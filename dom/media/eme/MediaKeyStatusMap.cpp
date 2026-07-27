@@ -1,15 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/MediaKeyStatusMap.h"
-#include "nsPIDOMWindow.h"
-#include "mozilla/dom/UnionTypes.h"
-#include "mozilla/dom/ToJSValue.h"
-#include "mozilla/EMEUtils.h"
+
 #include "GMPUtils.h"
+#include "mozilla/EMEUtils.h"
+#include "mozilla/dom/BufferSourceBinding.h"
+#include "mozilla/dom/ToJSValue.h"
+#include "mozilla/dom/UnionTypes.h"
+#include "nsPIDOMWindow.h"
 
 namespace mozilla::dom {
 
@@ -36,7 +36,7 @@ nsPIDOMWindowInner* MediaKeyStatusMap::GetParentObject() const {
 }
 
 const MediaKeyStatusMap::KeyStatus* MediaKeyStatusMap::FindKey(
-    const ArrayBufferViewOrArrayBuffer& aKey) const {
+    const BufferSource& aKey) const {
   MOZ_ASSERT(aKey.IsArrayBuffer() || aKey.IsArrayBufferView());
 
   return ProcessTypedArrays(aKey,
@@ -51,7 +51,7 @@ const MediaKeyStatusMap::KeyStatus* MediaKeyStatusMap::FindKey(
                             });
 }
 
-void MediaKeyStatusMap::Get(const ArrayBufferViewOrArrayBuffer& aKey,
+void MediaKeyStatusMap::Get(const BufferSource& aKey,
                             OwningMediaKeyStatusOrUndefined& aOutValue,
                             ErrorResult& aOutRv) const {
   const KeyStatus* status = FindKey(aKey);
@@ -63,7 +63,7 @@ void MediaKeyStatusMap::Get(const ArrayBufferViewOrArrayBuffer& aKey,
   aOutValue.SetAsMediaKeyStatus() = status->mStatus;
 }
 
-bool MediaKeyStatusMap::Has(const ArrayBufferViewOrArrayBuffer& aKey) const {
+bool MediaKeyStatusMap::Has(const BufferSource& aKey) const {
   return FindKey(aKey);
 }
 

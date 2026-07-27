@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -13,6 +11,7 @@
 #include "mozilla/LoggingCore.h"
 
 #include "jstypes.h"
+#include "fmt/format.h"
 #include "js/GCAPI.h"
 
 struct JSContext;
@@ -55,6 +54,9 @@ struct LoggingInterface {
                      const char* aFmt, va_list ap)
       MOZ_FORMAT_PRINTF(3, 0) = nullptr;
 
+  void (*logPrintFMT)(const OpaqueLogger aModule, mozilla::LogLevel aLevel,
+                      fmt::string_view, fmt::format_args);
+
   // Return a reference to the provided OpaqueLogger's level ref; Implementation
   // wise this can be a small violation of encapsulation but is intended to help
   // ensure that we can build lightweight logging without egregious costs to
@@ -69,6 +71,13 @@ struct LoggingInterface {
     va_start(ap, aFmt);
     this->logPrintVA(aModule, aLevel, aFmt, ap);
     va_end(ap);
+  }
+
+  template <typename... T>
+  void logPrintFmt(const OpaqueLogger aModule, mozilla::LogLevel aLevel,
+                   fmt::format_string<T...> aFmt, T&&... aArgs) {
+    JS::AutoSuppressGCAnalysis suppress;
+    this->logPrintFMT(aModule, aLevel, aFmt, fmt::make_format_args(aArgs...));
   }
 
   // Used to ensure that before we use an interface, it's successfully been

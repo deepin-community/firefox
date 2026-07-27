@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,6 +5,7 @@
 #include "nsDebug.h"
 #include "AutoSQLiteLifetime.h"
 #include "sqlite3.h"
+#include "mozilla/Atomics.h"
 
 #ifdef MOZ_MEMORY
 #  include "mozmemory.h"
@@ -124,6 +124,11 @@ AutoSQLiteLifetime::AutoSQLiteLifetime() {
     MOZ_CRASH("multiple instances of AutoSQLiteLifetime constructed!");
   }
 
+  Init();
+}
+
+// static
+void AutoSQLiteLifetime::Init() {
 #ifdef MOZ_MEMORY
   sResult = ::sqlite3_config(SQLITE_CONFIG_MALLOC, &memMethods);
 #else
@@ -133,7 +138,7 @@ AutoSQLiteLifetime::AutoSQLiteLifetime() {
   if (sResult == SQLITE_OK) {
     // TODO (bug 1191405): do not preallocate the connections caches until we
     // have figured the impact on our consumers and memory.
-    sqlite3_config(SQLITE_CONFIG_PAGECACHE, NULL, 0, 0);
+    ::sqlite3_config(SQLITE_CONFIG_PAGECACHE, NULL, 0, 0);
 
     // Explicitly initialize sqlite3.  Although this is implicitly called by
     // various sqlite3 functions (and the sqlite3_open calls in our case),

@@ -25,6 +25,8 @@ return-to-amo-subtitle = Ótimo, tem o { -brand-short-name }
 return-to-amo-addon-title = Agora vamos obter o <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Adicionar a extensão
 return-to-amo-add-theme-label = Adicionar o tema
+return-to-amo-theme-install-complete-label = Tema instalado
+return-to-amo-extension-install-complete-label = Extensão instalada
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importar de { $previous
 mr1-onboarding-theme-header = Personalize
 mr1-onboarding-theme-subtitle = Personalize o { -brand-short-name } com um tema.
 mr1-onboarding-theme-secondary-button-label = Agora não
-newtab-wallpaper-onboarding-title = Experimente um toque de cor
-newtab-wallpaper-onboarding-subtitle = Escolha um fundo para dar um novo visual ao seu novo separador.
-newtab-wallpaper-onboarding-primary-button-label = Definir fundo
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema do sistema
 mr1-onboarding-theme-label-light = Claro
@@ -223,7 +222,9 @@ mr2022-onboarding-set-default-subtitle = Utilize um navegador apoiado por uma or
 mr2022-onboarding-get-started-primary-subtitle = A nossa versão mais recente foi desenvolvida para si, tornando mais fácil do que nunca a navegação na Web. Ela está repleta de funcionalidades que achamos que vai adorar.
 mr2022-onboarding-get-started-primary-button-label = Configurar em segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuração ultra-rápida
 mr2022-onboarding-import-subtitle = Configure o { -brand-short-name } como preferir. Adicione os seus marcadores, palavras-passe e muito mais, do seu navegador antigo.
@@ -338,10 +339,10 @@ onboarding-device-migration-primary-button-label = Entrar
 ## Add-ons Picker screen
 
 amo-picker-title = Personalize o seu { -brand-short-name }
-amo-picker-subtitle = As extensões funcionam como aplicações para o seu navegador, permitindo-lhe proteger as suas palavras-passe, descarregar vídeos, descobrir promoções, bloquear anúncios incómodos, modificar a aparência do seu navegador, entre outras funcionalidades.
+amo-picker-subtitle = As extensões funcionam como aplicações para o seu navegador, permitindo-lhe proteger as suas palavras-passe, transferir vídeos, descobrir promoções, bloquear anúncios incómodos, modificar o aspeto do seu navegador, entre outras funcionalidades.
 amo-picker-install-button-label = Adicionar ao { -brand-short-name }
 amo-picker-install-complete-label = Instalado
-amo-picker-collection-link = Explorar mais extras
+amo-picker-collection-link = Explorar mais complementos
 
 ## The following screens have been updated to use security and privacy focused strings:
 
@@ -354,6 +355,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Quando está sincroni
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protege-o
 onboarding-gratitude-security-and-privacy-subtitle = Obrigado por utilizar o { -brand-short-name }, apoiado pela Mozilla Foundation. Com o seu apoio, nós estamos a trabalhar para tornar a Internet segura e mais acessível para todos.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronize os seus dados entre dispositivos
+onboarding-sign-up-description = Registe uma conta e todas as suas informações importantes (palavras-passe, marcadores e muito mais) serão armazenadas em segurança e disponíveis quando iniciar sessão em qualquer dispositivo.
+onboarding-sign-up-button = Criar conta ou iniciar sessão
+onboarding-sign-up-secondary-button = Começar a navegar
 
 ## New user time and familiarity survey strings
 
@@ -373,3 +379,209 @@ onboarding-new-user-survey-familiarity-based-option-1 = Estou a começar
 onboarding-new-user-survey-familiarity-based-option-2 = Eu já o utilizei um pouco
 onboarding-new-user-survey-familiarity-based-option-3 = Eu estou muito familiarizado com o mesmo
 onboarding-new-user-survey-familiarity-based-option-4 = Eu já o utilizei, mas foi há algum tempo
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Diga-nos onde gostaria de ter os seus separadores
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Pode alterar quando quiser, nas definições da barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Os seus separadores, à sua maneira
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Tem muitos separadores abertos? Experimente colocar os seus separadores na lateral para uma vista mais simplificada. Ou mantenha o clássico com os separadores no topo. Pode mudar a qualquer momento.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Escolha a disposição dos seus separadores
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Para uma vista simplificada que pode ajudar a manter a sua concentração, experimente colocar os seus separadores na lateral. Ou mantenha-se com o clássico com os separadores no topo. Pode mudar a qualquer momento.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Separadores na lateral
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Separadores no topo
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Os separadores vertical estão aqui
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = A apresentar os separadores verticais
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Experimente os seus separadores na lateral. Pode alterar quando quiser, nas definições da barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Experimente os separadores verticais
+onboarding-flair-text = Novo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manter os separadores horizontais
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Uma janela de navegador a mostrar separadores na lateral do ecrã como uma parte da barra lateral do { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Uma janela de navegador a mostrar separadores na lateral do ecrã como uma parte da barra lateral do { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Uma janela de navegador a mostrar separadores no topo.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Uma janela de navegador a mostrar separadores no topo.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Experimente um chatbot de IA na barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Sumarize conteúdos na Internet, prototipe ideias, crie rascunhos de mensagens — tudo enquanto navega. Escolha a partir de múltiplos fornecedores. Mude a qualquer altura. <a data-l10n-name="learn-more">Saber mais</a>
+onboarding-genai-sidebar-primary-button = Escolha um chatbot
+onboarding-genai-sidebar-secondary-button = Começar a navegar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Concluir a configuração do { -brand-short-name }
+onboarding-checklist-subtitle = Conclua estes passos para tirar o máximo proveito da sua experiência de navegação.
+onboarding-checklist-set-default = Definir o { -brand-short-name } como o seu navegador predefinido
+onboarding-checklist-pin = Fixar o { -brand-short-name } na barra de tarefas
+onboarding-checklist-import = Importar do navegador anterior
+onboarding-checklist-extension = Adicionar uma extensão
+onboarding-checklist-sign-up = Registar ou iniciar sessão na sua conta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Grupos de separadores: menos confusão, mais concentração
+tab-groups-onboarding-feature-callout-subtitle = Organize-se arrastando um separador sobre o outro para criar o seu primeiro grupo.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Encontre os seus grupos de separadores no menu Listar todos os separadores, sempre que quiser.
+tab-groups-onboarding-create-group-title-2 = Encontre os seus grupos de separadores a qualquer momento aqui.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Encontre os seus grupos ao procurar pelos mesmos na barra de endereço.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Quando fechar um grupo de separadores, reabra o mesmo a partir do menu Listar todos os separadores, sempre que quiser.
+tab-groups-onboarding-saved-groups-title-2 = Quando fecha um grupo de separadores, pode reabri-lo aqui a qualquer momento.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Encontre os seus grupos fechados ao procurar pelos mesmos na barra de endereço.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Volte a abrir os seus grupos de separadores a partir do menu Listar Todos os Separadores, sempre que quiser.
+tab-groups-onboarding-session-restore-title = Reabra os seus grupos de separadores a qualquer momento aqui.
+tab-groups-onboarding-dismiss = Ok
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Diga olá aos perfis do { -brand-product-name }
+multi-profile-spotlight-body = Permute facilmente entre a navegação para o trabalho e a diversão. Os perfis mantêm a sua informação de navegação totalmente separada, incluindo o histórico de pesquisa e as palavras-passe, para ajudar na organização da informação.
+multi-profile-spotlight-cta = Criar um perfil
+multi-profile-callout-title = Crie perfis diferentes para o trabalho e a diversão
+multi-profile-callout-subtitle = Os perfis permitem-lhe manter as suas informações de navegação, tais como o histórico de pesquisa e as palavras-passe, totalmente separadas.
+multi-profile-callout-cta = Criar um perfil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Transferir, sincronizar e pronto!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Digitalize o código QR para transferir o { -brand-product-name } para dispositivos móveis. Depois de instalado, selecione “Sincronizar com o telemóvel” para aceder às suas palavras-passe, marcadores e muito mais, em qualquer lugar.
+dismiss-button-label = Dispensar
+sync-to-mobile-button-label = Sincronizar com o telemóvel
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Código QR para transferir o { -brand-product-name } para dispositivos móveis
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    A atualizar para o Windows 11?
+    Vamos efetuar uma cópia dos seus dados do { -brand-product-name }.
+create-backup-screen-1-subtitle = Proteja automaticamente as suas palavras-passe, marcadores e muito mais, em 1–2 minutos.
+create-backup-screen-1-flair = Recomendado
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Saber mais</a>
+create-backup-screen-1-sync-label = Sincronizar com o { -brand-product-name }
+create-backup-screen-1-sync-body = Faz uma cópia de segurança de todos os dispositivos autenticados
+create-backup-screen-1-backup-label = Cópia de segurança para PC
+create-backup-screen-1-backup-body = Guarda no seu dispositivo ou OneDrive
+create-backup-select-tile-button-label = Selecionar
+create-backup-back-button-label = Retroceder
+create-backup-show-fewer =
+    .label = Mostrar menos como isto
+create-backup-screen-2-title = Escolher os dados do { -brand-product-name } para criar uma cópia
+create-backup-screen-2-subtitle = Demora apenas um minuto. Os seus dados são guardados uma vez por dia.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Configuração fácil
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Marcadores, histórico, definições e muito mais
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Não inclui palavras-passe e pagamentos
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Não encriptada
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Todos os dados
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Inclui palavras-passe e pagamentos
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Encriptada com uma palavra-passe
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Onde quer a sua cópia de segurança seja guardada?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Criar uma palavra-passe para o ficheiro da cópia de segurança
+create-backup-screen-3-subtitle = Necessário para encriptar os seus dados. Guarde-a num local de que irá lembrar-se.
+fx-backup-opt-in-header = Escolher a localização do ficheiro
+fx-backup-opt-in-filepath-label = Escolha um local que planeia transferir para um novo dispositivo, tal como o Onedrive.
+fx-backup-opt-in-create-password-label = Inserir palavra-passe
+fx-backup-opt-in-confirm-btn-label = Continuar
+fx-backup-opt-in-cancel-btn-label = Anterior
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = A sua cópia de segurança está agendada
+fx-backup-confirmation-screen-close-button = Fechar
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Todos os dados de navegação incluídos
+fx-backup-confirmation-screen-all-data-item-text-2 = Guardada no seu dispositivo
+fx-backup-confirmation-screen-all-data-item-text-3 = Encriptada e protegida por palavra-passe
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Marcadores, histórico, definições e outros dados incluídos
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Guardada no seu dispositivo
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Palavras-passe e pagamentos não incluídos
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Aceda às <a data-l10n-name="settings">Definições</a> para incluir dados sensíveis.
+fx-backup-confirmation-screen-item-subtext-1 = A sua cópia de segurança irá iniciar em alguns minutos e será executada uma vez por dia. Pode verificar o progresso nas <a data-l10n-name="settings">Definições</a>.
+fx-backup-confirmation-screen-item-subtext-2 = O { -brand-short-name } irá procurar pela sua cópia de segurança, se precisar de reinstalar.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Restaurar da cópia de segurança
+restore-from-backup-title = Vamos pôr o { -brand-short-name } novamente ao seu gosto
+restore-from-backup-subtitle = Recupere todos os seus marcadores, histórico e outros dados para voltar à navegação.
+restore-from-backup-secondary-button = Não restaurar
+multiple-backups-info-tile = <strong>Foram encontrados vários ficheiros de cópia de segurança.</strong> O ficheiro mais recente está selecionado. Para restaurar outros perfis, aceda às <a data-l10n-name="settings-label">Definições</a>.
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Estamos de volta! Os seus dados do { -brand-short-name } foram restaurados.
+restored-from-backup-success-with-checklist-subtitle = Pretende manter o seu navegador favorito, focado na privacidade, a um clique de distância?
+restored-from-backup-success-no-checklist-subtitle = Pode ativar a cópia de segurança para este dispositivo nas <a data-l10n-name="settings">Definições</a>.
+restored-from-backup-success-with-checklist-primary-button = Guardar e continuar
+restored-from-backup-success-with-checklist-secondary-button = Ignorar este passo
+restored-from-backup-success-no-checklist-primary-button = Continuar
+restored-from-backup-error-title = Hmm, ocorreu um problema com o seu ficheiro da cópia de segurança.
+restored-from-backup-error-subtitle = Se tiver outro ficheiro de cópia de segurança do { -brand-short-name }, tente restaurar a partir desse. <a data-l10n-name="restore-problems">Ainda tem problemas?</a>
+restored-from-backup-error-primary-button = Fechar
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personalize a sua experiência do { -brand-short-name }
+onboarding-personalization-subtitle = Responda a algumas perguntas e nós iremos sugerir funcionalidades e extensões para melhorar a sua utilização do { -brand-short-name }.
+onboarding-personalization-use-case-title = Para que irá utilizar o { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Pessoal
+onboarding-personalization-use-case-school-option = Escola
+onboarding-personalization-use-case-work-option = Trabalho
+onboarding-personalization-motivation-title = Quais são as funcionalidades do { -brand-short-name } mais importantes para si?
+onboarding-personalization-motivation-privacy-option = Privacidade e segurança
+onboarding-personalization-motivation-productivity-option = Produtividade
+onboarding-personalization-motivation-other-option = Outra
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Protegemos os seus dados e bloqueamos empresas que tentam espiar os seus cliques — tudo de forma automática.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Está em boas patas
+onboarding-refresh-import-subtitle = Traga as suas palavras-passe, marcadores, histórico e muito mais.
+onboarding-refresh-import-title = Faça do { -brand-short-name } a sua casa
+onboarding-refresh-onboarding-addons-subtitle = As extensões são pequenas aplicações que permitem personalizar o { -brand-short-name }. Podem reforçar a sua privacidade, aumentar a produtividade, mudar o aspeto do { -brand-short-name } e muito mais.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Otimize a sua navegação
+onboarding-refresh-sync-subtitle = Obtenha marcadores, palavras-passe e muito mais, em todos os lugares em que estiver autenticado no { -brand-short-name }. Além disso, os seus dados são encriptados para que apenas você os possa ver.
+onboarding-refresh-sync-title = Vá para qualquer lugar. Sincronize tudo.
+onboarding-refresh-gratitude-subtitle = Obrigado por utilizar o { -brand-short-name }, o único grande navegador apoiado por uma organização sem fins lucrativos. Com o seu apoio, nós estamos a trabalhar para tornar a Internet mais segura e acessível para todos.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = O { -brand-short-name } está aqui para si

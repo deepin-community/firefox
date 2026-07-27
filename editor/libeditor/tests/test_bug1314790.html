@@ -33,21 +33,25 @@ SimpleTest.waitForFocus(function() {
   sendString("apple pen");
 
   is(elm.childNodes[0].textContent, "pen pineapple",
-     "'pen pineapple' is first elment");
+     "'pen pineapple' is first node");
   is(elm.childNodes[1].textContent, "apple pen",
-     "'apple pen' is second elment");
+     "'apple pen' is second node");
 
   SpecialPowers.doCommand(window, "cmd_deleteWordBackward");
   SpecialPowers.doCommand(window, "cmd_deleteWordBackward");
   is(elm.childNodes[0].textContent, "pen pineapple",
-     "'pen pineapple' is first elment");
+     "'pen pineapple' is first node");
 
   SpecialPowers.doCommand(window, "cmd_deleteWordBackward");
   is(elm.childNodes[0].textContent, "pen pineapple",
-     "'pen pineapple' is first elment");
+     "'pen pineapple' is first node");
 
   SpecialPowers.doCommand(window, "cmd_deleteWordBackward");
-  is(elm.childNodes[0].textContent, "pen ", "'pen ' is first elment");
+  is(
+    elm.childNodes[0].textContent,
+    "pen\u00A0",
+    "'pen ' is first node"
+  );
 
   SimpleTest.finish();
 });

@@ -233,7 +233,7 @@ inside. The resulting localized content will look like this:
 
 .. code-block:: html
 
-  <p data-l10n-id="update-application-info" data-l10n-args='{"version": "60.0"}'">
+  <p data-l10n-id="update-application-info" data-l10n-args='{"version": "60.0"}'>
     You are using Firefox Version: 60.0.
     Please read the <a href="http://www.mozilla.org/privacy">privacy policy</a>.
   </p>
@@ -371,7 +371,7 @@ Plural Rules
 
 The most common localization feature is the ability to provide different variants
 of the same string depending on plural categories. Fluent ties into the Unicode CLDR
-standard called `Plural Rules`_.
+standard called `Plural Rules <http://cldr.unicode.org/index/cldr-spec/plural-rules>`__.
 
 In order to allow localizers to use it, all the developer has to do is to pass
 an external argument number:
@@ -560,7 +560,7 @@ on the class.
 
 
 Synchronous contexts should be always avoided as they require synchronous I/O. If you think your use case
-requires a synchronous localization context, please consult Gecko, Performance and L10n Drivers teams.
+requires a synchronous localization context, please consult Gecko, Performance and Localization teams.
 
 
 Designing Localizable APIs
@@ -677,7 +677,7 @@ Testing other locales
 Installing Nightly in a different locale
 ----------------------------------------
 
-Localized Nightly builds are `listed on the mozilla.org website`_.
+Localized Nightly builds are listed on `firefox.com`_.
 
 Installing language packs on local builds
 -----------------------------------------
@@ -708,6 +708,16 @@ However, if you really need to use this, you can:
 4. Open the Firefox Settings UI.
 5. Switch to your chosen language.
 
+Building localized builds for single and multi-locale repacks
+-------------------------------------------------------------
+
+Instructions on how to build localization repacks are available on :doc:`/build/buildsystem/locales`.
+
+Including specific localization repacks to a Try Server push
+------------------------------------------------------------
+
+Instructions are available in the `Firefox L10N FAQs`_.
+
 Finding a regression in a localized build
 -----------------------------------------
 
@@ -720,8 +730,9 @@ build, you could run something like:::
 
 and that should run localized nightlies.
 
-.. _listed on the mozilla.org website: https://www.mozilla.org/firefox/all/#product-desktop-nightly
+.. _firefox.com: https://www.firefox.com/en-US/download/all/desktop-nightly/
 .. _the FTP listing for langpacks: https://ftp.mozilla.org/pub/firefox/nightly/latest-mozilla-central-l10n/linux-x86_64/xpi/
+.. _Firefox L10N FAQs: https://mozilla-l10n.github.io/documentation/products/firefox_desktop/firefox_l10n_faqs.html#how-can-i-test-a-different-locale
 .. _mozregression: https://mozilla.github.io/mozregression/
 
 Inner Structure of Fluent
@@ -803,4 +814,3 @@ and resources that the :js:`Localization` class uses.
 .. _Unicode: https://www.unicode.org/
 .. _Fluent Syntax Guide: https://projectfluent.org/fluent/guide/
 .. _Pontoon: https://pontoon.mozilla.org/
-.. _Plural Rules: http://cldr.unicode.org/index/cldr-spec/plural-rules

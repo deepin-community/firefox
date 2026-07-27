@@ -1,12 +1,16 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ImageBitmap.h"
+
+#include "imgLoader.h"
+#include "imgTools.h"
+#include "jsapi.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/CheckedInt.h"
+#include "mozilla/Mutex.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/CanvasRenderingContext2D.h"
 #include "mozilla/dom/CanvasUtils.h"
@@ -18,27 +22,22 @@
 #include "mozilla/dom/ImageBitmapBinding.h"
 #include "mozilla/dom/OffscreenCanvas.h"
 #include "mozilla/dom/Promise.h"
-#include "mozilla/dom/StructuredCloneTags.h"
 #include "mozilla/dom/SVGImageElement.h"
+#include "mozilla/dom/StructuredCloneTags.h"
+#include "mozilla/dom/VideoFrame.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
-#include "mozilla/dom/VideoFrame.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/gfx/Scale.h"
 #include "mozilla/gfx/Swizzle.h"
-#include "mozilla/Mutex.h"
-#include "mozilla/ScopeExit.h"
 #include "nsGlobalWindowInner.h"
 #include "nsIAsyncInputStream.h"
 #include "nsISerialEventTarget.h"
-#include "nsNetUtil.h"
 #include "nsLayoutUtils.h"
+#include "nsNetUtil.h"
 #include "nsStreamUtils.h"
-#include "imgLoader.h"
-#include "imgTools.h"
-#include "jsapi.h"
 
 using namespace mozilla::gfx;
 using namespace mozilla::layers;
@@ -80,8 +79,7 @@ class SendShutdownToWorkerThread : public MainThreadWorkerControlRunnable {
 
   void DispatchToWorker() {
     MOZ_ASSERT(mTarget);
-    Unused << NS_WARN_IF(
-        NS_FAILED(mTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+    (void)NS_WARN_IF(NS_FAILED(mTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
     mTarget = nullptr;
   }
 
@@ -306,37 +304,28 @@ static already_AddRefed<DataSourceSurface> ScaleDataSourceSurface(
   const int bytesPerPixel = BytesPerPixel(format);
 
   const IntSize srcSize = aSurface->GetSize();
-  int32_t tmp;
-
-  CheckedInt<int32_t> checked;
-  CheckedInt<int32_t> dstWidth(
-      aOptions.mResizeWidth.WasPassed() ? aOptions.mResizeWidth.Value() : 0);
-  CheckedInt<int32_t> dstHeight(
-      aOptions.mResizeHeight.WasPassed() ? aOptions.mResizeHeight.Value() : 0);
-
-  if (!dstWidth.isValid() || !dstHeight.isValid()) {
+  Maybe<int32_t> resizeWidth;
+  Maybe<int32_t> resizeHeight;
+  if (aOptions.mResizeWidth.WasPassed()) {
+    CheckedInt<int32_t> checked(aOptions.mResizeWidth.Value());
+    if (!checked.isValid()) {
+      return nullptr;
+    }
+    resizeWidth.emplace(checked.value());
+  }
+  if (aOptions.mResizeHeight.WasPassed()) {
+    CheckedInt<int32_t> checked(aOptions.mResizeHeight.Value());
+    if (!checked.isValid()) {
+      return nullptr;
+    }
+    resizeHeight.emplace(checked.value());
+  }
+  Maybe<IntSize> maybeDstSize =
+      nsLayoutUtils::ComputeResizedSize(srcSize, resizeWidth, resizeHeight);
+  if (!maybeDstSize) {
     return nullptr;
   }
-
-  if (!dstWidth.value()) {
-    checked = srcSize.width * dstHeight;
-    if (!checked.isValid()) {
-      return nullptr;
-    }
-
-    tmp = ceil(checked.value() / double(srcSize.height));
-    dstWidth = tmp;
-  } else if (!dstHeight.value()) {
-    checked = srcSize.height * dstWidth;
-    if (!checked.isValid()) {
-      return nullptr;
-    }
-
-    tmp = ceil(checked.value() / double(srcSize.width));
-    dstHeight = tmp;
-  }
-
-  const IntSize dstSize(dstWidth.value(), dstHeight.value());
+  const IntSize dstSize = *maybeDstSize;
   const int32_t dstStride = dstSize.width * bytesPerPixel;
 
   // Create a new SourceSurface.
@@ -358,9 +347,24 @@ static already_AddRefed<DataSourceSurface> ScaleDataSourceSurface(
   uint8_t* srcBufferPtr = srcMap.GetData();
   uint8_t* dstBufferPtr = dstMap.GetData();
 
-  bool res = Scale(srcBufferPtr, srcSize.width, srcSize.height,
-                   srcMap.GetStride(), dstBufferPtr, dstSize.width,
-                   dstSize.height, dstMap.GetStride(), aSurface->GetFormat());
+  SamplingFilter filter = SamplingFilter::LINEAR;
+  switch (aOptions.mResizeQuality) {
+    case ResizeQuality::Pixelated:
+      filter = SamplingFilter::POINT;
+      break;
+    case ResizeQuality::Medium:
+    case ResizeQuality::High:
+      filter = SamplingFilter::GOOD;
+      break;
+    case ResizeQuality::Low:
+    default:
+      break;
+  }
+
+  bool res =
+      Scale(srcBufferPtr, srcSize.width, srcSize.height, srcMap.GetStride(),
+            dstBufferPtr, dstSize.width, dstSize.height, dstMap.GetStride(),
+            aSurface->GetFormat(), filter);
   if (!res) {
     return nullptr;
   }
@@ -854,7 +858,9 @@ already_AddRefed<SourceSurface> ImageBitmap::PrepareForDrawTarget(
       cropped = Factory::CreateDrawTarget(BackendType::SKIA,
                                           mPictureRect.Size(), format);
     } else {
-      cropped = aTarget->CreateSimilarDrawTarget(mPictureRect.Size(), format);
+      if (aTarget->CanCreateSimilarDrawTarget(mPictureRect.Size(), format)) {
+        cropped = aTarget->CreateSimilarDrawTarget(mPictureRect.Size(), format);
+      }
     }
 
     if (NS_WARN_IF(!cropped)) {
@@ -950,9 +956,6 @@ UniquePtr<ImageBitmapCloneData> ImageBitmap::ToCloneData() const {
     return nullptr;
   }
 
-  UniquePtr<ImageBitmapCloneData> result(new ImageBitmapCloneData());
-  result->mPictureRect = mPictureRect;
-  result->mAlphaType = mAlphaType;
   RefPtr<SourceSurface> surface = mData->GetAsSourceSurface();
   if (!surface) {
     // It might just not be possible to get/map the surface. (e.g. from another
@@ -960,10 +963,18 @@ UniquePtr<ImageBitmapCloneData> ImageBitmap::ToCloneData() const {
     return nullptr;
   }
 
-  result->mSurface = surface->GetDataSurface();
-  MOZ_ASSERT(result->mSurface);
-  result->mWriteOnly = mWriteOnly;
+  RefPtr<DataSourceSurface> dataSurface = surface->GetDataSurface();
+  if (NS_WARN_IF(!dataSurface)) {
+    // This can reasonably fail in many cases (e.g. canvas state doesn't allow
+    // reading back the snapshot).
+    return nullptr;
+  }
 
+  auto result = MakeUnique<ImageBitmapCloneData>();
+  result->mPictureRect = mPictureRect;
+  result->mAlphaType = mAlphaType;
+  result->mSurface = std::move(dataSurface);
+  result->mWriteOnly = mWriteOnly;
   return result;
 }
 
@@ -1004,7 +1015,7 @@ already_AddRefed<ImageBitmap> ImageBitmap::CreateFromOffscreenCanvas(
   RefPtr<SourceSurface> surface = res.GetSourceSurface();
 
   if (NS_WARN_IF(!surface)) {
-    aRv.Throw(NS_ERROR_NOT_AVAILABLE);
+    aRv.ThrowUnknownError("Failed to create ImageBitmap from OffscreenCanvas");
     return nullptr;
   }
 
@@ -1057,7 +1068,9 @@ already_AddRefed<ImageBitmap> ImageBitmap::CreateImageBitmapInternal(
   bool willModify = aOptions.mImageOrientation == ImageOrientation::FlipY ||
                     requiresPremultiply || requiresUnpremultiply;
   if ((willModify && !aAllocatedImageData) ||
-      (aOptions.mImageOrientation == ImageOrientation::FlipY &&
+      ((aOptions.mImageOrientation == ImageOrientation::FlipY ||
+        aOptions.mResizeWidth.WasPassed() ||
+        aOptions.mResizeHeight.WasPassed()) &&
        aCropRect.isSome()) ||
       aMustCopy) {
     dataSurface = surface->GetDataSurface();
@@ -1708,8 +1721,7 @@ NS_IMPL_ISUPPORTS_INHERITED(CreateImageBitmapFromBlob, DiscardableRunnable,
 
 class CreateImageBitmapFromBlobRunnable final : public WorkerThreadRunnable {
  public:
-  explicit CreateImageBitmapFromBlobRunnable(WorkerPrivate* aWorkerPrivate,
-                                             CreateImageBitmapFromBlob* aTask,
+  explicit CreateImageBitmapFromBlobRunnable(CreateImageBitmapFromBlob* aTask,
                                              layers::Image* aImage,
                                              nsresult aStatus)
       : WorkerThreadRunnable("CreateImageBitmapFromBlobRunnable"),
@@ -2299,8 +2311,7 @@ void CreateImageBitmapFromBlob::MimeTypeAndDecodeAndCropBlobCompletedMainThread(
     }
 
     RefPtr<CreateImageBitmapFromBlobRunnable> r =
-        new CreateImageBitmapFromBlobRunnable(mWorkerRef->Private(), this,
-                                              aImage, aStatus);
+        new CreateImageBitmapFromBlobRunnable(this, aImage, aStatus);
     r->Dispatch(mWorkerRef->Private());
     return;
   }

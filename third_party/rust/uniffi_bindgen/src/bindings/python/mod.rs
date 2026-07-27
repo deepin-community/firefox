@@ -2,36 +2,49 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::process::Command;
-
 use anyhow::Result;
+use askama::Template;
 use camino::Utf8Path;
 use fs_err as fs;
 
-pub mod gen_python;
-mod test;
-use super::super::interface::ComponentInterface;
-pub use gen_python::{generate_python_bindings, Config};
-pub use test::{run_script, run_test};
+use crate::{bindings::GenerateOptions, BindgenLoader};
 
-// Generate python bindings for the given ComponentInterface, in the given output directory.
-pub fn write_bindings(
-    config: &Config,
-    ci: &ComponentInterface,
+pub mod filters;
+mod pipeline;
+pub use pipeline::pipeline;
+
+#[cfg(feature = "bindgen-tests")]
+pub mod test;
+
+/// Generate Python bindings
+pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
+    let metadata = loader.load_metadata(&options.source)?;
+    let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
+    run_pipeline(root, &options.out_dir, options.crate_filter.as_deref())?;
+
+    Ok(())
+}
+
+pub fn run_pipeline(
+    initial_root: pipeline::initial::Root,
     out_dir: &Utf8Path,
-    try_format_code: bool,
+    crate_filter: Option<&str>,
 ) -> Result<()> {
-    let py_file = out_dir.join(format!("{}.py", ci.namespace()));
-    fs::write(&py_file, generate_python_bindings(config, ci)?)?;
-
-    if try_format_code {
-        if let Err(e) = Command::new("yapf").arg(&py_file).output() {
-            println!(
-                "Warning: Unable to auto-format {} using yapf: {e:?}",
-                py_file.file_name().unwrap(),
-            )
-        }
+    let python_root = pipeline().execute(initial_root)?;
+    println!("writing out {out_dir}");
+    if !out_dir.exists() {
+        fs::create_dir_all(out_dir)?;
     }
-
+    for module in python_root.namespaces.values() {
+        if let Some(crate_filter) = crate_filter {
+            if module.crate_name != crate_filter {
+                continue;
+            }
+        }
+        let path = out_dir.join(format!("{}.py", module.name));
+        let content = module.render()?;
+        println!("writing {path}");
+        fs::write(path, content)?;
+    }
     Ok(())
 }

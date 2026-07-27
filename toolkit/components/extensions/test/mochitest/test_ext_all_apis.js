@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 // Tests whether not too many APIs are visible by default.
@@ -24,6 +22,7 @@ let expectedCommonApis = [
   "i18n.detectLanguage",
   "i18n.getAcceptLanguages",
   "i18n.getMessage",
+  "i18n.getPreferredSystemLanguages",
   "i18n.getUILanguage",
   "runtime.OnInstalledReason",
   "runtime.OnRestartRequiredReason",
@@ -52,6 +51,7 @@ let expectedCommonApis = [
   "test.notifyFail",
   "test.notifyPass",
   "test.onMessage",
+  "test.runTests",
   "test.sendMessage",
   "test.succeed",
   "test.withHandlingUserInput",
@@ -223,9 +223,6 @@ add_task(async function test_enumerate_background_script_apis() {
 });
 
 add_task(async function test_enumerate_background_script_apis_mv3() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["extensions.manifestV3.enabled", true]],
-  });
   let extensionData = {
     background: sendAllApis,
     manifest: {
@@ -247,5 +244,4 @@ add_task(async function test_enumerate_background_script_apis_mv3() {
   ok(sameness, "namespaces are same object");
 
   await extension.unload();
-  await SpecialPowers.popPrefEnv();
 });

@@ -11,9 +11,10 @@ const { ContentTaskUtils } = ChromeUtils.importESModule(
 );
 const gCUITestUtils = new CustomizableUITestUtils(window);
 const gDOMWindowUtils = EventUtils._getDOMWindowUtils(window);
+let searchBar;
 
-add_task(async function test_setup() {
-  await gCUITestUtils.addSearchBar();
+add_setup(async function () {
+  searchBar = await gCUITestUtils.addSearchBar();
   registerCleanupFunction(() => {
     gCUITestUtils.removeSearchBar();
   });
@@ -21,11 +22,11 @@ add_task(async function test_setup() {
 
 function promiseResettingSearchBarAndFocus() {
   const waitForFocusInSearchBar = BrowserTestUtils.waitForEvent(
-    BrowserSearch.searchBar.textbox,
+    searchBar.inputField,
     "focus"
   );
-  BrowserSearch.searchBar.textbox.focus();
-  BrowserSearch.searchBar.textbox.value = "";
+  searchBar.inputField.focus();
+  searchBar.inputField.value = "";
   return Promise.all([
     waitForFocusInSearchBar,
     TestUtils.waitForCondition(
@@ -63,11 +64,11 @@ add_task(async function test_text_editor_in_chrome() {
   function logEvent(event) {
     events.push(event);
   }
-  BrowserSearch.searchBar.textbox.addEventListener("beforeinput", logEvent);
+  searchBar.inputField.addEventListener("beforeinput", logEvent);
   gDOMWindowUtils.sendContentCommandEvent("insertText", null, "XYZ");
 
   is(
-    BrowserSearch.searchBar.textbox.value,
+    searchBar.inputField.value,
     "XYZ",
     "The string should be inserted into the focused search bar"
   );
@@ -79,9 +80,9 @@ add_task(async function test_text_editor_in_chrome() {
   is(events[0]?.inputType, "insertText", 'inputType should be "insertText"');
   is(events[0]?.data, "XYZ", 'inputType should be "XYZ"');
   is(events[0]?.cancelable, true, "beforeinput event should be cancelable");
-  BrowserSearch.searchBar.textbox.removeEventListener("beforeinput", logEvent);
+  searchBar.inputField.removeEventListener("beforeinput", logEvent);
 
-  BrowserSearch.searchBar.textbox.blur();
+  searchBar.inputField.blur();
 });
 
 add_task(async function test_text_editor_in_content() {
@@ -169,7 +170,7 @@ add_task(async function test_text_editor_in_content() {
     });
 
     is(
-      BrowserSearch.searchBar.textbox.value,
+      searchBar.inputField.value,
       "",
       "The string should not be inserted into the previously focused search bar"
     );
@@ -263,7 +264,7 @@ add_task(async function test_html_editor_in_content() {
     });
 
     is(
-      BrowserSearch.searchBar.textbox.value,
+      searchBar.inputField.value,
       "",
       "The string should not be inserted into the previously focused search bar"
     );

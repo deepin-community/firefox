@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,9 @@
 
 #include "GLContext.h"
 #include "mozilla/layers/CompositorThread.h"
+#include "mozilla/layers/TextureHost.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/webrender/RenderThread.h"
 #include "RenderThread.h"
 
 namespace mozilla {
@@ -24,6 +25,63 @@ void ActivateBindAndTexParameteri(gl::GLContext* aGL, GLenum aActiveTexture,
                       LOCAL_GL_LINEAR);
 }
 
+void RenderTextureHostUsageInfo::OnVideoPresent(int aFrameId,
+                                                uint32_t aDurationMs) {
+  MOZ_ASSERT(RenderThread::IsInRenderThread());
+
+  const auto maxPresentWaitDurationMs = 2;
+  const auto maxSlowPresentCount = 5;
+
+  mVideoPresentFrameId = aFrameId;
+
+  if (aDurationMs < maxPresentWaitDurationMs) {
+    mSlowPresentCount = 0;
+    return;
+  }
+
+  mSlowPresentCount++;
+
+  if (mSlowPresentCount <= maxSlowPresentCount) {
+    return;
+  }
+
+  DisableVideoOverlay();
+
+  gfxCriticalNoteOnce << "Video swapchain present is slow";
+
+  nsPrintfCString marker("Video swapchain present is slow");
+  PROFILER_MARKER_TEXT("DisableOverlay", GRAPHICS, {}, marker);
+}
+
+void RenderTextureHostUsageInfo::OnCompositorEndFrame(int aFrameId,
+                                                      uint32_t aDurationMs) {
+  MOZ_ASSERT(RenderThread::IsInRenderThread());
+
+  const auto maxCommitWaitDurationMs = 20;
+  const auto maxSlowCommitCount = 5;
+
+  // Check if video was presented in current frame.
+  if (mVideoPresentFrameId != aFrameId) {
+    return;
+  }
+
+  if (aDurationMs < maxCommitWaitDurationMs) {
+    mSlowCommitCount = 0;
+    return;
+  }
+
+  mSlowCommitCount++;
+
+  if (mSlowCommitCount <= maxSlowCommitCount) {
+    return;
+  }
+
+  gfxCriticalNoteOnce << "Video swapchain is slow";
+
+  nsPrintfCString marker("Video swapchain is slow");
+  PROFILER_MARKER_TEXT("DisableOverlay", GRAPHICS, {}, marker);
+}
+
 RenderTextureHost::RenderTextureHost() : mIsFromDRMSource(false) {
   MOZ_COUNT_CTOR(RenderTextureHost);
 }
@@ -31,6 +89,9 @@ RenderTextureHost::RenderTextureHost() : mIsFromDRMSource(false) {
 RenderTextureHost::~RenderTextureHost() {
   MOZ_ASSERT(RenderThread::IsInRenderThread());
   MOZ_COUNT_DTOR(RenderTextureHost);
+  if (mDestroyedCallback) {
+    mDestroyedCallback();
+  }
 }
 
 wr::WrExternalImage RenderTextureHost::Lock(uint8_t aChannelIndex,
@@ -44,11 +105,9 @@ wr::WrExternalImage RenderTextureHost::LockSWGL(uint8_t aChannelIndex,
   return InvalidToWrExternalImage();
 }
 
-std::pair<gfx::Point, gfx::Point> RenderTextureHost::GetUvCoords(
-    gfx::IntSize aTextureSize) const {
-  return std::make_pair(gfx::Point(0.0, 0.0),
-                        gfx::Point(static_cast<float>(aTextureSize.width),
-                                   static_cast<float>(aTextureSize.height)));
+RefPtr<layers::TextureSource> RenderTextureHost::CreateTextureSource(
+    layers::TextureSourceProvider* aProvider) {
+  return nullptr;
 }
 
 void RenderTextureHost::Destroy() {

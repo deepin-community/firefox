@@ -80,10 +80,10 @@ add_task(async function test_pinned_horizontal_tabs() {
   indexTest(2, 3);
   indexTest(3, 0);
 
-  tabbrowser.moveTabTo(tabs[3], 3);
+  tabbrowser.moveTabTo(tabs[3], { tabIndex: 3 });
   indexTest(3, 1, "shouldn't be able to mix a pinned tab into normal tabs");
 
-  tabbrowser.moveTabTo(tabs[2], 0);
+  tabbrowser.moveTabTo(tabs[2], { tabIndex: 0 });
   indexTest(2, 2, "shouldn't be able to mix a normal tab into pinned tabs");
 
   eh = new PinUnpinHandler(tabs[1], "TabUnpinned");
@@ -101,11 +101,9 @@ add_task(async function test_pinned_horizontal_tabs() {
 
   let tabStrip = tabbrowser.tabContainer;
   let verticalTabs = document.querySelector("#vertical-tabs");
-  let verticalPinnedTabsContainer = document.querySelector(
-    "#vertical-pinned-tabs-container"
-  );
+  let pinnedTabsContainer = document.querySelector("#pinned-tabs-container");
 
-  is(tabbrowser._numPinnedTabs, 1, "One tab is pinned in horizontal tabstrip");
+  is(tabbrowser.pinnedTabCount, 1, "One tab is pinned in horizontal tabstrip");
   ok(tabs[3].pinned, "Third tab is pinned");
 
   // flip the pref to move the tabstrip into the sidebar
@@ -119,20 +117,20 @@ add_task(async function test_pinned_horizontal_tabs() {
   );
 
   ok(
-    BrowserTestUtils.isVisible(verticalPinnedTabsContainer),
+    BrowserTestUtils.isVisible(pinnedTabsContainer),
     "Vertical pinned tabs container is visible"
   );
   is(
-    verticalPinnedTabsContainer.children.length,
+    pinnedTabsContainer.children.length,
     1,
     "One tab is pinned in vertical pinned tabs container"
   );
-  is(tabbrowser._numPinnedTabs, 1, "One tab is pinned in global tabstrip");
+  is(tabbrowser.pinnedTabCount, 1, "One tab is pinned in global tabstrip");
 
   tabbrowser.unpinTab(tabs[3]);
-  is(tabbrowser._numPinnedTabs, 0, "No tabs are pinned in the global tabstrip");
+  is(tabbrowser.pinnedTabCount, 0, "No tabs are pinned in the global tabstrip");
   is(
-    verticalPinnedTabsContainer.children.length,
+    pinnedTabsContainer.children.length,
     0,
     "No tabs are pinned in vertical pinned tabs container"
   );
@@ -141,12 +139,12 @@ add_task(async function test_pinned_horizontal_tabs() {
   tabbrowser.pinTab(tabs[1]);
 
   is(
-    verticalPinnedTabsContainer.children.length,
+    pinnedTabsContainer.children.length,
     2,
     "Two tabs are pinned in the vertical pinned tabs container"
   );
 
-  is(tabbrowser._numPinnedTabs, 2, "Two tabs are pinned in global tabstrip");
+  is(tabbrowser.pinnedTabCount, 2, "Two tabs are pinned in global tabstrip");
   indexTest(
     1,
     1,
@@ -163,7 +161,7 @@ add_task(async function test_pinned_horizontal_tabs() {
   indexTest(1, 0, "about:blank is now the first pinned tab");
   indexTest(3, 1, "about:home is now the second pinned tab");
   is(
-    verticalPinnedTabsContainer.children[0],
+    pinnedTabsContainer.children[0],
     tabs[1],
     "about:blank is the first tab in the pinned tabs container"
   );
@@ -181,13 +179,13 @@ add_task(async function test_pinned_horizontal_tabs() {
   indexTest(2, 1, "about:mozilla is now the second pinned tab");
   indexTest(3, 2, "about:home is now the third pinned tab");
 
-  tabbrowser.moveTabTo(tabs[1], 1);
+  tabbrowser.moveTabTo(tabs[1], { tabIndex: 1 });
   indexTest(1, 1, "about:blank is now the second pinned tab");
   indexTest(2, 0, "about:mozilla is now the first pinned tab");
   indexTest(3, 2, "about:home is now the third pinned tab");
 
   is(
-    verticalPinnedTabsContainer.children[2],
+    pinnedTabsContainer.children[2],
     tabs[3],
     "about:home is the last tab in the pinned tabs container"
   );
@@ -195,12 +193,8 @@ add_task(async function test_pinned_horizontal_tabs() {
   // flip the pref to move the tabstrip back into original location
   await SpecialPowers.pushPrefEnv({ set: [["sidebar.verticalTabs", false]] });
 
-  await TestUtils.waitForCondition(
-    () => !verticalPinnedTabsContainer.children.length,
-    "Pinned tabs are no longer in vertical pinned tabs container"
-  );
   is(
-    tabbrowser._numPinnedTabs,
+    tabbrowser.pinnedTabCount,
     3,
     "One tab is still pinned in global tabstrip"
   );

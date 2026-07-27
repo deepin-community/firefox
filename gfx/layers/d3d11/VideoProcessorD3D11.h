@@ -1,11 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef MOZILLA_GFX_VideoProcessorD3D11_H
 #define MOZILLA_GFX_VideoProcessorD3D11_H
+
+#include <d3d11.h>
 
 #include "mozilla/gfx/2D.h"
 #include "mozilla/RefPtr.h"
@@ -36,9 +36,24 @@ class VideoProcessorD3D11 {
 
   static RefPtr<VideoProcessorD3D11> Create(ID3D11Device* aDevice);
 
-  bool Init(const gfx::IntSize& aSize);
-  bool CallVideoProcessorBlt(DXGITextureHostD3D11* aTextureHost,
-                             ID3D11Texture2D* aInputTexture,
+  HRESULT Init(const gfx::IntSize& aSize);
+
+  struct InputTextureInfo {
+    InputTextureInfo(gfx::ColorSpace2 aColorSpace, gfx::ColorRange aColorRange,
+                     gfx::TransferFunction aTransferFunction, uint32_t aIndex,
+                     ID3D11Texture2D* aTexture)
+        : mColorSpace(aColorSpace),
+          mColorRange(aColorRange),
+          mTransferFunction(aTransferFunction),
+          mIndex(aIndex),
+          mTexture(aTexture) {}
+    const gfx::ColorSpace2 mColorSpace;
+    const gfx::ColorRange mColorRange;
+    const gfx::TransferFunction mTransferFunction;
+    const uint32_t mIndex;
+    ID3D11Texture2D* mTexture;
+  };
+  bool CallVideoProcessorBlt(InputTextureInfo& aTextureInfo,
                              ID3D11Texture2D* aOutputTexture);
   gfx::IntSize GetSize() const { return mSize; }
 
@@ -61,6 +76,7 @@ class VideoProcessorD3D11 {
   gfx::IntSize mSize;
   RefPtr<ID3D11VideoProcessor> mVideoProcessor;
   RefPtr<ID3D11VideoProcessorEnumerator> mVideoProcessorEnumerator;
+  bool mContentIsHDR = false;
 };
 
 }  // namespace layers

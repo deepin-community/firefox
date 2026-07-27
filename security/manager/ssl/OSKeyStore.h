@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,6 +11,7 @@
 
 #include "nsCOMPtr.h"
 #include "nsIOSKeyStore.h"
+#include "nsISerialEventTarget.h"
 #include "nsString.h"
 #include "ScopedNSSTypes.h"
 
@@ -30,9 +30,9 @@ class AbstractOSKeyStore {
   virtual nsresult DeleteSecret(const nsACString& label) = 0;
   virtual ~AbstractOSKeyStore() = default;
 
-  // Returns true if the secret with the given label is available in the key
-  // store, false otherwise.
-  virtual bool SecretAvailable(const nsACString& label);
+  // Returns NS_OK if the secret with the given label is available in the key
+  // store, an error indicating why it was not available otherwise.
+  virtual nsresult SecretAvailable(const nsACString& label);
   // Perform encryption or decryption operation with the given secret and input
   // bytes. The output is written in outBytes. This function can make use of the
   // AesGcm class to use NSS for encryption and decryption.
@@ -58,12 +58,8 @@ class AbstractOSKeyStore {
 };
 
 #define NS_OSKEYSTORE_CONTRACTID "@mozilla.org/security/oskeystore;1"
-#define NS_OSKEYSTORE_CID                            \
-  {                                                  \
-    0x57972956, 0x5718, 0x42d2, {                    \
-      0x80, 0x70, 0xb3, 0xfc, 0x72, 0x21, 0x2e, 0xaf \
-    }                                                \
-  }
+#define NS_OSKEYSTORE_CID \
+  {0x57972956, 0x5718, 0x42d2, {0x80, 0x70, 0xb3, 0xfc, 0x72, 0x21, 0x2e, 0xaf}}
 
 nsresult GetPromise(JSContext* aCx,
                     /* out */ RefPtr<mozilla::dom::Promise>& aPromise);
@@ -73,7 +69,8 @@ class OSKeyStore final : public nsIOSKeyStore {
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIOSKEYSTORE
 
-  OSKeyStore();
+  static already_AddRefed<OSKeyStore> GetSingleton();
+
   nsresult GenerateSecret(const nsACString& aLabel,
                           /* out */ nsACString& aRecoveryPhrase);
   nsresult SecretAvailable(const nsACString& aLabel,
@@ -92,9 +89,11 @@ class OSKeyStore final : public nsIOSKeyStore {
                         /*out*/ uint8_t** outBytes);
 
  private:
+  OSKeyStore();
   ~OSKeyStore() = default;
 
   std::unique_ptr<AbstractOSKeyStore> mKs;
+  nsCOMPtr<nsISerialEventTarget> mBackgroundSerialEventTarget;
 };
 
 #endif  // OSKeyStore_h

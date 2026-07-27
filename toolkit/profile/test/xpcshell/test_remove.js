@@ -22,8 +22,9 @@ function compareLists(service, knownProfiles) {
     // Cannot use strictEqual here, it attempts to print out a string
     // representation of the profile objects and on some platforms that recurses
     // infinitely.
-    Assert.ok(
-      serviceProfiles[i] === knownProfiles[i],
+    Assert.strictEqual(
+      serviceProfiles[i],
+      knownProfiles[i],
       `Should have the right profile in position ${i}.`
     );
   }
@@ -55,15 +56,15 @@ add_task(async () => {
   let profiles = [];
   compareLists(service, profiles);
 
-  profiles.push(service.createProfile(null, "profile1"));
-  profiles.push(service.createProfile(null, "profile2"));
-  profiles.push(service.createProfile(null, "profile3"));
-  profiles.push(service.createProfile(null, "profile4"));
-  profiles.push(service.createProfile(null, "profile5"));
-  profiles.push(service.createProfile(null, "profile6"));
-  profiles.push(service.createProfile(null, "profile7"));
-  profiles.push(service.createProfile(null, "profile8"));
-  profiles.push(service.createProfile(null, "profile9"));
+  profiles.push(service.createProfile(null, "profile1", "tests"));
+  profiles.push(service.createProfile(null, "profile2", "tests"));
+  profiles.push(service.createProfile(null, "profile3", "tests"));
+  profiles.push(service.createProfile(null, "profile4", "tests"));
+  profiles.push(service.createProfile(null, "profile5", "tests"));
+  profiles.push(service.createProfile(null, "profile6", "tests"));
+  profiles.push(service.createProfile(null, "profile7", "tests"));
+  profiles.push(service.createProfile(null, "profile8", "tests"));
+  profiles.push(service.createProfile(null, "profile9", "tests"));
   compareLists(service, profiles);
 
   // Test removing the first profile.

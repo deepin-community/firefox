@@ -7,7 +7,7 @@
 
 import { BrowserTestUtils } from "resource://testing-common/BrowserTestUtils.sys.mjs";
 
-const URL =
+const TEST_URL =
   "https://test1.example.com/browser/browser/tools/mozscreenshots/mozscreenshots/extension/mozscreenshots/browser/resources/lib/permissionPrompts.html";
 let lastTab = null;
 
@@ -146,10 +146,10 @@ async function clickOn(selector, beforeContentFn) {
   // Save the tab so we can close it later.
   lastTab = await BrowserTestUtils.openNewForegroundTab(
     browserWindow.gBrowser,
-    URL
+    TEST_URL
   );
 
-  let { SpecialPowers } = lastTab.ownerGlobal;
+  let { SpecialPowers } = lastTab.documentGlobal;
   if (beforeContentFn) {
     await SpecialPowers.spawn(lastTab.linkedBrowser, [], beforeContentFn);
   }
@@ -160,7 +160,6 @@ async function clickOn(selector, beforeContentFn) {
   );
 
   await SpecialPowers.spawn(lastTab.linkedBrowser, [selector], arg => {
-    /* eslint-env mozilla/chrome-script */
     let element = content.document.querySelector(arg);
     return EventUtils.synthesizeClick(element);
   });

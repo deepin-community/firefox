@@ -42,6 +42,16 @@ function initWizard() {
       .getElementById("createProfile")
       .addEventListener("pageshow", initSecondWizardPage);
     setDisplayToDefaultFolder();
+    document.getElementById("profileName").addEventListener("input", event => {
+      updateProfileName(event.target.value);
+    });
+    document
+      .getElementById("create-profile-choose-folder")
+      .addEventListener("command", () => chooseProfileFolder());
+    document.getElementById("useDefault").addEventListener("command", () => {
+      setDisplayToDefaultFolder();
+      updateProfileDisplay();
+    });
   } catch (e) {
     window.close();
     throw e;
@@ -50,6 +60,10 @@ function initWizard() {
 
 // Called every time the second wizard page is displayed.
 function initSecondWizardPage() {
+  document
+    .getElementById("createProfileWizard")
+    .removeAttribute("aria-describedby");
+
   var profileName = document.getElementById("profileName");
   profileName.select();
   profileName.focus();
@@ -230,10 +244,11 @@ function enableNextButton() {
 function onFinish(event) {
   var profileName = document.getElementById("profileName").value;
   var profile;
+  let source = window.arguments[2];
 
   // Create profile named profileName in profileRoot.
   try {
-    profile = gProfileService.createProfile(gProfileRoot, profileName);
+    profile = gProfileService.createProfile(gProfileRoot, profileName, source);
   } catch (e) {
     var profileCreationFailed = gProfileManagerBundle.getString(
       "profileCreationFailed"
@@ -264,3 +279,5 @@ function onFinish(event) {
     dialogParams.objects.insertElementAt(profileLock, 0);
   }
 }
+
+window.addEventListener("load", initWizard);

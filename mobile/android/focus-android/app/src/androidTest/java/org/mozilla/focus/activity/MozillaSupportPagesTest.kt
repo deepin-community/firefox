@@ -10,11 +10,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.focus.R
 import org.mozilla.focus.activity.robots.homeScreen
 import org.mozilla.focus.helpers.FeatureSettingsHelper
+import org.mozilla.focus.helpers.FocusTestRule
 import org.mozilla.focus.helpers.MainActivityFirstrunTestRule
-import org.mozilla.focus.helpers.TestHelper.getTargetContext
 import org.mozilla.focus.testAnnotations.SmokeTest
 
 // This test visits each About page and checks whether some essential elements are being displayed
@@ -22,7 +21,10 @@ import org.mozilla.focus.testAnnotations.SmokeTest
 class MozillaSupportPagesTest {
     private val featureSettingsHelper = FeatureSettingsHelper()
 
-    @get: Rule
+    @get:Rule(order = 0)
+    val focusTestRule: FocusTestRule = FocusTestRule()
+
+    @get:Rule
     val mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
 
     @Before
@@ -75,19 +77,13 @@ class MozillaSupportPagesTest {
 
     @SmokeTest
     @Test
-    fun openYourRightsPageTest() {
-        val yourRightsString = getTargetContext.getString(
-            R.string.your_rights_content1,
-            getTargetContext.getString(R.string.app_name),
-            "Mozilla Public License",
-        )
-
+    fun openTermsOfUsePageTest() {
         homeScreen {
         }.openMainMenu {
         }.openSettings {
         }.openMozillaSettingsMenu {
-        }.openYourRightsPage {
-            verifyPageContent(yourRightsString)
+        }.openTermsOfUsePage {
+            verifyPageURL("/about/legal/terms/firefox-focus/")
         }
     }
 

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Alexey Shvayka. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -24,8 +23,8 @@ includes: [testTypedArray.js]
 features: [align-detached-buffer-semantics-with-web-reality, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([0]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([0]));
   var desc = Object.getOwnPropertyDescriptor(sample, "0");
 
   assert.throws(TypeError, function() {
@@ -43,6 +42,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.throws(TypeError, function() {
     Object.defineProperty(sample, "-0", desc);
   });
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Chengzhong Wu. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -18,8 +17,8 @@ includes: [testTypedArray.js, compareArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var ta = new TA([0, 1, 2, 3]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var ta = new TA(makeCtorArg([0, 1, 2, 3]));
   assert.compareArray(
     new TA(ta.buffer, TA.BYTES_PER_ELEMENT).copyWithin(2, 0),
     [1, 2, 1],

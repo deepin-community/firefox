@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -83,36 +81,34 @@ nrappkit copyright:
    ekr@rtfm.com  Thu Dec 20 20:14:49 2001
 */
 
+#include <assert.h>
 #include <csi_platform.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <assert.h>
-#include <errno.h>
-#include <string>
 
+#include "mozilla/ProfilerBandwidthCounter.h"
+#include "mozilla/SyncRunnable.h"
+#include "mozilla/net/DNS.h"
+#include "nsASocketHandler.h"
+#include "nsCOMPtr.h"
+#include "nsComponentManagerUtils.h"
+#include "nsDebug.h"
+#include "nsISocketFilter.h"
+#include "nsISocketTransportService.h"
+#include "nsISupportsImpl.h"
+#include "nsNetCID.h"
+#include "nsNetUtil.h"
+#include "nsServiceManagerUtils.h"
+#include "nsTArray.h"
+#include "nsXPCOM.h"
+#include "nsXULAppAPI.h"
 #include "nspr.h"
 #include "prerror.h"
 #include "prio.h"
 #include "prnetdb.h"
-
-#include "mozilla/net/DNS.h"
-#include "mozilla/ProfilerBandwidthCounter.h"
-#include "nsCOMPtr.h"
-#include "nsASocketHandler.h"
-#include "nsISocketTransportService.h"
-#include "nsNetCID.h"
-#include "nsISupportsImpl.h"
-#include "nsServiceManagerUtils.h"
-#include "nsComponentManagerUtils.h"
-#include "nsXPCOM.h"
-#include "nsXULAppAPI.h"
 #include "runnable_utils.h"
-#include "mozilla/SyncRunnable.h"
-#include "nsTArray.h"
-#include "nsISocketFilter.h"
-#include "nsDebug.h"
-#include "nsNetUtil.h"
 
 #if defined(MOZILLA_INTERNAL_API)
 // csi_platform.h deep in nrappkit defines LOG_INFO and LOG_WARNING
@@ -151,18 +147,16 @@ nrappkit copyright:
 #  endif
 #endif
 
-extern "C" {
-#include "nr_api.h"
 #include "async_wait.h"
+#include "nr_api.h"
 #include "nr_socket.h"
 #include "nr_socket_local.h"
-#include "stun_hint.h"
-}
-#include "nr_socket_prsock.h"
-#include "simpletokenbucket.h"
-#include "test_nr_socket.h"
-#include "nr_socket_tcp.h"
 #include "nr_socket_proxy_config.h"
+#include "nr_socket_prsock.h"
+#include "nr_socket_tcp.h"
+#include "simpletokenbucket.h"
+#include "stun_hint.h"
+#include "test_nr_socket.h"
 
 // Implement the nsISupports ref counting
 namespace mozilla {
@@ -532,7 +526,7 @@ abort:
 int nr_transport_addr_get_addrstring_and_port(const nr_transport_addr* addr,
                                               nsACString* host, int32_t* port) {
   int r, _status;
-  char addr_string[64];
+  char addr_string[256];
 
   // We cannot directly use |nr_transport_addr.as_string| because it contains
   // more than ip address, therefore, we need to explicity convert it
@@ -1062,8 +1056,8 @@ NS_IMETHODIMP NrUdpSocketIpc::CallListenerError(const nsACString& message,
   ASSERT_ON_THREAD(io_thread_);
 
   r_log(LOG_GENERIC, LOG_ERR, "UDP socket error:%s at %s:%d this=%p",
-        message.BeginReading(), filename.BeginReading(), line_number,
-        (void*)this);
+        PromiseFlatCString(message).get(), PromiseFlatCString(filename).get(),
+        line_number, (void*)this);
 
   ReentrantMonitorAutoEnter mon(monitor_);
   err_ = true;
@@ -1083,7 +1077,8 @@ NS_IMETHODIMP NrUdpSocketIpc::CallListenerReceivedData(
   {
     ReentrantMonitorAutoEnter mon(monitor_);
 
-    if (PR_SUCCESS != PR_StringToNetAddr(host.BeginReading(), &addr)) {
+    if (PR_SUCCESS !=
+        PR_StringToNetAddr(PromiseFlatCString(host).get(), &addr)) {
       err_ = true;
       MOZ_ASSERT(false, "Failed to convert remote host to PRNetAddr");
       return NS_OK;
@@ -1121,7 +1116,7 @@ nsresult NrUdpSocketIpc::SetAddress() {
     return NS_OK;
   }
 
-  if (PR_SUCCESS != PR_StringToNetAddr(address.BeginReading(), &praddr)) {
+  if (PR_SUCCESS != PR_StringToNetAddr(address.get(), &praddr)) {
     err_ = true;
     MOZ_ASSERT(false, "Failed to convert local host to PRNetAddr");
     return NS_OK;
@@ -1422,9 +1417,6 @@ void NrUdpSocketIpc::create_i(const nsACString& host, const uint16_t port) {
 
   uint32_t minBuffSize = 0;
   RefPtr<dom::UDPSocketChild> socketChild = new dom::UDPSocketChild();
-
-  // This can spin the event loop; don't do that with the monitor held
-  socketChild->SetBackgroundSpinsEvents();
 
   ReentrantMonitorAutoEnter mon(monitor_);
   if (!socket_child_) {

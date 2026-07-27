@@ -13,9 +13,8 @@ add_task(async function () {
   const START_URL = "data:text/html;charset=utf-8,foo";
   const tab = await addTab(START_URL);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   await testCrossProcessTabNavigation(tab.linkedBrowser, resourceCommand);
   await testCrossProcessIframeNavigation(tab.linkedBrowser, resourceCommand);
@@ -66,11 +65,9 @@ async function testCrossProcessTabNavigation(browser, resourceCommand) {
     messageText: "top-level document log",
   });
   assertConsoleMessage(resourceCommand, iframeMessage, {
-    targetFront: isEveryFrameTargetEnabled
-      ? resourceCommand.targetCommand
-          .getAllTargets([resourceCommand.targetCommand.TYPES.FRAME])
-          .find(t => t.url.startsWith("data:"))
-      : resourceCommand.targetCommand.targetFront,
+    targetFront: resourceCommand.targetCommand
+      .getAllTargets([resourceCommand.targetCommand.TYPES.FRAME])
+      .find(t => t.url.startsWith("data:")),
     messageText: "data url data log",
   });
 
@@ -166,11 +163,6 @@ function assertConsoleMessage(resourceCommand, messageResource, expected) {
 }
 
 async function getIframeTargetFront(targetCommand) {
-  // If Fission/EFT is enabled, the iframe will have a dedicated target,
-  // otherwise it will be debuggable via the top level target.
-  if (!isFissionEnabled() && !isEveryFrameTargetEnabled()) {
-    return targetCommand.targetFront;
-  }
   const frameTargets = targetCommand.getAllTargets([targetCommand.TYPES.FRAME]);
   const browsingContextID = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,

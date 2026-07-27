@@ -26,17 +26,18 @@ label {
   padding-top: 15px;
 }
 #ctap-listen-result {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   font-size: 1.5em;
   padding-inline-start: 15px;
   height: 1.5em;
+  color: var(--text-color);
 
   &.success {
     background-color: var(--background-color-success);
   }
 
   &.error {
-    background-color: var(--red-50);
+    background-color: var(--background-color-critical);
   }
 }
 
@@ -55,7 +56,7 @@ label {
   pointer-events: none;
 }
 
-@media (max-width: 830px){
+@media (max-width: 830px) {
   #categories > .category {
     padding-inline-start: 5px;
     margin-inline-start: 0;

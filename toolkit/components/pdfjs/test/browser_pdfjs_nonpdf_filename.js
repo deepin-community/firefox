@@ -13,7 +13,7 @@ const LINK_PAGE_URL = TESTROOT + "file_pdf_download_link.html";
 
 add_task(async function test_filename_nonpdf_extension() {
   var MockFilePicker = SpecialPowers.MockFilePicker;
-  MockFilePicker.init(window.browsingContext);
+  MockFilePicker.init();
   let filepickerNamePromise = new Promise(resolve => {
     MockFilePicker.showCallback = function (fp) {
       resolve(fp.defaultString);
@@ -58,7 +58,7 @@ add_task(async function test_filename_nonpdf_extension() {
 
       info("Clicking on the download button...");
       await SpecialPowers.spawn(newTab.linkedBrowser, [], () => {
-        content.document.getElementById("download").click();
+        content.document.getElementById("downloadButton").click();
       });
       info("Waiting for a filename to be picked from the file picker");
       let defaultName = await filepickerNamePromise;

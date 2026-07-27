@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } pokušava ko
 autofill-edit-payment-method-os-prompt-macos = prikaži spremljene podatke o načinu plaćanja.
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } pokušava prikazati spremljene podatke o načinu plaćanja. U nastavku potvrdi pristup ovom Windows računu.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } pokušava prikazati spremljene podatke o načinu plaćanja.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Mogućnosti automatskog popunjavanja obrazaca
 autofill-options-link-osx = Postavke automatskog popunjavanja obrazaca
 
@@ -52,7 +52,7 @@ autofill-clear-form-label = Izbriši automatski ispunjen obrazac
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
 autofill-manage-addresses-label = Upravljaj adresama
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
-autofill-manage-payment-methods-label = Upravljanje načinima plaćanja
+autofill-manage-payment-methods-label = Upravljaj načinima plaćanja
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 
@@ -81,3 +81,6 @@ autofill-category-name = ime
 autofill-category-organization = organizacija
 autofill-category-tel = telefon
 autofill-category-email = e-pošta
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } je uočio nesigurnu stranicu. Automatsko popunjavanje stranica privremeno je deaktivirano.

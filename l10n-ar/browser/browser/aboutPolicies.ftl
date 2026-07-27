@@ -3,15 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-policies-title = سياسات المؤسسات
-
+aboutpolicies-page-heading =
+    .heading = عن السياسات
 # 'Active' is used to describe the policies that are currently active
 active-policies-tab = نشطة
 errors-tab = الأخطاء
 documentation-tab = التوثيق
-
+# These title attributes label the navigation buttons when the moz-page-nav
+# sidebar is collapsed and the visible button text is hidden.
+active-policies-tab-title =
+    .title = نشطة
+errors-tab-title =
+    .title = الأخطاء
+documentation-tab-title =
+    .title = التوثيق
 no-specified-policies-message = خدمة سياسات المؤسسات نشطة إلا أنك لم تفعّل أي سياسة.
 inactive-message = خدمة سياسات المؤسسات غير نشطة.
-
 policy-name = اسم السياسة
 policy-value = قيمة السياسة
 policy-errors = أخطاء السياسة

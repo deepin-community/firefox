@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,9 +9,8 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 
-#include "chrome/common/child_process.h"
-
-#include "mozilla/ipc/ProcessUtils.h"
+#include "mozilla/GeckoArgs.h"
+#include "mozilla/ipc/IOThread.h"
 
 // ProcessChild is the base class for all subprocesses of the main
 // browser process.  Its code runs on the thread that started in
@@ -22,12 +19,13 @@
 namespace mozilla {
 namespace ipc {
 
-class ProcessChild : public ChildProcess {
+class ProcessChild {
  protected:
   typedef base::ProcessId ProcessId;
 
  public:
-  explicit ProcessChild(ProcessId aParentPid, const nsID& aMessageChannelId);
+  explicit ProcessChild(IPC::Channel::ChannelHandle aClientChannel,
+                        ProcessId aParentPid, const nsID& aMessageChannelId);
 
   ProcessChild(const ProcessChild&) = delete;
   ProcessChild& operator=(const ProcessChild&) = delete;
@@ -36,7 +34,7 @@ class ProcessChild : public ChildProcess {
 
   virtual bool Init(int aArgc, char* aArgv[]) = 0;
 
-  static void AddPlatformBuildID(std::vector<std::string>& aExtraArgs);
+  static void AddPlatformBuildID(geckoargs::ChildProcessArgs& aExtraArgs);
 
   static bool InitPrefs(int aArgc, char* aArgv[]);
 
@@ -76,6 +74,7 @@ class ProcessChild : public ChildProcess {
   MessageLoop* mUILoop;
   ProcessId mParentPid;
   nsID mMessageChannelId;
+  UniquePtr<IOThreadChild> mChildThread;
 };
 
 }  // namespace ipc

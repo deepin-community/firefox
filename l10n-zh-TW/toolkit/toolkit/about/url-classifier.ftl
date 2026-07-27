@@ -5,11 +5,16 @@
 url-classifier-title = URL 分類器資訊
 url-classifier-search-title = 搜尋
 url-classifier-search-result-title = 結果
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = 表格清單: { $list }
 url-classifier-search-input = 網址
 url-classifier-search-error-invalid-url = 網址無效
 url-classifier-search-error-no-features = 未選擇功能
+url-classifier-search-error-no-results = 找不到此網址對應的項目
 url-classifier-search-btn = 開始搜尋
 url-classifier-search-features = 功能
 url-classifier-search-listType = 清單類型
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Safe Browsing 記錄模組
 url-classifier-debug-modules = 目前的記錄模組
 url-classifier-debug-sbjs-modules = Safe Browsing JS 記錄
 url-classifier-debug-file = 目前記錄檔
-
 url-classifier-trigger-update = 觸發更新
 url-classifier-not-available = 不適用
 url-classifier-disable-sbjs-log = 停用 Safe Browsing JS 記錄

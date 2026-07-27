@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = ਇਹ ਸਾਈਟ ਤੁਹਾਡੇ MIDI (ਮਿਊਜ਼ਕਲ ਇੰਸਟਰੂਮੈਂਟ ਡਿਜ਼ਿਟਲ ਇੰਟਰਫ਼ੇਸ) ਡਿਵਾਈਸਾਂ ਲਈ ਪਹੁੰਚ ਦੀ ਮੰਗ ਕਰ ਰਹੀ ਹੈ। ਡਿਵਾਈਸ ਪਹੁੰਚ ਨੂੰ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਕਰਕੇ ਸਮਰੱਥ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
 site-permission-install-first-prompt-midi-message = ਇਹ ਪਹੁੰਚ ਦੀ ਸੁਰੱਖਿਅਤ ਹੋਣ ਦੀ ਗਾਰੰਟੀ ਨਹੀਂ ਹੈ। ਜੇ ਤੁਹਾਨੂੰ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਹੈ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
+site-permission-install-first-prompt-serial-header = ਇਹ ਸਾਈਟ ਤੁਹਾਡੇ ਸੀਰੀਅਲ ਡਿਵਾਈਸ ਲਈ ਪਹੁੰਚ ਮੰਗ ਰਹੀ ਹੈ। ਡਿਵਾਈਸ ਪਹੁੰਚ ਨੂੰ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਕਰਕੇ ਸਮਰੱਥ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
+site-permission-install-first-prompt-serial-message = ਇਹ ਪਹੁੰਚ ਦੀ ਸੁਰੱਖਿਅਤ ਹੋਣ ਦੀ ਗਾਰੰਟੀ ਨਹੀਂ ਹੈ। ਜੇ ਤੁਹਾਨੂੰ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਹੈ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
 
 ##
 
@@ -75,12 +77,14 @@ webext-imported-addons = { -brand-short-name } ਲਈ ਦਰਾਮਦ ਕੀਤ�
 
 # Variables:
 #  $name (String): The name of the add-on that will be removed.
-addon-removal-title = { $name } ਹਟਾਉਣਾ ਹੈ?
+addon-removal-title = { $name } ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
 # Variables:
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { $name } ਨੂੰ { -brand-shorter-name } ਵਿੱਚੋਂ ਹਟਾਉਣਾ ਹੈ?
 addon-removal-button = ਹਟਾਓ
 addon-removal-abuse-report-checkbox = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਬਾਰੇ { -vendor-short-name } ਨੂੰ ਰਿਪੋਰਟ ਦਿਓ
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = ਜੇ ਤੁਸੀਂ ਇਸ ਮਾਡਲ ਨੂੰ ਵਰਤਣ ਵਾਲੇ ਕਿਸੇ ਫ਼ੀਚਰ ਜਾਂ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਵਰਤ ਰਹੇ ਹੋ ਤਾਂ ਇਸ ਨੂੰ ਮੁੜ-ਜੋੜੋ।
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = ਇਸ ਸਾਈਟ ਤੋਂ ਡਾਊਨਲ
 addon-install-error-file-access = { $addonName } ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ { -brand-short-name } ਲੋੜੀਂਦੀ ਫਾਈਲ ਨੂੰ ਸੋਧ ਨਹੀਂ ਸਕਦਾ ਹੈ।
 addon-install-error-not-signed = { -brand-short-name } ਨੇ ਇਸ ਸਾਈਟ ਨਾ-ਤਸਦੀਕ ਹੋਈ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਹੋਣ ਤੋਂ ਰੋਕ ਦਿੱਤੀ ਹੈ।
 addon-install-error-invalid-domain = { $addonName } ਐਡ-ਆਨ ਨੂੰ ਇਸ ਟਿਕਾਣੇ ਲਈ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
-addon-local-install-error-network-failure = ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ ਫਾਈਲ-ਸਿਸਟਮ ਦੀ ਗਲਤੀ ਹੈ।
-addon-local-install-error-incorrect-hash = ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ ਇਹ ਉਮੀਦ ਕੀਤੀ { -brand-short-name } ਐਡ-ਆਨ ਨਾਲ ਮਿਲਦੀ ਨਹੀਂ ਹੈ।
-addon-local-install-error-corrupt-file = ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ ਇਹ ਨਿਕਾਰਾ ਜਾਪਦੀ ਹੈ।
-addon-local-install-error-file-access = { $addonName } ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ { -brand-short-name } ਲੋੜੀਂਦੀ ਫਾਈਲ ਨੂੰ ਸੋਧ ਨਹੀਂ ਸਕਦਾ ਹੈ।
+addon-install-error-no-addon-name-file-access = { -brand-short-name } ਵਲੋਂ ਲੋੜੀਂਦੀ ਫਾਈਲ ਨੂੰ ਸੋਧ ਨਾ ਸਕਣ ਕਰਕੇ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਹੈ।
+addon-local-install-error-network-failure = ਫ਼ਾਇਲ-ਸਿਸਟਮ ਦੀ ਗਲਤੀ ਕਰਕੇ ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।
+addon-local-install-error-incorrect-hash = ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ, ਕਿਉਂਕਿ ਇਹ ਉਮੀਦ ਕੀਤੀ { -brand-short-name } ਐਡ-ਆਨ ਨਾਲ ਮਿਲਦੀ ਨਹੀਂ ਹੈ।
+addon-local-install-error-corrupt-file = ਐਡ-ਆਨ ਨਿਕਾਰਾ ਹੋਣ ਕਰਕੇ ਇਸ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।
+addon-local-install-error-file-access = { $addonName } ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ { -brand-short-name } ਲੋੜੀਂਦੀ ਫ਼ਾਇਲ ਨੂੰ ਸੋਧ ਨਹੀਂ ਸਕਦਾ ਹੈ।
 addon-local-install-error-not-signed = ਇਸ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ ਇਸ ਦੀ ਤਸਦੀਕ ਨਹੀਂ ਹੋ ਸਕੀ ਹੈ।
+addon-local-install-no-addon-name-error-file-access = { -brand-short-name } ਵਲੋਂ ਲੋੜੀਂਦੀ ਫਾਈਲ ਨੂੰ ਸੋਧ ਨਾ ਸਕਣ ਕਰਕੇ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਹੈ।
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਕਿਉਂਕਿ ਇਹ { -brand-short-name } { $appVersion } ਲਈ ਢੁੱਕਵੀਂ ਨਹੀਂ ਹੈ।
+addon-install-error-hard-blocked = { $addonName } ਨੇ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦੀ ਉਲੰਘਣਾ ਕੀਤੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ { -brand-short-name } ਉੱਤੇ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
+addon-install-error-soft-blocked2 = { $addonName } ਉੱਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੈ ਅਤੇ { -brand-short-name } ਉੱਤੇ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
 addon-install-error-blocklisted = { $addonName } ਨੂੰ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ, ਕਿਉਂਕਿ ਇਹ ਸਥਿਰਤਾ ਜਾਂ ਸੁਰੱਖਿਆ ਸਮੱਸਿਆਵਾਂ ਦਾ ਵੱਡਾ ਖ਼ਤਰਾ ਹੈ।
+addon-install-error-soft-blocked = { $addonName } ਨੇ Mozilla ਦੀਆਂ ਨੀਤੀਆਂ ਉਲੰਘਣਾ ਕੀਤੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ { -brand-short-name } ਉੱਤੇ ਇੰਸਟਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = ਤੁਸੀਂ ਅੰਤਮ ਵਰਤੋਂਕਾਰ ਵਜੋਂ { $addonName } ਇੰਸਟਾਲ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹੋ, ਇਸ ਨੂੰ ਸਿਰਫ਼ ਸੰਗਠਨ ਵਲੋਂ ਇੰਟਰਪ੍ਰਾਈਜ਼ ਪਾਲਸੀਆਂ ਦੇ ਤਹਿਤ ਹੀ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।

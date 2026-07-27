@@ -8,7 +8,10 @@ let bounceTrackingProtection;
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["privacy.bounceTrackingProtection.requireStatefulBounces", true],
+      [
+        "privacy.bounceTrackingProtection.mode",
+        Ci.nsIBounceTrackingProtection.MODE_ENABLED,
+      ],
       ["privacy.bounceTrackingProtection.bounceTrackingGracePeriodSec", 0],
     ],
   });
@@ -67,7 +70,6 @@ async function runTest(useDryRunMode) {
     useDryRunMode ? "true" : "false",
     "The purge should not be a dry run."
   );
-
   let bounceTimeInt = Number.parseInt(event.extra.bounce_time, 10);
   Assert.greater(bounceTimeInt, 0, "The bounce time should be greater than 0.");
   Assert.less(

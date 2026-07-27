@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +6,11 @@
 
 #include <utility>
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/FloatingPoint.h"
-#include "mozilla/UniquePtrExtensions.h"
 #include "nsGkAtoms.h"
+#include "nsStringFlags.h"
+#include "nsStringIterator.h"
+#include "nsStyleUtil.h"
 #include "nsWhitespaceTokenizer.h"
 #include "txCore.h"
 #include "txInstructions.h"
@@ -22,9 +22,6 @@
 #include "txToplevelItems.h"
 #include "txURIUtils.h"
 #include "txXSLTFunctions.h"
-#include "nsStringFlags.h"
-#include "nsStyleUtil.h"
-#include "nsStringIterator.h"
 
 using namespace mozilla;
 
@@ -2296,11 +2293,11 @@ const txElementHandler* txHandlerTable::find(int32_t aNamespaceID,
       &gTx##_name##TableData.mOtherHandler);                                  \
   if (!gTx##_name##Handler) return false
 
-#define INIT_HANDLER_WITH_ELEMENT_HANDLERS(_name)                           \
-  INIT_HANDLER(_name);                                                      \
-                                                                            \
-  rv = gTx##_name##Handler->init(gTx##_name##ElementHandlers,               \
-                                 ArrayLength(gTx##_name##ElementHandlers)); \
+#define INIT_HANDLER_WITH_ELEMENT_HANDLERS(_name)                         \
+  INIT_HANDLER(_name);                                                    \
+                                                                          \
+  rv = gTx##_name##Handler->init(gTx##_name##ElementHandlers,             \
+                                 std::size(gTx##_name##ElementHandlers)); \
   if (NS_FAILED(rv)) return false
 
 #define SHUTDOWN_HANDLER(_name) \

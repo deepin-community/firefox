@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,6 +22,8 @@ class RecentEventsBuffer {
  public:
   explicit RecentEventsBuffer(TimeDuration maxAge);
 
+  explicit RecentEventsBuffer(TimeDuration maxAge, size_t minSize);
+
   void push(Event event);
   void clear();
 
@@ -47,13 +47,19 @@ class RecentEventsBuffer {
   const_reference back() const { return mBuffer.back(); }
 
  private:
+  size_t mMinSize;
   TimeDuration mMaxAge;
   std::deque<Event> mBuffer;
 };
 
 template <typename Event>
 RecentEventsBuffer<Event>::RecentEventsBuffer(TimeDuration maxAge)
-    : mMaxAge(maxAge), mBuffer() {}
+    : mMinSize(0), mMaxAge(maxAge), mBuffer() {}
+
+template <typename Event>
+RecentEventsBuffer<Event>::RecentEventsBuffer(TimeDuration maxAge,
+                                              size_t minSize)
+    : mMinSize(minSize), mMaxAge(maxAge), mBuffer() {}
 
 template <typename Event>
 void RecentEventsBuffer<Event>::push(Event event) {
@@ -64,7 +70,7 @@ void RecentEventsBuffer<Event>::push(Event event) {
 
   // Flush all events older than the given lifetime
   TimeStamp bound = event.mTimeStamp - mMaxAge;
-  while (!mBuffer.empty()) {
+  while (mBuffer.size() > mMinSize) {
     if (mBuffer.front().mTimeStamp >= bound) {
       break;
     }

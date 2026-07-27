@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef gc_Tenuring_h
 #define gc_Tenuring_h
 
-#include "mozilla/EnumeratedArray.h"
 #include "mozilla/HashTable.h"
 #include "mozilla/Maybe.h"
 
@@ -116,10 +113,10 @@ class TenuringTracer final : public JSTracer {
   JSObject* promoteOrForward(JSObject* obj);
   JSString* promoteOrForward(JSString* str);
   JS::BigInt* promoteOrForward(JS::BigInt* bip);
+  GetterSetter* promoteOrForward(GetterSetter* gs);
 
-  // Returns whether any cells in the arena require sweeping.
   template <typename T>
-  bool traceBufferedCells(Arena* arena, ArenaCellSet* cells);
+  void traceBufferedCells(Arena* arena, ArenaCellSet* cells);
 
   class AutoPromotedAnyToNursery;
 
@@ -146,12 +143,15 @@ class TenuringTracer final : public JSTracer {
   JSObject* promoteObjectSlow(JSObject* src);
   JSString* promoteString(JSString* src);
   JS::BigInt* promoteBigInt(JS::BigInt* src);
+  GetterSetter* promoteGetterSetter(GetterSetter* src);
 
   size_t moveElements(NativeObject* dst, NativeObject* src,
                       gc::AllocKind dstKind);
   size_t moveSlots(NativeObject* dst, NativeObject* src);
   size_t moveString(JSString* dst, JSString* src, gc::AllocKind dstKind);
   size_t moveBigInt(JS::BigInt* dst, JS::BigInt* src, gc::AllocKind dstKind);
+  size_t moveGetterSetter(GetterSetter* dst, GetterSetter* src,
+                          gc::AllocKind dstKind);
 
   void traceSlots(JS::Value* vp, JS::Value* end);
 };

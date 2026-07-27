@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -199,7 +197,7 @@ class nsVariant final : public nsVariantBase {
 
 class nsVariantCC final : public nsVariantBase {
  public:
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL
   NS_DECL_CYCLE_COLLECTION_CLASS(nsVariantCC)
 
   nsVariantCC() = default;
@@ -213,11 +211,11 @@ class nsVariantCC final : public nsVariantBase {
  *  - see NS_VARIANT_CONTRACTID in nsIVariant.idl.
  */
 
-#define NS_VARIANT_CID                              \
-  { /* 0D6EA1D0-879C-11d5-90EF-0010A4E73D9A */      \
-    0xd6ea1d0, 0x879c, 0x11d5, {                    \
-      0x90, 0xef, 0x0, 0x10, 0xa4, 0xe7, 0x3d, 0x9a \
-    }                                               \
-  }
+#define NS_VARIANT_CID                        \
+  {/* 0D6EA1D0-879C-11d5-90EF-0010A4E73D9A */ \
+   0xd6ea1d0,                                 \
+   0x879c,                                    \
+   0x11d5,                                    \
+   {0x90, 0xef, 0x0, 0x10, 0xa4, 0xe7, 0x3d, 0x9a}}
 
 #endif  // nsVariant_h

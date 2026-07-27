@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Shpjere në Fund
     .accesskey = u
 fxviewtabrow-move-tab-window = Kaloje në Dritare të Re
     .accesskey = e
+fxviewtabrow-send-to-device = Dërgoje në Pajisje
+    .accesskey = D
+fxviewtabrow-send-to-mobile = Dërgoje në Celular
+    .accesskey = D
 fxviewtabrow-send-tab = Dërgojeni Skedën në Pajisje
     .accesskey = a
 fxviewtabrow-pin-tab = Fiksoje Skedën
@@ -67,16 +71,8 @@ fxviewtabrow-unmute-tab = Rikthejani zërin Skedës
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Mundësi për { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Heshtoje { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Hiqe heshtimin e { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Mbylljani zërin skedës

@@ -10,22 +10,35 @@ contentanalysis-slow-agent-dialog-header = Prebieha skenovanie
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $filename - Name of the file being analyzed, such as "aFile.txt"
-contentanalysis-slow-agent-dialog-body-file = { $agent } kontroluje súbor “{ $filename }” vzhľadom na pravidlá správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+contentanalysis-slow-agent-dialog-body-file = { $agent } kontroluje súbor “{ $filename }” v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
-contentanalysis-slow-agent-dialog-body-clipboard = { $agent } kontroluje kopírovaný obsah vzhľadom na pravidlá správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } kontroluje súbor “{ $filename }” a { $count } ďalšiu položku v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+        [few] { $agent } kontroluje súbor “{ $filename }” a { $count } ďalšie položky v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+        [many] { $agent } kontroluje súbor “{ $filename }” a { $count } ďalších položiek v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+       *[other] { $agent } kontroluje súbor “{ $filename }” a { $count } ďalších položiek v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-clipboard = { $agent } kontroluje kopírovaný obsah v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
-contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } kontroluje kopírovaný obsah vzhľadom na pravidlá správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } kontroluje kopírovaný obsah v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
-contentanalysis-slow-agent-dialog-body-print = { $agent } kontroluje tlačený obsah vzhľadom na pravidlá správy údajov vo vašej organizácii. Môže to chvíľu trvať.
+contentanalysis-slow-agent-dialog-body-print = { $agent } kontroluje tlačený obsah v súlade s pravidlami správy údajov vo vašej organizácii. Môže to chvíľu trvať.
 contentanalysis-operationtype-clipboard = schránka
 contentanalysis-operationtype-dropped-text = pretiahnutý text
 contentanalysis-operationtype-print = tlač
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = odovzdanie súboru “{ $filename }”
+contentanalysis-upload-description = odovzdanie súboru “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = stiahnutie súboru “{ $filename }”
 contentanalysis-warndialogtitle = Tento obsah môže byť nebezpečný
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +53,6 @@ contentanalysis-genericresponse-message = Pre zdroj { $content } odpovedala anal
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Vaša organizácia používa softvér na prevenciu straty údajov, ktorý zablokoval tento obsah: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Pri komunikácii so softvérom na prevenciu straty údajov sa vyskytla chyba. Prenos bol odmietnutý pre tento zdroj: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Pri komunikácii s agentom { $agent } sa vyskytla chyba. Prenos bol odmietnutý pre tento zdroj: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Nedá sa pripojiť k agentovi { $agent }. Prenos bol odmietnutý pre tento zdroj: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Overenie podpisu pre agenta { $agent } zlyhalo. Prenos bol odmietnutý pre tento zdroj: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,16 +71,24 @@ contentanalysis-error-message-upload-file = Odovzdanie súboru “{ $filename }�
 contentanalysis-error-message-dropped-text = Pretiahnutie obsahu bolo odmietnuté.
 contentanalysis-error-message-clipboard = Prilepenie bolo odmietnuté.
 contentanalysis-error-message-print = Tlač bola odmietnutá.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Časový limit k pripojeniu agenta { $agent } vypršal. Obsah { $contentName } bol zablokovaný.
 contentanalysis-block-dialog-title-upload-file = Nemáte oprávnenie nahrať tento súbor
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Podľa pravidiel ochrany údajov vašej organizácie nie je povolené nahrať súbor “{ $filename }”. Ďalšie informácie získate od svojho správcu.
+contentanalysis-block-dialog-title-download-file = Nemáte oprávnenie stiahnuť tento súbor
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Podľa pravidiel ochrany údajov vašej organizácie nie je povolené stiahnuť súbor “{ $filename }”. Ďalšie informácie získate od svojho správcu.
 contentanalysis-block-dialog-title-clipboard = Nemáte oprávnenie prilepiť tento obsah
 contentanalysis-block-dialog-body-clipboard = Podľa pravidiel ochrany údajov vašej organizácie nemáte povolené prilepiť tento obsah. Ďalšie informácie získate od svojho správcu.
 contentanalysis-block-dialog-title-dropped-text = Nemáte oprávnenie pretiahnuť tento obsah
 contentanalysis-block-dialog-body-dropped-text = Podľa pravidiel ochrany údajov vašej organizácie nemáte oprávnenie presúvať tento obsah myšou. Ďalšie informácie získate od svojho správcu.
 contentanalysis-block-dialog-title-print = Nemáte oprávnenie na tlač tohto dokumentu
 contentanalysis-block-dialog-body-print = Podľa pravidiel ochrany údajov vašej organizácie nemáte oprávnenie na tlač tohto dokumentu. Ďalšie informácie získate od svojho správcu.
-contentanalysis-inprogress-quit-title = Ukončiť { -brand-shorter-name }?
+contentanalysis-inprogress-quit-title = Ukončiť { -brand-shorter-name(case: "acc") }?
 contentanalysis-inprogress-quit-message = Prebiehajú viaceré akcie. Ak teraz { -brand-shorter-name(case: "acc") } ukončíte, tieto akcie nebudú dokončené.
 contentanalysis-inprogress-quit-yesbutton = Áno, ukončiť

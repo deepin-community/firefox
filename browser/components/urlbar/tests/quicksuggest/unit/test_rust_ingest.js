@@ -8,9 +8,13 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
-  InterruptKind: "resource://gre/modules/RustSuggest.sys.mjs",
+  InterruptKind:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustSuggest.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
-  SuggestionProvider: "resource://gre/modules/RustSuggest.sys.mjs",
+  SuggestIngestionMetrics:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustSuggest.sys.mjs",
+  SuggestionProvider:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustSuggest.sys.mjs",
 });
 
 // These consts are copied from the update timer manager test. See
@@ -33,8 +37,8 @@ add_setup(async function () {
       },
     ],
     prefs: [
+      ["suggest.quicksuggest.all", true],
       ["suggest.quicksuggest.sponsored", true],
-      ["suggest.quicksuggest.nonsponsored", true],
     ],
   });
 });
@@ -77,71 +81,61 @@ add_task(async function disableEnable() {
   });
 });
 
-// For a feature that manages more than one Rust suggestion type, enabling one
-// type should ingest that type but not others, and enabling the feature itself
-// should not ingest suggestion types that remain disabled.
-add_task(async function featureWithMultipleSuggestionTypes() {
-  // Make sure we have a feature that manages multiple types.
-  let feature = QuickSuggest.getFeature("AdmWikipedia");
-  Assert.ok(!!feature, "This test expects the AdmWikipedia feature to exist");
-  Assert.deepEqual(
-    [...feature.rustSuggestionTypes].sort(),
-    ["Amp", "Wikipedia"],
-    "This test expects the AdmWikipedia feature to manage Amp and Wikipedia suggestions"
+// For a feature whose suggestion type provider has constraints, ingest should
+// happen when the constraints change.
+add_task(async function providerConstraintsChanged() {
+  // We'll use the Dynamic feature since it has provider constraints. Make sure
+  // it exists.
+  let feature = QuickSuggest.getFeature("DynamicSuggestions");
+  Assert.ok(
+    !!feature,
+    "This test expects the DynamicSuggestions feature to exist"
+  );
+  Assert.equal(
+    feature.rustSuggestionType,
+    "Dynamic",
+    "This test expects Dynamic suggestions to exist"
   );
 
-  // Make sure we start with both sponsored and nonsponsored enabled.
-  UrlbarPrefs.set("suggest.quicksuggest.sponsored", true);
-  UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", true);
-  await QuickSuggestTestUtils.forceSync();
-
+  let providersFilter = [SuggestionProvider.DYNAMIC];
   await withIngestStub(async ({ stub, rustBackend }) => {
-    let providersFilter = [
-      SuggestionProvider.AMP,
-      SuggestionProvider.WIKIPEDIA,
-    ];
+    // Set the pref to a few non-empty string values. Each time, a dynamic
+    // ingest should be triggered.
+    for (let type of ["aaa", "bbb", "aaa,bbb"]) {
+      UrlbarPrefs.set("quicksuggest.dynamicSuggestionTypes", type);
+      info("Awaiting ingest promise after setting dynamicSuggestionTypes");
+      await rustBackend.ingestPromise;
 
-    // Disable sponsored. No ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.sponsored", false);
-    info("Awaiting ingest promise after disabling sponsored");
-    await rustBackend.ingestPromise;
-    checkIngestCounts({ stub, providersFilter, expected: {} });
+      checkIngestCounts({
+        stub,
+        providersFilter,
+        expected: {
+          [SuggestionProvider.DYNAMIC]: 1,
+        },
+      });
+    }
 
-    // Disable nonsponsored. No ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", false);
-    info("Awaiting ingest promise after disabling nonsponsored");
+    // Set the pref to an empty string. The feature should become disabled and
+    // it shouldn't trigger ingest since no dynamic suggestions are enabled.
+    UrlbarPrefs.set("quicksuggest.dynamicSuggestionTypes", "");
+    info(
+      "Awaiting ingest promise after setting dynamicSuggestionTypes to empty string"
+    );
     await rustBackend.ingestPromise;
-    checkIngestCounts({ stub, providersFilter, expected: {} });
 
     Assert.ok(
       !feature.isEnabled,
-      "The feature should be disabled after disabling sponsored and nonsponsored suggestions"
+      "Dynamic feature should be disabled after setting dynamicSuggestionTypes to empty string"
     );
-
-    // Re-enable sponsored. Only one Amp ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.sponsored", true);
-    info("Awaiting ingest promise after re-enabling sponsored");
-    await rustBackend.ingestPromise;
     checkIngestCounts({
       stub,
       providersFilter,
-      expected: {
-        [SuggestionProvider.AMP]: 1,
-      },
-    });
-
-    // Re-enable nonsponsored. Only Wikipedia ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", true);
-    info("Awaiting ingest promise after re-enabling nonsponsored");
-    await rustBackend.ingestPromise;
-    checkIngestCounts({
-      stub,
-      providersFilter,
-      expected: {
-        [SuggestionProvider.WIKIPEDIA]: 1,
-      },
+      expected: {},
     });
   });
+
+  UrlbarPrefs.clear("quicksuggest.dynamicSuggestionTypes");
+  await QuickSuggest.rustBackend.ingestPromise;
 });
 
 // Ingestion should be performed according to the defined interval.
@@ -242,7 +236,7 @@ add_task(async function shutdown() {
   let spy = sandbox.spy(QuickSuggest.rustBackend._test_store, "interrupt");
 
   Services.prefs.setBoolPref("toolkit.asyncshutdown.testing", true);
-  AsyncShutdown.profileBeforeChange._trigger();
+  AsyncShutdown.profileChangeTeardown._trigger();
 
   let calls = spy.getCalls();
   Assert.equal(
@@ -274,6 +268,12 @@ async function withIngestStub(callback) {
   let sandbox = sinon.createSandbox();
   let { rustBackend } = QuickSuggest;
   let stub = sandbox.stub(rustBackend._test_store, "ingest");
+
+  // `ingest()` returns a `SuggestIngestionMetrics` object.
+  stub.returns(
+    new SuggestIngestionMetrics({ ingestionTimes: [], downloadTimes: [] })
+  );
+
   await callback({ stub, rustBackend });
   sandbox.restore();
 }
@@ -348,7 +348,7 @@ async function waitForIngestStart(oldIngestPromise) {
  * Sets up the update timer manager for testing: makes it fire more often,
  * removes all existing timers, and initializes it for testing. The body of this
  * function is copied from:
- * https://searchfox.org/mozilla-central/source/toolkit/components/timermanager/tests/unit/consumerNotifications.js
+ * https://searchfox.org/firefox-main/source/toolkit/components/timermanager/tests/unit/consumerNotifications.js
  */
 function initUpdateTimerManager() {
   // Set the timer to fire every second

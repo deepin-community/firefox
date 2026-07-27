@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,8 +25,10 @@ class SocketProcessHost;
 // by SocketProcessHost.
 class SocketProcessParent final
     : public PSocketProcessParent,
-      public ipc::CrashReporterHelper<GeckoProcessType_Socket> {
+      public ipc::CrashReporterHelper<SocketProcessParent> {
  public:
+  static constexpr GeckoProcessType PROCESS_TYPE = GeckoProcessType_Socket;
+
   friend class SocketProcessHost;
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(SocketProcessParent, final)
@@ -86,16 +87,20 @@ class SocketProcessParent final
       PProxyConfigLookupParent* aActor, nsIURI* aURI,
       const uint32_t& aProxyResolveFlags) override;
 
-  mozilla::ipc::IPCResult RecvCachePushCheck(
-      nsIURI* aPushedURL, OriginAttributes&& aOriginAttributes,
-      nsCString&& aRequestString, CachePushCheckResolver&& aResolver);
-
   mozilla::ipc::IPCResult RecvExcludeHttp2OrHttp3(
       const HttpConnectionInfoCloneArgs& aArgs);
   mozilla::ipc::IPCResult RecvOnConsoleMessage(const nsString& aMessage);
 
   mozilla::ipc::IPCResult RecvFOGData(ByteBuf&& aBuf);
 
+  mozilla::ipc::IPCResult RecvGeckoTraceExport(ByteBuf&& aBuf);
+
+  mozilla::ipc::IPCResult RecvSSLTokensCacheData(ByteBuf&& aBuf);
+
+#if defined(XP_MACOSX) || defined(XP_IOS)
+  mozilla::ipc::IPCResult RecvAppleFastDatapathProbeResult(
+      const bool& aAvailable);
+#endif
 #if defined(XP_WIN)
   mozilla::ipc::IPCResult RecvGetModulesTrust(
       ModulePaths&& aModPaths, bool aRunAtNormalPriority,

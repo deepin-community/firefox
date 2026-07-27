@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 /* rendering object for CSS "display: ruby-base-container" */
 
 #include "nsRubyBaseContainerFrame.h"
-#include "nsRubyTextContainerFrame.h"
-#include "nsRubyBaseFrame.h"
-#include "nsRubyTextFrame.h"
+
+#include "RubyUtils.h"
+#include "gfxContext.h"
 #include "mozilla/ComputedStyle.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Maybe.h"
@@ -18,10 +16,11 @@
 #include "nsLayoutUtils.h"
 #include "nsLineLayout.h"
 #include "nsPresContext.h"
+#include "nsRubyBaseFrame.h"
+#include "nsRubyTextContainerFrame.h"
+#include "nsRubyTextFrame.h"
 #include "nsStyleStructInlines.h"
 #include "nsTextFrame.h"
-#include "gfxContext.h"
-#include "RubyUtils.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -126,7 +125,7 @@ static void GetIsLineBreakAllowed(nsIFrame* aFrame, bool aIsLineBreakable,
  * happens across the boundary of those frames.
  */
 static nscoord CalculateColumnPrefISize(
-    gfxContext* aRenderingContext, const RubyColumnEnumerator& aEnumerator,
+    const IntrinsicSizeInput& aInput, const RubyColumnEnumerator& aEnumerator,
     nsIFrame::InlineIntrinsicISizeData* aBaseISizeData) {
   nscoord max = 0;
   uint32_t levelCount = aEnumerator.GetLevelCount();
@@ -143,7 +142,7 @@ static nscoord CalculateColumnPrefISize(
         // ruby text container frame.
         data.SetLineContainer(frame->GetParent());
       }
-      frame->AddInlinePrefISize(aRenderingContext, &data);
+      frame->AddInlinePrefISize(aInput, &data);
       MOZ_ASSERT(data.mPrevLines == 0, "Shouldn't have prev lines");
       max = std::max(max, data.mCurrentLine);
       if (i == 0) {
@@ -159,8 +158,8 @@ static nscoord CalculateColumnPrefISize(
 //       computing min isize of ruby frame, which may cause problem.
 //       See bug 1134945.
 /* virtual */
-void nsRubyBaseContainerFrame::AddInlineMinISize(gfxContext* aRenderingContext,
-                                                 InlineMinISizeData* aData) {
+void nsRubyBaseContainerFrame::AddInlineMinISize(
+    const IntrinsicSizeInput& aInput, InlineMinISizeData* aData) {
   AutoRubyTextContainerArray textContainers(this);
 
   for (uint32_t i = 0, iend = textContainers.Length(); i < iend; i++) {
@@ -171,7 +170,7 @@ void nsRubyBaseContainerFrame::AddInlineMinISize(gfxContext* aRenderingContext,
       data.SetLineContainer(aData->LineContainer());
       data.mSkipWhitespace = aData->mSkipWhitespace;
       data.mTrailingWhitespace = aData->mTrailingWhitespace;
-      AddInlinePrefISize(aRenderingContext, &data);
+      AddInlinePrefISize(aInput, &data);
       aData->mCurrentLine += data.mCurrentLine;
       if (data.mCurrentLine > 0) {
         aData->mAtStartOfLine = false;
@@ -194,15 +193,14 @@ void nsRubyBaseContainerFrame::AddInlineMinISize(gfxContext* aRenderingContext,
         nsIFrame* baseFrame = enumerator.GetFrameAtLevel(0);
         if (baseFrame) {
           gfxBreakPriority breakPriority = LineBreakBefore(
-              baseFrame, aRenderingContext->GetDrawTarget(), nullptr, nullptr);
+              baseFrame, aInput.mContext->GetDrawTarget(), nullptr, nullptr);
           if (breakPriority != gfxBreakPriority::eNoBreak) {
             aData->OptionallyBreak();
           }
         }
       }
       firstFrame = false;
-      nscoord isize =
-          CalculateColumnPrefISize(aRenderingContext, enumerator, aData);
+      nscoord isize = CalculateColumnPrefISize(aInput, enumerator, aData);
       aData->mCurrentLine += isize;
       if (isize > 0) {
         aData->mAtStartOfLine = false;
@@ -212,23 +210,24 @@ void nsRubyBaseContainerFrame::AddInlineMinISize(gfxContext* aRenderingContext,
 }
 
 /* virtual */
-void nsRubyBaseContainerFrame::AddInlinePrefISize(gfxContext* aRenderingContext,
-                                                  InlinePrefISizeData* aData) {
+void nsRubyBaseContainerFrame::AddInlinePrefISize(
+    const IntrinsicSizeInput& aInput, InlinePrefISizeData* aData) {
   AutoRubyTextContainerArray textContainers(this);
+  const IntrinsicSizeInput input(aInput.mContext, Nothing(), Nothing());
 
   nscoord sum = 0;
   for (nsIFrame* frame = this; frame; frame = frame->GetNextInFlow()) {
     RubyColumnEnumerator enumerator(
         static_cast<nsRubyBaseContainerFrame*>(frame), textContainers);
     for (; !enumerator.AtEnd(); enumerator.Next()) {
-      sum += CalculateColumnPrefISize(aRenderingContext, enumerator, aData);
+      sum += CalculateColumnPrefISize(input, enumerator, aData);
     }
   }
   for (uint32_t i = 0, iend = textContainers.Length(); i < iend; i++) {
     if (textContainers[i]->IsSpanContainer()) {
       nsIFrame* frame = textContainers[i]->PrincipalChildList().FirstChild();
       InlinePrefISizeData data;
-      frame->AddInlinePrefISize(aRenderingContext, &data);
+      frame->AddInlinePrefISize(input, &data);
       MOZ_ASSERT(data.mPrevLines == 0, "Shouldn't have prev lines");
       sum = std::max(sum, data.mCurrentLine);
     }
@@ -241,10 +240,10 @@ bool nsRubyBaseContainerFrame::CanContinueTextRun() const { return true; }
 
 /* virtual */
 nsIFrame::SizeComputationResult nsRubyBaseContainerFrame::ComputeSize(
-    gfxContext* aRenderingContext, WritingMode aWM, const LogicalSize& aCBSize,
-    nscoord aAvailableISize, const LogicalSize& aMargin,
-    const LogicalSize& aBorderPadding, const StyleSizeOverrides& aSizeOverrides,
-    ComputeSizeFlags aFlags) {
+    const SizeComputationInput& aSizingInput, WritingMode aWM,
+    const LogicalSize& aCBSize, nscoord aAvailableISize,
+    const LogicalSize& aMargin, const LogicalSize& aBorderPadding,
+    const StyleSizeOverrides& aSizeOverrides, ComputeSizeFlags aFlags) {
   // Ruby base container frame is inline,
   // hence don't compute size before reflow.
   return {LogicalSize(aWM, NS_UNCONSTRAINEDSIZE, NS_UNCONSTRAINEDSIZE),

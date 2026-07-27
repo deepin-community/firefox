@@ -1,11 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DMABUFTextureHostOGL.h"
 #include "mozilla/widget/DMABufSurface.h"
+#include "mozilla/widget/DMABufFormats.h"
 #include "mozilla/webrender/RenderDMABUFTextureHost.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/webrender/WebRenderAPI.h"
@@ -48,6 +47,13 @@ gfx::ColorRange DMABUFTextureHostOGL::GetColorRange() const {
   }
   return mSurface->IsFullRange() ? gfx::ColorRange::FULL
                                  : gfx::ColorRange::LIMITED;
+}
+
+gfx::TransferFunction DMABUFTextureHostOGL::GetTransferFunction() const {
+  if (!mSurface) {
+    return gfx::TransferFunction::BT709;
+  }
+  return mSurface->GetTransferFunction();
 }
 
 uint32_t DMABUFTextureHostOGL::NumSubTextures() {
@@ -94,38 +100,69 @@ void DMABUFTextureHostOGL::PushResourceUpdates(
     case gfx::SurfaceFormat::R8G8B8A8:
     case gfx::SurfaceFormat::B8G8R8X8:
     case gfx::SurfaceFormat::B8G8R8A8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length");
+        return;
+      }
       // XXX Add RGBA handling. Temporary hack to avoid crash
       // With BGRA format setting, rendering works without problem.
       wr::ImageDescriptor descriptor(GetSize(), mSurface->GetFormat());
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::NV12: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetTextureCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetTextureCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor0(
           gfx::IntSize(mSurface->GetWidth(0), mSurface->GetHeight(0)),
           gfx::SurfaceFormat::A8);
       wr::ImageDescriptor descriptor1(
           gfx::IntSize(mSurface->GetWidth(1), mSurface->GetHeight(1)),
           gfx::SurfaceFormat::R8G8);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::YUV420: {
-      MOZ_ASSERT(aImageKeys.length() == 3);
-      MOZ_ASSERT(mSurface->GetTextureCount() == 3);
+      if (aImageKeys.length() != 3 || mSurface->GetTextureCount() != 3) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor0(
           gfx::IntSize(mSurface->GetWidth(0), mSurface->GetHeight(0)),
           gfx::SurfaceFormat::A8);
       wr::ImageDescriptor descriptor1(
           gfx::IntSize(mSurface->GetWidth(1), mSurface->GetHeight(1)),
           gfx::SurfaceFormat::A8);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
-      (aResources.*method)(aImageKeys[2], descriptor1, aExtID, imageType, 2);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[2], descriptor1, aExtID, imageType, 2,
+                           /* aNormalizedUvs */ false);
+      break;
+    }
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
+      if (aImageKeys.length() != 2 || mSurface->GetTextureCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
+      wr::ImageDescriptor descriptor0(
+          gfx::IntSize(mSurface->GetWidth(0), mSurface->GetHeight(0)),
+          gfx::SurfaceFormat::A16);
+      wr::ImageDescriptor descriptor1(
+          gfx::IntSize(mSurface->GetWidth(1), mSurface->GetHeight(1)),
+          gfx::SurfaceFormat::R16G16);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     default: {
@@ -143,40 +180,64 @@ void DMABUFTextureHostOGL::PushDisplayItems(
   }
   bool preferCompositorSurface =
       aFlags.contains(PushDisplayItemFlag::PREFER_COMPOSITOR_SURFACE);
+  bool supportsDirectComposition =
+      widget::GetGlobalDMABufFormats()->SupportsDirectComposition(
+          mSurface->GetFormat());
+
   switch (mSurface->GetFormat()) {
     case gfx::SurfaceFormat::R8G8B8X8:
     case gfx::SurfaceFormat::R8G8B8A8:
     case gfx::SurfaceFormat::B8G8R8A8:
     case gfx::SurfaceFormat::B8G8R8X8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length");
+        return;
+      }
       aBuilder.PushImage(aBounds, aClip, true, false, aFilter, aImageKeys[0],
                          !(mFlags & TextureFlags::NON_PREMULTIPLIED),
                          wr::ColorF{1.0f, 1.0f, 1.0f, 1.0f},
-                         preferCompositorSurface);
+                         preferCompositorSurface, supportsDirectComposition);
       break;
     }
     case gfx::SurfaceFormat::NV12: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetTextureCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetTextureCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       // Those images can only be generated at present by the VAAPI H264 decoder
       // which only supports 8 bits color depth.
-      aBuilder.PushNV12Image(aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
-                             wr::ColorDepth::Color8,
-                             wr::ToWrYuvColorSpace(GetYUVColorSpace()),
-                             wr::ToWrColorRange(GetColorRange()), aFilter,
-                             preferCompositorSurface);
+      aBuilder.PushNV12Image(
+          aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
+          wr::ColorDepth::Color8, wr::ToWrYuvColorSpace(GetYUVColorSpace()),
+          wr::ToWrColorRange(GetColorRange()), aFilter, preferCompositorSurface,
+          supportsDirectComposition);
       break;
     }
     case gfx::SurfaceFormat::YUV420: {
-      MOZ_ASSERT(aImageKeys.length() == 3);
-      MOZ_ASSERT(mSurface->GetTextureCount() == 3);
+      if (aImageKeys.length() != 3 || mSurface->GetTextureCount() != 3) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       // Those images can only be generated at present by the VAAPI vp8 decoder
       // which only supports 8 bits color depth.
       aBuilder.PushYCbCrPlanarImage(
           aBounds, aClip, true, aImageKeys[0], aImageKeys[1], aImageKeys[2],
           wr::ColorDepth::Color8, wr::ToWrYuvColorSpace(GetYUVColorSpace()),
-          wr::ToWrColorRange(GetColorRange()), aFilter,
-          preferCompositorSurface);
+          wr::ToWrColorRange(GetColorRange()), aFilter, preferCompositorSurface,
+          supportsDirectComposition);
+      break;
+    }
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
+      if (aImageKeys.length() != 2 || mSurface->GetTextureCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
+      aBuilder.PushP010Image(
+          aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
+          wr::ColorDepth::Color10, wr::ToWrYuvColorSpace(GetYUVColorSpace()),
+          wr::ToWrColorRange(GetColorRange()), aFilter, preferCompositorSurface,
+          supportsDirectComposition);
       break;
     }
     default: {

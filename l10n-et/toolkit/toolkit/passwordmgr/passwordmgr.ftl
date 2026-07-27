@@ -24,10 +24,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Ära uuenda
     .accesskey = r
+primary-password-prompt-message = Palun sisesta ülemparool.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = kasutajanime pole
-password-manager-toggle-password =
-    .label = Kuva parooli
-    .accesskey = v
 password-manager-confirm-password-change = Parooli muudatuse kinnitus
 password-manager-select-username = Vali uuendatav kasutajakonto:

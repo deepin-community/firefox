@@ -52,22 +52,22 @@ MEMBER_CHECK(nsCString, mDataFlags)
 MEMBER_CHECK(nsCString, mClassFlags)
 
 extern "C" void Rust_Test_NsStringFlags(
-    uint16_t* f_terminated, uint16_t* f_voided, uint16_t* f_refcounted,
+    uint16_t* f_terminated, uint16_t* f_voided, uint16_t* f_stringbuffer,
     uint16_t* f_owned, uint16_t* f_inline, uint16_t* f_literal,
     uint16_t* f_class_inline, uint16_t* f_class_null_terminated);
 TEST(RustNsString, NsStringFlags)
 {
-  uint16_t f_terminated, f_voided, f_refcounted, f_owned, f_inline, f_literal,
+  uint16_t f_terminated, f_voided, f_stringbuffer, f_owned, f_inline, f_literal,
       f_class_inline, f_class_null_terminated;
-  Rust_Test_NsStringFlags(&f_terminated, &f_voided, &f_refcounted, &f_owned,
+  Rust_Test_NsStringFlags(&f_terminated, &f_voided, &f_stringbuffer, &f_owned,
                           &f_inline, &f_literal, &f_class_inline,
                           &f_class_null_terminated);
   EXPECT_EQ(f_terminated, uint16_t(nsAString::DataFlags::TERMINATED));
   EXPECT_EQ(f_terminated, uint16_t(nsACString::DataFlags::TERMINATED));
   EXPECT_EQ(f_voided, uint16_t(nsAString::DataFlags::VOIDED));
   EXPECT_EQ(f_voided, uint16_t(nsACString::DataFlags::VOIDED));
-  EXPECT_EQ(f_refcounted, uint16_t(nsAString::DataFlags::REFCOUNTED));
-  EXPECT_EQ(f_refcounted, uint16_t(nsACString::DataFlags::REFCOUNTED));
+  EXPECT_EQ(f_stringbuffer, uint16_t(nsAString::DataFlags::STRINGBUFFER));
+  EXPECT_EQ(f_stringbuffer, uint16_t(nsACString::DataFlags::STRINGBUFFER));
   EXPECT_EQ(f_owned, uint16_t(nsAString::DataFlags::OWNED));
   EXPECT_EQ(f_owned, uint16_t(nsACString::DataFlags::OWNED));
   EXPECT_EQ(f_inline, uint16_t(nsAString::DataFlags::INLINE));
@@ -113,15 +113,21 @@ void Cpp_AssignFromCpp(nsACString* aCStr, nsAString* aStr) {
 }
 extern "C" void Rust_AssignFromCpp();
 TEST(RustNsString, AssignFromCpp)
-{ Rust_AssignFromCpp(); }
+{
+  Rust_AssignFromCpp();
+}
 
 extern "C" void Rust_StringWrite();
 TEST(RustNsString, StringWrite)
-{ Rust_StringWrite(); }
+{
+  Rust_StringWrite();
+}
 
 extern "C" void Rust_FromEmptyRustString();
 TEST(RustNsString, FromEmptyRustString)
-{ Rust_FromEmptyRustString(); }
+{
+  Rust_FromEmptyRustString();
+}
 
 extern "C" void Rust_WriteToBufferFromRust(nsACString* aCStr, nsAString* aStr,
                                            nsACString* aFallibleCStr,

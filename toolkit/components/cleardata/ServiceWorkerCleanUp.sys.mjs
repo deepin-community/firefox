@@ -10,7 +10,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "serviceWorkerManager",
   "@mozilla.org/serviceworkers/manager;1",
-  "nsIServiceWorkerManager"
+  Ci.nsIServiceWorkerManager
 );
 
 if (Services.appinfo.processType === Services.appinfo.PROCESS_TYPE_CONTENT) {
@@ -58,14 +58,28 @@ export const ServiceWorkerCleanUp = {
     );
   },
 
-  removeFromBaseDomain(aBaseDomain) {
-    // Service workers are disabled in partitioned contexts. This means we don't
-    // have to check for a partitionKey, but only look at the top level base
-    // domain. If this ever changes we need to update this method to account for
-    // partitions. See Bug 1495241.
-    return unregisterServiceWorkersMatching(
-      sw => sw.principal.baseDomain == aBaseDomain
-    );
+  removeFromSite(aSchemelessSite, aOriginAttributesPattern) {
+    return unregisterServiceWorkersMatching(sw => {
+      let { principal } = sw;
+      let { originAttributes } = principal;
+
+      // Check service workers owned by aSchemelessSite.
+      if (
+        principal.baseDomain == aSchemelessSite &&
+        ChromeUtils.originAttributesMatchPattern(
+          originAttributes,
+          aOriginAttributesPattern
+        )
+      ) {
+        return true;
+      }
+
+      // Check service workers partitioned under aSchemelessSite.
+      return ChromeUtils.originAttributesMatchPattern(originAttributes, {
+        partitionKeyPattern: { baseDomain: aSchemelessSite },
+        ...aOriginAttributesPattern,
+      });
+    });
   },
 
   removeFromPrincipal(aPrincipal) {

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import type {ServerResponse} from 'http';
-import path from 'path';
+import fs from 'node:fs';
+import type {ServerResponse} from 'node:http';
+import path from 'node:path';
 
 import expect from 'expect';
 import type {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
@@ -109,6 +109,61 @@ describe('network', function () {
         expect(userAgent).toContain('Firefox');
       }
     });
+
+    // In CDP cookie header is only when the request actually
+    // hits the network, verify that we populate the correctly
+    describe('cookie header', () => {
+      it('should show Cookie header', async () => {
+        const {page, server} = await getTestState();
+        await page.goto(server.EMPTY_PAGE);
+        await page.evaluate(() => {
+          document.cookie = 'username=John Doe';
+        });
+        const response = (await page.goto(server.PREFIX + '/title.html'))!;
+
+        const cookie = response.request().headers()['cookie'];
+
+        expect(cookie).toContain('username=John Doe');
+      });
+
+      it('should show Cookie header for redirect', async () => {
+        const {page, server} = await getTestState();
+        await page.goto(server.EMPTY_PAGE);
+        server.setRedirect('/foo.html', '/title.html');
+        await page.evaluate(() => {
+          document.cookie = 'username=John Doe';
+        });
+        const response = (await page.goto(server.PREFIX + '/foo.html'))!;
+
+        const cookie1 = response.request().redirectChain()[0]!.headers()[
+          'cookie'
+        ];
+        expect(cookie1).toContain('username=John Doe');
+
+        const cookie2 = response.request().headers()['cookie'];
+        expect(cookie2).toContain('username=John Doe');
+      });
+
+      it('should show Cookie header for fetch request', async () => {
+        const {page, server} = await getTestState();
+        await page.goto(server.EMPTY_PAGE);
+        await page.evaluate(() => {
+          document.cookie = 'username=John Doe';
+        });
+
+        const [response] = await Promise.all([
+          waitEvent<HTTPResponse>(page, 'response', req => {
+            return !isFavicon(req);
+          }),
+          page.evaluate(async () => {
+            await fetch('/title.html');
+          }),
+        ]);
+
+        const cookie = response.request().headers()['cookie'];
+        expect(cookie).toContain('username=John Doe');
+      });
+    });
   });
 
   describe('Response.headers', function () {
@@ -132,7 +187,7 @@ describe('network', function () {
       page.on('request', request => {
         return initiators.set(
           request.url().split('/').pop(),
-          request.initiator()
+          request.initiator(),
         );
       });
       await page.goto(server.PREFIX + '/initiator.html');
@@ -140,31 +195,31 @@ describe('network', function () {
       expect(initiators.get('initiator.html').type).toBe('other');
       expect(initiators.get('initiator.js').type).toBe('parser');
       expect(initiators.get('initiator.js').url).toBe(
-        server.PREFIX + '/initiator.html'
+        server.PREFIX + '/initiator.html',
       );
       expect(initiators.get('frame.html').type).toBe('parser');
       expect(initiators.get('frame.html').url).toBe(
-        server.PREFIX + '/initiator.html'
+        server.PREFIX + '/initiator.html',
       );
       expect(initiators.get('script.js').type).toBe('parser');
       expect(initiators.get('script.js').url).toBe(
-        server.PREFIX + '/frames/frame.html'
+        server.PREFIX + '/frames/frame.html',
       );
       expect(initiators.get('style.css').type).toBe('parser');
       expect(initiators.get('style.css').url).toBe(
-        server.PREFIX + '/frames/frame.html'
+        server.PREFIX + '/frames/frame.html',
       );
       expect(initiators.get('initiator.js').type).toBe('parser');
       expect(initiators.get('injectedfile.js').type).toBe('script');
       expect(initiators.get('injectedfile.js').stack.callFrames[0]!.url).toBe(
-        server.PREFIX + '/initiator.js'
+        server.PREFIX + '/initiator.js',
       );
       expect(initiators.get('injectedstyle.css').type).toBe('script');
       expect(initiators.get('injectedstyle.css').stack.callFrames[0]!.url).toBe(
-        server.PREFIX + '/initiator.js'
+        server.PREFIX + '/initiator.js',
       );
       expect(initiators.get('initiator.js').url).toBe(
-        server.PREFIX + '/initiator.html'
+        server.PREFIX + '/initiator.html',
       );
     });
   });
@@ -241,7 +296,7 @@ describe('network', function () {
     });
   });
 
-  describe('Request.postData', function () {
+  describe('Request.fetchPostData', function () {
     it('should work', async () => {
       const {page, server} = await getTestState();
 
@@ -263,14 +318,17 @@ describe('network', function () {
       ]);
 
       expect(request).toBeTruthy();
-      expect(request.postData()).toBe('{"foo":"bar"}');
+      expect(request.hasPostData()).toBeTruthy();
+      expect(await request.fetchPostData()).toBe('{"foo":"bar"}');
     });
 
     it('should be |undefined| when there is no post data', async () => {
       const {page, server} = await getTestState();
 
       const response = (await page.goto(server.EMPTY_PAGE))!;
-      expect(response.request().postData()).toBe(undefined);
+      expect(response.request().hasPostData()).toBeFalsy();
+
+      expect(await response.request().fetchPostData()).toBe(undefined);
     });
 
     it('should work with blobs', async () => {
@@ -296,7 +354,6 @@ describe('network', function () {
       ]);
 
       expect(request).toBeTruthy();
-      expect(request.postData()).toBe(undefined);
       expect(request.hasPostData()).toBe(true);
       expect(await request.fetchPostData()).toBe('{"foo":"bar"}');
     });
@@ -333,7 +390,7 @@ describe('network', function () {
         return (error = error_);
       });
       expect(error.message).toContain(
-        'Response body is unavailable for redirect responses'
+        'Response body is unavailable for redirect responses',
       );
     });
     it('should wait until response completes', async () => {
@@ -400,7 +457,7 @@ describe('network', function () {
 
       const response = (await page.goto(server.PREFIX + '/pptr.png'))!;
       const imageBuffer = fs.readFileSync(
-        path.join(__dirname, '../assets', 'pptr.png')
+        path.join(import.meta.dirname, '../assets', 'pptr.png'),
       );
       const responseBuffer = await response.buffer();
 
@@ -412,7 +469,7 @@ describe('network', function () {
       server.enableGzip('/pptr.png');
       const response = (await page.goto(server.PREFIX + '/pptr.png'))!;
       const imageBuffer = fs.readFileSync(
-        path.join(__dirname, '../assets', 'pptr.png')
+        path.join(import.meta.dirname, '../assets', 'pptr.png'),
       );
       const responseBuffer = await response.buffer();
       expect(Buffer.from(responseBuffer).equals(imageBuffer)).toBe(true);
@@ -436,7 +493,7 @@ describe('network', function () {
           return (
             response.request().method() === 'OPTIONS' && response.url() === url
           );
-        }
+        },
       );
 
       // Trigger a request with a preflight.
@@ -449,8 +506,8 @@ describe('network', function () {
       }, url);
 
       const response = await responsePromise;
-      await expect(response.buffer()).rejects.toThrowError(
-        'Could not load body for this request. This might happen if the request is a preflight request.'
+      await expect(response.buffer()).rejects.toThrow(
+        'Could not load response body for this request. This might happen if the request is a preflight request.',
       );
     });
   });
@@ -621,18 +678,24 @@ describe('network', function () {
 
       const events: string[] = [];
       page.on('request', request => {
-        !isFavicon(request) &&
+        if (!isFavicon(request)) {
           events.push(`${request.method()} ${request.url()}`);
+        }
       });
       page.on('response', response => {
-        !isFavicon(response) &&
+        if (!isFavicon(response)) {
           events.push(`${response.status()} ${response.url()}`);
+        }
       });
       page.on('requestfinished', request => {
-        !isFavicon(request) && events.push(`DONE ${request.url()}`);
+        if (!isFavicon(request)) {
+          events.push(`DONE ${request.url()}`);
+        }
       });
       page.on('requestfailed', request => {
-        !isFavicon(request) && events.push(`FAIL ${request.url()}`);
+        if (!isFavicon(request)) {
+          events.push(`FAIL ${request.url()}`);
+        }
       });
       server.setRedirect('/foo.html', '/empty.html');
       const FOO_URL = server.PREFIX + '/foo.html';
@@ -721,7 +784,7 @@ describe('network', function () {
         error = error_ as Error;
       }
       expect(error.message).toBe(
-        'Expected value of header "foo" to be String, but "number" is found.'
+        'Expected value of header "foo" to be String, but "number" is found.',
       );
     });
   });
@@ -729,6 +792,21 @@ describe('network', function () {
   describe('Page.authenticate', function () {
     it('should work', async () => {
       const {page, server} = await getTestState();
+      server.setAuth('/empty.html', 'user', 'pass');
+      await page.authenticate({
+        username: 'user',
+        password: 'pass',
+      });
+      const response = (await page.goto(server.EMPTY_PAGE))!;
+      expect(response.status()).toBe(200);
+    });
+
+    it('should work with interception', async () => {
+      const {page, server} = await getTestState();
+      await page.setRequestInterception(true);
+      page.on('request', async req => {
+        await req.continue();
+      });
       server.setAuth('/empty.html', 'user', 'pass');
       await page.authenticate({
         username: 'user',
@@ -750,7 +828,7 @@ describe('network', function () {
         // In headful, an error is thrown instead of 401.
         if (
           !(error as Error).message?.includes(
-            'net::ERR_INVALID_AUTH_CREDENTIALS'
+            'net::ERR_INVALID_AUTH_CREDENTIALS',
           )
         ) {
           throw error;
@@ -790,14 +868,14 @@ describe('network', function () {
       // Navigate to a different origin to bust Chrome's credential caching.
       try {
         response = (await page.goto(
-          server.CROSS_PROCESS_PREFIX + '/empty.html'
+          server.CROSS_PROCESS_PREFIX + '/empty.html',
         ))!;
         expect(response.status()).toBe(401);
       } catch (error) {
         // In headful, an error is thrown instead of 401.
         if (
           !(error as Error).message?.includes(
-            'net::ERR_INVALID_AUTH_CREDENTIALS'
+            'net::ERR_INVALID_AUTH_CREDENTIALS',
           )
         ) {
           throw error;
@@ -879,9 +957,14 @@ describe('network', function () {
     });
 
     it('Cross-origin set-cookie', async () => {
-      const {page, httpsServer, close} = await launch({
-        acceptInsecureCerts: true,
-      });
+      const {page, httpsServer, close} = await launch(
+        {
+          acceptInsecureCerts: true,
+        },
+        {
+          createContext: true,
+        },
+      );
       try {
         await page.goto(httpsServer.PREFIX + '/empty.html');
 
@@ -963,12 +1046,16 @@ describe('network', function () {
       const {page, server} = await getTestState();
 
       const cssRequests: HTTPRequest[] = [];
-      page.on('request', request => {
-        if (request.url().endsWith('css')) {
-          cssRequests.push(request);
-        }
+      const promise = new Promise<void>(resolve => {
+        page.on('request', request => {
+          if (request.url().endsWith('css')) {
+            cssRequests.push(request);
+            resolve();
+          }
+        });
       });
       await page.goto(server.PREFIX + '/one-style.html');
+      await promise;
       expect(cssRequests).toHaveLength(1);
       const request = cssRequests[0]!;
       expect(request.url()).toContain('one-style.css');
@@ -984,7 +1071,7 @@ describe('network', function () {
       const remoteAddress = response.remoteAddress();
       // Either IPv6 or IPv4, depending on environment.
       expect(
-        remoteAddress.ip!.includes('::1') || remoteAddress.ip === '127.0.0.1'
+        remoteAddress.ip!.includes('::1') || remoteAddress.ip === '127.0.0.1',
       ).toBe(true);
       expect(remoteAddress.port).toBe(server.PORT);
     });
@@ -1001,7 +1088,7 @@ describe('network', function () {
       expect(redirectChain).toHaveLength(1);
       expect(redirectChain[0]!.url()).toContain('/foo.html');
       expect(redirectChain[0]!.response()!.remoteAddress().port).toBe(
-        server.PORT
+        server.PORT,
       );
     });
   });

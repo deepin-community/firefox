@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "gtest/gtest.h"
-
-#include "mozilla/dom/SafeRefPtr.h"
 #include "mozilla/RefCounted.h"
+#include "mozilla/dom/SafeRefPtr.h"
 
 using namespace mozilla;
 
@@ -267,6 +264,18 @@ TEST(DOM_IndexedDB_SafeRefPtr, SafeRefPtrFromThis_DiscardInCtor)
   {
     SafeRefPtr<SafeTest> ptr = MakeSafeRefPtr<SafeTest>(
         [](SafeRefPtr<SafeBase> ptr) { EXPECT_EQ(2u, ptr->refCount()); });
+    ASSERT_EQ(1u, ptr->refCount());
+    ASSERT_EQ(0, SafeBase::sNumDestroyed);
+  }
+  ASSERT_EQ(1, SafeBase::sNumDestroyed);
+}
+
+TEST(DOM_IndexedDB_SafeRefPtr, Construct_FromSelf)
+{
+  SafeBase::sNumDestroyed = 0;
+  {
+    SafeRefPtr<SafeBase> ptr = MakeSafeRefPtr<SafeBase>();
+    ptr = std::move(static_cast<SafeRefPtr<SafeBase>&>(ptr));
     ASSERT_EQ(1u, ptr->refCount());
     ASSERT_EQ(0, SafeBase::sNumDestroyed);
   }

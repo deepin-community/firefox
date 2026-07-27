@@ -7,7 +7,6 @@ page-subtitle =
     Această pagină conține informații tehnice care ar putea fi utile atunci când
     încerci să rezolvi o problemă. Dacă cauți răspunsuri la întrebări comune despre
     { -brand-short-name }, verifică <a data-l10n-name="support-link">site-ul nostru de suport</a>.
-
 crashes-title = Rapoarte de defecțiuni
 crashes-id = ID-ul raportului
 crashes-send-date = Trimis
@@ -19,6 +18,14 @@ support-addons-type = Tip
 support-addons-enabled = Activate
 support-addons-version = Versiune
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Locație
+legacy-user-stylesheets-title = Fișe de stil moștenite create de utilizator
+legacy-user-stylesheets-enabled = Active
+legacy-user-stylesheets-stylesheet-types = Fișe de stil
+legacy-user-stylesheets-no-stylesheets-found = Nu s-au găsit fișe de stil
 security-software-title = Program de securitate
 security-software-type = Tip
 security-software-name = Nume
@@ -69,13 +76,20 @@ app-basics-third-party = Module terțe
 app-basics-profiles = Profiluri
 app-basics-launcher-process-status = Procesul lansatorului
 app-basics-multi-process-support = Ferestre multiproces
+app-basics-fission-support = Ferestre de fisiune
 app-basics-remote-processes-count = Procese la distanță
 app-basics-enterprise-policies = Politici dedicate întreprinderilor
 app-basics-location-service-key-google = Cheie de servicii Google pentru localizare
 app-basics-safebrowsing-key-google = Cheie Google pentru navigare în siguranță
 app-basics-key-mozilla = Cheie pentru serviciul de localizare Mozilla
 app-basics-safe-mode = Mod sigur
-
+app-basics-memory-size = Mărime memorie (RAM)
+app-basics-disk-available = Spațiu disponibil pe disc
+app-basics-pointing-devices = Dispozitive de indicare
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Afișează în Finder
@@ -105,13 +119,27 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Jurnal de decizii
 graphics-crash-guards-title = Funcții dezactivate de Crash Guard
 graphics-workarounds-title = Alternative
+graphics-device-pixel-ratios = Rapoarte pixeli dispozitiv Windows
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protocol de ferestre
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Mediu desktop
 place-database-title = Bază de date cu locuri
+place-database-stats = Statistici
+place-database-stats-show = Arată statisticile
+place-database-stats-hide = Ascunde statisticile
+place-database-stats-entity = Entitate
+place-database-stats-count = Număr
+place-database-stats-size-kib = Mărime (KiB)
+place-database-stats-size-perc = Mărime (%)
+place-database-stats-efficiency-perc = Eficiență (%)
+place-database-stats-sequentiality-perc = Secvențialitate (%)
 place-database-integrity = Integritate
 place-database-verify-integrity = Verifică integritatea
+place-database-last-idle-maintenance-data = Data ultimei operații de întreținere în stare inactivă
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Data ultimei vidări
+place-database-last-integrity-corruption-date = Data ultimei coruperi a integrității
 a11y-title = Accesibilitate
 a11y-activated = Activat
 a11y-force-disabled = Împiedică accesibilitatea
@@ -129,7 +157,7 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Tipul de proces
 sandbox-sys-call-number = Apel sistem
 sandbox-sys-call-args = Argumente
-troubleshoot-mode-title = Diagnostică problemele
+troubleshoot-mode-title = Diagnostichează problemele
 restart-in-troubleshoot-mode-label = Mod de depanare…
 clear-startup-cache-title = Încearcă să golești cache-ul de pornire
 clear-startup-cache-label = Golește cache-ul de pornire…
@@ -156,10 +184,38 @@ media-device-channels = Canale
 media-device-rate = Rată
 media-device-latency = Latență
 media-capabilities-title = Capabilități media
+media-codec-support-info = Informații privind suportul pentru codecuri
 # List all the entries of the database.
 media-capabilities-enumerate = Enumeră baza de date
 
 ## Codec support table
+
+media-codec-support-sw-decoding = Decodificare software
+media-codec-support-hw-decoding = Decodificare hardware
+media-codec-support-sw-encoding = Codificare software
+media-codec-support-hw-encoding = Codificare hardware
+media-codec-support-codec-name = Nume codec
+media-codec-support-supported = Acceptat
+media-codec-support-unsupported = Neacceptat
+media-codec-support-error = Informațiile despre acceptarea codecurilor sunt indisponibile. Încearcă din nou după redarea unui fișier media.
+media-codec-support-lack-of-extension = Instalează extensia
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Informații despre modulele de decriptare a conținuturilor
+media-key-system-name = Denumire sistem de chei
+media-video-robustness = Robustețe video
+media-audio-robustness = Robustețe audio
+media-cdm-capabilities = Capabilități
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Pornește necriptat (Clear Lead)
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = Compatibil cu HDCP 2.2
 
 ##
 
@@ -196,7 +252,6 @@ report-crash-for-days =
         [few] Rapoarte de defecțiuni pentru ultimele { $days } zile
        *[other] Rapoarte de defecțiuni pentru ultimele { $days } de zile
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -205,7 +260,6 @@ crashes-time-minutes =
         [few] acum { $minutes } minute
        *[other] acum { $minutes } de minute
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -214,7 +268,6 @@ crashes-time-hours =
         [few] acum { $hours } ore
        *[other] acum { $hours } de ore
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -223,7 +276,6 @@ crashes-time-days =
         [few] acum { $days } zile
        *[other] acum { $days } de zile
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -232,7 +284,6 @@ pending-reports =
         [few] Toate rapoartele de defecțiuni (inclusiv { $reports } rapoarte în așteptare în intervalul de timp dat)
        *[other] Toate rapoartele de defecțiuni (inclusiv { $reports } de rapoarte în așteptare în intervalul de timp dat)
     }
-
 raw-data-copied = Date brute copiate în clipboard
 text-copied = Text copiat în clipboard
 
@@ -245,12 +296,11 @@ blocked-mismatched-version = Blocat din cauza necorelării versiunilor driverelo
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Blocat pentru versiunea ta de driver pentru adaptorul grafic. Încearcă să actualizezi driverul adaptorului grafic la versiunea { $driverVersion } sau mai nouă.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Parametrii ClearType
-
 compositing = Compunere
+support-font-determination = Informații de depanare privind vizibilitatea fontului
 hardware-h264 = Decodare H264 hardware
 main-thread-no-omtc = fir principal, fără OMTC
 yes = Da
@@ -264,7 +314,6 @@ virtual-monitor-disp = Afișarea monitorului virtual
 
 found = Găsită
 missing = Lipsă
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Descriere
@@ -287,19 +336,17 @@ webgl2-renderer = Renderul driverului WebGL 2
 webgl2-version = Versiunea driverului WebGL 2
 webgl2-driver-extensions = Extensiile driverului WebGL 2
 webgl2-extensions = Extensii WebGL 2
-
+webgpu-default-adapter = Adaptor WebGPU implicit
+webgpu-fallback-adapter = Adaptor WebGPU de rezervă
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Pus pe lista de blocare din cauza problemelor cunoscute: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Pus pe lista de blocări; cod de eroare { $failureCode }
-
 d3d11layers-crash-guard = Compozitor D3D11
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = Decodor video WMF VPX
-
 reset-on-next-restart = Resetează la următoarea repornire
 gpu-process-kill-button = Termină procesul GPU
 gpu-device-reset = Resetarea dispozitivului
@@ -309,39 +356,53 @@ content-uses-tiling = Folosește Tiling (Conținut)
 off-main-thread-paint-enabled = Desenare în afara firului de execuție principal activată
 off-main-thread-paint-worker-count = Număr de workeri pentru desenare în afara firului de execuție principal
 target-frame-rate = Frecvență de cadre țintă
-
 min-lib-versions = Versiune minimă așteptată
 loaded-lib-versions = Versiune în uz
-
 has-seccomp-bpf = Seccomp-BPF (filtrarea apelurilor de sistem)
 has-seccomp-tsync = Sincronizarea firului de execuție seccomp
 has-user-namespaces = Spații de nume ale utilizatorului
 has-privileged-user-namespaces = Spații de nume ale utilizatorului pentru procese privilegiate
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Funcționalitatea nu este permisă pe sistemul tău. Funcționalitățile de securitate { -brand-short-name } pot fi restricționate.
 can-sandbox-content = Proces sandbox pentru continuț
 can-sandbox-media = Plugin sandbox pentru media
 content-sandbox-level = Nivel de sandbox al proceselor pentru conținut
 effective-content-sandbox-level = Nivel efectiv de sandbox al proceselor pentru conținut
+content-win32k-lockdown-state = Stare de blocare Win32k pentru procesul de conținut
+support-sandbox-gpu-level = Nivel sandbox pentru procese GPU
 sandbox-proc-type-content = conținut
 sandbox-proc-type-file = conținut fișier
 sandbox-proc-type-media-plugin = plugin media
 sandbox-proc-type-data-decoder = decodor de date
-
 startup-cache-title = Cache de pornire
 startup-cache-disk-cache-path = Cale de salvare locală pentru cache
 startup-cache-ignore-disk-cache = Ignoră cache-ul salvat local
 startup-cache-found-disk-cache-on-init = Cache local identificat la inițializare
 startup-cache-wrote-to-disk-cache = Cache salvat local
-
 launcher-process-status-0 = Activat
 launcher-process-status-1 = Dezactivat din cauza unei probleme
 launcher-process-status-2 = Dezactivat forțat
 launcher-process-status-unknown = Stare necunoscută
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
+# Variables
+# $fissionWindows (integer) - Number of remote windows
+# $totalWindows (integer) - Number of total windows
+fission-windows = { $fissionWindows }/{ $totalWindows }
+fission-status-experiment-control = Dezactivate de experiment
+fission-status-experiment-treatment = Activate de experiment
+fission-status-disabled-by-e10s-env = Dezactivate de mediu
+fission-status-enabled-by-env = Activate de mediu
+fission-status-disabled-by-env = Dezactivate de mediu
+fission-status-enabled-by-default = Activate implicit
+fission-status-disabled-by-default = Dezactivate implicit
+fission-status-enabled-by-user-pref = Activate de utilizator
+fission-status-disabled-by-user-pref = Dezactivate de utilizator
+fission-status-disabled-by-e10s-other = Dezactivate de E10s
+fission-status-enabled-by-rollout = Activat prin lansare etapizată
 async-pan-zoom = Panoramare/zoom asincron(ă)
 apz-none = fără
 wheel-enabled = intrare pentru rotița mouse-ului activată
@@ -365,19 +426,52 @@ policies-error = Eroare
 
 ## Printing section
 
-support-printing-title = Tipărire
+support-printing-title = Printare
 support-printing-troubleshoot = Depanare
-support-printing-clear-settings-button = Golește setările de tipărire salvate
-support-printing-modified-settings = Setări de tipărire modificate
+support-printing-clear-settings-button = Golește setările de printare salvate
+support-printing-modified-settings = Setări de printare modificate
 support-printing-prefs-name = Nume
 support-printing-prefs-value = Valoare
+
+## Remote Settings sections
+
+support-remote-settings-title = Setări la distanță
+support-remote-settings-status = Stare
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Nu funcționează
+support-remote-settings-last-check = Ultima verificare
+support-remote-settings-local-timestamp = Marcaj temporal local
+support-remote-settings-sync-history = Istoric
+support-remote-settings-sync-history-status = Stare
+support-remote-settings-sync-history-datetime = Dată
+support-remote-settings-sync-history-infos = Informații
 
 ## Normandy sections
 
 support-remote-experiments-title = Experimente la distanță
 support-remote-experiments-name = Nume
+support-remote-experiments-branch = Ramură experiment
 support-remote-experiments-see-about-studies = Consultă <a data-l10n-name="support-about-studies-link">about:studies</a> pentru mai multe informații, inclusiv cum să dezactivezi experimentele individuale sau cum să împiedici { -brand-short-name } să ruleze acest tip de experiment în viitor.
-
 support-remote-features-title = Funcții la distanță
 support-remote-features-name = Nume
 support-remote-features-status = Stare
+
+## Pointing devices
+
+pointing-device-mouse = Mouse
+pointing-device-touchscreen = Ecran tactil
+pointing-device-pen-digitizer = Digitizor stilou
+pointing-device-none = Fără dispozitive de indicare
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Analiză de conținut (DLP)
+content-analysis-active = Activ
+content-analysis-connected-to-agent = Conectat la agent
+content-analysis-agent-path = Cale agent
+content-analysis-agent-failed-signature-verification = Verificarea semnăturii agentului a eșuat
+content-analysis-request-count = Număr de solicitări

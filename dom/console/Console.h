@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,13 +6,13 @@
 #define mozilla_dom_Console_h
 
 #include "domstubs.h"
+#include "mozilla/TimeStamp.h"
 #include "mozilla/dom/ConsoleBinding.h"
 #include "mozilla/dom/ConsoleInstanceBinding.h"
-#include "mozilla/TimeStamp.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsTHashMap.h"
 #include "nsHashKeys.h"
 #include "nsIObserver.h"
+#include "nsTHashMap.h"
 #include "nsWeakReference.h"
 
 class nsIConsoleAPIStorage;
@@ -147,7 +145,7 @@ class Console final : public nsIObserver, public nsSupportsWeakReference {
 
  private:
   Console(JSContext* aCx, nsIGlobalObject* aGlobal, uint64_t aOuterWindowID,
-          uint64_t aInnerWIndowID);
+          uint64_t aInnerWIndowID, const nsAString& aPrefix = u""_ns);
   ~Console();
 
   void Initialize(ErrorResult& aRv);
@@ -356,27 +354,43 @@ class Console final : public nsIObserver, public nsSupportsWeakReference {
                       const Sequence<JS::Value>& aData,
                       DOMHighResTimeStamp* aTimeStamp);
 
+  mozilla::TimeStamp GetCreationTimeStamp() const;
+
   void StringifyElement(Element* aElement, nsAString& aOut);
 
   MOZ_CAN_RUN_SCRIPT
-  void MaybeExecuteDumpFunction(JSContext* aCx, const nsAString& aMethodName,
-                                const Sequence<JS::Value>& aData,
-                                nsIStackFrame* aStack);
+  void LogToMozLog(JSContext* aCx, MethodName aMethodName,
+                   const nsAString& aMethodString,
+                   const Sequence<JS::Value>& aData, nsIStackFrame* aStack,
+                   DOMHighResTimeStamp aMonotonicTimer);
 
   MOZ_CAN_RUN_SCRIPT
-  void MaybeExecuteDumpFunctionForTime(JSContext* aCx, MethodName aMethodName,
-                                       const nsAString& aMethodString,
-                                       uint64_t aMonotonicTimer,
-                                       const JS::Value& aData);
+  void MaybeExecuteDumpFunction(JSContext* aCx, MethodName aMethodName,
+                                const nsAString& aMethodString,
+                                const Sequence<JS::Value>& aData,
+                                nsIStackFrame* aStack,
+                                DOMHighResTimeStamp aMonotonicTimer);
+
+  MOZ_CAN_RUN_SCRIPT
+  nsString GetDumpMessage(JSContext* aCx, MethodName aMethodName,
+                          const nsAString& aMethodString,
+                          const Sequence<JS::Value>& aData,
+                          nsIStackFrame* aStack,
+                          DOMHighResTimeStamp aMonotonicTimer,
+                          bool aIsForMozLog);
 
   MOZ_CAN_RUN_SCRIPT
   void ExecuteDumpFunction(const nsAString& aMessage);
 
   bool ShouldProceed(MethodName aName) const;
+  bool ShouldLogToMozLog(MethodName aName) const;
+  bool ShouldLogToMozLog(ConsoleLogLevel aLevel) const;
 
   uint32_t WebIDLLogLevelToInteger(ConsoleLogLevel aLevel) const;
+  uint32_t ConsoleMethodNameToInteger(MethodName aName) const;
 
-  uint32_t InternalLogLevelToInteger(MethodName aName) const;
+  LogLevel ConsoleMethodNameToMozLog(MethodName aName) const;
+  LogLevel ConsoleLevelIntegerToMozLog(uint32_t aLevel) const;
 
   class ArgumentData {
    public:
@@ -425,6 +439,7 @@ class Console final : public nsIObserver, public nsSupportsWeakReference {
   nsString mPassedInnerID;
   RefPtr<ConsoleInstanceDumpCallback> mDumpFunction;
   bool mDumpToStdout;
+  LogModule* mLogModule;
   nsString mPrefix;
   bool mChromeInstance;
   uint32_t mCurrentLogLevel;
@@ -434,6 +449,9 @@ class Console final : public nsIObserver, public nsSupportsWeakReference {
   // This is used when Console is created and it's used only for JSM custom
   // console instance.
   mozilla::TimeStamp mCreationTimeStamp;
+
+  // Touch on the owning thread only.
+  bool mIsRetrievingConsoleEvent = false;
 
   friend class ConsoleCallData;
   friend class ConsoleCallDataWorkletRunnable;

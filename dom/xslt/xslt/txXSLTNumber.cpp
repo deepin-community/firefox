@@ -1,21 +1,19 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/FloatingPoint.h"
-
 #include "txXSLTNumber.h"
-#include "nsGkAtoms.h"
-#include "txCore.h"
+
 #include <math.h>
-#include "txExpr.h"
-#include "txXSLTPatterns.h"
-#include "txIXPathContext.h"
-#include "txXPathTreeWalker.h"
 
 #include <algorithm>
+
+#include "nsGkAtoms.h"
+#include "txCore.h"
+#include "txExpr.h"
+#include "txIXPathContext.h"
+#include "txXPathTreeWalker.h"
+#include "txXSLTPatterns.h"
 
 using mozilla::MakeUnique;
 using mozilla::UniquePtr;
@@ -107,7 +105,7 @@ nsresult txXSLTNumber::getValueList(Expr* aValueExpr, txPattern* aCountPattern,
 
   txPattern* countPattern = aCountPattern;
   UniquePtr<txPattern> newCountPattern;
-  const txXPathNode& currNode = aContext->getContextNode();
+  txXPathNode currNode(aContext->getContextNode());
 
   // Parse count- and from-attributes
 
@@ -726,12 +724,11 @@ bool txXSLTNumber::isAlphaNumeric(char16_t ch) {
         { 0xFF66, 0xFFBE },
         { 0xFFC2, 0xFFC7 },
         { 0xFFCA, 0xFFCF },
-        { 0xFFD2, 0xFFD7 }
-      // clang-format on
+        { 0xFFD2, 0xFFD7 }  // clang-format on
   };
 
   CharRange search = {ch, ch};
-  const CharRange* end = mozilla::ArrayEnd(alphanumericRanges);
+  const CharRange* end = std::end(alphanumericRanges);
   const CharRange* element =
       std::lower_bound(&alphanumericRanges[0], end, search);
   if (element == end) {

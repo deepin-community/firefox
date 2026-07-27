@@ -16,27 +16,32 @@ TEST(IntlLocale, LocaleSettersAndGetters)
   locale.SetLanguage("fr");
   locale.SetRegion("CA");
   locale.SetScript("Latn");
+  Locale::VariantsVector variants;
+  ASSERT_TRUE(variants.append(VariantSubtag{MakeStringSpan("fonipa")}));
+  locale.SetVariants(std::move(variants));
   ASSERT_TRUE(
       locale.SetUnicodeExtension(MakeStringSpan("u-ca-gregory")).isOk());
   ASSERT_TRUE(locale.Language().EqualTo("fr"));
   ASSERT_TRUE(locale.Region().EqualTo("CA"));
   ASSERT_TRUE(locale.Script().EqualTo("Latn"));
+  ASSERT_EQ(locale.Variants().length(), 1UL);
+  ASSERT_EQ(locale.Variants()[0], MakeStringSpan("fonipa"));
   ASSERT_EQ(locale.GetUnicodeExtension().value(),
             MakeStringSpan("u-ca-gregory"));
 
   TestBuffer<char> buffer;
   ASSERT_TRUE(locale.ToString(buffer).isOk());
-  ASSERT_TRUE(buffer.verboseMatches("fr-Latn-CA-u-ca-gregory"));
+  ASSERT_TRUE(buffer.verboseMatches("fr-Latn-CA-fonipa-u-ca-gregory"));
 
-  // No setters for variants or other extensions...
+  locale.ClearVariants();
+  ASSERT_EQ(locale.Variants().length(), 0UL);
+
+  // No setters for other extensions...
   Locale locale2;
-  ASSERT_TRUE(LocaleParser::TryParse(
-                  MakeStringSpan("fr-CA-fonipa-t-es-AR-h0-hybrid"), locale2)
-                  .isOk());
-  ASSERT_EQ(locale2.Variants()[0], MakeStringSpan("fonipa"));
+  ASSERT_TRUE(
+      LocaleParser::TryParse(MakeStringSpan("fr-CA-t-es-AR-h0-hybrid"), locale2)
+          .isOk());
   ASSERT_EQ(locale2.Extensions()[0], MakeStringSpan("t-es-AR-h0-hybrid"));
-  locale2.ClearVariants();
-  ASSERT_EQ(locale2.Variants().length(), 0UL);
 }
 
 TEST(IntlLocale, LocaleMove)
@@ -125,20 +130,18 @@ TEST(IntlLocale, SystemDependentTests)
 
 TEST(IntlLocale, GetAvailableLocales)
 {
-  using namespace std::literals;
-
   int32_t english = 0;
   int32_t german = 0;
   int32_t chinese = 0;
 
   // Since this list is dependent on ICU, and may change between upgrades, only
   // test a subset of the available locales.
-  for (const char* locale : Locale::GetAvailableLocales()) {
-    if (locale == "en"sv) {
+  for (mozilla::Span<const char> locale : Locale::GetAvailableLocales()) {
+    if (locale == mozilla::MakeStringSpan("en")) {
       english++;
-    } else if (locale == "de"sv) {
+    } else if (locale == mozilla::MakeStringSpan("de")) {
       german++;
-    } else if (locale == "zh"sv) {
+    } else if (locale == mozilla::MakeStringSpan("zh")) {
       chinese++;
     }
   }

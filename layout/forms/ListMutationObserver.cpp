@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,10 +13,10 @@ ListMutationObserver::~ListMutationObserver() = default;
 
 void ListMutationObserver::Attach(bool aRepaint) {
   nsAutoString id;
-  if (InputElement().GetAttr(nsGkAtoms::list_, id)) {
+  if (InputElement().GetAttr(nsGkAtoms::list, id)) {
     Unlink();
     RefPtr<nsAtom> idAtom = NS_AtomizeMainThread(id);
-    ResetWithID(InputElement(), idAtom);
+    ResetToID(InputElement(), idAtom);
     AddObserverIfNeeded();
   }
   if (aRepaint) {
@@ -54,8 +52,7 @@ dom::HTMLInputElement& ListMutationObserver::InputElement() const {
 
 void ListMutationObserver::AttributeChanged(dom::Element* aElement,
                                             int32_t aNameSpaceID,
-                                            nsAtom* aAttribute,
-                                            int32_t aModType,
+                                            nsAtom* aAttribute, AttrModType,
                                             const nsAttrValue* aOldValue) {
   if (aAttribute == nsGkAtoms::value && aNameSpaceID == kNameSpaceID_None &&
       aElement->IsHTMLElement(nsGkAtoms::option)) {
@@ -68,16 +65,18 @@ void ListMutationObserver::CharacterDataChanged(
   mOwningElementFrame->InvalidateFrame();
 }
 
-void ListMutationObserver::ContentAppended(nsIContent* aFirstNewContent) {
+void ListMutationObserver::ContentAppended(nsIContent* aFirstNewContent,
+                                           const ContentAppendInfo&) {
   mOwningElementFrame->InvalidateFrame();
 }
 
-void ListMutationObserver::ContentInserted(nsIContent* aChild) {
+void ListMutationObserver::ContentInserted(nsIContent* aChild,
+                                           const ContentInsertInfo&) {
   mOwningElementFrame->InvalidateFrame();
 }
 
-void ListMutationObserver::ContentRemoved(nsIContent* aChild,
-                                          nsIContent* aPreviousSibling) {
+void ListMutationObserver::ContentWillBeRemoved(nsIContent* aChild,
+                                                const ContentRemoveInfo&) {
   mOwningElementFrame->InvalidateFrame();
 }
 

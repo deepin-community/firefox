@@ -5,7 +5,7 @@
 /* Permissions */
 
 .highlighting-group {
-  --section-highlight-background-color: color-mix(in srgb, var(--in-content-accent-color) 20%, transparent);
+  --section-highlight-background-color: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
 }
 
 .permission-icon {
@@ -41,6 +41,14 @@
   list-style-image: url(chrome://browser/skin/notification-icons/camera.svg);
 }
 
+.loopback-network-icon {
+  list-style-image: url(chrome://browser/skin/notification-icons/local-host.svg);
+}
+
+.local-network-icon {
+  list-style-image: url(chrome://browser/skin/notification-icons/local-network.svg);
+}
+
 .microphone-icon {
   list-style-image: url(chrome://browser/skin/notification-icons/microphone.svg);
 }
@@ -59,6 +67,10 @@
 
 .midi-icon {
   list-style-image: url(chrome://browser/skin/notification-icons/midi.svg);
+}
+
+.serial-icon {
+  list-style-image: url(chrome://browser/skin/notification-icons/serial.svg);
 }
 
 /* Content Blocking */
@@ -101,7 +113,7 @@
 }
 
 .privacy-detailedoption {
-  border-color: var(--in-content-box-border-color);
+  border-color: var(--border-color);
 }
 
 .privacy-detailedoption.disabled {
@@ -117,7 +129,7 @@
 }
 
 .arrowhead {
-  border-radius: 2px;
+  border-radius: var(--border-radius-xsmall);
   min-height: 20px;
   min-width: 20px;
   max-height: 20px;
@@ -184,12 +196,12 @@
 }
 
 .privacy-detailedoption.selected {
-  border-color: var(--in-content-accent-color);
+  border-color: var(--border-color-selected);
 }
 
 @media (forced-colors) {
   .privacy-detailedoption.selected {
-    outline: 2px solid var(--in-content-accent-color);
+    outline: 2px solid var(--border-color-selected);
   }
 }
 
@@ -205,7 +217,7 @@
 
 .content-blocking-warning-title,
 .privacy-detailedoption .radio-label-box {
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .privacy-detailedoption:not(.expanded, .selected) .privacy-extra-information {
@@ -269,6 +281,11 @@
   margin-inline-end: 6px;
 }
 
+.content-blocking-exceptions {
+  border-top: 1px solid var(--border-color);
+  padding-top: 18px;
+}
+
 #blockCookiesMenu {
   width: 450px;
 }
@@ -277,15 +294,6 @@
 #trackingProtectionMenu,
 #fingerprintingProtectionMenu {
   margin: 0;
-}
-
-#changeBlockListLink {
-  margin-inline-start: 56px;
-}
-
-#telemetry-container {
-  margin-block: 4px;
-  width: 100%;
 }
 
 .privacy-detailedoption-description {
@@ -316,34 +324,12 @@
   margin-inline-end: 32px;
 }
 
-#submitHealthReportBox {
-  display: inline-flex;
-}
-
-/* Address bar */
-
-.firefoxSuggestOptionBox {
-  /* With this value we're trying to keep the apparent vertical space between
-     option boxes the same as the apparent vertical space between the labels of
-     the checkboxes above the Firefox Suggest subsection. */
-  margin-block-start: 18px;
-}
-
-#firefoxSuggestInfoBox {
-  margin-block-start: 16px;
-}
-
-#openSearchEnginePreferences {
-  margin-block-start: .5em;
-}
-
-#dismissedSuggestions,
-#openSearchEnginePreferences.extraMargin {
-  margin-block-start: 2em;
-}
-
 /* Logins and Passwords */
 
 #openWindowsPasskeySettings {
   margin-block-start: 2em;
+}
+
+#statusPrimaryPassword {
+  --box-icon-fill: var(--icon-color-success);
 }

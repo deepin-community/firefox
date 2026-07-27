@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Dizze website freget tagong ta jo MIDI-apparaten (Musical Instrument Digital Interface). Tagong ta apparaten kin ynskeakele wurde troch in add-on te ynstallearjen.
 site-permission-install-first-prompt-midi-message = Dizze tagong is net garandearre feilich. Gean allinnich fierder as jo dizze website fertrouwe.
+site-permission-install-first-prompt-serial-header = Dizze website freget om tagong ta jo seriële apparaten. Apparaattagong kin ynskeakele wurde troch in add-on te ynstallearjen.
+site-permission-install-first-prompt-serial-message = Dizze tagong is net garandearre feilich. Gean allinnich fierder as jo dizze website fertrouwe.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = { $name } fuortsmite?
 addon-removal-message = { $name } út { -brand-shorter-name } fuortsmite?
 addon-removal-button = Fuortsmite
 addon-removal-abuse-report-checkbox = Dizze útwreiding rapportearje oan { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = As jo de funksjes of útwreidingen brûke dy’t dit model brûke, wurdt it opnij tafoege.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = De fan dizze website downloade add-on koe net
 addon-install-error-file-access = { $addonName } koe net ynstallearre wurde, omdat { -brand-short-name } it nedige bestân net oanpasse kin.
 addon-install-error-not-signed = { -brand-short-name } hat opkeard dat dizze website in net-ferifiearre add-on ynstallearre hat.
 addon-install-error-invalid-domain = De add-on { $addonName } kin net fan dizze lokaasje ynstallearre wurde.
+addon-install-error-no-addon-name-file-access = De add-on koe net ynstallearre wurde, omdat { -brand-short-name } it nedige bestân net oanpasse kin.
 addon-local-install-error-network-failure = Dizze add-on koe net ynstallearre wurde, fanwegen in bestânssysteemflater.
 addon-local-install-error-incorrect-hash = Dizze add-on koe net ynstallearre wurde, omdat dizze net oerienkomt mei de ferwachte add-on { -brand-short-name }.
 addon-local-install-error-corrupt-file = Dizze add-on koe net ynstallearre wurde, omdat dizze skansearre liket.
 addon-local-install-error-file-access = { $addonName } koe net ynstallearre wurde, omdat { -brand-short-name } it nedige bestân net oanpasse kin.
 addon-local-install-error-not-signed = Dizze add-on koe net ynstallearre wurde, omdat dizze net ferifiearre is.
+addon-local-install-no-addon-name-error-file-access = De add-on koe net ynstallearre wurde, omdat { -brand-short-name } it nedige bestân net oanpasse kin.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } koe net ynstallearre wurde, omdat it net kompatibel is mei { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } skeint it belied fan Mozilla en kin net ynstallearre wurde op { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } is beheind en kin net ynstallearre wurde op { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } koe net ynstallearre wurde, omdat it in heech risiko op stabiliteits- of feilichheidsproblemen jout.
+addon-install-error-soft-blocked = { $addonName } skeint it belied fan Mozilla en kin net ynstallearre wurde op { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Jo kinne as einbrûker { $addonName } net ynstallearje, dit kin allinnich troch in organisaasje dy’t bedriuwsbelied brûkt.

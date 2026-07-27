@@ -10,7 +10,7 @@
 
 ## Welcome page strings
 
-onboarding-welcome-header = Ansuf γer { -brand-short-name }
+onboarding-welcome-header = Ansuf ɣer { -brand-short-name }
 onboarding-start-browsing-button-label = Bdu tunigin
 onboarding-not-now-button-label = Mačči tura
 mr1-onboarding-get-started-primary-button-label = Bdu
@@ -25,6 +25,8 @@ return-to-amo-subtitle = Igerrez, tesεiḍ { -brand-short-name }
 return-to-amo-addon-title = Tura ad ak·am-id-nmudd <img data-l10n-name="icon"/> <b>{ $addon-name }.</b>
 return-to-amo-add-extension-label = Rnu asiɣzef
 return-to-amo-add-theme-label = Rnu asentel
+return-to-amo-theme-install-complete-label = Asentel yettwasbedd
+return-to-amo-extension-install-complete-label = Asiɣzef yettwasbedd
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Kter seg { $previous }
 mr1-onboarding-theme-header = Err-it d ayla-k·m
 mr1-onboarding-theme-subtitle = Err { -brand-short-name } d udmawan s usentel.
 mr1-onboarding-theme-secondary-button-label = Mačči tura
-newtab-wallpaper-onboarding-title = Ɛreḍ aṛuccu n yini
-newtab-wallpaper-onboarding-subtitle = Fren tugna n ugilal i wakken ad tmuddeḍ udem niḍen i yiccer amaynut.
-newtab-wallpaper-onboarding-primary-button-label = Sbadu tugna n ugilal
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Asentel n unagraw
 mr1-onboarding-theme-label-light = Aceɛlal
@@ -189,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Eǧǧ { -brand-short-name } deg Dock
        *[other] Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin akked wumuɣ n usenker
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -224,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Seqdec iminig ur nettnadi ara ɣef tedr
 mr2022-onboarding-get-started-primary-subtitle = Lqem-nneɣ aneggaru yettwafeṣṣel almend n wakken i tḥemmleḍ, err-it fessus ugarqef wayen iɛeddan mi ara tettinigeḍ deg web. Yeččur d timahilin i neẓra ad awint leɛqel-ik·im.
 mr2022-onboarding-get-started-primary-button-label = Asesteb deg kra n tesdatin
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Asesteb s zzerb ugar
 mr2022-onboarding-import-subtitle = Sesteb { -brand-short-name } akken i t-tebɣiḍ. Rnu ticraḍ-ik·im n yisebtar, awalen uffiren d wayen-nniḍen seg yiminig-ik·im aqbur.
@@ -317,6 +320,13 @@ mr2022-onboarding-default-image-alt =
 onboarding-device-migration-title = Ansuf tikkelt niḍen!
 onboarding-device-migration-primary-button-label = Kcem
 
+## Add-ons Picker screen
+
+amo-picker-title = Sagen { -brand-short-name }
+amo-picker-install-button-label = Rnu ɣer { -brand-short-name }
+amo-picker-install-complete-label = ibded
+amo-picker-collection-link = Snirem akk izegrar
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -326,9 +336,16 @@ onboarding-easy-setup-security-and-privacy-subtitle = Iminig-nneɣ tettallit yiw
 onboarding-mobile-download-security-and-privacy-title = Mmesten iman-ik s ttawil n uwgelhen mi ara tɛeddiḍ seg yibenk ɣer wayeḍ
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } mazal-it ɣer tama-k
+# Sign up or Sign in screen
+onboarding-sign-up-title = Mtawi isefka-k gar yibenkan
+onboarding-sign-up-button = Kcem neɣ qqen
+onboarding-sign-up-secondary-button = Bdu tunigin
 
 ## New user time and familiarity survey strings
 
+onboarding-new-user-time-based-survey-title = Seg melmi i tesseqdaceḍ { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Acḥal aya seg wasmi i tessneḍ { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Tadktiwin-ik ttεawanent ad nesnerni { -brand-short-name } ugar.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Ɣer zdat
 # When translating "brand new" it means completely new.
@@ -341,3 +358,77 @@ onboarding-new-user-survey-familiarity-based-option-1 = Ad bduɣ kan
 onboarding-new-user-survey-familiarity-based-option-2 = Sqedceɣ-t cwiṭ
 onboarding-new-user-survey-familiarity-based-option-3 = Ssneɣ-t akken ilaq
 onboarding-new-user-survey-familiarity-based-option-4 = Sqedceɣ-t yakan, maca ddeqs aya.
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Ini-aɣ-d anda ay tebɣiḍ ad terreḍ adccaren-ik
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Accaren-ik, akken i ten-tebɣiḍ
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Fren taneɣruft n waccaren-ik
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Accaren ɣef yidis
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Accaren ufella
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Accaren-ik irakaten ha-ten-a da
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Asekcem n waccaren irakaten
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Ԑreḍ accaren d ubdiden
+onboarding-flair-text = Amaynut!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Eǧǧ accaren d iglawanen
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Asfaylu n yiminig i d-yeskanen accaren nnig ugdil.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Asfaylu n yiminig i d-yeskanen accaren nnig ugdil.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Sekyed chatbot IA deg ugalis adisan
+onboarding-genai-sidebar-primary-button = Fren chatbot
+onboarding-genai-sidebar-secondary-button = Bdu tunigin
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Fakk asesteb n { -brand-short-name }
+onboarding-checklist-subtitle = Smed takkayin akken ad tfarseḍ ugar deg yiminig.
+onboarding-checklist-set-default = Sbadu { -brand-short-name } d iminig amezwer
+onboarding-checklist-pin = Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin
+onboarding-checklist-import = Kter seg yiminig yezrin
+onboarding-checklist-extension = Rnu asiɣzef
+onboarding-checklist-sign-up = Kcem neɣ qqen ɣer umiḍan-ik
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-create-group-title-2 = Af igrawen n waccaren-ik da yal tikkelt.
+tab-groups-onboarding-session-restore-title = Ales alday n yigrawen n waccaren-ik da yal tikkelt.
+tab-groups-onboarding-dismiss = IH
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Ini azul i yimaɣnuten n { -brand-product-name }
+multi-profile-spotlight-cta = Rnu amaɣnu
+multi-profile-callout-cta = Rnu amaɣnu
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Sader, mtawi syen ddu!
+dismiss-button-label = Zgel
+sync-to-mobile-button-label = Mtawi ɣer uziraz
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Tangalt QR i usader n { -brand-product-name } i uziraz
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-button = Ur d-ttarr ara
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-with-checklist-primary-button = Sekles syen kemmel
+restored-from-backup-success-with-checklist-secondary-button = Zgel amecwaṛ-a
+restored-from-backup-success-no-checklist-primary-button = Kemmel
+restored-from-backup-error-primary-button = Mdel

@@ -8,6 +8,7 @@ import type {Protocol} from 'devtools-protocol';
 
 import {
   concat,
+  distinctUntilChanged,
   EMPTY,
   filter,
   first,
@@ -31,7 +32,6 @@ import type {HTTPRequest} from '../api/HTTPRequest.js';
 import type {HTTPResponse} from '../api/HTTPResponse.js';
 import type {Accessibility} from '../cdp/Accessibility.js';
 import type {Coverage} from '../cdp/Coverage.js';
-import type {DeviceRequestPrompt} from '../cdp/DeviceRequestPrompt.js';
 import type {NetworkConditions} from '../cdp/NetworkManager.js';
 import type {Tracing} from '../cdp/Tracing.js';
 import type {ConsoleMessage} from '../common/ConsoleMessage.js';
@@ -81,9 +81,11 @@ import {
 } from '../util/disposable.js';
 import {stringToTypedArray} from '../util/encoding.js';
 
-import type {Browser} from './Browser.js';
+import type {BluetoothEmulation} from './BluetoothEmulation.js';
+import type {Browser, WindowId} from './Browser.js';
 import type {BrowserContext} from './BrowserContext.js';
 import type {CDPSession} from './CDPSession.js';
+import type {DeviceRequestPrompt} from './DeviceRequestPrompt.js';
 import type {Dialog} from './Dialog.js';
 import type {
   BoundingBox,
@@ -258,6 +260,16 @@ export interface ScreenshotClip extends BoundingBox {
 /**
  * @public
  */
+export type ImageFormat = 'png' | 'jpeg' | 'webp';
+
+/**
+ * @public
+ */
+export type VideoFormat = 'webm' | 'gif' | 'mp4';
+
+/**
+ * @public
+ */
 export interface ScreenshotOptions {
   /**
    * @defaultValue `false`
@@ -266,7 +278,7 @@ export interface ScreenshotOptions {
   /**
    * @defaultValue `'png'`
    */
-  type?: 'png' | 'jpeg' | 'webp';
+  type?: ImageFormat;
   /**
    * Quality of the image, between 0-100. Not applicable to `png` images.
    */
@@ -322,7 +334,20 @@ export interface ScreencastOptions {
   /**
    * File path to save the screencast to.
    */
-  path?: `${string}.webm`;
+  path?: `${string}.${VideoFormat}`;
+  /**
+   * Specifies whether to overwrite output file,
+   * or exit immediately if it already exists.
+   *
+   * @defaultValue `true`
+   */
+  overwrite?: boolean;
+  /**
+   * Specifies the output file format.
+   *
+   * @defaultValue `'webm'`
+   */
+  format?: VideoFormat;
   /**
    * Specifies the region of the viewport to crop.
    */
@@ -346,9 +371,48 @@ export interface ScreencastOptions {
    */
   speed?: number;
   /**
+   * Specifies the frame rate in frames per second.
+   *
+   * @defaultValue `30` (`20` for GIF)
+   */
+  fps?: number;
+  /**
+   * Specifies the number of times to loop playback, from `0` to `Infinity`.
+   * A value of `0` or `undefined` will disable looping.
+   *
+   * @defaultValue `undefined`
+   */
+  loop?: number;
+  /**
+   * Specifies the delay between iterations of a loop, in ms.
+   * `-1` is a special value to re-use the previous delay.
+   *
+   * @defaultValue `-1`
+   */
+  delay?: number;
+  /**
+   * Specifies the recording
+   * {@link https://trac.ffmpeg.org/wiki/Encode/VP9#constantq | quality}
+   * Constant Rate Factor between `0`–`63`. Lower values mean better quality.
+   *
+   * @defaultValue `30`
+   */
+  quality?: number;
+  /**
+   * Specifies the maximum number of
+   * {@link https://ffmpeg.org/ffmpeg-filters.html#palettegen | palette}
+   * colors to quantize, with GIF limited to `256`.
+   * Restrict the palette to only necessary colors to reduce output file size.
+   *
+   * @defaultValue `256`
+   */
+  colors?: number;
+  /**
    * Path to the {@link https://ffmpeg.org/ | ffmpeg}.
    *
    * Required if `ffmpeg` is not in your PATH.
+   *
+   * @defaultValue `'ffmpeg'`
    */
   ffmpegPath?: string;
 }
@@ -444,7 +508,7 @@ export const enum PageEvent {
   Metrics = 'metrics',
   /**
    * Emitted when an uncaught exception happens within the page. Contains an
-   * `Error`.
+   * `Error` or data of type unknown.
    */
   PageError = 'pageerror',
   /**
@@ -539,7 +603,7 @@ export interface PageEvents extends Record<EventType, unknown> {
   [PageEvent.FrameNavigated]: Frame;
   [PageEvent.Load]: undefined;
   [PageEvent.Metrics]: {title: string; metrics: Metrics};
-  [PageEvent.PageError]: Error;
+  [PageEvent.PageError]: Error | unknown;
   [PageEvent.Popup]: Page | null;
   [PageEvent.Request]: HTTPRequest;
   [PageEvent.Response]: HTTPResponse;
@@ -571,6 +635,19 @@ export function setDefaultScreenshotOptions(options: ScreenshotOptions): void {
 }
 
 /**
+ * @public
+ */
+export interface ReloadOptions extends WaitForOptions {
+  /**
+   * If set to true, the browser caches are ignored for the page reload.
+   *
+   * @defaultValue true
+   * @public
+   */
+  ignoreCache?: boolean;
+}
+
+/**
  * Page provides methods to interact with a single tab or
  * {@link https://developer.chrome.com/extensions/background_pages | extension background page}
  * in the browser.
@@ -587,13 +664,11 @@ export function setDefaultScreenshotOptions(options: ScreenshotOptions): void {
  * ```ts
  * import puppeteer from 'puppeteer';
  *
- * (async () => {
- *   const browser = await puppeteer.launch();
- *   const page = await browser.newPage();
- *   await page.goto('https://example.com');
- *   await page.screenshot({path: 'screenshot.png'});
- *   await browser.close();
- * })();
+ * const browser = await puppeteer.launch();
+ * const page = await browser.newPage();
+ * await page.goto('https://example.com');
+ * await page.screenshot({path: 'screenshot.png'});
+ * await browser.close();
  * ```
  *
  * The Page class extends from Puppeteer's {@link EventEmitter} class and will
@@ -629,6 +704,15 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   _timeoutSettings = new TimeoutSettings();
 
+  /**
+   * Internal API to get an implementation-specific identifier
+   * for the tab. In Chrome, it is a tab target id. If unknown,
+   * returns an empty string.
+   *
+   * @internal
+   */
+  _tabId = '';
+
   #requestHandlers = new WeakMap<Handler<HTTPRequest>, Handler<HTTPRequest>>();
 
   #inflight$ = new ReplaySubject<number>(1);
@@ -650,8 +734,8 @@ export abstract class Page extends EventEmitter<PageEvents> {
               fromEmitterEvent(this, PageEvent.Response).pipe(
                 map(response => {
                   return response.request();
-                })
-              )
+                }),
+              ),
             ).pipe(
               filter(request => {
                 return request.id === originalRequest.id;
@@ -659,15 +743,15 @@ export abstract class Page extends EventEmitter<PageEvents> {
               take(1),
               map(() => {
                 return -1;
-              })
-            )
+              }),
+            ),
           );
         }),
         mergeScan((acc, addend) => {
           return of(acc + addend);
         }, 0),
         takeUntil(fromEmitterEvent(this, PageEvent.Close)),
-        startWith(0)
+        startWith(0),
       )
       .subscribe(this.#inflight$);
   }
@@ -703,13 +787,13 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   override on<K extends keyof EventsWithWildcard<PageEvents>>(
     type: K,
-    handler: (event: EventsWithWildcard<PageEvents>[K]) => void
+    handler: (event: EventsWithWildcard<PageEvents>[K]) => void,
   ): this {
     if (type !== PageEvent.Request) {
       return super.on(type, handler);
     }
     let wrapper = this.#requestHandlers.get(
-      handler as (event: PageEvents[PageEvent.Request]) => void
+      handler as (event: PageEvents[PageEvent.Request]) => void,
     );
     if (wrapper === undefined) {
       wrapper = (event: HTTPRequest) => {
@@ -719,12 +803,12 @@ export abstract class Page extends EventEmitter<PageEvents> {
       };
       this.#requestHandlers.set(
         handler as (event: PageEvents[PageEvent.Request]) => void,
-        wrapper
+        wrapper,
       );
     }
     return super.on(
       type,
-      wrapper as (event: EventsWithWildcard<PageEvents>[K]) => void
+      wrapper as (event: EventsWithWildcard<PageEvents>[K]) => void,
     );
   }
 
@@ -733,14 +817,14 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   override off<K extends keyof EventsWithWildcard<PageEvents>>(
     type: K,
-    handler: (event: EventsWithWildcard<PageEvents>[K]) => void
+    handler: (event: EventsWithWildcard<PageEvents>[K]) => void,
   ): this {
     if (type === PageEvent.Request) {
       handler =
         (this.#requestHandlers.get(
           handler as (
-            event: EventsWithWildcard<PageEvents>[PageEvent.Request]
-          ) => void
+            event: EventsWithWildcard<PageEvents>[PageEvent.Request],
+          ) => void,
         ) as (event: EventsWithWildcard<PageEvents>[K]) => void) || handler;
     }
     return super.off(type, handler);
@@ -782,7 +866,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * ```
    */
   abstract waitForFileChooser(
-    options?: WaitTimeoutOptions
+    options?: WaitTimeoutOptions,
   ): Promise<FileChooser>;
 
   /**
@@ -886,21 +970,19 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * import puppeteer from 'puppeteer';
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   await page.setRequestInterception(true);
-   *   page.on('request', interceptedRequest => {
-   *     if (
-   *       interceptedRequest.url().endsWith('.png') ||
-   *       interceptedRequest.url().endsWith('.jpg')
-   *     )
-   *       interceptedRequest.abort();
-   *     else interceptedRequest.continue();
-   *   });
-   *   await page.goto('https://example.com');
-   *   await browser.close();
-   * })();
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * await page.setRequestInterception(true);
+   * page.on('request', interceptedRequest => {
+   *   if (
+   *     interceptedRequest.url().endsWith('.png') ||
+   *     interceptedRequest.url().endsWith('.jpg')
+   *   )
+   *     interceptedRequest.abort();
+   *   else interceptedRequest.continue();
+   * });
+   * await page.goto('https://example.com');
+   * await browser.close();
    * ```
    *
    * @param value - Whether to enable request interception.
@@ -924,9 +1006,10 @@ export abstract class Page extends EventEmitter<PageEvents> {
   abstract setDragInterception(enabled: boolean): Promise<void>;
 
   /**
-   * Sets the network connection to offline.
+   * Emulates the offline mode.
    *
-   * It does not change the parameters used in {@link Page.emulateNetworkConditions}
+   * It does not change the download/upload/latency parameters set by
+   * {@link Page.emulateNetworkConditions}
    *
    * @param enabled - When `true`, enables offline mode for the page.
    */
@@ -946,21 +1029,19 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * import {PredefinedNetworkConditions} from 'puppeteer';
    * const slow3G = PredefinedNetworkConditions['Slow 3G'];
    *
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   await page.emulateNetworkConditions(slow3G);
-   *   await page.goto('https://www.google.com');
-   *   // other actions...
-   *   await browser.close();
-   * })();
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * await page.emulateNetworkConditions(slow3G);
+   * await page.goto('https://www.google.com');
+   * // other actions...
+   * await browser.close();
    * ```
    *
    * @param networkConditions - Passing `null` disables network condition
    * emulation.
    */
   abstract emulateNetworkConditions(
-    networkConditions: NetworkConditions | null
+    networkConditions: NetworkConditions | null,
   ): Promise<void>;
 
   /**
@@ -993,6 +1074,11 @@ export abstract class Page extends EventEmitter<PageEvents> {
   abstract getDefaultTimeout(): number;
 
   /**
+   * Maximum navigation time in milliseconds.
+   */
+  abstract getDefaultNavigationTimeout(): number;
+
+  /**
    * Creates a locator for the provided selector. See {@link Locator} for
    * details and supported actions.
    *
@@ -1002,7 +1088,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1013,7 +1099,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://pptr.dev/guides/page-interactions#prefixed-selector-syntax | prefix}.
    */
   locator<Selector extends string>(
-    selector: Selector
+    selector: Selector,
   ): Locator<NodeFor<Selector>>;
 
   /**
@@ -1026,7 +1112,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1037,13 +1123,14 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://pptr.dev/guides/page-interactions#prefixed-selector-syntax | prefix}.
    */
   locator<Ret>(func: () => Awaitable<Ret>): Locator<Ret>;
-  locator<Selector extends string, Ret>(
-    selectorOrFunc: Selector | (() => Awaitable<Ret>)
-  ): Locator<NodeFor<Selector>> | Locator<Ret> {
-    if (typeof selectorOrFunc === 'string') {
-      return NodeLocator.create(this, selectorOrFunc);
+
+  locator<Selector extends string, Ret, T extends Node>(
+    input: Selector | (() => Awaitable<Ret>),
+  ): Locator<NodeFor<Selector>> | Locator<Ret> | Locator<T> {
+    if (typeof input === 'string') {
+      return NodeLocator.create(this, input);
     } else {
-      return FunctionLocator.create(this, selectorOrFunc);
+      return FunctionLocator.create(this, input);
     }
   }
 
@@ -1053,7 +1140,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @internal
    */
   locatorRace<Locators extends readonly unknown[] | []>(
-    locators: Locators
+    locators: Locators,
   ): Locator<AwaitedLocator<Locators[number]>> {
     return Locator.race(locators);
   }
@@ -1068,7 +1155,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1083,7 +1170,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * Shortcut for {@link Frame.$ | Page.mainFrame().$(selector) }.
    */
   async $<Selector extends string>(
-    selector: Selector
+    selector: Selector,
   ): Promise<ElementHandle<NodeFor<Selector>> | null> {
     return await this.mainFrame().$(selector);
   }
@@ -1098,7 +1185,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1114,7 +1201,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   async $$<Selector extends string>(
     selector: Selector,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<Array<ElementHandle<NodeFor<Selector>>>> {
     return await this.mainFrame().$$(selector, options);
   }
@@ -1145,7 +1232,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * const aHandle = await page.evaluateHandle(() => document.body);
    * const resultHandle = await page.evaluateHandle(
    *   body => body.innerHTML,
-   *   aHandle
+   *   aHandle,
    * );
    * console.log(await resultHandle.jsonValue());
    * await resultHandle.dispose();
@@ -1159,7 +1246,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * const button = await page.evaluateHandle(() =>
-   *   document.querySelector('button')
+   *   document.querySelector('button'),
    * );
    * // can call `click` because `button` is an `ElementHandle`
    * await button.click();
@@ -1185,7 +1272,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
   ): Promise<HandleFor<Awaited<ReturnType<Func>>>> {
     pageFunction = withSourcePuppeteerURLIfNone(
       this.evaluateHandle.name,
-      pageFunction
+      pageFunction,
     );
     return await this.mainFrame().evaluateHandle(pageFunction, ...args);
   }
@@ -1214,7 +1301,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * this prototype.
    */
   abstract queryObjects<Prototype>(
-    prototypeHandle: JSHandle<Prototype>
+    prototypeHandle: JSHandle<Prototype>,
   ): Promise<JSHandle<Prototype[]>>;
 
   /**
@@ -1248,7 +1335,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * // as `value` is not on `Element`
    * const searchValue = await page.$eval(
    *   '#search',
-   *   (el: HTMLInputElement) => el.value
+   *   (el: HTMLInputElement) => el.value,
    * );
    * ```
    *
@@ -1263,7 +1350,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * // or if you want to be more explicit, provide it as the generic type.
    * const searchValue = await page.$eval<string>(
    *   '#search',
-   *   (el: HTMLInputElement) => el.value
+   *   (el: HTMLInputElement) => el.value,
    * );
    * ```
    *
@@ -1273,7 +1360,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1348,7 +1435,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * const allInputValues = await page.$$eval('input', elements =>
-   *   elements.map(e => e.textContent)
+   *   elements.map(e => e.textContent),
    * );
    * ```
    *
@@ -1358,7 +1445,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -1378,10 +1465,8 @@ export abstract class Page extends EventEmitter<PageEvents> {
   async $$eval<
     Selector extends string,
     Params extends unknown[],
-    Func extends EvaluateFuncWith<
-      Array<NodeFor<Selector>>,
-      Params
-    > = EvaluateFuncWith<Array<NodeFor<Selector>>, Params>,
+    Func extends EvaluateFuncWith<Array<NodeFor<Selector>>, Params> =
+      EvaluateFuncWith<Array<NodeFor<Selector>>, Params>,
   >(
     selector: Selector,
     pageFunction: Func | string,
@@ -1392,19 +1477,33 @@ export abstract class Page extends EventEmitter<PageEvents> {
   }
 
   /**
-   * If no URLs are specified, this method returns cookies for the current page
-   * URL. If URLs are specified, only cookies for those URLs are returned.
+   * If no URLs are specified, this method returns cookies for the
+   * current page URL. If URLs are specified, only cookies for those
+   * URLs are returned.
+   *
+   * @deprecated Page-level cookie API is deprecated. Use
+   * {@link Browser.cookies} or {@link BrowserContext.cookies} instead.
    */
   abstract cookies(...urls: string[]): Promise<Cookie[]>;
 
+  /**
+   * @deprecated Page-level cookie API is deprecated. Use
+   * {@link Browser.deleteCookie}, {@link BrowserContext.deleteCookie},
+   * {@link Browser.deleteMatchingCookies} or {@link BrowserContext.deleteMatchingCookies}
+   * instead.
+   */
   abstract deleteCookie(...cookies: DeleteCookiesRequest[]): Promise<void>;
 
   /**
    * @example
    *
-   * ```ts
+   *```ts
    * await page.setCookie(cookieObject1, cookieObject2);
-   * ```
+   *```
+   *
+   * @deprecated Page-level cookie API is deprecated. Use
+   * {@link Browser.setCookie} or {@link BrowserContext.setCookie}
+   * instead.
    */
   abstract setCookie(...cookies: CookieParam[]): Promise<void>;
 
@@ -1420,7 +1519,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * `<script>` element.
    */
   async addScriptTag(
-    options: FrameAddScriptTagOptions
+    options: FrameAddScriptTagOptions,
   ): Promise<ElementHandle<HTMLScriptElement>> {
     return await this.mainFrame().addScriptTag(options);
   }
@@ -1436,13 +1535,13 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * or `<style>` element.
    */
   async addStyleTag(
-    options: Omit<FrameAddStyleTagOptions, 'url'>
+    options: Omit<FrameAddStyleTagOptions, 'url'>,
   ): Promise<ElementHandle<HTMLStyleElement>>;
   async addStyleTag(
-    options: FrameAddStyleTagOptions
+    options: FrameAddStyleTagOptions,
   ): Promise<ElementHandle<HTMLLinkElement>>;
   async addStyleTag(
-    options: FrameAddStyleTagOptions
+    options: FrameAddStyleTagOptions,
   ): Promise<ElementHandle<HTMLStyleElement | HTMLLinkElement>> {
     return await this.mainFrame().addStyleTag(options);
   }
@@ -1468,21 +1567,19 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * import puppeteer from 'puppeteer';
    * import crypto from 'crypto';
    *
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   page.on('console', msg => console.log(msg.text()));
-   *   await page.exposeFunction('md5', text =>
-   *     crypto.createHash('md5').update(text).digest('hex')
-   *   );
-   *   await page.evaluate(async () => {
-   *     // use window.md5 to compute hashes
-   *     const myString = 'PUPPETEER';
-   *     const myHash = await window.md5(myString);
-   *     console.log(`md5 of ${myString} is ${myHash}`);
-   *   });
-   *   await browser.close();
-   * })();
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * page.on('console', msg => console.log(msg.text()));
+   * await page.exposeFunction('md5', text =>
+   *   crypto.createHash('md5').update(text).digest('hex'),
+   * );
+   * await page.evaluate(async () => {
+   *   // use window.md5 to compute hashes
+   *   const myString = 'PUPPETEER';
+   *   const myHash = await window.md5(myString);
+   *   console.log(`md5 of ${myString} is ${myHash}`);
+   * });
+   * await browser.close();
    * ```
    *
    * @example
@@ -1490,27 +1587,25 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * import puppeteer from 'puppeteer';
-   * import fs from 'fs';
+   * import fs from 'node:fs';
    *
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   page.on('console', msg => console.log(msg.text()));
-   *   await page.exposeFunction('readfile', async filePath => {
-   *     return new Promise((resolve, reject) => {
-   *       fs.readFile(filePath, 'utf8', (err, text) => {
-   *         if (err) reject(err);
-   *         else resolve(text);
-   *       });
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * page.on('console', msg => console.log(msg.text()));
+   * await page.exposeFunction('readfile', async filePath => {
+   *   return new Promise((resolve, reject) => {
+   *     fs.readFile(filePath, 'utf8', (err, text) => {
+   *       if (err) reject(err);
+   *       else resolve(text);
    *     });
    *   });
-   *   await page.evaluate(async () => {
-   *     // use window.readfile to read contents of a file
-   *     const content = await window.readfile('/etc/hosts');
-   *     console.log(content);
-   *   });
-   *   await browser.close();
-   * })();
+   * });
+   * await page.evaluate(async () => {
+   *   // use window.readfile to read contents of a file
+   *   const content = await window.readfile('/etc/hosts');
+   *   console.log(content);
+   * });
+   * await browser.close();
    * ```
    *
    * @param name - Name of the function on the window object
@@ -1519,7 +1614,8 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   abstract exposeFunction(
     name: string,
-    pptrFunction: Function | {default: Function}
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    pptrFunction: Function | {default: Function},
   ): Promise<void>;
 
   /**
@@ -1570,11 +1666,22 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @param userAgentData - Specific user agent client hint data to use in this
    * page
    * @returns Promise which resolves when the user agent is set.
+   * @deprecated Use {@link Page.(setUserAgent:2) } instead.
    */
   abstract setUserAgent(
     userAgent: string,
-    userAgentMetadata?: Protocol.Emulation.UserAgentMetadata
+    userAgentMetadata?: Protocol.Emulation.UserAgentMetadata,
   ): Promise<void>;
+
+  /**
+   * @param options - Object containing user agent and optional user agent metadata
+   * @returns Promise which resolves when the user agent is set.
+   */
+  abstract setUserAgent(options: {
+    userAgent?: string;
+    userAgentMetadata?: Protocol.Emulation.UserAgentMetadata;
+    platform?: string;
+  }): Promise<void>;
 
   /**
    * Object containing metrics as key/value pairs.
@@ -1657,7 +1764,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * multiple redirects, the navigation will resolve with the response of the
    * last redirect.
    */
-  abstract reload(options?: WaitForOptions): Promise<HTTPResponse | null>;
+  abstract reload(options?: ReloadOptions): Promise<HTTPResponse | null>;
 
   /**
    * Waits for the page to navigate to a new URL or to reload. It is useful when
@@ -1688,7 +1795,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *   API usage, the navigation will resolve with `null`.
    */
   async waitForNavigation(
-    options: WaitForOptions = {}
+    options: WaitForOptions = {},
   ): Promise<HTTPResponse | null> {
     return await this.mainFrame().waitForNavigation(options);
   }
@@ -1701,10 +1808,10 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * const firstRequest = await page.waitForRequest(
-   *   'https://example.com/resource'
+   *   'https://example.com/resource',
    * );
    * const finalRequest = await page.waitForRequest(
-   *   request => request.url() === 'https://example.com'
+   *   request => request.url() === 'https://example.com',
    * );
    * return finalRequest.response()?.ok();
    * ```
@@ -1718,7 +1825,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   waitForRequest(
     urlOrPredicate: string | AwaitablePredicate<HTTPRequest>,
-    options: WaitTimeoutOptions = {}
+    options: WaitTimeoutOptions = {},
   ): Promise<HTTPRequest> {
     const {timeout: ms = this._timeoutSettings.timeout(), signal} = options;
     if (typeof urlOrPredicate === 'string') {
@@ -1735,9 +1842,9 @@ export abstract class Page extends EventEmitter<PageEvents> {
         fromEmitterEvent(this, PageEvent.Close).pipe(
           map(() => {
             throw new TargetCloseError('Page closed!');
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
     return firstValueFrom(observable$);
   }
@@ -1750,11 +1857,11 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * const firstResponse = await page.waitForResponse(
-   *   'https://example.com/resource'
+   *   'https://example.com/resource',
    * );
    * const finalResponse = await page.waitForResponse(
    *   response =>
-   *     response.url() === 'https://example.com' && response.status() === 200
+   *     response.url() === 'https://example.com' && response.status() === 200,
    * );
    * const finalResponse = await page.waitForResponse(async response => {
    *   return (await response.text()).includes('<html>');
@@ -1771,7 +1878,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   waitForResponse(
     urlOrPredicate: string | AwaitablePredicate<HTTPResponse>,
-    options: WaitTimeoutOptions = {}
+    options: WaitTimeoutOptions = {},
   ): Promise<HTTPResponse> {
     const {timeout: ms = this._timeoutSettings.timeout(), signal} = options;
     if (typeof urlOrPredicate === 'string') {
@@ -1788,15 +1895,18 @@ export abstract class Page extends EventEmitter<PageEvents> {
         fromEmitterEvent(this, PageEvent.Close).pipe(
           map(() => {
             throw new TargetCloseError('Page closed!');
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
     return firstValueFrom(observable$);
   }
 
   /**
    * Waits for the network to be idle.
+   *
+   * @remarks The function will always wait at least the
+   * set {@link WaitForNetworkIdleOptions.idleTime | IdleTime}.
    *
    * @param options - Options to configure waiting behavior.
    * @returns A promise which resolves once the network is idle.
@@ -1809,7 +1919,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @internal
    */
   waitForNetworkIdle$(
-    options: WaitForNetworkIdleOptions = {}
+    options: WaitForNetworkIdleOptions = {},
   ): Observable<void> {
     const {
       timeout: ms = this._timeoutSettings.timeout(),
@@ -1819,8 +1929,12 @@ export abstract class Page extends EventEmitter<PageEvents> {
     } = options;
 
     return this.#inflight$.pipe(
-      switchMap(inflight => {
-        if (inflight > concurrency) {
+      map(inflight => {
+        return inflight > concurrency;
+      }),
+      distinctUntilChanged(),
+      switchMap(isInflightOverConcurrency => {
+        if (isInflightOverConcurrency) {
           return EMPTY;
         }
         return timer(idleTime);
@@ -1832,9 +1946,9 @@ export abstract class Page extends EventEmitter<PageEvents> {
         fromEmitterEvent(this, PageEvent.Close).pipe(
           map(() => {
             throw new TargetCloseError('Page closed!');
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -1845,13 +1959,18 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * const frame = await page.waitForFrame(async frame => {
-   *   return frame.name() === 'Test';
+   *   const frameElement = await frame.frameElement();
+   *   if (!frameElement) {
+   *     return false;
+   *   }
+   *   const name = await frameElement.evaluate(el => el.getAttribute('name'));
+   *   return name === 'test';
    * });
    * ```
    */
   async waitForFrame(
     urlOrPredicate: string | ((frame: Frame) => Awaitable<boolean>),
-    options: WaitTimeoutOptions = {}
+    options: WaitTimeoutOptions = {},
   ): Promise<Frame> {
     const {timeout: ms = this.getDefaultTimeout(), signal} = options;
 
@@ -1865,7 +1984,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
       merge(
         fromEmitterEvent(this, PageEvent.FrameAttached),
         fromEmitterEvent(this, PageEvent.FrameNavigated),
-        from(this.frames())
+        from(this.frames()),
       ).pipe(
         filterAsync(predicate),
         first(),
@@ -1875,10 +1994,10 @@ export abstract class Page extends EventEmitter<PageEvents> {
           fromEmitterEvent(this, PageEvent.Close).pipe(
             map(() => {
               throw new TargetCloseError('Page closed.');
-            })
-          )
-        )
-      )
+            }),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1887,7 +2006,9 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @param options - Navigation parameters
    * @returns Promise which resolves to the main resource response. In case of
    * multiple redirects, the navigation will resolve with the response of the
-   * last redirect. If can not go back, resolves to `null`.
+   * last redirect.
+   * If the navigation is same page, returns null.
+   * If no history entry is found throws.
    */
   abstract goBack(options?: WaitForOptions): Promise<HTTPResponse | null>;
 
@@ -1896,7 +2017,9 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @param options - Navigation Parameter
    * @returns Promise which resolves to the main resource response. In case of
    * multiple redirects, the navigation will resolve with the response of the
-   * last redirect. If can not go forward, resolves to `null`.
+   * last redirect.
+   * If the navigation is same page, returns null.
+   * If no history entry is found throws.
    */
   abstract goForward(options?: WaitForOptions): Promise<HTTPResponse | null>;
 
@@ -1913,7 +2036,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * @remarks
    * This method is a shortcut for calling two methods:
-   * {@link Page.setUserAgent} and {@link Page.setViewport}.
+   * {@link Page.(setUserAgent:2) } and {@link Page.setViewport}.
    *
    * This method will resize the page. A lot of websites don't expect phones to
    * change size, so you should emulate before navigating to the page.
@@ -1924,19 +2047,17 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * import {KnownDevices} from 'puppeteer';
    * const iPhone = KnownDevices['iPhone 15 Pro'];
    *
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   await page.emulate(iPhone);
-   *   await page.goto('https://www.google.com');
-   *   // other actions...
-   *   await browser.close();
-   * })();
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * await page.emulate(iPhone);
+   * await page.goto('https://www.google.com');
+   * // other actions...
+   * await browser.close();
    * ```
    */
   async emulate(device: Device): Promise<void> {
     await Promise.all([
-      this.setUserAgent(device.userAgent),
+      this.setUserAgent({userAgent: device.userAgent}),
       this.setViewport(device.viewport),
     ]);
   }
@@ -2003,11 +2124,11 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *   {name: 'prefers-color-scheme', value: 'dark'},
    * ]);
    * await page.evaluate(
-   *   () => matchMedia('(prefers-color-scheme: dark)').matches
+   *   () => matchMedia('(prefers-color-scheme: dark)').matches,
    * );
    * // → true
    * await page.evaluate(
-   *   () => matchMedia('(prefers-color-scheme: light)').matches
+   *   () => matchMedia('(prefers-color-scheme: light)').matches,
    * );
    * // → false
    *
@@ -2015,11 +2136,11 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *   {name: 'prefers-reduced-motion', value: 'reduce'},
    * ]);
    * await page.evaluate(
-   *   () => matchMedia('(prefers-reduced-motion: reduce)').matches
+   *   () => matchMedia('(prefers-reduced-motion: reduce)').matches,
    * );
    * // → true
    * await page.evaluate(
-   *   () => matchMedia('(prefers-reduced-motion: no-preference)').matches
+   *   () => matchMedia('(prefers-reduced-motion: no-preference)').matches,
    * );
    * // → false
    *
@@ -2028,19 +2149,19 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *   {name: 'prefers-reduced-motion', value: 'reduce'},
    * ]);
    * await page.evaluate(
-   *   () => matchMedia('(prefers-color-scheme: dark)').matches
+   *   () => matchMedia('(prefers-color-scheme: dark)').matches,
    * );
    * // → true
    * await page.evaluate(
-   *   () => matchMedia('(prefers-color-scheme: light)').matches
+   *   () => matchMedia('(prefers-color-scheme: light)').matches,
    * );
    * // → false
    * await page.evaluate(
-   *   () => matchMedia('(prefers-reduced-motion: reduce)').matches
+   *   () => matchMedia('(prefers-reduced-motion: reduce)').matches,
    * );
    * // → true
    * await page.evaluate(
-   *   () => matchMedia('(prefers-reduced-motion: no-preference)').matches
+   *   () => matchMedia('(prefers-reduced-motion: no-preference)').matches,
    * );
    * // → false
    *
@@ -2095,28 +2216,29 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * ```ts
    * import puppeteer from 'puppeteer';
    *
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   await page.goto('https://v8.dev/blog/10-years');
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * await page.goto('https://v8.dev/blog/10-years');
    *
-   *   await page.emulateVisionDeficiency('achromatopsia');
-   *   await page.screenshot({path: 'achromatopsia.png'});
+   * await page.emulateVisionDeficiency('achromatopsia');
+   * await page.screenshot({path: 'achromatopsia.png'});
    *
-   *   await page.emulateVisionDeficiency('deuteranopia');
-   *   await page.screenshot({path: 'deuteranopia.png'});
+   * await page.emulateVisionDeficiency('deuteranopia');
+   * await page.screenshot({path: 'deuteranopia.png'});
    *
-   *   await page.emulateVisionDeficiency('blurredVision');
-   *   await page.screenshot({path: 'blurred-vision.png'});
+   * await page.emulateVisionDeficiency('blurredVision');
+   * await page.screenshot({path: 'blurred-vision.png'});
    *
-   *   await browser.close();
-   * })();
+   * await page.emulateVisionDeficiency('reducedContrast');
+   * await page.screenshot({path: 'reduced-contrast.png'});
+   *
+   * await browser.close();
    * ```
    *
    * @param type - the type of deficiency to simulate, or `'none'` to reset.
    */
   abstract emulateVisionDeficiency(
-    type?: Protocol.Emulation.SetEmulatedVisionDeficiencyRequest['type']
+    type?: Protocol.Emulation.SetEmulatedVisionDeficiencyRequest['type'],
   ): Promise<void>;
 
   /**
@@ -2153,8 +2275,8 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * This is either the viewport set with the previous {@link Page.setViewport}
    * call or the default viewport set via
-   * {@link BrowserConnectOptions.defaultViewport |
-   * BrowserConnectOptions.defaultViewport}.
+   * {@link ConnectOptions.defaultViewport |
+   * ConnectOptions.defaultViewport}.
    */
   abstract viewport(): Viewport | null;
 
@@ -2214,7 +2336,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
   ): Promise<Awaited<ReturnType<Func>>> {
     pageFunction = withSourcePuppeteerURLIfNone(
       this.evaluate.name,
-      pageFunction
+      pageFunction,
     );
     return await this.mainFrame().evaluate(pageFunction, ...args);
   }
@@ -2265,7 +2387,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * @param identifier - script identifier
    */
   abstract removeScriptToEvaluateOnNewDocument(
-    identifier: string
+    identifier: string,
   ): Promise<void>;
 
   /**
@@ -2281,7 +2403,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   async _maybeWriteTypedArrayToFile(
     path: string | undefined,
-    typedArray: Uint8Array
+    typedArray: Uint8Array,
   ): Promise<void> {
     if (!path) {
       return;
@@ -2325,13 +2447,13 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * @remarks
    *
-   * All recordings will be {@link https://www.webmproject.org/ | WebM} format using
-   * the {@link https://www.webmproject.org/vp9/ | VP9} video codec. The FPS is 30.
+   * By default, all recordings will be {@link https://www.webmproject.org/ | WebM} format using
+   * the {@link https://www.webmproject.org/vp9/ | VP9} video codec, with a frame rate of 30 FPS.
    *
    * You must have {@link https://ffmpeg.org/ | ffmpeg} installed on your system.
    */
   async screencast(
-    options: Readonly<ScreencastOptions> = {}
+    options: Readonly<ScreencastOptions> = {},
   ): Promise<ScreenRecorder> {
     const ScreenRecorder = environment.value.ScreenRecorder;
     const [width, height, devicePixelRatio] =
@@ -2346,12 +2468,12 @@ export abstract class Page extends EventEmitter<PageEvents> {
       } = roundRectangle(normalizeRectangle(options.crop));
       if (x < 0 || y < 0) {
         throw new Error(
-          `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`
+          `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`,
         );
       }
       if (cropWidth <= 0 || cropHeight <= 0) {
         throw new Error(
-          `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`
+          `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`,
         );
       }
 
@@ -2359,12 +2481,12 @@ export abstract class Page extends EventEmitter<PageEvents> {
       const viewportHeight = height / devicePixelRatio;
       if (x + cropWidth > viewportWidth) {
         throw new Error(
-          `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`
+          `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`,
         );
       }
       if (y + cropHeight > viewportHeight) {
         throw new Error(
-          `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
+          `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`,
         );
       }
 
@@ -2384,7 +2506,6 @@ export abstract class Page extends EventEmitter<PageEvents> {
 
     const recorder = new ScreenRecorder(this, width, height, {
       ...options,
-      path: options.ffmpegPath,
       crop,
     });
     try {
@@ -2481,20 +2602,17 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    */
   async screenshot(
-    options: Readonly<ScreenshotOptions> & {encoding: 'base64'}
+    options: Readonly<ScreenshotOptions> & {encoding: 'base64'},
   ): Promise<string>;
   async screenshot(options?: Readonly<ScreenshotOptions>): Promise<Uint8Array>;
   @guarded(function () {
     return this.browser();
   })
   async screenshot(
-    userOptions: Readonly<ScreenshotOptions> = {}
+    userOptions: Readonly<ScreenshotOptions> = {},
   ): Promise<Uint8Array | string> {
     using _guard = await this.browserContext().startScreenshot();
 
-    await this.bringToFront();
-
-    // TODO: use structuredClone after Node 16 support is dropped.
     const options = {
       ...userOptions,
       clip: userOptions.clip
@@ -2525,7 +2643,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
     if (options.quality !== undefined) {
       if (options.quality < 0 || options.quality > 100) {
         throw new Error(
-          `Expected 'quality' (${options.quality}) to be between 0 and 100, inclusive.`
+          `Expected 'quality' (${options.quality}) to be between 0 and 100, inclusive.`,
         );
       }
       if (
@@ -2533,7 +2651,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
         !['jpeg', 'webp'].includes(options.type)
       ) {
         throw new Error(
-          `${options.type ?? 'png'} screenshots do not support 'quality'.`
+          `${options.type ?? 'png'} screenshots do not support 'quality'.`,
         );
       }
     }
@@ -2595,6 +2713,13 @@ export abstract class Page extends EventEmitter<PageEvents> {
   }
 
   /**
+   * Emulates focus state of the page.
+   *
+   * @param enabled - Whether to emulate focus.
+   */
+  abstract emulateFocusedPage(enabled: boolean): Promise<void>;
+
+  /**
    * @internal
    */
   abstract _screenshot(options: Readonly<ScreenshotOptions>): Promise<string>;
@@ -2616,7 +2741,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * property to force rendering of exact colors.
    */
   abstract createPDFStream(
-    options?: PDFOptions
+    options?: PDFOptions,
   ): Promise<ReadableStream<Uint8Array>>;
 
   /**
@@ -2675,7 +2800,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2703,7 +2828,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2738,7 +2863,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2778,7 +2903,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2811,7 +2936,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2850,7 +2975,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2867,7 +2992,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
   type(
     selector: string,
     text: string,
-    options?: Readonly<KeyboardTypeOptions>
+    options?: Readonly<KeyboardTypeOptions>,
   ): Promise<void> {
     return this.mainFrame().type(selector, text, options);
   }
@@ -2883,22 +3008,21 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * import puppeteer from 'puppeteer';
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   let currentURL;
-   *   page
-   *     .waitForSelector('img')
-   *     .then(() => console.log('First URL with image: ' + currentURL));
-   *   for (currentURL of [
-   *     'https://example.com',
-   *     'https://google.com',
-   *     'https://bbc.com',
-   *   ]) {
-   *     await page.goto(currentURL);
-   *   }
-   *   await browser.close();
-   * })();
+   *
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * let currentURL;
+   * page
+   *   .waitForSelector('img')
+   *   .then(() => console.log('First URL with image: ' + currentURL));
+   * for (currentURL of [
+   *   'https://example.com',
+   *   'https://google.com',
+   *   'https://bbc.com',
+   * ]) {
+   *   await page.goto(currentURL);
+   * }
+   * await browser.close();
    * ```
    *
    * @param selector -
@@ -2907,7 +3031,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
    * can be passed as-is and a
    * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-   * allows quering by
+   * allows querying by
    * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
    * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
    * and
@@ -2938,7 +3062,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   async waitForSelector<Selector extends string>(
     selector: Selector,
-    options: WaitForSelectorOptions = {}
+    options: WaitForSelectorOptions = {},
   ): Promise<ElementHandle<NodeFor<Selector>> | null> {
     return await this.mainFrame().waitForSelector(selector, options);
   }
@@ -2952,14 +3076,13 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * ```ts
    * import puppeteer from 'puppeteer';
-   * (async () => {
-   *   const browser = await puppeteer.launch();
-   *   const page = await browser.newPage();
-   *   const watchDog = page.waitForFunction('window.innerWidth < 100');
-   *   await page.setViewport({width: 50, height: 50});
-   *   await watchDog;
-   *   await browser.close();
-   * })();
+   *
+   * const browser = await puppeteer.launch();
+   * const page = await browser.newPage();
+   * const watchDog = page.waitForFunction('window.innerWidth < 100');
+   * await page.setViewport({width: 50, height: 50});
+   * await watchDog;
+   * await browser.close();
    * ```
    *
    * @example
@@ -2970,7 +3093,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * await page.waitForFunction(
    *   selector => !!document.querySelector(selector),
    *   {},
-   *   selector
+   *   selector,
    * );
    * ```
    *
@@ -2982,7 +3105,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    * await page.waitForFunction(
    *   async username => {
    *     const githubResponse = await fetch(
-   *       `https://api.github.com/users/${username}`
+   *       `https://api.github.com/users/${username}`,
    *     );
    *     const githubUser = await githubResponse.json();
    *     // show the avatar
@@ -2993,7 +3116,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *     img.remove();
    *   },
    *   {},
-   *   username
+   *   username,
    * );
    * ```
    *
@@ -3031,16 +3154,34 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *   page.click('#connect-bluetooth'),
    * ]);
    * await devicePrompt.select(
-   *   await devicePrompt.waitForDevice(({name}) => name.includes('My Device'))
+   *   await devicePrompt.waitForDevice(({name}) => name.includes('My Device')),
    * );
    * ```
    */
   abstract waitForDevicePrompt(
-    options?: WaitTimeoutOptions
+    options?: WaitTimeoutOptions,
   ): Promise<DeviceRequestPrompt>;
 
+  /**
+   * Resizes the browser window of this page so that the content area (excluding
+   * browser UI) has the specified width and height.
+   *
+   * @experimental
+   */
+  abstract resize(params: {
+    contentWidth: number;
+    contentHeight: number;
+  }): Promise<void>;
+
+  /**
+   * Returns the page's window id.
+   *
+   * @experimental
+   */
+  abstract windowId(): Promise<WindowId>;
+
   /** @internal */
-  [disposeSymbol](): void {
+  override [disposeSymbol](): void {
     return void this.close().catch(debugError);
   }
 
@@ -3048,6 +3189,17 @@ export abstract class Page extends EventEmitter<PageEvents> {
   [asyncDisposeSymbol](): Promise<void> {
     return this.close();
   }
+
+  /**
+   * Opens DevTools for the current Page and returns the DevTools Page. This
+   * method is only available in Chrome.
+   */
+  abstract openDevTools(): Promise<Page>;
+
+  /**
+   * {@inheritDoc BluetoothEmulation}
+   */
+  abstract get bluetooth(): BluetoothEmulation;
 }
 
 /**
@@ -3071,7 +3223,7 @@ export const supportedMetrics = new Set<string>([
 
 /** @see https://w3c.github.io/webdriver-bidi/#normalize-rect */
 function normalizeRectangle<BoundingBoxType extends BoundingBox>(
-  clip: Readonly<BoundingBoxType>
+  clip: Readonly<BoundingBoxType>,
 ): BoundingBoxType {
   return {
     ...clip,
@@ -3097,7 +3249,7 @@ function normalizeRectangle<BoundingBoxType extends BoundingBox>(
 }
 
 function roundRectangle<BoundingBoxType extends BoundingBox>(
-  clip: Readonly<BoundingBoxType>
+  clip: Readonly<BoundingBoxType>,
 ): BoundingBoxType {
   const x = Math.round(clip.x);
   const y = Math.round(clip.y);

@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/dom/MediaSession.h"
+
+#include "mozilla/EnumeratedArrayCycleCollection.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/ContentMediaController.h"
 #include "mozilla/dom/Document.h"
-#include "mozilla/dom/MediaSession.h"
 #include "mozilla/dom/MediaControlUtils.h"
 #include "mozilla/dom/WindowContext.h"
-#include "mozilla/EnumeratedArrayCycleCollection.h"
 
 // avoid redefined macro in unified build
 #undef LOG
@@ -79,6 +78,13 @@ MediaSession::MediaSession(nsPIDOMWindowInner* aParent)
   }
 }
 
+MediaSession::~MediaSession() { DisconnectRequestAndListener(); }
+
+void MediaSession::DisconnectRequestAndListener() {
+  mLoadingArtworkRequest.DisconnectIfExists();
+  mMetadataChangeListener.DisconnectIfExists();
+}
+
 void MediaSession::Shutdown() {
   if (mDoc) {
     mDoc->UnregisterActivityObserver(this);
@@ -86,6 +92,7 @@ void MediaSession::Shutdown() {
   if (mParent) {
     SetMediaSessionDocStatus(SessionDocStatus::eInactive);
   }
+  DisconnectRequestAndListener();
 }
 
 void MediaSession::NotifyOwnerDocumentActivityChanged() {
@@ -116,7 +123,18 @@ JSObject* MediaSession::WrapObject(JSContext* aCx,
 MediaMetadata* MediaSession::GetMetadata() const { return mMediaMetadata; }
 
 void MediaSession::SetMetadata(MediaMetadata* aMetadata) {
+  mMetadataChangeListener.DisconnectIfExists();
   mMediaMetadata = aMetadata;
+  // Do not register a raw-pointer listener while inactive. eInactive covers
+  // both bfcache (temporary, session may resume) and Navigator::Invalidate()
+  // (permanent teardown). We still update mMediaMetadata above so that
+  // NotifyMediaSessionAttributes() can resync it when the session becomes
+  // active again after bfcache restore.
+  if (mMediaMetadata && mSessionDocState != SessionDocStatus::eInactive) {
+    mMetadataChangeListener = mMediaMetadata->MetadataChangeEvent().Connect(
+        AbstractThread::MainThread(), this,
+        &MediaSession::NotifyMetadataUpdated);
+  }
   NotifyMetadataUpdated();
 }
 
@@ -135,7 +153,7 @@ MediaSessionPlaybackState MediaSession::PlaybackState() const {
 
 void MediaSession::SetActionHandler(MediaSessionAction aAction,
                                     MediaSessionActionHandler* aHandler) {
-  MOZ_ASSERT(size_t(aAction) < ArrayLength(mActionHandlers));
+  MOZ_ASSERT(size_t(aAction) < std::size(mActionHandlers));
   // If the media session changes its supported action, then we would propagate
   // this information to the chrome process in order to run the media session
   // actions update algorithm.
@@ -151,7 +169,7 @@ void MediaSession::SetActionHandler(MediaSessionAction aAction,
 
 MediaSessionActionHandler* MediaSession::GetActionHandler(
     MediaSessionAction aAction) const {
-  MOZ_ASSERT(size_t(aAction) < ArrayLength(mActionHandlers));
+  MOZ_ASSERT(size_t(aAction) < std::size(mActionHandlers));
   return mActionHandlers[aAction];
 }
 
@@ -236,7 +254,7 @@ void MediaSession::DispatchNotifyHandler(
 }
 
 bool MediaSession::IsSupportedAction(MediaSessionAction aAction) const {
-  MOZ_ASSERT(size_t(aAction) < ArrayLength(mActionHandlers));
+  MOZ_ASSERT(size_t(aAction) < std::size(mActionHandlers));
   return mActionHandlers[aAction] != nullptr;
 }
 
@@ -284,7 +302,7 @@ void MediaSession::NotifyMediaSessionAttributes() {
   if (mMediaMetadata) {
     NotifyMetadataUpdated();
   }
-  for (size_t idx = 0; idx < ArrayLength(mActionHandlers); idx++) {
+  for (size_t idx = 0; idx < std::size(mActionHandlers); idx++) {
     MediaSessionAction action = static_cast<MediaSessionAction>(idx);
     if (mActionHandlers[action]) {
       NotifyEnableSupportedAction(action);
@@ -314,13 +332,43 @@ void MediaSession::NotifyMetadataUpdated() {
   RefPtr<BrowsingContext> currentBC = GetParentObject()->GetBrowsingContext();
   MOZ_ASSERT(currentBC, "Update session metadata after context destroyed!");
 
+  mLoadingArtworkRequest.DisconnectIfExists();
+
+  RefPtr<IMediaInfoUpdater> updater = ContentMediaAgent::Get(currentBC);
+  if (!updater) {
+    return;
+  }
+
   Maybe<MediaMetadataBase> metadata;
-  if (GetMetadata()) {
-    metadata.emplace(*(GetMetadata()->AsMetadataBase()));
+  if (mMediaMetadata) {
+    metadata.emplace(*mMediaMetadata->AsMetadataBaseWithoutArtworkSurface());
   }
-  if (RefPtr<IMediaInfoUpdater> updater = ContentMediaAgent::Get(currentBC)) {
-    updater->UpdateMetadata(currentBC->Id(), metadata);
+
+  updater->UpdateMetadata(currentBC->Id(), metadata);
+
+  // If we don't have any metadata, just return. Otherwise we might have
+  // artwork that we have to load asynchronously and update the metadata
+  // together with the artwork's image surface again.
+  if (metadata.isNothing() || metadata->mArtwork.IsEmpty()) {
+    return;
   }
+
+  LOG("Starting load of the MediaMetadata artwork.");
+  mMediaMetadata->LoadMetadataArtwork()
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          [self = RefPtr{this}, currentBC](MediaMetadataBase&& aMetadata) {
+            if (RefPtr<IMediaInfoUpdater> updater =
+                    ContentMediaAgent::Get(currentBC)) {
+              updater->UpdateMetadata(currentBC->Id(), Some(aMetadata));
+            }
+
+            self->mLoadingArtworkRequest.Complete();
+          },
+          [](nsresult rv) {
+            MOZ_ASSERT_UNREACHABLE("LoadMetadataArtwork should always resolve");
+          })
+      ->Track(mLoadingArtworkRequest);
 }
 
 void MediaSession::NotifyEnableSupportedAction(MediaSessionAction aAction) {

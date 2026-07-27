@@ -7,12 +7,8 @@ const { MiscDataBackupResource } = ChromeUtils.importESModule(
   "resource:///modules/backup/MiscDataBackupResource.sys.mjs"
 );
 
-const { ActivityStreamStorage } = ChromeUtils.importESModule(
-  "resource://activity-stream/lib/ActivityStreamStorage.sys.mjs"
-);
-
-const { ProfileAge } = ChromeUtils.importESModule(
-  "resource://gre/modules/ProfileAge.sys.mjs"
+const { ASRouterStorage } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/ASRouterStorage.sys.mjs"
 );
 
 /**
@@ -104,7 +100,7 @@ add_task(async function test_backup() {
   };
 
   sandbox
-    .stub(ActivityStreamStorage.prototype, "getDbTable")
+    .stub(ASRouterStorage.prototype, "getDbTable")
     .withArgs("snippets")
     .resolves(snippetsTableStub);
 
@@ -176,14 +172,6 @@ add_task(async function test_recover() {
     "MiscDataBackupResource-test-profile"
   );
 
-  // Write a dummy times.json into the xpcshell test profile directory. We
-  // expect it to be copied into the destination profile.
-  let originalProfileAge = await ProfileAge(PathUtils.profileDir);
-  await originalProfileAge.computeAndPersistCreated();
-  Assert.ok(
-    await IOUtils.exists(PathUtils.join(PathUtils.profileDir, "times.json"))
-  );
-
   const simpleCopyFiles = [
     { path: "enumerate_devices.txt" },
     { path: "protections.sqlite" },
@@ -224,27 +212,6 @@ add_task(async function test_recover() {
     "Snippets backup data should not have gone into the profile directory"
   );
 
-  // The times.json file should have been copied over and a backup recovery
-  // time written into it.
-  Assert.ok(
-    await IOUtils.exists(PathUtils.join(destProfilePath, "times.json"))
-  );
-  let copiedProfileAge = await ProfileAge(destProfilePath);
-  Assert.equal(
-    await originalProfileAge.created,
-    await copiedProfileAge.created,
-    "Created timestamp should match."
-  );
-  Assert.equal(
-    await originalProfileAge.firstUse,
-    await copiedProfileAge.firstUse,
-    "First use timestamp should match."
-  );
-  Assert.ok(
-    await copiedProfileAge.recoveredFromBackup,
-    "Backup recovery timestamp should have been set."
-  );
-
   await maybeRemovePath(recoveryPath);
   await maybeRemovePath(destProfilePath);
 });
@@ -276,7 +243,7 @@ add_task(async function test_postRecovery() {
   };
 
   sandbox
-    .stub(ActivityStreamStorage.prototype, "getDbTable")
+    .stub(ASRouterStorage.prototype, "getDbTable")
     .withArgs("snippets")
     .resolves(snippetsTableStub);
 

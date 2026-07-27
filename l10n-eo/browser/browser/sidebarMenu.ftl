@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Legosignoj
+sidebar-menu-bookmarks-2 = Legosignoj
 sidebar-menu-history =
     .label = Historio
 sidebar-menu-synced-tabs =
     .label = Spegulitaj langetoj
-sidebar-menu-megalist =
-    .label = Pasvortoj
 sidebar-menu-close =
     .label = Fermi flankan strion
 sidebar-close-button =

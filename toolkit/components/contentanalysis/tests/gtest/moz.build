@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,11 +15,17 @@ if CONFIG["OS_TARGET"] == "WINNT":
         # Agent SDK usings conflicts with Gecko usings
         "TestContentAnalysisAgent.cpp",
         "TestContentAnalysisMisbehaving.cpp",
+        "TestContentAnalysisTelemetry.cpp",
         "TestContentAnalysisUtils.cpp",
     ]
     DIRS += ["agent"]
     OS_LIBS += ["pathcch"]
 
-TEST_HARNESS_FILES.gtest += ["allowedFile.txt", "blockedFile.txt"]
+TEST_HARNESS_FILES.gtest += [
+    "allowedFile.txt",
+    "allowedFile1.txt",
+    "allowedFile2.txt",
+    "blockedFile.txt",
+]
 
 FINAL_LIBRARY = "xul-gtest"

@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = ניפוי שגיאות - סביבת �
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = ‏{ -brand-shorter-name } זה
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = ‏{ -brand-shorter-name } זה
+about-debugging-sidebar-this-firefox-title =
+    .title = ‏{ -brand-shorter-name } זה
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = הקמה
+about-debugging-sidebar-setup-title =
+    .title = הקמה
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -79,7 +87,7 @@ about-debugging-sidebar-support-icon =
     .alt = סמל עזרה
 # Text displayed in a sidebar button to refresh the list of USB devices. Clicking on it
 # will attempt to update the list of devices displayed in the sidebar.
-about-debugging-refresh-usb-devices-button = רענון מכשירים
+about-debugging-refresh-usb-devices-button = ריענון מכשירים
 
 # Setup Page strings
 
@@ -289,6 +297,15 @@ about-debugging-multiprocess-toolbox-name = ארגז כלים מרובה תהל�
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = התהליך הראשי ותהליכי התוכן עבור דפדפן היעד
+about-debugging-message-error-icon =
+    .alt = סמל שגיאה
+about-debugging-message-info-icon =
+    .alt = סמל מידע
+about-debugging-message-warning-icon =
+    .alt = סמל אזהרה
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = סגירת הודעה
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = סגירת הודעה
@@ -298,3 +315,5 @@ about-debugging-message-details-label-error = פרטי שגיאה
 about-debugging-message-details-label-warning = פרטי אזהרה
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = פרטים
+about-debugging-sidebar =
+    .heading = ניפוי שגיאות

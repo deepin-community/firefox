@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -56,6 +55,14 @@ class EditorEventListener : public nsIDOMEventListener {
   // nsIDOMEventListener
   MOZ_CAN_RUN_SCRIPT NS_IMETHOD HandleEvent(dom::Event* aEvent) override;
 
+  /**
+   * Called before starting to handle eMouseDown or eMouseUp in PresShell.
+   *
+   * @return true if IME consumed aMouseEvent.
+   */
+  MOZ_CAN_RUN_SCRIPT bool WillHandleMouseButtonEvent(
+      WidgetMouseEvent& aMouseEvent);
+
  protected:
   virtual ~EditorEventListener();
 
@@ -79,7 +86,7 @@ class EditorEventListener : public nsIDOMEventListener {
   MOZ_CAN_RUN_SCRIPT virtual nsresult PointerClick(
       WidgetMouseEvent* aPointerClick);
   MOZ_CAN_RUN_SCRIPT nsresult Focus(const InternalFocusEvent& aFocusEvent);
-  nsresult Blur(const InternalFocusEvent& aBlurEvent);
+  MOZ_CAN_RUN_SCRIPT nsresult Blur(const InternalFocusEvent& aBlurEvent);
   MOZ_CAN_RUN_SCRIPT nsresult DragOverOrDrop(dom::DragEvent* aDragEvent);
   nsresult DragLeave(dom::DragEvent* aDragEvent);
 
@@ -90,9 +97,13 @@ class EditorEventListener : public nsIDOMEventListener {
   void CleanupDragDropCaret();
   PresShell* GetPresShell() const;
   nsPresContext* GetPresContext() const;
-  // Returns true if IME consumes the mouse event.
+
+  /**
+   * @return true if IME consumed aMouseEvent.
+   */
   MOZ_CAN_RUN_SCRIPT bool NotifyIMEOfMouseButtonEvent(
-      WidgetMouseEvent* aMouseEvent);
+      WidgetMouseEvent& aMouseEvent);
+
   bool EditorHasFocus();
   bool IsFileControlTextBox();
   bool ShouldHandleNativeKeyBindings(WidgetKeyboardEvent* aKeyboardEvent);

@@ -5,11 +5,16 @@
 url-classifier-title = Πληροφορίες URL Classifier
 url-classifier-search-title = Αναζήτηση
 url-classifier-search-result-title = Αποτελέσματα
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Λίστα πινάκων: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = Μη έγκυρο URL
 url-classifier-search-error-no-features = Δεν επιλέχθηκαν λειτουργίες
+url-classifier-search-error-no-results = Δεν βρέθηκαν καταχωρήσεις για το URL
 url-classifier-search-btn = Έναρξη αναζήτησης
 url-classifier-search-features = Λειτουργίες
 url-classifier-search-listType = Τύπος λίστας
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Λειτουργικές μονάδες κατ
 url-classifier-debug-modules = Τρέχουσες λειτουργικές μονάδες καταγραφής
 url-classifier-debug-sbjs-modules = Αρχείο καταγραφής JS ασφαλούς περιήγησης
 url-classifier-debug-file = Τρέχον αρχείο καταγραφής
-
 url-classifier-trigger-update = Πρόκληση ενημέρωσης
 url-classifier-not-available = Μ/Δ
 url-classifier-disable-sbjs-log = Απενεργοποίηση αρχείου καταγραφής JS ασφαλούς περιήγησης

@@ -7,7 +7,7 @@
 ### the remote profiling panel. There are additional profiler strings in the appmenu.ftl
 ### file that are used for the profiler popup.
 
-perftools-intro-title = Nastajenja profilowaka
+perftools-intro-title = Nastajenja wugbaśoweje analyzy
 perftools-intro-description =
     Nagraśa profiler.firefox.com w nowem rejtariku wócynjaju. Wšykne daty se lokalnje
     składuju, ale móžośo je nagraś, aby je źělił.
@@ -32,11 +32,33 @@ perftools-description-intro =
 perftools-description-local-build =
     Jolic wersiju pśespytujośo, kótaruž sćo sam kompilěrował na toś tom licadle, pśidajśo pšosym lišćinje dołojce objdir swójeje wersije, aby
     se dał wužywas, za symbolowymi informacijami pytaś.
+perftools-pick-local-build-directory = Wersijowy zapis wubraś
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Wótsmasowański interwal:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -67,6 +89,14 @@ perftools-button-restart = Znowego startowaś
 perftools-button-add-directory = Zapis pśidaś
 perftools-button-remove-directory = Wubrane wótwónoźeś
 perftools-button-edit-settings = Nastajenja wobźěłaś…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Dalšne akcije
+perftools-menu-more-actions-restart-with-profiling = { -brand-shorter-name } ze zmóžnjonym startowym profilěrowanim znowego startowaś
+perftools-menu-more-actions-copy-for-startup = Wokolinowe wariable za startowe profilěrowanje kopěrowaś
+perftools-menu-more-actions-copy-for-perf-tests = Parametry za wugbaśowe testy kopěrowaś
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -99,11 +129,11 @@ perftools-thread-jvm-gecko =
 perftools-thread-jvm-nimbus =
     .title = Głowne nitki za SDK eksperimentow Nimbus
 perftools-thread-jvm-default-dispatcher =
-    .title = Standardny dispatcher za biblioteku korutinow  Kotlin
+    .title = Standardny dispatcher za biblioteku korutinow Kotlin
 perftools-thread-jvm-glean =
     .title = Głowne nitki za SDK telemetrije Glean
 perftools-thread-jvm-arch-disk-io =
-    .title = Dispatcher IO za biblioteku korutinow  Kotlin
+    .title = Dispatcher IO za biblioteku korutinow Kotlin
 perftools-thread-jvm-pool =
     .title = Nitki napórane w kupce nitkow bźez mjenja
 
@@ -111,7 +141,7 @@ perftools-thread-jvm-pool =
 
 perftools-record-all-registered-threads = Wuběrki górjejce wobejś a wšě zregistrěrowane nitki nagraś
 perftools-tools-threads-input-label =
-    .title = Toś te nitkowe mjenja su pśez komu źělona lisćina, kótaraž se wužywa, aby pśepytowanje nitkow w profilowaku zmóžnił. Mě trjeba se jano pó źělach z mjenim nitki makaś, kótarež se ma zapśimjeś. Na prozne znamjenja se źiwa.
+    .title = Toś te nitkowe mjenja su pśez komu źělona lisćina, kótaraž se wužywa, aby pśepytowanje nitkow we wugbaśowej analyzy zmóžnił. Mě trjeba se jano pó źělach z mjenim nitki makaś, kótarež se ma zapśimjeś. Na prozne znamjenja se źiwa.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -140,14 +170,16 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Pśednastajenje za wuslěźenje zmólkow grafiki w { -brand-shorter-name }.
 perftools-presets-media-label = Medije
 perftools-presets-media-description2 = Pśednastajenje za wuslěźenje zmólkow awdio a wideo w { -brand-shorter-name }.
+perftools-presets-ml-label = Mašinelne wuknjenje
+perftools-presets-ml-description2 = Pśednastajenje za wuslěźenje zmólkow mašinelnego wuknjenja w { -brand-shorter-name }.
 perftools-presets-networking-label = Seś
 perftools-presets-networking-description = Pśednastajenje za wuslěźenje seśowych zmólkow w { -brand-shorter-name }.
+perftools-presets-networking-with-logs-label = Seśowe zwězki z protokolami
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Energija
 perftools-presets-power-description = Pśednastajenje za wuslěźenje zmólkow wužywanja energije w { -brand-shorter-name }, z niskeju pótrjebu.
 perftools-presets-debug-label = Za zmólkami pytaś
 perftools-presets-debug-description = Pśednastajenje za pytanje zmólkow w { -brand-shorter-name }. Wusoka dodatna śěža, njewužywajśo jo za wugbaśowe źěło, ale wužywajśo jo, aby se na rozměśe zaźaržanja wobglědowaka fokusěrował.
+perftools-presets-web-compat-label = Webkompatibelnosć
+perftools-presets-web-compat-description = Dopórucone pśednastajenje za pytanje problemow z webkompatibelnosću we websedłach, město až se wugbaśeju slědujo.
 perftools-presets-custom-label = Swójski
-
-##
-

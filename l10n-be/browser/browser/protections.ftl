@@ -10,7 +10,6 @@ graph-week-summary =
         [few] { -brand-short-name } заблакаваў { $count } трэкеры за мінулы тыдзень
        *[many] { -brand-short-name } заблакаваў { $count } трэкераў за мінулы тыдзень
     }
-
 # Variables:
 #   $count (Number) - Number of tracking events blocked.
 #   $earliestDate (Number) - Unix timestamp in ms, representing a date. The
@@ -21,57 +20,43 @@ graph-total-tracker-summary =
         [few] <b>{ $count }</b> трэкеры заблакавана з { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
        *[many] <b>{ $count }</b> трэкераў заблакавана з { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
     }
-
 # Text displayed instead of the graph when in Private Mode
 graph-private-window = { -brand-short-name } працягвае блакаваць трэкеры ў  прыватных вокнах, але не  запісвае, што было заблакавана.
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = Трэкеры, якія { -brand-short-name } заблакаваў на гэтым тыдні
-
 protection-report-webpage-title = Панэль стану аховы
 protection-report-page-content-title = Панэль стану аховы
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
 protection-report-page-summary = { -brand-short-name } можа ахоўваць вашу прыватнасць за кадрам у часе аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
 protection-report-page-summary-default = { -brand-short-name } ахоўвае вашу прыватнасць за кадрам у часе аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
-
 protection-report-settings-link = Кіруйце сваімі наладамі прыватнасці і бяспекі
-
 etp-card-title-always = Узмоцненая ахова ад сачэння: заўсёды ўключана
 etp-card-title-custom-not-blocking = Узмоцненая ахова ад сачэння: ВЫКЛЮЧАНА
 etp-card-content-description = { -brand-short-name } аўтаматычна спыняе таемнае сачэнне кампаній за вамі ў Інтэрнэце.
 protection-report-etp-card-content-custom-not-blocking = Усе меры аховы зараз адключаны. Выберыце, якія трэкеры трэба заблакаваць, кіруючы наладамі аховы { -brand-short-name }.
 protection-report-manage-protections = Кіраваць наладамі
-
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
 # capitalization for this string should match the output for your locale.
 graph-today = Сёння
-
 # This string is used to describe the graph for screenreader users.
 graph-legend-description = Графік змяшчае агульную колькасць трэкераў кожнага тыпу, заблакаваны на гэтым тыдні.
-
 social-tab-title = Трэкеры сацыяльных сетак
 social-tab-contant = Сацыяльныя сеткі размяшчаюць трэкеры на іншых сайтах, каб сачыць за тым, што вы робіце, бачыце і глядзіце ў сеціве. Гэта дазваляе кампаніям сацыяльных сетак даведацца пра вас больш за тое, чым вы дзеліцеся ў сваіх профілях у сацыяльных сетках. <a data-l10n-name="learn-more-link">Падрабязней</a>
-
 cookie-tab-title = Міжсайтавыя кукі асочвання
 cookie-tab-content = Гэтыя кукі ідуць за вамі з сайта на сайт, каб сабраць дадзеныя пра тое, што вы робіце ў Інтэрнэце. Яны ўсталёўваюцца трэцім бокам, такім як рэкламадаўцы і аналітычныя кампаніі. Блакаванне трэцебаковых кукі асочвання зніжае колькасць рэкламы, якая ідзе за вамі. <a data-l10n-name="learn-more-link">Даведацца больш</a>
-
 tracker-tab-title = Змест з элементамі сачэння
 tracker-tab-description = Вэб-сайты могуць загружаць вонкавую рэкламу, відэа і іншае змесціва з кодам асочвання. Блакіроўка змесціва асочвання можа дапамагчы сайтам хутчэй загружацца, але некаторыя кнопкі, формы і палі ўваходу могуць не працаваць. <a data-l10n-name="learn-more-link">Даведацца больш</a>
-
 fingerprinter-tab-title = Збіральнікі лічбавых адбіткаў
 fingerprinter-tab-content = Збіральнікі лічбавых адбіткаў збіраюць налады вашага браўзера і камп'ютара для стварэння вашага профілю. Выкарыстоўваючы гэты лічбавы адбітак, яны могуць асочваць вас на розных сайтах. <a data-l10n-name="learn-more-link">Даведацца больш</a>
-
 cryptominer-tab-title = Майнеры крыптавалют
 cryptominer-tab-content = Майнеры крыптавалют выкарыстоўваюць вылічальную магутнасць вашай сістэмы, каб здабываць лічбавыя грошы. Скрыпты для здабычы крыптавалют разраджаюць вашу батарэю, запавольваюць працу камп'ютара і могуць павялічыць ваш выдаткі на электраэнергію. <a data-l10n-name="learn-more-link">Даведацца больш</a>
-
 protections-close-button2 =
     .aria-label = Закрыць
     .title = Закрыць
-
 mobile-app-title = Блакуйце рэкламныя трэкеры на некалькіх прыладах
 mobile-app-card-content = Выкарыстоўвайце мабільны браўзер з убудаванай аховай ад рэкламнага сачэння.
 mobile-app-links = { -brand-product-name } Браўзер для <a data-l10n-name="android-mobile-inline-link">Android</a> і <a data-l10n-name="ios-mobile-inline-link">iOS</a>
-
 lockwise-title = Больш ніколі не забывайце свой пароль
 passwords-title-logged-in = Кіруйце сваімі паролямі
 passwords-header-content = { -brand-product-name } надзейна захоўвае вашы паролі ў вашым браўзеры.
@@ -80,8 +65,6 @@ protection-report-passwords-save-passwords-button = Захаваць парол�
     .title = Захаваць паролі
 protection-report-passwords-manage-passwords-button = Кіраваць паролямі
     .title = Кіраванне паролямі
-
-
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
 lockwise-scanned-text-breached-logins =
@@ -90,7 +73,6 @@ lockwise-scanned-text-breached-logins =
         [few] { $count } паролі, імаверна, выкрыты ў выніку ўцечкі дадзеных.
        *[many] { $count } пароляў, імаверна, выкрыта ў выніку ўцечкі дадзеных.
     }
-
 # While English doesn't use the number in the plural form, you can add $count to your language
 # if needed for grammatical reasons.
 # Variables:
@@ -102,7 +84,6 @@ lockwise-scanned-text-no-breached-logins =
        *[many] Вашы паролі надзейна захоўваюцца.
     }
 lockwise-how-it-works-link = Як гэта працуе
-
 monitor-title = Сачыце за ўцечкамі дадзеных
 monitor-link = Як гэта працуе
 monitor-header-content-no-account = Паспрабуйце { -monitor-brand-name }, каб спраўдзіць, ці не ўцяклі вашы дадзеныя у вядомых узломах, і атрымліваць апавяшчэнні аб новых уцечках.
@@ -110,14 +91,12 @@ monitor-header-content-signed-in = { -monitor-brand-name } папярэдзіц�
 monitor-sign-up-link = Падпісацца на абвесткі аб уцечках
     .title = Падпісацца на абвесткі аб уцечках ад { -monitor-brand-name }
 auto-scan = Аўтаматычна прасканавана сёння
-
 monitor-emails-tooltip =
     .title = Пабачыць адрасы пошты, якія назіраюцца ў { -monitor-brand-short-name }
 monitor-breaches-tooltip =
     .title = Пабачыць вядомыя ўцечкі дадзеных на { -monitor-brand-short-name }
 monitor-passwords-tooltip =
     .title = Пабачыць выкрытыя паролі на { -monitor-brand-short-name }
-
 # This string is displayed after a large numeral that indicates the total number
 # of email addresses being monitored. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -127,7 +106,6 @@ info-monitored-emails =
         [few] Адрасы электроннай пошты асочваецца
        *[many] Адрасоў электроннай пошты асочваецца
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of known data breaches. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -137,7 +115,6 @@ info-known-breaches-found =
         [few] Вядомыя парушэнні дадзеных раскрылі вашу інфармацыю
        *[many] Вядомых парушэнняў дадзеных раскрылі вашу інфармацыю
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of known data breaches that are marked as resolved by the user. Don’t add $count
 # to your localization, because it would result in the number showing twice.
@@ -147,7 +124,6 @@ info-known-breaches-resolved =
         [few] Вядомыя ўцечкі дадзеных адзначаны як вырашаныя
        *[many] Вядомых уцечак дадзеных адзначана як вырашаныя
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of exposed passwords. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -157,7 +133,6 @@ info-exposed-passwords-found =
         [few] Паролі выяўлена ва ўсіх уцечках
        *[many] Пароляў выяўлена ва ўсіх уцечках
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of exposed passwords that are marked as resolved by the user. Don’t add $count
 # to your localization, because it would result in the number showing twice.
@@ -167,7 +142,6 @@ info-exposed-passwords-resolved =
         [few] Паролі выяўлены ў нявырашаных уцечках
        *[many] Пароляў выяўлена ў нявырашаных уцечках
     }
-
 monitor-no-breaches-title = Добрыя навіны!
 monitor-no-breaches-description = У вас няма вядомых уцечак дадзеных. Калі гэта зменіцца, мы вам паведамім.
 monitor-view-report-link = Паглядзець справаздачу
@@ -178,7 +152,6 @@ monitor-manage-breaches-link = Кіраваць уцечкамі дадзены�
     .title = Кіраваць уцечкамі дадзеных на { -monitor-brand-short-name }
 monitor-breaches-resolved-title = Нядрэнна! Вы вырашылі ўсе вядомыя ўцечкі дадзеных.
 monitor-breaches-resolved-description = Калі ваш адрас пошты з'явіцца ў любых новых уцечках, мы паведамім вам.
-
 # Variables:
 # $numBreachesResolved (Number) - Number of breaches marked as resolved by the user on Monitor.
 # $numBreaches (Number) - Number of breaches in which a user's data was involved, detected by Monitor.
@@ -188,11 +161,9 @@ monitor-partial-breaches-title =
         [few] { $numBreachesResolved } з { $numBreaches } уцечак пазначаны як вырашаныя
        *[many] { $numBreachesResolved } з { $numBreaches } уцечак пазначана як вырашаныя
     }
-
 # Variables:
 # $percentageResolved (Number) - Percentage of breaches marked as resolved by a user on Monitor.
 monitor-partial-breaches-percentage = { $percentageResolved } завершана
-
 monitor-partial-breaches-motivation-title-start = Выдатны пачатак!
 monitor-partial-breaches-motivation-title-middle = Так трымаць!
 monitor-partial-breaches-motivation-title-end = Амаль гатова! Так трымаць.
@@ -247,3 +218,67 @@ bar-tooltip-cryptominer =
             [few] { $count } майнеры крыптавалют ({ $percentage }%)
            *[many] { $count } майнераў крыптавалют ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Меры аховы прыватнасці
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } заблакаваны на гэтым тыдні
+        [few] { $count } заблакавана на гэтым тыдні
+       *[many] { $count } заблакавана на гэтым тыдні
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } трэкер
+        [few] { $count } трэкеры
+       *[many] { $count } трэкераў
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } збіральнік лічбавых адбіткаў
+        [few] { $count } збіральнікі лічбавых адбіткаў
+       *[many] { $count } збіральнікаў лічбавых адбіткаў
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } кукі сачэння
+        [few] { $count } кукі сачэння
+       *[many] { $count } кукі сачэння
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } трэкер сацыяльных сетак
+        [few] { $count } трэкеры сацыяльных сетак
+       *[many] { $count } трэкераў сацыяльных сетак
+    }
+privacy-metrics-empty = На гэтым тыдні трэкеры не заблакаваныя. { -brand-short-name } ахоўвае вас у часе аглядання ад наступных пагроз.
+privacy-metrics-loading = Загрузка статыстыкі аховы…
+privacy-metrics-error = Не ўдалося загрузіць статыстыку аховы.
+privacy-metrics-private-window = { -brand-short-name } працягвае блакаваць трэкеры ў прыватных вокнах, але не вядзе ўлік таго, што было заблакавана.
+
+## VPN promo card and banner
+
+protections-vpn-title = Вазьміце ахову прыватнасці па-за межы браўзера
+protections-vpn-header-content = Абараніце ўсю сваю прыладу з дапамогай { -mozilla-vpn-brand-name }. Адно націсканне шыфруе ўвесь трафік і хавае ваша месцазнаходжанне.
+protections-get-vpn-link = Атрымаць { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: Вы падпісаны
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [one] Выкарыстанне { -mozilla-vpn-brand-name } шыфруе ўвесь ваш трафік і хавае ваша месцазнаходжанне — на { $count } прыладзе. Атрымайце максімум ад сваёй падпіскі — дадайце яе з <a data-l10n-name="playstore-link">Google Play Store</a> або <a data-l10n-name="appstore-link">Apple App Store</a>.
+        [few] Выкарыстанне { -mozilla-vpn-brand-name } шыфруе ўвесь ваш трафік і хавае ваша месцазнаходжанне — на { $count } прыладах. Атрымайце максімум ад сваёй падпіскі — дадайце яе з <a data-l10n-name="playstore-link">Google Play Store</a> або <a data-l10n-name="appstore-link">Apple App Store</a>.
+       *[many] Выкарыстанне { -mozilla-vpn-brand-name } шыфруе ўвесь ваш трафік і хавае ваша месцазнаходжанне — на { $count } прыладах. Атрымайце максімум ад сваёй падпіскі — дадайце яе з <a data-l10n-name="playstore-link">Google Play Store</a> або <a data-l10n-name="appstore-link">Apple App Store</a>.
+    }
+protections-vpn-banner-header = Абарона, якая выходзіць за рамкі браўзера
+protections-vpn-banner-content = Паспрабуйце { -mozilla-vpn-brand-name } без рызыкі і даведайцеся, чаму TechRadar кажа: «Яго хуткасць, прастата і нізкая штомесячная цана робяць яго вартым увагі».
+protections-vpn-banner-link = Атрымаць { -mozilla-vpn-brand-name }

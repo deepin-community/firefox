@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Leig seachad
     .secondarybuttonaccesskey = s
 appmenu-update-restart-message2 = Faigh an tionndadh as ùire dhe { -brand-shorter-name }. Thèid na tabaichean is uinneagan fosgailte aiseag dhut.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Neo-dhèan
+    .secondarybuttonaccesskey = N
 appmenu-update-other-instance =
     .label = Chan urrainn dha { -brand-shorter-name } àrdachadh gun tionndadh as ùire gu fèin-obrachail.
     .buttonlabel = Ùraich { -brand-shorter-name } co-dhiù
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Chan ann an-dràsta
     .secondarybuttonaccesskey = c
 appmenu-update-other-instance-message = Tha ùrachadh air { -brand-shorter-name } ri fhaighinn ach cha ghabh a stàladh on a tha lethbhreac eile dhe { -brand-shorter-name } a’ ruith. Dùin esan airson leantainn ris an ùrachadh no cuir romhad gun dèan thu ùrachadh a dh’aindeoin sin (dh’fhaoidte nach obraich an lethbhreac eile mar bu chòir tuilleadh gus an ath-thòisich thu e).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Ceart ma-thà
     .buttonaccesskey = C
 appmenu-addon-post-install-message3 = Stiùirich na tuilleadain ’s na h-ùrlaran agad le clàr-taice na h-aplacaid.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = ’S urrainn dhut na ceadan is roghainnean dàta ùrachadh uair sam bith ann an <a data-l10n-name="settings-link">roghainnean an leudachain</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Prìnich an leudachan ri bàr nan saothair
+    .accesskey = P
 appmenu-addon-post-install-incognito-checkbox =
     .label = Leig leis an leudachan seo ruith ann an uinneagan prìobhaideach
     .accesskey = a
-    
 appmenu-new-tab-controlled-changes =
     .label = Chaidh na chì thu air taba ùr atharrachadh.
     .buttonlabel = Cùm na h-atharraichean

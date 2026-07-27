@@ -29,8 +29,3 @@ about-logging-preset-windows-label = Windows
 about-logging-preset-custom-label = Personelaet
 # Error handling
 about-logging-error = Fazi:
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

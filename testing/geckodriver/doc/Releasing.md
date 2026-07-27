@@ -1,5 +1,7 @@
 # Releasing geckodriver
 
+## Standard Release Process
+
 Releasing geckodriver is not as easy as it once used to be when the
 project’s canonical home was on GitHub.  Today geckodriver is hosted
 in [mozilla-central], and whilst we do want to make future releases
@@ -12,7 +14,7 @@ In any case, the steps to release geckodriver are as follows:
 [mozilla-central]: https://hg.mozilla.org/mozilla-central/
 [Mozilla’s CI infrastructure]: https://treeherder.mozilla.org/
 
-## Update in-tree dependency crates
+### Update in-tree dependency crates
 
 geckodriver depends on a number of Rust crates that also live in
 central by using relative paths. Here an excerpt from its `Cargo.toml`:
@@ -57,7 +59,7 @@ For each crate:
     % cargo semver-checks check-release
     ```
 
-4. Update the crate:
+4. Update dependencies:
 
    ```shell
    % cargo update -p <crate name>
@@ -81,11 +83,11 @@ For each crate:
 [cargo-semver-checks]: https://crates.io/crates/cargo-semver-checks
 [audit criteria]: https://mozilla.github.io/cargo-vet/audit-criteria.html
 [wildcard audit entries]: https://mozilla.github.io/cargo-vet/wildcard-audit-entries.html
-[Cargo.toml]: https://searchfox.org/mozilla-central/source/testing/geckodriver/Cargo.toml
-[Cargo.lock]: https://searchfox.org/mozilla-central/source/Cargo.lock
-[audits.toml]: https://searchfox.org/mozilla-central/source/supply-chain/audits.toml
+[Cargo.toml]: https://searchfox.org/firefox-main/source/testing/geckodriver/Cargo.toml
+[Cargo.lock]: https://searchfox.org/firefox-main/source/Cargo.lock
+[audits.toml]: https://searchfox.org/firefox-main/source/supply-chain/audits.toml
 
-## Update the change log
+### Update the change log
 
 Notable changes to geckodriver are mentioned in [CHANGES.md]. Many
 users rely on this, so it’s important that you make it **relevant
@@ -122,13 +124,13 @@ mention of this.  Lines are optimally formatted at roughly 72 columns
 to make the file readable in a text editor as well as rendered HTML.
 fmt(1) does a splendid job at text formatting.
 
-[CHANGES.md]: https://searchfox.org/mozilla-central/source/testing/geckodriver/CHANGES.md
-[webdriver]: https://searchfox.org/mozilla-central/source/testing/webdriver
-[marionette]: https://searchfox.org/mozilla-central/source/testing/geckodriver/marionette
-[rust-mozrunner]: https://searchfox.org/mozilla-central/source/testing/mozbase/rust/mozrunner
-[rust-mozdevice]: https://searchfox.org/mozilla-central/source/testing/mozbase/rust/mozdevice
+[CHANGES.md]: https://searchfox.org/firefox-main/source/testing/geckodriver/CHANGES.md
+[webdriver]: https://searchfox.org/firefox-main/source/testing/webdriver
+[marionette]: https://searchfox.org/firefox-main/source/testing/geckodriver/marionette
+[rust-mozrunner]: https://searchfox.org/firefox-main/source/testing/mozbase/rust/mozrunner
+[rust-mozdevice]: https://searchfox.org/firefox-main/source/testing/mozbase/rust/mozdevice
 
-## Bump the version number and update the support page
+### Bump the version number and update the support page
 
 Bump the version number in [Cargo.toml] to the next version.
 geckodriver follows [semantic versioning] so it’s a good idea to
@@ -148,9 +150,9 @@ including the required versions of Selenium, and Firefox.
 Finally commit all those changes.
 
 [semantic versioning]: http://semver.org/
-[support page]: https://searchfox.org/mozilla-central/source/testing/geckodriver/doc/Support.md
+[support page]: https://searchfox.org/firefox-main/source/testing/geckodriver/doc/Support.md
 
-## Add the changeset id
+### Add the changeset id
 
 To easily allow a release build of geckodriver after cloning the
 repository, the changeset id for the release has to be added to the
@@ -162,7 +164,7 @@ to `mozilla-central`, the changeset id from the merge commit has to picked for
 finalizing the change log. This specific id is needed because Taskcluster creates
 the final signed builds based on that merge.
 
-## Release new in-tree dependency crates
+### Release new in-tree dependency crates
 
 Make sure to wait until the complete patch series from above has been
 merged to mozilla-central. Then continue with the following steps.
@@ -185,9 +187,9 @@ Do not release the geckodriver crate yet!
 
 Once all crates have been published observe the `/target/package/` folder under
 the root of the mozilla-central repository and remove all the folders related
-to the above published packages (it will save ~1GB disk space).
+to the above published crates (it will save ~1GB disk space).
 
-## Export to GitHub
+### Export to GitHub
 
 The canonical GitHub repository is <https://github.com/mozilla/geckodriver.git>
 so make sure you have a local clone of that.  It has three branches:
@@ -228,10 +230,10 @@ Now verify that geckodriver builds correctly by running:
 % cargo build
 ```
 
-[README.md]: https://searchfox.org/mozilla-central/source/testing/geckodriver/README.md
-[testing/geckodriver]: https://searchfox.org/mozilla-central/source/testing/geckodriver
+[README.md]: https://searchfox.org/firefox-main/source/testing/geckodriver/README.md
+[testing/geckodriver]: https://searchfox.org/firefox-main/source/testing/geckodriver
 
-## Commit local changes
+### Commit local changes
 
 Now commit all the changes you have made locally to the _release_ branch.
 It is recommended to setup a [GPG key] for signing the commit, so
@@ -261,7 +263,7 @@ place for external consumers to build their own version of geckodriver.
 
 [GPG key]: https://help.github.com/articles/signing-commits/
 
-## Make the release
+### Make the release
 
 geckodriver needs to be manually released on github.com. Therefore start to
 [draft a new release], and make the following changes:
@@ -278,6 +280,12 @@ geckodriver needs to be manually released on github.com. Therefore start to
 4. Find the signed geckodriver archives in the [taskcluster index] by
    replacing %changeset% with the full release changeset id. Rename the
    individual files so the basename looks like 'geckodriver-v%version%-%platform%'.
+
+   The macOS build is a universal binary (x86_64 + aarch64). For
+   backward compatibility, create a copy of the macOS archive with
+   the `-aarch64` platform suffix so that existing consumers that
+   reference the architecture-specific filename continue to work.
+
    Upload them all, including the checksum files for the Linux platforms.
 
 5. Before announcing the release on GitHub publish the geckodriver crate as well
@@ -290,3 +298,98 @@ geckodriver needs to be manually released on github.com. Therefore start to
 [dev-webdriver]: https://groups.google.com/a/mozilla.org/g/dev-webdriver
 
 Congratulations!  You’ve released geckodriver!
+
+## Out-of-Band WebDriver Releases
+
+Occasionally, an out-of-band release of the `webdriver` crate may be required —
+for example, to fix a newly introduced regression that affects external WebDriver
+clients, while not necessitating a full geckodriver release.
+
+When preparing such a release, be especially cautious when selecting the
+semantic version number, to avoid breaking users who install geckodriver via
+`cargo install`.
+
+### Bump the version number
+
+To publish a fix for the `webdriver` crate, you’ll need to update its version.
+Decide whether the change qualifies as a bugfix or a minor release:
+
+1. Review recent changes in all geckodriver dependent crates since the last
+   geckodriver release.
+
+2. If external dependencies have been updated in any of the other crates, check
+   whether they could cause version conflicts with geckodriver by comparing
+   them against the upstream geckodriver repository on the `release` branch.
+   If any conflicts exist, bump the minor version. Otherwise, increment the
+   patch version for a bugfix release.
+
+In detail follow these steps:
+
+1. Change into the `testing/webdriver` folder.
+2. Update the version number in Cargo.toml based on the assessment above,
+   following [semantic versioning rules].
+
+     - For bugfix releases, there is no need to update the geckodriver crate.
+     - For minor releases, update the dependency in the geckodriver crate as well.
+     - Note: cargo update will fail if a dependency update is missed.
+
+3. Use the [cargo-semver-checks] command to validate the version change:
+
+    ```shell
+    % cargo semver-checks check-release
+    ```
+
+4. Update dependencies:
+
+   ```shell
+   % cargo update -p <crate name>
+   ```
+
+5. We also publish audit information for the crates based on Mozilla's
+   [audit criteria]. Because we use [wildcard audit entries] make sure that the
+   latest day of publication is still within the `end` date. The related entry
+   of the crate can be found at the top of [audits.toml]. If the date is over,
+   then update its value to at most 1 year in the future.
+
+6. Commit the changes for the modified [Cargo.toml] files, [Cargo.lock] and
+   [audits.toml].
+
+   ```shell
+   % git add Cargo.toml Cargo.lock audits.toml testing
+   % git commit -m "Bug XYZ - [rust-webdriver] Release version <version>"
+   ```
+
+### Release the new webdriver crate
+
+Make sure to wait until the complete patch series from above has been
+merged to mozilla-central. Then continue with the following steps.
+
+To release the webdriver crate change into `testing/webdriver` and run the
+following command to publish the crate:
+
+```shell
+% cargo publish
+```
+
+Once published observe the `/target/package/` folder under
+the root of the mozilla-central repository and remove all the folders related
+to the webdriver crate.
+
+### Verify the release
+
+To confirm the release was successful, verify that geckodriver can still be
+installed using:
+
+```shell
+cargo install geckodriver
+```
+
+If the installation fails:
+
+- Immediately yank the published `webdriver` crate from crates.io by using:
+
+    ```shell
+    cargo yank --version <version> webdriver
+    ```
+
+- Perform a minor version bump, and repeat the release process.

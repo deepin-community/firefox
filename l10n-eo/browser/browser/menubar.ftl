@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Preferoj
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Agordoj…
+menu-application-set-as-default =
+    .label = Difini { -brand-shorter-name } kiel la norman retumilon
 menu-application-services =
     .label = Servoj
 menu-application-hide-this =
@@ -55,7 +48,7 @@ menu-about =
 
 menu-file =
     .label = Dosiero
-    .accesskey = o
+    .accesskey = D
 menu-file-new-tab =
     .label = Nova langeto
     .accesskey = v
@@ -98,6 +91,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Dividi
     .accesskey = D
+menu-file-share-qrcode =
+    .label = Krei kodon QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Krei kodon QR
+    .accesskey = K
 menu-file-print-setup =
     .label = Agordi paĝon…
     .accesskey = A
@@ -146,8 +145,6 @@ menu-view-history-button =
     .label = Historio
 menu-view-synced-tabs-sidebar =
     .label = Spegulitaj langetoj
-menu-view-megalist-sidebar =
-    .label = Pasvortoj
 menu-view-full-zoom =
     .label = Grandeco
     .accesskey = G
@@ -217,7 +214,7 @@ menu-history =
 menu-history-show-all-history =
     .label = Montri tutan historion
 menu-history-clear-recent-history =
-    .label = Forigi ĵusan historion…
+    .label = Viŝi ĵusan historion…
 menu-history-synced-tabs =
     .label = Spegulitaj langetoj
 menu-history-restore-last-session =
@@ -255,6 +252,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Poŝaparataj legosignoj
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiloj
+menu-profiles-manage-profiles =
+    .label = Administri profilojn
+menu-profiles-new-profile =
+    .label = Nova profilo
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (nuna)
+menu-profiles-menu =
+    .label = Profiloj
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
     .accesskey = I
 menu-tools-downloads =
     .label = Elŝutoj
+    .accesskey = E
+menu-tools-extensions-and-themes =
+    .label = Etendaĵoj kaj etosoj
     .accesskey = E
 menu-tools-addons-and-themes =
     .label = Aldonaĵoj kaj etosoj

@@ -5,18 +5,20 @@
 package org.mozilla.focus.engine
 
 import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.browser.errorpages.ErrorType
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.RequestInterceptor
 import org.mozilla.focus.R
-import org.mozilla.focus.activity.CrashListActivity
-import org.mozilla.focus.browser.LocalizedContent
 import org.mozilla.focus.ext.components
+import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.utils.SupportUtils
 
+/**
+ * [RequestInterceptor] implementation for the application.
+ *
+ * Handles special URIs like `about:crashes` and provides custom error pages.
+ */
 class AppContentInterceptor(
     private val context: Context,
 ) : RequestInterceptor {
@@ -31,31 +33,10 @@ class AppContentInterceptor(
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
         return when (uri) {
-            LocalizedContent.URL_ABOUT -> RequestInterceptor.InterceptionResponse.Content(
-                LocalizedContent.loadAbout(context),
-                encoding = "base64",
-            )
-
-            LocalizedContent.URL_RIGHTS -> RequestInterceptor.InterceptionResponse.Content(
-                LocalizedContent.loadRights(context),
-                encoding = "base64",
-            )
-
-            LocalizedContent.URL_GPL -> RequestInterceptor.InterceptionResponse.Content(
-                LocalizedContent.loadGPL(context),
-                encoding = "base64",
-            )
-
-            LocalizedContent.URL_LICENSES -> RequestInterceptor.InterceptionResponse.Content(
-                LocalizedContent.loadLicenses(context),
-                encoding = "base64",
-            )
-
             "about:crashes" -> {
-                val intent = Intent(context, CrashListActivity::class.java)
-                intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-
+                context.components.appStore.dispatch(
+                    AppAction.OpenCrashList,
+                )
                 RequestInterceptor.InterceptionResponse.Url("about:blank")
             }
 

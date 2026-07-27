@@ -23,6 +23,10 @@ appmenuitem-downloads =
     .label = దింపుకోళ్ళు
 appmenuitem-passwords =
     .label = సంకేతపదాలు
+appmenuitem-extensions-and-themes =
+    .label = పొడగింతలు, అలంకారాలు
+appmenuitem-extensions =
+    .label = పొడగింతలు
 appmenuitem-addons-and-themes =
     .label = పొడగింతలు, అలంకారాలు
 appmenuitem-print =
@@ -84,10 +88,12 @@ appmenu-remote-tabs-opensettings =
 appmenu-remote-tabs-noclients = ఇతర పరికరాలలో తెరిచివున్న మీ ట్యాబులను ఇక్కడ చూడాలనుకుంటున్నారా?
 appmenu-remote-tabs-connectdevice =
     .label = మరొక పరికరాన్ని అనుసంధానించండి
+appmenu-remote-tabs-welcome = మీ ఇతర పరికరాల నుండి ట్యాబుల జాబితాను చూడండి.
 appmenu-remote-tabs-unverified = మీ ఖాతాను తనిఖీ చెయ్యాలి.
 appmenuitem-fxa-manage-account = ఖాతా నిర్వహణ
 appmenu-fxa-header2 = { -fxaccount-brand-name }
 appmenu-account-header = ఖాతా
+appmenu-fxa-signed-in-label = ప్రవేశించు
 appmenuitem-save-page =
     .label = పేజీని ఇలా భద్రపరచు…
 
@@ -116,6 +122,11 @@ profiler-popup-edit-settings-button =
     .label = అమరికలను మార్చండి…
 profiler-popup-discard-button =
     .label = విస్మరించు
+profiler-popup-start-shortcut =
+    { PLATFORM() ->
+        [macos] ⌃⇧1
+       *[other] Ctrl+Shift+1
+    }
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
@@ -141,6 +152,8 @@ profiler-popup-presets-media-label =
     .label = మాధ్యమాలు
 profiler-popup-presets-networking-label =
     .label = నెట్‌వర్కింగ్
+profiler-popup-presets-custom-label =
+    .label = అభిమతం
 
 ## History panel
 
@@ -155,6 +168,9 @@ appmenu-recently-closed-tabs =
     .label = ఇటీవల మూసిన ట్యాబులు
 appmenu-recently-closed-windows =
     .label = ఇటీవల మూసిన విండోలు
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = చరిత్రలో వెతకండి
 
 ## Help panel
 
@@ -171,6 +187,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = T
 appmenu-help-report-site-issue =
     .label = సైటులోని సమస్యను నివేదించండి…
+appmenu-help-share-ideas =
+    .label = ఆలోచనలను, అభిప్రాయాలను పంచుకోండి…
+    .accesskey = S
+appmenu-help-switch-device =
+    .label = కొత్త పరికరంలోకి మారడం
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -194,6 +215,21 @@ appmenu-help-not-deceptive =
 appmenu-customizetoolbar =
     .label = పనిముట్లపట్టీని మలుచుకోండి…
 appmenu-developer-tools-subheader = విహారిణి పనిముట్లు
+appmenu-developer-tools-extensions =
+    .label = డెవలపర్‌ల కోసం పొడగింతలు
+appmenuitem-report-broken-site =
+    .label = పనిచేయని సైటును నివేదించండి
 
 ## Panel for privacy and security products
 
+appmenuitem-sign-in-account = మీ ఖాతా లోనికి ప్రవేశించండి
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = మీ ఆన్‌లైన్ కార్యాచరణను సంరక్షించుకోండి
+appmenu-services-header = నా సేవలు
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = మొజిల్లా వారి ఇతర సంరక్షణ పనిముట్లను ప్రయత్నించండి:
+appmenu-other-protection-header = { -vendor-short-name } వారి ఇతర రక్షణ పనిముట్లని ప్రయత్నించండి:

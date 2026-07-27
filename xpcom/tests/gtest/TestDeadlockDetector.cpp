@@ -1,10 +1,6 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- * vim: sw=2 ts=4 et :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-#include "mozilla/ArrayUtils.h"
 
 #include "prthread.h"
 
@@ -298,10 +294,10 @@ static int ContentionNoDeadlock_Child() MOZ_NO_THREAD_SAFETY_ANALYSIS {
   for (uint32_t i = 0; i < kMutexCount; ++i)
     locks.AppendElement(new MUTEX("dd.cnd.ms"));
 
-  for (int32_t i = 0; i < (int32_t)ArrayLength(threads); ++i)
+  for (int32_t i = 0; i < (int32_t)std::size(threads); ++i)
     threads[i] = spawn(ContentionNoDeadlock_thread, states + i);
 
-  for (uint32_t i = 0; i < ArrayLength(threads); ++i) PR_JoinThread(threads[i]);
+  for (uint32_t i = 0; i < std::size(threads); ++i) PR_JoinThread(threads[i]);
 
   for (uint32_t i = 0; i < locks.Length(); ++i) delete locks[i];
 

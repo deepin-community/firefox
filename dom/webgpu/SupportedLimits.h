@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,10 +5,10 @@
 #ifndef GPU_SupportedLimits_H_
 #define GPU_SupportedLimits_H_
 
-#include "nsWrapperCache.h"
-#include "ObjectModel.h"
-
 #include <memory>
+
+#include "ObjectModel.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::webgpu {
 namespace ffi {
@@ -29,7 +28,11 @@ enum class Limit : uint8_t {
   MaxDynamicStorageBuffersPerPipelineLayout,
   MaxSampledTexturesPerShaderStage,
   MaxSamplersPerShaderStage,
+  MaxStorageBuffersInVertexStage,
+  MaxStorageBuffersInFragmentStage,
   MaxStorageBuffersPerShaderStage,
+  MaxStorageTexturesInVertexStage,
+  MaxStorageTexturesInFragmentStage,
   MaxStorageTexturesPerShaderStage,
   MaxUniformBuffersPerShaderStage,
   MaxUniformBufferBindingSize,
@@ -40,7 +43,6 @@ enum class Limit : uint8_t {
   MaxBufferSize,
   MaxVertexAttributes,
   MaxVertexBufferArrayStride,
-  MaxInterStageShaderComponents,
   MaxInterStageShaderVariables,
   MaxColorAttachments,
   MaxColorAttachmentBytesPerSample,
@@ -54,7 +56,7 @@ enum class Limit : uint8_t {
 };
 
 uint64_t GetLimit(const ffi::WGPULimits&, Limit);
-void SetLimit(ffi::WGPULimits*, Limit, double);
+void SetLimit(ffi::WGPULimits*, Limit, uint64_t);
 
 class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
  public:
@@ -77,7 +79,11 @@ class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
   _(MaxDynamicStorageBuffersPerPipelineLayout)
   _(MaxSampledTexturesPerShaderStage)
   _(MaxSamplersPerShaderStage)
+  _(MaxStorageBuffersInVertexStage)
+  _(MaxStorageBuffersInFragmentStage)
   _(MaxStorageBuffersPerShaderStage)
+  _(MaxStorageTexturesInVertexStage)
+  _(MaxStorageTexturesInFragmentStage)
   _(MaxStorageTexturesPerShaderStage)
   _(MaxUniformBuffersPerShaderStage)
   _(MaxUniformBufferBindingSize)
@@ -88,7 +94,6 @@ class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
   _(MaxBufferSize)
   _(MaxVertexAttributes)
   _(MaxVertexBufferArrayStride)
-  _(MaxInterStageShaderComponents)
   _(MaxInterStageShaderVariables)
   _(MaxColorAttachments)
   _(MaxColorAttachmentBytesPerSample)
@@ -104,8 +109,7 @@ class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
   SupportedLimits(Adapter* const aParent, const ffi::WGPULimits&);
 
  private:
-  ~SupportedLimits();
-  void Cleanup() {}
+  virtual ~SupportedLimits();
 };
 
 }  // namespace mozilla::webgpu

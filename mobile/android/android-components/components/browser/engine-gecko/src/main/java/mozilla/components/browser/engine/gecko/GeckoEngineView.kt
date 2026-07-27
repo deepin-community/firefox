@@ -9,7 +9,6 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.AttributeSet
-import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.VisibleForTesting
 import androidx.core.view.ViewCompat
@@ -64,8 +63,7 @@ class GeckoEngineView @JvmOverloads constructor(
     }.apply {
         // Explicitly mark this view as important for autofill. The default "auto" doesn't seem to trigger any
         // autofill behavior for us here.
-        @Suppress("WrongConstant")
-        ViewCompat.setImportantForAutofill(this, View.IMPORTANT_FOR_ACCESSIBILITY_YES)
+        ViewCompat.setImportantForAutofill(this, IMPORTANT_FOR_AUTOFILL_YES)
     }
 
     internal fun setColorScheme(preferredColorScheme: PreferredColorScheme) {
@@ -96,10 +94,15 @@ class GeckoEngineView @JvmOverloads constructor(
 
     override var selectionActionDelegate: SelectionActionDelegate? = null
 
+    @VisibleForTesting
+    internal var verticalScrollListener = GeckoVerticalScrollListener()
+    override val verticalScrollPosition = verticalScrollListener.scrollYPosition
+    override val verticalScrollDelta = verticalScrollListener.scrollYDeltas
+
     init {
         addView(geckoView)
 
-        /**
+        /*
          * With the current design, we have a [NestedGeckoView] inside this
          * [GeckoEngineView]. In our supported embedders, we wrap this with the
          * AndroidX `SwipeRefreshLayout` to enable features like Pull-To-Refresh:
@@ -140,6 +143,7 @@ class GeckoEngineView @JvmOverloads constructor(
             try {
                 geckoView.setSession(internalSession.geckoSession)
                 attachSelectionActionDelegate(internalSession.geckoSession)
+                verticalScrollListener.observe(internalSession.geckoSession)
             } catch (e: IllegalStateException) {
                 // This is to debug "display already acquired" crashes
                 val otherActivityClassName =
@@ -174,6 +178,7 @@ class GeckoEngineView @JvmOverloads constructor(
     @Synchronized
     override fun release() {
         detachSelectionActionDelegate(currentSession?.geckoSession)
+        verticalScrollListener.release()
 
         currentSession = null
 

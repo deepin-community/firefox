@@ -25,6 +25,10 @@ class ServiceWorkerFront extends FrontClassWithSpec(serviceWorkerSpec) {
     return this._form.url;
   }
 
+  get origin() {
+    return this._form.origin;
+  }
+
   get state() {
     return this._form.state;
   }
@@ -58,5 +62,4 @@ class ServiceWorkerFront extends FrontClassWithSpec(serviceWorkerSpec) {
   }
 }
 
-exports.ServiceWorkerFront = ServiceWorkerFront;
 registerFront(ServiceWorkerFront);

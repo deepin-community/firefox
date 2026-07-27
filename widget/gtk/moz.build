@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,6 +17,10 @@ with Files("*IMContextWrapper*"):
 with Files("*nsGtkKeyUtils*"):
     BUG_COMPONENT = ("Core", "DOM: UI Events & Focus Handling")
 
+DIRS += [
+    "/third_party/gbm/libgbm",
+]
+
 if CONFIG["COMPILE_ENVIRONMENT"]:
     DIRS += ["mozgtk"]
 
@@ -31,9 +33,12 @@ if CONFIG["MOZ_ENABLE_VAAPI"]:
 if CONFIG["MOZ_ENABLE_V4L2"]:
     DIRS += ["v4l2test"]
 
+if CONFIG["MOZ_ENABLE_VULKAN_VIDEO"]:
+    DIRS += ["vulkantest"]
+
 EXPORTS += [
     "MozContainer.h",
-    "MozContainerSurfaceLock.h",
+    "nsAppShell.h",
     "nsGTKToolkit.h",
     "nsGtkUtils.h",
     "nsImageToPixbuf.h",
@@ -50,12 +55,15 @@ EXPORTS.mozilla += [
 EXPORTS.mozilla.widget += [
     "CompositorWidgetChild.h",
     "CompositorWidgetParent.h",
-    "DMABufLibWrapper.h",
+    "DMABufDevice.h",
+    "DMABufFormats.h",
     "DMABufSurface.h",
-    "gbm.h",
+    "GSettings.h",
     "GtkCompositorWidget.h",
     "InProcessGtkCompositorWidget.h",
+    "nsGtkHtmlUtils.h",
     "va_drmcommon.h",
+    "WaylandSurfaceLock.h",
     "WindowSurface.h",
     "WindowSurfaceProvider.h",
 ]
@@ -64,15 +72,16 @@ UNIFIED_SOURCES += [
     "AsyncGtkClipboardRequest.cpp",
     "CompositorWidgetChild.cpp",
     "CompositorWidgetParent.cpp",
-    "DMABufLibWrapper.cpp",
+    "DMABufDevice.cpp",
+    "DMABufFormats.cpp",
     "DMABufSurface.cpp",
     "GfxInfo.cpp",
-    "gtk3drawing.cpp",
+    "GSettings.cpp",
     "GtkCompositorWidget.cpp",
+    "GtkWidgets.cpp",
     "IMContextWrapper.cpp",
     "InProcessGtkCompositorWidget.cpp",
     "MozContainer.cpp",
-    "MozContainerSurfaceLock.cpp",
     "MPRISServiceHandler.cpp",
     "NativeKeyBindings.cpp",
     "NativeMenuGtk.cpp",
@@ -84,6 +93,7 @@ UNIFIED_SOURCES += [
     "nsColorPicker.cpp",
     "nsDragService.cpp",
     "nsFilePicker.cpp",
+    "nsGtkHtmlUtils.cpp",
     "nsGtkKeyUtils.cpp",
     "nsImageToPixbuf.cpp",
     "nsLookAndFeel.cpp",
@@ -94,7 +104,7 @@ UNIFIED_SOURCES += [
     "ScreenHelperGTK.cpp",
     "TaskbarProgress.cpp",
     "WakeLockListener.cpp",
-    "WidgetStyleCache.cpp",
+    "WaylandSurfaceLock.cpp",
     "WidgetUtilsGtk.cpp",
     "WindowSurfaceProvider.cpp",
 ]
@@ -103,7 +113,6 @@ SOURCES += [
     "MediaKeysEventSourceFactory.cpp",
     "nsNativeThemeGTK.cpp",  # conflicts with X11 headers
     "nsWindow.cpp",  # conflicts with X11 headers
-    "WaylandVsyncSource.cpp",  # conflicts with X11 headers
 ]
 
 if CONFIG["MOZ_WAYLAND"]:
@@ -112,13 +121,19 @@ if CONFIG["MOZ_WAYLAND"]:
         "nsClipboardWayland.cpp",
         "nsWaylandDisplay.cpp",
         "WaylandBuffer.cpp",
+        "WaylandSurface.cpp",
+        "WindowSurfaceCairo.cpp",
         "WindowSurfaceWaylandMultiBuffer.cpp",
     ]
+    SOURCES += [
+        "nsWindowWayland.cpp",  # conflicts with X11 headers
+        "WaylandVsyncSource.cpp",  # conflicts with X11 headers
+    ]
     EXPORTS.mozilla.widget += [
-        "MozContainerSurfaceLock.h",
         "MozContainerWayland.h",
         "nsWaylandDisplay.h",
         "WaylandBuffer.h",
+        "WaylandSurface.h",
     ]
 
 if CONFIG["MOZ_X11"]:
@@ -128,6 +143,9 @@ if CONFIG["MOZ_X11"]:
         "WindowSurfaceX11.cpp",
         "WindowSurfaceX11Image.cpp",
         "WindowSurfaceX11SHM.cpp",
+    ]
+    SOURCES += [
+        "nsWindowX11.cpp",  # conflicts with X11 headers
     ]
 
 if CONFIG["NS_PRINTING"]:
@@ -158,6 +176,23 @@ LOCAL_INCLUDES += [
     "/widget/x11",
 ]
 
+CXXFLAGS += CONFIG["MOZ_GBM_CFLAGS"]
+if not CONFIG["MOZ_SYSTEM_GBM"]:
+    LOCAL_INCLUDES += [
+        "/third_party/gbm/gbm/",
+    ]
+    DIRS += [
+        "/third_party/gbm/gbm/",
+    ]
+
+CXXFLAGS += CONFIG["MOZ_LIBDRM_CFLAGS"]
+if not CONFIG["MOZ_SYSTEM_LIBDRM"]:
+    LOCAL_INCLUDES += [
+        "/third_party/drm/drm/",
+        "/third_party/drm/drm/include",
+        "/third_party/drm/drm/include/libdrm",
+    ]
+
 DEFINES["CAIRO_GFX"] = True
 
 DEFINES["MOZ_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"]
@@ -180,4 +215,4 @@ if CONFIG["MOZ_ENABLE_DBUS"]:
     ]
     CXXFLAGS += CONFIG["MOZ_DBUS_CFLAGS"]
 
-CXXFLAGS += ["-Werror=switch"]
+COMPILE_FLAGS["WARNINGS_CXXFLAGS"] += ["-Werror=switch"]

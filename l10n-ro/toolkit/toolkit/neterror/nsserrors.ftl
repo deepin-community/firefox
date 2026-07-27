@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 # DO NOT ADD THINGS OTHER THAN ERROR MESSAGES HERE.
 # This file gets parsed into a JS dictionary of all known error message ids in
 # gen_aboutneterror_codes.py . If we end up needing fluent attributes or
@@ -9,13 +10,11 @@
 
 psmerr-ssl-disabled = Nu se poate stabili o conexiune securizată deoarece protocolul SSL a fost dezactivat.
 psmerr-ssl2-disabled = Nu se poate stabili o conexiune securizată deoarece site-ul folosește o versiune mai veche, nesigură, a protocolului SSL.
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     Ai primit un certificat nevalid.  Te rugăm să contactezi administratorul serverului sau adresa corespondentă de e-mail și furnizează-le următoarele informații:
     
     Certificatul tău conține același număr de serie ca un alt certificat emis de autoritatea de certificare.  Te rugăm să obții un certificat nou cu un număr de serie unic.
-
 ssl-error-export-only-server = Nu se poate comunica securizat. Partenerul de conexiune nu suportă criptare de grad înalt.
 ssl-error-us-only-server = Nu se poate comunica securizat. Partenerul de conexiune necesită criptare de grad înalt care nu este suportată.
 ssl-error-no-cypher-overlap = Nu se poate comunica securizat cu partenerul: nu este suportat niciun algoritm de criptare.
@@ -38,7 +37,7 @@ ssl-error-ssl-disabled = Nu se poate conecta: SSL este dezactivat.
 ssl-error-fortezza-pqg = Conectare imposibilă: partenerul de conexiune SSL este într-un alt domeniu FORTEZZA.
 ssl-error-unknown-cipher-suite = S-a cerut o suită necunoscută de cifrare SSL.
 ssl-error-no-ciphers-supported = Nu sunt prezente și activate în acest program niciun fel de suite de cifrare.
-ssl-error-bad-block-padding = SSL a primit o înregistrare cu blocuri formatate greșit.
+ssl-error-bad-block-padding = SSL a primit o înregistrare cu o completare de bloc greșită.
 ssl-error-rx-record-too-long = SSL a primit o înregistrare care depășește lungimea maximă permisă.
 ssl-error-tx-record-too-long = SSL a încercat să trimită o listă care depășește lungimea maximă permisă.
 ssl-error-rx-malformed-hello-request = SSL a primit un mesaj malformat „Hello Request” de confirmare a conexiunii.
@@ -152,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = Nu a fost configurat niciun algorit
 ssl-error-unsupported-signature-algorithm = Serverul a folosit o combinație fără suport de algoritmi de semnătură și hash.
 ssl-error-missing-extended-master-secret = Serverul a încercat să reia conexiunea fără o extensie corectă extended_master_secret.
 ssl-error-unexpected-extended-master-secret = Serverul a încercat să reia cu o extensie neașteptată extended_master_secret.
-
 sec-error-io = A intervenit o eroare I/O în timpul autorizării securizate.
 sec-error-library-failure = eroare a bibliotecii de securitate.
 sec-error-bad-data = biblioteca de securitate: s-au primit date greșite.
@@ -176,7 +174,7 @@ sec-error-no-memory = biblioteca de securitate: eroare de alocare a memoriei.
 sec-error-untrusted-issuer = Emitentul certificatului partenerului a fost marcat ca nefiind de încredere de către utilizator.
 sec-error-untrusted-cert = Certificatul partenerului a fost marcat ca nefiind de încredere de utilizator.
 sec-error-duplicate-cert = Certificatul există deja în baza ta de date.
-sec-error-duplicate-cert-name = Numele certificatului preluat repetă unul deja existent în baza ta de date.
+sec-error-duplicate-cert-name = Numele certificatului preluat duplică unul deja existent în baza ta de date.
 sec-error-adding-cert = Eroare la adăugarea certificatului la baza de date.
 sec-error-filing-key = Eroare de scriere a cheii pentru acest certificat.
 sec-error-no-key = Cheia privată pentru acest certificat nu poate fi găsită în baza de date cu chei
@@ -245,7 +243,7 @@ sec-error-pkcs12-key-database-not-initialized = Nu se poate exporta. Baza de dat
 sec-error-keygen-fail = Nu se poate genera perechea de chei publică/privată.
 sec-error-invalid-password = Parola introdusă este nevalidă. Te rugăm să alegi alta.
 sec-error-retry-old-password = Parola veche a fost introdusă incorect. Te rugăm să încerci din nou.
-sec-error-bad-nickname = Pseudonimul certificatului este deja utilizat.
+sec-error-bad-nickname = Pseudonimul certificatului este deja în uz.
 sec-error-not-fortezza-issuer = Partenerul FORTEZZA are un certificat non-FORTEZZA.
 sec-error-cannot-move-sensitive-key = O cheie senzitivă nu poate fi mutată în slotul unde este nevoie de ea.
 sec-error-js-invalid-module-name = Denumirea modulului este nevalidă.
@@ -319,7 +317,6 @@ sec-error-locked-password = Parola e blocată.
 sec-error-unknown-pkcs11-error = Eroare PKCS #11 necunoscută.
 sec-error-bad-crl-dp-url = URL nevalid sau fără suport în denumirea punctului de distribuție CRL.
 sec-error-cert-signature-algorithm-disabled = The certificate was signed using an signature algorithm that is disabled because it is not secure.
-
 mozilla-pkix-error-key-pinning-failure = Serverul folosește fixarea cheilor publice (HPKP), însă nu a putut fi construit niciun lanț de certificate de încredere care să se coreleze la setul de fixare. Încălcările mecanismului de fixare a cheilor nu pot fi ocolite.
 mozilla-pkix-error-ca-cert-used-as-end-entity = Serverul folosește un certificat cu o extensie de constrângeri de bază care îl identifică drept autoritate de certificare. Nu ar fi cazul, dacă ar fi un certificat emis corespunzător.
 mozilla-pkix-error-inadequate-key-size = Serverul a prezentat un certificat cu o mărime a cheii care este prea mică pentru a stabili o conexiune securizată.
@@ -334,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = Serverul a prezentat un certificat
 mozilla-pkix-error-empty-issuer-name = Serverul a prezentat un certificat fără un nume de emițător.
 mozilla-pkix-error-additional-policy-constraint-failed = O constrângere suplimentară de politică a eșuat la validarea acestui certificat.
 mozilla-pkix-error-self-signed-cert = Certificatul nu prezintă încredere deoarece este semnat de el însuși.
-
+mozilla-pkix-error-issuer-no-longer-trusted = Autoritatea de certificare care a emis certificatul nu era de încredere înainte de emiterea certificatului.
 xp-java-remove-principal-error = Nu se poate elimina principalul
 xp-java-delete-privilege-error = Nu s-a putut șterge privilegiul
 xp-java-cert-not-exists-error = Acest principal nu are un certificat
-
 xp-sec-fortezza-bad-card = Cardul Fortezza nu a fost inițializat corect. Te rugăm să-l elimini și să-l înapoiezi persoanei care l-a emis.
 xp-sec-fortezza-no-card = Nu a fost găsit niciun card Fortezza
 xp-sec-fortezza-none-selected = Nu a fost selectat niciun card Fortezza

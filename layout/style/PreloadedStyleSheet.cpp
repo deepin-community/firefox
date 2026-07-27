@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,30 +27,22 @@ NS_IMPL_CYCLE_COLLECTING_RELEASE(PreloadedStyleSheet)
 
 NS_IMPL_CYCLE_COLLECTION(PreloadedStyleSheet, mSheet)
 
-nsresult PreloadedStyleSheet::GetSheet(StyleSheet** aResult) {
-  *aResult = nullptr;
-
+Result<StyleSheet*, nsresult> PreloadedStyleSheet::GetSheet() {
   MOZ_DIAGNOSTIC_ASSERT(mLoaded);
 
   if (!mSheet) {
     auto loader = MakeRefPtr<css::Loader>();
-    auto result = loader->LoadSheetSync(mURI, mParsingMode,
-                                        css::Loader::UseSystemPrincipal::Yes);
-    if (result.isErr()) {
-      return result.unwrapErr();
-    }
-    mSheet = result.unwrap();
+    mSheet = MOZ_TRY(loader->LoadSheetSync(
+        mURI, mParsingMode, css::Loader::UseSystemPrincipal::Yes));
   }
-
-  *aResult = mSheet;
-  return NS_OK;
+  return {mSheet.get()};
 }
 
 nsresult PreloadedStyleSheet::Preload() {
   MOZ_DIAGNOSTIC_ASSERT(!mLoaded);
   mLoaded = true;
-  StyleSheet* sheet;
-  return GetSheet(&sheet);
+  MOZ_TRY(GetSheet());
+  return NS_OK;
 }
 
 NS_IMPL_ISUPPORTS(PreloadedStyleSheet::StylesheetPreloadObserver,

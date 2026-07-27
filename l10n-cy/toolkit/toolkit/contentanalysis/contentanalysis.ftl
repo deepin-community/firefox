@@ -13,6 +13,19 @@ contentanalysis-slow-agent-dialog-header = Wrthi'n sganio
 contentanalysis-slow-agent-dialog-body-file = Mae { $agent } yn asesu " { $filename } " yn erbyn polisïau data eich sefydliad. Gall hyn gymryd ychydig o amser.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [zero] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+        [one] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+        [two] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+        [few] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+        [many] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+       *[other] Mae { $agent } yn adolygu " { $filename } " a { $count } eitem ychwanegol yn erbyn polisïau data eich sefydliad. Gall hyn gymryd eiliad.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = Mae { $agent } yn asesu'r hyn a gludwyd gennych yn erbyn polisïau data eich sefydliad. Gall hyn gymryd ychydig o amser.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +38,9 @@ contentanalysis-operationtype-clipboard = clipfwrdd
 contentanalysis-operationtype-dropped-text = testun wedi'i ostwng
 contentanalysis-operationtype-print = argraffu
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = llwytho “{ $filename }” i fyny
+contentanalysis-upload-description = llwythiad “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = Llwythiad { $filename } i lawr
 contentanalysis-warndialogtitle = Gall y cynnwys hwn fod yn anniogel
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +55,6 @@ contentanalysis-genericresponse-message = Ymatebodd Dadansoddi Cynnwys gyda { $r
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Mae eich sefydliad yn defnyddio meddalwedd atal colli data sydd wedi rhwystro'r cynnwys hwn: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Digwyddodd gwall wrth gyfathrebu â'r feddalwedd atal colli data. Gwrthodwyd trosglwyddo adnodd: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Bu gwall wrth gyfathrebu â { $agent }. Gwrthodwyd trosglwyddo adnodd: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Methu cysylltu â { $agent }. Gwrthodwyd trosglwyddo adnodd: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Methwyd â dilysu llofnod ar gyfer { $agent }. Gwrthodwyd trosglwyddo adnodd: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +73,18 @@ contentanalysis-error-message-upload-file = Gwrthodwyd llwytho “{ $filename }�
 contentanalysis-error-message-dropped-text = Gwrthodwyd llusgo a gollwng.
 contentanalysis-error-message-clipboard = Gwrthodwyd gludo.
 contentanalysis-error-message-print = Gwrthodwyd argraffu.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Daeth y cysylltiad â chysylltiad { $agent } i ben. Mae { $contentName } wedi ei rwystro.
 contentanalysis-block-dialog-title-upload-file = Nid oes caniatâd i chi lwytho'r ffeil hon
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = O dan bolisïau diogelu data eich sefydliad, nid oes caniatâd i chi lwytho’r ffeil “{ $filename }”. Cysylltwch â'ch gweinyddwr am ragor o wybodaeth.
+contentanalysis-block-dialog-title-download-file = Nid oes caniatâd i chi lwytho'r ffeil hon i lawr
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = O dan bolisïau diogelu data eich sefydliad, nid oes caniatâd i chi lwytho’r ffeil “{ $filename }”. Cysylltwch â'ch gweinyddwr am ragor o wybodaeth.
 contentanalysis-block-dialog-title-clipboard = Nid oes caniatâd i chi ludo'r ffeil hon
 contentanalysis-block-dialog-body-clipboard = O dan bolisïau diogelu data eich sefydliad, nid oes caniatâd i chi ludo'r cynnwys hwn. Cysylltwch â'ch gweinyddwr am ragor o wybodaeth.
 contentanalysis-block-dialog-title-dropped-text = Nid oes caniatâd i chi ollwng y cynnwys hwn

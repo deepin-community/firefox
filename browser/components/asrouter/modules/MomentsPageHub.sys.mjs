@@ -13,13 +13,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 const SYSTEM_TICK_INTERVAL = 5 * 60 * 1000;
 const HOMEPAGE_OVERRIDE_PREF = "browser.startup.homepage_override.once";
 
-// For the "reach" event of Messaging Experiments
-const REACH_EVENT_CATEGORY = "messaging_experiments";
-const REACH_EVENT_METHOD = "reach";
-// Note it's not "moments-page" as Telemetry Events only accepts understores
-// for the event `object`
-const REACH_EVENT_OBJECT = "moments_page";
-
 export class _MomentsPageHub {
   constructor() {
     this.id = "moments-page-hub";
@@ -77,6 +70,7 @@ export class _MomentsPageHub {
    * it depends on user dependent parameters. Since the message matched
    * targeting we calculate `expire` based on the current timestamp and the
    * `expireDelta` which defines for how long it should be available.
+   *
    * @param expireDelta {number} - Offset in milliseconds from the current date
    */
   getExpirationDate(expireDelta) {
@@ -84,64 +78,56 @@ export class _MomentsPageHub {
   }
 
   executeAction(message) {
+    const { _nimbusFeature: feature_id, _nimbusSlug: slug } = message;
     const { id, data } = message.content.action;
     switch (id) {
-      case "moments-wnp":
+      case "moments-wnp": {
         const { url, expireDelta } = data;
         let { expire } = data;
         if (!expire) {
           expire = this.getExpirationDate(expireDelta);
         }
-        // In order to reset this action we can dispatch a new message that
-        // will overwrite the prev value with an expiration date from the past.
         Services.prefs.setStringPref(
           HOMEPAGE_OVERRIDE_PREF,
-          JSON.stringify({ message_id: message.id, url, expire })
+          JSON.stringify({
+            message_id: message.id,
+            url,
+            expire,
+            // These two are used in BrowserContentHandler for exposure events:
+            feature_id,
+            slug,
+          })
         );
         // Add impression and block immediately after taking the action
         this.sendUserEventTelemetry(message);
         this._addImpression(message);
         this._blockMessageById(message.id);
         break;
+      }
     }
   }
 
-  _recordReachEvent(message) {
-    const extra = { branches: message.branchSlug };
-    Services.telemetry.recordEvent(
-      REACH_EVENT_CATEGORY,
-      REACH_EVENT_METHOD,
-      REACH_EVENT_OBJECT,
-      message.experimentSlug,
-      extra
-    );
-  }
-
   async messageRequest({ triggerId, template }) {
-    const telemetryObject = { triggerId };
-    TelemetryStopwatch.start("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    const timerId = Glean.messagingSystem.messageRequestTime.start();
     const messages = await this._handleMessageRequest({
       triggerId,
       template,
       returnAll: true,
     });
-    TelemetryStopwatch.finish("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    Glean.messagingSystem.messageRequestTime.stopAndAccumulate(timerId);
 
-    // Record the "reach" event for all the messages with `forReachEvent`,
-    // only execute action for the first message without forReachEvent.
+    // Don't bother recording reach for moments page messages, since all they do
+    // for this message type is track startup and the interval. We do get more
+    // useful telemetry with exposure events in BrowserContentHandler.
     const nonReachMessages = [];
     for (const message of messages) {
-      if (message.forReachEvent) {
-        if (!message.forReachEvent.sent) {
-          this._recordReachEvent(message);
-          message.forReachEvent.sent = true;
-        }
-      } else {
+      if (!message.recordReach && !message._reachId) {
         nonReachMessages.push(message);
       }
     }
-    if (nonReachMessages.length) {
-      this.executeAction(nonReachMessages[0]);
+    const [message] = nonReachMessages;
+    if (message) {
+      this.executeAction(message);
     }
   }
 

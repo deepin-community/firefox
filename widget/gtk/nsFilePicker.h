@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsFilePicker_h__
-#define nsFilePicker_h__
+#ifndef nsFilePicker_h_
+#define nsFilePicker_h_
 
 #include <gtk/gtk.h>
 
@@ -16,7 +15,7 @@
 class nsIWidget;
 class nsIFile;
 
-class nsFilePicker : public nsBaseFilePicker {
+class nsFilePicker final : public nsBaseFilePicker {
  public:
   nsFilePicker();
 
@@ -40,30 +39,40 @@ class nsFilePicker : public nsBaseFilePicker {
   NS_IMETHOD GetFiles(nsISimpleEnumerator** aFiles) override;
 
   // nsBaseFilePicker
-  virtual void InitNative(nsIWidget* aParent, const nsAString& aTitle) override;
+  void InitNative(nsIWidget* aParent, const nsAString& aTitle) override;
 
   static void Shutdown();
 
  protected:
   virtual ~nsFilePicker();
 
-  nsresult Show(nsIFilePicker::ResultCode* aReturn) override;
-  void ReadValuesFromFileChooser(void* file_chooser);
+  bool WarnForNonReadableFile();
+  already_AddRefed<nsIFile> GetDefaultPath();
 
-  bool WarnForNonReadableFile(void* file_chooser);
+  static void OnNonPortalResponse(GtkWidget* file_chooser, gint response_id,
+                                  gpointer user_data);
+  static void OnNonPortalDestroy(GtkWidget* file_chooser, gpointer user_data);
+  void ReadValuesFromNonPortalFileChooser(GtkFileChooser* file_chooser);
+  void OpenNonPortal();
+  void DoneNonPortal(GtkWidget* file_chooser, gint response_id);
 
-  static void OnResponse(void* file_chooser, gint response_id,
-                         gpointer user_data);
-  static void OnDestroy(GtkWidget* file_chooser, gpointer user_data);
-  void Done(void* file_chooser, gint response_id);
+#ifdef MOZ_ENABLE_DBUS
+  void ReadPortalUriList(GVariant* aUriList);
+  void TryOpenPortal();
+  void FinishOpeningPortal();
+  void FinishOpeningPortalWithParent(const nsCString& aHandle);
+  void DonePortal(GVariant*);
+  void ClearPortalState();
+#endif
 
-  nsCOMPtr<nsIWidget> mParentWidget;
+  void DoneCommon(ResultCode);
+
+  RefPtr<nsWindow> mParentWidget;
   nsCOMPtr<nsIFilePickerShownCallback> mCallback;
   nsCOMArray<nsIFile> mFiles;
 
-  int16_t mSelectedType;
-  nsIFilePicker::ResultCode mResult;
-  bool mAllowURLs;
+  int32_t mSelectedType = 0;
+  bool mAllowURLs = false;
   nsCString mFileURL;
   nsString mTitle;
   nsString mDefault;
@@ -72,24 +81,15 @@ class nsFilePicker : public nsBaseFilePicker {
   nsTArray<nsCString> mFilters;
   nsTArray<nsCString> mFilterNames;
 
- private:
-  static nsIFile* mPrevDisplayDirectory;
+#ifdef MOZ_ENABLE_DBUS
+  RefPtr<GDBusProxy> mPortalProxy;
+  const bool mPreferPortal;
+  bool mExportedParent = false;
+#endif
 
-  void* GtkFileChooserNew(const gchar* title, GtkWindow* parent,
-                          GtkFileChooserAction action,
-                          const gchar* accept_label);
-  void GtkFileChooserShow(void* file_chooser);
-  void GtkFileChooserDestroy(void* file_chooser);
-  void GtkFileChooserSetModal(void* file_chooser, GtkWindow* parent_widget,
-                              gboolean modal);
-
-  GtkFileChooserWidget* mFileChooserDelegate;
-  bool mUseNativeFileChooser;
-
-  /**
-   * mFileChooser is non-null while open.
-   */
-  void* mFileChooser = nullptr;
+  GtkFileChooser* mFileChooser = nullptr;
+  GtkFileChooserWidget* mFileChooserDelegate = nullptr;
+  bool mIsOpen = false;
 };
 
 #endif

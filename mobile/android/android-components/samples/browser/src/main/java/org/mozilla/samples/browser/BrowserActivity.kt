@@ -7,15 +7,20 @@ package org.mozilla.samples.browser
 import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.Fragment
 import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.concept.engine.EngineView
 import mozilla.components.feature.contextmenu.ext.DefaultSelectionActionDelegate
 import mozilla.components.feature.intent.ext.getSessionId
+import mozilla.components.feature.screendetection.ScreenDetectionFeature
+import mozilla.components.support.AppServicesInitializer
 import mozilla.components.support.base.feature.UserInteractionHandler
+import mozilla.components.support.ktx.android.view.setupPersistentInsets
 import mozilla.components.support.locale.LocaleAwareAppCompatActivity
 import mozilla.components.support.utils.SafeIntent
 import mozilla.components.support.webextensions.WebExtensionPopupObserver
@@ -39,6 +44,10 @@ open class BrowserActivity : LocaleAwareAppCompatActivity(), ComponentCallbacks2
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        enableEdgeToEdge()
+        window.setupPersistentInsets()
+
+        AppServicesInitializer.init(AppServicesInitializer.Config(null))
 
         if (savedInstanceState == null) {
             val sessionId = SafeIntent(intent).getSessionId()
@@ -49,11 +58,17 @@ open class BrowserActivity : LocaleAwareAppCompatActivity(), ComponentCallbacks2
         }
 
         lifecycle.addObserver(webExtensionPopupObserver)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val screenDetectionFeature = ScreenDetectionFeature(this)
+            lifecycle.addObserver(screenDetectionFeature)
+        }
+
         components.historyStorage.registerStorageMaintenanceWorker()
         components.notificationsDelegate.bindToActivity(this)
     }
 
-    @Suppress("MissingSuperCall", "OVERRIDE_DEPRECATION")
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1975910
+    @Suppress("GestureBackNavigation", "MissingSuperCall", "OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         supportFragmentManager.fragments.forEach {
             if (it is UserInteractionHandler && it.onBackPressed()) {

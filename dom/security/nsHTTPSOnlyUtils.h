@@ -1,31 +1,45 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHTTPSOnlyUtils_h___
-#define nsHTTPSOnlyUtils_h___
+#ifndef nsHTTPSOnlyUtils_h_
+#define nsHTTPSOnlyUtils_h_
 
+#include "mozilla/net/DocumentLoadListener.h"
 #include "nsIScriptError.h"
 #include "nsISupports.h"
-#include "mozilla/net/DocumentLoadListener.h"
 
 class nsHTTPSOnlyUtils {
  public:
-  /**
-   * Returns if HTTPS-Only Mode preference is enabled
-   * @param aFromPrivateWindow true if executing in private browsing mode
-   * @return true if HTTPS-Only Mode is enabled
-   */
-  static bool IsHttpsOnlyModeEnabled(bool aFromPrivateWindow);
+  enum UpgradeMode {
+    NO_UPGRADE_MODE,
+    HTTPS_ONLY_MODE,
+    HTTPS_FIRST_MODE,
+    SCHEMELESS_HTTPS_FIRST_MODE
+  };
 
   /**
-   * Returns if HTTPS-First Mode preference is enabled
-   * @param aFromPrivateWindow true if executing in private browsing mode
-   * @return true if HTTPS-First Mode is enabled
+   * Returns the upgrade mode which should be used for a given load, based on
+   * the prefs currently set.
+   * @param aFromPrivateWindow   Whether the load in question is from a private
+   *                             window.
+   * @param aSchemelessInputType Information about the load possibly originating
+   *                             from a schemeful or schemeless address bar
+   *                             input.
+   * @return                     Upgrade mode as an enum.
    */
-  static bool IsHttpsFirstModeEnabled(bool aFromPrivateWindow);
+  static UpgradeMode GetUpgradeMode(
+      bool aFromPrivateWindow,
+      nsILoadInfo::SchemelessInputType aSchemelessInputType =
+          nsILoadInfo::SchemelessInputTypeUnset);
+
+  /**
+   * Returns the upgrade mode which should be used for a given load, based on
+   * the prefs currently set.
+   * @param aLoadInfo Load info for the load in question.
+   * @return          Upgrade mode as an enum.
+   */
+  static UpgradeMode GetUpgradeMode(nsILoadInfo* aLoadInfo);
 
   /**
    * Potentially fires an http request for a top-level load (provided by
@@ -128,12 +142,13 @@ class nsHTTPSOnlyUtils {
                                  bool aUseHttpsFirst = false);
 
   /**
-   * Tests if the HTTPS-Only upgrade exception is set for a given principal.
-   * @param  aPrincipal The principal for whom the exception should be checked
-   * @return            True if exempt
+   * Tests if a upgrade exception is set for a given principal.
+   * @param  aPrincipal   The principal for whom the exception should be checked
+   * @param  aUpgradeMode The upgrade mode that should be checked for
+   * @return              True if exempt
    */
   static bool TestIfPrincipalIsExempt(nsIPrincipal* aPrincipal,
-                                      bool aCheckForHTTPSFirst = false);
+                                      UpgradeMode aUpgradeMode);
 
   /**
    * Tests if the HTTPS-Only Mode upgrade exception is set for channel result
@@ -154,12 +169,6 @@ class nsHTTPSOnlyUtils {
   static bool IsSafeToAcceptCORSOrMixedContent(nsILoadInfo* aLoadInfo);
 
   /**
-   * Checks if https only or https first mode is enabled for this load
-   * @param aLoadInfo nsILoadInfo of the request
-   */
-  static bool ShouldUpgradeConnection(nsILoadInfo* aLoadInfo);
-
-  /**
    * Checks if two URIs are same origin modulo the difference that
    * aToURI scheme is downgraded to http from https aFromURI.
    * @param aFromURI nsIURI using scheme of https
@@ -176,8 +185,8 @@ class nsHTTPSOnlyUtils {
    * @param aLoadInfo The loadinfo of the request triggering this exception to
    *                  be added (needs to match aURI)
    */
-  static nsresult AddHTTPSFirstExceptionForSession(
-      nsCOMPtr<nsIURI> aURI, nsILoadInfo* const aLoadInfo);
+  static nsresult AddHTTPSFirstException(nsCOMPtr<nsIURI> aURI,
+                                         nsILoadInfo* const aLoadInfo);
 
   /**
    * Determines which HTTPS-Only status flags should get propagated to
@@ -257,6 +266,15 @@ class nsHTTPSOnlyUtils {
    * @return     true if the host of the URI ends with a unknown suffix
    */
   static bool UnknownPublicSuffixException(nsIURI* aURI);
+
+  /**
+   * Checks if a request was initiated by an extension background script and
+   * the destination URL is on the exception list.
+   * @param aURI      The destination URI
+   * @param aLoadInfo The loadinfo of the request
+   * @return          true if the request is exempt
+   */
+  static bool IsExemptedExtensionRequest(nsIURI* aURI, nsILoadInfo* aLoadInfo);
 };
 
 /**
@@ -303,6 +321,7 @@ class TestHTTPAnswerRunnable final : public mozilla::Runnable,
   // through redirects)
   RefPtr<mozilla::net::DocumentLoadListener> mDocumentLoadListener;
   RefPtr<nsITimer> mTimer;
+  bool mHasHTTPSRR{false};
 };
 
 /**
@@ -318,4 +337,4 @@ struct HTTPSFirstDowngradeData
   bool isSchemeless = false;
 };
 
-#endif /* nsHTTPSOnlyUtils_h___ */
+#endif /* nsHTTPSOnlyUtils_h_ */

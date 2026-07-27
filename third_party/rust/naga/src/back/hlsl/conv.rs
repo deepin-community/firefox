@@ -1,8 +1,9 @@
-use std::borrow::Cow;
+use crate::common;
 
-use crate::proc::Alignment;
+use alloc::{borrow::Cow, format, string::String};
 
 use super::Error;
+use crate::proc::Alignment;
 
 impl crate::ScalarKind {
     pub(super) fn to_hlsl_cast(self) -> &'static str {
@@ -22,11 +23,13 @@ impl crate::Scalar {
     pub(super) const fn to_hlsl_str(self) -> Result<&'static str, Error> {
         match self.kind {
             crate::ScalarKind::Sint => match self.width {
+                2 => Ok("int16_t"),
                 4 => Ok("int"),
                 8 => Ok("int64_t"),
                 _ => Err(Error::UnsupportedScalar(self)),
             },
             crate::ScalarKind::Uint => match self.width {
+                2 => Ok("uint16_t"),
                 4 => Ok("uint"),
                 8 => Ok("uint64_t"),
                 _ => Err(Error::UnsupportedScalar(self)),
@@ -53,7 +56,7 @@ impl crate::TypeInner {
         }
     }
 
-    pub(super) fn size_hlsl(&self, gctx: crate::proc::GlobalCtx) -> u32 {
+    pub(super) fn size_hlsl(&self, gctx: crate::proc::GlobalCtx) -> Result<u32, Error> {
         match *self {
             Self::Matrix {
                 columns,
@@ -62,18 +65,18 @@ impl crate::TypeInner {
             } => {
                 let stride = Alignment::from(rows) * scalar.width as u32;
                 let last_row_size = rows as u32 * scalar.width as u32;
-                ((columns as u32 - 1) * stride) + last_row_size
+                Ok(((columns as u32 - 1) * stride) + last_row_size)
             }
             Self::Array { base, size, stride } => {
-                let count = match size {
-                    crate::ArraySize::Constant(size) => size.get(),
+                let count = match size.resolve(gctx)? {
+                    crate::proc::IndexableLength::Known(size) => size,
                     // A dynamically-sized array has to have at least one element
-                    crate::ArraySize::Dynamic => 1,
+                    crate::proc::IndexableLength::Dynamic => 1,
                 };
-                let last_el_size = gctx.types[base].inner.size_hlsl(gctx);
-                ((count - 1) * stride) + last_el_size
+                let last_el_size = gctx.types[base].inner.size_hlsl(gctx)?;
+                Ok(((count - 1) * stride) + last_el_size)
             }
-            _ => self.size(gctx),
+            _ => Ok(self.size(gctx)),
         }
     }
 
@@ -88,7 +91,7 @@ impl crate::TypeInner {
             crate::TypeInner::Vector { size, scalar } => Cow::Owned(format!(
                 "{}{}",
                 scalar.to_hlsl_str()?,
-                crate::back::vector_size_str(size)
+                common::vector_size_str(size)
             )),
             crate::TypeInner::Matrix {
                 columns,
@@ -97,8 +100,8 @@ impl crate::TypeInner {
             } => Cow::Owned(format!(
                 "{}{}x{}",
                 scalar.to_hlsl_str()?,
-                crate::back::vector_size_str(columns),
-                crate::back::vector_size_str(rows),
+                common::vector_size_str(columns),
+                common::vector_size_str(rows),
             )),
             crate::TypeInner::Array {
                 base,
@@ -124,15 +127,16 @@ impl crate::StorageFormat {
             Self::R8Snorm | Self::R16Snorm => "snorm float",
             Self::R8Uint | Self::R16Uint | Self::R32Uint => "uint",
             Self::R8Sint | Self::R16Sint | Self::R32Sint => "int",
+            Self::R64Uint => "uint64_t",
 
-            Self::Rg16Float | Self::Rg32Float => "float2",
-            Self::Rg8Unorm | Self::Rg16Unorm => "unorm float2",
-            Self::Rg8Snorm | Self::Rg16Snorm => "snorm float2",
+            Self::Rg16Float | Self::Rg32Float => "float4",
+            Self::Rg8Unorm | Self::Rg16Unorm => "unorm float4",
+            Self::Rg8Snorm | Self::Rg16Snorm => "snorm float4",
 
-            Self::Rg8Sint | Self::Rg16Sint | Self::Rg32Uint => "int2",
-            Self::Rg8Uint | Self::Rg16Uint | Self::Rg32Sint => "uint2",
+            Self::Rg8Sint | Self::Rg16Sint | Self::Rg32Uint => "int4",
+            Self::Rg8Uint | Self::Rg16Uint | Self::Rg32Sint => "uint4",
 
-            Self::Rg11b10UFloat => "float3",
+            Self::Rg11b10Ufloat => "float4",
 
             Self::Rgba16Float | Self::Rgba32Float => "float4",
             Self::Rgba8Unorm | Self::Bgra8Unorm | Self::Rgba16Unorm | Self::Rgb10a2Unorm => {
@@ -147,11 +151,13 @@ impl crate::StorageFormat {
 }
 
 impl crate::BuiltIn {
-    pub(super) fn to_hlsl_str(self) -> Result<&'static str, Error> {
-        Ok(match self {
+    /// Returns `None` for "virtual" builtins, i.e. mesh shader builtins that are
+    /// used by naga but not recognized by HLSL.
+    pub(super) fn to_hlsl_str(self) -> Result<Option<&'static str>, Error> {
+        Ok(Some(match self {
             Self::Position { .. } => "SV_Position",
             // vertex
-            Self::ClipDistance => "SV_ClipDistance",
+            Self::ClipDistances => "SV_ClipDistance",
             Self::CullDistance => "SV_CullDistance",
             Self::InstanceIndex => "SV_InstanceID",
             Self::VertexIndex => "SV_VertexID",
@@ -159,6 +165,7 @@ impl crate::BuiltIn {
             Self::FragDepth => "SV_Depth",
             Self::FrontFacing => "SV_IsFrontFace",
             Self::PrimitiveIndex => "SV_PrimitiveID",
+            Self::Barycentric { .. } => "SV_Barycentrics",
             Self::SampleIndex => "SV_SampleIndex",
             Self::SampleMask => "SV_Coverage",
             // compute
@@ -170,6 +177,7 @@ impl crate::BuiltIn {
             // to this field will get replaced with references to `SPECIAL_CBUF_VAR`
             // in `Writer::write_expr`.
             Self::NumWorkGroups => "SV_GroupID",
+            Self::ViewIndex => "SV_ViewID",
             // These builtins map to functions
             Self::SubgroupSize
             | Self::SubgroupInvocationId
@@ -178,10 +186,32 @@ impl crate::BuiltIn {
             Self::BaseInstance | Self::BaseVertex | Self::WorkGroupSize => {
                 return Err(Error::Unimplemented(format!("builtin {self:?}")))
             }
-            Self::PointSize | Self::ViewIndex | Self::PointCoord => {
+            Self::PointSize | Self::PointCoord | Self::DrawIndex => {
                 return Err(Error::Custom(format!("Unsupported builtin {self:?}")))
             }
-        })
+            Self::CullPrimitive => "SV_CullPrimitive",
+            Self::MeshTaskSize
+            | Self::VertexCount
+            | Self::PrimitiveCount
+            | Self::Vertices
+            | Self::Primitives
+            | Self::PointIndex
+            | Self::LineIndices
+            | Self::TriangleIndices => return Ok(None),
+            Self::RayInvocationId
+            | Self::NumRayInvocations
+            | Self::InstanceCustomData
+            | Self::GeometryIndex
+            | Self::WorldRayOrigin
+            | Self::WorldRayDirection
+            | Self::ObjectRayOrigin
+            | Self::ObjectRayDirection
+            | Self::RayTmin
+            | Self::RayTCurrentMax
+            | Self::ObjectToWorld
+            | Self::WorldToObject
+            | Self::HitKind => unreachable!(),
+        }))
     }
 }
 
@@ -194,6 +224,7 @@ impl crate::Interpolation {
             Self::Perspective => None,
             Self::Linear => Some("noperspective"),
             Self::Flat => Some("nointerpolation"),
+            Self::PerVertex => Some("nointerpolation"),
         }
     }
 }
@@ -202,7 +233,7 @@ impl crate::Sampling {
     /// Return the HLSL auxiliary qualifier for the given sampling value.
     pub(super) const fn to_hlsl_str(self) -> Option<&'static str> {
         match self {
-            Self::Center => None,
+            Self::Center | Self::First | Self::Either => None,
             Self::Centroid => Some("centroid"),
             Self::Sample => Some("sample"),
         }
@@ -220,7 +251,7 @@ impl crate::AtomicFunction {
             Self::Min => "Min",
             Self::Max => "Max",
             Self::Exchange { compare: None } => "Exchange",
-            Self::Exchange { .. } => "", //TODO
+            Self::Exchange { .. } => "CompareExchange",
         }
     }
 }

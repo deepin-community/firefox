@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 #include <stdint.h>
 
 #include "ContainerParser.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/gtest/MozAssertions.h"
 
 using namespace mozilla;
@@ -18,7 +16,7 @@ TEST(ContainerParser, MIMETypes)
   const char* containerTypes[] = {"video/webm", "audio/webm", "video/mp4",
                                   "audio/mp4", "audio/aac"};
   UniquePtr<ContainerParser> parser;
-  for (size_t i = 0; i < ArrayLength(containerTypes); ++i) {
+  for (size_t i = 0; i < std::size(containerTypes); ++i) {
     Maybe<MediaContainerType> containerType =
         MakeMediaContainerType(containerTypes[i]);
     ASSERT_TRUE(containerType.isSome());
@@ -30,7 +28,7 @@ TEST(ContainerParser, MIMETypes)
 already_AddRefed<MediaByteBuffer> make_adts_header() {
   const uint8_t test[] = {0xff, 0xf1, 0x50, 0x80, 0x03, 0x1f, 0xfc};
   RefPtr<MediaByteBuffer> buffer(new MediaByteBuffer);
-  buffer->AppendElements(test, ArrayLength(test));
+  buffer->AppendElements(test, std::size(test));
   return buffer.forget();
 }
 

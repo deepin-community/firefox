@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,17 +30,24 @@ class DeviceAttachmentsD3D11 final {
     return mInitFailureId;
   }
 
+  typedef EnumeratedArray<ClipType, RefPtr<ID3D11VertexShader>,
+                          size_t(ClipType::NumClipTypes)>
+      VertexShaderArray;
+  typedef EnumeratedArray<ClipType, RefPtr<ID3D11PixelShader>,
+                          size_t(ClipType::NumClipTypes)>
+      PixelShaderArray;
+
   RefPtr<ID3D11InputLayout> mInputLayout;
 
   RefPtr<ID3D11Buffer> mVertexBuffer;
 
-  RefPtr<ID3D11VertexShader> mVSQuadShader;
+  VertexShaderArray mVSQuadShader;
 
   RefPtr<ID3D11PixelShader> mSolidColorShader;
-  RefPtr<ID3D11PixelShader> mRGBAShader;
-  RefPtr<ID3D11PixelShader> mRGBShader;
-  RefPtr<ID3D11PixelShader> mYCbCrShader;
-  RefPtr<ID3D11PixelShader> mNV12Shader;
+  PixelShaderArray mRGBAShader;
+  PixelShaderArray mRGBShader;
+  PixelShaderArray mYCbCrShader;
+  PixelShaderArray mNV12Shader;
   RefPtr<ID3D11Buffer> mPSConstantBuffer;
   RefPtr<ID3D11Buffer> mVSConstantBuffer;
   RefPtr<ID3D11RasterizerState> mRasterizerState;
@@ -67,13 +72,13 @@ class DeviceAttachmentsD3D11 final {
   bool CreateShaders();
   bool InitSyncObject();
 
-  void InitVertexShader(const ShaderBytes& aShader,
-                        RefPtr<ID3D11VertexShader>& aDest) {
-    InitVertexShader(aShader, getter_AddRefs(aDest));
+  void InitVertexShader(const ShaderBytes& aShader, VertexShaderArray& aArray,
+                        ClipType aClipType) {
+    InitVertexShader(aShader, getter_AddRefs(aArray[aClipType]));
   }
-  void InitPixelShader(const ShaderBytes& aShader,
-                       RefPtr<ID3D11PixelShader>& aDest) {
-    InitPixelShader(aShader, getter_AddRefs(aDest));
+  void InitPixelShader(const ShaderBytes& aShader, PixelShaderArray& aArray,
+                       ClipType aClipType) {
+    InitPixelShader(aShader, getter_AddRefs(aArray[aClipType]));
   }
 
   void InitVertexShader(const ShaderBytes& aShader, ID3D11VertexShader** aOut);

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,7 +16,7 @@
 
 class nsITransferable;
 
-class nsClipboard : public nsBaseClipboard {
+class nsClipboard final : public nsBaseClipboard {
  public:
   nsClipboard();
 
@@ -33,22 +32,22 @@ class nsClipboard : public nsBaseClipboard {
   static NSDictionary* PasteboardDictFromTransferable(
       nsITransferable* aTransferable);
   // aPasteboardType is being retained and needs to be released by the caller.
-  static bool IsStringType(const nsCString& aMIMEType,
+  static bool IsStringType(const nsACString& aMIMEType,
                            NSString** aPasteboardType);
   static bool IsImageType(const nsACString& aMIMEType);
   static NSString* WrapHtmlForSystemPasteboard(NSString* aString);
-  static nsresult TransferableFromPasteboard(nsITransferable* aTransferable,
-                                             NSPasteboard* pboard);
+  static mozilla::Result<nsCOMPtr<nsISupports>, nsresult> GetDataFromPasteboard(
+      const nsACString& aFlavor, NSPasteboard* aPasteboard);
+  mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
+      ClipboardType aWhichClipboard) override;
 
  protected:
   // Implement the native clipboard behavior.
   NS_IMETHOD SetNativeClipboardData(nsITransferable* aTransferable,
                                     ClipboardType aWhichClipboard) override;
-  NS_IMETHOD GetNativeClipboardData(nsITransferable* aTransferable,
-                                    ClipboardType aWhichClipboard) override;
+  mozilla::Result<nsCOMPtr<nsISupports>, nsresult> GetNativeClipboardData(
+      const nsACString& aFlavor, ClipboardType aWhichClipboard) override;
   nsresult EmptyNativeClipboardData(ClipboardType aWhichClipboard) override;
-  mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
-      ClipboardType aWhichClipboard) override;
   mozilla::Result<bool, nsresult> HasNativeClipboardDataMatchingFlavors(
       const nsTArray<nsCString>& aFlavorList,
       ClipboardType aWhichClipboard) override;

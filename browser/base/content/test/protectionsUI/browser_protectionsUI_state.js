@@ -16,10 +16,7 @@
 
 const TP_PREF = "privacy.trackingprotection.enabled";
 const TP_PB_PREF = "privacy.trackingprotection.pbmode.enabled";
-const APS_PREF =
-  "privacy.partition.always_partition_third_party_non_cookie_storage";
 const TPC_PREF = "network.cookie.cookieBehavior";
-const DTSCBN_PREF = "dom.testing.sync-content-blocking-notifications";
 const BENIGN_PAGE =
   // eslint-disable-next-line @microsoft/sdl/no-insecure-url
   "http://tracking.example.org/browser/browser/base/content/test/protectionsUI/benignPage.html";
@@ -45,11 +42,10 @@ registerCleanupFunction(function () {
   Services.prefs.clearUserPref(TP_PREF);
   Services.prefs.clearUserPref(TP_PB_PREF);
   Services.prefs.clearUserPref(TPC_PREF);
-  Services.prefs.clearUserPref(DTSCBN_PREF);
 });
 
 function notFound(id) {
-  let doc = tabbrowser.ownerGlobal.document;
+  let doc = tabbrowser.documentGlobal.document;
   return doc.getElementById(id).classList.contains("notFound");
 }
 
@@ -78,7 +74,7 @@ async function testBenignPage() {
     "icon box is visible"
   );
 
-  let win = tabbrowser.ownerGlobal;
+  let win = tabbrowser.documentGlobal;
   await openProtectionsPanel(false, win);
   ok(
     notFound("protections-popup-category-cookies"),
@@ -117,7 +113,7 @@ async function testBenignPageWithException() {
     "icon box is not hidden"
   );
 
-  let win = tabbrowser.ownerGlobal;
+  let win = tabbrowser.documentGlobal;
   await openProtectionsPanel(false, win);
   ok(
     notFound("protections-popup-category-cookies"),
@@ -239,61 +235,79 @@ async function testContentBlocking(tab) {
   info("Testing with Tracking Protection ENABLED.");
 
   info("Load a test page not containing tracking elements");
-  await promiseTabLoadEvent(tab, BENIGN_PAGE);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: BENIGN_PAGE,
+  });
   await testBenignPage();
 
   info(
     "Load a test page not containing tracking elements which has an exception."
   );
 
-  await promiseTabLoadEvent(tab, "https://example.org/?round=1");
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: "https://example.org/?round=1",
+  });
 
   ContentBlockingAllowList.add(tab.linkedBrowser);
   // Load another page from the same origin to ensure there is an onlocationchange
   // notification which would trigger an oncontentblocking notification for us.
-  await promiseTabLoadEvent(tab, "https://example.org/?round=2");
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: "https://example.org/?round=2",
+  });
 
   await testBenignPageWithException();
 
   ContentBlockingAllowList.remove(tab.linkedBrowser);
 
   info("Load a test page containing tracking elements");
-  await promiseTabLoadEvent(tab, gTrackingPageURL);
-  await testTrackingPage(tab.ownerGlobal);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: gTrackingPageURL,
+  });
+  await testTrackingPage(tab.documentGlobal);
 
   info("Disable CB for the page (which reloads the page)");
-  let tabReloadPromise = promiseTabLoadEvent(tab);
-  tab.ownerGlobal.gProtectionsHandler.disableForCurrentPage();
+  let reloadURI = tab.linkedBrowser.currentURI.spec;
+  let tabReloadPromise = BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: reloadURI,
+  });
+  tab.documentGlobal.gProtectionsHandler.disableForCurrentPage();
   await tabReloadPromise;
-  let isPrivateBrowsing = PrivateBrowsingUtils.isWindowPrivate(tab.ownerGlobal);
+  let isPrivateBrowsing = PrivateBrowsingUtils.isWindowPrivate(
+    tab.documentGlobal
+  );
   let blockedByTP = areTrackersBlocked(isPrivateBrowsing);
-  await testTrackingPageUnblocked(blockedByTP, tab.ownerGlobal);
+  await testTrackingPageUnblocked(blockedByTP, tab.documentGlobal);
 
   info("Re-enable TP for the page (which reloads the page)");
-  tabReloadPromise = promiseTabLoadEvent(tab);
-  tab.ownerGlobal.gProtectionsHandler.enableForCurrentPage();
+  reloadURI = tab.linkedBrowser.currentURI.spec;
+  tabReloadPromise = BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: reloadURI,
+  });
+  tab.documentGlobal.gProtectionsHandler.enableForCurrentPage();
   await tabReloadPromise;
-  await testTrackingPage(tab.ownerGlobal);
+  await testTrackingPage(tab.documentGlobal);
 }
 
 add_task(async function testNormalBrowsing() {
-  await SpecialPowers.pushPrefEnv({ set: [[APS_PREF, false]] });
-
   await UrlClassifierTestUtils.addTestTrackers();
-
-  Services.prefs.setBoolPref(DTSCBN_PREF, true);
 
   tabbrowser = gBrowser;
   let tab = (tabbrowser.selectedTab = BrowserTestUtils.addTab(tabbrowser));
 
-  gProtectionsHandler = gBrowser.ownerGlobal.gProtectionsHandler;
+  gProtectionsHandler = gBrowser.documentGlobal.gProtectionsHandler;
   ok(
     gProtectionsHandler,
     "gProtectionsHandler is attached to the browser window"
   );
 
   TrackingProtection =
-    gBrowser.ownerGlobal.gProtectionsHandler.blockers.TrackingProtection;
+    gBrowser.documentGlobal.gProtectionsHandler.blockers.TrackingProtection;
   ok(TrackingProtection, "TP is attached to the browser window");
   is(
     TrackingProtection.enabled,
@@ -317,10 +331,7 @@ add_task(async function testNormalBrowsing() {
 
 add_task(async function testPrivateBrowsing() {
   await SpecialPowers.pushPrefEnv({
-    set: [
-      ["dom.security.https_first_pbm", false],
-      [APS_PREF, false],
-    ],
+    set: [["dom.security.https_first_pbm", false]],
   });
   let privateWin = await BrowserTestUtils.openNewBrowserWindow({
     private: true,
@@ -333,14 +344,14 @@ add_task(async function testPrivateBrowsing() {
 
   Services.prefs.setIntPref(TPC_PREF, Ci.nsICookieService.BEHAVIOR_ACCEPT);
 
-  gProtectionsHandler = tabbrowser.ownerGlobal.gProtectionsHandler;
+  gProtectionsHandler = tabbrowser.documentGlobal.gProtectionsHandler;
   ok(
     gProtectionsHandler,
     "gProtectionsHandler is attached to the private window"
   );
 
   TrackingProtection =
-    tabbrowser.ownerGlobal.gProtectionsHandler.blockers.TrackingProtection;
+    tabbrowser.documentGlobal.gProtectionsHandler.blockers.TrackingProtection;
   ok(TrackingProtection, "TP is attached to the private window");
   is(
     TrackingProtection.enabled,
@@ -363,21 +374,19 @@ add_task(async function testPrivateBrowsing() {
 add_task(async function testThirdPartyCookies() {
   requestLongerTimeout(3);
 
-  await SpecialPowers.pushPrefEnv({ set: [[APS_PREF, false]] });
-
   await UrlClassifierTestUtils.addTestTrackers();
   gTrackingPageURL = COOKIE_PAGE;
 
   tabbrowser = gBrowser;
   let tab = (tabbrowser.selectedTab = BrowserTestUtils.addTab(tabbrowser));
 
-  gProtectionsHandler = gBrowser.ownerGlobal.gProtectionsHandler;
+  gProtectionsHandler = gBrowser.documentGlobal.gProtectionsHandler;
   ok(
     gProtectionsHandler,
     "gProtectionsHandler is attached to the browser window"
   );
   ThirdPartyCookies =
-    gBrowser.ownerGlobal.gProtectionsHandler.blockers.ThirdPartyCookies;
+    gBrowser.documentGlobal.gProtectionsHandler.blockers.ThirdPartyCookies;
   ok(ThirdPartyCookies, "TP is attached to the browser window");
   is(
     ThirdPartyCookies.enabled,

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,10 +6,8 @@
 
 #include "MemMapSnapshot.h"
 #include "ScriptPreloader-inl.h"
-
 #include "mozilla/BinarySearch.h"
 #include "mozilla/Try.h"
-#include "mozilla/ipc/FileDescriptor.h"
 
 using namespace mozilla::loader;
 
@@ -28,27 +24,36 @@ static inline size_t GetAlignmentOffset(size_t aOffset, size_t aAlign) {
   return mod ? aAlign - mod : 0;
 }
 
-SharedStringMap::SharedStringMap(const FileDescriptor& aMapFile,
-                                 size_t aMapSize) {
-  auto result = mMap.initWithHandle(aMapFile, aMapSize);
-  MOZ_RELEASE_ASSERT(result.isOk());
-  MOZ_RELEASE_ASSERT(GetHeader().mMagic == kSharedStringMapMagic);
+SharedStringMap::SharedStringMap(const ReadOnlySharedMemoryHandle& aMapHandle) {
+  mHandle = aMapHandle.Clone();
+  MOZ_RELEASE_ASSERT(mHandle.IsValid());
+  auto mapping = aMapHandle.Map();
+  MOZ_RELEASE_ASSERT(mapping.IsValid());
+
   // We return literal nsStrings and nsCStrings pointing to the mapped data,
   // which means that we may still have references to the mapped data even
   // after this instance is destroyed. That means that we need to keep the
   // mapping alive until process shutdown, in order to be safe.
-  mMap.setPersistent();
+  mMappedMemory = std::move(mapping).Release();
+
+  MOZ_RELEASE_ASSERT(GetHeader().mMagic == kSharedStringMapMagic);
 }
 
 SharedStringMap::SharedStringMap(SharedStringMapBuilder&& aBuilder) {
-  auto result = aBuilder.Finalize(mMap);
+  ReadOnlySharedMemoryMappingWithHandle mappingWithHandle;
+  auto result = aBuilder.Finalize();
   MOZ_RELEASE_ASSERT(result.isOk());
+  mHandle = result.unwrap();
+  auto mapping = mHandle.Map();
+  MOZ_RELEASE_ASSERT(mapping.IsValid());
+
+  mMappedMemory = std::move(mapping).Release();
+
   MOZ_RELEASE_ASSERT(GetHeader().mMagic == kSharedStringMapMagic);
-  mMap.setPersistent();
 }
 
-mozilla::ipc::FileDescriptor SharedStringMap::CloneFileDescriptor() const {
-  return mMap.cloneHandle();
+mozilla::ipc::ReadOnlySharedMemoryHandle SharedStringMap::CloneHandle() const {
+  return mHandle.Clone();
 }
 
 bool SharedStringMap::Has(const nsCString& aKey) {
@@ -83,8 +88,8 @@ void SharedStringMapBuilder::Add(const nsCString& aKey,
                           Entry{mKeyTable.Add(aKey), mValueTable.Add(aValue)});
 }
 
-Result<Ok, nsresult> SharedStringMapBuilder::Finalize(
-    loader::AutoMemMap& aMap) {
+Result<ReadOnlySharedMemoryHandle, nsresult>
+SharedStringMapBuilder::Finalize() {
   using Header = SharedStringMap::Header;
 
   MOZ_ASSERT(mEntries.Count() == mKeyTable.Count());
@@ -133,7 +138,7 @@ Result<Ok, nsresult> SharedStringMapBuilder::Finalize(
   mValueTable.Clear();
   mEntries.Clear();
 
-  return mem.Finalize(aMap);
+  return mem.Finalize();
 }
 
 }  // namespace dom::ipc

@@ -4,72 +4,122 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::{path::PathBuf, str::FromStr};
+#![expect(clippy::unwrap_used, reason = "OK in a bench.")]
+#![expect(
+    clippy::significant_drop_tightening,
+    reason = "Inherent in codspeed criterion_group! macro."
+)]
 
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion, Throughput};
+use std::{env, hint::black_box, net::SocketAddr, path::PathBuf, str::FromStr as _};
+
+use criterion::{BatchSize, Criterion, Throughput, criterion_group, criterion_main};
 use neqo_bin::{client, server};
-use tokio::runtime::Runtime;
+use tokio::runtime::Builder;
 
 struct Benchmark {
-    name: String,
-    requests: Vec<u64>,
+    name: &'static str,
+    num_requests: usize,
+    upload_size: usize,
+    download_size: usize,
 }
 
 fn transfer(c: &mut Criterion) {
-    neqo_common::log::init(Some(log::LevelFilter::Off));
-    neqo_crypto::init_db(PathBuf::from_str("../test-fixture/db").unwrap()).unwrap();
+    nss::init_db(PathBuf::from_str("../test-fixture/db").unwrap()).unwrap();
 
-    let done_sender = spawn_server();
-
-    for Benchmark { name, requests } in [
+    let mtu_suffix = env::var("MTU").ok().map(|mtu| format!("/mtu-{mtu}"));
+    for Benchmark {
+        name,
+        num_requests,
+        upload_size,
+        download_size,
+    } in [
         Benchmark {
-            name: "1-conn/1-100mb-resp (aka. Download)".to_string(),
-            requests: vec![100 * 1024 * 1024],
+            name: "1-conn/1-100mb-resp (aka. Download)",
+            num_requests: 1,
+            upload_size: 0,
+            download_size: 100 * 1024 * 1024,
         },
         Benchmark {
-            name: "1-conn/10_000-parallel-1b-resp (aka. RPS)".to_string(),
-            requests: vec![1; 10_000],
+            name: "1-conn/10_000-parallel-1b-resp (aka. RPS)",
+            num_requests: 10_000,
+            upload_size: 0,
+            download_size: 1,
         },
         Benchmark {
-            name: "1-conn/1-1b-resp (aka. HPS)".to_string(),
-            requests: vec![1; 1],
+            name: "1-conn/1-1b-resp (aka. HPS)",
+            num_requests: 1,
+            upload_size: 0,
+            download_size: 1,
+        },
+        Benchmark {
+            name: "1-conn/1-100mb-req (aka. Upload)",
+            num_requests: 1,
+            upload_size: 100 * 1024 * 1024,
+            download_size: 0,
         },
     ] {
-        let mut group = c.benchmark_group(name);
-        group.throughput(if requests[0] > 1 {
-            assert_eq!(requests.len(), 1);
-            Throughput::Bytes(requests[0])
+        let bench_name = mtu_suffix
+            .as_ref()
+            .map_or_else(|| name.to_string(), |suffix| format!("{name}{suffix}"));
+        let mut group = c.benchmark_group("transfer");
+        group.throughput(if num_requests == 1 {
+            Throughput::Bytes((upload_size + download_size) as u64)
         } else {
-            Throughput::Elements(requests.len() as u64)
+            Throughput::Elements(num_requests as u64)
         });
-        group.bench_function("client", |b| {
-            b.to_async(Runtime::new().unwrap()).iter_batched(
-                || client::client(client::Args::new(&requests)),
-                |client| async move {
-                    client.await.unwrap();
-                },
-                BatchSize::PerIteration,
-            );
+        group.bench_function(&bench_name, |b| {
+            b.to_async(Builder::new_current_thread().enable_all().build().unwrap())
+                .iter_batched(
+                    || {
+                        let (server_handle, server_addr) = spawn_server();
+                        let client = client::client(client::Args::new(
+                            Some(server_addr),
+                            num_requests,
+                            upload_size,
+                            download_size,
+                        ));
+                        (server_handle, client)
+                    },
+                    |(server_handle, client)| {
+                        black_box(async move {
+                            client.await.unwrap();
+                            // Tell server to shut down.
+                            server_handle.send(()).unwrap();
+                        })
+                    },
+                    BatchSize::PerIteration,
+                );
         });
         group.finish();
     }
-
-    done_sender.send(()).unwrap();
 }
 
-#[allow(clippy::redundant_pub_crate)] // Bug in clippy nursery? Not sure how this lint could fire here.
-fn spawn_server() -> tokio::sync::oneshot::Sender<()> {
+fn spawn_server() -> (tokio::sync::oneshot::Sender<()>, SocketAddr) {
     let (done_sender, mut done_receiver) = tokio::sync::oneshot::channel();
+    let (addr_sender, addr_receiver) = std::sync::mpsc::channel::<SocketAddr>();
     std::thread::spawn(move || {
-        Runtime::new().unwrap().block_on(async {
-            let mut server = Box::pin(server::server(server::Args::default()));
+        let runtime = Builder::new_current_thread().enable_all().build().unwrap();
+
+        let mut args = server::Args::default();
+        args.set_hosts(vec!["[::]:0".to_string()]);
+        // `server.run` calls tokio's `UdpSocket::from_std` which requires a
+        // Tokio runtime. Ensure one is available by running it in
+        // `runtime.block_on`.
+        let (server, local_addrs) = runtime.block_on(async { server::run(args).unwrap() });
+
+        addr_sender
+            .send(local_addrs.into_iter().find(SocketAddr::is_ipv6).unwrap())
+            .unwrap();
+
+        runtime.block_on(async {
+            let mut server = Box::pin(server);
             tokio::select! {
                 _ = &mut done_receiver => {}
                 res = &mut server  => panic!("expect server not to terminate: {res:?}"),
             };
         });
     });
-    done_sender
+    (done_sender, addr_receiver.recv().unwrap())
 }
 
 criterion_group!(benches, transfer);

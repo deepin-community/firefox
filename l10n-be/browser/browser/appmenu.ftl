@@ -23,10 +23,16 @@ appmenuitem-new-private-window =
     .label = Новае прыватнае акно
 appmenuitem-history =
     .label = Гісторыя
+appmenuitem-tab-groups =
+    .label = Групы картак
 appmenuitem-downloads =
     .label = Сцягванні
 appmenuitem-passwords =
     .label = Паролі
+appmenuitem-extensions-and-themes =
+    .label = Пашырэнні і тэмы
+appmenuitem-extensions =
+    .label = Пашырэнні
 appmenuitem-addons-and-themes =
     .label = Дадаткі і тэмы
 appmenuitem-print =
@@ -108,8 +114,11 @@ appmenu-fxa-sync-and-save-data2 = Сінхранізаваць і захавац
 appmenu-fxa-signed-in-label = Увайсці
 appmenu-fxa-setup-sync =
     .label = Уключыць сінхранізацыю…
+appmenu-fxa-setup-sync-new = Уключыць
 appmenuitem-save-page =
     .label = Захаваць старонку як…
+appmenuitem-fxa-sync-off-title = Сінхранізацыя выключана
+appmenuitem-fxa-sync-off-description = Абараняйце і атрымлівайце доступ да сваіх закладак, пароляў і іншага з любога месца.
 
 ## What's New panel in App menu.
 
@@ -163,6 +172,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Адкрыць панэль прафайлера
+    .tooltiptext = Адкрыць панэль прафайлера
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +201,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Папярэднія налады для даследавання хібаў гуку і відэа ў { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Медыя
+profiler-popup-presets-ml-description = Папярэднія налады для даследавання хібаў машыннага навучання ў { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Машыннае навучанне
 profiler-popup-presets-networking-description = Папярэднія налады для даследавання сеткавых хібаў у { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Сетка
@@ -199,6 +214,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Папярэднія налады для адладкі ў { -brand-shorter-name }. Вялікія накладныя выдаткі, выкарыстоўвайце не для павышэння прадукцыйнасці, а для канцэнтрацыі ўвагі на разуменні паводзін браўзера.
 profiler-popup-presets-debug-label =
     .label = Адладка
+profiler-popup-presets-web-compat-description = Рэкамендаваныя папярэднія налады для адладкі праблем сумяшчальнасці ў сайтах, а не для сачэння за хуткадзейнасцю.
+profiler-popup-presets-web-compat-label =
+    .label = Вэб-сумяшчальнасць
 profiler-popup-presets-custom-label =
     .label = Адмысловыя
 
@@ -264,6 +282,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Уладкаваць паліцу прылад…
+appmenu-abouttranslations =
+    .label = Перакласці…
 appmenu-developer-tools-subheader = Інструменты браўзера
 appmenu-developer-tools-extensions =
     .label = Пашырэнні для распрацоўшчыкаў
@@ -277,5 +297,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Атрымлівайце абвесткі аб уцечках дадзеных
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Маскіруйце сваю сапраўдную электронную пошту і тэлефон
+appmenuitem-services-relay-description = Запусціць панэль масак электроннай пошты
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Атрымайце ахову ўсёй прылады
 appmenuitem-vpn-description = Абараніце сваю актыўнасць у інтэрнэце
+appmenu-services-header = Мае сэрвісы
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Паспрабуйце іншыя ахоўныя сродкі ад Mozilla:
+appmenu-other-protection-header = Паспрабуйце іншыя ахоўныя сродкі ад { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Іншыя профілі
+appmenu-manage-profiles =
+    .label = Кіраванне профілямі
+appmenu-copy-profile =
+    .label = Скапіяваць гэты профіль
+appmenu-create-profile =
+    .label = Новы профіль
+appmenu-edit-profile =
+    .aria-label = Рэдагаваць профіль
+appmenu-profiles-2 =
+    .label = Профілі

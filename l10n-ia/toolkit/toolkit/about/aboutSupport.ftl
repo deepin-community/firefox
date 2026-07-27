@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-page-title = Informationes de diagnostico
+page-title = Informationes diagnostic
 page-subtitle =
     Iste pagina contine informationes technic que pote servir quando tu
     tenta de resolver un problema. Si tu cerca responsas a questiones commun
@@ -18,6 +18,10 @@ support-addons-type = Typo
 support-addons-enabled = Activate
 support-addons-version = Version
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Position
 legacy-user-stylesheets-title = Ancian folios de stilo de usator
 legacy-user-stylesheets-enabled = Active
 legacy-user-stylesheets-stylesheet-types = Folios de stilo
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Efficientia (%)
 place-database-stats-sequentiality-perc = Sequentialitate (%)
 place-database-integrity = Integritate
 place-database-verify-integrity = Verificar le integritate
+place-database-last-idle-maintenance-data = Data de ultime mantenentia foras de servicio
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Data ultime execution Vacuum
+place-database-last-integrity-corruption-date = Data del ultime corruption de integritate
 a11y-title = Accessibilitate
 a11y-activated = Activate
 a11y-force-disabled = Impedir le accessibilitate
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Enumerar base de datos
 
 media-codec-support-sw-decoding = Decodification del software
 media-codec-support-hw-decoding = Decodification del hardware
+media-codec-support-sw-encoding = Codification per software
+media-codec-support-hw-encoding = Codification per hardware
 media-codec-support-codec-name = Nomine del codec
 media-codec-support-supported = Supportate
 media-codec-support-unsupported = Non supportate

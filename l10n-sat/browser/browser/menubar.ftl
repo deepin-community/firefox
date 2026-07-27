@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -248,6 +242,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = ᱢᱚᱵᱟᱤᱞ ᱵᱩᱠᱢᱟᱨᱠ
 
+## Profiles Menu
+
+menu-profiles =
+    .label = ᱢᱮᱫᱦᱟᱸᱠᱚ
+menu-profiles-manage-profiles =
+    .label = ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱠᱚ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
+menu-profiles-new-profile =
+    .label = ᱱᱟᱶᱟ ᱯᱨᱚᱯᱷᱟᱭᱤᱞ
+
 ## Tools Menu
 
 menu-tools =
@@ -343,3 +346,5 @@ menu-help-report-deceptive-site =
 menu-help-not-deceptive =
     .label = ᱱᱚᱶᱟ ᱫᱚ ᱫᱷᱚᱠᱮᱵᱟᱡᱽ ᱥᱟᱭᱤᱴ ᱵᱟᱝ ᱠᱟᱱᱟ …
     .accesskey = D
+menu-report-broken-site =
+    .label = ᱢᱤᱫᱴᱟᱝ ᱨᱟᱹᱯᱩᱫ ᱥᱟᱭᱤᱴ ᱠᱷᱚᱵᱚᱨ ᱢᱮ

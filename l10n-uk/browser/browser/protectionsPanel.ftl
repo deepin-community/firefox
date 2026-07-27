@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Більше інформації про розширений захист від стеження
 protections-panel-etp-on-header = Розширений захист від стеження для цього сайту увімкнено
 protections-panel-etp-off-header = Розширений захист від стеження для цього сайту вимкнено
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Не працює сайт?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Не працює сайт?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Розширений захист від стеження
     .description = Вимкнено на цьому сайті
     .aria-label = Розширений захист від стеження: вимкнено для { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Не працює сайт?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Не працює сайт?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,19 @@ protections-panel-content-blocking-fingerprinters-label = Зчитування �
 protections-panel-blocking-label = Заблоковано
 protections-panel-not-blocking-label = Дозволено
 protections-panel-not-found-label = Не виявлено
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } блокує вміст стеження на цьому сайті, якщо ви це не дозволите.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Дозволити { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Стеження і вміст { $trackername } заблоковано
+smartblock-placeholder-desc = Ваші налаштування { -brand-short-name } заборонили цьому вмісту відстежувати вас на сайтах або використовуватися для реклами.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Дозволити на { $websitehost }
 
 ##
 
@@ -108,7 +121,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Повідомити про пошкоджений сайт
 protections-panel-content-blocking-breakage-report-view-description = Блокування певних елементів стеження може призвести до проблем з деякими вебсайтами. Звіт про такі проблеми допомагає поліпшувати роботу { -brand-short-name }. При надсиланні цього звіту в Mozilla відправиться URL-адреса з інформацією про налаштування вашого браузера. <label data-l10n-name="learn-more">Докладніше</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Блокування певних елементів стеження може призвести до проблем з деякими вебсайтами. Звіт про такі проблеми допомагає поліпшувати роботу { -brand-short-name }. При надсиланні цього звіту в { -vendor-short-name } відправиться URL-адреса з інформацією про налаштування вашого браузера.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -158,5 +170,5 @@ protections-panel-report-broken-site =
 ## Protections panel info message
 
 cfr-protections-panel-header = Переглядайте без стеження
-cfr-protections-panel-body = Зберігайте свої дані при собі. { -brand-short-name } захищає вас від численних найпоширеніших елементів стеження, що переслідують вас в мережі.
+cfr-protections-panel-body = Збережіть приватність своїх даних. { -brand-short-name } захищає вас від численних найпоширеніших елементів стеження, що переслідують вас в інтернеті.
 cfr-protections-panel-link-text = Докладніше

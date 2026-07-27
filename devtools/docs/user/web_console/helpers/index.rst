@@ -12,7 +12,12 @@ $(selector, element)
 .. _web_console_helpers_$$:
 
 $$(selector, element)
-  Looks up a CSS selector string ``selector``, returning an array of DOMnodesdescended from ``element`` that match. If unspecified, ``element`` defaults to ``document``. This is like for `document.querySelectorAll() <https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll>`_, but returns an array instead of a `NodeList <https://developer.mozilla.org/en-US/docs/Web/API/NodeList>`_.
+  Looks up a CSS selector string ``selector``, returning an array of DOM nodes descended from ``element`` that match. If unspecified, ``element`` defaults to ``document``. This is similar to `document.querySelectorAll() <https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll>`_, but returns an array instead of a `NodeList <https://developer.mozilla.org/en-US/docs/Web/API/NodeList>`_.
+
+.. _web_console_helpers_$$$:
+
+$$$(selector, element)
+  Looks up a CSS selector string ``selector``, returning an array of DOM nodes descended from ``element`` that match, including elements in the shadow DOM. If unspecified, ``element`` defaults to ``document``.
 
 .. _web_console_helpers_$0:
 
@@ -28,7 +33,7 @@ $x(xpath, element, resultType)
   Evaluates the `XPath <https://developer.mozilla.org/en-US/docs/Web/XPath>`_ ``xpath`` expression in the context of ``element`` and returns an array of matching nodes. If unspecified, ``element`` defaults to ``document``. The resultType parameter specifies the type of result to return; it can be an `XPathResult constant <https://developer.mozilla.org/en-US/docs/Web/API/XPathResult#constants>`_, or a corresponding string: ``"number"``, ``"string"``, ``"bool"``, ``"node"``, or ``"nodes"``; if not provided, ``ANY_TYPE`` is used.
 
 :block
-  (Starting in Firefox 80) Followed by an unquoted string, blocks requests where the URL contains that string. In the :doc:`Network Monitor <../../network_monitor/index>`, the string now appears and is selected in the :ref:`Request Blocking sidebar <network_monitor_blocking_specific_urls>`. Unblock with ``:unblock``.
+  Followed by an unquoted string, blocks requests where the URL contains that string. In the :doc:`Network Monitor <../../network_monitor/index>`, the string now appears and is selected in the :ref:`Request Blocking sidebar <network_monitor_blocking_specific_urls>`. Unblock with ``:unblock``.
 
 clear()
   Clears the console output area.
@@ -98,7 +103,7 @@ pprint() (deprecated)
 
 
 :unblock
-  (Starting in Firefox 80) Followed by an unquoted string, removes blocking for URLs containing that string. In the :doc:`Network Monitor <../../network_monitor/index>`, the string is removed from the :ref:`Request Blocking sidebar <network_monitor_blocking_specific_urls>`. No error is given if the string was not previously blocked.
+  Followed by an unquoted string, removes blocking for URLs containing that string. In the :doc:`Network Monitor <../../network_monitor/index>`, the string is removed from the :ref:`Request Blocking sidebar <network_monitor_blocking_specific_urls>`. No error is given if the string was not previously blocked.
 
 values()
   Given an object, returns a list of the values on that object; serves as a companion to ``keys()``.

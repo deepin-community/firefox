@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,12 +5,13 @@
 #ifndef nsMaybeWeakPtr_h_
 #define nsMaybeWeakPtr_h_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/Try.h"
+#include "mozilla/Variant.h"
 #include "nsCOMPtr.h"
 #include "nsIWeakReferenceUtils.h"
 #include "nsTArray.h"
 #include "nsCycleCollectionNoteChild.h"
+#include "xpcpublic.h"
 
 // nsMaybeWeakPtr is a helper object to hold a strong-or-weak reference
 // to the template class.  It's pretty minimal, but sufficient.
@@ -19,35 +19,78 @@
 template <class T>
 class nsMaybeWeakPtr {
  public:
-  nsMaybeWeakPtr() = default;
-  MOZ_IMPLICIT nsMaybeWeakPtr(T* aRef) : mPtr(aRef), mWeak(false) {}
-  MOZ_IMPLICIT nsMaybeWeakPtr(const nsCOMPtr<nsIWeakReference>& aRef)
-      : mPtr(aRef), mWeak(true) {}
+  nsMaybeWeakPtr() : mPtr(mozilla::VariantType<nsCOMPtr<T>>{}, nullptr) {}
+  explicit nsMaybeWeakPtr(std::nullptr_t)
+      : mPtr(mozilla::VariantType<nsCOMPtr<T>>{}, nullptr) {}
+  explicit nsMaybeWeakPtr(T* aRef)
+      : mPtr(mozilla::VariantType<nsCOMPtr<T>>{}, aRef) {}
+  explicit nsMaybeWeakPtr(const nsWeakPtr& aRef)
+      : mPtr(mozilla::VariantType<nsWeakPtr>{}, aRef) {
+    MOZ_ASSERT(AsWeak(), "null nsWeakPtr pointer passed to nsMaybeWeakPtr");
+  }
+
+  bool IsStrong() const { return mPtr.template is<nsCOMPtr<T>>(); }
+
+  bool IsWeak() const { return mPtr.template is<nsWeakPtr>(); }
+
+  nsMaybeWeakPtr& operator=(std::nullptr_t) {
+    mPtr.template emplace<nsCOMPtr<T>>(nullptr);
+    return *this;
+  }
 
   nsMaybeWeakPtr<T>& operator=(T* aRef) {
-    mPtr = aRef;
-    mWeak = false;
+    mPtr.template emplace<nsCOMPtr<T>>(aRef);
     return *this;
   }
 
-  nsMaybeWeakPtr<T>& operator=(const nsCOMPtr<nsIWeakReference>& aRef) {
-    mPtr = aRef;
-    mWeak = true;
+  nsMaybeWeakPtr<T>& operator=(const nsWeakPtr& aRef) {
+    mPtr.template emplace<nsWeakPtr>(aRef);
     return *this;
   }
 
-  bool operator==(const nsMaybeWeakPtr<T>& other) const {
-    return mPtr == other.mPtr;
+  bool operator==(const nsMaybeWeakPtr<T>& aOther) const {
+    return mPtr == aOther.mPtr;
   }
 
-  nsISupports* GetRawValue() const { return mPtr.get(); }
-  bool IsWeak() const { return mWeak; }
+  bool operator==(T* const& aStrong) const {
+    return IsStrong() && AsStrong() == aStrong;
+  }
 
-  const nsCOMPtr<T> GetValue() const;
+  bool operator==(const nsWeakPtr& aWeak) const {
+    return IsWeak() && AsWeak() == aWeak;
+  }
+
+  already_AddRefed<T> GetValue() const {
+    return IsWeak() ? GetWeakReferent() : nsCOMPtr<T>{AsStrong()}.forget();
+  }
+
+  friend inline void ImplCycleCollectionTraverse(
+      nsCycleCollectionTraversalCallback& aCallback,
+      const nsMaybeWeakPtr& aField, const char* aName, uint32_t aFlags = 0) {
+    if (aField.IsStrong()) {
+      CycleCollectionNoteChild(aCallback, aField.AsStrong().get(), aName,
+                               aFlags);
+    }
+  }
+
+ protected:
+  const nsCOMPtr<T>& AsStrong() const {
+    return mPtr.template as<nsCOMPtr<T>>();
+  }
+
+  const nsWeakPtr& AsWeak() const { return mPtr.template as<nsWeakPtr>(); }
 
  private:
-  nsCOMPtr<nsISupports> mPtr;
-  bool mWeak;
+  already_AddRefed<T> GetWeakReferent() const {
+    MOZ_ASSERT(AsWeak());
+    nsresult rv;
+    nsCOMPtr<T> ref = do_QueryReferent(AsWeak(), &rv);
+    NS_WARNING_ASSERTION(NS_SUCCEEDED(rv) || rv == NS_ERROR_NULL_POINTER,
+                         "QueryReferent failed with non-null pointer");
+    return ref.forget();
+  }
+
+  mozilla::Variant<nsCOMPtr<T>, nsWeakPtr> mPtr;
 };
 
 // nsMaybeWeakPtrArray is an array of MaybeWeakPtr objects, that knows how to
@@ -56,7 +99,7 @@ class nsMaybeWeakPtr {
 
 template <class T>
 class nsMaybeWeakPtrArray : public CopyableTArray<nsMaybeWeakPtr<T>> {
-  typedef nsTArray<nsMaybeWeakPtr<T>> MaybeWeakArray;
+  using MaybeWeakArray = nsTArray<nsMaybeWeakPtr<T>>;
 
   nsresult SetMaybeWeakPtr(nsMaybeWeakPtr<T>& aRef, T* aElement,
                            bool aOwnsWeak) {
@@ -75,6 +118,17 @@ class nsMaybeWeakPtrArray : public CopyableTArray<nsMaybeWeakPtr<T>> {
   nsresult AppendWeakElement(T* aElement, bool aOwnsWeak) {
     nsMaybeWeakPtr<T> ref;
     MOZ_TRY(SetMaybeWeakPtr(ref, aElement, aOwnsWeak));
+
+#if (defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED) && !defined(MOZ_THUNDERBIRD))
+    // Checking for duplicates is expensive, so we enforce callers to avoid
+    // this with a diagnostic assertion. See bug 2000788 for Thunderbird.
+    if (IsAssertOnDoubleAdd()) {
+      if (MaybeWeakArray::Contains(aElement)) {
+        xpc_DumpJSStack(true, true, false);
+        MOZ_DIAGNOSTIC_ASSERT(false, "Element already in array.");
+      }
+    }
+#endif
 
     MaybeWeakArray::AppendElement(ref);
     return NS_OK;
@@ -114,56 +168,43 @@ class nsMaybeWeakPtrArray : public CopyableTArray<nsMaybeWeakPtr<T>> {
 
     return NS_ERROR_INVALID_ARG;
   }
-};
 
-template <class T>
-const nsCOMPtr<T> nsMaybeWeakPtr<T>::GetValue() const {
-  if (!mPtr) {
-    return nullptr;
+  friend inline void ImplCycleCollectionUnlink(nsMaybeWeakPtrArray& aField) {
+    aField.Clear();
   }
 
-  nsCOMPtr<T> ref;
-  nsresult rv;
-
-  if (mWeak) {
-    nsCOMPtr<nsIWeakReference> weakRef = do_QueryInterface(mPtr);
-    if (NS_WARN_IF(!weakRef)) {
-      return nullptr;
+  friend inline void ImplCycleCollectionTraverse(
+      nsCycleCollectionTraversalCallback& aCallback,
+      nsMaybeWeakPtrArray& aField, const char* aName, uint32_t aFlags = 0) {
+    aFlags |= CycleCollectionEdgeNameArrayFlag;
+    for (auto& e : aField) {
+      ImplCycleCollectionTraverse(aCallback, e, aName, aFlags);
     }
-    ref = do_QueryReferent(weakRef, &rv);
-    NS_WARNING_ASSERTION(NS_SUCCEEDED(rv) || rv == NS_ERROR_NULL_POINTER,
-                         "QueryReferent failed with non-null pointer");
-  } else {
-    ref = do_QueryInterface(mPtr, &rv);
-    NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
-                         "QueryInterface failed with non-null pointer");
   }
-  return ref;
-}
 
-template <typename T>
-inline void ImplCycleCollectionUnlink(nsMaybeWeakPtrArray<T>& aField) {
-  aField.Clear();
-}
-
-template <typename E>
-inline void ImplCycleCollectionTraverse(
-    nsCycleCollectionTraversalCallback& aCallback,
-    nsMaybeWeakPtrArray<E>& aField, const char* aName, uint32_t aFlags = 0) {
-  aFlags |= CycleCollectionEdgeNameArrayFlag;
-  size_t length = aField.Length();
-  for (size_t i = 0; i < length; ++i) {
-    CycleCollectionNoteChild(aCallback, aField[i].GetRawValue(), aName, aFlags);
+ private:
+#if (defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED) && !defined(MOZ_THUNDERBIRD))
+  // Until we have bug 2005466, a plain diagnostic assert would only yield us
+  // unactionable crash reports from official Nightly builds in case JS was
+  // adding an observer (which is common enough). But we want developers using
+  // non-DEBUG builds to catch this locally and on CI when testing.
+  static inline bool IsAssertOnDoubleAdd() {
+#  if defined(DEBUG) || defined(FUZZING)
+    return true;
+#  else
+    return xpc::IsInAutomation();
+#  endif
   }
-}
+#endif
+};
 
 // Call a method on each element in the array, but only if the element is
 // non-null.
 
-#define ENUMERATE_WEAKARRAY(array, type, method)                          \
-  for (uint32_t array_idx = 0; array_idx < array.Length(); ++array_idx) { \
-    const nsCOMPtr<type>& e = array.ElementAt(array_idx).GetValue();      \
-    if (e) e->method;                                                     \
+#define ENUMERATE_WEAKARRAY(array, type, method)                            \
+  for (uint32_t array_idx = 0; array_idx < (array).Length(); ++array_idx) { \
+    const nsCOMPtr<type>& e = (array).ElementAt(array_idx).GetValue();      \
+    if (e) e->method;                                                       \
   }
 
 #endif

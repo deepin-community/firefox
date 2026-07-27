@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef AlignedTArray_h__
-#define AlignedTArray_h__
+#ifndef AlignedTArray_h_
+#define AlignedTArray_h_
 
-#include "mozilla/Alignment.h"
 #include "nsTArray.h"
 
 /**
@@ -52,8 +49,7 @@ class AlignedAutoTArray : private AutoTArray<E, S + N> {
   AlignedAutoTArray(const AlignedAutoTArray& other) = delete;
   void operator=(const AlignedAutoTArray& other) = delete;
 
-  static const size_type sPadding =
-      N <= MOZ_ALIGNOF(E) ? 0 : N - MOZ_ALIGNOF(E);
+  static const size_type sPadding = N <= alignof(E) ? 0 : N - alignof(E);
   static const size_type sExtra = (sPadding + sizeof(E) - 1) / sizeof(E);
 
   template <typename U>
@@ -102,8 +98,7 @@ class AlignedTArray : private nsTArray_Impl<E, nsTArrayInfallibleAllocator> {
   AlignedTArray(const AlignedTArray& other) = delete;
   void operator=(const AlignedTArray& other) = delete;
 
-  static const size_type sPadding =
-      N <= MOZ_ALIGNOF(E) ? 0 : N - MOZ_ALIGNOF(E);
+  static const size_type sPadding = N <= alignof(E) ? 0 : N - alignof(E);
   static const size_type sExtra = (sPadding + sizeof(E) - 1) / sizeof(E);
 
   template <typename U>
@@ -112,4 +107,4 @@ class AlignedTArray : private nsTArray_Impl<E, nsTArrayInfallibleAllocator> {
   }
 };
 
-#endif  // AlignedTArray_h__
+#endif  // AlignedTArray_h_

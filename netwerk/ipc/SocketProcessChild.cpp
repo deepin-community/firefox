@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +6,7 @@
 #include "SocketProcessLogging.h"
 
 #include "base/task.h"
+#include "SSLTokensCache.h"
 #include "InputChannelThrottleQueueChild.h"
 #include "HttpInfo.h"
 #include "HttpTransactionChild.h"
@@ -16,7 +16,7 @@
 #include "mozilla/Components.h"
 #include "mozilla/dom/MemoryReportRequest.h"
 #include "mozilla/FOGIPC.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/GleanTestsTestMetrics.h"
 #include "mozilla/ipc/CrashReporterClient.h"
 #include "mozilla/ipc/ProcessChild.h"
 #include "mozilla/net/AltSvcTransactionChild.h"
@@ -27,12 +27,14 @@
 #include "mozilla/net/ProxyAutoConfigChild.h"
 #include "mozilla/net/SocketProcessBackgroundChild.h"
 #include "mozilla/net/TRRServiceChild.h"
+#include "mozilla/net/AppleFastDatapathProbe.h"
 #include "mozilla/ipc/ProcessUtils.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/RemoteLazyInputStreamChild.h"
 #include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/Telemetry.h"
+#include "MockNetworkLayerController.h"
 #include "NetworkConnectivityService.h"
 #include "nsDebugImpl.h"
 #include "nsHttpConnectionInfo.h"
@@ -40,6 +42,7 @@
 #include "nsIDNSService.h"
 #include "nsIHttpActivityObserver.h"
 #include "nsIXULRuntime.h"
+#include "nsNetAddr.h"
 #include "nsNetUtil.h"
 #include "nsNSSComponent.h"
 #include "nsSocketTransportService2.h"
@@ -65,13 +68,13 @@
 
 #include "ChildProfilerController.h"
 
-#ifdef MOZ_WEBRTC
-#  include "mozilla/net/WebrtcTCPSocketChild.h"
-#endif
-
 #if defined(MOZ_SANDBOX) && defined(MOZ_DEBUG) && defined(ENABLE_TESTS)
 #  include "mozilla/SandboxTestingChild.h"
 #endif
+
+namespace TelemetryScalar {
+void Set(mozilla::Telemetry::ScalarID aId, uint32_t aValue);
+}
 
 namespace mozilla {
 namespace net {
@@ -117,7 +120,7 @@ void SocketProcessChild::InitSocketBackground() {
 
   SocketProcessBackgroundChild::Create(std::move(childEndpoint));
 
-  Unused << SendInitSocketBackground(std::move(parentEndpoint));
+  (void)SendInitSocketBackground(std::move(parentEndpoint));
 }
 
 namespace {
@@ -207,7 +210,7 @@ bool SocketProcessChild::Init(mozilla::ipc::UntypedEndpoint&& aEndpoint,
   nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
   if (obs) {
     nsCOMPtr<nsIObserver> observer = new NetTeardownObserver();
-    Unused << obs->AddObserver(observer, "profile-change-net-teardown", false);
+    (void)obs->AddObserver(observer, "profile-change-net-teardown", false);
   }
 
   mSocketThread = mozilla::components::SocketTransport::Service();
@@ -278,10 +281,10 @@ void SocketProcessChild::CleanUp() {
 
 mozilla::ipc::IPCResult SocketProcessChild::RecvInit(
     const SocketPorcessInitAttributes& aAttributes) {
-  Unused << RecvSetOffline(aAttributes.mOffline());
-  Unused << RecvSetConnectivity(aAttributes.mConnectivity());
+  (void)RecvSetOffline(aAttributes.mOffline());
+  (void)RecvSetConnectivity(aAttributes.mConnectivity());
   if (aAttributes.mInitSandbox()) {
-    Unused << RecvInitLinuxSandbox(aAttributes.mSandboxBroker());
+    (void)RecvInitLinuxSandbox(aAttributes.mSandboxBroker());
   }
 
 #if defined(XP_WIN)
@@ -289,6 +292,22 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvInit(
   dllSvc->StartUntrustedModulesProcessor(
       aAttributes.mIsReadyForBackgroundProcessing());
 #endif  // defined(XP_WIN)
+
+#if defined(XP_MACOSX) || defined(XP_IOS)
+  if (aAttributes.mAppleFastDatapathProbeAllowed()) {
+    NS_DispatchBackgroundTask(
+        NS_NewRunnableFunction("net::AppleFastDatapathProbe", []() {
+          bool result = InitAppleFastDatapathProbe();
+          NS_DispatchToMainThread(NS_NewRunnableFunction(
+              "net::AppleFastDatapathProbeResult", [result]() {
+                if (SocketProcessChild* child =
+                        SocketProcessChild::GetSingleton()) {
+                  (void)child->SendAppleFastDatapathProbeResult(result);
+                }
+              }));
+        }));
+  }
+#endif  // defined(XP_MACOSX) || defined(XP_IOS)
 
   return IPC_OK();
 }
@@ -308,7 +327,7 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvRequestMemoryReport(
   mozilla::dom::MemoryReportRequestClient::Start(
       aGeneration, aAnonymize, aMinimizeMemoryUsage, aDMDFile, processName,
       [&](const MemoryReport& aReport) {
-        Unused << GetSingleton()->SendAddMemoryReport(aReport);
+        (void)GetSingleton()->SendAddMemoryReport(aReport);
       },
       aResolver);
   return IPC_OK();
@@ -340,12 +359,9 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvSetConnectivity(
 mozilla::ipc::IPCResult SocketProcessChild::RecvInitLinuxSandbox(
     const Maybe<ipc::FileDescriptor>& aBrokerFd) {
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
-  int fd = -1;
-  if (aBrokerFd.isSome()) {
-    fd = aBrokerFd.value().ClonePlatformHandle().release();
-  }
   RegisterProfilerObserversForSandboxProfiler();
-  SetSocketProcessSandbox(fd);
+  SetSocketProcessSandbox(
+      SocketProcessSandboxParams::ForThisProcess(aBrokerFd));
 #endif  // XP_LINUX && MOZ_SANDBOX
   return IPC_OK();
 }
@@ -388,7 +404,7 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvInitSandboxTesting(
 
 mozilla::ipc::IPCResult SocketProcessChild::RecvSocketProcessTelemetryPing() {
   const uint32_t kExpectedUintValue = 42;
-  Telemetry::ScalarSet(Telemetry::ScalarID::TELEMETRY_TEST_SOCKET_ONLY_UINT,
+  TelemetryScalar::Set(Telemetry::ScalarID::TELEMETRY_TEST_SOCKET_ONLY_UINT,
                        kExpectedUintValue);
   return IPC_OK();
 }
@@ -397,25 +413,6 @@ void SocketProcessChild::DestroySocketProcessBridgeParent(ProcessId aId) {
   MOZ_ASSERT(NS_IsMainThread());
 
   mSocketProcessBridgeParentMap.Remove(aId);
-}
-
-PWebrtcTCPSocketChild* SocketProcessChild::AllocPWebrtcTCPSocketChild(
-    const Maybe<TabId>& tabId) {
-  // We don't allocate here: instead we always use IPDL constructor that takes
-  // an existing object
-  MOZ_ASSERT_UNREACHABLE(
-      "AllocPWebrtcTCPSocketChild should not be called on"
-      " socket child");
-  return nullptr;
-}
-
-bool SocketProcessChild::DeallocPWebrtcTCPSocketChild(
-    PWebrtcTCPSocketChild* aActor) {
-#ifdef MOZ_WEBRTC
-  WebrtcTCPSocketChild* child = static_cast<WebrtcTCPSocketChild*>(aActor);
-  child->ReleaseIPDLReference();
-#endif
-  return true;
 }
 
 already_AddRefed<PHttpTransactionChild>
@@ -459,7 +456,7 @@ SocketProcessChild::RecvOnHttpActivityDistributorObserveProxyResponse(
   nsCOMPtr<nsIHttpActivityDistributor> distributor;
   distributor = mozilla::components::HttpActivityDistributor::Service();
   if (distributor) {
-    Unused << distributor->SetObserveProxyResponse(aIsEnabled);
+    (void)distributor->SetObserveProxyResponse(aIsEnabled);
   }
   return IPC_OK();
 }
@@ -470,7 +467,7 @@ SocketProcessChild::RecvOnHttpActivityDistributorObserveConnection(
   nsCOMPtr<nsIHttpActivityDistributor> distributor;
   distributor = mozilla::components::HttpActivityDistributor::Service();
   if (distributor) {
-    Unused << distributor->SetObserveConnection(aIsEnabled);
+    (void)distributor->SetObserveConnection(aIsEnabled);
   }
   return IPC_OK();
 }
@@ -697,6 +694,31 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvGetHttpConnectionData(
   return IPC_OK();
 }
 
+mozilla::ipc::IPCResult SocketProcessChild::RecvGetHttp3ConnectionStatsData(
+    GetHttp3ConnectionStatsDataResolver&& aResolve) {
+  if (!gSocketTransportService) {
+    aResolve(nsTArray<Http3ConnectionStatsParams>());
+    return IPC_OK();
+  }
+
+  RefPtr<DataResolver<nsTArray<Http3ConnectionStatsParams>,
+                      SocketProcessChild::GetHttp3ConnectionStatsDataResolver>>
+      resolver = new DataResolver<
+          nsTArray<Http3ConnectionStatsParams>,
+          SocketProcessChild::GetHttp3ConnectionStatsDataResolver>(
+          std::move(aResolve));
+  gSocketTransportService->Dispatch(
+      NS_NewRunnableFunction(
+          "net::SocketProcessChild::RecvGetHttpConnectionStatsData",
+          [resolver{std::move(resolver)}]() {
+            nsTArray<Http3ConnectionStatsParams> data;
+            HttpInfo::GetHttp3ConnectionStatsData(&data);
+            resolver->OnResolve(std::move(data));
+          }),
+      NS_DISPATCH_NORMAL);
+  return IPC_OK();
+}
+
 mozilla::ipc::IPCResult SocketProcessChild::RecvInitProxyAutoConfigChild(
     Endpoint<PProxyAutoConfigChild>&& aEndpoint) {
   // For parsing PAC.
@@ -715,7 +737,7 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvInitProxyAutoConfigChild(
     xpc::SelfHostedShmem::GetSingleton();
   }
 
-  Unused << ProxyAutoConfigChild::Create(std::move(aEndpoint));
+  (void)ProxyAutoConfigChild::Create(std::move(aEndpoint));
   return IPC_OK();
 }
 
@@ -740,6 +762,18 @@ mozilla::ipc::IPCResult SocketProcessChild::RecvRecheckDNS() {
 mozilla::ipc::IPCResult SocketProcessChild::RecvFlushFOGData(
     FlushFOGDataResolver&& aResolver) {
   glean::FlushFOGData(std::move(aResolver));
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult SocketProcessChild::RecvLoadSSLTokensCache(
+    ByteBuf&& aBuf) {
+  SSLTokensCache::DeserializeFromIPCAsync(std::move(aBuf));
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult SocketProcessChild::RecvFlushSSLTokensCache(
+    FlushSSLTokensCacheResolver&& aResolver) {
+  aResolver(mozilla::ipc::ByteBufFrom(SSLTokensCache::SerializeForIPC()));
   return IPC_OK();
 }
 
@@ -821,7 +855,7 @@ SocketProcessChild::GetIPCClientCertsActor() {
           "SendInitIPCClientCerts",
           [endpoint = std::move(parentEndpoint)](
               SocketProcessBackgroundChild* aActor) mutable {
-            Unused << aActor->SendInitIPCClientCerts(std::move(endpoint));
+            (void)aActor->SendInitIPCClientCerts(std::move(endpoint));
           }))) {
     return nullptr;
   }
@@ -833,6 +867,22 @@ SocketProcessChild::GetIPCClientCertsActor() {
 
   mIPCClientCertsChild = actor;
   return actor.forget();
+}
+
+mozilla::ipc::IPCResult SocketProcessChild::RecvAddNetAddrOverride(
+    const NetAddr& aFrom, const NetAddr& aTo) {
+  nsCOMPtr<nsIMockNetworkLayerController> controller =
+      MockNetworkLayerController::GetSingleton();
+  RefPtr<nsNetAddr> from = new nsNetAddr(&aFrom);
+  RefPtr<nsNetAddr> to = new nsNetAddr(&aTo);
+  (void)controller->AddNetAddrOverride(from, to);
+  return IPC_OK();
+}
+mozilla::ipc::IPCResult SocketProcessChild::RecvClearNetAddrOverrides() {
+  nsCOMPtr<nsIMockNetworkLayerController> controller =
+      MockNetworkLayerController::GetSingleton();
+  (void)controller->ClearNetAddrOverrides();
+  return IPC_OK();
 }
 
 }  // namespace net

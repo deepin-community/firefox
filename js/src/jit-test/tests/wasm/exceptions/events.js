@@ -59,16 +59,6 @@ wasmEval(
 
 wasmError(
   moduleWithSections([
-    sigSection([badExnType]),
-    memorySection(0),
-    tagSection([{ type: 0 }]),
-  ]),
-  WebAssembly.CompileError,
-  /tag function types must not return anything/
-);
-
-wasmError(
-  moduleWithSections([
     sigSection([emptyType]),
     memorySection(0),
     tagSection([{ type: 1 }]),
@@ -91,7 +81,7 @@ wasmError(
   const body = [1];
   body.push(...string("mod"));
   body.push(...string("exn"));
-  body.push(...varU32(TagCode));
+  body.push(...varU32(ExternTagCode));
 
   wasmError(
     moduleWithSections([
@@ -146,7 +136,7 @@ wasmError(
 (() => {
   const body = [1];
   body.push(...string("exn"));
-  body.push(...varU32(TagCode));
+  body.push(...varU32(ExternTagCode));
   wasmError(
     moduleWithSections([
       sigSection([emptyType]),

@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_fetcheventopproxychild_h__
-#define mozilla_dom_fetcheventopproxychild_h__
-
-#include "nsISupportsImpl.h"
+#ifndef mozilla_dom_fetcheventopproxychild_h_
+#define mozilla_dom_fetcheventopproxychild_h_
 
 #include "ServiceWorkerOp.h"
 #include "ServiceWorkerOpPromise.h"
@@ -15,6 +11,7 @@
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/InternalRequest.h"
 #include "mozilla/dom/PFetchEventOpProxyChild.h"
+#include "nsISupportsImpl.h"
 
 namespace mozilla::dom {
 
@@ -70,9 +67,15 @@ class FetchEventOpProxyChild final : public PFetchEventOpProxyChild {
   RefPtr<FetchEventPreloadResponseEndPromise::Private>
       mPreloadResponseEndPromise;
 
+  // MozPromise intentionally does not expose synchronous access to the
+  // resolved/rejected state of a promise, so track whether or not we've
+  // resolved these promises manually.
+  bool mPreloadResponseAvailablePromiseResolved = false;
+  bool mPreloadResponseEndPromiseResolved = false;
+
   Maybe<ServiceWorkerOpResult> mCachedOpResult;
 };
 
 }  // namespace mozilla::dom
 
-#endif  // mozilla_dom_fetcheventopproxychild_h__
+#endif  // mozilla_dom_fetcheventopproxychild_h_

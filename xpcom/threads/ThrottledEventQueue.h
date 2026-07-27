@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,12 +9,8 @@
 
 #include "nsISerialEventTarget.h"
 
-#define NS_THROTTLEDEVENTQUEUE_IID                   \
-  {                                                  \
-    0x8f3cf7dc, 0xfc14, 0x4ad5, {                    \
-      0x9f, 0xd5, 0xdb, 0x79, 0xbc, 0xe6, 0xd5, 0x08 \
-    }                                                \
-  }
+#define NS_THROTTLEDEVENTQUEUE_IID \
+  {0x8f3cf7dc, 0xfc14, 0x4ad5, {0x9f, 0xd5, 0xdb, 0x79, 0xbc, 0xe6, 0xd5, 0x08}}
 
 namespace mozilla {
 
@@ -108,10 +102,8 @@ class ThrottledEventQueue final : public nsISerialEventTarget {
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIEVENTTARGET_FULL
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_THROTTLEDEVENTQUEUE_IID);
+  NS_INLINE_DECL_STATIC_IID(NS_THROTTLEDEVENTQUEUE_IID);
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(ThrottledEventQueue, NS_THROTTLEDEVENTQUEUE_IID);
 
 }  // namespace mozilla
 

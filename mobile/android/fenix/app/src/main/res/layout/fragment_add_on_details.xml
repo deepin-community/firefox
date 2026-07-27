@@ -21,8 +21,8 @@
             android:id="@+id/details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?attr/textPrimary"
-            android:textColorLink="?textAccent"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorLink="?attr/colorTertiary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@tools:sample/lorem/random" />
@@ -46,7 +46,8 @@
             style="@style/AboutHeaderContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="end|center_vertical"
+            android:textAlignment="textEnd"
             android:minHeight="48dp"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="10dp"
@@ -84,13 +85,14 @@
             style="@style/AboutHeaderContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:textAlignment="textEnd"
+            android:importantForAccessibility="no"
             android:minWidth="48dp"
             android:minHeight="48dp"
-            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/version_label"
             app:layout_constraintTop_toBottomOf="@+id/author_divider"
-            android:importantForAccessibility="no"
             tools:text="1.2.3" />
 
         <View
@@ -119,7 +121,8 @@
             style="@style/AboutHeaderContentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="end|center_vertical"
+            android:textAlignment="textEnd"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/last_updated_label"
@@ -145,7 +148,7 @@
             android:clickable="true"
             android:focusable="true"
             android:text="@string/mozac_feature_addons_home_page"
-            android:textColor="?textAccent"
+            android:textColor="?attr/colorTertiary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/last_updated_divider" />
 
@@ -197,7 +200,8 @@
                 style="@style/AboutHeaderContentText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="end|center_vertical"
+                android:textAlignment="textEnd"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 app:layout_constrainedWidth="true"
@@ -227,7 +231,7 @@
             android:clickable="true"
             android:focusable="true"
             android:text="@string/mozac_feature_addons_more_info_link_2"
-            android:textColor="?textAccent"
+            android:textColor="?attr/colorTertiary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/detail_url_divider" />
 

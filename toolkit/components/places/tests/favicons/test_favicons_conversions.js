@@ -14,20 +14,18 @@ var isWindows = "@mozilla.org/windows-registry-key;1" in Cc;
 /**
  * Checks the conversion of the given test image file.
  *
- * @param aFileName
+ * @param {string} aFileName
  *        File that contains the favicon image, located in the test folder.
- * @param aFileMimeType
+ * @param {string} aFileMimeType
  *        MIME type of the image contained in the file.
- * @param aFileLength
+ * @param {number} aFileLength
  *        Expected length of the file.
- * @param aExpectConversion
+ * @param {boolean} aExpectConversion
  *        If false, the icon should be stored as is.  If true, the expected data
  *        is loaded from a file named "expected-" + aFileName + ".png".
- * @param aVaryOnWindows
+ * @param {boolean} aVaryOnWindows
  *        Indicates that the content of the converted image can be different on
  *        Windows and should not be checked on that platform.
- * @param aCallback
- *        This function is called after the check finished.
  */
 async function checkFaviconDataConversion(
   aFileName,
@@ -36,32 +34,42 @@ async function checkFaviconDataConversion(
   aExpectConversion,
   aVaryOnWindows
 ) {
-  let pageURI = NetUtil.newURI("http://places.test/page/" + aFileName);
+  let pageURI = Services.io.newURI("http://places.test/page/" + aFileName);
   await PlacesTestUtils.addVisits({
     uri: pageURI,
     transition: TRANSITION_TYPED,
   });
-  let faviconURI = NetUtil.newURI("http://places.test/icon/" + aFileName);
+  let faviconURI = Services.io.newURI("http://places.test/icon/" + aFileName);
   let fileData = readFileOfLength(aFileName, aFileLength);
-  let fileDataURL = await fileDataToDataURL(fileData, aFileMimeType);
+  let fileDataURL = await PlacesTestUtils.fileDataToDataURL(
+    fileData,
+    aFileMimeType
+  );
   await PlacesTestUtils.setFaviconForPage(
     pageURI.spec,
     faviconURI.spec,
     fileDataURL
   );
 
-  await new Promise(resolve => {
-    if (!aExpectConversion) {
-      checkFaviconDataForPage(pageURI, aFileMimeType, fileData, resolve);
-    } else if (!aVaryOnWindows || !isWindows) {
-      let expectedFile = do_get_file("expected-" + aFileName + ".png");
-      let expectedData = readFileData(expectedFile);
-      checkFaviconDataForPage(pageURI, "image/png", expectedData, resolve);
-    } else {
-      // Not check the favicon data.
-      checkFaviconDataForPage(pageURI, "image/png", null, resolve);
+  if (!aExpectConversion) {
+    await checkFaviconDataForPage(pageURI, aFileMimeType, fileData);
+  } else if (!aVaryOnWindows || !isWindows) {
+    let allowMissing = AppConstants.USE_LIBZ_RS;
+    let expectedFile = do_get_file(
+      "expected-" +
+        aFileName +
+        (AppConstants.USE_LIBZ_RS ? ".libz-rs.png" : ".png"),
+      allowMissing
+    );
+    if (!expectedFile.exists()) {
+      expectedFile = do_get_file("expected-" + aFileName + ".png");
     }
-  });
+    let expectedData = readFileData(expectedFile);
+    await checkFaviconDataForPage(pageURI, "image/png", expectedData);
+  } else {
+    // Not check the favicon data.
+    await checkFaviconDataForPage(pageURI, "image/png", null);
+  }
 }
 
 add_task(async function test_storing_a_normal_16x16_icon() {

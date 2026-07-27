@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::match_byte;
-use dtoa_short::Notation;
 use std::fmt::{self, Write};
 use std::str;
+
+#[cfg(feature = "fast_match_byte")]
+pub use crate::match_byte;
 
 use super::Token;
 
@@ -32,30 +33,27 @@ fn write_numeric<W>(value: f32, int_value: Option<i32>, has_sign: bool, dest: &m
 where
     W: fmt::Write,
 {
-    // `value.value >= 0` is true for negative 0.
-    if has_sign && value.is_sign_positive() {
+    if value == 0.0 && value.is_sign_negative() {
+        // Negative zero. Work around #20596.
+        return dest.write_str("-0");
+    }
+    // NOTE: `value.value >= 0` is true for negative 0 but we've dealt with it above.
+    if has_sign && value >= 0.0 {
         dest.write_str("+")?;
     }
 
-    let notation = if value == 0.0 && value.is_sign_negative() {
-        // Negative zero. Work around #20596.
-        dest.write_str("-0")?;
-        Notation {
-            decimal_point: false,
-            scientific: false,
-        }
-    } else {
-        dtoa_short::write(dest, value)?
-    };
+    if let Some(v) = int_value {
+        return write!(dest, "{}", v);
+    }
 
-    if int_value.is_none() && value.fract() == 0. && !notation.decimal_point && !notation.scientific
-    {
+    let notation = dtoa_short::write(dest, value)?;
+    if value.fract() == 0. && !notation.decimal_point && !notation.scientific {
         dest.write_str(".0")?;
     }
     Ok(())
 }
 
-impl<'a> ToCss for Token<'a> {
+impl ToCss for Token<'_> {
     fn to_css<W>(&self, dest: &mut W) -> fmt::Result
     where
         W: fmt::Write,
@@ -286,7 +284,7 @@ where
 ///
 /// Typical usage:
 ///
-/// ```{rust,ignore}
+/// ```rust,ignore
 /// fn write_foo<W>(foo: &Foo, dest: &mut W) -> fmt::Result where W: fmt::Write {
 ///     dest.write_str("\"")?;
 ///     {
@@ -311,7 +309,7 @@ where
     }
 }
 
-impl<'a, W> fmt::Write for CssStringWriter<'a, W>
+impl<W> fmt::Write for CssStringWriter<'_, W>
 where
     W: fmt::Write,
 {
@@ -466,6 +464,9 @@ pub enum TokenSerializationType {
     Other,
 }
 
+#[cfg(feature = "malloc_size_of")]
+malloc_size_of::malloc_size_of_is_0!(TokenSerializationType);
+
 impl TokenSerializationType {
     /// Return a value that represents the absence of a token, e.g. before the start of the input.
     #[deprecated(
@@ -539,7 +540,7 @@ impl TokenSerializationType {
     }
 }
 
-impl<'a> Token<'a> {
+impl Token<'_> {
     /// Categorize a token into a type that determines when `/**/` needs to be inserted
     /// between two tokens when serialized next to each other without whitespace in between.
     ///

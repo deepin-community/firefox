@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2016 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,8 +17,6 @@
 #ifndef wasm_validate_h
 #define wasm_validate_h
 
-#include <type_traits>
-
 #include "js/Utility.h"
 #include "js/WasmFeatures.h"
 
@@ -28,6 +24,7 @@
 #include "wasm/WasmCompile.h"
 #include "wasm/WasmCompileArgs.h"
 #include "wasm/WasmModuleTypes.h"
+#include "wasm/WasmOpIter.h"
 #include "wasm/WasmProcess.h"
 #include "wasm/WasmTypeDef.h"
 
@@ -111,6 +108,9 @@ using ValidatingOpIter = OpIter<ValidatingPolicy>;
 // Shared subtyping function across validation.
 
 [[nodiscard]] bool CheckIsSubtypeOf(Decoder& d, const CodeMetadata& codeMeta,
+                                    size_t opcodeOffset, ResultType subType,
+                                    ResultType superType);
+[[nodiscard]] bool CheckIsSubtypeOf(Decoder& d, const CodeMetadata& codeMeta,
                                     size_t opcodeOffset, StorageType subType,
                                     StorageType superType);
 
@@ -135,14 +135,14 @@ using ValidatingOpIter = OpIter<ValidatingPolicy>;
                                                 ValTypeVector* locals);
 
 // Returns whether the given [begin, end) prefix of a module's bytecode starts a
-// code section and, if so, returns the SectionRange of that code section.
+// code section and, if so, returns the BytecodeRange of that code section.
 // Note that, even if this function returns 'false', [begin, end) may actually
 // be a valid module in the special case when there are no function defs and the
 // code section is not present. Such modules can be valid so the caller must
 // handle this special case.
 
 [[nodiscard]] bool StartsCodeSection(const uint8_t* begin, const uint8_t* end,
-                                     SectionRange* codeSection);
+                                     BytecodeRange* codeSection);
 
 // Calling DecodeModuleEnvironment decodes all sections up to the code section
 // and performs full validation of all those sections. The client must then
@@ -165,8 +165,46 @@ using ValidatingOpIter = OpIter<ValidatingPolicy>;
 //  - if *error is null, the caller should report out-of-memory
 //  - otherwise, there was a legitimate error described by *error
 
-[[nodiscard]] bool Validate(JSContext* cx, const ShareableBytes& bytecode,
+[[nodiscard]] bool Validate(JSContext* cx, const BytecodeSource& bytecode,
                             const FeatureOptions& options, UniqueChars* error);
+
+struct NopOpDumper {
+  void dumpOpBegin(OpBytes op) {}
+  void dumpOpEnd() {}
+  void dumpTypeIndex(uint32_t typeIndex, bool asTypeUse = false) {}
+  void dumpFuncIndex(uint32_t funcIndex) {}
+  void dumpTableIndex(uint32_t tableIndex) {}
+  void dumpGlobalIndex(uint32_t globalIndex) {}
+  void dumpMemoryIndex(uint32_t memoryIndex) {}
+  void dumpElemIndex(uint32_t elemIndex) {}
+  void dumpDataIndex(uint32_t dataIndex) {}
+  void dumpTagIndex(uint32_t tagIndex) {}
+  void dumpLocalIndex(uint32_t localIndex) {}
+  void dumpBlockType(BlockType type) {}
+  void dumpI32Const(int32_t constant) {}
+  void dumpI64Const(int64_t constant) {}
+  void dumpF32Const(float constant) {}
+  void dumpF64Const(double constant) {}
+  void dumpV128Const(V128 constant) {}
+  void dumpVectorMask(V128 mask) {}
+  void dumpRefType(RefType type) {}
+  void dumpHeapType(RefType type) {}
+  void dumpValType(ValType type) {}
+  void dumpTryTableCatches(const TryTableCatchVector& catches) {}
+  void dumpLinearMemoryAddress(LinearMemoryAddress<mozilla::Nothing> addr) {}
+  void dumpBlockDepth(uint32_t relativeDepth) {}
+  void dumpBlockDepths(const Uint32Vector& relativeDepths) {}
+  void dumpFieldIndex(uint32_t fieldIndex) {}
+  void dumpNumElements(uint32_t numElements) {}
+  void dumpLaneIndex(uint32_t laneIndex) {}
+
+  void startScope() {};
+  void endScope() {};
+};
+
+template <class T>
+[[nodiscard]] bool ValidateOps(ValidatingOpIter& iter, T& dumper,
+                               const CodeMetadata& codeMeta);
 
 }  // namespace wasm
 }  // namespace js

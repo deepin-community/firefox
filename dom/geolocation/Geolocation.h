@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,27 +8,25 @@
 // Microsoft's API Name hackery sucks
 #undef CreateEvent
 
-#include "nsCOMPtr.h"
-#include "nsTArray.h"
-#include "nsITimer.h"
-#include "nsIObserver.h"
-#include "nsIWeakReferenceUtils.h"
-#include "nsWrapperCache.h"
-
-#include "nsCycleCollectionParticipant.h"
-
-#include "GeolocationPosition.h"
 #include "GeolocationCoordinates.h"
+#include "GeolocationPosition.h"
+#include "GeolocationSystem.h"
+#include "mozilla/Attributes.h"
+#include "mozilla/WeakPtr.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/CallbackObject.h"
+#include "mozilla/dom/GeolocationBinding.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsIDOMGeoPosition.h"
 #include "nsIDOMGeoPositionCallback.h"
 #include "nsIDOMGeoPositionErrorCallback.h"
-#include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/dom/GeolocationBinding.h"
-#include "mozilla/dom/CallbackObject.h"
-#include "GeolocationSystem.h"
-
 #include "nsIGeolocationProvider.h"
-#include "mozilla/Attributes.h"
+#include "nsIObserver.h"
+#include "nsITimer.h"
+#include "nsIWeakReferenceUtils.h"
+#include "nsTArray.h"
+#include "nsWrapperCache.h"
 
 class nsGeolocationService;
 class nsGeolocationRequest;
@@ -57,7 +53,8 @@ struct CachedPositionAndAccuracy {
 class nsGeolocationService final : public nsIGeolocationUpdate,
                                    public nsIObserver {
  public:
-  static already_AddRefed<nsGeolocationService> GetGeolocationService();
+  static already_AddRefed<nsGeolocationService> GetGeolocationService(
+      mozilla::dom::BrowsingContext* browsingContext = nullptr);
   static mozilla::StaticRefPtr<nsGeolocationService> sService;
 
   NS_DECL_THREADSAFE_ISUPPORTS
@@ -69,8 +66,11 @@ class nsGeolocationService final : public nsIGeolocationUpdate,
   nsresult Init();
 
   // Management of the Geolocation objects
-  void AddLocator(mozilla::dom::Geolocation* locator);
-  void RemoveLocator(mozilla::dom::Geolocation* locator);
+  void AddLocator(mozilla::dom::Geolocation* aLocator);
+  void RemoveLocator(mozilla::dom::Geolocation* aLocator);
+
+  // Move locators from service override to the original service.
+  void MoveLocators(nsGeolocationService* aService);
 
   void SetCachedPosition(nsIDOMGeoPosition* aPosition);
   CachedPositionAndAccuracy GetCachedPosition();
@@ -102,13 +102,18 @@ class nsGeolocationService final : public nsIGeolocationUpdate,
   // mGeolocators are not owned here.  Their constructor
   // adds them to this list, and their destructor removes
   // them from this list.
-  nsTArray<mozilla::dom::Geolocation*> mGeolocators;
+  nsTArray<mozilla::WeakPtr<mozilla::dom::Geolocation>> mGeolocators;
 
   // This is the last geo position that we have seen.
   CachedPositionAndAccuracy mLastPosition;
 
   // Current state of requests for higher accuracy
   bool mHigherAccuracy = false;
+
+  // Whether the geolocation device is starting.
+  // Nothing() if not being started, or a boolean reflecting the requested
+  // accuracy.
+  mozilla::Maybe<bool> mStarting;
 };
 
 namespace mozilla::dom {
@@ -116,7 +121,11 @@ namespace mozilla::dom {
 /**
  * Can return a geolocation info
  */
-class Geolocation final : public nsIGeolocationUpdate, public nsWrapperCache {
+class Geolocation final : public nsIGeolocationUpdate,
+                          public nsWrapperCache,
+                          public SupportsWeakPtr {
+  friend class ::nsGeolocationService;
+
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Geolocation)
@@ -165,6 +174,11 @@ class Geolocation final : public nsIGeolocationUpdate, public nsWrapperCache {
 
   // Shutting down.
   void Shutdown();
+
+  // Getter for the browsing context that this Geolocation was loaded for
+  mozilla::dom::BrowsingContext* GetBrowsingContext() {
+    return mBrowsingContext;
+  }
 
   // Getter for the principal that this Geolocation was loaded from
   nsIPrincipal* GetPrincipal() { return mPrincipal; }
@@ -220,20 +234,24 @@ class Geolocation final : public nsIGeolocationUpdate, public nsWrapperCache {
   // Initates the asynchronous process of filling the request.
   static void RequestIfPermitted(nsGeolocationRequest* request);
 
+  // Allow updating service for shutdown deregistering
+  void SetService(nsGeolocationService* aService) { mService = aService; }
+
   // Two callback arrays.  The first |mPendingCallbacks| holds objects for only
   // one callback and then they are released/removed from the array.  The second
   // |mWatchingCallbacks| holds objects until the object is explicitly removed
   // or there is a page change. All requests held by either array are active,
   // that is, they have been allowed and expect to be fulfilled.
 
-  nsTArray<RefPtr<nsGeolocationRequest> > mPendingCallbacks;
-  nsTArray<RefPtr<nsGeolocationRequest> > mWatchingCallbacks;
+  nsTArray<RefPtr<nsGeolocationRequest>> mPendingCallbacks;
+  nsTArray<RefPtr<nsGeolocationRequest>> mWatchingCallbacks;
 
   // window that this was created for.  Weak reference.
   nsWeakPtr mOwner;
 
   // where the content was loaded from
   nsCOMPtr<nsIPrincipal> mPrincipal;
+  RefPtr<mozilla::dom::BrowsingContext> mBrowsingContext;
 
   // the protocols we want to measure
   enum class ProtocolType : uint8_t { OTHER, HTTP, HTTPS };
@@ -243,12 +261,14 @@ class Geolocation final : public nsIGeolocationUpdate, public nsWrapperCache {
 
   // owning back pointer.
   RefPtr<nsGeolocationService> mService;
+  // owning back pointer for service override.
+  RefPtr<nsGeolocationService> mServiceOverride;
 
   // Watch ID
   uint32_t mLastWatchId;
 
   // Pending requests are used when the service is not ready
-  nsTArray<RefPtr<nsGeolocationRequest> > mPendingRequests;
+  nsTArray<RefPtr<nsGeolocationRequest>> mPendingRequests;
 
   // Array containing already cleared watch IDs
   nsTArray<int32_t> mClearedWatchIDs;

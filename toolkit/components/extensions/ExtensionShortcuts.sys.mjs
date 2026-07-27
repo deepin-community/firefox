@@ -2,48 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { ExtensionCommon } from "resource://gre/modules/ExtensionCommon.sys.mjs";
 
 import { ExtensionUtils } from "resource://gre/modules/ExtensionUtils.sys.mjs";
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
   ExtensionSettingsStore:
     "resource://gre/modules/ExtensionSettingsStore.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
-});
-
-/**
- * These properties cannot be lazy getters otherwise they
- * get defined on first use, at a time when some modules
- * may not have been loaded.  In that case, the getter would
- * become undefined until next app restart.
- */
-Object.defineProperties(lazy, {
-  windowTracker: {
-    get() {
-      return lazy.ExtensionParent.apiManager.global.windowTracker;
-    },
-  },
-  browserActionFor: {
-    get() {
-      return lazy.ExtensionParent.apiManager.global.browserActionFor;
-    },
-  },
-  pageActionFor: {
-    get() {
-      return lazy.ExtensionParent.apiManager.global.pageActionFor;
-    },
-  },
-  sidebarActionFor: {
-    get() {
-      return lazy.ExtensionParent.apiManager.global.sidebarActionFor;
-    },
-  },
+  global: () => lazy.ExtensionParent.apiManager.global,
 });
 
 const { ExtensionError, DefaultMap } = ExtensionUtils;
@@ -283,6 +253,17 @@ export class ExtensionShortcuts {
     }
   }
 
+  async openShortcutSettings() {
+    let window = lazy.global.windowTracker.topWindow;
+    if (!window) {
+      throw new ExtensionError("No browser window available");
+    }
+
+    let { extension } = this;
+    const viewId = `addons://shortcuts/${encodeURIComponent(extension.id)}`;
+    await window.BrowserAddonUI.openAddonsMgr(viewId);
+  }
+
   loadCommands() {
     let { extension } = this;
 
@@ -326,7 +307,7 @@ export class ExtensionShortcuts {
   }
 
   registerKeys(commands) {
-    for (let window of lazy.windowTracker.browserWindows()) {
+    for (let window of lazy.global.windowTracker.browserWindows()) {
       this.registerKeysToDocument(window, commands);
     }
   }
@@ -345,7 +326,7 @@ export class ExtensionShortcuts {
       }
     };
 
-    lazy.windowTracker.addOpenListener(this.windowOpenListener);
+    lazy.global.windowTracker.addOpenListener(this.windowOpenListener);
   }
 
   /**
@@ -353,13 +334,13 @@ export class ExtensionShortcuts {
    * from being registered to windows which are later created.
    */
   unregister() {
-    for (let window of lazy.windowTracker.browserWindows()) {
+    for (let window of lazy.global.windowTracker.browserWindows()) {
       if (this.keysetsMap.has(window)) {
         this.keysetsMap.get(window).remove();
       }
     }
 
-    lazy.windowTracker.removeOpenListener(this.windowOpenListener);
+    lazy.global.windowTracker.removeOpenListener(this.windowOpenListener);
   }
 
   /**
@@ -468,10 +449,6 @@ export class ExtensionShortcuts {
   buildKey(doc, name, shortcut) {
     let keyElement = this.buildKeyFromShortcut(doc, name, shortcut);
 
-    // We need to have the attribute "oncommand" for the "command" listener to fire,
-    // and it is currently ignored when set to the empty string.
-    keyElement.setAttribute("oncommand", "//");
-
     /* eslint-disable mozilla/balanced-listeners */
     // We remove all references to the key elements when the extension is shutdown,
     // therefore the listeners for these elements will be garbage collected.
@@ -483,14 +460,14 @@ export class ExtensionShortcuts {
           : "_execute_action";
 
       let actionFor = {
-        [_execute_action]: lazy.browserActionFor,
-        _execute_page_action: lazy.pageActionFor,
-        _execute_sidebar_action: lazy.sidebarActionFor,
+        [_execute_action]: lazy.global.browserActionFor,
+        _execute_page_action: lazy.global.pageActionFor,
+        _execute_sidebar_action: lazy.global.sidebarActionFor,
       }[name];
 
       if (actionFor) {
         action = actionFor(this.extension);
-        let win = event.target.ownerGlobal;
+        let win = event.target.documentGlobal;
         action.triggerAction(win);
       } else {
         this.onCommand(name);

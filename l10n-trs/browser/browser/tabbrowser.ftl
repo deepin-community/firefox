@@ -76,13 +76,6 @@ tabbrowser-unblock-tab-audio-tooltip =
 
 tabbrowser-confirm-close-tabs-button = Narán rakïj ñanj
 
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 tabbrowser-confirm-open-multiple-tabs-title = Garayino' da' na'ni'
@@ -94,12 +87,6 @@ tabbrowser-confirm-open-multiple-tabs-message =
     }
 tabbrowser-confirm-open-multiple-tabs-button = Na'nïn rakïj ñanj
 tabbrowser-confirm-open-multiple-tabs-checkbox = Gataj na'anj ma si 'ngà na'nïnj ma ga'ì ñanj ni nahuin naj ma { -brand-short-name }
-
-## Confirmation dialog for enabling caret browsing
-
-
-## Confirmation dialog for closing all duplicate tabs
-
 
 ##
 
@@ -128,6 +115,3 @@ tabbrowser-context-unmute-selected-tabs =
 #   $tabCount (Number): The number of tabs in the current browser window. It will always be 2 at least.
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = Duniko' dugui' dara'anj { $tabCount } Rakïj ñanj
-
-## Tab manager menu buttons
-

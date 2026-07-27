@@ -4,12 +4,13 @@
 
 //! Specified types for box properties.
 
+use crate::derives::*;
+pub use crate::logical_geometry::WritingModeProperty;
 use crate::parser::{Parse, ParserContext};
-#[cfg(feature = "gecko")]
 use crate::properties::{LonghandId, PropertyDeclarationId, PropertyId};
 use crate::values::generics::box_::{
-    GenericContainIntrinsicSize, GenericLineClamp, GenericPerspective, GenericVerticalAlign,
-    VerticalAlignKeyword,
+    BaselineShiftKeyword, GenericBaselineShift, GenericContainIntrinsicSize, GenericLineClamp,
+    GenericOverflowClipMargin, GenericPerspective, OverflowClipMarginBox,
 };
 use crate::values::specified::length::{LengthPercentage, NonNegativeLength};
 use crate::values::specified::{AllowQuirks, Integer, NonNegativeNumberOrPercentage};
@@ -21,24 +22,59 @@ use style_traits::{CssWriter, KeywordsCollectFn, ParseError};
 use style_traits::{SpecifiedValueInfo, StyleParseErrorKind, ToCss};
 
 #[cfg(not(feature = "servo"))]
-fn flexbox_enabled() -> bool {
-    true
-}
-#[cfg(not(feature = "servo"))]
 fn grid_enabled() -> bool {
     true
 }
 
 #[cfg(feature = "servo")]
-fn flexbox_enabled() -> bool {
-    servo_config::prefs::pref_map()
-        .get("layout.flexbox.enabled")
-        .as_bool()
-        .unwrap_or(false)
-}
-#[cfg(feature = "servo")]
 fn grid_enabled() -> bool {
-    style_config::get_bool("layout.grid.enabled")
+    static_prefs::pref!("layout.grid.enabled")
+}
+
+#[inline]
+fn appearance_base_enabled(_context: &ParserContext) -> bool {
+    static_prefs::pref!("layout.css.appearance-base.enabled")
+}
+
+#[inline]
+fn appearance_base_select_enabled(_context: &ParserContext) -> bool {
+    static_prefs::pref!("dom.select.customizable_select.enabled")
+}
+
+/// The specified value of `overflow-clip-margin`.
+pub type OverflowClipMargin = GenericOverflowClipMargin<NonNegativeLength>;
+
+impl Parse for OverflowClipMargin {
+    // <visual-box> || <length [0,∞]>
+    fn parse<'i>(
+        context: &ParserContext,
+        input: &mut Parser<'i, '_>,
+    ) -> Result<Self, ParseError<'i>> {
+        use crate::Zero;
+        let mut offset = None;
+        let mut visual_box = None;
+        loop {
+            if offset.is_none() {
+                offset = input
+                    .try_parse(|i| NonNegativeLength::parse(context, i))
+                    .ok();
+            }
+            if visual_box.is_none() {
+                visual_box = input.try_parse(OverflowClipMarginBox::parse).ok();
+                if visual_box.is_some() {
+                    continue;
+                }
+            }
+            break;
+        }
+        if offset.is_none() && visual_box.is_none() {
+            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+        }
+        Ok(Self {
+            offset: offset.unwrap_or_else(NonNegativeLength::zero),
+            visual_box: visual_box.unwrap_or(OverflowClipMarginBox::PaddingBox),
+        })
+    }
 }
 
 /// Defines an element’s display type, which consists of
@@ -124,8 +160,10 @@ impl DisplayInside {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
+#[typed(todo_derive_fields)]
 pub struct Display(u16);
 
 /// Gecko-only impl block for Display (shared stuff later in this file):
@@ -187,54 +225,54 @@ impl Display {
     // Internal table boxes.
 
     pub const TableRowGroup: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableRowGroup as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableRowGroup as u16,
     );
     pub const TableHeaderGroup: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableHeaderGroup as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableHeaderGroup as u16,
     );
     pub const TableFooterGroup: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableFooterGroup as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableFooterGroup as u16,
     );
     pub const TableColumn: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableColumn as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableColumn as u16,
     );
     pub const TableColumnGroup: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableColumnGroup as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableColumnGroup as u16,
     );
     pub const TableRow: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableRow as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableRow as u16,
     );
     pub const TableCell: Self = Self(
-        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::TableCell as u16,
+        ((DisplayOutside::InternalTable as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::TableCell as u16,
     );
 
     /// Internal ruby boxes.
     #[cfg(feature = "gecko")]
     pub const RubyBase: Self = Self(
-        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::RubyBase as u16,
+        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::RubyBase as u16,
     );
     #[cfg(feature = "gecko")]
     pub const RubyBaseContainer: Self = Self(
-        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::RubyBaseContainer as u16,
+        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::RubyBaseContainer as u16,
     );
     #[cfg(feature = "gecko")]
     pub const RubyText: Self = Self(
-        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::RubyText as u16,
+        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::RubyText as u16,
     );
     #[cfg(feature = "gecko")]
     pub const RubyTextContainer: Self = Self(
-        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT) |
-            DisplayInside::RubyTextContainer as u16,
+        ((DisplayOutside::InternalRuby as u16) << Self::OUTSIDE_SHIFT)
+            | DisplayInside::RubyTextContainer as u16,
     );
 
     /// Make a raw display value from <display-outside> and <display-inside> values.
@@ -296,11 +334,11 @@ impl Display {
     pub fn is_ruby_type(&self) -> bool {
         match self.inside() {
             #[cfg(feature = "gecko")]
-            DisplayInside::Ruby |
-            DisplayInside::RubyBase |
-            DisplayInside::RubyText |
-            DisplayInside::RubyBaseContainer |
-            DisplayInside::RubyTextContainer => true,
+            DisplayInside::Ruby
+            | DisplayInside::RubyBase
+            | DisplayInside::RubyText
+            | DisplayInside::RubyBaseContainer
+            | DisplayInside::RubyTextContainer => true,
             _ => false,
         }
     }
@@ -312,17 +350,6 @@ impl Display {
     #[inline]
     pub fn inline() -> Self {
         Display::Inline
-    }
-
-    /// <https://drafts.csswg.org/css2/visuren.html#x13>
-    #[cfg(feature = "servo")]
-    #[inline]
-    pub fn is_atomic_inline_level(&self) -> bool {
-        match *self {
-            Display::InlineBlock | Display::InlineFlex => true,
-            Display::InlineTable => true,
-            _ => false,
-        }
     }
 
     /// Returns whether this `display` value is the display of a flex or
@@ -354,12 +381,10 @@ impl Display {
     /// Convert this display into an equivalent block display.
     ///
     /// Also used for :root style adjustments.
-    pub fn equivalent_block_display(&self, _is_root_element: bool) -> Self {
-        {
-            // Special handling for `contents` and `list-item`s on the root element.
-            if _is_root_element && (self.is_contents() || self.is_list_item()) {
-                return Display::Block;
-            }
+    pub fn equivalent_block_display(&self, is_root_element: bool) -> Self {
+        // Special handling for `contents` and `list-item`s on the root element.
+        if is_root_element && (self.is_contents() || self.is_list_item()) {
+            return Display::Block;
         }
 
         match self.outside() {
@@ -426,8 +451,8 @@ impl DisplayKeyword {
             "contents" => Full(Display::Contents),
             "inline-block" => Full(Display::InlineBlock),
             "inline-table" => Full(Display::InlineTable),
-            "-webkit-flex" if flexbox_enabled() => Full(Display::Flex),
-            "inline-flex" | "-webkit-inline-flex" if flexbox_enabled() => Full(Display::InlineFlex),
+            "-webkit-flex" => Full(Display::Flex),
+            "inline-flex" | "-webkit-inline-flex" => Full(Display::InlineFlex),
             "inline-grid" if grid_enabled() => Full(Display::InlineGrid),
             "table-caption" => Full(Display::TableCaption),
             "table-row-group" => Full(Display::TableRowGroup),
@@ -460,7 +485,7 @@ impl DisplayKeyword {
             /// <display-inside> = flow | flow-root | table | flex | grid | ruby
             /// https://drafts.csswg.org/css-display/#typedef-display-inside
             "flow" => Inside(DisplayInside::Flow),
-            "flex" if flexbox_enabled() => Inside(DisplayInside::Flex),
+            "flex" => Inside(DisplayInside::Flex),
             "flow-root" => Inside(DisplayInside::FlowRoot),
             "table" => Inside(DisplayInside::Table),
             "grid" if grid_enabled() => Inside(DisplayInside::Grid),
@@ -600,10 +625,10 @@ pub type ContainIntrinsicSize = GenericContainIntrinsicSize<NonNegativeLength>;
 /// A specified value for the `line-clamp` property.
 pub type LineClamp = GenericLineClamp<Integer>;
 
-/// A specified value for the `vertical-align` property.
-pub type VerticalAlign = GenericVerticalAlign<LengthPercentage>;
+/// A specified value for the `baseline-shift` property.
+pub type BaselineShift = GenericBaselineShift<LengthPercentage>;
 
-impl Parse for VerticalAlign {
+impl Parse for BaselineShift {
     fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -611,13 +636,114 @@ impl Parse for VerticalAlign {
         if let Ok(lp) =
             input.try_parse(|i| LengthPercentage::parse_quirky(context, i, AllowQuirks::Yes))
         {
-            return Ok(GenericVerticalAlign::Length(lp));
+            return Ok(BaselineShift::Length(lp));
         }
 
-        Ok(GenericVerticalAlign::Keyword(VerticalAlignKeyword::parse(
-            input,
-        )?))
+        Ok(BaselineShift::Keyword(BaselineShiftKeyword::parse(input)?))
     }
+}
+
+/// A specified value for the `dominant-baseline` property.
+/// https://drafts.csswg.org/css-inline-3/#dominant-baseline
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToCss,
+    ToShmem,
+    ToComputedValue,
+    ToResolvedValue,
+    ToTyped,
+)]
+#[repr(u8)]
+pub enum DominantBaseline {
+    /// Equivalent to 'alphabetic' in horizontal writing modes and in vertical writing
+    /// modes when 'text-orientation' is sideways. Equivalent to 'central' in vertical
+    /// writing modes when 'text-orientation' is 'mixed' or 'upright'.
+    Auto,
+    /// Use the text-under baseline.
+    #[parse(aliases = "text-after-edge")]
+    TextBottom,
+    /// Use the alphabetic baseline.
+    Alphabetic,
+    /// Use the ideographic-under baseline.
+    Ideographic,
+    /// In general, use the x-middle baselines; except under text-orientation: upright
+    /// (where the alphabetic and x-height baselines are essentially meaningless) use
+    /// the central baseline instead.
+    Middle,
+    /// Use the central baseline.
+    Central,
+    /// Use the math baseline.
+    Mathematical,
+    /// Use the hanging baseline.
+    Hanging,
+    /// Use the text-over baseline.
+    #[parse(aliases = "text-before-edge")]
+    TextTop,
+}
+
+/// A specified value for the `alignment-baseline` property.
+/// https://drafts.csswg.org/css-inline-3/#alignment-baseline
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToCss,
+    ToShmem,
+    ToComputedValue,
+    ToResolvedValue,
+    ToTyped,
+)]
+#[repr(u8)]
+pub enum AlignmentBaseline {
+    /// Use the dominant baseline choice of the parent.
+    Baseline,
+    /// Use the text-under baseline.
+    TextBottom,
+    /// Use the alphabetic baseline.
+    /// TODO: Bug 2010717 - Remove css(skip) to support alignment-baseline: alphabetic
+    #[css(skip)]
+    Alphabetic,
+    /// Use the ideographic-under baseline.
+    /// TODO: Bug 2010718 - Remove css(skip) support alignment-baseline: ideographic
+    #[css(skip)]
+    Ideographic,
+    /// In general, use the x-middle baselines; except under text-orientation: upright
+    /// (where the alphabetic and x-height baselines are essentially meaningless) use
+    /// the central baseline instead.
+    Middle,
+    /// Use the central baseline.
+    /// TODO: Bug 2010719 - Remove css(skip) to support alignment-baseline: central
+    #[css(skip)]
+    Central,
+    /// Use the math baseline.
+    /// TODO: Bug 2010720 - Remove css(skip) to support alignment-baseline: mathematical
+    #[css(skip)]
+    Mathematical,
+    /// Use the hanging baseline.
+    /// TODO: Bug 2017197 - Remove css(skip) to support alignment-baseline: hanging
+    #[css(skip)]
+    Hanging,
+    /// Use the text-over baseline.
+    TextTop,
+    /// Used to implement the deprecated "align=middle" attribute for HTML img elements.
+    #[cfg(feature = "gecko")]
+    MozMiddleWithBaseline,
 }
 
 /// A specified value for the `baseline-source` property.
@@ -636,6 +762,7 @@ impl Parse for VerticalAlign {
     ToShmem,
     ToComputedValue,
     ToResolvedValue,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum BaselineSource {
@@ -645,6 +772,16 @@ pub enum BaselineSource {
     First,
     /// Use last baseline for alignment.
     Last,
+}
+
+impl BaselineSource {
+    /// Parse baseline source, but without the auto keyword, for the shorthand.
+    pub fn parse_non_auto<'i>(input: &mut Parser<'i, '_>) -> Result<Self, ParseError<'i>> {
+        Ok(try_match_ident_ignore_ascii_case! { input,
+            "first" => Self::First,
+            "last" => Self::Last,
+        })
+    }
 }
 
 /// https://drafts.csswg.org/css-scroll-snap-1/#snap-axis
@@ -712,8 +849,10 @@ pub enum ScrollSnapStrictness {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
+#[typed(todo_derive_fields)]
 pub struct ScrollSnapType {
     axis: ScrollSnapAxis,
     strictness: ScrollSnapStrictness,
@@ -807,8 +946,10 @@ pub enum ScrollSnapAlignKeyword {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
+#[typed(todo_derive_fields)]
 pub struct ScrollSnapAlign {
     block: ScrollSnapAlignKeyword,
     inline: ScrollSnapAlignKeyword,
@@ -868,6 +1009,7 @@ impl ToCss for ScrollSnapAlign {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum ScrollSnapStop {
@@ -890,6 +1032,7 @@ pub enum ScrollSnapStop {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum OverscrollBehavior {
@@ -913,33 +1056,12 @@ pub enum OverscrollBehavior {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum OverflowAnchor {
     Auto,
     None,
-}
-
-#[allow(missing_docs)]
-#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    MallocSizeOf,
-    Parse,
-    PartialEq,
-    SpecifiedValueInfo,
-    ToComputedValue,
-    ToCss,
-    ToResolvedValue,
-    ToShmem,
-)]
-#[repr(u8)]
-pub enum OverflowClipBox {
-    PaddingBox,
-    ContentBox,
 }
 
 #[derive(
@@ -953,9 +1075,11 @@ pub enum OverflowClipBox {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(comma)]
 #[repr(C)]
+#[typed(no_multiple_values)]
 /// Provides a rendering hint to the user agent, stating what kinds of changes
 /// the author expects to perform on the element.
 ///
@@ -972,7 +1096,7 @@ pub struct WillChange {
     /// A bitfield with the kind of change that the value will create, based
     /// on the above field.
     #[css(skip)]
-    bits: WillChangeBits,
+    pub bits: WillChangeBits,
 }
 
 impl WillChange {
@@ -1021,35 +1145,46 @@ bitflags! {
         const FIXPOS_CB_NON_SVG = 1 << 7;
         /// Whether the position property will change.
         const POSITION = 1 << 8;
+        /// Whether the view-transition-name property will change.
+        const VIEW_TRANSITION_NAME = 1 << 9;
+        /// Whether any property which establishes a backdrop-root will change.
+        /// See https://drafts.fxtf.org/filter-effects-2/#BackdropFilterProperty
+        const BACKDROP_ROOT = 1 << 10;
     }
 }
 
-#[cfg(feature="servo")]
-fn change_bits_for_longhand(longhand: LonghandId) -> WillChangeBits { WillChangeBits::empty() }
-
-#[cfg(feature = "gecko")]
 fn change_bits_for_longhand(longhand: LonghandId) -> WillChangeBits {
     match longhand {
-        LonghandId::Opacity => WillChangeBits::OPACITY,
+        LonghandId::Opacity => WillChangeBits::OPACITY | WillChangeBits::BACKDROP_ROOT,
         LonghandId::Contain => WillChangeBits::CONTAIN,
         LonghandId::Perspective => WillChangeBits::PERSPECTIVE,
         LonghandId::Position => {
             WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL | WillChangeBits::POSITION
         },
         LonghandId::ZIndex => WillChangeBits::Z_INDEX,
-        LonghandId::Transform |
-        LonghandId::TransformStyle |
-        LonghandId::Translate |
-        LonghandId::Rotate |
-        LonghandId::Scale |
-        LonghandId::OffsetPath => WillChangeBits::TRANSFORM,
-        LonghandId::BackdropFilter | LonghandId::Filter => {
-            WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL | WillChangeBits::FIXPOS_CB_NON_SVG
+        LonghandId::Transform
+        | LonghandId::TransformStyle
+        | LonghandId::Translate
+        | LonghandId::Rotate
+        | LonghandId::Scale
+        | LonghandId::OffsetPath => WillChangeBits::TRANSFORM,
+        LonghandId::Filter | LonghandId::BackdropFilter => {
+            WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL
+                | WillChangeBits::BACKDROP_ROOT
+                | WillChangeBits::FIXPOS_CB_NON_SVG
         },
-        LonghandId::MixBlendMode |
-        LonghandId::Isolation |
-        LonghandId::MaskImage |
-        LonghandId::ClipPath => WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL,
+        LonghandId::ViewTransitionName => {
+            WillChangeBits::VIEW_TRANSITION_NAME | WillChangeBits::BACKDROP_ROOT
+        },
+        LonghandId::MixBlendMode => {
+            WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL | WillChangeBits::BACKDROP_ROOT
+        },
+        LonghandId::Isolation | LonghandId::MaskImage => {
+            WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL
+        },
+        LonghandId::ClipPath => {
+            WillChangeBits::STACKING_CONTEXT_UNCONDITIONAL | WillChangeBits::BACKDROP_ROOT
+        },
         _ => WillChangeBits::empty(),
     }
 }
@@ -1125,6 +1260,7 @@ impl Parse for WillChange {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(bitflags(single = "none,auto,manipulation", mixed = "pan-x,pan-y,pinch-zoom"))]
 #[repr(C)]
@@ -1167,6 +1303,7 @@ impl TouchAction {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(bitflags(
     single = "none,strict,content",
@@ -1246,6 +1383,7 @@ impl Parse for LineClamp {
     Copy,
     Debug,
     Eq,
+    FromPrimitive,
     MallocSizeOf,
     Parse,
     PartialEq,
@@ -1255,6 +1393,7 @@ impl Parse for LineClamp {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum ContentVisibility {
@@ -1281,28 +1420,56 @@ pub enum ContentVisibility {
     Parse,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
-#[repr(u8)]
-#[allow(missing_docs)]
+#[css(bitflags(
+    single = "normal",
+    mixed = "size,inline-size,scroll-state",
+    validate_mixed = "Self::validate_mixed_flags",
+))]
+#[repr(C)]
+/// Specified keyword values for the container-type property.
+/// Spec: normal | [ [ size | inline-size ] || scroll-state ]
+///
+/// Container Queries are moved from css-contain-3 to css-conditional-5 in August 2022:
 /// https://drafts.csswg.org/css-contain-3/#container-type
-pub enum ContainerType {
-    /// The `normal` variant.
-    Normal,
-    /// The `inline-size` variant.
-    InlineSize,
-    /// The `size` variant.
-    Size,
+/// https://drafts.csswg.org/css-conditional-5/#container-type
+pub struct ContainerType(u8);
+bitflags! {
+    impl ContainerType: u8 {
+        /// The `normal` variant.
+        const NORMAL = 0;
+        /// The `inline-size` variant.
+        const INLINE_SIZE = 1 << 0;
+        /// The `size` variant.
+        const SIZE = 1 << 1;
+        /// The `scroll-state` variant.
+        const SCROLL_STATE = 1 << 2;
+    }
 }
 
 impl ContainerType {
+    fn validate_mixed_flags(&self) -> bool {
+        // size and inline-size can't be mixed together.
+        if self.contains(Self::SIZE | Self::INLINE_SIZE) {
+            return false;
+        }
+        if self.contains(Self::SCROLL_STATE)
+            && !static_prefs::pref!("layout.css.scroll-state.enabled")
+        {
+            return false;
+        }
+        true
+    }
+
     /// Is this container-type: normal?
     pub fn is_normal(self) -> bool {
-        self == Self::Normal
+        self == Self::NORMAL
     }
 
     /// Is this type containing size in any way?
     pub fn is_size_container_type(self) -> bool {
-        !self.is_normal()
+        self.intersects(Self::SIZE | Self::INLINE_SIZE)
     }
 }
 
@@ -1318,6 +1485,7 @@ impl ContainerType {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 pub struct ContainerName(#[css(iterable, if_empty = "none")] pub crate::OwnedSlice<CustomIdent>);
 
@@ -1381,12 +1549,27 @@ impl Parse for ContainerName {
 /// A specified value for the `perspective` property.
 pub type Perspective = GenericPerspective<NonNegativeLength>;
 
+/// https://drafts.csswg.org/css-box/#propdef-float
 #[allow(missing_docs)]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[derive(
-    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
 )]
-/// https://drafts.csswg.org/css-box/#propdef-float
+#[repr(u8)]
 pub enum Float {
     Left,
     Right,
@@ -1396,12 +1579,34 @@ pub enum Float {
     InlineEnd,
 }
 
+impl Float {
+    /// Returns true if `self` is not `None`.
+    pub fn is_floating(self) -> bool {
+        self != Self::None
+    }
+}
+
+/// https://drafts.csswg.org/css2/#propdef-clear
 #[allow(missing_docs)]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[derive(
-    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
 )]
-/// https://drafts.csswg.org/css2/#propdef-clear
+#[repr(u8)]
 pub enum Clear {
     None,
     Left,
@@ -1416,7 +1621,18 @@ pub enum Clear {
 #[allow(missing_docs)]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[derive(
-    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToCss,
+    ToShmem,
+    ToTyped,
 )]
 pub enum Resize {
     None,
@@ -1446,6 +1662,7 @@ pub enum Resize {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum Appearance {
@@ -1478,24 +1695,16 @@ pub enum Appearance {
     Textfield,
     /// The dropdown button(s) that open up a dropdown list.
     MenulistButton,
-    /// Various arrows that go in buttons
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ButtonArrowDown,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ButtonArrowNext,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ButtonArrowPrevious,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ButtonArrowUp,
-    /// A dual toolbar button (e.g., a Back button with a dropdown)
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Dualbutton,
+    /// https://drafts.csswg.org/css-forms/#appearance
+    #[parse(condition = "appearance_base_enabled")]
+    Base,
+    /// Only relevant to the <select> element and ::picker(select) pseudo-element, allowing them to
+    /// be styled.
+    #[parse(condition = "appearance_base_select_enabled")]
+    BaseSelect,
     /// Menu Popup background.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menupopup,
-    /// The meter bar's meter indicator.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Meterchunk,
     /// The "arrowed" part of the dropdown button that open up a dropdown list.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozMenulistArrowButton,
@@ -1505,14 +1714,9 @@ pub enum Appearance {
     /// For HTML's <input type=password>
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     PasswordInput,
-    /// The progress bar's progress indicator
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Progresschunk,
     /// nsRangeFrame and its subparts
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Range,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    RangeThumb,
     /// The scrollbar slider
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ScrollbarHorizontal,
@@ -1534,55 +1738,18 @@ pub enum Appearance {
     ScrollbarthumbHorizontal,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ScrollbarthumbVertical,
-    /// The scrollbar track.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ScrollbartrackHorizontal,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ScrollbartrackVertical,
     /// The scroll corner
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Scrollcorner,
-    /// A separator.  Can be horizontal or vertical.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Separator,
-    /// A spin control (up/down control for time/date pickers).
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Spinner,
     /// The up button of a spin control.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     SpinnerUpbutton,
     /// The down button of a spin control.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     SpinnerDownbutton,
-    /// The textfield of a spin control
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    SpinnerTextfield,
-    /// A splitter.  Can be horizontal or vertical.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Splitter,
-    /// A status bar in a main application window.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Statusbar,
-    /// A single tab in a tab widget.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Tab,
-    /// A single pane (inside the tabpanels container).
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Tabpanel,
-    /// The tab panels container.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Tabpanels,
-    /// The tabs scroll arrows (left/right).
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    TabScrollArrowBack,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    TabScrollArrowForward,
     /// A single toolbar button (with no associated dropdown).
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbarbutton,
-    /// The dropdown portion of a toolbar button
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    ToolbarbuttonDropdown,
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
@@ -1653,6 +1820,7 @@ pub enum Appearance {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum BreakBetween {
@@ -1722,6 +1890,7 @@ impl BreakBetween {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum BreakWithin {
@@ -1780,6 +1949,7 @@ impl BreakWithin {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum Overflow {
@@ -1787,7 +1957,6 @@ pub enum Overflow {
     Hidden,
     Scroll,
     Auto,
-    #[cfg(feature = "gecko")]
     Clip,
 }
 
@@ -1803,7 +1972,6 @@ impl Parse for Overflow {
             "hidden" => Self::Hidden,
             "scroll" => Self::Scroll,
             "auto" | "overlay" => Self::Auto,
-            #[cfg(feature = "gecko")]
             "clip" => Self::Clip,
             #[cfg(feature = "gecko")]
             "-moz-hidden-unscrollable" if static_prefs::pref!("layout.css.overflow-moz-hidden-unscrollable.enabled") => {
@@ -1826,7 +1994,6 @@ impl Overflow {
         match *self {
             Self::Hidden | Self::Scroll | Self::Auto => *self,
             Self::Visible => Self::Auto,
-            #[cfg(feature = "gecko")]
             Self::Clip => Self::Hidden,
         }
     }
@@ -1845,6 +2012,7 @@ impl Overflow {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
 #[css(bitflags(
@@ -1875,9 +2043,10 @@ impl ScrollbarGutter {
 
 /// A specified value for the zoom property.
 #[derive(
-    Clone, Copy, Debug, MallocSizeOf, PartialEq, Parse, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone, Debug, MallocSizeOf, PartialEq, Parse, SpecifiedValueInfo, ToCss, ToShmem, ToTyped,
 )]
 #[allow(missing_docs)]
+#[typed(todo_derive_fields)]
 pub enum Zoom {
     Normal,
     /// An internal value that resets the effective zoom to 1. Used for scrollbar parts, which
@@ -1894,3 +2063,5 @@ impl Zoom {
         Self::Value(NonNegativeNumberOrPercentage::new_number(n))
     }
 }
+
+pub use crate::values::generics::box_::PositionProperty;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,37 +5,32 @@
 #include "HTMLDNSPrefetch.h"
 
 #include "base/basictypes.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/dom/HTMLLinkElement.h"
-#include "mozilla/dom/HTMLAnchorElement.h"
-#include "mozilla/net/NeckoCommon.h"
-#include "mozilla/net/NeckoChild.h"
-#include "mozilla/OriginAttributes.h"
-#include "mozilla/StoragePrincipalHelper.h"
-#include "nsURLHelper.h"
-
-#include "nsCOMPtr.h"
-#include "nsString.h"
-
-#include "nsNetUtil.h"
-#include "nsNetCID.h"
-#include "nsIProtocolHandler.h"
-
-#include "nsIDNSListener.h"
-#include "nsIWebProgressListener.h"
-#include "nsIWebProgress.h"
-#include "nsIDNSRecord.h"
-#include "nsIDNSService.h"
-#include "nsICancelable.h"
-#include "nsGkAtoms.h"
-#include "mozilla/dom/Document.h"
-#include "nsThreadUtils.h"
-#include "nsITimer.h"
-#include "nsIObserverService.h"
-
 #include "mozilla/Components.h"
+#include "mozilla/OriginAttributes.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_network.h"
+#include "mozilla/StoragePrincipalHelper.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/HTMLAnchorElement.h"
+#include "mozilla/dom/HTMLLinkElement.h"
+#include "mozilla/net/NeckoChild.h"
+#include "mozilla/net/NeckoCommon.h"
+#include "nsCOMPtr.h"
+#include "nsICancelable.h"
+#include "nsIDNSListener.h"
+#include "nsIDNSRecord.h"
+#include "nsIDNSService.h"
+#include "nsIObserverService.h"
+#include "nsIProtocolHandler.h"
+#include "nsITimer.h"
+#include "nsIWebProgress.h"
+#include "nsIWebProgressListener.h"
+#include "nsNetCID.h"
+#include "nsNetUtil.h"
+#include "nsString.h"
+#include "nsThreadUtils.h"
+#include "nsURLHelper.h"
 
 using namespace mozilla::net;
 
@@ -229,10 +222,10 @@ nsresult HTMLDNSPrefetch::Prefetch(
     const OriginAttributes& aPartitionedPrincipalOriginAttributes,
     nsIDNSService::DNSFlags flags) {
   if (IsNeckoChild()) {
-    // We need to check IsEmpty() because net_IsValidHostName()
+    // We need to check IsEmpty() because net_IsValidDNSHost()
     // considers empty strings to be valid hostnames
     if (!hostname.IsEmpty() &&
-        net_IsValidHostName(NS_ConvertUTF16toUTF8(hostname))) {
+        net_IsValidDNSHost(NS_ConvertUTF16toUTF8(hostname))) {
       // during shutdown gNeckoChild might be null
       if (gNeckoChild) {
         gNeckoChild->SendHTMLDNSPrefetch(
@@ -256,7 +249,7 @@ nsresult HTMLDNSPrefetch::Prefetch(
 
   if (StaticPrefs::network_dns_upgrade_with_https_rr() ||
       StaticPrefs::network_dns_use_https_rr_as_altsvc()) {
-    Unused << sDNSService->AsyncResolveNative(
+    (void)sDNSService->AsyncResolveNative(
         NS_ConvertUTF16toUTF8(hostname), nsIDNSService::RESOLVE_TYPE_HTTPSSVC,
         flags | nsIDNSService::RESOLVE_SPECULATE, nullptr, sDNSListener,
         nullptr, aPartitionedPrincipalOriginAttributes,
@@ -312,10 +305,10 @@ nsresult HTMLDNSPrefetch::CancelPrefetch(
     nsIDNSService::DNSFlags flags, nsresult aReason) {
   // Forward this request to Necko Parent if we're a child process
   if (IsNeckoChild()) {
-    // We need to check IsEmpty() because net_IsValidHostName()
+    // We need to check IsEmpty() because net_IsValidDNSHost()
     // considers empty strings to be valid hostnames
     if (!hostname.IsEmpty() &&
-        net_IsValidHostName(NS_ConvertUTF16toUTF8(hostname))) {
+        net_IsValidDNSHost(NS_ConvertUTF16toUTF8(hostname))) {
       // during shutdown gNeckoChild might be null
       if (gNeckoChild && gNeckoChild->CanSend()) {
         gNeckoChild->SendCancelHTMLDNSPrefetch(
@@ -339,7 +332,7 @@ nsresult HTMLDNSPrefetch::CancelPrefetch(
 
   if (StaticPrefs::network_dns_upgrade_with_https_rr() ||
       StaticPrefs::network_dns_use_https_rr_as_altsvc()) {
-    Unused << sDNSService->CancelAsyncResolveNative(
+    (void)sDNSService->CancelAsyncResolveNative(
         NS_ConvertUTF16toUTF8(hostname), nsIDNSService::RESOLVE_TYPE_HTTPSSVC,
         flags | nsIDNSService::RESOLVE_SPECULATE,
         nullptr,  // AdditionalInfo
@@ -513,10 +506,36 @@ nsresult DeferredDNSPrefetches::Add(nsIDNSService::DNSFlags flags,
     mTimerArmed = true;
     mTimer->InitWithNamedFuncCallback(
         Tick, this, 2000, nsITimer::TYPE_ONE_SHOT,
-        "HTMLDNSPrefetch::DeferredDNSPrefetches::Tick");
+        "HTMLDNSPrefetch::DeferredDNSPrefetches::Tick"_ns);
   }
 
   return NS_OK;
+}
+
+static bool BuildPrefetchArgs(SupportsDNSPrefetch& aSupports, Element& aElement,
+                              nsIDNSService::DNSFlags aFlags,
+                              HTMLDNSPrefetchArgs& aOut) {
+  nsIURI* uri = aSupports.GetURIForDNSPrefetch(aElement);
+  if (!uri) {
+    return false;
+  }
+  nsAutoCString hostName;
+  uri->GetAsciiHost(hostName);
+  if (hostName.IsEmpty()) {
+    return false;
+  }
+  bool isLocalResource = false;
+  nsresult rv = NS_URIChainHasFlags(
+      uri, nsIProtocolHandler::URI_IS_LOCAL_RESOURCE, &isLocalResource);
+  if (NS_FAILED(rv) || isLocalResource) {
+    return false;
+  }
+  OriginAttributes oa;
+  StoragePrincipalHelper::GetOriginAttributesForNetworkState(
+      aElement.OwnerDoc(), oa);
+  aOut = HTMLDNSPrefetchArgs(NS_ConvertUTF8toUTF16(hostName),
+                             uri->SchemeIs("https"), oa, aFlags);
+  return true;
 }
 
 void DeferredDNSPrefetches::SubmitQueue() {
@@ -526,13 +545,38 @@ void DeferredDNSPrefetches::SubmitQueue() {
     return;
   }
 
-  for (; mHead != mTail; mTail = (mTail + 1) & sMaxDeferredMask) {
-    Element* element = mEntries[mTail].mElement;
-    if (!element) {
-      continue;
+  if (IsNeckoChild()) {
+    nsTArray<HTMLDNSPrefetchArgs> batch;
+    for (; mHead != mTail; mTail = (mTail + 1) & sMaxDeferredMask) {
+      Element* element = mEntries[mTail].mElement;
+      nsIDNSService::DNSFlags flags = mEntries[mTail].mFlags;
+      mEntries[mTail].mElement = nullptr;
+      if (!element) {
+        continue;
+      }
+      auto& supports = ToSupportsDNSPrefetch(*element);
+      supports.ClearIsInDNSPrefetch();
+      if (!supports.IsDNSPrefetchRequestDeferred()) {
+        continue;
+      }
+      HTMLDNSPrefetchArgs args;
+      if (BuildPrefetchArgs(supports, *element, flags, args)) {
+        supports.DNSPrefetchRequestStarted();
+        batch.AppendElement(std::move(args));
+      }
     }
-    SubmitQueueEntry(*element, mEntries[mTail].mFlags);
-    mEntries[mTail].mElement = nullptr;
+    if (!batch.IsEmpty() && gNeckoChild) {
+      gNeckoChild->SendHTMLDNSPrefetchBatch(std::move(batch));
+    }
+  } else {
+    for (; mHead != mTail; mTail = (mTail + 1) & sMaxDeferredMask) {
+      Element* element = mEntries[mTail].mElement;
+      if (!element) {
+        continue;
+      }
+      SubmitQueueEntry(*element, mEntries[mTail].mFlags);
+      mEntries[mTail].mElement = nullptr;
+    }
   }
 
   if (mTimerArmed) {

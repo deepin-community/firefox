@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 add_task(async function test_filter_url() {
@@ -249,6 +247,54 @@ add_task(async function test_filter_windowId() {
   await ext_fail.unload();
 
   await BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function test_filter_cookieStoreId() {
+  let ext = ExtensionTestUtils.loadExtension({
+    manifest: {
+      permissions: ["tabs"],
+    },
+    background() {
+      browser.tabs.onUpdated.addListener(
+        async (tabId, changeInfo) => {
+          if (changeInfo.status === "complete") {
+            const tab = await browser.tabs.get(tabId);
+            browser.test.sendMessage("onUpdated", tab);
+          }
+        },
+        { cookieStoreId: "firefox-container-2" }
+      );
+      browser.test.sendMessage("ready");
+    },
+  });
+  await ext.startup();
+  await ext.awaitMessage("ready");
+
+  let tab1 = await BrowserTestUtils.addTab(gBrowser, "about:blank?1", {
+    userContextId: 1,
+  });
+  let tab2 = await BrowserTestUtils.addTab(gBrowser, "about:blank?2", {
+    userContextId: 2,
+  });
+
+  is(tab1.userContextId, 1, "userContextId is the expected value.");
+  is(tab2.userContextId, 2, "userContextId is the expected value.");
+
+  let triggeredTab = await ext.awaitMessage("onUpdated");
+  is(
+    triggeredTab.url,
+    "about:blank?2",
+    "The tab with the correct URL was triggered."
+  );
+  is(
+    triggeredTab.cookieStoreId,
+    "firefox-container-2",
+    "The tab with the correct cookieStoreId was triggered."
+  );
+
+  BrowserTestUtils.removeTab(tab1);
+  BrowserTestUtils.removeTab(tab2);
+  await ext.unload();
 });
 
 add_task(async function test_filter_isArticle() {

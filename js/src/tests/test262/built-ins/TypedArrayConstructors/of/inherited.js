@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -23,6 +22,6 @@ testWithTypedArrayConstructors(function(TA) {
     TA.hasOwnProperty("of"), false,
     "constructor does not define an own property named 'of'"
   );
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

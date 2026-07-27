@@ -10,14 +10,6 @@ learn-more = <span data-l10n-name ="link">Darllen rhagor</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
-## Variables:
-##   $property (string) - A CSS property name e.g. "color".
-##   $display (string) - A CSS display value e.g. "inline-block".
-
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain why
-## the property is not applied.
 ## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
 ## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
@@ -29,6 +21,10 @@ inactive-css-not-grid-or-flex-container-or-multicol-container = Nid yw <strong>{
 inactive-css-not-multicol-container = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar yr elfen hon gan nad yw'n gynhwysydd aml-golofn.
 inactive-css-column-span = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar yr elfen hon gan nad yw'n gynhwysydd aml-golofn.
 inactive-css-not-grid-or-flex-item = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n grid nac yn eitem flex.
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n eitem grid neu fflecs, nac yn elfen wedi'i lleoli'n llwyr.
+inactive-css-not-grid-or-absolutely-positioned-item = Dyw <strong>{ $property }</strong> ddim yn effeithio ar yr elfen hon gan nad yw'n eitem grid nac yn elfen wedi'i lleoli'n llwyr.
+inactive-css-not-absolutely-positioned-item = Dyw <strong>{ $property }</strong> ddim yn effeithio ar yr elfen hon gan nad yw'n elfen wedi'i lleoli'n llwyr.
+inactive-css-no-default-anchor = Does gan <strong>{ $property }</strong> ddim effaith ar yr elfen hon gan nad oes ganddi elfen angori rhagosodedig.
 inactive-css-not-grid-item = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n eitem grid.
 inactive-css-not-grid-container = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n gynhwysydd grid.
 inactive-css-not-flex-item = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar yr elfen hon gan nad yw'n eitem hyblyg.
@@ -42,11 +38,14 @@ inactive-css-not-display-block-on-floated = Mae'r peiriant wedi newid y gwerth <
 inactive-css-not-display-block-on-floated-2 = Mae'r gwerth <strong>dangos</strong> wedi ei newid gan yr injan i <strong>{ $display }</strong> oherwydd bod yr elfen yn <strong>arnofio</strong>.
 inactive-css-only-non-grid-or-flex-item = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith oherwydd nid oes modd ei ddefnyddio ar eitemau grid neu fflecs.
 inactive-css-not-block = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon oherwydd ei fod yn berthnasol i elfennau lefel bloc yn unig.
+inactive-css-not-block-container = Does gan <strong>{ $property }</strong> effaith ar yr elfen hon oherwydd ei fod yn berthnasol i elfennau lefel bloc yn unig.
+inactive-css-not-block-flex-grid-container = Does gan <strong>{ $property }</strong> ddim effaith ar yr elfen hon oherwydd ei fod yn berthnasol dim ond i elfennau lefel bloc, fflecs a chynhwysydd grid.
 inactive-css-not-floated = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith oherwydd ei fod yn berthnasol i elfennau sy'n arnofio yn unig.
 inactive-css-property-is-impossible-to-override-in-visited = Mae'n amhosib diystyru <strong>{ $property }</strong> oherwydd cyfyngiadau <strong>:visited</strong>.
 inactive-css-position-property-on-unpositioned-box = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n eitem wedi'i lleoli.
 inactive-css-only-replaced-elements = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar yr elfen hon gan mai dim ond i elfennau sydd wedi'u disodli y mae modd ei chymhwyso.
 inactive-text-overflow-when-no-overflow = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar yr elfen hon gan nad yw <strong>overflow:hidden</strong> wedi'i osod.
+inactive-css-no-size-containment = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad oes ganddi gyfyngiad maint.
 inactive-css-not-for-internal-table-elements = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar elfennau tablau mewnol.
 inactive-css-not-for-internal-table-elements-except-table-cells = Nid yw <strong>{ $property }</strong> yn cael unrhyw effaith ar elfennau bwrdd mewnol ac eithrio celloedd bwrdd.
 inactive-css-not-table = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad yw'n dabl.
@@ -58,11 +57,17 @@ inactive-css-resize = Nid yw <strong>{ $property }</strong> yn cael unrhyw effai
 inactive-css-ruby-element = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan ei bod yn elfen ruby. Mae ei faint yn cael ei bennu gan faint ffont y testun ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = Nid yw <strong>{ $property }</strong> yn cael ei gefnogi ar amlygu ffug-elfennau.
 inactive-css-cue-pseudo-element-not-supported = Nid yw <strong>{ $property }</strong> yn cael ei gefnogi ar  ::cue pseudo-elements.
+inactive-css-at-position-try-not-supported = Dyw <strong>{ $property }</strong> ddim yn cael ei gefnogi yn rheolau <strong>@position-try</strong>.
 # Variables:
 #   $lineCount (integer) - The number of lines the element has.
 inactive-css-text-wrap-balance-lines-exceeded =
@@ -76,6 +81,7 @@ inactive-css-text-wrap-balance-lines-exceeded =
     }
 inactive-css-text-wrap-balance-fragmented = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon oherwydd ei bod yn dameidiog, h.y. mae ei chynnwys wedi'i rhannu ar draws colofnau neu dudalennau lluosog.
 inactive-css-no-width-height = Nid yw <strong>{ $property }</strong> yn effeithio ar yr elfen hon gan nad oes modd gosod ei lled a'i huchder.
+inactive-css-no-principal-box = Does gan <strong>{ $property }</strong> ddim effaith ar yr elfen hon oherwydd nid yw'n creu prif flwch.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -87,6 +93,10 @@ inactive-css-not-grid-or-flex-or-block-container-fix = Ceisiwch ychwanegu <stron
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Ceisiwch ychwanegu naill ai <strong>display:grid</strong>, <strong>display:flex</strong>, neu <strong>columns:2</strong>. { learn-more }
 inactive-css-not-multicol-container-fix = Ceisiwch ychwanegu <strong>column-count</strong> neu <strong>column-width</strong>. { learn-more }
 inactive-css-column-span-fix = Ceisiwch ychwanegu <strong>column-count</strong> neu <strong>column-width</strong> at un o'i elfennau hynafiaid . { learn-more }
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item-fix = Ceisiwch ychwanegu <strong>position:absolute</strong> i'r elfen, neu <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> >, neu <strong>display:inline-flex</strong> i riant yr elfen. { learn-more }
+inactive-css-not-grid-or-absolutely-positioned-item-fix = Ceisiwch ychwanegu <strong>position:absolute</strong> i'r elfen, neu <strong>display:grid</strong> neu <strong>display:inline-grid</strong> i riant yr elfen. { learn-more }
+inactive-css-not-absolutely-positioned-item-fix = Ceisiwch ychwanegu <strong>position:absolute</strong> i'r elfen. { learn-more }
+inactive-css-no-default-anchor-fix = Ceisiwch ychwanegu <strong>position-anchor</strong> gydag enw angor dilys. { learn-more }
 inactive-css-not-grid-or-flex-item-fix-3 = Ceisiwch ychwanegu <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> neu <strong>display:inline-flex</strong> i riant yr elfen. { learn-more }
 inactive-css-not-grid-item-fix-2 = Ceisiwch ychwanegu <strong>display:grid</strong> neu <strong>display:inline-grid</strong> at riant yr elfen. { learn-more }
 inactive-css-not-grid-container-fix = Ceisiwch ychwanegu <strong>display:grid</strong> neu <strong>display:inline-grid</strong>. { learn-more }
@@ -98,10 +108,13 @@ inactive-css-non-replaced-inline-or-table-column-or-column-group-fix = Ceisiwch 
 inactive-css-not-display-block-on-floated-fix = Ceisiwch dynnu <strong>float</strong> neu <strong>display:block</strong>. { learn-more }
 inactive-css-only-non-grid-or-flex-item-fix = Ceisiwch newid gwerth <strong>dangos</strong> cynhwysydd yr elfen i rywbeth heblaw <strong>flex</strong>, <strong>grid</strong>, <strong>inline-flex</strong>, neu <strong>inline-grid</strong>, neu dynnu <strong>float</strong>. { learn-more }
 inactive-css-not-block-fix = Ceisiwch ychwanegu priodweddau fel <strong>display:block</strong> neu <strong>float:left</strong>. { learn-more }
+inactive-css-not-block-container-fix = Ceisiwch ychwanegu <strong>display:block</strong>, <strong>display:inline-block</strong> neu <strong>display:flow-root</strong>. { learn-more }
+inactive-css-not-block-flex-grid-container-fix = Ceisiwch ychwanegu <strong>display:block</strong>, <strong>display:inline-block</strong>, <strong>display:flex</strong>, <strong>display:inline-flex</strong>, <strong>display:grid</strong>, <strong>display:inline-grid</strong> neu <strong>display:flow-root</strong>. { learn-more }
 inactive-css-not-floated-fix = Ceisiwch ychwanegu'r priodwedd <strong>float</strong> gyda gwerth heblaw <strong>none</strong>. { learn-more }
 inactive-css-position-property-on-unpositioned-box-fix = Ceisiwch osod priodwedd ei <strong>leoliad</strong> i rywbeth arall heblaw <strong>statig</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Gwnewch yn siŵr eich bod yn ychwanegu'r briodwedd at elfen newydd. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Ceisiwch ychwanegu <strong>overflow:hidden</strong>. { learn-more }
+inactive-css-no-size-containment-fix = Ceisiwch osod ei briodwedd <strong>dangos</strong> i rywbeth heblaw <strong>dim</strong>, <strong>cynnwys</strong>, <strong>tabl</strong>, neu <strong>tabl mewn-lein </strong>a gwnewch yn siŵr nad yw o fewn tabl neu segment ruby. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Ceisiwch osod ei briodwedd <strong>arddangos</strong> i rywbeth arall heblaw <strong>cell-tabl</strong>, <strong>colofn-tabl</strong>, <strong>rhes-tabl</strong>, <strong>tabl-colofn-grŵp</strong>, <strong>tabl-rhes-grŵp</strong>, neu <strong>tabl-troedyn-grŵp</strong>. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Ceisiwch osod ei briodwedd <strong>arddangos</strong> i rywbeth arall heblaw <strong>colofn-tabl</strong>, <strong>rhes-tabl</strong>, <strong>tabl-colofn-grŵp</strong>, <strong>tabl-rhes-grŵp</strong>, neu <strong>tabl-troedyn-grŵp</strong>. { learn-more }
 inactive-css-not-table-fix = Ceisiwch ychwanegu <strong>display:table</strong> neu <strong>display:inline-table</strong>. { learn-more }
@@ -113,6 +126,7 @@ inactive-css-resize-fix = Ceisiwch osod <strong>gorlif</strong> i werth heblaw <
 inactive-css-ruby-element-fix = Ceisio newid <strong>maint ffont</strong> y testun ruby. { learn-more }
 inactive-css-text-wrap-balance-lines-exceeded-fix = Ceisiwch leihau nifer y llinellau.{ learn-more }
 inactive-css-text-wrap-balance-fragmented-fix = Osgowch hollti cynnwys yr elfen e.e. drwy dynnu'r colofnau neu drwy ddefnyddio <strong>page-break-inside:avoid</strong>.{ learn-more }
+inactive-css-no-principal-box-fix = Ceisiwch ychwanegu gwerth <strong>arddangos</strong> sy'n creu prif flwch, fel <strong>bloc</strong>, <strong>bloc mewn-lein</strong>, <strong>flex</strong>, neu <strong>grid</strong>.{ learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why
@@ -136,3 +150,13 @@ css-compatibility-learn-more-message = <span data-l10n-name="link">Darllen rhago
 
 # :has() should not be translated
 css-selector-warning-unconstrained-has = Mae'r dewisydd hwn yn defnyddio <strong>:has()</strong> heb ei gyfyngu, a all fod yn araf
+# :scope should not be translated
+css-selector-warning-sibling-combinator-after-scope = Bydd dewiswyr brodyr a chwiorydd ar ôl <strong>:scope</strong> byth yn cyfateb i unrhyw beth
+
+## In the Rule View we display a tooltip when a @container condition is hovered.
+## We want to show a specific message if the condition doesn't match a container for the
+## currently selected element
+## Variables:
+##   $name (string) - The condition name.
+
+css-selector-container-query-condition-no-container = Heb ganfod y cynhwysydd ‘ { $name } ’

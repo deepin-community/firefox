@@ -10,6 +10,8 @@ const LOGGER_PREFIX = "ClientID::";
 // Must match ID in TelemetryUtils
 const CANARY_CLIENT_ID = "c0ffeec0-ffee-c0ff-eec0-ffeec0ffeec0";
 const CANARY_PROFILE_GROUP_ID = "decafdec-afde-cafd-ecaf-decafdecafde";
+const CANARY_USAGE_PROFILE_ID = "beefbeef-beef-beef-beef-beeefbeefbee";
+const CANARY_USAGE_PROFILE_GROUP_ID = "b0bacafe-b0ba-cafe-b0ba-cafeb0bacafe";
 
 const DRS_STATE_VERSION = 2;
 
@@ -40,12 +42,15 @@ ChromeUtils.defineLazyGetter(lazy, "gStateFilePath", () => {
 
 const PREF_CACHED_CLIENTID = "toolkit.telemetry.cachedClientID";
 const PREF_CACHED_PROFILEGROUPID = "toolkit.telemetry.cachedProfileGroupID";
+const PREF_CACHED_USAGE_PROFILEID = "datareporting.dau.cachedUsageProfileID";
+const PREF_CACHED_USAGE_PROFILEGROUPID =
+  "datareporting.dau.cachedUsageProfileGroupID";
 
 /**
  * Checks if the string is a valid UUID (without braces).
  *
- * @param {String} id A string containing an ID.
- * @return {Boolean} True when the ID has valid format, or False otherwise.
+ * @param {string} id A string containing an ID.
+ * @return {boolean} True when the ID has valid format, or False otherwise.
  */
 function isValidUUID(id) {
   const UUID_REGEX =
@@ -75,14 +80,56 @@ export var ClientID = Object.freeze({
   },
 
   /**
+   * This returns a promise resolving to the stable Usage Profile ID we use for
+   * DAU reporting.
+   *
+   * @return {Promise<string>} The stable Usage Profile ID.
+   */
+  getUsageProfileID() {
+    return ClientIDImpl.getUsageProfileID();
+  },
+
+  /**
+   * This returns a promise resolving to the stable Usage Profile Group ID we
+   * use for DAU reporting.
+   *
+   * @return {Promise<string>} The stable Usage Profile Group ID.
+   */
+  getUsageProfileGroupID() {
+    return ClientIDImpl.getUsageProfileGroupID();
+  },
+
+  /**
    * Asynchronously updates the stable profile group ID we use for data
    * reporting.
    *
-   * @param {String} id A string containing the profile group ID.
+   * @param {string} id A string containing the profile group ID.
    * @return {Promise} Resolves when the ID is updated.
    */
   setProfileGroupID(id) {
     return ClientIDImpl.setProfileGroupID(id);
+  },
+
+  /**
+   * Asynchronously updates the stable Usage Profile ID we use for DAU
+   * reporting.
+   *
+   * @param {string} id A string containing the Usage Profile ID.
+   * @return {Promise} Resolves when the ID is updated.
+   */
+  setUsageProfileID(id) {
+    return ClientIDImpl.setUsageProfileID(id);
+  },
+
+  /**
+   * Asynchronously updates the stable Usage Profile Group ID we use for DAU
+   * reporting.
+   *
+   * @param {string} id A string containing the Usage Group Profile ID.
+   * @return {Promise} Resolves when the ID is updated.
+   */
+  setUsageProfileGroupID(id) {
+    return ClientIDImpl.setUsageProfileGroupID(id);
   },
 
   /**
@@ -107,13 +154,35 @@ export var ClientID = Object.freeze({
     return ClientIDImpl.getCachedProfileGroupID();
   },
 
+  /**
+   * Get the Usage Profile ID synchronously without hitting the disk.
+   * This returns:
+   *  - the current on-disk Usage Profile ID if it was already loaded
+   *  - the Usage Profile ID that we cached into preferences (if any)
+   *  - null otherwise
+   */
+  getCachedUsageProfileID() {
+    return ClientIDImpl.getCachedUsageProfileID();
+  },
+
+  /**
+   * Get the Usage Profile Group ID synchronously without hitting the disk.
+   * This returns:
+   *  - the current on-disk Usage Profile Group ID if it was already loaded
+   *  - the Usage Profile Group ID that we cached into preferences (if any)
+   *  - null otherwise
+   */
+  getCachedUsageProfileGroupID() {
+    return ClientIDImpl.getCachedUsageProfileGroupID();
+  },
+
   async getClientIdHash() {
     return ClientIDImpl.getClientIdHash();
   },
 
   /**
    * Sets the client ID and profile group ID to the canary (known) identifiers,
-   * writing it to disk and updating the cached version.
+   * writing them to disk and updating the cached version.
    *
    * Use `resetIdentifiers` to clear the existing identifiers and generate new,
    * random ones if required.
@@ -125,6 +194,21 @@ export var ClientID = Object.freeze({
   },
 
   /**
+   * Sets the Usage Profile ID and Usage Profile Group ID to the canary (known)
+   * identifiers, writing them to disk and updating the cached version.
+   *
+   * Does not touch the client ID or profile group ID.
+   *
+   * Use `resetUsageProfileIdentifiers` to clear the existing identifiers
+   * and generate new, random ones if required.
+   *
+   * @return {Promise<void>}
+   */
+  setCanaryUsageProfileIdentifiers() {
+    return ClientIDImpl.setCanaryUsageProfileIdentifiers();
+  },
+
+  /**
    * Assigns new random values to client ID and profile group ID. Should only be
    * used if a reset is explicitly requested by the user.
    *
@@ -132,6 +216,18 @@ export var ClientID = Object.freeze({
    */
   resetIdentifiers() {
     return ClientIDImpl.resetIdentifiers();
+  },
+
+  /**
+   * Assigns new random values to the Usage Profile ID and Usage Profile Group
+   * ID. Should only be used if a reset is explicitly requested by the user.
+   *
+   * Does not touch the client ID or profile group ID.
+   *
+   * @return {Promise<void>}
+   */
+  resetUsageProfileIdentifiers() {
+    return ClientIDImpl.resetUsageProfileIdentifiers();
   },
 
   /**
@@ -148,9 +244,11 @@ var ClientIDImpl = {
   _clientID: null,
   _clientIDHash: null,
   _profileGroupID: null,
+  _usageProfileID: null,
   _loadClientIdTask: null,
   _saveDataReportingStateTask: null,
   _resetIdentifiersTask: null,
+  _resetUsageProfileIdentifierTask: null,
   _logger: null,
 
   _loadDataReportingState() {
@@ -165,17 +263,21 @@ var ClientIDImpl = {
   },
 
   /**
-   * Load the client ID and profile group ID from the DataReporting Service
-   * state file. If either is missing, we generate a new one.
+   * Load the client ID, profile group ID, Usage Profile ID, and Usage Profile
+   * Group ID from the DataReporting Service state file. If any are missing,
+   * we generate a new one.
    */
   async _doLoadDataReportingState() {
     this._log.trace(`_doLoadDataReportingState`);
     // If there's a removal in progress, let's wait for it
     await this._resetIdentifiersTask;
+    await this._resetUsageProfileIdentifierTask;
 
     // Try to load the client id from the DRS state file.
     let hasCurrentClientID = false;
     let hasCurrentProfileGroupID = false;
+    let hasCurrentUsageProfileID = false;
+    let hasCurrentUsageProfileGroupID = false;
     try {
       let state = await IOUtils.readJSON(lazy.gStateFilePath);
       if (state) {
@@ -188,6 +290,12 @@ var ClientIDImpl = {
         hasCurrentProfileGroupID = this.updateProfileGroupID(
           state.profileGroupID
         );
+        hasCurrentUsageProfileID = this.updateUsageProfileID(
+          state.usageProfileID
+        );
+        hasCurrentUsageProfileGroupID = this.updateUsageProfileGroupID(
+          state.usageProfileGroupID
+        );
 
         if (!hasCurrentProfileGroupID && hasCurrentClientID) {
           // A pre-existing profile should be assigned the existing client ID.
@@ -199,13 +307,20 @@ var ClientIDImpl = {
           }
         }
 
-        if (hasCurrentClientID && hasCurrentProfileGroupID) {
+        if (
+          hasCurrentClientID &&
+          hasCurrentProfileGroupID &&
+          hasCurrentUsageProfileID &&
+          hasCurrentUsageProfileGroupID
+        ) {
           this._log.trace(
-            `_doLoadDataReportingState: Client and Group IDs loaded from state.`
+            `_doLoadDataReportingState: Client ID, Profile Group ID, Usage Profile ID, and Usage Profile Group ID loaded from state.`
           );
           return {
             clientID: this._clientID,
             profileGroupID: this._profileGroupID,
+            usageProfileID: this._usageProfileID,
+            usageProfileGroupID: this._usageProfileGroupID,
           };
         }
       }
@@ -230,6 +345,23 @@ var ClientIDImpl = {
       }
     }
 
+    if (!hasCurrentUsageProfileID) {
+      const cachedID = this.getCachedUsageProfileID();
+      // Calling `updateUsageProfileID` with `null` logs an error, which breaks tests.
+      if (cachedID) {
+        hasCurrentUsageProfileID = this.updateUsageProfileID(cachedID);
+      }
+    }
+
+    if (!hasCurrentUsageProfileGroupID) {
+      const cachedID = this.getCachedUsageProfileGroupID();
+      // Calling `updateUsageProfileGroupID` with `null` logs an error, which breaks tests.
+      if (cachedID) {
+        hasCurrentUsageProfileGroupID =
+          this.updateUsageProfileGroupID(cachedID);
+      }
+    }
+
     // We're missing the ID from the DRS state file and prefs.
     // Generate a new one.
     if (!hasCurrentClientID) {
@@ -238,6 +370,14 @@ var ClientIDImpl = {
 
     if (!hasCurrentProfileGroupID) {
       this.updateProfileGroupID(lazy.CommonUtils.generateUUID());
+    }
+
+    if (!hasCurrentUsageProfileID) {
+      this.updateUsageProfileID(lazy.CommonUtils.generateUUID());
+    }
+
+    if (!hasCurrentUsageProfileGroupID) {
+      this.updateUsageProfileGroupID(lazy.CommonUtils.generateUUID());
     }
 
     this._saveDataReportingStateTask = this._saveDataReportingState();
@@ -249,16 +389,18 @@ var ClientIDImpl = {
     await this._saveDataReportingStateTask;
 
     this._log.trace(
-      "_doLoadDataReportingState: client and profile group IDs loaded and persisted."
+      "_doLoadDataReportingState: client ID, profile group ID and Usage Profile ID loaded and persisted."
     );
     return {
       clientID: this._clientID,
       profileGroupID: this._profileGroupID,
+      usageProfileID: this._usageProfileID,
+      usageProfileGroupID: this._usageProfileGroupID,
     };
   },
 
   /**
-   * Save the client and profile group IDs to the DRS state file.
+   * Save the client ID, profile group ID, Usage Profile ID, and Usage Profile Group ID to the DRS state file.
    *
    * @return {Promise} A promise resolved when the DRS state file is saved to disk.
    */
@@ -269,6 +411,8 @@ var ClientIDImpl = {
         version: DRS_STATE_VERSION,
         clientID: this._clientID,
         profileGroupID: this._profileGroupID,
+        usageProfileID: this._usageProfileID,
+        usageProfileGroupID: this._usageProfileGroupID,
       };
       await IOUtils.makeDirectory(lazy.gDatareportingPath);
       await IOUtils.writeJSON(lazy.gStateFilePath, obj, {
@@ -319,10 +463,46 @@ var ClientIDImpl = {
   },
 
   /**
+   * This returns a promise resolving to the stable Usage Profile ID we use for
+   * DAU reporting.
+   *
+   * @return {Promise<string>} The stable Usage Profile ID.
+   */
+  async getUsageProfileID() {
+    if (!this._usageProfileID) {
+      let { usageProfileID } = await this._loadDataReportingState();
+      if (AppConstants.platform != "android") {
+        Glean.usage.profileId.set(usageProfileID);
+      }
+      return usageProfileID;
+    }
+
+    return this._usageProfileID;
+  },
+
+  /**
+   * This returns a promise resolving to the stable Usage Profile Group ID we
+   * use for DAU reporting.
+   *
+   * @return {Promise<string>} The stable Usage Profile Group ID.
+   */
+  async getUsageProfileGroupID() {
+    if (!this._usageProfileGroupID) {
+      let { usageProfileGroupID } = await this._loadDataReportingState();
+      if (AppConstants.platform != "android") {
+        Glean.usage.profileGroupId.set(usageProfileGroupID);
+      }
+      return usageProfileGroupID;
+    }
+
+    return this._usageProfileGroupID;
+  },
+
+  /**
    * Asynchronously updates the stable profile group ID we use for data reporting
    * (FHR & Telemetry).
    *
-   * @param {String} id A string containing the profile group ID.
+   * @param {string} id A string containing the profile group ID.
    * @return {Promise} Resolves when the ID is updated.
    */
   async setProfileGroupID(id) {
@@ -337,6 +517,62 @@ var ClientIDImpl = {
         "setProfileGroupID - invalid profile group ID passed, not updating"
       );
       throw new Error("Invalid profile group ID");
+    }
+
+    // If there is already a save in progress, wait for it to complete.
+    await this._saveDataReportingStateTask;
+
+    this._saveDataReportingStateTask = this._saveDataReportingState();
+    await this._saveDataReportingStateTask;
+  },
+
+  /**
+   * Asynchronously updates the stable Usage Profile ID we use for DAU reporting.
+   *
+   * @param {string} id A string containing the Usage Profile ID.
+   * @return {Promise} Resolves when the ID is updated.
+   */
+  async setUsageProfileID(id) {
+    // Make sure that we have loaded the client ID. Do this before updating the
+    // Usage Profile ID as loading would clobber that.
+    if (!this._clientID) {
+      await this._loadDataReportingState();
+    }
+
+    GleanPings.usageReporting.setEnabled(true);
+    if (!(await this.updateUsageProfileID(id))) {
+      this._log.error(
+        "setUsageProfileID - invalid Usage Profile ID passed, not updating"
+      );
+      throw new Error("Invalid Usage Profile ID");
+    }
+
+    // If there is already a save in progress, wait for it to complete.
+    await this._saveDataReportingStateTask;
+
+    this._saveDataReportingStateTask = this._saveDataReportingState();
+    await this._saveDataReportingStateTask;
+  },
+
+  /**
+   * Asynchronously updates the stable Usage Profile Group ID we use for DAU
+   * reporting.
+   *
+   * @param {string} id A string containing the Usage Profile Group ID.
+   * @return {Promise} Resolves when the ID is updated.
+   */
+  async setUsageProfileGroupID(id) {
+    // Make sure that we have loaded the client ID. Do this before updating the
+    // Usage Profile Group ID as loading would clobber that.
+    if (!this._clientID) {
+      await this._loadDataReportingState();
+    }
+
+    if (!(await this.updateUsageProfileGroupID(id))) {
+      this._log.error(
+        "setUsageProfileGroupID - invalid Usage Profile Group ID passed, not updating"
+      );
+      throw new Error("Invalid Usage Profile Group ID");
     }
 
     // If there is already a save in progress, wait for it to complete.
@@ -434,6 +670,96 @@ var ClientIDImpl = {
     return id;
   },
 
+  /**
+   * Get the Usage Profile ID synchronously without hitting the disk.
+   * This returns:
+   *  - the current on-disk Usage Profile ID if it was already loaded
+   *  - the Usage Profile ID that we cached into preferences (if any)
+   *  - null otherwise
+   */
+  getCachedUsageProfileID() {
+    if (this._usageProfileID) {
+      // Already loaded the Usage Profile ID from disk.
+      return this._usageProfileID;
+    }
+
+    // If the Usage Profile ID cache contains a value of the wrong type,
+    // reset the pref. We need to do this before |getStringPref| since
+    // it will just return |null| in that case and we won't be able
+    // to distinguish between the missing pref and wrong type cases.
+    if (
+      Services.prefs.prefHasUserValue(PREF_CACHED_USAGE_PROFILEID) &&
+      Services.prefs.getPrefType(PREF_CACHED_USAGE_PROFILEID) !=
+        Ci.nsIPrefBranch.PREF_STRING
+    ) {
+      this._log.error(
+        "getCachedUsageProfileID - invalid Usage Profile ID type in preferences, resetting"
+      );
+      Services.prefs.clearUserPref(PREF_CACHED_USAGE_PROFILEID);
+    }
+
+    // Not yet loaded, return the cached Usage Profile ID if we have one.
+    let id = Services.prefs.getStringPref(PREF_CACHED_USAGE_PROFILEID, null);
+    if (id === null) {
+      return null;
+    }
+    if (!isValidUUID(id)) {
+      this._log.error(
+        "getCachedUsageProfileID - invalid Usage Profile ID in preferences, resetting",
+        id
+      );
+      Services.prefs.clearUserPref(PREF_CACHED_USAGE_PROFILEID);
+      return null;
+    }
+    return id;
+  },
+
+  /**
+   * Get the Usage Profile Group ID synchronously without hitting the disk.
+   * This returns:
+   *  - the current on-disk Usage Profile Group ID if it was already loaded
+   *  - the Usage Profile Group ID that we cached into preferences (if any)
+   *  - null otherwise
+   */
+  getCachedUsageProfileGroupID() {
+    if (this._usageProfileGroupID) {
+      // Already loaded the Usage Profile Group ID from disk.
+      return this._usageProfileGroupID;
+    }
+
+    // If the Usage Profile Group ID cache contains a value of the wrong type,
+    // reset the pref. We need to do this before |getStringPref| since
+    // it will just return |null| in that case and we won't be able
+    // to distinguish between the missing pref and wrong type cases.
+    if (
+      Services.prefs.prefHasUserValue(PREF_CACHED_USAGE_PROFILEGROUPID) &&
+      Services.prefs.getPrefType(PREF_CACHED_USAGE_PROFILEGROUPID) !=
+        Ci.nsIPrefBranch.PREF_STRING
+    ) {
+      this._log.error(
+        "getCachedUsageProfileGroupID - invalid Usage Profile Group ID type in preferences, resetting"
+      );
+      Services.prefs.clearUserPref(PREF_CACHED_USAGE_PROFILEGROUPID);
+    }
+
+    // Not yet loaded, return the cached Usage Profile Group ID if we have one.
+    let id = Services.prefs.getStringPref(
+      PREF_CACHED_USAGE_PROFILEGROUPID,
+      null
+    );
+    if (id === null) {
+      return null;
+    }
+    if (!isValidUUID(id)) {
+      this._log.error(
+        "getCachedUsageProfileGroupID - invalid Usage Profile Group ID type in preferences, resetting",
+        id
+      );
+      Services.prefs.clearUserPref(PREF_CACHED_USAGE_PROFILEGROUPID);
+      return null;
+    }
+    return id;
+  },
   async getClientIdHash() {
     if (!this._clientIDHash) {
       let byteArr = new TextEncoder().encode(await this.getClientID());
@@ -453,6 +779,8 @@ var ClientIDImpl = {
     this._clientID = null;
     this._clientIDHash = null;
     this._profileGroupID = null;
+    this._usageProfileID = null;
+    this._usageProfileGroupID = null;
   },
 
   async setCanaryIdentifiers() {
@@ -465,6 +793,17 @@ var ClientIDImpl = {
     return this._clientID;
   },
 
+  async setCanaryUsageProfileIdentifiers() {
+    this._log.trace("setCanaryUsageProfileIdentifiers");
+    this.updateUsageProfileID(CANARY_USAGE_PROFILE_ID);
+    this.updateUsageProfileGroupID(CANARY_USAGE_PROFILE_GROUP_ID);
+    GleanPings.usageReporting.setEnabled(false);
+
+    this._saveDataReportingStateTask = this._saveDataReportingState();
+    await this._saveDataReportingStateTask;
+    return this._usageProfileID;
+  },
+
   async _doResetIdentifiers() {
     this._log.trace("_doResetIdentifiers");
 
@@ -474,6 +813,24 @@ var ClientIDImpl = {
 
     // Reset the cached profile group ID.
     this.updateProfileGroupID(lazy.CommonUtils.generateUUID());
+
+    // If there is a save in progress, wait for it to complete.
+    await this._saveDataReportingStateTask;
+
+    // Save the new identifiers to disk.
+    this._saveDataReportingStateTask = this._saveDataReportingState();
+    await this._saveDataReportingStateTask;
+  },
+
+  async _doResetUsageProfileIdentifiers() {
+    this._log.trace("_doResetUsageProfileIdentifiers");
+
+    // Reset the cached Usage Profile ID.
+    GleanPings.usageReporting.setEnabled(true);
+    this.updateUsageProfileID(lazy.CommonUtils.generateUUID());
+
+    // Reset the cached Usage Profile Group ID.
+    this.updateUsageProfileGroupID(lazy.CommonUtils.generateUUID());
 
     // If there is a save in progress, wait for it to complete.
     await this._saveDataReportingStateTask;
@@ -495,12 +852,25 @@ var ClientIDImpl = {
     await this._resetIdentifiersTask;
   },
 
+  async resetUsageProfileIdentifiers() {
+    this._log.trace("resetUsageProfileIdentifiers");
+
+    // Wait for the removal.
+    // Asynchronous calls to getClientID will also be blocked on this.
+    this._resetUsageProfileIdentifierTask =
+      this._doResetUsageProfileIdentifiers();
+    let clear = () => (this._resetUsageProfileIdentifierTask = null);
+    this._resetUsageProfileIdentifierTask.then(clear, clear);
+
+    await this._resetUsageProfileIdentifierTask;
+  },
+
   /**
    * Sets the client id to the given value and updates the value cached in
    * preferences only if the given id is a valid UUID.
    *
-   * @param {String} id A string containing the client ID.
-   * @return {Boolean} True when the client ID has valid format, or False
+   * @param {string} id A string containing the client ID.
+   * @return {boolean} True when the client ID has valid format, or False
    * otherwise.
    */
   updateClientID(id) {
@@ -523,8 +893,8 @@ var ClientIDImpl = {
    * Sets the profile group ID to the given value and updates the value cached
    * in preferences only if the given id is a valid UUID.
    *
-   * @param {String} id A string containing the profile group ID.
-   * @return {Boolean} True when the profile group ID has valid format, or False
+   * @param {string} id A string containing the profile group ID.
+   * @return {boolean} True when the profile group ID has valid format, or False
    * otherwise.
    */
   updateProfileGroupID(id) {
@@ -541,6 +911,61 @@ var ClientIDImpl = {
     Services.prefs.setStringPref(
       PREF_CACHED_PROFILEGROUPID,
       this._profileGroupID
+    );
+    return true;
+  },
+
+  /**
+   * Sets the Usage Profile ID to the given value and updates the value cached
+   * in preferences only if the given id is a valid UUID.
+   *
+   * @param {string} id A string containing the Profile Usage ID.
+   * @return {boolean} True when the Profile Usage ID has valid format, or False
+   * otherwise.
+   */
+  updateUsageProfileID(id) {
+    if (!isValidUUID(id)) {
+      this._log.error("updateUsageProfileID - invalid Usage Profile ID", id);
+      return false;
+    }
+
+    this._usageProfileID = id;
+    if (AppConstants.platform != "android") {
+      Glean.usage.profileId.set(id);
+    }
+
+    Services.prefs.setStringPref(
+      PREF_CACHED_USAGE_PROFILEID,
+      this._usageProfileID
+    );
+    return true;
+  },
+
+  /**
+   * Sets the Usage Profile Group ID to the given value and updates the value
+   * cached in preferences only if the given id is a valid UUID.
+   *
+   * @param {string} id A string containing the Profile Group Usage ID.
+   * @return {boolean} True when the Profile Group Usage ID has valid format,
+   * or False otherwise.
+   */
+  updateUsageProfileGroupID(id) {
+    if (!isValidUUID(id)) {
+      this._log.error(
+        "updateUsageProfileGroupID - invalid Usage Profile Group ID",
+        id
+      );
+      return false;
+    }
+
+    this._usageProfileGroupID = id;
+    if (AppConstants.platform != "android") {
+      Glean.usage.profileGroupId.set(id);
+    }
+
+    Services.prefs.setStringPref(
+      PREF_CACHED_USAGE_PROFILEGROUPID,
+      this._usageProfileGroupID
     );
     return true;
   },

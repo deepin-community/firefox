@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,10 +7,7 @@
  *
  */
 
-// Still unclear what should be subclassed.
-// https://github.com/slightlyoff/ServiceWorker/issues/189
-[Func="ServiceWorkerVisible",
- // FIXME(nsm): Bug 1113522. This is exposed to satisfy webidl constraints, but it won't actually work.
+[Func="ServiceWorkersEnabled",
  Exposed=(Window,Worker)]
 interface ServiceWorker : EventTarget {
   readonly attribute USVString scriptURL;

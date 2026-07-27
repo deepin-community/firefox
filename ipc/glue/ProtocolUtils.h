@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -19,13 +17,12 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/FunctionRef.h"
-#include "mozilla/Maybe.h"
+#include "mozilla/MoveOnlyFunction.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/ipc/MessageChannel.h"
 #include "mozilla/ipc/MessageLink.h"
-#include "mozilla/ipc/SharedMemory.h"
 #include "mozilla/ipc/Shmem.h"
 #include "nsPrintfCString.h"
 #include "nsTHashMap.h"
@@ -124,9 +121,7 @@ struct EndpointProcInfo {
 // Used to pass references to protocol actors across the wire.
 // Actors created on the parent-side have a positive ID, and actors
 // allocated on the child side have a negative ID.
-struct ActorHandle {
-  int mId;
-};
+using ActorId = IPC::Message::routeid_t;
 
 enum class LinkStatus : uint8_t {
   // The actor has not established a link yet, or the actor is no longer in use
@@ -142,12 +137,9 @@ enum class LinkStatus : uint8_t {
   // A live link is connected to the other side of this actor.
   Connected,
 
-  // The link has begun being destroyed. Messages may no longer be sent. The
-  // ActorDestroy method is queued to be called, but has not been invoked yet,
-  // as managed actors still need to be destroyed first.
-  //
-  // NOTE: While no new IPC can be received at this point, `CanRecv` will still
-  // be true until `LinkStatus::Destroyed`.
+  // The link has begun being destroyed. Messages may no longer be sent or
+  // received. The ActorDestroy method is queued to be called, but has not been
+  // invoked yet, as managed actors still need to be destroyed first.
   Doomed,
 
   // The actor has been destroyed, and ActorDestroy has been called, however an
@@ -178,8 +170,8 @@ class IProtocol : public HasResultCodes {
     ManagedEndpointDropped
   };
 
-  typedef base::ProcessId ProcessId;
-  typedef IPC::Message Message;
+  using ProcessId = base::ProcessId;
+  using Message = IPC::Message;
 
   IProtocol(ProtocolId aProtoId, Side aSide)
       : mId(0),
@@ -194,12 +186,11 @@ class IProtocol : public HasResultCodes {
   const IToplevelProtocol* ToplevelProtocol() const { return mToplevel; }
 
   // Lookup() is forwarded directly to the toplevel protocol.
-  IProtocol* Lookup(int32_t aId);
+  IProtocol* Lookup(ActorId aId);
 
-  Shmem::SharedMemory* CreateSharedMemory(size_t aSize, bool aUnsafe,
-                                          int32_t* aId);
-  Shmem::SharedMemory* LookupSharedMemory(int32_t aId);
-  bool IsTrackingSharedMemory(Shmem::SharedMemory* aSegment);
+  Shmem CreateSharedMemory(size_t aSize, bool aUnsafe);
+  Shmem::Segment* LookupSharedMemory(ActorId aId);
+  bool IsTrackingSharedMemory(const Shmem::Segment* aSegment);
   bool DestroySharedMemory(Shmem& aShmem);
 
   MessageChannel* GetIPCChannel();
@@ -214,7 +205,7 @@ class IProtocol : public HasResultCodes {
   ProtocolId GetProtocolId() const { return mProtocolId; }
   const char* GetProtocolName() const { return ProtocolIdToName(mProtocolId); }
 
-  int32_t Id() const { return mId; }
+  ActorId Id() const { return mId; }
   IRefCountedProtocol* Manager() const { return mManager; }
 
   uint32_t AllManagedActorsCount() const;
@@ -225,19 +216,8 @@ class IProtocol : public HasResultCodes {
   Side GetSide() const { return mSide; }
   bool CanSend() const { return mLinkStatus == LinkStatus::Connected; }
 
-  // Returns `true` for an active actor until the actor's `ActorDestroy` method
-  // has been called.
-  bool CanRecv() const {
-    return mLinkStatus == LinkStatus::Connected ||
-           mLinkStatus == LinkStatus::Doomed;
-  }
-
   // Deallocate a managee given its type.
-  virtual void DeallocManagee(int32_t, IProtocol*) = 0;
-
-  Maybe<IProtocol*> ReadActor(IPC::MessageReader* aReader, bool aNullable,
-                              const char* aActorDescription,
-                              int32_t aProtocolTypeId);
+  virtual void DeallocManagee(ProtocolId, IProtocol*) = 0;
 
   virtual Result OnMessageReceived(const Message& aMessage) = 0;
   virtual Result OnMessageReceived(const Message& aMessage,
@@ -256,6 +236,7 @@ class IProtocol : public HasResultCodes {
   friend class ActorLifecycleProxy;
   friend class IPDLResolverInner;
   friend class UntypedManagedEndpoint;
+  friend struct IPC::ParamTraits<IProtocol*>;
 
   // We have separate functions because the accessibility code and BrowserParent
   // manually calls SetManager.
@@ -270,28 +251,20 @@ class IProtocol : public HasResultCodes {
   // its manager, setting up channels for the protocol as well.  Not
   // for use outside of IPDL.
   bool SetManagerAndRegister(IRefCountedProtocol* aManager,
-                             int32_t aId = kNullActorId);
+                             ActorId aId = kNullActorId);
 
   // Helpers for calling `Send` on our underlying IPC channel.
-  bool ChannelSend(UniquePtr<IPC::Message> aMsg);
+  bool ChannelSend(UniquePtr<IPC::Message> aMsg,
+                   IPC::Message::seqno_t* aSeqno = nullptr);
   bool ChannelSend(UniquePtr<IPC::Message> aMsg,
                    UniquePtr<IPC::Message>* aReply);
-  template <typename Value>
-  void ChannelSend(UniquePtr<IPC::Message> aMsg,
-                   IPC::Message::msgid_t aReplyMsgId,
-                   ResolveCallback<Value>&& aResolve,
-                   RejectCallback&& aReject) {
-    if (CanSend()) {
-      GetIPCChannel()->Send(std::move(aMsg), Id(), aReplyMsgId,
-                            std::move(aResolve), std::move(aReject));
-    } else {
-      WarnMessageDiscarded(aMsg.get());
-      aReject(ResponseRejectReason::SendError);
-    }
-  }
 
   // Internal method called when the actor becomes connected.
   already_AddRefed<ActorLifecycleProxy> ActorConnected();
+
+  // Internal method called to indicate an actor will become disconnected.
+  // Implicitly called by ActorDisconnected.
+  void DoomSubtree();
 
   // Internal method called when actor becomes disconnected.
   void ActorDisconnected(ActorDestroyReason aWhy);
@@ -307,6 +280,10 @@ class IProtocol : public HasResultCodes {
     return const_cast<IProtocol*>(this)->GetManagedActors(aProtocol);
   }
 
+  // Called internally to reject the callbacks for all async-returns methods
+  // in-progress on this actor with the given ResponseRejectReason.
+  virtual void RejectPendingResponses(ResponseRejectReason aReason) {}
+
   // Called when the actor has been destroyed due to an error, a __delete__
   // message, or a __doom__ reply.
   virtual void ActorDestroy(ActorDestroyReason aWhy) {}
@@ -321,8 +298,7 @@ class IProtocol : public HasResultCodes {
   // The actor has been freed after this method returns.
   virtual void ActorDealloc() = 0;
 
-  static const int32_t kNullActorId = 0;
-  static const int32_t kFreedActorId = 1;
+  static const ActorId kNullActorId = 0;
 
  private:
 #ifdef DEBUG
@@ -331,13 +307,11 @@ class IProtocol : public HasResultCodes {
   void WarnMessageDiscarded(IPC::Message*) {}
 #endif
 
-  void DoomSubtree();
-
   // Internal function returning an arbitrary directly managed actor. Used to
   // identify managed actors to destroy when tearing down an actor tree.
   IProtocol* PeekManagedActor() const;
 
-  int32_t mId;
+  ActorId mId;
   const ProtocolId mProtocolId;
   const Side mSide;
   LinkStatus mLinkStatus;
@@ -454,12 +428,18 @@ class IToplevelProtocol : public IRefCountedProtocol {
 
  public:
   // Shadows the method on IProtocol, which will forward to the top.
-  IProtocol* Lookup(int32_t aId);
+  IProtocol* Lookup(ActorId aId);
 
-  Shmem::SharedMemory* CreateSharedMemory(size_t aSize, bool aUnsafe,
-                                          int32_t* aId);
-  Shmem::SharedMemory* LookupSharedMemory(int32_t aId);
-  bool IsTrackingSharedMemory(Shmem::SharedMemory* aSegment);
+  // Ensures aId is from the remote side's range, and reserves a slot in
+  // mActorMap for a future call to SetManagerAndRegister.
+  [[nodiscard]] bool TryReserve(ActorId aId);
+
+  // Abandon a reservation if SetManagerAndRegister will never be called.
+  void ClearReservation(ActorId aId);
+
+  Shmem CreateSharedMemory(size_t aSize, bool aUnsafe);
+  Shmem::Segment* LookupSharedMemory(Shmem::id_t aId);
+  bool IsTrackingSharedMemory(const Shmem::Segment* aSegment);
   bool DestroySharedMemory(Shmem& aShmem);
 
   MessageChannel* GetIPCChannel() { return &mChannel; }
@@ -536,7 +516,7 @@ class IToplevelProtocol : public IRefCountedProtocol {
   void OnIPCChannelOpened() {
     // Leak the returned ActorLifecycleProxy reference. It will be destroyed in
     // `OnChannelClose` or `OnChannelError`.
-    Unused << ActorConnected();
+    ActorConnected().leak();
   }
   void OnChannelClose() {
     // Re-acquire the ActorLifecycleProxy reference acquired in
@@ -557,19 +537,19 @@ class IToplevelProtocol : public IRefCountedProtocol {
   GeckoChildID OtherChildIDMaybeInvalid() const { return mOtherChildID; }
 
  private:
-  int32_t NextId();
+  int64_t NextId();
 
   template <class T>
-  using IDMap = nsTHashMap<nsUint32HashKey, T>;
+  using IDMap = nsTHashMap<int64_t, T>;
 
   base::ProcessId mOtherPid;
   GeckoChildID mOtherChildID;
 
   // NOTE NOTE NOTE
   // Used to be on mState
-  int32_t mLastLocalId;
+  int64_t mLastLocalId;
   IDMap<RefPtr<ActorLifecycleProxy>> mActorMap;
-  IDMap<RefPtr<Shmem::SharedMemory>> mShmemMap;
+  IDMap<RefPtr<Shmem::Segment>> mShmemMap;
 
   MessageChannel mChannel;
 };
@@ -680,6 +660,9 @@ void AnnotateSystemError();
 // references!
 class ActorLifecycleProxy {
  public:
+  ActorLifecycleProxy(const ActorLifecycleProxy&) = delete;
+  ActorLifecycleProxy& operator=(const ActorLifecycleProxy&) = delete;
+
   NS_INLINE_DECL_REFCOUNTING_ONEVENTTARGET(ActorLifecycleProxy)
 
   IProtocol* Get() { return mActor; }
@@ -691,9 +674,6 @@ class ActorLifecycleProxy {
 
   explicit ActorLifecycleProxy(IProtocol* aActor);
   ~ActorLifecycleProxy();
-
-  ActorLifecycleProxy(const ActorLifecycleProxy&) = delete;
-  ActorLifecycleProxy& operator=(const ActorLifecycleProxy&) = delete;
 
   IProtocol* MOZ_NON_OWNING_REF mActor;
 
@@ -760,6 +740,43 @@ class IPDLResolverInner final {
 
   UniquePtr<IPC::Message> mReply;
   RefPtr<WeakActorLifecycleProxy> mWeakProxy;
+};
+
+// Member type added by the IPDL compiler to actors with async-returns messages.
+// Manages a table mapping outstanding async message seqnos to the corresponding
+// IPDL-generated callback which handles validating, deserializing, and
+// dispatching the reply.
+class IPDLAsyncReturnsCallbacks : public HasResultCodes {
+ public:
+  // Internal resolve callback signature. The callback should deserialize from
+  // the IPC::MessageReader* argument.
+  using Callback =
+      mozilla::MoveOnlyFunction<Result(IPC::MessageReader* IProtocol)>;
+  using seqno_t = IPC::Message::seqno_t;
+  using msgid_t = IPC::Message::msgid_t;
+
+  void AddCallback(seqno_t aSeqno, msgid_t aType, Callback aResolve,
+                   RejectCallback aReject);
+  Result GotReply(IProtocol* aActor, const IPC::Message& aMessage);
+  void RejectPendingResponses(ResponseRejectReason aReason);
+
+ private:
+  struct EntryKey {
+    seqno_t mSeqno;
+    msgid_t mType;
+
+    bool operator==(const EntryKey& aOther) const;
+    bool operator<(const EntryKey& aOther) const;
+  };
+  struct Entry : EntryKey {
+    Callback mResolve;
+    RejectCallback mReject;
+  };
+
+  // NOTE: We expect this table to be quite small most of the time (usually 0-1
+  // entries), so use a sorted array as backing storage to reduce unnecessary
+  // overhead.
+  nsTArray<Entry> mMap;
 };
 
 }  // namespace ipc

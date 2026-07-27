@@ -1,16 +1,30 @@
 # JIT Profiling with perf
 
-perf is a performance profiling tool available on Linux that is capable of measuring performance events such as cycles, instructions executed, cache misses, etc and providing assembly and source code annotation.
-It is possible to collect performance profiles of the SpiderMonkey JIT using perf on Linux and also annotate the generated assembly with the IR opcodes that were used during compilation as shown below.
+## Maybe preferable: profiling with `samply`
+
+`samply` makes profiling JIT a lot easier and should be preferred if running
+macOS or Linux. Documentation is at [JIT profiling with
+`samply`](jit_profiling_with_samply.md).
+
+## Introduction
+
+`perf` is a performance profiling tool available on Linux that is
+capable of measuring performance events such as cycles, instructions executed,
+cache misses, etc and providing assembly and source code annotation. It is
+possible to collect performance profiles of the SpiderMonkey JIT using perf on
+Linux and also annotate the generated assembly with the IR opcodes that were
+used during compilation as shown below.
 
 ![](img/annotation.png)
 
 ## Build setup
 
-To enable JIT profiling with perf jitdump, you must build Firefox or the JS shell with the following flag:
+JIT profiling with perf jitdump is **enabled by default for nightly builds** in the shell and browser.
+
+If you wish to disable jitdump support in your build, then you can include the following build flag:
 
 ```
-ac_add_options --enable-perf
+ac_add_options --disable-jitdump
 ```
 
 ## Environment Variables
@@ -23,6 +37,7 @@ Environment variables that must be defined for perf JIT profiling:
 `IONPERF=func` will disable all annotation and only function names will be available. It is the fastest option.\
 `IONPERF=ir` will enable IR annotation.\
 `IONPERF=ir-ops` will enable IR annotation with operand support.  **Requires --enable-jitspew** and adds additional overhead to "ir".\
+`IONPERF=ir-graph` will output the full IR for interactive visualization.  **Requires --enable-jitspew** and adds additional overhead to "ir".\
 `IONPERF=src` will enable source code annotation **only if** perf can read the source file locally.  Only really works well in the JS shell.
 
 ## Profiling the JS shell

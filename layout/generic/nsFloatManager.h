@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #ifndef nsFloatManager_h_
 #define nsFloatManager_h_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/TypedEnumBits.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WritingModes.h"
@@ -98,6 +95,9 @@ class nsFloatManager {
   explicit nsFloatManager(mozilla::PresShell* aPresShell,
                           mozilla::WritingMode aWM);
   ~nsFloatManager();
+
+  nsFloatManager(const nsFloatManager&) = delete;
+  void operator=(const nsFloatManager&) = delete;
 
   void* operator new(size_t aSize) noexcept(true);
   void operator delete(void* aPtr, size_t aSize);
@@ -218,7 +218,8 @@ class nsFloatManager {
    */
   enum class BandInfoType { BandFromPoint, WidthWithinHeight };
   enum class ShapeType { Margin, ShapeOutside };
-  nsFlowAreaRect GetFlowArea(mozilla::WritingMode aWM, nscoord aBCoord,
+  nsFlowAreaRect GetFlowArea(mozilla::WritingMode aCBWM,
+                             mozilla::WritingMode aWM, nscoord aBCoord,
                              nscoord aBSize, BandInfoType aBandInfoType,
                              ShapeType aShapeType,
                              mozilla::LogicalRect aContentArea,
@@ -315,13 +316,13 @@ class nsFloatManager {
    *
    * Both aBCoord and the result are relative to the current translation.
    */
-  nscoord ClearFloats(nscoord aBCoord, mozilla::StyleClear aClearType) const;
+  nscoord ClearFloats(nscoord aBCoord, mozilla::UsedClear aClearType) const;
 
   /**
    * Checks if clear would pass into the floats' BFC's next-in-flow,
    * i.e. whether floats affecting this clear have continuations.
    */
-  bool ClearContinues(mozilla::StyleClear aClearType) const;
+  bool ClearContinues(mozilla::UsedClear aClearType) const;
 
   void AssertStateMatches(SavedState* aState) const {
     NS_ASSERTION(
@@ -426,9 +427,6 @@ class nsFloatManager {
 
   static int32_t sCachedFloatManagerCount;
   static void* sCachedFloatManagers[NS_FLOAT_MANAGER_CACHE_SIZE];
-
-  nsFloatManager(const nsFloatManager&) = delete;
-  void operator=(const nsFloatManager&) = delete;
 };
 
 /**

@@ -2,20 +2,18 @@
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src chrome: blob:; object-src 'none'"
+      content="default-src chrome:; object-src 'none'"
     />
     <meta name="color-scheme" content="light dark" />
     <link rel="localization" href="branding/brand.ftl" />
     <link rel="localization" href="browser/protections.ftl" />
     <link rel="localization" href="toolkit/branding/brandings.ftl" />
-    <!-- Temporary "en-US"-only l10n strings -->
-    <link rel="localization" href="preview/protections.ftl" />
     <link rel="stylesheet" href="chrome://global/skin/in-content/common.css" />
     <link rel="stylesheet" href="chrome://browser/content/protections.css" />
     <link rel="icon" href="chrome://browser/skin/controlcenter/dashboard.svg" />
@@ -23,29 +21,32 @@
       type="module"
       src="chrome://browser/content/protections.mjs"
     ></script>
+    <script
+      type="module"
+      src="chrome://browser/content/privacy-metrics-card.mjs"
+    ></script>
     <title data-l10n-id="protection-report-webpage-title"></title>
   </head>
 
   <body>
     <div class="new-banner vpn-banner hidden">
       <div class="banner-wrapper">
-        <img
-          class="icon light"
-          src="chrome://browser/content/logos/vpn-light.svg"
-        />
-        <img
-          class="icon dark"
-          src="chrome://browser/content/logos/vpn-dark.svg"
-        />
+        <img class="icon" src="chrome://browser/content/logos/vpn.svg" />
         <div class="wrapper">
           <div>
-            <h3 class="banner-title" data-l10n-id="vpn-banner-header"></h3>
-            <span class="content" data-l10n-id="vpn-banner-content"></span>
+            <h3
+              class="banner-title"
+              data-l10n-id="protections-vpn-banner-header"
+            ></h3>
+            <span
+              class="content"
+              data-l10n-id="protections-vpn-banner-content"
+            ></span>
           </div>
           <a
             target="_blank"
             id="vpn-banner-link"
-            data-l10n-id="get-vpn-link"
+            data-l10n-id="protections-get-vpn-link"
           ></a>
           <button
             class="exit-icon"
@@ -69,6 +70,7 @@
         role="link"
         tabindex="0"
       ></p>
+      <privacy-metrics-card class="hidden"></privacy-metrics-card>
       <div class="card card-no-hover etp-card">
         <div class="card-header">
           <img
@@ -522,41 +524,9 @@
           </div>
         </div> -->
       </section>
-      <!-- Markup for Proxy card -->
-      <section class="card card-no-hover proxy-card hidden">
-        <div class="card-header">
-          <img
-            class="icon light"
-            src="chrome://browser/content/logos/proxy-light.svg"
-          />
-          <img
-            class="icon dark"
-            src="chrome://browser/content/logos/proxy-dark.svg"
-          />
-          <div class="wrapper">
-            <div>
-              <h3 class="card-title" data-l10n-id="proxy-title"></h3>
-              <p class="content" data-l10n-id="proxy-header-content"></p>
-            </div>
-            <a
-              target="_blank"
-              id="get-proxy-extension-link"
-              data-l10n-id="get-proxy-extension-link"
-            ></a>
-          </div>
-        </div>
-      </section>
-
       <section class="card card-no-hover vpn-card hidden">
         <div class="card-header">
-          <img
-            class="icon light"
-            src="chrome://browser/content/logos/vpn-light.svg"
-          />
-          <img
-            class="icon dark"
-            src="chrome://browser/content/logos/vpn-dark.svg"
-          />
+          <img class="icon" src="chrome://browser/content/logos/vpn.svg" />
           <div class="wrapper">
             <div>
               <div class="title-wrapper">
@@ -564,29 +534,36 @@
                   id="check-icon"
                   src="chrome://browser/skin/protections/resolved-breach.svg"
                 />
-                <h3 class="card-title" data-l10n-id="vpn-title"></h3>
+                <h3
+                  class="card-title"
+                  data-l10n-id="protections-vpn-title"
+                ></h3>
               </div>
-              <p class="content" data-l10n-id="vpn-header-content"></p>
+              <p
+                class="content"
+                data-l10n-id="protections-vpn-header-content"
+              ></p>
               <p
                 class="content subscribed"
-                data-l10n-id="vpn-header-content-subscribed"
+                data-l10n-id="protections-vpn-header-content-subscribed"
+                data-l10n-args='{"count": 5}'
               >
                 <a
                   target="_blank"
                   id="vpn-google-playstore-link"
-                  data-l10n-name="vpn-google-playstore-link"
+                  data-l10n-name="playstore-link"
                 ></a>
                 <a
                   target="_blank"
                   id="vpn-app-store-link"
-                  data-l10n-name="vpn-app-store-link"
+                  data-l10n-name="appstore-link"
                 ></a>
               </p>
             </div>
             <a
               target="_blank"
               id="get-vpn-link"
-              data-l10n-id="get-vpn-link"
+              data-l10n-id="protections-get-vpn-link"
             ></a>
           </div>
         </div>

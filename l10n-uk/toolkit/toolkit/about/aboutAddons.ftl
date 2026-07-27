@@ -77,7 +77,7 @@ detail-home =
 detail-home-value =
     .value = { detail-home.label }
 detail-repository =
-    .label = Профіль додатку
+    .label = Профіль додатка
 detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
@@ -170,6 +170,8 @@ extensions-warning-update-security-button = Увімкнути
 extensions-warning-imported-addons2 =
     .message = Завершіть встановлення розширень, які було імпортовано до { -brand-short-name }.
 extensions-warning-imported-addons-button = Встановити розширення
+extensions-warning-safe-mode3 =
+    .message = Усі додатки вимкнено, оскільки ви в режимі усунення проблем.
 
 ## Strings connected to add-on updates
 
@@ -206,6 +208,10 @@ addon-updates-manual-updates-found = Переглянути доступні о�
 
 addon-install-from-file = Встановити додаток з файлу…
     .accesskey = В
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Встановити чи оновити додаток з файлу…
+    .accesskey = с
 addon-install-from-file-dialog-title = Виберіть додаток для встановлення
 addon-install-from-file-filter-name = Додатки
 addon-open-about-debugging = Налагодження додатків
@@ -263,17 +269,30 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Розширення і теми - це невеличкі додатки для вашого браузера, які дозволяють
+    Розширення і теми – це додатки для вашого браузера, за допомогою яких можна
     захищати паролі, завантажувати відео, знаходити пропозиції, блокувати рекламу,
-    змінювати зовнішній вигляд браузера та багато іншого. Ці невеликі програми часто
-    розробляються сторонніми організаціями.
-    Ось декілька <a data-l10n-name="learn-more-trigger">рекомендацій</a> від { -brand-product-name } для виняткової безпеки, швидкодії та функціональності.
+    змінювати зовнішній вигляд браузера та багато іншого. Ці невеликі програми зазвичай
+    розробляються сторонніми розробниками.
+    Ось декілька <a data-l10n-name="learn-more-trigger">рекомендацій</a> від { -brand-product-name } для виняткової безпеки, продуктивності та функціональності.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Деякі з цих рекомендацій персоналізовані. Вони базуються на ваших вже встановлених розширеннях, налаштуваннях профілю і статистиці використання.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations2 =
     .message = Деякі з цих рекомендацій персоналізовані. Вони базуються на ваших вже встановлених розширеннях, налаштуваннях профілю і статистиці використання.
 discopane-notice-learn-more = Докладніше
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Ваші теми забарвлень вилучено.
+    .message =
+        Колекцію забарвлень для { -brand-product-name } оновлено. Ми вилучили
+        застарілі версії зі списку "Збережені теми". Отримайте нові версії на
+        на сайті додатків.
+colorway-removal-notice-learn-more = Докладніше
+colorway-removal-notice-button = Отримайте оновлені теми забарвлень
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Ваші налаштування контрастності Windows перевизначають теми { -brand-short-name }. Вимкніть ці налаштування, щоб використовувати теми в { -brand-short-name }.
 privacy-policy = Політика приватності
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -294,6 +313,16 @@ find-more-themes = Знайти інші теми
 # used for screen readers.
 addon-options-button =
     .aria-label = Інші варіанти
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Розширення й теми дозволяють налаштувати { -brand-product-name }. Вони можуть покращити приватність,
+    підвищити продуктивність, вдосконалити медіа, змінити вигляд { -brand-product-name }, і
+    ще багато іншого. Ці невеликі програми часто розробляються третіми особами. Ось
+    перелік <a data-l10n-name="learn-more-trigger">рекомендованих розширень</a> Firefox
+    для виняткової безпеки, продуктивності та функціональності.
 
 ## Add-on actions
 
@@ -381,6 +410,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Дозволено в приватних вікнах
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Дозволено в приватних вікнах
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -410,7 +443,7 @@ addon-detail-group-label-quarantined-domains =
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
-    .title = { -brand-product-name } рекомендує лише розширення, що задовольняють наші стандарти безпеки та швидкодії
+    .title = { -brand-product-name } рекомендує лише розширення, які відповідають нашим стандартам безпеки та продуктивності
     .aria-label = { addon-badge-recommended2.title }
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
@@ -418,8 +451,26 @@ addon-badge-line3 =
     .title = Офіційне розширення, створене Mozilla. Відповідає стандартам безпеки та продуктивності.
     .aria-label = { addon-badge-line3.title }
 addon-badge-verified2 =
-    .title = Це розширення перевірено на відповідність нашим стандартам безпеки та швидкодії.
+    .title = Це розширення перевірено на відповідність нашим стандартам безпеки та продуктивності.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Офіційне розширення, створене Mozilla. Відповідає стандартам безпеки та продуктивності.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Це розширення перевірено на відповідність стандартам безпеки та продуктивності.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox рекомендує лише ті розширення, які відповідають стандартам безпеки та продуктивності.
 
 ##
 
@@ -427,6 +478,10 @@ available-updates-heading = Доступні оновлення
 recent-updates-heading = Недавні оновлення
 release-notes-loading = Завантаження…
 release-notes-error = На жаль, під час завантаження приміток до випуску сталася помилка.
+addon-permissions-heading = Дозволи
+addon-permissions-empty2 = Це розширення не вимагає жодних дозволів.
+addon-permissions-required-label = Обов'язково:
+addon-permissions-optional-label = Необов'язково:
 addon-permissions-empty = Це розширення не потребує дозволів
 addon-permissions-required = Необхідні дозволи для роботи основних функцій:
 addon-permissions-optional = Необов'язкові дозволи для додаткових функцій:
@@ -454,6 +509,9 @@ shortcuts-heading = Керувати комбінаціями клавіш ро�
 default-heading-search-label = Знайти більше додатків
 addons-heading-search-input =
     .placeholder = Пошук на addons.mozilla.org
+addons-heading-search-button =
+    .title = Пошук на addons.mozilla.org
+    .aria-label = Пошук на addons.mozilla.org
 addon-page-options-button =
     .title = Інструменти для всіх додатків
 
@@ -476,14 +534,32 @@ details-notification-unsigned-and-disabled-link = Докладніше
 details-notification-unsigned = Додаток { $name } не був перевірений для використання в { -brand-short-name }. Продовжуйте з обережністю.
 details-notification-unsigned2 =
     .message = Додаток { $name } не був перевірений для використання в { -brand-short-name }. Продовжуйте з обережністю.
+details-notification-hard-blocked-extension =
+    .message = Це розширення заблоковано за порушення політик Mozilla, тому його було вимкнено.
+details-notification-hard-blocked-other =
+    .message = Цей додаток заблоковано за порушення політик Mozilla, тому його було вимкнено.
 details-notification-unsigned-link = Докладніше
 details-notification-blocked = { $name } було вимкнено, у зв'язку з проблемами безпеки чи стабільності.
-details-notification-blocked2 =
-    .message = { $name } було вимкнено, у зв'язку з проблемами безпеки чи стабільності.
+details-notification-blocked-link2 = Переглянути подробиці
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Це розширення вимкнено через обмеження. Ви можете його ввімкнути, але це може бути ризиковано.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Це розширення обмежено. Його використання може бути ризикованим.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Цей додаток вимкнено через обмеження. Ви можете його ввімкнути, але це може бути ризиковано.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Цей додаток обмежено. Його використання може бути ризикованим.
+details-notification-soft-blocked-extension-disabled =
+    .message = Це розширення обмежено через порушення політик Mozilla, тому його було вимкнено. Ви можете ввімкнути його, розуміючи можливі наслідки ризику.
+details-notification-soft-blocked-extension-enabled =
+    .message = Це розширення порушує політики Mozilla. Користуватися ним може бути ризиковано.
+details-notification-soft-blocked-other-disabled =
+    .message = Цей додаток обмежено через порушення політик Mozilla, тому його було вимкнено. Ви можете ввімкнути його, розуміючи можливі наслідки ризику.
+details-notification-soft-blocked-other-enabled =
+    .message = Цей додаток порушує політики Mozilla. Користуватися ним може бути ризиковано.
+details-notification-softblocked-link2 = Переглянути подробиці
 details-notification-blocked-link = Докладніше
 details-notification-softblocked = В { $name } є відомі проблеми з безпекою та стабільністю.
-details-notification-softblocked2 =
-    .message = В { $name } є відомі проблеми з безпекою та стабільністю.
 details-notification-softblocked-link = Докладніше
 details-notification-gmp-pending = { $name } незабаром буде встановлено.
 details-notification-gmp-pending2 =
@@ -497,3 +573,45 @@ plugins-openh264-name = Відеокодек OpenH264 наданий Cisco Syste
 plugins-openh264-description = Цей плагін автоматично встановлений Mozilla для взаємодії зі специфікацією WebRTC та увімкнення викликів WebRTC з пристроями, які потребують відеокодек H.264. Відвідайте http://www.openh264.org/ для перегляду програмного коду кодека та докладної інформації про його застосування.
 plugins-widevine-name = Модуль розшифрування вмісту Widevine наданий Google Inc.
 plugins-widevine-description = Цей плагін активує відтворення зашифрованого медіа у відповідності до специфікації Encrypted Media Extensions (EME). Зашифровані медіа зазвичай використовуються сайтами для захисту від копіювання преміум медіа-вмісту. Відвідайте https://www.w3.org/TR/encrypted-media/ для отримання докладної інформації про Encrypted Media Extensions (EME).
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Необхідний збір даних:
+addon-permissions-optional-data-collection = Необов'язковий збір даних:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Дозволи й дані
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Використовується розширенням { $extensionName }
+addon-permissions-data-collection-heading = Збір даних
+addon-permissions-data-collection-empty = Розробник стверджує, що це розширення не потребує збору даних.
+addon-data-collection-provided = Інформація надана розробником розширення
+addon-data-collection-learnmore = Докладніше про збір даних
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } використовує це на about:inference
+mlmodel-link-preview = { -brand-short-name } використовує це для генерування ключових точок під час перегляду посилань
+mlmodel-pdfjs = { -brand-short-name } використовує це для створення альтернативного тексту зображень, які ви додаєте до PDF-файлів
+mlmodel-smart-tab-topic-engine = { -brand-short-name } використовує це, щоб пропонувати назви для ваших груп вкладок
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } використовує це, щоб пропонувати вкладки для ваших груп вкладок
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = ШІ на пристрої
+addon-category-mlmodel-title =
+    .title = ШІ на пристрої
+mlmodel-heading = Керування моделями ШІ на пристрої
+mlmodel-description = Деякі функції та розширення в { -brand-short-name } працюють на основі моделей штучного інтелекту, локально на вашому пристрої. Такий підхід захищає вашу приватність і в багатьох випадках вдосконалює продуктивність. <a data-l10n-name="learn-more">Докладніше</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Вилучити
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Розмір файлу
+mlmodel-addon-detail-last-used-label = Востаннє використано
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Використовується
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Картка моделі
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Переглянути на Hugging Face

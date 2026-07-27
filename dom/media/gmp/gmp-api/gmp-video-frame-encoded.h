@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* Copyright (c) 2011, The WebRTC project authors. All rights reserved.
  * Copyright (c) 2014, Mozilla
  *
@@ -35,8 +34,9 @@
 #define GMP_VIDEO_FRAME_ENCODED_h_
 
 #include <stdint.h>
-#include "gmp-video-frame.h"
+
 #include "gmp-video-codec.h"
+#include "gmp-video-frame.h"
 
 enum GMPVideoFrameType {
   kGMPKeyFrame = 0,
@@ -87,6 +87,8 @@ class GMPVideoEncodedFrame : public GMPVideoFrame {
   virtual uint8_t* Buffer() = 0;
   virtual GMPBufferType BufferType() const = 0;
   virtual void SetBufferType(GMPBufferType aBufferType) = 0;
+  virtual void SetTemporalLayerId(int32_t aLayerId) = 0;
+  virtual int32_t GetTemporalLayerId() = 0;
 };
 
 #endif  // GMP_VIDEO_FRAME_ENCODED_h_

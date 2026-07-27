@@ -1,19 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMathMLContainerFrame_h___
-#define nsMathMLContainerFrame_h___
+#ifndef nsMathMLContainerFrame_h_
+#define nsMathMLContainerFrame_h_
 
-#include "mozilla/Attributes.h"
-#include "nsContainerFrame.h"
-#include "nsBlockFrame.h"
-#include "nsInlineFrame.h"
-#include "nsMathMLOperators.h"
-#include "nsMathMLFrame.h"
 #include "mozilla/Likely.h"
+#include "nsBlockFrame.h"
+#include "nsContainerFrame.h"
+#include "nsInlineFrame.h"
+#include "nsMathMLFrame.h"
+#include "nsMathMLOperators.h"
 
 namespace mozilla {
 class PresShell;
@@ -27,11 +24,6 @@ class PresShell;
  * By overloading Place() in derived classes, it is therefore possible
  * to position children in various customized ways.
  */
-
-// Options for the preferred size at which to stretch our stretchy children
-#define STRETCH_CONSIDER_ACTUAL_SIZE 0x00000001  // just use our current size
-#define STRETCH_CONSIDER_EMBELLISHMENTS \
-  0x00000002  // size calculations include embellishments
 
 class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
  public:
@@ -47,14 +39,15 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   // Overloaded nsMathMLFrame methods -- see documentation in nsIMathMLFrame.h
 
   NS_IMETHOD
-  Stretch(DrawTarget* aDrawTarget, nsStretchDirection aStretchDirection,
+  Stretch(DrawTarget* aDrawTarget, StretchDirection aStretchDirection,
           nsBoundingMetrics& aContainerSize,
           ReflowOutput& aDesiredStretchSize) override;
 
   NS_IMETHOD
-  UpdatePresentationDataFromChildAt(int32_t aFirstIndex, int32_t aLastIndex,
-                                    uint32_t aFlagsValues,
-                                    uint32_t aFlagsToUpdate) override {
+  UpdatePresentationDataFromChildAt(
+      int32_t aFirstIndex, int32_t aLastIndex,
+      MathMLPresentationFlags aFlagsValues,
+      MathMLPresentationFlags aFlagsToUpdate) override {
     PropagatePresentationDataFromChildAt(this, aFirstIndex, aLastIndex,
                                          aFlagsValues, aFlagsToUpdate);
     return NS_OK;
@@ -72,7 +65,7 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   void RemoveFrame(DestroyContext&, ChildListID aListID,
                    nsIFrame* aOldFrame) override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   /**
@@ -85,14 +78,6 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
               const ReflowInput& aReflowInput,
               nsReflowStatus& aStatus) override;
 
-  void DidReflow(nsPresContext* aPresContext,
-                 const ReflowInput* aReflowInput) override
-
-  {
-    mPresentationData.flags &= ~NS_MATHML_STRETCH_DONE;
-    return nsContainerFrame::DidReflow(aPresContext, aReflowInput);
-  }
-
   void BuildDisplayList(nsDisplayListBuilder* aBuilder,
                         const nsDisplayListSet& aLists) override;
 
@@ -104,9 +89,10 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   // following paradigm:
   //
   // 1. If the MathML frame class doesn't have any cached automatic data that
-  //    depends on the attribute: we just reflow (e.g., this happens with
-  //    <msub>, <msup>, <mmultiscripts>, etc). This is the default behavior
-  //    implemented by this base class.
+  //    depends on the attribute:
+  //    1a. If the attribute is taken into account for the layout of the class
+  //    then, we reflow (e.g., this happens with mfrac@linethickness).
+  //    2b. Otherwise, we don't force any reflow.
   //
   // 2. If the MathML frame class has cached automatic data that depends on
   //    the attribute:
@@ -118,13 +104,13 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   //        Therefore, there is an overhead here in that our siblings are
   //        re-laid too (e.g., this happens with <munder>, <mover>,
   //        <munderover>).
-  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+  // nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+  //                           AttrModType aModType) override;
 
   // helper function to apply mirroring to a horizontal coordinate, if needed.
   nscoord MirrorIfRTL(nscoord aParentWidth, nscoord aChildWidth,
                       nscoord aChildLeading) {
-    return StyleVisibility()->mDirection == mozilla::StyleDirection::Rtl
+    return GetWritingMode().IsBidiRTL()
                ? aParentWidth - aChildWidth - aChildLeading
                : aChildLeading;
   }
@@ -156,6 +142,11 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
     // place some radical symbol on top of them and finally add its
     // padding/border around that radical symbol.
     IgnoreBorderPadding,
+
+    // If DoNotAdjustForWidthAndHeight is set, the function will complete
+    // without setting the computed width and height after the math layout. This
+    // can be used similarly to IgnoreBorderPadding above.
+    DoNotAdjustForWidthAndHeight,
   };
   using PlaceFlags = mozilla::EnumSet<PlaceFlag>;
 
@@ -181,29 +172,23 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
    *        any space you want for border/padding in the desired size you
    *        return.
    */
-  virtual nsresult Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                         ReflowOutput& aDesiredSize);
-
-  // MeasureForWidth:
-  //
-  // A method used by nsMathMLContainerFrame::GetIntrinsicISize to get the
-  // width that a particular Place method desires.  For most frames, this will
-  // just call the object's Place method.  However <msqrt> and <menclose> use
-  // nsMathMLContainerFrame::GetIntrinsicISize to measure the child frames as
-  // if in an <mrow>, and so their frames implement MeasureForWidth to use
-  // nsMathMLContainerFrame::Place.
-  virtual nsresult MeasureForWidth(DrawTarget* aDrawTarget,
-                                   ReflowOutput& aDesiredSize);
+  virtual void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+                     ReflowOutput& aDesiredSize);
 
   // helper to re-sync the automatic data in our children and notify our parent
   // to reflow us when changes (e.g., append/insert/remove) happen in our child
   // list
-  virtual nsresult ChildListChanged(int32_t aModType);
+  virtual nsresult ChildListChanged();
 
   // helper to get the preferred size that a container frame should use to fire
   // the stretch on its stretchy child frames.
-  void GetPreferredStretchSize(DrawTarget* aDrawTarget, uint32_t aOptions,
-                               nsStretchDirection aStretchDirection,
+  enum class PreferredStretchSizeMode {
+    Embellishments,
+    EmbellishmentsIfSameStretchDirection,
+  };
+  void GetPreferredStretchSize(DrawTarget* aDrawTarget,
+                               PreferredStretchSizeMode aMode,
+                               StretchDirection aStretchDirection,
                                nsBoundingMetrics& aPreferredStretchSize);
 
   // helper used by mstyle, mphantom, mpadded and mrow in their implementation
@@ -216,8 +201,8 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
    * (typically invalid markup) was encountered during reflow. Parameters are
    * the same as Place().
    */
-  nsresult PlaceAsMrow(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                       ReflowOutput& aDesiredSize);
+  void PlaceAsMrow(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+                   ReflowOutput& aDesiredSize);
 
   /*
    * Helper to call ReportErrorToConsole for parse errors involving
@@ -257,6 +242,18 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
 
   nsMargin GetBorderPaddingForPlace(const PlaceFlags& aFlags);
 
+  struct WidthAndHeightForPlaceAdjustment {
+    mozilla::Maybe<nscoord> width;
+    mozilla::Maybe<nscoord> height;
+  };
+  WidthAndHeightForPlaceAdjustment GetWidthAndHeightForPlaceAdjustment(
+      const PlaceFlags& aFlags);
+
+  virtual bool IsMathContentBoxHorizontallyCentered() const { return false; }
+  nscoord ApplyAdjustmentForWidthAndHeight(
+      const PlaceFlags& aFlags, const WidthAndHeightForPlaceAdjustment& aSizes,
+      ReflowOutput& aReflowOutput, nsBoundingMetrics& aBoundingMetrics);
+
  protected:
   // helper to add the inter-spacing when <math> is the immediate parent.
   // Since we don't (yet) handle the root <math> element ourselves, we need to
@@ -287,7 +284,7 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   static void GetReflowAndBoundingMetricsFor(
       nsIFrame* aFrame, ReflowOutput& aReflowOutput,
       nsBoundingMetrics& aBoundingMetrics,
-      eMathMLFrameType* aMathMLFrameType = nullptr);
+      MathMLFrameType* aMathMLFrameType = nullptr);
 
   // helper method to clear metrics saved with
   // SaveReflowAndBoundingMetricsFor() from all child frames.
@@ -301,16 +298,15 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
 
   // helper to let the update of presentation data pass through
   // a subtree that may contain non-MathML container frames
-  static void PropagatePresentationDataFor(nsIFrame* aFrame,
-                                           uint32_t aFlagsValues,
-                                           uint32_t aFlagsToUpdate);
+  static void PropagatePresentationDataFor(
+      nsIFrame* aFrame, MathMLPresentationFlags aFlagsValues,
+      MathMLPresentationFlags aFlagsToUpdate);
 
  public:
-  static void PropagatePresentationDataFromChildAt(nsIFrame* aParentFrame,
-                                                   int32_t aFirstChildIndex,
-                                                   int32_t aLastChildIndex,
-                                                   uint32_t aFlagsValues,
-                                                   uint32_t aFlagsToUpdate);
+  static void PropagatePresentationDataFromChildAt(
+      nsIFrame* aParentFrame, int32_t aFirstChildIndex, int32_t aLastChildIndex,
+      MathMLPresentationFlags aFlagsValues,
+      MathMLPresentationFlags aFlagsToUpdate);
 
   // Sets flags on aFrame and all descendant frames
   static void PropagateFrameFlagFor(nsIFrame* aFrame, nsFrameState aFlags);
@@ -346,20 +342,13 @@ class nsMathMLContainerFrame : public nsContainerFrame, public nsMathMLFrame {
   // Helper method which positions child frames as an <mrow> on given baseline
   // y = aBaseline starting from x = aOffsetX, calling FinishReflowChild()
   // on the frames.
-  void PositionRowChildFrames(nscoord aOffsetX, nscoord aBaseline);
+  void PositionRowChildFrames(nscoord aOffsetX, nscoord aBaseline,
+                              bool aAddOperatorSpacing = true);
 
   // A variant on FinishAndStoreOverflow() that uses the union of child
   // overflows, the frame bounds, and mBoundingMetrics to set and store the
   // overflow.
   void GatherAndStoreOverflow(ReflowOutput* aMetrics);
-
-  /**
-   * Call DidReflow() if the NS_FRAME_IN_REFLOW frame bit is set on aFirst and
-   * all its next siblings up to, but not including, aStop.
-   * aStop == nullptr meaning all next siblings with the bit set.
-   * The method does nothing if aFirst == nullptr.
-   */
-  static void DidReflowChildren(nsIFrame* aFirst, nsIFrame* aStop = nullptr);
 
   /**
    * Recompute mIntrinsicISize if it's not already up to date.
@@ -398,8 +387,7 @@ class nsMathMLmathBlockFrame final : public nsBlockFrame {
   // mFrames
   void SetInitialChildList(ChildListID aListID,
                            nsFrameList&& aChildList) override {
-    MOZ_ASSERT(aListID == mozilla::FrameChildListID::Principal ||
-                   aListID == mozilla::FrameChildListID::Backdrop,
+    MOZ_ASSERT(aListID == mozilla::FrameChildListID::Principal,
                "unexpected frame list");
     nsBlockFrame::SetInitialChildList(aListID, std::move(aChildList));
     if (aListID == mozilla::FrameChildListID::Principal) {
@@ -520,4 +508,4 @@ class nsMathMLmathInlineFrame final : public nsInlineFrame,
   virtual ~nsMathMLmathInlineFrame() = default;
 };
 
-#endif /* nsMathMLContainerFrame_h___ */
+#endif /* nsMathMLContainerFrame_h_ */

@@ -23,10 +23,16 @@ appmenuitem-new-private-window =
     .label = Nueva ventana privada
 appmenuitem-history =
     .label = Historial
+appmenuitem-tab-groups =
+    .label = Grupos de pestañas
 appmenuitem-downloads =
     .label = Descargas
 appmenuitem-passwords =
     .label = Contraseñas
+appmenuitem-extensions-and-themes =
+    .label = Extensiones y temas
+appmenuitem-extensions =
+    .label = Extensiones
 appmenuitem-addons-and-themes =
     .label = Complementos y temas
 appmenuitem-print =
@@ -108,8 +114,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronizar y guardar datos
 appmenu-fxa-signed-in-label = Iniciar sesión
 appmenu-fxa-setup-sync =
     .label = Activar la sincronización…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Guardar como…
+appmenuitem-fxa-sync-off-title = La sincronización está desactivada
+appmenuitem-fxa-sync-off-description = Proteja y acceda a sus marcadores, contraseñas y más en cualquier lugar.
 
 ## What's New panel in App menu.
 
@@ -163,6 +172,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Mayús+2
     }
+profiler-button-dropmarker =
+    .label = Abrir el panel del analizador
+    .tooltiptext = Abrir el panel del analizador
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +201,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preestablecido para investigar errores de audio y vídeo en { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimedia
+profiler-popup-presets-ml-description = Preestablecido para investigar problemas de machine learning en { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Machine Learning
 profiler-popup-presets-networking-description = Preestablecido para investigar problemas de red en { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Red
@@ -199,6 +214,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Preestablecido para depuración en { -brand-shorter-name } Alta sobrecarga, no lo uses para mejoras de rendimiento sino para enfocarte en comprender el comportamiento del navegador.
 profiler-popup-presets-debug-label =
     .label = Depurar
+profiler-popup-presets-web-compat-description = Ajuste preestablecido recomendado para depurar problemas de compatibilidad en sitios web, en lugar de analizar el rendimiento.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilidad web
 profiler-popup-presets-custom-label =
     .label = Personalizado
 
@@ -264,6 +282,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personalizar barra de herramientas…
+appmenu-abouttranslations =
+    .label = Traducir…
 appmenu-developer-tools-subheader = Herramientas del navegador
 appmenu-developer-tools-extensions =
     .label = Extensiones para desarrolladores
@@ -277,5 +297,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Reciba alertas sobre filtraciones de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Enmascare su correo electrónico y teléfono reales
+appmenuitem-services-relay-description = Iniciar el panel de máscaras de correo electrónico
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Obtener protección para todo el dispositivo
 appmenuitem-vpn-description = Proteja su privacidad en línea.
+appmenu-services-header = Mis servicios
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Pruebe otras herramientas de protección de Mozilla:
+appmenu-other-protection-header = Pruebe otras herramientas de protección de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Otros perfiles
+appmenu-manage-profiles =
+    .label = Administrar perfiles
+appmenu-copy-profile =
+    .label = Copiar este perfil
+appmenu-create-profile =
+    .label = Nuevo perfil
+appmenu-edit-profile =
+    .aria-label = Editar perfil
+appmenu-profiles-2 =
+    .label = Perfiles

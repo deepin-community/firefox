@@ -11,6 +11,8 @@ neterror-blocked-by-policy-page-title = Blocked Page
 neterror-captive-portal-page-title = Log in to network
 neterror-dns-not-found-title = Server Not Found
 neterror-malformed-uri-page-title = Invalid URL
+general-body-title = Be careful. Something doesn’t look right.
+problem-with-this-site-title = Looks like there’s a problem with this site
 
 ## Error page actions
 
@@ -22,17 +24,15 @@ neterror-override-exception-button = Accept the Risk and Continue
 neterror-pref-reset-button = Restore default settings
 neterror-return-to-previous-page-button = Go Back
 neterror-return-to-previous-page-recommended-button = Go Back (Recommended)
-neterror-try-again-button = Try Again
+neterror-try-again-button-2 = Try Again
+    .accesskey = T
 neterror-add-exception-button = Always continue for this site
 neterror-settings-button = Change DNS settings
 neterror-view-certificate-link = View Certificate
-neterror-trr-continue-this-time = Continue this time
-neterror-disable-native-feedback-warning = Always continue
 
 ##
 
 neterror-pref-reset = It looks like your network security settings might be causing this. Do you want the default settings to be restored?
-neterror-error-reporting-automatic = Report errors like this to help { -vendor-short-name } identify and block malicious sites
 
 ## Specific error messages
 
@@ -41,6 +41,14 @@ neterror-generic-error = { -brand-short-name } can’t load this page for some r
 neterror-load-error-try-again = The site could be temporarily unavailable or too busy. Try again in a few moments.
 neterror-load-error-connection = If you are unable to load any pages, check your computer’s network connection.
 neterror-load-error-firewall = If your computer or network is protected by a firewall or proxy, make sure that { -brand-short-name } is permitted to access the web.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = If you are trying to load a local network page, please check that { -brand-short-name } has been granted Local Network permissions in the macOS Privacy & Security settings.
+
+neterror-http-error-page = Check to make sure you’ve typed the website address correctly.
+neterror-http-empty-response = Check to make sure you’ve typed the website address correctly and try again in a few moments.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } sent back an empty page.
 
 neterror-captive-portal = You must log in to this network before you can access the internet.
 
@@ -51,6 +59,10 @@ neterror-dns-not-found-hint-header = <strong>If you entered the right address, y
 neterror-dns-not-found-hint-try-again = Try again later
 neterror-dns-not-found-hint-check-network = Check your network connection
 neterror-dns-not-found-hint-firewall = Check that { -brand-short-name } has permission to access the web (you might be connected but behind a firewall)
+neterror-dns-not-found-offline-hint-header = <strong>What can you do about it?</strong>
+neterror-dns-not-found-offline-hint-different-device = Try connecting on a different device.
+neterror-dns-not-found-offline-hint-modem = Check your modem or router.
+neterror-dns-not-found-offline-hint-reconnect = Disconnect and reconnect to Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -62,25 +74,21 @@ neterror-dns-not-found-trr-third-party-warning2 = You can continue with your def
 
 neterror-dns-not-found-trr-only-could-not-connect = { -brand-short-name } wasn’t able to connect to { $trrDomain }.
 neterror-dns-not-found-trr-only-timeout = The connection to { $trrDomain } took longer than expected.
-neterror-dns-not-found-trr-offline = You are not connected to the internet.
 neterror-dns-not-found-trr-unknown-host2 = This website wasn’t found by { $trrDomain }.
 neterror-dns-not-found-trr-server-problem = There was a problem with { $trrDomain }.
 neterror-dns-not-found-bad-trr-url = Invalid URL.
 neterror-dns-not-found-system-sleep = System is in sleep mode.
 neterror-dns-not-found-trr-unknown-problem = Unexpected problem.
 
-## Native fallback specific messages
-## Variables:
-##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
-
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } can’t protect your request for this site’s address through our secure DNS provider. Here’s why:
-neterror-dns-not-found-native-fallback-heuristic = DNS over HTTPS has been disabled on your network.
-neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } wasn’t able to connect to { $trrDomain }.
-
 ##
 
 neterror-file-not-found-filename = Check the file name for capitalization or other typing errors.
 neterror-file-not-found-moved = Check to see if the file was moved, renamed or deleted.
+
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = { -brand-short-name } can’t find the file at <strong>{ $path }</strong>. It either doesn’t exist or the path is incorrect.
+neterror-file-not-found-what-can-you-do = If you typed the address manually, check for capitalization mistakes or typos in the file name or path. If you followed a saved bookmark or link, the file may have been moved, renamed, or deleted since it was saved. Try locating it using your file manager or a recent search.
 
 neterror-access-denied = It may have been removed, moved, or file permissions may be preventing access.
 
@@ -88,8 +96,7 @@ neterror-unknown-protocol = You might need to install other software to open thi
 
 neterror-redirect-loop = This problem can sometimes be caused by disabling or refusing to accept cookies.
 
-neterror-unknown-socket-type-psm-installed = Check to make sure your system has the Personal Security Manager installed.
-neterror-unknown-socket-type-server-config = This might be due to a non-standard configuration on the server.
+neterror-unknown-socket-type-client-config = This might be due to a configuration error with your client.
 
 neterror-not-cached-intro = The requested document is not available in { -brand-short-name }’s cache.
 neterror-not-cached-sensitive = As a security precaution, { -brand-short-name } does not automatically re-request sensitive documents.
@@ -107,6 +114,10 @@ neterror-proxy-connect-failure-contact-admin = Contact your network administrato
 neterror-content-encoding-error = Please contact the website owners to inform them of this problem.
 
 neterror-unsafe-content-type = Please contact the website owners to inform them of this problem.
+
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } doesn’t trust { $hostname } because the connection isn’t secure. Try changing the URL to HTTPS.
 
 neterror-nss-failure-not-verified = The page you are trying to view cannot be shown because the authenticity of the received data could not be verified.
 neterror-nss-failure-contact-website = Please contact the website owners to inform them of this problem.
@@ -174,3 +185,58 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = If you are not familiar wit
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> has a security policy called HTTP Strict Transport Security (HSTS), which means that { -brand-short-name } can only connect to it securely. You can’t add an exception to visit this site.
+
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Probably nothing, since it’s likely there’s a problem with the site itself.
+
+certerror-blocked-by-corp-headers-description = Sometimes websites set up protections for themselves and people like you from unwanted interactions with other sites.
+certerror-coop-learn-more = Learn more about Cross Origin Opener Policies (COOP)
+certerror-coep-learn-more = Learn more about Cross Origin Embedder Policies (COEP)
+
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Error code: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Looks like there’s a problem with your internet connection
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } can’t create a secure connection to the server at { $hostname }.
+fp-neterror-offline-intro = { -brand-short-name } can’t connect to the server at <strong>{ $hostname }</strong>
+fp-neterror-offline-intro-2 = { -brand-short-name } can’t connect to the server at <strong>{ $hostname }</strong>.
+fp-neterror-net-timeout-intro = The server at <strong>{ $hostname }</strong> is taking too long to respond.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = The server at <strong>{ $hostname }</strong> sent back an error: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = <strong>{ $hostname }</strong> sent back a header with empty characters not allowed by web security standards.
+fp-neterror-content-encoding-intro = The page you are trying to view cannot be shown because it uses an invalid or unsupported form of compression.
+fp-neterror-coop-coep-intro = { -brand-short-name } didn’t load this page because it looks like the security configuration doesn’t match the previous page.
+fp-neterror-blocked-by-policy-intro = Your organization has blocked access to this page or website.
+fp-neterror-http-auth-disabled-intro = Someone pretending to be the site could try to steal things like your username, password, or email.
+fp-neterror-http-auth-disabled-secure-connection = This site requires a secure connection, and you can’t add an exception to visit it.
+
+fp-neterror-why-did-this-happen = Why did this happen?
+
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = It looks like this site is using old software with known security issues.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } doesn’t trust { $hostname } because the connection isn’t secure.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Make sure you’re using the latest version of { -brand-short-name }. Go to Help > About { -brand-short-name } in the menu. If you’re using the latest { -brand-short-name }, the problem is most likely with the site itself.
+fp-neterror-offline-what-can-you-do-body = Try connecting on a different device. Check your modem or router. Disconnect and reconnect to Wi-Fi.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Try changing the URL to HTTPS. But it’s likely there’s a problem with the site itself.
+
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Sometimes websites set up protections for themselves from unwanted interactions with other sites.
+fp-learn-more-about-https-connections = Learn about HTTPS connections
+
+fp-neterror-vpn-error-title = Couldn’t connect to VPN
+fp-neterror-vpn-error-description = Try again in a few minutes.
+
+fp-neterror-denied-port-access = This address uses a network port which is normally used for purposes other than Web browsing. { -brand-short-name } has canceled the request for your protection.

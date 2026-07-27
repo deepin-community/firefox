@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = פתיחת קישור בלשונית חדשה
     .accesskey = ל
+main-context-menu-open-link-split-view =
+    .label = פתיחת קישור בתצוגה מפוצלת
+    .accesskey = צ
 main-context-menu-open-link-container-tab =
     .label = פתיחת קישור במגירת לשוניות חדשה
     .accesskey = מ
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = שמירת קישור אל { -pocket-brand-name }
     .accesskey = מ
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = העתקת כתובת דוא״ל
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = העתקת קישור
     .accesskey = ה
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = העתקת קישור ללא מעקב האתר
+main-context-menu-preview-link =
+    .label = תצוגה מקדימה לקישור
     .accesskey = ה
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = העתקת קישור נקי
+    .accesskey = נ
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = הסתרת פקדים
     .accesskey = פ
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = מסך מלא
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = הצגת תיאור
     .accesskey = ת
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = חיפוש תמונה באמצעות { $engine }
+    .accesskey = ת
 main-context-menu-video-save-as =
     .label = שמירת וידאו בשם…
     .accesskey = מ
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = שליחת אודיו בדוא״ל…
     .accesskey = א
+main-context-menu-send-to-device-2 =
+    .label = שליחה למכשיר
+    .accesskey = ש
+main-context-menu-send-to-mobile-2 =
+    .label = שליחה לנייד
+    .accesskey = ש
+main-context-menu-send-to-mobile-sign-in = יש להתחבר כדי לשלוח לשוניות
+main-context-menu-send-to-mobile-enable-sync2 = יש להפעיל סנכרון כדי לשלוח לשונית
+main-context-menu-send-to-mobile-connect-phone2 = חיבור לטלפון שלך
+main-context-menu-send-to-mobile-device-missing2 = לא רואה את המכשיר שלך?
+main-context-menu-send-to-mobile-sign-in-from-link = יש להתחבר כדי לשלוח קישור
+main-context-menu-send-to-mobile-sign-in-from-page = יש להתחבר כדי לשלוח דף
+main-context-menu-send-to-mobile-enable-sync3 = יש להפעיל את הסנכרון כדי לשלוח לשוניות
+main-context-menu-send-to-mobile-enable-sync-from-link = יש להפעיל את הסנכרון כדי לשלוח קישור
+main-context-menu-send-to-mobile-enable-sync-from-page = יש להפעיל את הסנכרון כדי לשלוח דף
+main-context-menu-send-to-mobile-connect-phone3 = יש לחבר מכשיר כדי לשלוח לשוניות
+main-context-menu-send-to-mobile-connect-phone-from-link = יש לחבר מכשיר כדי לשלוח קישור
+main-context-menu-send-to-mobile-connect-phone-from-page = יש לחבר מכשיר כדי לשלוח דף
 main-context-menu-save-to-pocket =
     .label = שמירת דף אל { -pocket-brand-name }
     .accesskey = ש
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = שליחת דף למכשיר
     .accesskey = מ
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = שימוש בכניסה שמורה
@@ -305,7 +331,7 @@ main-context-menu-use-saved-password =
 ##
 
 main-context-menu-use-relay-mask =
-    .label = שימוש במסיכת דוא״ל של { -relay-brand-short-name }
+    .label = שימוש במסכת דוא״ל של { -relay-brand-short-name }
     .accesskey = ד
 main-context-menu-suggest-strong-password =
     .label = קבלת הצעה לססמה חזקה…
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = הוספת מילת מפתח לחיפוש זה…
     .accesskey = ס
+main-context-menu-add-engine =
+    .label = הוספת מנוע חיפוש
+    .accesskey = ח
 main-context-menu-link-send-to-device =
     .label = שליחת קישור למכשיר
     .accesskey = מ
+main-context-menu-link-send-to-mobile =
+    .label = שליחת קישור לנייד
+    .accesskey = ל
 main-context-menu-frame =
     .label = מסגרת זו
     .accesskey = ג
@@ -356,7 +388,7 @@ main-context-menu-print-selection-2 =
     .label = הדפסת הקטע הנבחר…
     .accesskey = ד
 main-context-menu-view-selection-source =
-    .label = הצגת קוד מקור של קטע נבחר
+    .label = הצגת קוד מקור של הקטע הנבחר
     .accesskey = ה
 main-context-menu-take-screenshot =
     .label = צילום מסך
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = הצגת ססמה
     .accesskey = ה
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = חדש
+main-context-menu-pdfjs-copy-page =
+    .label = העתקת עמוד
+main-context-menu-pdfjs-cut-page =
+    .label = גזירת עמוד
+main-context-menu-pdfjs-delete-page =
+    .label = מחיקת עמוד
+main-context-menu-pdfjs-save-page =
+    .label = שמירת הבחירה בשם…

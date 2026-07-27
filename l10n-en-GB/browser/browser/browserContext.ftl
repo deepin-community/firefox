@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Open Link in New Tab
     .accesskey = T
+main-context-menu-open-link-split-view =
+    .label = Open Link in Split View
+    .accesskey = M
 main-context-menu-open-link-container-tab =
     .label = Open Link in New Container Tab
     .accesskey = w
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Save Link to { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Copy Email Address
@@ -162,10 +163,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copy Link
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copy Link Without Site Tracking
+main-context-menu-preview-link =
+    .label = Preview Link
+    .accesskey = J
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copy Clean Link
     .accesskey = u
 
 ## Media (video/audio) controls
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Hide Controls
     .accesskey = C
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Full Screen
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = View Description
     .accesskey = D
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Search Image with { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Save Video As…
     .accesskey = v
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Email Audio…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Send to Device
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Send to Mobile
+    .accesskey = n
+main-context-menu-send-to-mobile-sign-in = Sign in to Send Tabs
+main-context-menu-send-to-mobile-enable-sync2 = Enable synchronisation to send a tab
+main-context-menu-send-to-mobile-connect-phone2 = Connect your phone
+main-context-menu-send-to-mobile-device-missing2 = Don’t See Your Device?
+main-context-menu-send-to-mobile-sign-in-from-link = Sign in to Send a Link
+main-context-menu-send-to-mobile-sign-in-from-page = Sign in to Send a Page
+main-context-menu-send-to-mobile-enable-sync3 = Turn on Sync to Send Tabs
+main-context-menu-send-to-mobile-enable-sync-from-link = Turn on Sync to Send a Link
+main-context-menu-send-to-mobile-enable-sync-from-page = Turn on Sync to Send a Page
+main-context-menu-send-to-mobile-connect-phone3 = Connect a Device to Send Tabs
+main-context-menu-send-to-mobile-connect-phone-from-link = Connect a Device to Send a Link
+main-context-menu-send-to-mobile-connect-phone-from-page = Connect a Device to Send a Page
 main-context-menu-save-to-pocket =
     .label = Save Page to { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Send Page to Device
     .accesskey = n
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Use Saved Login
@@ -319,8 +345,14 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Add a Keyword for this Search…
     .accesskey = K
+main-context-menu-add-engine =
+    .label = Add Search Engine
+    .accesskey = S
 main-context-menu-link-send-to-device =
     .label = Send Link to Device
+    .accesskey = n
+main-context-menu-link-send-to-mobile =
+    .label = Send Link to Mobile
     .accesskey = n
 main-context-menu-frame =
     .label = This Frame
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Reveal Password
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = New
+main-context-menu-pdfjs-copy-page =
+    .label = Copy page
+main-context-menu-pdfjs-cut-page =
+    .label = Cut page
+main-context-menu-pdfjs-delete-page =
+    .label = Delete page
+main-context-menu-pdfjs-save-page =
+    .label = Save selection as…

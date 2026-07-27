@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Papar
 download-cert-view-text = Periksa sijil CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Dikeluarkan oleh: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Disimpan dalam: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ingati keputusan ini
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Kata laluan sandaran sijil (lagi):
 set-password-reminder = Penting: Jika anda lupa kata laluan sandaran sijil anda, anda tidak akan dapat pulihkan sandaran ini lagi.  Sila catat di lokasi yang selamat.
-
-## Protected authentication alert
-

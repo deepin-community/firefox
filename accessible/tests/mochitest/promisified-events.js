@@ -8,14 +8,15 @@
 // globals from there.
 /* import-globals-from common.js */
 
-/* exported EVENT_ANNOUNCEMENT, EVENT_REORDER, EVENT_SCROLLING,
+/* exported EVENT_ANNOUNCEMENT, EVENT_ALERT, EVENT_REORDER, EVENT_SCROLLING,
             EVENT_SCROLLING_END, EVENT_SHOW, EVENT_TEXT_INSERTED,
             EVENT_TEXT_REMOVED, EVENT_DOCUMENT_LOAD_COMPLETE, EVENT_HIDE,
             EVENT_TEXT_ATTRIBUTE_CHANGED, EVENT_TEXT_CARET_MOVED, EVENT_SELECTION,
             EVENT_DESCRIPTION_CHANGE, EVENT_NAME_CHANGE, EVENT_STATE_CHANGE,
             EVENT_VALUE_CHANGE, EVENT_TEXT_VALUE_CHANGE, EVENT_FOCUS,
             EVENT_DOCUMENT_RELOAD, EVENT_VIRTUALCURSOR_CHANGED, EVENT_ALERT,
-            EVENT_OBJECT_ATTRIBUTE_CHANGED, UnexpectedEvents, waitForEvent,
+            EVENT_OBJECT_ATTRIBUTE_CHANGED, EVENT_MENUPOPUP_START, EVENT_MENUPOPUP_END, EVENT_ERRORMESSAGE_CHANGED,
+            UnexpectedEvents, waitForEvent,
             waitForEvents, waitForOrderedEvents, waitForStateChange,
             stateChangeEventArgs */
 
@@ -28,6 +29,8 @@ const EVENT_SCROLLING = nsIAccessibleEvent.EVENT_SCROLLING;
 const EVENT_SCROLLING_START = nsIAccessibleEvent.EVENT_SCROLLING_START;
 const EVENT_SCROLLING_END = nsIAccessibleEvent.EVENT_SCROLLING_END;
 const EVENT_SELECTION = nsIAccessibleEvent.EVENT_SELECTION;
+const EVENT_SELECTION_ADD = nsIAccessibleEvent.EVENT_SELECTION_ADD;
+const EVENT_SELECTION_REMOVE = nsIAccessibleEvent.EVENT_SELECTION_REMOVE;
 const EVENT_SELECTION_WITHIN = nsIAccessibleEvent.EVENT_SELECTION_WITHIN;
 const EVENT_SHOW = nsIAccessibleEvent.EVENT_SHOW;
 const EVENT_STATE_CHANGE = nsIAccessibleEvent.EVENT_STATE_CHANGE;
@@ -52,6 +55,12 @@ const EVENT_LIVE_REGION_REMOVED = nsIAccessibleEvent.EVENT_LIVE_REGION_REMOVED;
 const EVENT_OBJECT_ATTRIBUTE_CHANGED =
   nsIAccessibleEvent.EVENT_OBJECT_ATTRIBUTE_CHANGED;
 const EVENT_INNER_REORDER = nsIAccessibleEvent.EVENT_INNER_REORDER;
+const EVENT_MENU_START = nsIAccessibleEvent.EVENT_MENU_START;
+const EVENT_MENU_END = nsIAccessibleEvent.EVENT_MENU_END;
+const EVENT_MENUPOPUP_START = nsIAccessibleEvent.EVENT_MENUPOPUP_START;
+const EVENT_MENUPOPUP_END = nsIAccessibleEvent.EVENT_MENUPOPUP_END;
+const EVENT_ERRORMESSAGE_CHANGED =
+  nsIAccessibleEvent.EVENT_ERRORMESSAGE_CHANGED;
 
 const EventsLogger = {
   enabled: false,
@@ -65,6 +74,7 @@ const EventsLogger = {
 
 /**
  * Describe an event in string format.
+ *
  * @param  {nsIAccessibleEvent}  event  event to strigify
  */
 function eventToString(event) {
@@ -93,13 +103,14 @@ function matchEvent(event, matchCriteria) {
 
   let acc = event.accessible;
   switch (typeof matchCriteria) {
-    case "string":
+    case "string": {
       let id = getAccessibleDOMNodeID(acc);
       if (id === matchCriteria) {
         EventsLogger.log(`Event matches DOMNode id: ${id}`);
         return true;
       }
       break;
+    }
     case "function":
       if (matchCriteria(event)) {
         EventsLogger.log(
@@ -129,12 +140,13 @@ function matchEvent(event, matchCriteria) {
  * A helper function that returns a promise that resolves when an accessible
  * event of the given type with the given target (defined by its id or
  * accessible) is observed.
- * @param  {Number}                eventType        expected accessible event
+ *
+ * @param  {number}                eventType        expected accessible event
  *                                                  type
- * @param  {String|nsIAccessible|Function}  matchCriteria  expected content
+ * @param  {string | nsIAccessible | Function}  matchCriteria  expected content
  *                                                         element id
  *                                                         for the event
- * @param  {String}                message          Message to prepend to logging.
+ * @param  {string}                message          Message to prepend to logging.
  * @return {Promise}                                promise that resolves to an
  *                                                  event
  */
@@ -202,6 +214,34 @@ class UnexpectedEvents {
     }
   }
 
+  async flush(invokerOrWindow = null) {
+    let flushQueue = async win => {
+      // Flush all notifications or queued a11y events.
+      win.windowUtils.advanceTimeAndRefresh(100);
+
+      // Flush all DOM async events.
+      await new Promise(r => win.setTimeout(r, 0));
+
+      // Flush all notifications or queued a11y events resulting from async DOM events.
+      win.windowUtils.advanceTimeAndRefresh(100);
+
+      // Flush all notifications or a11y events that may have been queued in the last tick.
+      win.windowUtils.advanceTimeAndRefresh(100);
+
+      // Return refresh to normal.
+      win.windowUtils.restoreNormalRefresh();
+    };
+
+    if (invokerOrWindow instanceof Function) {
+      await invokerOrWindow([flushQueue.toString()], async _flushQueue => {
+        // eslint-disable-next-line no-eval, no-undef
+        await eval(_flushQueue)(content);
+      });
+    } else {
+      await flushQueue(invokerOrWindow ? invokerOrWindow : window);
+    }
+  }
+
   stop() {
     if (this.unexpected) {
       Services.obs.removeObserver(this, "accessible-event");
@@ -212,11 +252,12 @@ class UnexpectedEvents {
 /**
  * A helper function that waits for a sequence of accessible events in
  * specified order.
+ *
  * @param {Array}   events          a list of events to wait (same format as
  *                                   waitForEvent arguments)
- * @param {String}  message         Message to prepend to logging.
- * @param {Boolean} ordered         Events need to be received in given order.
- * @param {Object}  invokerOrWindow a local window or a special content invoker
+ * @param {string}  message         Message to prepend to logging.
+ * @param {boolean} ordered         Events need to be received in given order.
+ * @param {object}  invokerOrWindow a local window or a special content invoker
  *                                   it takes a list of arguments and a task
  *                                   function.
  */
@@ -244,31 +285,7 @@ async function waitForEvents(
   );
 
   if (unexpectedListener) {
-    let flushQueue = async win => {
-      // Flush all notifications or queued a11y events.
-      win.windowUtils.advanceTimeAndRefresh(100);
-
-      // Flush all DOM async events.
-      await new Promise(r => win.setTimeout(r, 0));
-
-      // Flush all notifications or queued a11y events resulting from async DOM events.
-      win.windowUtils.advanceTimeAndRefresh(100);
-
-      // Flush all notifications or a11y events that may have been queued in the last tick.
-      win.windowUtils.advanceTimeAndRefresh(100);
-
-      // Return refresh to normal.
-      win.windowUtils.restoreNormalRefresh();
-    };
-
-    if (invokerOrWindow instanceof Function) {
-      await invokerOrWindow([flushQueue.toString()], async _flushQueue => {
-        // eslint-disable-next-line no-eval, no-undef
-        await eval(_flushQueue)(content);
-      });
-    } else {
-      await flushQueue(invokerOrWindow ? invokerOrWindow : window);
-    }
+    await unexpectedListener.flush(invokerOrWindow);
 
     unexpectedListener.stop();
   }
@@ -316,6 +333,7 @@ function waitForStateChange(id, state, isEnabled, isExtra = false) {
  * before setting focus to it. This simulates behavio with the keyboard when
  * tabbing to the element. This does explicitly what synthFocus did implicitly.
  * This should be called only if you really want this behavior.
+ *
  * @param  {string}  id  The element ID to focus
  */
 function selectAllTextAndFocus(id) {

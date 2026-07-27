@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 import datetime
 import enum
@@ -43,7 +41,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         # the wrench source code.
         self.wrench_dir = "/data/data/org.mozilla.wrench/files/wrench"
 
-        super(AndroidWrench, self).__init__()
+        super().__init__()
 
         # Override AndroidMixin's use_root to ensure we use run-as instead of
         # root to push and pull files from the device, as the latter fails due
@@ -84,7 +82,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         abs_dirs["abs_work_dir"] = os.path.expanduser("~/.wrench")
         if os.environ.get("MOZ_AUTOMATION", "0") == "1":
             # In automation use the standard work dir if there is one
-            parent_abs_dirs = super(AndroidWrench, self).query_abs_dirs()
+            parent_abs_dirs = super().query_abs_dirs()
             if "abs_work_dir" in parent_abs_dirs:
                 abs_dirs["abs_work_dir"] = parent_abs_dirs["abs_work_dir"]
 
@@ -131,7 +129,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         logcat_cmd = [self.adb_path, "-s", self.device_serial, "logcat", "-c"]
         self.info(" ".join(logcat_cmd))
         subprocess.check_call(logcat_cmd)
-        super(AndroidWrench, self).logcat_start()
+        super().logcat_start()
 
     def wait_until_process_done(self, process_name, timeout):
         """Waits until the specified process has exited. Polls the process list
@@ -192,6 +190,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
             app_name="org.mozilla.wrench",
             activity_name="android.app.NativeActivity",
             intent=None,
+            grant_runtime_permissions=False,
         )
         self.info("App launched")
         done = self.wait_until_process_done("org.mozilla.wrench", timeout=timeout)
@@ -208,7 +207,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         """
         logfile = tempfile.NamedTemporaryFile()
         self.device.pull(self.wrench_dir + "/stdout", logfile.name)
-        with open(logfile.name, "r", encoding="utf-8") as f:
+        with open(logfile.name, encoding="utf-8") as f:
             self.info("=== scraped log output ===")
             for line in f:
                 if "UNEXPECTED-FAIL" in line or "panicked" in line:
@@ -237,6 +236,8 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         self.verify_device()
         self.info("Logging device properties...")
         self.info(self.shell_output("getprop", attempts=3))
+        self.info("Uninstalling APK...")
+        self.device.uninstall_app("org.mozilla.wrench")
         self.info("Installing APK...")
         self.install_android_app(self.query_abs_dirs()["abs_apk_path"], replace=True)
 
@@ -278,7 +279,7 @@ class AndroidWrench(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
     def check_errors(self):
         if self._errored:
             self.info("Errors encountered, terminating with error code...")
-            exit(EXIT_STATUS_DICT[TBPL_FAILURE])
+            sys.exit(EXIT_STATUS_DICT[TBPL_FAILURE])
 
 
 if __name__ == "__main__":

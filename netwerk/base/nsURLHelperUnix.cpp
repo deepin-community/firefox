@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=4 sw=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -51,14 +49,7 @@ nsresult net_GetURLSpecFromActualFile(nsIFile* aFile, nsACString& result) {
 }
 
 nsresult net_GetFileFromURLSpec(const nsACString& aURL, nsIFile** result) {
-  // NOTE: See also the implementation in nsURLHelperOSX.cpp,
-  // which is based on this.
-
   nsresult rv;
-
-  nsCOMPtr<nsIFile> localFile;
-  rv = NS_NewNativeLocalFile(""_ns, true, getter_AddRefs(localFile));
-  if (NS_FAILED(rv)) return rv;
 
   nsAutoCString directory, fileBaseName, fileExtension, path;
 
@@ -85,25 +76,5 @@ nsresult net_GetFileFromURLSpec(const nsACString& aURL, nsIFile** result) {
   NS_UnescapeURL(path);
   if (path.Length() != strlen(path.get())) return NS_ERROR_FILE_INVALID_PATH;
 
-  if (IsUtf8(path)) {
-    // speed up the start-up where UTF-8 is the native charset
-    // (e.g. on recent Linux distributions)
-    if (NS_IsNativeUTF8()) {
-      rv = localFile->InitWithNativePath(path);
-    } else {
-      rv = localFile->InitWithPath(NS_ConvertUTF8toUTF16(path));
-    }
-    // XXX In rare cases, a valid UTF-8 string can be valid as a native
-    // encoding (e.g. 0xC5 0x83 is valid both as UTF-8 and Windows-125x).
-    // However, the chance is very low that a meaningful word in a legacy
-    // encoding is valid as UTF-8.
-  } else {
-    // if path is not in UTF-8, assume it is encoded in the native charset
-    rv = localFile->InitWithNativePath(path);
-  }
-
-  if (NS_FAILED(rv)) return rv;
-
-  localFile.forget(result);
-  return NS_OK;
+  return NS_NewNativeLocalFile(path, result);
 }

@@ -2,17 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { BaseFeature } from "resource:///modules/urlbar/private/BaseFeature.sys.mjs";
+import { SuggestProvider } from "moz-src:///browser/components/urlbar/private/SuggestFeature.sys.mjs";
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
-  QuickSuggest: "resource:///modules/QuickSuggest.sys.mjs",
-  SuggestionsMap: "resource:///modules/urlbar/private/SuggestBackendJs.sys.mjs",
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
-  UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
-  UrlbarUtils: "resource:///modules/UrlbarUtils.sys.mjs",
+  QuickSuggest: "moz-src:///browser/components/urlbar/QuickSuggest.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
+  UrlbarResult: "moz-src:///browser/components/urlbar/UrlbarResult.sys.mjs",
+  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
 });
 
 const UTM_PARAMS = {
@@ -21,86 +20,30 @@ const UTM_PARAMS = {
 };
 
 const RESULT_MENU_COMMAND = {
+  DISMISS: "dismiss",
   MANAGE: "manage",
   NOT_INTERESTED: "not_interested",
-  NOT_RELEVANT: "not_relevant",
   SHOW_LESS_FREQUENTLY: "show_less_frequently",
 };
 
 /**
  * A feature that supports Addon suggestions.
  */
-export class AddonSuggestions extends BaseFeature {
-  get shouldEnable() {
-    return (
-      lazy.UrlbarPrefs.get("addonsFeatureGate") &&
-      lazy.UrlbarPrefs.get("suggest.addons") &&
-      lazy.UrlbarPrefs.get("suggest.quicksuggest.nonsponsored")
-    );
+export class AddonSuggestions extends SuggestProvider {
+  get enablingPreferences() {
+    return ["addonsFeatureGate", "suggest.addons", "suggest.quicksuggest.all"];
   }
 
-  get enablingPreferences() {
-    return ["suggest.addons", "suggest.quicksuggest.nonsponsored"];
+  get primaryUserControlledPreferences() {
+    return ["suggest.addons"];
   }
 
   get merinoProvider() {
     return "amo";
   }
 
-  get rustSuggestionTypes() {
-    return ["Amo"];
-  }
-
-  enable(enabled) {
-    if (enabled) {
-      lazy.QuickSuggest.jsBackend.register(this);
-    } else {
-      lazy.QuickSuggest.jsBackend.unregister(this);
-      this.#suggestionsMap?.clear();
-    }
-  }
-
-  queryRemoteSettings(searchString) {
-    const suggestions = this.#suggestionsMap?.get(searchString);
-    if (!suggestions) {
-      return [];
-    }
-
-    return suggestions.map(suggestion => ({
-      icon: suggestion.icon,
-      url: suggestion.url,
-      title: suggestion.title,
-      description: suggestion.description,
-      guid: suggestion.guid,
-      score: suggestion.score,
-    }));
-  }
-
-  async onRemoteSettingsSync(rs) {
-    const records = await rs.get({ filters: { type: "amo-suggestions" } });
-    if (!this.isEnabled) {
-      return;
-    }
-
-    const suggestionsMap = new lazy.SuggestionsMap();
-
-    for (const record of records) {
-      const { buffer } = await rs.attachments.download(record);
-      if (!this.isEnabled) {
-        return;
-      }
-
-      const results = JSON.parse(new TextDecoder("utf-8").decode(buffer));
-      await suggestionsMap.add(results, {
-        mapKeyword:
-          lazy.SuggestionsMap.MAP_KEYWORD_PREFIXES_STARTING_AT_FIRST_WORD,
-      });
-      if (!this.isEnabled) {
-        return;
-      }
-    }
-
-    this.#suggestionsMap = suggestionsMap;
+  get rustSuggestionType() {
+    return "Amo";
   }
 
   async makeResult(queryContext, suggestion, searchString) {
@@ -110,18 +53,11 @@ export class AddonSuggestions extends BaseFeature {
       return null;
     }
 
-    // If the user hasn't clicked the "Show less frequently" command, the
-    // suggestion can be shown. Otherwise, the suggestion can be shown if the
-    // user typed more than one word with at least `showLessFrequentlyCount`
-    // characters after the first word, including spaces.
-    if (this.showLessFrequentlyCount) {
-      let spaceIndex = searchString.search(/\s/);
-      if (
-        spaceIndex < 0 ||
-        searchString.length - spaceIndex < this.showLessFrequentlyCount
-      ) {
-        return null;
-      }
+    if (
+      this.showLessFrequentlyCount &&
+      searchString.length < this.#minKeywordLength
+    ) {
+      return null;
     }
 
     const { guid } =
@@ -135,11 +71,6 @@ export class AddonSuggestions extends BaseFeature {
       return null;
     }
 
-    if (suggestion.source == "rust") {
-      suggestion.icon = suggestion.iconUrl;
-      delete suggestion.iconUrl;
-    }
-
     // Set UTM params unless they're already defined. This allows remote
     // settings or Merino to override them if need be.
     let url = new URL(suggestion.url);
@@ -149,66 +80,59 @@ export class AddonSuggestions extends BaseFeature {
       }
     }
 
-    const payload = {
-      url: url.href,
-      originalUrl: suggestion.url,
-      shouldShowUrl: true,
-      title: suggestion.title,
-      description: suggestion.description,
-      bottomTextL10n: { id: "firefox-suggest-addons-recommended" },
-      helpUrl: lazy.QuickSuggest.HELP_URL,
-    };
-
-    return Object.assign(
-      new lazy.UrlbarResult(
-        lazy.UrlbarUtils.RESULT_TYPE.URL,
-        lazy.UrlbarUtils.RESULT_SOURCE.SEARCH,
-        ...lazy.UrlbarResult.payloadAndSimpleHighlights(
-          queryContext.tokens,
-          payload
-        )
-      ),
-      {
-        isBestMatch: true,
-        suggestedIndex: 1,
-        isRichSuggestion: true,
-        richSuggestionIconSize: 24,
-        showFeedbackMenu: true,
-      }
-    );
+    return new lazy.UrlbarResult({
+      type: lazy.UrlbarUtils.RESULT_TYPE.URL,
+      source: lazy.UrlbarUtils.RESULT_SOURCE.SEARCH,
+      isBestMatch: true,
+      isBottomUrlSuggestion: true,
+      suggestedIndex: 1,
+      richSuggestionIconSize: 24,
+      payload: {
+        url: url.href,
+        originalUrl: suggestion.url,
+        // Rust uses `iconUrl` but Merino uses `icon`.
+        icon: suggestion.iconUrl ?? suggestion.icon,
+        title: suggestion.title,
+        subtitleL10n: { id: "urlbar-result-addons-subtitle" },
+        description: suggestion.description,
+        bottomTextL10n: {
+          id: "urlbar-result-suggestion-recommended",
+        },
+      },
+    });
   }
 
+  /**
+   * Gets the list of commands that should be shown in the result menu for a
+   * given result from the provider. All commands returned by this method should
+   * be handled by implementing `onEngagement()` with the possible exception of
+   * commands automatically handled by the urlbar, like "help".
+   */
   getResultCommands() {
+    /** @type {UrlbarResultCommand[]} */
     const commands = [];
 
     if (this.canShowLessFrequently) {
       commands.push({
         name: RESULT_MENU_COMMAND.SHOW_LESS_FREQUENTLY,
         l10n: {
-          id: "firefox-suggest-command-show-less-frequently",
+          id: "urlbar-result-menu-show-less-frequently",
         },
       });
     }
 
     commands.push(
       {
+        name: RESULT_MENU_COMMAND.DISMISS,
         l10n: {
-          id: "firefox-suggest-command-dont-show-this",
+          id: "urlbar-result-menu-dismiss-suggestion",
         },
-        children: [
-          {
-            name: RESULT_MENU_COMMAND.NOT_RELEVANT,
-            l10n: {
-              id: "firefox-suggest-command-not-relevant",
-            },
-          },
-          {
-            name: RESULT_MENU_COMMAND.NOT_INTERESTED,
-            l10n: {
-              id: "firefox-suggest-command-not-interested",
-            },
-          },
-        ],
+      },
+      {
+        name: RESULT_MENU_COMMAND.NOT_INTERESTED,
+        l10n: {
+          id: "firefox-suggest-command-dont-show-addons",
+        },
       },
       { name: "separator" },
       {
@@ -222,33 +146,37 @@ export class AddonSuggestions extends BaseFeature {
     return commands;
   }
 
-  handleCommand(view, result, selType) {
-    switch (selType) {
+  onEngagement(queryContext, controller, details, searchString) {
+    let { result } = details;
+    switch (details.selType) {
       case RESULT_MENU_COMMAND.MANAGE:
         // "manage" is handled by UrlbarInput, no need to do anything here.
         break;
       // selType == "dismiss" when the user presses the dismiss key shortcut.
-      case "dismiss":
-      case RESULT_MENU_COMMAND.NOT_RELEVANT:
-        lazy.QuickSuggest.blockedSuggestions.add(result.payload.originalUrl);
+      case RESULT_MENU_COMMAND.DISMISS:
+        lazy.QuickSuggest.dismissResult(result);
         result.acknowledgeDismissalL10n = {
           id: "firefox-suggest-dismissal-acknowledgment-one",
         };
-        view.controller.removeResult(result);
+        controller.removeResult(result);
         break;
       case RESULT_MENU_COMMAND.NOT_INTERESTED:
         lazy.UrlbarPrefs.set("suggest.addons", false);
         result.acknowledgeDismissalL10n = {
-          id: "firefox-suggest-dismissal-acknowledgment-all",
+          id: "urlbar-result-dismissal-acknowledgment-all",
         };
-        view.controller.removeResult(result);
+        controller.removeResult(result);
         break;
       case RESULT_MENU_COMMAND.SHOW_LESS_FREQUENTLY:
-        view.acknowledgeFeedback(result);
+        controller.view.acknowledgeFeedback(result);
         this.incrementShowLessFrequentlyCount();
         if (!this.canShowLessFrequently) {
-          view.invalidateResultMenuCommands();
+          controller.view.invalidateResultMenuCommands();
         }
+        lazy.UrlbarPrefs.set(
+          "addons.minKeywordLength",
+          searchString.length + 1
+        );
         break;
     }
   }
@@ -270,10 +198,13 @@ export class AddonSuggestions extends BaseFeature {
   get canShowLessFrequently() {
     const cap =
       lazy.UrlbarPrefs.get("addonsShowLessFrequentlyCap") ||
-      lazy.QuickSuggest.backend.config?.showLessFrequentlyCap ||
+      lazy.QuickSuggest.config.showLessFrequentlyCap ||
       0;
     return !cap || this.showLessFrequentlyCount < cap;
   }
 
-  #suggestionsMap = null;
+  get #minKeywordLength() {
+    let minLength = lazy.UrlbarPrefs.get("addons.minKeywordLength");
+    return Math.max(minLength, 0);
+  }
 }

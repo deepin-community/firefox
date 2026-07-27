@@ -37,6 +37,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Премахване на всички страници
     .accesskey = в
+permissions-save-changes-2 =
+    .buttonlabelaccept = Запазване
+    .buttonaccesskeyaccept = З
 permission-dialog =
     .buttonlabelaccept = Запазване
     .buttonaccesskeyaccept = З
@@ -180,7 +183,13 @@ permissions-site-microphone-disable-desc = По този начин ще поп�
 ##
 ## "Speaker" refers to an audio output device.
 
+permissions-site-speaker-window =
+    .title = Настройки - Права на високоговорителите
+    .style = { permissions-window2.style }
 permissions-site-speaker-desc = Следните сайтове са искали достъп до изход за аудио. Можете да укажете, кои сайтове имат право да искат избор на изходно аудио устройство.
+permissions-exceptions-doh-window =
+    .title = Изключения за уебсайтове за DNS през HTTPS
+    .style = { permissions-window2.style }
 permissions-doh-add-exception =
     .label = Добавяне
     .accesskey = Д

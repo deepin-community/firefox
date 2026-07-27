@@ -6,7 +6,7 @@
 ### These strings are used inside the about:debugging UI.
 
 
-## Page Title strings
+# Page Title strings
 
 # Page title (ie tab title) for the Setup page
 about-debugging-page-title-setup-page = デバッガー - セットアップ
@@ -15,11 +15,19 @@ about-debugging-page-title-setup-page = デバッガー - セットアップ
 #   $selectedRuntimeId - ID of the current runtime, such as "this-firefox", "localhost:6080", etc.
 about-debugging-page-title-runtime-page = デバッガー - ランタイム / { $selectedRuntimeId }
 
-## Sidebar strings
+# Sidebar strings
 
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = この { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = この { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = この { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = セットアップ
+about-debugging-sidebar-setup-title =
+    .title = セットアップ
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -81,7 +89,7 @@ about-debugging-sidebar-support-icon =
 # will attempt to update the list of devices displayed in the sidebar.
 about-debugging-refresh-usb-devices-button = デバイスを再検索
 
-## Setup Page strings
+# Setup Page strings
 
 # Title of the Setup page.
 about-debugging-setup-title = セットアップ
@@ -147,7 +155,7 @@ about-debugging-network-location-form-invalid = “{ $host-value }” は不正�
 #   $host-value (string) - The input value submitted by the user in the network locations form
 about-debugging-network-location-form-duplicate = ホスト “{ $host-value }” は登録済みです。
 
-## Runtime Page strings
+# Runtime Page strings
 
 # Below are the titles for the various categories of debug targets that can be found
 # on "runtime" pages of about:debugging.
@@ -221,7 +229,7 @@ about-debugging-profiler-dialog-title2 = プロファイラー
 # to describe this feature.
 about-debugging-collapse-expand-debug-targets = 折りたたむ / 展開
 
-## Debug Targets strings
+# Debug Targets strings
 
 # Displayed in the categories of "runtime" pages that don't have any debug target to
 # show. Debug targets depend on the category (extensions, tabs, workers...).
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Push サービス
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = オリジン
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker の調査は、現在のマルチプロセス { -brand-shorter-name } では無効化されています。
@@ -325,6 +336,9 @@ about-debugging-multiprocess-toolbox-name = マルチプロセスツールボッ
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = ターゲットブラウザーのメインプロセスとコンテンツプロセス
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = メッセージを閉じる
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = メッセージを閉じる

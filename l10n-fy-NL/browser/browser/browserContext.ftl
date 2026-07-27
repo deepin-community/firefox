@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Keppeling iepenje yn nij ljepblêd
     .accesskey = l
+main-context-menu-open-link-split-view =
+    .label = Keppeling yn splitste werjefte iepenje
+    .accesskey = s
 main-context-menu-open-link-container-tab =
     .label = Keppeling yn nij kontenerljepblêd iepenje
     .accesskey = k
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Keppeling bewarje nei { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = E-mailadres kopiearje
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Keppeling kopiearje
     .accesskey = K
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Keppeling sûnder websitetracking kopiearje
-    .accesskey = i
+main-context-menu-preview-link =
+    .label = Foarbyld fan keppeling
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Skjinne keppeling kopiearje
+    .accesskey = k
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Knoppen ferstopje
     .accesskey = F
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Folslein skerm
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Omskriuwing besjen
     .accesskey = o
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Ofbylding sykje mei { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Bewarje fideo as…
     .accesskey = f
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Audio e-maile…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Nei apparaat ferstjoere
+    .accesskey = s
+main-context-menu-send-to-mobile-2 =
+    .label = Nei Mobyl ferstjoere
+    .accesskey = s
+main-context-menu-send-to-mobile-sign-in = Meld jo oan om ljepblêden te ferstjoeren
+main-context-menu-send-to-mobile-enable-sync2 = Skeakelje syngronisaasje yn om in ljepblêd te ferstjoeren
+main-context-menu-send-to-mobile-connect-phone2 = Jo telefoan ferbine
+main-context-menu-send-to-mobile-device-missing2 = Sjogge jo jo apparaat net?
+main-context-menu-send-to-mobile-sign-in-from-link = Meld jo oan om in keppeling te ferstjoeren
+main-context-menu-send-to-mobile-sign-in-from-page = Meld jo oan om in side te ferstjoeren
+main-context-menu-send-to-mobile-enable-sync3 = Skeakelje Syngronisaasje yn om ljepblêden te ferstjoeren
+main-context-menu-send-to-mobile-enable-sync-from-link = Skeakelje Syngronisaasje yn om in keppeling te ferstjoeren
+main-context-menu-send-to-mobile-enable-sync-from-page = Skeakelje Syngronisaasje yn om in side te ferstjoeren
+main-context-menu-send-to-mobile-connect-phone3 = Ferbyn in apparaat om ljepblêden te ferstjoeren
+main-context-menu-send-to-mobile-connect-phone-from-link = Ferbyn in apparaat om in keppeling te ferstjoeren
+main-context-menu-send-to-mobile-connect-phone-from-page = Ferbyn in apparaat om in side te ferstjoeren
 main-context-menu-save-to-pocket =
     .label = Side bewarje nei { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Side nei apparaat ferstjoere
     .accesskey = p
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Bewarre oanmeldingen brûke
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Kaaiwurd foar dizze sykopdracht tafoegje…
     .accesskey = K
+main-context-menu-add-engine =
+    .label = Sykmasine tafoegje
+    .accesskey = S
 main-context-menu-link-send-to-device =
     .label = Keppeling nei apparaat ferstjoere
     .accesskey = p
+main-context-menu-link-send-to-mobile =
+    .label = Keppeling nei Mobyl ferstjoere
+    .accesskey = s
 main-context-menu-frame =
     .label = Dit dielfinster
     .accesskey = D
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Wachtwurd toane
     .accesskey = u
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nij
+main-context-menu-pdfjs-copy-page =
+    .label = Side kopiearje
+main-context-menu-pdfjs-cut-page =
+    .label = Side knippe
+main-context-menu-pdfjs-delete-page =
+    .label = Side fuortsmite
+main-context-menu-pdfjs-save-page =
+    .label = Seleksjes bewarje as…

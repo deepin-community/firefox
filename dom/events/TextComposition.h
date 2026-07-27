@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,20 +5,19 @@
 #ifndef mozilla_TextComposition_h
 #define mozilla_TextComposition_h
 
-#include "nsCOMPtr.h"
-#include "nsINode.h"
-#include "nsIWidget.h"
-#include "nsTArray.h"
-#include "nsThreadUtils.h"
-#include "nsPresContext.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/RangeBoundary.h"
 #include "mozilla/TextRange.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/dom/Text.h"
+#include "nsCOMPtr.h"
+#include "nsINode.h"
+#include "nsIWidget.h"
+#include "nsPresContext.h"
+#include "nsTArray.h"
+#include "nsThreadUtils.h"
 
 class nsRange;
 
@@ -89,6 +86,10 @@ class TextComposition final {
     }
     return do_AddRef(mPresContext->GetRootWidget());
   }
+  /**
+   * GetEditorBase() returns EditorBase pointer of mEditorBaseWeak.
+   */
+  already_AddRefed<EditorBase> GetEditorBase() const;
   // Returns the tab parent which has this composition in its remote process.
   BrowserParent* GetBrowserParent() const { return mBrowserParent; }
   // Returns true if the composition is started with synthesized event which
@@ -189,6 +190,19 @@ class TextComposition final {
   bool IsComposing() const { return mIsComposing; }
 
   /**
+   * If we're requesting IME to commit or cancel composition, or we've already
+   * requested it, or we've already known this composition has been ended in
+   * IME, we don't need to request commit nor cancel composition anymore and
+   * shouldn't do so if we're in content process for not committing/canceling
+   * "current" composition in native IME.  So, when this returns true,
+   * RequestIMEToCommit() does nothing.
+   */
+  [[nodiscard]] bool CanRequsetIMEToCommitOrCancelComposition() const {
+    return !mIsRequestingCommit && !mIsRequestingCancel &&
+           !mRequestedToCommitOrCancel && !mHasReceivedCommitEvent;
+  }
+
+  /**
    * Returns true if editor has started or already ended handling an event which
    * is modifying the composition string and/or IME selections.
    */
@@ -247,12 +261,12 @@ class TextComposition final {
     ~CompositionChangeEventHandlingMarker() {
       mComposition->EditorDidHandleCompositionChangeEvent();
     }
+    CompositionChangeEventHandlingMarker() = delete;
+    CompositionChangeEventHandlingMarker(
+        const CompositionChangeEventHandlingMarker& aOther) = delete;
 
    private:
     RefPtr<TextComposition> mComposition;
-    CompositionChangeEventHandlingMarker();
-    CompositionChangeEventHandlingMarker(
-        const CompositionChangeEventHandlingMarker& aOther);
   };
 
   /**
@@ -299,9 +313,8 @@ class TextComposition final {
 
  private:
   // Private destructor, to discourage deletion outside of Release():
-  ~TextComposition() {
-    // WARNING: mPresContext may be destroying, so, be careful if you touch it.
-  }
+  // WARNING: mPresContext may be destroying, so, be careful if you touch it.
+  ~TextComposition() = default;
 
   // sHandlingSelectionEvent is true while TextComposition sends a selection
   // event to ContentEventHandler.
@@ -411,24 +424,6 @@ class TextComposition final {
   // mWasCompositionStringEmpty is true if the composition string was empty
   // when DispatchCompositionEvent() is called.
   bool mWasCompositionStringEmpty;
-
-  /**
-   * If we're requesting IME to commit or cancel composition, or we've already
-   * requested it, or we've already known this composition has been ended in
-   * IME, we don't need to request commit nor cancel composition anymore and
-   * shouldn't do so if we're in content process for not committing/canceling
-   * "current" composition in native IME.  So, when this returns true,
-   * RequestIMEToCommit() does nothing.
-   */
-  bool CanRequsetIMEToCommitOrCancelComposition() const {
-    return !mIsRequestingCommit && !mIsRequestingCancel &&
-           !mRequestedToCommitOrCancel && !mHasReceivedCommitEvent;
-  }
-
-  /**
-   * GetEditorBase() returns EditorBase pointer of mEditorBaseWeak.
-   */
-  already_AddRefed<EditorBase> GetEditorBase() const;
 
   /**
    * HasEditor() returns true if mEditorBaseWeak holds EditorBase instance

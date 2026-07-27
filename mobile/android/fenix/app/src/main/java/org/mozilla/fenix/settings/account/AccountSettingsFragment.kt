@@ -13,20 +13,24 @@ import android.provider.Settings
 import android.text.InputFilter
 import android.text.format.DateUtils
 import android.view.View
-import androidx.appcompat.app.AlertDialog
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import mozilla.appservices.syncmanager.SyncTelemetry
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.ConstellationState
 import mozilla.components.concept.sync.DeviceConstellationObserver
 import mozilla.components.lib.state.ext.consumeFrom
+import mozilla.components.lib.state.helpers.StoreProvider.Companion.fragmentStore
 import mozilla.components.service.fxa.SyncEngine
 import mozilla.components.service.fxa.manager.FxaAccountManager
 import mozilla.components.service.fxa.manager.SyncEnginesStorage
@@ -37,26 +41,34 @@ import mozilla.components.service.fxa.sync.setLastSynced
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import mozilla.components.ui.widgets.withCenterAlignedButtons
 import mozilla.telemetry.glean.private.NoExtras
-import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.SyncAccount
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
-import org.mozilla.fenix.components.StoreProvider
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarState
+import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getPreferenceKey
+import org.mozilla.fenix.ext.pixelSizeFor
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.secure
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.requirePreference
+import org.mozilla.fenix.settings.scrollToPreferenceWithHighlight
+import org.mozilla.fenix.settings.showCustomEditTextPreferenceDialog
+import com.google.android.material.R as materialR
 
+/**
+ * Settings screen allowing users to manage their Firefox account and what data to sync through it.
+ */
 @SuppressWarnings("TooManyFunctions", "LargeClass")
-class AccountSettingsFragment : PreferenceFragmentCompat() {
+class AccountSettingsFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment {
     private lateinit var accountManager: FxaAccountManager
     private lateinit var accountSettingsStore: AccountSettingsFragmentStore
     private lateinit var accountSettingsInteractor: AccountSettingsInteractor
+    private val args by navArgs<AccountSettingsFragmentArgs>()
 
     // Navigate away from this fragment when we encounter auth problems or logout events.
     private val accountStateObserver = object : AccountObserver {
@@ -68,12 +80,12 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
 
         override fun onLoggedOut() {
             viewLifecycleOwner.lifecycleScope.launch {
-                findNavController().popBackStack()
+                findNavController().popBackStack(R.id.accountSettingsFragment, inclusive = true)
 
                 // Remove the device name when we log out.
                 context?.let {
                     val deviceNameKey = it.getPreferenceKey(R.string.pref_key_sync_device_name)
-                    preferenceManager.sharedPreferences?.edit()?.remove(deviceNameKey)?.apply()
+                    preferenceManager.sharedPreferences?.edit { remove(deviceNameKey) }
                 }
             }
         }
@@ -82,15 +94,60 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
         showToolbar(getString(R.string.preferences_account_settings))
+        args.preferenceToScrollTo?.let {
+            scrollToPreferenceWithHighlight(it)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SyncTelemetry.processOpenSyncSettingsMenuTelemetry()
         SyncAccount.opened.record(NoExtras())
+
+        accountManager = requireComponents.backgroundServices.accountManager
+        accountManager.register(accountStateObserver, this, true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val allEngines = listOf(
+            SyncEngine.Bookmarks,
+            SyncEngine.Addresses,
+            SyncEngine.CreditCards,
+            SyncEngine.History,
+            SyncEngine.Passwords,
+            SyncEngine.Tabs,
+        )
+        val enabledEngines = mutableListOf<String>()
+        val disabledEngines = mutableListOf<String>()
+        val syncEnginesStatus = SyncEnginesStorage(requireContext()).getStatus()
+        for (syncEngine in allEngines) {
+            if (syncEnginesStatus.containsKey(syncEngine)) {
+                if (syncEnginesStatus.getOrElse(syncEngine) { true }) {
+                    enabledEngines.add(syncEngine.nativeName)
+                } else {
+                    disabledEngines.add(syncEngine.nativeName)
+                }
+            }
+        }
+        SyncTelemetry.processSaveSyncSettingsTelemetry(enabledEngines, disabledEngines)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        accountSettingsStore = fragmentStore(
+            AccountSettingsFragmentState(
+                lastSyncedDate = if (getLastSynced(requireContext()) == 0L) {
+                    LastSyncTime.Never
+                } else {
+                    LastSyncTime.Success(getLastSynced(requireContext()))
+                },
+                deviceName = requireComponents.backgroundServices.defaultDeviceName(
+                    requireContext(),
+                ),
+            ),
+        ) { AccountSettingsFragmentStore(it) }.value
 
         consumeFrom(accountSettingsStore) {
             updateLastSyncTimePref(it)
@@ -103,33 +160,44 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
             ::syncDeviceName,
             accountSettingsStore,
         )
+
+        setupPreferenceListeners()
     }
 
-    @Suppress("ComplexMethod", "LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.account_settings_preferences, rootKey)
+    }
 
-        accountSettingsStore = StoreProvider.get(this) {
-            AccountSettingsFragmentStore(
-                AccountSettingsFragmentState(
-                    lastSyncedDate = if (getLastSynced(requireContext()) == 0L) {
-                        LastSyncTime.Never
-                    } else {
-                        LastSyncTime.Success(getLastSynced(requireContext()))
-                    },
-                    deviceName = requireComponents.backgroundServices.defaultDeviceName(
-                        requireContext(),
-                    ),
-                ),
-            )
+    override fun onDisplayPreferenceDialog(preference: Preference) {
+        val handled = showCustomEditTextPreferenceDialog(
+            preference = preference,
+            errorMessage = { value -> R.string.empty_device_name_error.takeIf { value.isBlank() } },
+        )
+
+        if (!handled) {
+            super.onDisplayPreferenceDialog(preference)
         }
+    }
 
-        accountManager = requireComponents.backgroundServices.accountManager
-        accountManager.register(accountStateObserver, this, true)
-
+    private fun setupPreferenceListeners() {
         val preferenceManageAccount = requirePreference<Preference>(R.string.pref_key_sync_manage_account)
         preferenceManageAccount.onPreferenceClickListener = getClickListenerForManageAccount()
 
+        setupSignInOutPreferenceListeners()
+        setupDeviceNamePreferenceListeners()
+        setupSyncCategoriesPreferenceListeners()
+
+        // NB: ObserverRegistry will take care of cleaning up internal references to 'observer' and
+        // 'owner' when appropriate.
+        requireComponents.backgroundServices.accountManager.registerForSyncEvents(
+            syncStatusObserver,
+            owner = this,
+            autoPause = true,
+        )
+    }
+
+    private fun setupSignInOutPreferenceListeners() {
         // Sign out
         val preferenceSignOut = requirePreference<Preference>(R.string.pref_key_sign_out)
         preferenceSignOut.onPreferenceClickListener = getClickListenerForSignOut()
@@ -141,7 +209,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
 
             icon?.let {
                 icon = it.mutate().apply {
-                    setTint(context.getColorFromAttr(R.attr.textPrimary))
+                    setTint(context.getColorFromAttr(materialR.attr.colorOnSurface))
                 }
             }
 
@@ -153,9 +221,11 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                 isEnabled = true
             }
         }
+    }
 
-        // Device Name
+    private fun setupDeviceNamePreferenceListeners() {
         val deviceConstellation = accountManager.authenticatedAccount()?.deviceConstellation()
+
         requirePreference<EditTextPreference>(R.string.pref_key_sync_device_name).apply {
             onPreferenceChangeListener = getChangeListenerForDeviceName()
             deviceConstellation?.state()?.currentDevice?.let { device ->
@@ -165,10 +235,18 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
             }
             setOnBindEditTextListener { editText ->
                 editText.filters = arrayOf(InputFilter.LengthFilter(DEVICE_NAME_MAX_LENGTH))
-                editText.minHeight = resources.getDimensionPixelSize(R.dimen.account_settings_device_name_min_height)
+                editText.minHeight = pixelSizeFor(R.dimen.account_settings_device_name_min_height)
             }
         }
 
+        deviceConstellation?.registerDeviceObserver(
+            deviceConstellationObserver,
+            owner = this,
+            autoPause = true,
+        )
+    }
+
+    private fun setupSyncCategoriesPreferenceListeners() {
         // Make sure out sync engine checkboxes are up-to-date and disabled if currently syncing
         updateSyncEngineStates()
         setDisabledWhileSyncing(accountManager.isSyncActive())
@@ -209,20 +287,6 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
-        deviceConstellation?.registerDeviceObserver(
-            deviceConstellationObserver,
-            owner = this,
-            autoPause = true,
-        )
-
-        // NB: ObserverRegistry will take care of cleaning up internal references to 'observer' and
-        // 'owner' when appropriate.
-        requireComponents.backgroundServices.accountManager.registerForSyncEvents(
-            syncStatusObserver,
-            owner = this,
-            autoPause = true,
-        )
     }
 
     /**
@@ -277,7 +341,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
      */
     private fun showPinDialogWarning(syncEngine: SyncEngine, newValue: Boolean) {
         context?.let {
-            AlertDialog.Builder(it).apply {
+            MaterialAlertDialogBuilder(it).apply {
                 setTitle(getString(R.string.logins_warning_dialog_title_2))
                 setMessage(
                     getString(R.string.logins_warning_dialog_message_2),
@@ -304,6 +368,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
      * Updates the status of all [SyncEngine] states.
      */
     private fun updateSyncEngineStates() {
+        val settings = requireContext().settings()
         val syncEnginesStatus = SyncEnginesStorage(requireContext()).getStatus()
         requirePreference<CheckBoxPreference>(R.string.pref_key_sync_bookmarks).apply {
             isEnabled = syncEnginesStatus.containsKey(SyncEngine.Bookmarks)
@@ -326,7 +391,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
             isChecked = syncEnginesStatus.getOrElse(SyncEngine.Tabs) { true }
         }
         requirePreference<CheckBoxPreference>(R.string.pref_key_sync_address).apply {
-            isVisible = FeatureFlags.syncAddressesFeature
+            isVisible = settings.isAddressSyncEnabled
             isEnabled = syncEnginesStatus.containsKey(SyncEngine.Addresses)
             isChecked = syncEnginesStatus.getOrElse(SyncEngine.Addresses) { true }
         }
@@ -405,12 +470,13 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
     private fun getChangeListenerForDeviceName(): Preference.OnPreferenceChangeListener {
         return Preference.OnPreferenceChangeListener { _, newValue ->
             accountSettingsInteractor.onChangeDeviceName(newValue as String) {
-                FenixSnackbar.make(
-                    view = requireView(),
-                    duration = FenixSnackbar.LENGTH_LONG,
-                )
-                    .setText(getString(R.string.empty_device_name_error))
-                    .show()
+                Snackbar.make(
+                    snackBarParentView = requireView(),
+                    snackbarState = SnackbarState(
+                        message = getString(R.string.empty_device_name_error),
+                        duration = SnackbarState.Duration.Preset.Long,
+                    ),
+                ).show()
             }
         }
     }
@@ -425,6 +491,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
 
         override fun onStarted() {
             viewLifecycleOwner.lifecycleScope.launch {
+                @Suppress("DEPRECATION")
                 view?.announceForAccessibility(getString(R.string.sync_syncing_in_progress))
                 pref.title = getString(R.string.sync_syncing_in_progress)
                 pref.isEnabled = false

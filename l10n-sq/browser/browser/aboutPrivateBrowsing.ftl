@@ -24,7 +24,7 @@ about-private-browsing-info-description-simplified = { -brand-short-name }-i spa
 about-private-browsing-learn-more-link = Mësoni më tepër
 about-private-browsing-hide-activity = Fshihni veprimtarinë dhe vendndodhjen tuaj, kudo ku shfletoni
 about-private-browsing-get-privacy = Përfitoni mbrojtje të privatësisë, kudo ku shfletoni
-about-private-browsing-hide-activity-1 = Fshihni me { -mozilla-vpn-brand-name }-in veprimtari shfletimi dhe vendndodhje. Një klikim krijon një lidhje të sigurt, madje edhe në Wi-Fi publik.
+about-private-browsing-hide-activity-1 = Fshihni me { -mozilla-vpn-brand-name }-in veprimtari shfletimi dhe vendndodhje. Një klikim krijon një lidhje të siguruar, madje edhe në Wi-Fi publik.
 about-private-browsing-prominent-cta = Jini privat, me { -mozilla-vpn-brand-name }
 about-private-browsing-focus-promo-cta = Shkarko { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: Shfletim privat në lëvizje
@@ -73,7 +73,7 @@ about-private-browsing-cookie-banners-promo-message = Lejojeni { -brand-short-na
 about-private-browsing-cookie-banners-promo-heading = Me banderola cookie-sh merret { -brand-short-name }-i për ju
 about-private-browsing-cookie-banners-promo-body = Tani ne hedhim poshtë automatikisht mjaft banderola cookie-sh, që t’ju ndjekin më pak dhe t’i riktheheni shfletimit pa shpërqendrim.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Mos lini gjurmë në këtë pajisje
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } fshin cookie-t, historikun dhe të dhëna sajti tuajat, kur mbyllni krejt dritaret tuaja private.

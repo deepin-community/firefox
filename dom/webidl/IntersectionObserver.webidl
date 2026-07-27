@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -35,6 +34,8 @@ interface IntersectionObserver {
   readonly attribute Node? root;
   [Constant]
   readonly attribute UTF8String rootMargin;
+  [Constant,Cached, Pref="dom.intersection_observer.scroll_margin.enabled"]
+  readonly attribute UTF8String scrollMargin;
   [Constant,Cached]
   readonly attribute sequence<double> thresholds;
   undefined observe(Element target);
@@ -57,5 +58,6 @@ dictionary IntersectionObserverEntryInit {
 dictionary IntersectionObserverInit {
   (Element or Document)? root = null;
   UTF8String rootMargin = "0px";
+  [Pref="dom.intersection_observer.scroll_margin.enabled"] UTF8String scrollMargin = "0px";
   (double or sequence<double>) threshold = 0;
 };

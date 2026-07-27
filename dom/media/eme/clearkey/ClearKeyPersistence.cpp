@@ -18,7 +18,6 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <string.h>
 
 #include <sstream>
 
@@ -96,9 +95,7 @@ void ClearKeyPersistence::WriteIndex() {
             std::move(onIndexFail));
 }
 
-ClearKeyPersistence::ClearKeyPersistence(Host_10* aHost) {
-  this->mHost = aHost;
-}
+ClearKeyPersistence::ClearKeyPersistence(Host_11* aHost) : mHost(aHost) {}
 
 void ClearKeyPersistence::EnsureInitialized(bool aPersistentStateAllowed,
                                             function<void()>&& aOnInitialized) {

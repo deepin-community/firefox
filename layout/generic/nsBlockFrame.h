@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,14 +7,14 @@
  * boxes, also used for various anonymous boxes
  */
 
-#ifndef nsBlockFrame_h___
-#define nsBlockFrame_h___
+#ifndef nsBlockFrame_h_
+#define nsBlockFrame_h_
 
+#include "mozilla/IntrinsicISizesCache.h"
 #include "nsContainerFrame.h"
+#include "nsFloatManager.h"
 #include "nsHTMLParts.h"
 #include "nsLineBox.h"
-#include "nsCSSPseudoElements.h"
-#include "nsFloatManager.h"
 
 enum class LineReflowStatus {
   // The line was completely reflowed and fit in available width, and we should
@@ -42,11 +40,13 @@ enum class LineReflowStatus {
 };
 
 class nsBlockInFlowLineIterator;
+class nsLineLayout;
 namespace mozilla {
 class BlockReflowState;
 class PresShell;
 class ServoRestyleState;
 class ServoStyleSet;
+
 }  // namespace mozilla
 
 /**
@@ -154,11 +154,6 @@ class nsBlockFrame : public nsContainerFrame {
   nsresult GetFrameName(nsAString& aResult) const override;
 #endif
 
-#ifdef DEBUG
-  const char* LineReflowStatusToString(
-      LineReflowStatus aLineReflowStatus) const;
-#endif
-
 #ifdef ACCESSIBILITY
   mozilla::a11y::AccType AccessibleType() override;
 #endif
@@ -229,24 +224,20 @@ class nsBlockFrame : public nsContainerFrame {
   bool IsEmpty() override;
   bool CachedIsEmpty() override;
   bool IsSelfEmpty() override;
+  bool LinesAreEmpty() const;
 
   // Given that we have a ::marker frame, does it actually draw something, i.e.,
   // do we have either a 'list-style-type' or 'list-style-image' that is
   // not 'none', and no 'content'?
-  bool MarkerIsEmpty() const;
+  // This is expected to be used only for outside markers, and when the caller
+  // already has a pointer to the marker frame.
+  bool MarkerIsEmpty(const nsIFrame* aMarker) const;
 
   // Return true if this frame has a ::marker frame.
-  bool HasMarker() const { return HasOutsideMarker() || HasInsideMarker(); }
-
-  // Return true if this frame has an inside ::marker frame.
-  bool HasInsideMarker() const {
-    return HasAnyStateBits(NS_BLOCK_HAS_INSIDE_MARKER);
-  }
+  bool HasMarker() const { return HasAnyStateBits(NS_BLOCK_HAS_MARKER); }
 
   // Return true if this frame has an outside ::marker frame.
-  bool HasOutsideMarker() const {
-    return HasAnyStateBits(NS_BLOCK_HAS_OUTSIDE_MARKER);
-  }
+  bool HasOutsideMarker() const;
 
   /**
    * @return the first-letter frame or nullptr if we don't have one.
@@ -266,6 +257,12 @@ class nsBlockFrame : public nsContainerFrame {
 
   void CheckIntrinsicCacheAgainstShrinkWrapState();
 
+  nsRect ComputePaddingInflatedScrollableOverflow(
+      const nsRect& aInFlowChildBounds) const;
+  Maybe<nsRect> GetLineFrameInFlowBounds(
+      const nsLineBox& aLine, const nsIFrame& aLineChildFrame,
+      bool aConsiderPositiveMargins = true) const;
+
   template <typename LineIteratorType>
   Maybe<nscoord> GetBaselineBOffset(LineIteratorType aStart,
                                     LineIteratorType aEnd,
@@ -273,12 +270,13 @@ class nsBlockFrame : public nsContainerFrame {
                                     BaselineSharingGroup aBaselineGroup,
                                     BaselineExportContext aExportContext) const;
 
+ protected:
   // MinISize() and PrefISize() are helpers to implement IntrinsicISize().
-  nscoord MinISize(gfxContext* aContext);
-  nscoord PrefISize(gfxContext* aContext);
+  nscoord MinISize(const mozilla::IntrinsicSizeInput& aInput);
+  nscoord PrefISize(const mozilla::IntrinsicSizeInput& aInput);
 
  public:
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   nsRect ComputeTightBounds(DrawTarget* aDrawTarget) const override;
@@ -501,16 +499,7 @@ class nsBlockFrame : public nsContainerFrame {
    * children, and includes them into aOverflowAreas.
    */
   void ComputeOverflowAreas(mozilla::OverflowAreas& aOverflowAreas,
-                            nscoord aBEndEdgeOfChildren,
                             const nsStyleDisplay* aDisplay) const;
-
-  /**
-   * Helper method for ComputeOverflowAreas(). Incorporates aBEndEdgeOfChildren
-   * into the aOverflowAreas.
-   */
-  void ConsiderBlockEndEdgeOfChildren(mozilla::OverflowAreas& aOverflowAreas,
-                                      nscoord aBEndEdgeOfChildren,
-                                      const nsStyleDisplay* aDisplay) const;
 
   /**
    * Add the frames in aFrameList to this block after aPrevSibling.
@@ -535,24 +524,56 @@ class nsBlockFrame : public nsContainerFrame {
    */
   nsresult ResolveBidi();
 
-  /**
-   * Test whether the frame is a form control in a visual Bidi page.
-   * This is necessary for backwards-compatibility, because most visual
-   * pages use logical order for form controls so that they will
-   * display correctly on native widgets in OSs with Bidi support
-   * @param aPresContext the pres context
-   * @return whether the frame is a BIDI form control
-   */
-  bool IsVisualFormControl(nsPresContext* aPresContext);
-
-  /** Whether this block has an effective align-content property */
-  bool IsAligned() const {
-    return StylePosition()->mAlignContent.primary !=
-           mozilla::StyleAlignFlags::NORMAL;
+ public:
+  bool IsButtonControlFrame() const {
+    return IsInputButtonControlFrame() || IsColorControlFrame() ||
+           IsComboboxControlFrame();
   }
 
+  bool IsTextInput() const {
+    return Style()->GetPseudoType() ==
+               mozilla::PseudoStyleType::MozScrolledContent &&
+           mParent->IsTextInputFrame();
+  }
+
+  bool IsSingleLineTextInput() const {
+    return IsTextInput() && mContent->IsHTMLElement(nsGkAtoms::input);
+  }
+
+  bool IsButtonLike() const {
+    if (mContent->IsAnyOfHTMLElements(nsGkAtoms::button)) {
+      // NOTE(emilio): We need the IsAnonBox check to deal with things like the
+      // :-moz-anonymous-item of a <button> with display: grid. We don't want
+      // that to e.g. center its contents. But we do want the scrolled-content
+      // box of a button to do it.
+      auto pseudoType = Style()->GetPseudoType();
+      return !mozilla::PseudoStyle::IsAnonBox(pseudoType) ||
+             pseudoType == mozilla::PseudoStyleType::MozScrolledContent;
+    }
+    return IsButtonControlFrame();
+  }
+
+  bool IsButtonOrTextInput() const { return IsButtonLike() || IsTextInput(); }
+
+  /** Returns the effective align-content of this frame */
+  mozilla::StyleAlignFlags EffectiveAlignContent() const {
+    if (IsButtonLike()) {
+      return mozilla::StyleAlignFlags::CENTER;
+    }
+    if (IsSingleLineTextInput()) {
+      return mozilla::StyleAlignFlags::CENTER |
+             mozilla::StyleAlignFlags::UNSAFE;
+    }
+    return StylePosition()->mAlignContent.primary;
+  }
+
+  bool IsContentAligned() const {
+    return EffectiveAlignContent() != mozilla::StyleAlignFlags::NORMAL;
+  }
+
+ protected:
   nscoord GetAlignContentShift() const {
-    return IsAligned() ? GetProperty(AlignContentShift()) : 0;
+    return IsContentAligned() ? GetProperty(AlignContentShift()) : 0;
   }
 
   /**
@@ -654,7 +675,7 @@ class nsBlockFrame : public nsContainerFrame {
    * Determine if we have any pushed floats from a previous continuation.
    *
    * @returns true, if any of the floats at the beginning of our floats list
-   *          have the NS_FRAME_IS_PUSHED_FLOAT bit set; false otherwise.
+   *          have the NS_FRAME_IS_PUSHED_OUT_OF_FLOW bit set; false otherwise.
    */
   bool HasPushedFloatsFromPrevContinuation() const;
 
@@ -672,15 +693,40 @@ class nsBlockFrame : public nsContainerFrame {
    * whether this block is in a block formatting-context whose root block has
    * -webkit-line-clamp: <n>.
    */
-  bool IsInLineClampContext() const;
+  bool IsInLineClampContext() const { return !!GetLineClampRoot(); }
 
   /**
    * @return false iff this block does not have a float on any child list.
    * This function is O(1).
    */
   bool MaybeHasFloats() const;
+  /**
+   * This indicates that exactly one line in this block has the
+   * LineClampEllipsis flag set, and that such a line must be found
+   * and have that flag cleared when reflowing this element's nearest legacy box
+   * container.
+   */
+  bool HasLineClampEllipsis() const {
+    return HasAnyStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS);
+  }
+  /**
+   * This indicates that we have a descendant in our block formatting context
+   * that has such a line.
+   */
+  bool HasLineClampEllipsisDescendant() const {
+    return HasAnyStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS_DESCENDANT);
+  }
+  void SetHasLineClampEllipsis(bool aValue) {
+    AddOrRemoveStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS, aValue);
+  }
+  void SetHasLineClampEllipsisDescendant(bool aValue) {
+    AddOrRemoveStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS_DESCENDANT, aValue);
+  }
 
  protected:
+  nsBlockFrame* GetLineClampRoot() const;
+  nscoord ApplyLineClamp(nscoord aContentBlockEndEdge);
+
   /** grab overflow lines from this block's prevInFlow, and make them
    * part of this block's mLines list.
    * @return true if any lines were drained.
@@ -713,7 +759,7 @@ class nsBlockFrame : public nsContainerFrame {
    * Find any trailing BR clear from the last line of this block (or from its
    * prev-in-flows).
    */
-  mozilla::StyleClear FindTrailingClear();
+  mozilla::UsedClear FindTrailingClear();
 
   /**
    * Remove a float from our float list.
@@ -733,8 +779,8 @@ class nsBlockFrame : public nsContainerFrame {
   void DoCollectFloats(nsIFrame* aFrame, nsFrameList& aList,
                        bool aCollectFromSiblings);
 
-  // Remove a float, abs, rel positioned frame from the appropriate block's list
-  static void DoRemoveOutOfFlowFrame(DestroyContext&, nsIFrame*);
+  // Remove a float and its continuations.
+  static void DoRemoveFloats(DestroyContext&, nsIFrame*);
 
   /** set up the conditions necessary for an resize reflow
    * the primary task is to mark the minimumly sufficient lines dirty.
@@ -1018,8 +1064,7 @@ class nsBlockFrame : public nsContainerFrame {
   int32_t GetDepth() const;
 #endif
 
-  nscoord mCachedMinISize = NS_INTRINSIC_ISIZE_UNKNOWN;
-  nscoord mCachedPrefISize = NS_INTRINSIC_ISIZE_UNKNOWN;
+  mozilla::IntrinsicISizesCache mCachedIntrinsics;
 
   nsLineList mLines;
 
@@ -1040,8 +1085,6 @@ class nsBlockFrame : public nsContainerFrame {
   static bool gDisableResizeOpt;
 
   static int32_t gNoiseIndent;
-
-  static const char* kReflowCommandType[];
 
  protected:
   static void InitDebugFlags();
@@ -1143,4 +1186,4 @@ class nsBlockInFlowLineIterator {
   bool FindValidLine();
 };
 
-#endif /* nsBlockFrame_h___ */
+#endif /* nsBlockFrame_h_ */

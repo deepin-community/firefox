@@ -5,33 +5,30 @@
 #ifndef MOZILLA_MEDIAMANAGER_H
 #define MOZILLA_MEDIAMANAGER_H
 
+#include "DOMMediaStream.h"
 #include "MediaEnginePrefs.h"
 #include "MediaEventSource.h"
-#include "mozilla/dom/GetUserMediaRequest.h"
-#include "mozilla/Unused.h"
-#include "nsIMediaDevice.h"
-#include "nsIMediaManager.h"
-
-#include "nsHashKeys.h"
-#include "nsClassHashtable.h"
-#include "nsRefPtrHashtable.h"
-#include "nsIMemoryReporter.h"
-#include "nsIObserver.h"
-
-#include "nsXULAppAPI.h"
+#include "PerformanceRecorder.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/dom/GetUserMediaRequest.h"
 #include "mozilla/dom/MediaStreamBinding.h"
-#include "mozilla/dom/MediaStreamTrackBinding.h"
 #include "mozilla/dom/MediaStreamError.h"
+#include "mozilla/dom/MediaStreamTrackBinding.h"
+#include "mozilla/dom/MediaTrackCapabilitiesBinding.h"
 #include "mozilla/dom/NavigatorBinding.h"
 #include "mozilla/media/MediaChild.h"
 #include "mozilla/media/MediaParent.h"
-#include "mozilla/Logging.h"
-#include "mozilla/UniquePtr.h"
-#include "DOMMediaStream.h"
-#include "PerformanceRecorder.h"
+#include "nsClassHashtable.h"
+#include "nsHashKeys.h"
+#include "nsIMediaDevice.h"
+#include "nsIMediaManager.h"
+#include "nsIMemoryReporter.h"
+#include "nsIObserver.h"
+#include "nsRefPtrHashtable.h"
+#include "nsXULAppAPI.h"
 
 #ifdef MOZ_WEBRTC
 #  include "transport/runnable_utils.h"
@@ -48,8 +45,9 @@ namespace mozilla {
 class MediaEngine;
 class MediaEngineSource;
 class TaskQueue;
-class MediaTimer;
 class MediaTrack;
+template <typename T>
+class MediaTimer;
 namespace dom {
 struct AudioOutputOptions;
 struct MediaStreamConstraints;
@@ -87,16 +85,10 @@ class MediaDevice final {
    */
   enum class OsPromptable { No, Yes };
 
-  /**
-   * Whether source device is just a placeholder
-   */
-  enum class IsPlaceholder { No, Yes };
-
   MediaDevice(MediaEngine* aEngine, dom::MediaSourceEnum aMediaSource,
               const nsString& aRawName, const nsString& aRawID,
               const nsString& aRawGroupID, IsScary aIsScary,
-              const OsPromptable canRequestOsLevelPrompt,
-              const IsPlaceholder aIsPlaceholder = IsPlaceholder::No);
+              const OsPromptable canRequestOsLevelPrompt);
 
   MediaDevice(MediaEngine* aEngine,
               const RefPtr<AudioDeviceInfo>& aAudioDeviceInfo,
@@ -118,7 +110,6 @@ class MediaDevice final {
   const bool mScary;
   const bool mCanRequestOsLevelPrompt;
   const bool mIsFake;
-  const bool mIsPlaceholder;
   const nsString mType;
   const nsString mRawID;
   const nsString mRawGroupID;
@@ -142,7 +133,7 @@ class LocalMediaDevice final : public nsIMediaDevice {
 
   uint32_t GetBestFitnessDistance(
       const nsTArray<const NormalizedConstraintSet*>& aConstraintSets,
-      dom::CallerType aCallerType);
+      const MediaEnginePrefs& aPrefs, dom::CallerType aCallerType);
 
   nsresult Allocate(const dom::MediaTrackConstraints& aConstraints,
                     const MediaEnginePrefs& aPrefs, uint64_t aWindowId,
@@ -157,7 +148,13 @@ class LocalMediaDevice final : public nsIMediaDevice {
   nsresult Stop();
   nsresult Deallocate();
 
+  /**
+   * Clones the LocalMediaDevice and sets a cloned source.
+   */
+  already_AddRefed<LocalMediaDevice> Clone() const;
+
   void GetSettings(dom::MediaTrackSettings& aOutSettings);
+  void GetCapabilities(dom::MediaTrackCapabilities& aOutCapabilities);
   MediaEngineSource* Source();
   const TrackingId& GetTrackingId() const;
   // Returns null if not a physical audio device.
@@ -170,6 +167,7 @@ class LocalMediaDevice final : public nsIMediaDevice {
   dom::MediaDeviceKind Kind() const { return mRawDevice->mKind; }
   bool IsFake() const { return mRawDevice->mIsFake; }
   const nsString& RawID() { return mRawDevice->mRawID; }
+  const dom::MediaTrackConstraints& Constraints() const;
 
  private:
   virtual ~LocalMediaDevice() = default;
@@ -192,6 +190,8 @@ class LocalMediaDevice final : public nsIMediaDevice {
 
  private:
   RefPtr<MediaEngineSource> mSource;
+  // Currently applied constraints. Media thread only.
+  dom::MediaTrackConstraints mConstraints;
 };
 
 typedef nsRefPtrHashtable<nsUint64HashKey, GetUserMediaWindowListener>
@@ -394,10 +394,10 @@ class MediaManager final : public nsIMediaManagerService,
       const dom::MediaStreamConstraints& aConstraints,
       dom::CallerType aCallerType, RefPtr<LocalMediaDeviceSetRefCnt> aDevices);
 
-  void GetPref(nsIPrefBranch* aBranch, const char* aPref, const char* aData,
-               int32_t* aVal);
-  void GetPrefBool(nsIPrefBranch* aBranch, const char* aPref, const char* aData,
-                   bool* aVal);
+  nsresult GetPref(nsIPrefBranch* aBranch, const char* aPref, const char* aData,
+                   int32_t* aVal);
+  nsresult GetPrefBool(nsIPrefBranch* aBranch, const char* aPref,
+                       const char* aData, bool* aVal);
   void GetPrefs(nsIPrefBranch* aBranch, const char* aData);
 
   // Make private because we want only one instance of this class
@@ -444,7 +444,7 @@ class MediaManager final : public nsIMediaManagerService,
       mPendingDevicesPromises;
   RefPtr<MediaDeviceSetRefCnt> mPhysicalDevices;
   TimeStamp mUnhandledDeviceChangeTime;
-  RefPtr<MediaTimer> mDeviceChangeTimer;
+  RefPtr<MediaTimer<TimeStamp>> mDeviceChangeTimer;
   bool mCamerasMuted = false;
   bool mMicrophonesMuted = false;
 

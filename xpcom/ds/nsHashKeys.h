@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsTHashKeys_h__
-#define nsTHashKeys_h__
+#ifndef nsTHashKeys_h_
+#define nsTHashKeys_h_
 
 #include "nsID.h"
 #include "nsISupports.h"
@@ -26,6 +24,7 @@
 #include <utility>
 
 #include "mozilla/HashFunctions.h"
+#include "mozilla/ThreadSafeWeakPtr.h"
 
 namespace mozilla {
 
@@ -47,15 +46,21 @@ inline uint32_t HashString(const nsACString& aStr) {
  *
  * Lightweight keytypes provided here:
  * nsStringHashKey
+ * nsTStringCaseInsensitiveHashKey
  * nsCStringHashKey
+ * nsIntegralHashKey
  * nsUint32HashKey
  * nsUint64HashKey
  * nsFloatHashKey
  * IntPtrHashKey
- * nsPtrHashKey
- * nsVoidPtrHashKey
+ * nsPtrHashKey (by nsPointerHashKeys.h)
+ * nsVoidPtrHashKey (by nsPointerHashKeys.h)
  * nsISupportsHashKey
+ * nsRefPtrHashKey
+ * mozilla::ThreadSafeWeakPtrHashKey
+ * nsFuncPtrHashKey
  * nsIDHashKey
+ * nsIDPointerHashKey
  * nsDepCharHashKey
  * nsCharPtrHashKey
  * nsUnicharPtrHashKey
@@ -98,6 +103,10 @@ class nsStringHashKey : public PLDHashEntryHdr {
  private:
   nsString mStr;
 };
+
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsStringHashKey& aField, const char* aName, uint32_t aFlags = 0) {}
 
 #ifdef MOZILLA_INTERNAL_API
 
@@ -181,6 +190,12 @@ class nsTStringCaseInsensitiveHashKey : public PLDHashEntryHdr {
   const nsTString<T> mStr;
 };
 
+template <class T, bool Unicode>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsTStringCaseInsensitiveHashKey<T, Unicode>& aField,
+    const char* aName, uint32_t aFlags = 0) {}
+
 using nsStringCaseInsensitiveHashKey =
     nsTStringCaseInsensitiveHashKey<char16_t, true>;
 using nsCStringASCIICaseInsensitiveHashKey =
@@ -226,6 +241,10 @@ class nsCStringHashKey : public PLDHashEntryHdr {
   const nsCString mStr;
 };
 
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsCStringHashKey& aField, const char* aName, uint32_t aFlags = 0) {}
+
 /**
  * hashkey wrapper using integral or enum KeyTypes
  *
@@ -255,6 +274,12 @@ class nsIntegralHashKey : public PLDHashEntryHdr {
  private:
   const T mValue;
 };
+
+template <typename T>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsIntegralHashKey<T>& aField, const char* aName,
+    uint32_t aFlags = 0) {}
 
 /**
  * hashkey wrapper using uint32_t KeyType
@@ -298,6 +323,10 @@ class nsFloatHashKey : public PLDHashEntryHdr {
   const float mValue;
 };
 
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback, const nsFloatHashKey& aField,
+    const char* aName, uint32_t aFlags = 0) {}
+
 /**
  * hashkey wrapper using intptr_t KeyType
  *
@@ -333,6 +362,13 @@ class nsISupportsHashKey : public PLDHashEntryHdr {
   nsCOMPtr<nsISupports> mSupports;
 };
 
+template <class T>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsISupportsHashKey& aField, const char* aName, uint32_t aFlags = 0) {
+  CycleCollectionNoteChild(aCallback, aField.GetKey(), aName, aFlags);
+}
+
 /**
  * hashkey wrapper using refcounted * KeyType
  *
@@ -361,10 +397,50 @@ class nsRefPtrHashKey : public PLDHashEntryHdr {
   RefPtr<T> mKey;
 };
 
+namespace mozilla {
+
+/**
+ * hashkey wrapper using weakly-referenced KeyType
+ *
+ * The key is stored as a ThreadSafeWeakPtr<T>, so the referenced object is not
+ * kept alive. GetKey() returns a non-null RefPtr<T> if the object is still
+ * alive, or null otherwise.
+ *
+ * WARNING: Entries will NOT be automatically removed from the table as the
+ * referenced object is destroyed, and the entry can no longer be looked up.
+ * A component using this hash key must clear destroyed keys from long-lived
+ * tables in order to avoid leaks.
+ *
+ * @see nsTHashtable::EntryType for specification
+ */
+template <class T>
+class ThreadSafeWeakPtrHashKey : public PLDHashEntryHdr {
+ public:
+  typedef RefPtr<T> KeyType;
+  typedef const T* KeyTypePointer;
+
+  explicit ThreadSafeWeakPtrHashKey(KeyTypePointer aKey)
+      : mKey(do_AddRef(const_cast<T*>(aKey))) {}
+
+  KeyType GetKey() const { return do_AddRef(mKey); }
+  bool KeyEquals(KeyTypePointer aKey) const { return mKey == aKey; }
+
+  static KeyTypePointer KeyToPointer(const KeyType& aKey) { return aKey.get(); }
+  static PLDHashNumber HashKey(KeyTypePointer aKey) {
+    return HashGeneric(aKey);
+  }
+  enum { ALLOW_MEMMOVE = true };
+
+ private:
+  ThreadSafeWeakPtr<T> mKey;
+};
+
+}  // namespace mozilla
+
 template <class T>
 inline void ImplCycleCollectionTraverse(
-    nsCycleCollectionTraversalCallback& aCallback, nsRefPtrHashKey<T>& aField,
-    const char* aName, uint32_t aFlags = 0) {
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsRefPtrHashKey<T>& aField, const char* aName, uint32_t aFlags = 0) {
   CycleCollectionNoteChild(aCallback, aField.GetKey(), aName, aFlags);
 }
 
@@ -396,6 +472,12 @@ class nsFuncPtrHashKey : public PLDHashEntryHdr {
   T mKey;
 };
 
+template <class T>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsFuncPtrHashKey<T>& aField, const char* aName, uint32_t aFlags = 0) {
+}
+
 /**
  * hashkey wrapper using nsID KeyType
  *
@@ -426,6 +508,10 @@ class nsIDHashKey : public PLDHashEntryHdr {
   nsID mID;
 };
 
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback, const nsIDHashKey& aField,
+    const char* aName, uint32_t aFlags = 0) {}
+
 /**
  * hashkey wrapper using nsID* KeyType
  *
@@ -455,6 +541,10 @@ class nsIDPointerHashKey : public PLDHashEntryHdr {
  private:
   const nsID* mID;
 };
+
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsIDPointerHashKey& aField, const char* aName, uint32_t aFlags = 0) {}
 
 /**
  * hashkey wrapper for "dependent" const char*; this class does not "own"
@@ -488,6 +578,10 @@ class nsDepCharHashKey : public PLDHashEntryHdr {
  private:
   const char* mKey;
 };
+
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsDepCharHashKey& aField, const char* aName, uint32_t aFlags = 0) {}
 
 /**
  * hashkey wrapper for const char*; at construction, this class duplicates
@@ -531,6 +625,10 @@ class nsCharPtrHashKey : public PLDHashEntryHdr {
   const char* mKey;
 };
 
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsCharPtrHashKey& aField, const char* aName, uint32_t aFlags = 0) {}
+
 /**
  * hashkey wrapper for const char16_t*; at construction, this class duplicates
  * a string pointed to by the pointer so that it doesn't matter whether or not
@@ -571,6 +669,11 @@ class nsUnicharPtrHashKey : public PLDHashEntryHdr {
  private:
   const char16_t* mKey;
 };
+
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsUnicharPtrHashKey& aField, const char* aName, uint32_t aFlags = 0) {
+}
 
 namespace mozilla {
 
@@ -620,4 +723,4 @@ class NoMemMoveKey : public Key {
   enum { ALLOW_MEMMOVE = false };
 };
 
-#endif  // nsTHashKeys_h__
+#endif  // nsTHashKeys_h_

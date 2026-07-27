@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -49,19 +47,18 @@ bool RenderAndroidHardwareBufferTextureHost::EnsureLockable() {
   }
 
   auto fenceFd = mAndroidHardwareBuffer->GetAndResetAcquireFence();
-  if (fenceFd.IsValid()) {
+  if (fenceFd) {
     const auto& gle = gl::GLContextEGL::Cast(mGL);
     const auto& egl = gle->mEgl;
 
-    auto rawFD = fenceFd.TakePlatformHandle();
     const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
-                              rawFD.get(), LOCAL_EGL_NONE};
+                              fenceFd.get(), LOCAL_EGL_NONE};
 
     EGLSync sync =
         egl->fCreateSync(LOCAL_EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
     if (sync) {
       // Release fd here, since it is owned by EGLSync
-      Unused << rawFD.release();
+      (void)fenceFd.release();
 
       if (egl->IsExtensionSupported(gl::EGLExtension::KHR_wait_sync)) {
         egl->fWaitSync(sync, 0);
@@ -132,9 +129,10 @@ wr::WrExternalImage RenderAndroidHardwareBufferTextureHost::Lock(
     return InvalidToWrExternalImage();
   }
 
-  const auto uvs = GetUvCoords(GetSize());
-  return NativeTextureToWrExternalImage(
-      mTextureHandle, uvs.first.x, uvs.first.y, uvs.second.x, uvs.second.y);
+  const gfx::IntSize size = GetSize();
+  return NativeTextureToWrExternalImage(mTextureHandle, 0.0, 0.0,
+                                        static_cast<float>(size.width),
+                                        static_cast<float>(size.height));
 }
 
 void RenderAndroidHardwareBufferTextureHost::Unlock() {}
@@ -209,8 +207,8 @@ RenderAndroidHardwareBufferTextureHost::ReadTexImage() {
   int shaderConfig = config.mFeatures;
 
   bool ret = mGL->ReadTexImageHelper()->ReadTexImage(
-      surf, mTextureHandle, LOCAL_GL_TEXTURE_EXTERNAL, GetSize(), shaderConfig,
-      /* aYInvert */ false);
+      surf, mTextureHandle, LOCAL_GL_TEXTURE_EXTERNAL, GetSize(),
+      gfx::Matrix4x4(), shaderConfig, /* aYInvert */ false);
   if (!ret) {
     return nullptr;
   }

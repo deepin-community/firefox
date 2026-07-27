@@ -1,19 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SharedWorkerService.h"
-#include "mozilla/dom/MessagePort.h"
-#include "mozilla/dom/RemoteWorkerTypes.h"
-#include "mozilla/dom/SharedWorkerManager.h"
-#include "mozilla/ipc/BackgroundParent.h"
-#include "mozilla/ipc/URIUtils.h"
+
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/StaticMutex.h"
+#include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/MessagePort.h"
+#include "mozilla/dom/RemoteWorkerManager.h"  // RemoteWorkerManager::GetRemoteType
+#include "mozilla/dom/RemoteWorkerTypes.h"
+#include "mozilla/dom/SharedWorkerManager.h"
+#include "mozilla/ipc/BackgroundParent.h"
+#include "mozilla/ipc/URIUtils.h"
 #include "nsIPrincipal.h"
 #include "nsProxyRelease.h"
 
@@ -31,14 +32,15 @@ StaticRefPtr<SharedWorkerService> sSharedWorkerService;
 
 class GetOrCreateWorkerManagerRunnable final : public Runnable {
  public:
-  GetOrCreateWorkerManagerRunnable(SharedWorkerService* aService,
-                                   SharedWorkerParent* aActor,
-                                   const RemoteWorkerData& aData,
-                                   uint64_t aWindowID,
-                                   const MessagePortIdentifier& aPortIdentifier)
+  GetOrCreateWorkerManagerRunnable(
+      SharedWorkerService* aService,
+      ThreadsafeContentParentHandle* aContentParentHandle,
+      SharedWorkerParent* aActor, const RemoteWorkerData& aData,
+      uint64_t aWindowID, const MessagePortIdentifier& aPortIdentifier)
       : Runnable("GetOrCreateWorkerManagerRunnable"),
         mBackgroundEventTarget(GetCurrentSerialEventTarget()),
         mService(aService),
+        mContentParentHandle(aContentParentHandle),
         mActor(aActor),
         mData(aData),
         mWindowID(aWindowID),
@@ -47,7 +49,8 @@ class GetOrCreateWorkerManagerRunnable final : public Runnable {
   NS_IMETHOD
   Run() {
     mService->GetOrCreateWorkerManagerOnMainThread(
-        mBackgroundEventTarget, mActor, mData, mWindowID, mPortIdentifier);
+        mBackgroundEventTarget, mContentParentHandle, mActor, mData, mWindowID,
+        mPortIdentifier);
 
     return NS_OK;
   }
@@ -55,6 +58,7 @@ class GetOrCreateWorkerManagerRunnable final : public Runnable {
  private:
   nsCOMPtr<nsIEventTarget> mBackgroundEventTarget;
   RefPtr<SharedWorkerService> mService;
+  RefPtr<ThreadsafeContentParentHandle> mContentParentHandle;
   RefPtr<SharedWorkerParent> mActor;
   RemoteWorkerData mData;
   uint64_t mWindowID;
@@ -134,7 +138,7 @@ already_AddRefed<SharedWorkerService> SharedWorkerService::GetOrCreate() {
           MOZ_ASSERT(sSharedWorkerService);
           ClearOnShutdown(&sSharedWorkerService);
         }));
-    Unused << NS_WARN_IF(NS_FAILED(rv));
+    (void)NS_WARN_IF(NS_FAILED(rv));
   }
 
   RefPtr<SharedWorkerService> instance = sSharedWorkerService;
@@ -154,25 +158,52 @@ void SharedWorkerService::GetOrCreateWorkerManager(
     uint64_t aWindowID, const MessagePortIdentifier& aPortIdentifier) {
   AssertIsOnBackgroundThread();
 
+  RefPtr<ThreadsafeContentParentHandle> contentParentHandle =
+      BackgroundParent::GetContentParentHandle(aActor->Manager());
+
   // The real check happens on main-thread.
   RefPtr<GetOrCreateWorkerManagerRunnable> r =
-      new GetOrCreateWorkerManagerRunnable(this, aActor, aData, aWindowID,
-                                           aPortIdentifier);
+      new GetOrCreateWorkerManagerRunnable(this, contentParentHandle, aActor,
+                                           aData, aWindowID, aPortIdentifier);
 
   nsresult rv = SchedulerGroup::Dispatch(r.forget());
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 }
 
 void SharedWorkerService::GetOrCreateWorkerManagerOnMainThread(
-    nsIEventTarget* aBackgroundEventTarget, SharedWorkerParent* aActor,
-    const RemoteWorkerData& aData, uint64_t aWindowID,
-    UniqueMessagePortId& aPortIdentifier) {
+    nsIEventTarget* aBackgroundEventTarget,
+    ThreadsafeContentParentHandle* aContentParentHandle,
+    SharedWorkerParent* aActor, const RemoteWorkerData& aData,
+    uint64_t aWindowID, UniqueMessagePortId& aPortIdentifier) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(aBackgroundEventTarget);
   MOZ_ASSERT(aActor);
 
+  RemoteWorkerData copyData = aData;
+  auto principalOrErr = PrincipalInfoToPrincipal(copyData.principalInfo());
+  if (NS_WARN_IF(principalOrErr.isErr())) {
+    ErrorPropagationOnMainThread(aBackgroundEventTarget, aActor,
+                                 principalOrErr.unwrapErr());
+    return;
+  }
+
+  nsCOMPtr<nsIPrincipal> principal = principalOrErr.unwrap();
+
+  nsCString currentRemoteType = aContentParentHandle
+                                    ? aContentParentHandle->GetRemoteType()
+                                    : NOT_REMOTE_TYPE;
+  auto remoteType = RemoteWorkerManager::GetRemoteType(
+      principal, WorkerKind::WorkerKindShared, currentRemoteType);
+  if (NS_WARN_IF(remoteType.isErr())) {
+    ErrorPropagationOnMainThread(aBackgroundEventTarget, aActor,
+                                 remoteType.unwrapErr());
+    return;
+  }
+
+  copyData.remoteType() = remoteType.unwrap();
+
   auto partitionedPrincipalOrErr =
-      PrincipalInfoToPrincipal(aData.partitionedPrincipalInfo());
+      PrincipalInfoToPrincipal(copyData.partitionedPrincipalInfo());
   if (NS_WARN_IF(partitionedPrincipalOrErr.isErr())) {
     ErrorPropagationOnMainThread(aBackgroundEventTarget, aActor,
                                  partitionedPrincipalOrErr.unwrapErr());
@@ -180,7 +211,7 @@ void SharedWorkerService::GetOrCreateWorkerManagerOnMainThread(
   }
 
   auto loadingPrincipalOrErr =
-      PrincipalInfoToPrincipal(aData.loadingPrincipalInfo());
+      PrincipalInfoToPrincipal(copyData.loadingPrincipalInfo());
   if (NS_WARN_IF(loadingPrincipalOrErr.isErr())) {
     ErrorPropagationOnMainThread(aBackgroundEventTarget, aActor,
                                  loadingPrincipalOrErr.unwrapErr());
@@ -194,33 +225,42 @@ void SharedWorkerService::GetOrCreateWorkerManagerOnMainThread(
       partitionedPrincipalOrErr.unwrap();
 
   nsCOMPtr<nsIPrincipal> effectiveStoragePrincipal = partitionedPrincipal;
-  if (aData.useRegularPrincipal()) {
+  if (copyData.useRegularPrincipal()) {
     effectiveStoragePrincipal = loadingPrincipal;
   }
 
   // Let's see if there is already a SharedWorker to share.
   nsCOMPtr<nsIURI> resolvedScriptURL =
-      DeserializeURI(aData.resolvedScriptURL());
+      DeserializeURI(copyData.resolvedScriptURL());
   for (SharedWorkerManager* workerManager : mWorkerManagers) {
+    bool matchNameButNotOptions = false;
+
     managerHolder = workerManager->MatchOnMainThread(
-        this, aData.domain(), resolvedScriptURL, aData.name(), loadingPrincipal,
-        BasePrincipal::Cast(effectiveStoragePrincipal)->OriginAttributesRef());
+        this, copyData, resolvedScriptURL, loadingPrincipal,
+        BasePrincipal::Cast(effectiveStoragePrincipal)->OriginAttributesRef(),
+        &matchNameButNotOptions);
     if (managerHolder) {
       break;
+    }
+
+    if (matchNameButNotOptions) {
+      MismatchOptionsErrorPropagationOnMainThread(aBackgroundEventTarget,
+                                                  aActor);
+      return;
     }
   }
 
   // Let's create a new one.
   if (!managerHolder) {
     managerHolder = SharedWorkerManager::Create(
-        this, aBackgroundEventTarget, aData, loadingPrincipal,
+        this, aBackgroundEventTarget, copyData, loadingPrincipal,
         BasePrincipal::Cast(effectiveStoragePrincipal)->OriginAttributesRef());
 
     mWorkerManagers.AppendElement(managerHolder->Manager());
   } else {
     // We are attaching the actor to an existing one.
     if (managerHolder->Manager()->IsSecureContext() !=
-        aData.isSecureContext()) {
+        copyData.isSecureContext()) {
       ErrorPropagationOnMainThread(aBackgroundEventTarget, aActor,
                                    NS_ERROR_DOM_SECURITY_ERR);
       return;
@@ -231,7 +271,7 @@ void SharedWorkerService::GetOrCreateWorkerManagerOnMainThread(
       new SharedWorkerManagerWrapper(managerHolder.forget());
 
   RefPtr<WorkerManagerCreatedRunnable> r = new WorkerManagerCreatedRunnable(
-      wrapper.forget(), aActor, aData, aWindowID, aPortIdentifier);
+      wrapper.forget(), aActor, copyData, aWindowID, aPortIdentifier);
   aBackgroundEventTarget->Dispatch(r.forget(), NS_DISPATCH_NORMAL);
 }
 
@@ -246,6 +286,21 @@ void SharedWorkerService::ErrorPropagationOnMainThread(
   RefPtr<ErrorPropagationRunnable> r =
       new ErrorPropagationRunnable(aActor, aError);
   aBackgroundEventTarget->Dispatch(r.forget(), NS_DISPATCH_NORMAL);
+}
+
+void SharedWorkerService::MismatchOptionsErrorPropagationOnMainThread(
+    nsIEventTarget* aBackgroundEventTarget, SharedWorkerParent* aActor) {
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(aBackgroundEventTarget);
+  MOZ_ASSERT(aActor);
+
+  aBackgroundEventTarget->Dispatch(
+      NS_NewRunnableFunction(__func__,
+                             [aActor = RefPtr(aActor)] {
+                               AssertIsOnBackgroundThread();
+                               aActor->MismatchOptionsErrorPropagation();
+                             }),
+      NS_DISPATCH_NORMAL);
 }
 
 void SharedWorkerService::RemoveWorkerManagerOnMainThread(

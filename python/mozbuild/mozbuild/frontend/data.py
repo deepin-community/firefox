@@ -18,7 +18,6 @@ structures.
 from collections import OrderedDict, defaultdict
 
 import mozpack.path as mozpath
-import six
 from mozpack.chrome.manifest import ManifestEntry
 
 from mozbuild.frontend.context import ObjDirPath, SourcePath
@@ -28,7 +27,7 @@ from ..util import group_unified_files
 from .context import FinalTargetValue
 
 
-class TreeMetadata(object):
+class TreeMetadata:
     """Base class for all data being captured."""
 
     __slots__ = ()
@@ -50,6 +49,7 @@ class ContextDerived(TreeMetadata):
         "topsrcdir",
         "topobjdir",
         "relsrcdir",
+        "relobjdir",
         "srcdir",
         "objdir",
         "config",
@@ -70,6 +70,7 @@ class ContextDerived(TreeMetadata):
         self.relsrcdir = context.relsrcdir
         self.srcdir = context.srcdir
         self.objdir = context.objdir
+        self.relobjdir = mozpath.relpath(self.objdir, self.topobjdir)
 
         self.config = context.config
 
@@ -88,12 +89,8 @@ class ContextDerived(TreeMetadata):
         defines = self._context["DEFINES"]
         return Defines(self._context, defines) if defines else None
 
-    @property
-    def relobjdir(self):
-        return mozpath.relpath(self.objdir, self.topobjdir)
 
-
-class HostMixin(object):
+class HostMixin:
     @property
     def defines(self):
         defines = self._context["HOST_DEFINES"]
@@ -148,7 +145,7 @@ class VariablePassthru(ContextDerived):
     in our build backends since we will continue to be tied to our rules.mk.
     """
 
-    __slots__ = "variables"
+    __slots__ = ("variables",)
 
     def __init__(self, context):
         ContextDerived.__init__(self, context)
@@ -197,14 +194,14 @@ class BaseDefines(ContextDerived):
     which are OrderedDicts.
     """
 
-    __slots__ = "defines"
+    __slots__ = ("defines",)
 
     def __init__(self, context, defines):
         ContextDerived.__init__(self, context)
         self.defines = defines
 
     def get_defines(self):
-        for define, value in six.iteritems(self.defines):
+        for define, value in self.defines.items():
             if value is True:
                 yield ("-D%s" % define)
             elif value is False:
@@ -477,7 +474,7 @@ class BaseProgram(Linkable):
     Otherwise, the suffix is appended to the program name.
     """
 
-    __slots__ = "program"
+    __slots__ = ("program",)
 
     DICT_ATTRS = {"install_target", "KIND", "program", "relobjdir"}
 
@@ -551,13 +548,19 @@ class HostSimpleProgram(HostMixin, BaseProgram):
         return []
 
 
-def cargo_output_directory(context, target_var):
+def cargo_output_directory(context, target_var, libname=""):
     # cargo creates several directories and places its build artifacts
     # in those directories.  The directory structure depends not only
     # on the target, but also what sort of build we are doing.
-    rust_build_kind = "release"
-    if context.config.substs.get("MOZ_DEBUG_RUST"):
-        rust_build_kind = "debug"
+    # Megazord libraries use custom profiles that output to different directories.
+    if "megazord" in libname:
+        rust_build_kind = "release-megazord"
+        if context.config.substs.get("MOZ_DEBUG_RUST"):
+            rust_build_kind = "dev-megazord"
+    else:
+        rust_build_kind = "release"
+        if context.config.substs.get("MOZ_DEBUG_RUST"):
+            rust_build_kind = "debug"
     return mozpath.join(context.config.substs[target_var], rust_build_kind)
 
 
@@ -567,16 +570,19 @@ class BaseRustProgram(Linkable):
     __slots__ = (
         "name",
         "cargo_file",
+        "features",
         "location",
+        "output_category",
         "SUFFIX_VAR",
         "KIND",
         "TARGET_SUBST_VAR",
     )
 
-    def __init__(self, context, name, cargo_file):
+    def __init__(self, context, name, cargo_file, features):
         Linkable.__init__(self, context)
         self.name = name
         self.cargo_file = cargo_file
+        self.output_category = context.get(self.OUTPUT_CATEGORY_VAR)
         # Skip setting properties below which depend on cargo
         # when we don't have a compile environment. The required
         # config keys won't be available, but the instance variables
@@ -587,18 +593,23 @@ class BaseRustProgram(Linkable):
         cargo_dir = cargo_output_directory(context, self.TARGET_SUBST_VAR)
         exe_file = "%s%s" % (name, context.config.substs.get(self.SUFFIX_VAR, ""))
         self.location = mozpath.join(cargo_dir, exe_file)
+        self.features = features
 
 
 class RustProgram(BaseRustProgram):
     SUFFIX_VAR = "BIN_SUFFIX"
     KIND = "target"
     TARGET_SUBST_VAR = "RUST_TARGET"
+    FEATURES_VAR = "RUST_PROGRAM_FEATURES"
+    OUTPUT_CATEGORY_VAR = "RUST_PROGRAM_OUTPUT_CATEGORY"
 
 
 class HostRustProgram(BaseRustProgram):
     SUFFIX_VAR = "HOST_BIN_SUFFIX"
     KIND = "host"
     TARGET_SUBST_VAR = "RUST_HOST_TARGET"
+    FEATURES_VAR = "HOST_RUST_PROGRAM_FEATURES"
+    OUTPUT_CATEGORY_VAR = "HOST_RUST_PROGRAM_OUTPUT_CATEGORY"
 
 
 class RustTests(ContextDerived):
@@ -609,6 +620,15 @@ class RustTests(ContextDerived):
         self.names = names
         self.features = features
         self.output_category = "rusttests"
+
+
+class LegacyRunTests(ContextDerived):
+    __slots__ = ("tests", "output_category")
+
+    def __init__(self, context, tests):
+        ContextDerived.__init__(self, context)
+        self.tests = tests
+        self.output_category = "runtests"
 
 
 class BaseLibrary(Linkable):
@@ -691,7 +711,7 @@ class SandboxedWasmLibrary(Library):
         return self.config.substs.get("WASM_OBJ_SUFFIX", "")
 
 
-class BaseRustLibrary(object):
+class BaseRustLibrary:
     slots = (
         "cargo_file",
         "crate_type",
@@ -742,7 +762,9 @@ class BaseRustLibrary(object):
             self._context,
             "!/"
             + mozpath.join(
-                cargo_output_directory(self._context, self.TARGET_SUBST_VAR),
+                cargo_output_directory(
+                    self._context, self.TARGET_SUBST_VAR, self.import_name
+                ),
                 self.import_name,
             ),
         )
@@ -910,7 +932,7 @@ class HostSharedLibrary(HostMixin, Library):
         )
 
 
-class ExternalLibrary(object):
+class ExternalLibrary:
     """Empty mixin for libraries built by an external build system."""
 
 
@@ -1201,7 +1223,7 @@ class FinalTargetFiles(ContextDerived):
     HierarchicalStringList, which is created when parsing FINAL_TARGET_FILES.
     """
 
-    __slots__ = "files"
+    __slots__ = ("files",)
 
     def __init__(self, sandbox, files):
         ContextDerived.__init__(self, sandbox)
@@ -1218,11 +1240,19 @@ class FinalTargetPreprocessedFiles(ContextDerived):
     FINAL_TARGET_PP_FILES.
     """
 
-    __slots__ = "files"
+    __slots__ = ("files",)
 
     def __init__(self, sandbox, files):
         ContextDerived.__init__(self, sandbox)
         self.files = files
+
+    @staticmethod
+    def get_obj_basename(f):
+        # This matches what PP_TARGETS do in config/rules.
+        basename = f.target_basename
+        if basename.endswith(".in"):
+            basename = basename[:-3]
+        return basename
 
 
 class LocalizedFiles(FinalTargetFiles):
@@ -1239,6 +1269,24 @@ class LocalizedPreprocessedFiles(FinalTargetPreprocessedFiles):
     """
 
     pass
+
+
+class MozSrcFiles(FinalTargetFiles):
+    """Sandbox container object for MOZ_SRC_FILES, which is a
+    ContextDerivedTypedList.
+
+    This is similar to FinalTargetFiles, but always installs into
+    dist/bin/moz-src . Contents are derived from MOZ_SRC_FILES in the emitter.
+    """
+
+    __slots__ = ("files",)
+
+    @property
+    def install_target(self):
+        # We don't use FINAL_TARGET here because it can include DIST_SUBDIR
+        # and/or XPI_NAME, whereas we want all moz-src content packaged in
+        # the same place.
+        return mozpath.join("dist/bin/moz-src", self._context.relsrcdir)
 
 
 class ObjdirFiles(FinalTargetFiles):
@@ -1299,7 +1347,6 @@ class GeneratedFile(ContextDerived):
         "required_during_compile",
         "localized",
         "force",
-        "py2",
     )
 
     def __init__(
@@ -1312,7 +1359,6 @@ class GeneratedFile(ContextDerived):
         flags=(),
         localized=False,
         force=False,
-        py2=False,
         required_during_compile=None,
     ):
         ContextDerived.__init__(self, context)
@@ -1323,12 +1369,19 @@ class GeneratedFile(ContextDerived):
         self.flags = flags
         self.localized = localized
         self.force = force
-        self.py2 = py2
 
         if self.config.substs.get("MOZ_WIDGET_TOOLKIT") == "android":
-            # In GeckoView builds we process Jinja files during pre-export
+            # In GeckoView builds, the gradle build is done during export to
+            # extract JNI wrapping details, so make sure generated Java and
+            # Android manifest files are created during pre-export.
             self.required_before_export = [
-                f for f in self.inputs if f.endswith(".jinja")
+                f
+                for f in self.outputs
+                if f.endswith((".java", ".kt"))
+                or mozpath.match(f, "**/AndroidManifest*.xml")
+                # Special-case for the webcompat addon, for files it automatically
+                # generates with GenerateWebCompatAddonFiles in /mobile/android/moz.build.
+                or mozpath.match(f, "**/webcompat_addon_generated_files/**")
             ]
         else:
             self.required_before_export = False
@@ -1363,12 +1416,24 @@ class GeneratedFile(ContextDerived):
             self.required_during_compile = [
                 f
                 for f in self.outputs
-                if f.endswith(
-                    (".asm", ".c", ".cpp", ".inc", ".m", ".mm", ".def", "symverscript")
-                )
+                if f.endswith((
+                    ".asm",
+                    ".c",
+                    ".cpp",
+                    ".inc",
+                    ".m",
+                    ".mm",
+                    ".def",
+                    ".s",
+                    ".S",
+                    "symverscript",
+                ))
             ]
         else:
             self.required_during_compile = required_during_compile
+        if self.required_during_compile and self.required_before_compile:
+            self.required_before_compile += self.required_during_compile
+            self.required_during_compile = []
 
 
 class ChromeManifestEntry(ContextDerived):

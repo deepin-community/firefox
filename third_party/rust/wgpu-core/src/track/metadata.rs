@@ -1,5 +1,7 @@
 //! The `ResourceMetadata` type.
 
+use alloc::vec::Vec;
+
 use bit_vec::BitVec;
 use wgt::strict_assert;
 
@@ -27,11 +29,6 @@ impl<T: Clone> ResourceMetadata<T> {
         }
     }
 
-    /// Returns the number of indices we can accommodate.
-    pub(super) fn size(&self) -> usize {
-        self.owned.len()
-    }
-
     pub(super) fn set_size(&mut self, size: usize) {
         self.resources.resize(size, None);
         resize_bitvec(&mut self.owned, size);
@@ -39,14 +36,13 @@ impl<T: Clone> ResourceMetadata<T> {
 
     pub(super) fn clear(&mut self) {
         self.resources.clear();
-        self.owned.clear();
+        self.owned.fill(false);
     }
 
     /// Ensures a given index is in bounds for all arrays and does
     /// sanity checks of the presence of a refcount.
     ///
     /// In release mode this function is completely empty and is removed.
-    #[cfg_attr(not(feature = "strict_asserts"), allow(unused_variables))]
     pub(super) fn tracker_assert_in_bounds(&self, index: usize) {
         strict_assert!(index < self.owned.len());
         strict_assert!(index < self.resources.len());
@@ -116,13 +112,13 @@ impl<T: Clone> ResourceMetadata<T> {
     }
 
     /// Returns an iterator over the resources owned by `self`.
-    pub(super) fn owned_resources(&self) -> impl Iterator<Item = T> + '_ {
+    pub(super) fn owned_resources(&self) -> impl Iterator<Item = &T> + '_ {
         if !self.owned.is_empty() {
             self.tracker_assert_in_bounds(self.owned.len() - 1)
         };
         iterate_bitvec_indices(&self.owned).map(move |index| {
             let resource = unsafe { self.resources.get_unchecked(index) };
-            resource.as_ref().unwrap().clone()
+            resource.as_ref().unwrap()
         })
     }
 

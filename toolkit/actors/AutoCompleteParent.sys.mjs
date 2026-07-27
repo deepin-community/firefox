@@ -2,19 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "DELEGATE_AUTOCOMPLETE",
-  "toolkit.autocomplete.delegate",
-  false
-);
-
 ChromeUtils.defineESModuleGetters(lazy, {
   GeckoViewAutocomplete: "resource://gre/modules/GeckoViewAutocomplete.sys.mjs",
+  clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
@@ -203,7 +197,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
     }
   }
 
-  showPopupWithResults({ rect, dir, results }) {
+  showPopupWithResults({ rect, dir, results, selectedIndex }) {
     if (!results.length || this.openedPopup) {
       // We shouldn't ever be showing an empty popup, and if we
       // already have a popup open, the old one needs to close before
@@ -211,15 +205,16 @@ export class AutoCompleteParent extends JSWindowActorParent {
       return;
     }
 
+    if (!this.browsingContext.canOpenModalPicker) {
+      return;
+    }
+
     let browser = this.browsingContext.top.embedderElement;
-    let window = browser.ownerGlobal;
-    // Also check window top in case this is a sidebar.
-    if (
-      Services.focus.activeWindow !== window.top &&
-      Services.focus.focusedWindow.top !== window.top
-    ) {
-      // We were sent a message from a window or tab that went into the
-      // background, so we'll ignore it for now.
+
+    let tabbrowser = browser.getTabBrowser();
+    if (tabbrowser && tabbrowser.selectedBrowser != browser) {
+      // Overly cautious check, because AsyncTabSwitcher might delay
+      // deactivating our browser.
       return;
     }
 
@@ -240,7 +235,6 @@ export class AutoCompleteParent extends JSWindowActorParent {
     AutoCompleteResultView.setResults(this, results);
 
     this.openedPopup.view = AutoCompleteResultView;
-    this.openedPopup.selectedIndex = -1;
 
     // Reset fields that were set from the last time the search popup was open
     this.openedPopup.mInput = AutoCompleteResultView;
@@ -266,6 +260,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
       false
     );
     this.openedPopup.invalidate();
+    this.openedPopup.selectedIndex = selectedIndex;
     this._maybeRecordTelemetryEvents(results);
 
     // This is a temporary solution. We should replace it with
@@ -331,7 +326,9 @@ export class AutoCompleteParent extends JSWindowActorParent {
       return accumulated;
     }, rawExtraData);
 
-    // Convert extra values to strings since recordEvent requires that.
+    // Even though Glean events do not require converting extra values to
+    // strings, keep doing it so booleans keep being encoded as they were for
+    // Telemetry recordEvent.
     let extraStrings = Object.fromEntries(
       Object.entries(rawExtraData).map(([key, val]) => {
         let stringVal = "";
@@ -344,14 +341,8 @@ export class AutoCompleteParent extends JSWindowActorParent {
       })
     );
 
-    Services.telemetry.recordEvent(
-      "form_autocomplete",
-      "show",
-      "logins",
-      // Convert to a string
-      duration + "",
-      extraStrings
-    );
+    extraStrings.value = duration;
+    Glean.formAutocomplete.showLogins.record(extraStrings);
   }
 
   invalidate(results) {
@@ -382,7 +373,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
 
     if (
       !browser ||
-      (!lazy.DELEGATE_AUTOCOMPLETE && !browser.autoCompletePopup)
+      (!AppConstants.MOZ_GECKOVIEW && !browser.autoCompletePopup)
     ) {
       // If there is no browser or popup, just make sure that the popup has been closed.
       if (this.openedPopup) {
@@ -416,9 +407,15 @@ export class AutoCompleteParent extends JSWindowActorParent {
       }
 
       case "AutoComplete:MaybeOpenPopup": {
-        let { results, rect, dir, inputElementIdentifier, formOrigin } =
-          message.data;
-        if (lazy.DELEGATE_AUTOCOMPLETE) {
+        let {
+          results,
+          rect,
+          dir,
+          inputElementIdentifier,
+          formOrigin,
+          selectedIndex,
+        } = message.data;
+        if (AppConstants.MOZ_GECKOVIEW) {
           lazy.GeckoViewAutocomplete.delegateSelection({
             browsingContext: this.browsingContext,
             options: results,
@@ -426,7 +423,12 @@ export class AutoCompleteParent extends JSWindowActorParent {
             formOrigin,
           });
         } else {
-          this.showPopupWithResults({ results, rect, dir });
+          this.showPopupWithResults({
+            results,
+            rect,
+            dir,
+            selectedIndex,
+          });
           this.notifyListeners();
 
           this.notifyAutoCompletePopupOpened(
@@ -443,7 +445,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
       }
 
       case "AutoComplete:ClosePopup": {
-        if (lazy.DELEGATE_AUTOCOMPLETE) {
+        if (AppConstants.MOZ_GECKOVIEW) {
           lazy.GeckoViewAutocomplete.delegateDismiss();
           break;
         }
@@ -482,14 +484,23 @@ export class AutoCompleteParent extends JSWindowActorParent {
     );
     items.forEach(item => (item.disabled = true));
 
-    lazy.setTimeout(
-      () => items.forEach(item => (item.disabled = false)),
-      popupDelay
-    );
+    let timerId;
+    const delay = () => {
+      if (timerId) {
+        lazy.clearTimeout(timerId);
+      }
+      timerId = lazy.setTimeout(() => {
+        items.forEach(item => (item.disabled = false));
+        this.openedPopup?.removeEventListener("click", delay);
+      }, popupDelay);
+    };
+
+    this.openedPopup.addEventListener("click", delay);
+    delay();
   }
 
   notifyListeners() {
-    let window = this.browsingContext.top.embedderElement.ownerGlobal;
+    let window = this.browsingContext.top.embedderElement.documentGlobal;
     for (let listener of autoCompleteListeners) {
       try {
         listener(window);
@@ -505,6 +516,7 @@ export class AutoCompleteParent extends JSWindowActorParent {
    * The real controller's handleEnter is called directly in the content process
    * for other methods of completing a selection (e.g. using the tab or enter
    * keys) since the field with focus is in that process.
+   *
    * @param {boolean} aIsPopupSelection
    */
   handleEnter(aIsPopupSelection) {
@@ -517,8 +529,10 @@ export class AutoCompleteParent extends JSWindowActorParent {
   }
 
   // This defines the supported autocomplete providers and the prioity to show the autocomplete
-  // entry.
-  #AUTOCOMPLETE_PROVIDERS = ["FormAutofill", "LoginManager", "FormHistory"];
+  // entry. LoginManager is prioritized to handle potential username fields first,
+  // allowing FormAutofill to safely support single email fields without
+  // manual exclusions.
+  #AUTOCOMPLETE_PROVIDERS = ["LoginManager", "FormAutofill", "FormHistory"];
 
   /**
    * Search across multiple module to gather autocomplete entries for a given search string.
@@ -526,11 +540,11 @@ export class AutoCompleteParent extends JSWindowActorParent {
    * @param {string} searchString
    *                 The input string used to query autocomplete entries across different
    *                 autocomplete providers.
-   * @param {Array<Object>} providers
+   * @param {Array<object>} providers
    *                        An array of objects where each object has a `name` used to identify the actor
    *                        name of the provider and `options` that are passed to the `searchAutoCompleteEntries`
    *                        method of the actor.
-   * @returns {Array<Object>} An array of results objects with `name` of the provider and `entries`
+   * @returns {Array<object>} An array of results objects with `name` of the provider and `entries`
    *          that are returned from the provider module's `searchAutoCompleteEntries` method.
    */
   async #startSearch(searchString, providers) {

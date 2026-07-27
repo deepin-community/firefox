@@ -19,6 +19,11 @@ add_task(async function () {
         "privacy.restrict3rdpartystorage.userInteractionRequiredForHosts",
         "tracking.example.com,tracking.example.org",
       ],
+      // Enable SA heuristics for trackers because the test depends on it.
+      [
+        "privacy.restrict3rdpartystorage.heuristic.exclude_third_party_trackers",
+        false,
+      ],
     ],
   });
 
@@ -80,8 +85,8 @@ add_task(async function () {
             ok(false, "Unknown message");
           });
 
-          content.document.body.appendChild(ifr);
           ifr.src = obj.page;
+          content.document.body.appendChild(ifr);
         });
 
       await assertBlocked();
@@ -153,8 +158,8 @@ add_task(async function () {
           ok(false, "Unknown message");
         });
 
-        content.document.body.appendChild(ifr);
         ifr.src = obj.page;
+        content.document.body.appendChild(ifr);
       });
 
       info("Triggering a 3rd party script...");
@@ -202,8 +207,8 @@ add_task(async function () {
           ok(false, "Unknown message");
         });
 
-        content.document.body.appendChild(ifr);
         ifr.src = obj.page;
+        content.document.body.appendChild(ifr);
       });
     }
   );

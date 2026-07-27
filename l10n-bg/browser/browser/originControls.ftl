@@ -3,16 +3,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## These strings appear in Origin Controls for Extensions.  Currently,
-## they are visible in the context menu for extension toolbar buttons,
-## and are used to inform the user how the extension can access their
-## data for the current website, and allow them to control it.
-
-
 ## These strings are used to map Origin Controls states to user-friendly
 ## messages. They currently appear in the unified extensions panel.
 
+origin-controls-state-no-access = Не може да чете и променя данни на този сайт
 origin-controls-state-quarantined = Забранено от { -vendor-short-name } за този сайт
+origin-controls-state-always-on = Може да чете и променя данни на този сайт
+origin-controls-state-when-clicked = Трябват права за четене и промяна на данни
+origin-controls-state-hover-run-visit-only = Изпълняване само за това посещение
+origin-controls-state-runnable-hover-open = Отваряне на разширението
+origin-controls-state-runnable-hover-run = Изпълняване на разширението
+origin-controls-state-temporary-access = Може да чете и променя данни за това посещение
 
 ## Extension's toolbar button.
 ## Variables:

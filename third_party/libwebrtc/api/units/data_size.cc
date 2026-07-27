@@ -10,14 +10,15 @@
 
 #include "api/units/data_size.h"
 
-#include "api/array_view.h"
+#include <string>
+
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
 
 std::string ToString(DataSize value) {
   char buf[64];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   if (value.IsPlusInfinity()) {
     sb << "+inf bytes";
   } else if (value.IsMinusInfinity()) {

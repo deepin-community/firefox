@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,7 +16,8 @@ void ServiceWorkerRegistrationChild::ActorDestroy(ActorDestroyReason aReason) {
   mIPCWorkerRef = nullptr;
 
   if (mOwner) {
-    mOwner->RevokeActor(this);
+    RefPtr<ServiceWorkerRegistration> owner = mOwner;
+    owner->RevokeActor(this);
     MOZ_DIAGNOSTIC_ASSERT(!mOwner);
   }
 }
@@ -34,7 +33,8 @@ IPCResult ServiceWorkerRegistrationChild::RecvUpdateState(
 
 IPCResult ServiceWorkerRegistrationChild::RecvFireUpdateFound() {
   if (mOwner) {
-    mOwner->MaybeDispatchUpdateFoundRunnable();
+    RefPtr<ServiceWorkerRegistration> owner = mOwner;
+    owner->FireUpdateFound();
   }
   return IPC_OK();
 }
@@ -51,9 +51,9 @@ ServiceWorkerRegistrationChild::Create() {
     RefPtr<IPCWorkerRefHelper<ServiceWorkerRegistrationChild>> helper =
         new IPCWorkerRefHelper<ServiceWorkerRegistrationChild>(actor);
 
-    actor->mIPCWorkerRef = IPCWorkerRef::Create(
-        workerPrivate, "ServiceWorkerRegistrationChild",
-        [helper] { helper->Actor()->MaybeStartTeardown(); });
+    actor->mIPCWorkerRef =
+        IPCWorkerRef::Create(workerPrivate, "ServiceWorkerRegistrationChild",
+                             [helper] { helper->Actor()->Shutdown(); });
 
     if (NS_WARN_IF(!actor->mIPCWorkerRef)) {
       return nullptr;
@@ -64,7 +64,7 @@ ServiceWorkerRegistrationChild::Create() {
 }
 
 ServiceWorkerRegistrationChild::ServiceWorkerRegistrationChild()
-    : mOwner(nullptr), mTeardownStarted(false) {}
+    : mOwner(nullptr) {}
 
 void ServiceWorkerRegistrationChild::SetOwner(
     ServiceWorkerRegistration* aOwner) {
@@ -80,12 +80,11 @@ void ServiceWorkerRegistrationChild::RevokeOwner(
   mOwner = nullptr;
 }
 
-void ServiceWorkerRegistrationChild::MaybeStartTeardown() {
-  if (mTeardownStarted) {
+void ServiceWorkerRegistrationChild::Shutdown() {
+  if (!CanSend()) {
     return;
   }
-  mTeardownStarted = true;
-  Unused << SendTeardown();
+  (void)Send__delete__(this);
 }
 
 }  // namespace mozilla::dom

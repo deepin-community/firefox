@@ -29,6 +29,7 @@ reset-primary-password-window2 =
     .style = min-width: 40em
 reset-password-button-label =
     .label = Poništi
+reset-primary-password-text = Ako resetiraš primarnu lozinku, zaboravit će se sve spremljene lozinke web stranica i e-pošte te spremljeni formulari, osobni certifikati i privatni ključevi. Zaista želiš poništiti svoju primarnu lozinku?
 pippki-reset-password-confirmation-title = Ponovno postavljanje primarne lozinke
 pippki-reset-password-confirmation-message = Tvoja primarna lozinka ponovno je postavljena.
 
@@ -46,9 +47,6 @@ download-cert-message-desc = Prije vjerovanju ovom CA-u za bilo koju svrhu, treb
 download-cert-view-cert =
     .label = Pogled
 download-cert-view-text = Ispitaj CA-ov certifikat
-
-## Client Authorization Ask dialog
-
 
 ## Client Authentication Ask dialog
 
@@ -84,8 +82,13 @@ client-auth-cert-details-issued-by = Izdano od: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Spremljeno na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Zapamti ovu odluku
+client-auth-cert-remember-label = Zapamti ovu odluku:
+client-auth-cert-remember-never =
+    .label = Jednom
+client-auth-cert-remember-always =
+    .label = Stalno
+client-auth-cert-remember-temporarily =
+    .label = Za ovu sesiju
 
 ## Set password (p12) dialog
 
@@ -100,3 +103,6 @@ set-password-reminder = Važno: ako zaboraviš svoju lozinku sigurnosne kopije c
 
 ## Protected authentication alert
 
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentificiraj se na token „{ $tokenName }”. Kako to učiniti ovisi o tokenu (npr. skeniranjem otiska prsta ili unosom koda na tipkovnici).

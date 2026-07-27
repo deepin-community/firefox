@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/remote-page */
-
 const MONITOR_URL = RPMGetStringPref(
   "browser.contentblocking.report.monitor.url",
   ""
@@ -33,7 +31,7 @@ export default class MonitorClass {
 
     let monitorAboutLink = this.doc.getElementById("monitor-link");
     monitorAboutLink.addEventListener("click", () => {
-      this.doc.sendTelemetryEvent("click", "mtr_about_link");
+      this.doc.sendTelemetryEvent("clickMtrAboutLink");
     });
 
     const storedEmailLink = this.doc.getElementById(
@@ -68,55 +66,38 @@ export default class MonitorClass {
     RPMSendAsyncMessage("ClearMonitorCache");
     switch (evt.currentTarget.id) {
       case "monitor-partial-breaches-link":
-        this.doc.sendTelemetryEvent(
-          "click",
-          "mtr_report_link",
-          "resolve_breaches"
-        );
+        this.doc.sendTelemetryEvent("clickMtrReportLink", "resolve_breaches");
         break;
       case "monitor-breaches-link":
         if (evt.currentTarget.classList.contains("no-breaches-resolved")) {
-          this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
-            "manage_breaches"
-          );
+          this.doc.sendTelemetryEvent("clickMtrReportLink", "manage_breaches");
         } else {
-          this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
-            "view_report"
-          );
+          this.doc.sendTelemetryEvent("clickMtrReportLink", "view_report");
         }
         break;
       case "monitor-stored-emails-link":
-        this.doc.sendTelemetryEvent(
-          "click",
-          "mtr_report_link",
-          "stored_emails"
-        );
+        this.doc.sendTelemetryEvent("clickMtrReportLink", "stored_emails");
         break;
-      case "monitor-known-breaches-link":
+      case "monitor-known-breaches-link": {
         const knownBreaches = this.doc.querySelector(
           "span[data-type='known-breaches']"
         );
         if (knownBreaches.classList.contains("known-resolved-breaches")) {
           this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
+            "clickMtrReportLink",
             "known_resolved_breaches"
           );
         } else if (
           knownBreaches.classList.contains("known-unresolved-breaches")
         ) {
           this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
+            "clickMtrReportLink",
             "known_unresolved_breaches"
           );
         }
         break;
-      case "monitor-exposed-passwords-link":
+      }
+      case "monitor-exposed-passwords-link": {
         const exposedPasswords = this.doc.querySelector(
           "span[data-type='exposed-passwords']"
         );
@@ -124,8 +105,7 @@ export default class MonitorClass {
           exposedPasswords.classList.contains("passwords-exposed-all-breaches")
         ) {
           this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
+            "clickMtrReportLink",
             "exposed_passwords_all_breaches"
           );
         } else if (
@@ -134,12 +114,12 @@ export default class MonitorClass {
           )
         ) {
           this.doc.sendTelemetryEvent(
-            "click",
-            "mtr_report_link",
+            "clickMtrReportLink",
             "exposed_passwords_unresolved_breaches"
           );
         }
         break;
+      }
     }
   }
 
@@ -181,7 +161,7 @@ export default class MonitorClass {
         "monitor-header-content-no-account"
       );
       signUpForMonitorLink.addEventListener("click", () => {
-        this.doc.sendTelemetryEvent("click", "mtr_signup_button");
+        this.doc.sendTelemetryEvent("clickMtrSignupButton");
       });
     }
   }

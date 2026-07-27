@@ -18,6 +18,7 @@ support-files = [
   "fission_document_workers.html",
   "fission_iframe.html",
   "fission_iframe_workers.html",
+  "iframe_request.html",
   "service-worker-sources.js",
   "sources.html",
   "sources.js",
@@ -55,12 +56,8 @@ support-files = [
 ["browser_resources_css_messages.js"]
 
 ["browser_resources_css_registered_properties.js"]
-skip-if = ["!fission"]
 
 ["browser_resources_document_events.js"]
-skip-if = [
-  "os == 'linux' && bits == 64", # Bug 1715878
-]
 
 ["browser_resources_error_messages.js"]
 
@@ -71,6 +68,8 @@ skip-if = [
 ["browser_resources_last_private_context_exit.js"]
 
 ["browser_resources_network_event_stacktraces.js"]
+
+["browser_resources_network_event_stacktraces_keepalive.js"]
 
 ["browser_resources_network_events.js"]
 
@@ -83,6 +82,12 @@ skip-if = [
 ["browser_resources_platform_messages.js"]
 
 ["browser_resources_reflows.js"]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && debug", # Bug 1767771
+  "os == 'mac' && os_version == '14.70' && arch == 'x86_64' && debug", # Bug 1767771
+  "os == 'win' && os_version == '11.26100' && arch == 'x86_64' && debug", # Bug 1767771
+  "os == 'win' && os_version == '11.26200' && arch == 'x86_64' && debug", # Bug 1767771
+]
 
 ["browser_resources_root_node.js"]
 
@@ -90,14 +95,11 @@ skip-if = [
 
 ["browser_resources_server_sent_events.js"]
 
+["browser_resources_session_history_events.js"]
+
 ["browser_resources_several_resources.js"]
 
 ["browser_resources_sources.js"]
-skip-if = [
-  "os == 'linux' && bits == 64", # Bug 1744565
-  "win11_2009", # Bug 1767772
-  "apple_catalina", # Bug 1767772
-]
 
 ["browser_resources_stylesheets.js"]
 
@@ -123,6 +125,5 @@ skip-if = [
 
 ["browser_resources_websocket.js"]
 skip-if = [
-  "http3", # Bug 1829298
-  "http2",
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && debug && http3", # Bug 1829298
 ]

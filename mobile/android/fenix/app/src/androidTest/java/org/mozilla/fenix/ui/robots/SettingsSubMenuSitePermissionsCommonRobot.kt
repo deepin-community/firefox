@@ -4,7 +4,9 @@
 
 package org.mozilla.fenix.ui.robots
 
+import android.os.Build
 import android.util.Log
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
@@ -26,6 +28,7 @@ import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.packageName
+import org.mozilla.fenix.helpers.TestHelper.waitForAppWindowToBeUpdated
 import org.mozilla.fenix.helpers.assertIsChecked
 import org.mozilla.fenix.helpers.click
 
@@ -193,6 +196,8 @@ class SettingsSubMenuSitePermissionsCommonRobot {
     }
 
     fun switchAppPermissionSystemSetting(permissionCategory: String, permission: String) {
+        Log.i(TAG, "switchAppPermissionSystemSetting: Waiting for $waitingTime ms for the $permissionCategory permission category to exist")
+        mDevice.findObject(UiSelector().textContains(permissionCategory)).waitForExists(waitingTime)
         Log.i(TAG, "switchAppPermissionSystemSetting: Trying to click the system permission category: $permissionCategory button")
         mDevice.findObject(UiSelector().textContains(permissionCategory)).click()
         Log.i(TAG, "switchAppPermissionSystemSetting: Clicked the system permission category: $permissionCategory button")
@@ -230,20 +235,33 @@ class SettingsSubMenuSitePermissionsCommonRobot {
     }
 
     fun verifySystemGrantedPermission(permissionCategory: String) {
-        assertUIObjectExists(
-            itemWithClassName("android.widget.RelativeLayout")
-                .getChild(
-                    UiSelector()
-                        .resourceId("android:id/title")
-                        .textContains(permissionCategory),
-                ),
-            itemWithClassName("android.widget.RelativeLayout")
-                .getChild(
-                    UiSelector()
-                        .resourceId("android:id/summary")
-                        .textContains("Only while app is in use"),
-                ),
-        )
+        // The summary of the permission will be displayed in the app system settings
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            assertUIObjectExists(
+                itemWithClassName("android.widget.RelativeLayout")
+                    .getChild(
+                        UiSelector()
+                            .resourceId("android:id/title")
+                            .textContains(permissionCategory),
+                    ),
+                itemWithClassName("android.widget.RelativeLayout")
+                    .getChild(
+                        UiSelector()
+                            .resourceId("android:id/summary")
+                            .textContains("Only while app is in use"),
+                    ),
+            )
+        } else {
+            // The summary of the permission will be not be displayed in the app system settings
+            assertUIObjectExists(
+                itemWithClassName("android.widget.RelativeLayout")
+                    .getChild(
+                        UiSelector()
+                            .resourceId("android:id/title")
+                            .textContains(permissionCategory),
+                    ),
+            )
+        }
     }
 
     fun verifyNotificationToolbar() =
@@ -290,6 +308,18 @@ class SettingsSubMenuSitePermissionsCommonRobot {
 
             SettingsSubMenuSitePermissionsRobot().interact()
             return SettingsSubMenuSitePermissionsRobot.Transition()
+        }
+
+        fun goBackToSignInToSync(composeTestRule: ComposeTestRule, interact: SettingsSignInToSyncRobot.() -> Unit): SettingsSignInToSyncRobot.Transition {
+            for (i in 0..2) {
+                Log.i(TAG, "goBackToSignInToSync: Trying to click the device back button")
+                mDevice.pressBack()
+                Log.i(TAG, "goBackToSignInToSync: Clicked the device back button")
+                waitForAppWindowToBeUpdated()
+            }
+
+            SettingsSignInToSyncRobot().interact()
+            return SettingsSignInToSyncRobot.Transition(composeTestRule)
         }
     }
 }

@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = Strigčių pranešiklis
-crashreporter-crash-message = Programa „{ -brand-short-name }“ susidūrė su problema ir užstrigo.
 crashreporter-plea = Jei norite padėti aptikti ir pašalinti šią problemą, galite išsiųsti strigties pranešimą.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Išsamiau: { $details }
 crashreporter-no-run-message = Ši programa paleidžiama po strigties, kad praneštų apie problemą programos autoriams. Ji neturėtų būti paleidžiama tiesiogiai.
 crashreporter-button-details = Išsamiau…
 crashreporter-view-report-title = Strigties pranešimo turinys

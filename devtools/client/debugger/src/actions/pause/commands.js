@@ -8,7 +8,9 @@ import {
   getIsCurrentThreadPaused,
   getIsPaused,
 } from "../../selectors/index";
-import { PROMISE } from "../utils/middleware/promise";
+const {
+  PROMISE,
+} = require("resource://devtools/client/shared/redux/middleware/promise.js");
 import { evaluateExpressions } from "../expressions";
 import { selectLocation } from "../sources/index";
 import { fetchScopes } from "./fetchScopes";
@@ -22,8 +24,11 @@ export function selectThread(thread) {
       return;
     }
     dispatch({ type: "SELECT_THREAD", thread });
+    if (getCurrentThread(getState()) !== thread) {
+      throw new Error("The thread wasn't selected");
+    }
 
-    const selectedFrame = getSelectedFrame(getState(), thread);
+    const selectedFrame = getSelectedFrame(getState());
 
     const serverRequests = [];
     // Update the watched expressions as we may never have evaluated them against this thread
@@ -40,7 +45,7 @@ export function selectThread(thread) {
       serverRequests.push(dispatch(selectLocation(selectedFrame.location)));
       serverRequests.push(dispatch(fetchFrames(thread)));
 
-      serverRequests.push(dispatch(fetchScopes(selectedFrame)));
+      serverRequests.push(dispatch(fetchScopes()));
     }
 
     await Promise.all(serverRequests);
@@ -60,7 +65,7 @@ export function command(type) {
     // For now, all commands are by default against the currently selected thread
     const thread = getCurrentThread(getState());
 
-    const frame = getSelectedFrame(getState(), thread);
+    const frame = getSelectedFrame(getState());
 
     return dispatch({
       type: "COMMAND",

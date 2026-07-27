@@ -5,18 +5,107 @@
 #![cfg(windows)]
 #![allow(unused_variables)]
 
-use glutin::ContextError;
-use glutin::CreationError;
-use glutin::GlAttributes;
-use glutin::GlRequest;
-use glutin::PixelFormat;
-use glutin::PixelFormatRequirements;
-use glutin::ReleaseBehavior;
-use glutin::Robustness;
-use glutin::Api;
+// Local replacements for glutin types that no longer exist in glutin 0.32.
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Api {
+    OpenGl,
+    OpenGlEs,
+}
+
+#[derive(Debug, Clone)]
+pub struct PixelFormat {
+    pub hardware_accelerated: bool,
+    pub color_bits: u8,
+    pub alpha_bits: u8,
+    pub depth_bits: u8,
+    pub stencil_bits: u8,
+    pub stereoscopy: bool,
+    pub double_buffer: bool,
+    pub multisampling: Option<u16>,
+    pub srgb: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct PixelFormatRequirements {
+    pub hardware_accelerated: Option<bool>,
+    pub color_bits: Option<u8>,
+    pub alpha_bits: Option<u8>,
+    pub depth_bits: Option<u8>,
+    pub stencil_bits: Option<u8>,
+    pub double_buffer: Option<bool>,
+    pub multisampling: Option<u16>,
+    pub stereoscopy: bool,
+    pub release_behavior: ReleaseBehavior,
+}
+
+impl Default for PixelFormatRequirements {
+    fn default() -> Self {
+        PixelFormatRequirements {
+            hardware_accelerated: Some(true),
+            color_bits: Some(24),
+            alpha_bits: Some(8),
+            depth_bits: Some(24),
+            stencil_bits: None,
+            double_buffer: None,
+            multisampling: None,
+            stereoscopy: false,
+            release_behavior: ReleaseBehavior::Flush,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ReleaseBehavior {
+    Flush,
+    None,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Robustness {
+    NotRobust,
+    NoError,
+    RobustNoResetNotification,
+    TryRobustNoResetNotification,
+    RobustLoseContextOnReset,
+    TryRobustLoseContextOnReset,
+}
+
+#[derive(Debug)]
+pub enum CreationError {
+    PlatformSpecific(String),
+    OsError(String),
+    OpenGlVersionNotSupported,
+    NoAvailablePixelFormat,
+    RobustnessNotSupported,
+}
+
+impl std::fmt::Display for CreationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for CreationError {}
+
+#[derive(Debug)]
+pub enum ContextError {
+    ContextLost,
+}
+
+impl std::fmt::Display for ContextError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for ContextError {}
+
+use mozangle::egl::ffi::types::EGLAttrib;
 
 use std::ffi::{CStr, CString};
 use std::os::raw::c_int;
+use std::os::raw::c_void;
 use std::ptr;
 use std::cell::Cell;
 
@@ -32,6 +121,7 @@ pub struct Context {
     surface: Cell<ffi::egl::types::EGLSurface>,
     api: Api,
     pixel_format: PixelFormat,
+    using_compositor: bool,
 }
 
 impl Context {
@@ -42,13 +132,11 @@ impl Context {
     /// To finish the process, you must call `.finish(window)` on the `ContextPrototype`.
     pub fn new<'a>(
         pf_reqs: &PixelFormatRequirements,
-        opengl: &'a GlAttributes<&'a Context>,
+        gl_request: &'a crate::GlApiRequest,
+        debug: bool,
+        robustness: Robustness,
     ) -> Result<ContextPrototype<'a>, CreationError>
     {
-        if opengl.sharing.is_some() {
-            unimplemented!()
-        }
-
         // calling `eglGetDisplay` or equivalent
         let display = unsafe { egl::GetDisplay(ptr::null_mut()) };
 
@@ -80,49 +168,35 @@ impl Context {
 
         // binding the right API and choosing the version
         let (version, api) = unsafe {
-            match opengl.version {
-                GlRequest::Latest => {
-                    if egl_version >= (1, 4) {
-                        if egl::BindAPI(ffi::egl::OPENGL_API) != 0 {
-                            (None, Api::OpenGl)
-                        } else if egl::BindAPI(ffi::egl::OPENGL_ES_API) != 0 {
-                            (None, Api::OpenGlEs)
-                        } else {
-                            return Err(CreationError::OpenGlVersionNotSupported);
-                        }
-                    } else {
-                        (None, Api::OpenGlEs)
-                    }
-                },
-                GlRequest::Specific(Api::OpenGlEs, version) => {
+            match gl_request {
+                crate::GlApiRequest::OpenGlEs { major, minor } => {
                     if egl_version >= (1, 2) {
                         if egl::BindAPI(ffi::egl::OPENGL_ES_API) == 0 {
                             return Err(CreationError::OpenGlVersionNotSupported);
                         }
                     }
-                    (Some(version), Api::OpenGlEs)
+                    (Some((*major, *minor)), Api::OpenGlEs)
                 },
-                GlRequest::Specific(Api::OpenGl, version) => {
+                crate::GlApiRequest::OpenGl { major, minor } => {
                     if egl_version < (1, 4) {
                         return Err(CreationError::OpenGlVersionNotSupported);
                     }
                     if egl::BindAPI(ffi::egl::OPENGL_API) == 0 {
                         return Err(CreationError::OpenGlVersionNotSupported);
                     }
-                    (Some(version), Api::OpenGl)
+                    (Some((*major, *minor)), Api::OpenGl)
                 },
-                GlRequest::Specific(_, _) => return Err(CreationError::OpenGlVersionNotSupported),
-                GlRequest::GlThenGles { opengles_version, opengl_version } => {
+                crate::GlApiRequest::GlThenGles { opengl_version, opengles_version } => {
                     if egl_version >= (1, 4) {
                         if egl::BindAPI(ffi::egl::OPENGL_API) != 0 {
-                            (Some(opengl_version), Api::OpenGl)
+                            (Some(*opengl_version), Api::OpenGl)
                         } else if egl::BindAPI(ffi::egl::OPENGL_ES_API) != 0 {
-                            (Some(opengles_version), Api::OpenGlEs)
+                            (Some(*opengles_version), Api::OpenGlEs)
                         } else {
                             return Err(CreationError::OpenGlVersionNotSupported);
                         }
                     } else {
-                        (Some(opengles_version), Api::OpenGlEs)
+                        (Some(opengles_version.clone()), Api::OpenGlEs)
                     }
                 },
             }
@@ -133,7 +207,9 @@ impl Context {
         };
 
         Ok(ContextPrototype {
-            opengl: opengl,
+            _gl_request: gl_request,
+            debug,
+            robustness,
             display: display,
             egl_version: egl_version,
             extensions: extensions,
@@ -146,6 +222,10 @@ impl Context {
 
     #[inline]
     pub fn swap_buffers(&self) -> Result<(), ContextError> {
+        if self.using_compositor {
+            return Ok(());
+        }
+
         if self.surface.get() == ffi::egl::NO_SURFACE {
             return Err(ContextError::ContextLost);
         }
@@ -193,13 +273,37 @@ impl Context {
     }
 
     #[inline]
-    pub fn get_api(&self) -> Api {
-        self.api
+    pub fn is_gles(&self) -> bool {
+        self.api == Api::OpenGlEs
     }
 
     #[inline]
     pub fn get_pixel_format(&self) -> PixelFormat {
         self.pixel_format.clone()
+    }
+
+    pub fn get_display(&self) -> *const c_void {
+        self.display
+    }
+
+    pub fn get_context(&self) -> *const c_void {
+        self.context
+    }
+
+    pub fn get_d3d11_device(&self) -> *const c_void {
+        let mut egl_device: EGLAttrib = 0;
+        unsafe {
+            egl::QueryDisplayAttribEXT(self.display, egl::DEVICE_EXT as i32, &mut egl_device);
+        }
+        assert!(egl_device != 0);
+
+        let mut d3d_device: EGLAttrib = 0;
+        unsafe {
+            egl::QueryDeviceAttribEXT(egl_device as *const c_void, egl::D3D11_DEVICE_ANGLE as i32, &mut d3d_device);
+        }
+        assert!(d3d_device != 0);
+
+        d3d_device as *const c_void
     }
 }
 
@@ -219,7 +323,9 @@ impl Drop for Context {
 }
 
 pub struct ContextPrototype<'a> {
-    opengl: &'a GlAttributes<&'a Context>,
+    _gl_request: &'a crate::GlApiRequest,
+    debug: bool,
+    robustness: Robustness,
     display: ffi::egl::types::EGLDisplay,
     egl_version: (ffi::egl::types::EGLint, ffi::egl::types::EGLint),
     extensions: Vec<String>,
@@ -239,19 +345,23 @@ impl<'a> ContextPrototype<'a> {
         value
     }
 
-    pub fn finish(self, native_window: ffi::EGLNativeWindowType)
+    pub fn finish(self, native_window: ffi::EGLNativeWindowType, using_compositor: bool)
                   -> Result<Context, CreationError>
     {
-        let surface = unsafe {
-            let surface = egl::CreateWindowSurface(self.display, self.config_id, native_window,
-                                                       ptr::null());
-            if surface.is_null() {
-                return Err(CreationError::OsError(format!("eglCreateWindowSurface failed")))
+        let surface = if using_compositor {
+            ptr::null()
+        } else {
+            unsafe {
+                let surface = egl::CreateWindowSurface(self.display, self.config_id, native_window,
+                                                        ptr::null());
+                if surface.is_null() {
+                    return Err(CreationError::OsError(format!("eglCreateWindowSurface failed")))
+                }
+                surface
             }
-            surface
         };
 
-        self.finish_impl(surface)
+        self.finish_impl(surface, using_compositor)
     }
 
     pub fn finish_pbuffer(self, dimensions: (u32, u32)) -> Result<Context, CreationError> {
@@ -270,28 +380,27 @@ impl<'a> ContextPrototype<'a> {
             surface
         };
 
-        self.finish_impl(surface)
+        self.finish_impl(surface, false)
     }
 
-    fn finish_impl(self, surface: ffi::egl::types::EGLSurface)
+    fn finish_impl(self, surface: ffi::egl::types::EGLSurface, using_compositor: bool)
                    -> Result<Context, CreationError>
     {
         let context = unsafe {
             if let Some(version) = self.version {
                 create_context(self.display, &self.egl_version,
                                &self.extensions, self.api, version, self.config_id,
-                               self.opengl.debug, self.opengl.robustness)?
+                               self.debug, self.robustness)?
 
             } else if self.api == Api::OpenGlEs {
                 if let Ok(ctxt) = create_context(self.display, &self.egl_version,
                                                  &self.extensions, self.api, (2, 0), self.config_id,
-                                                 self.opengl.debug, self.opengl.robustness)
+                                                 self.debug, self.robustness)
                 {
                     ctxt
                 } else if let Ok(ctxt) = create_context(self.display, &self.egl_version,
                                                         &self.extensions, self.api, (1, 0),
-                                                        self.config_id, self.opengl.debug,
-                                                        self.opengl.robustness)
+                                                        self.config_id, self.debug, self.robustness)
                 {
                     ctxt
                 } else {
@@ -301,19 +410,17 @@ impl<'a> ContextPrototype<'a> {
             } else {
                 if let Ok(ctxt) = create_context(self.display, &self.egl_version,
                                                  &self.extensions, self.api, (3, 2), self.config_id,
-                                                 self.opengl.debug, self.opengl.robustness)
+                                                 self.debug, self.robustness)
                 {
                     ctxt
                 } else if let Ok(ctxt) = create_context(self.display, &self.egl_version,
                                                         &self.extensions, self.api, (3, 1),
-                                                        self.config_id, self.opengl.debug,
-                                                        self.opengl.robustness)
+                                                        self.config_id, self.debug, self.robustness)
                 {
                     ctxt
                 } else if let Ok(ctxt) = create_context(self.display, &self.egl_version,
                                                         &self.extensions, self.api, (1, 0),
-                                                        self.config_id, self.opengl.debug,
-                                                        self.opengl.robustness)
+                                                        self.config_id, self.debug, self.robustness)
                 {
                     ctxt
                 } else {
@@ -328,6 +435,7 @@ impl<'a> ContextPrototype<'a> {
             surface: Cell::new(surface),
             api: self.api,
             pixel_format: self.pixel_format,
+            using_compositor,
         })
     }
 }
@@ -381,7 +489,6 @@ unsafe fn choose_fbconfig(display: ffi::egl::types::EGLDisplay,
                 out.push(ffi::egl::CONFORMANT as c_int);
                 out.push(ffi::egl::OPENGL_BIT as c_int);
             },
-            (_, _) => unimplemented!(),
         };
 
         if let Some(hardware_accelerated) = reqs.hardware_accelerated {
@@ -608,4 +715,3 @@ unsafe fn create_context(display: ffi::egl::types::EGLDisplay,
 
     Ok(context)
 }
-

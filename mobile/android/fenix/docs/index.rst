@@ -18,7 +18,6 @@ Specific documentation on a few topics is available at:
    Fennec Legacy: Migration <Fennec-Migration.md>
    Firebase Cloud Messaging for WebPush <Firebase-Cloud-Messaging-for-WebPush.md>
    Firefox for Android Team Processes <Firefox-for-Android-Team-Processes.md>
-   Guide to merging contributor PRs <Guide-to-merging-contributor-PRs.md>
    Home <Home.md>
    Implementing Telemetry <Implementing-Telemetry.md>
    Implementing a Nimbus Experiment <Implementing-a-Nimbus-Experiment.md>
@@ -33,10 +32,10 @@ Specific documentation on a few topics is available at:
    Certificates <certificates.md>
    Crash Reporting <crash-reporting.md>
    Experiments <experiments.md>
-   l10n Screenshots Tests <l10nScreenshotsTests.md>
    Manual Testing <manual-testing.md>
    Metrics Definitions <metrics.md>
    Release Checklist <release-checklist.md>
+   Startup Performance <startup-performance.md>
    Substituting Local GeckoView <substituting-local-gv.md>
    Sync Integration Tests <syncIntegrationTests.md>
    Telemetry <telemetry.md>

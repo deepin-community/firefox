@@ -1,7 +1,8 @@
 {
   "name": "@puppeteer/ng-schematics",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Puppeteer Angular schematics",
+  "type": "module",
   "scripts": {
     "build": "wireit",
     "clean": "../../tools/clean.mjs",
@@ -29,7 +30,7 @@
       "command": "tsc -b test/tsconfig.json"
     },
     "unit": {
-      "command": "node --test --test-reporter spec test/build",
+      "command": "node --test --test-reporter=spec \"test/build/**/*.test.js\"",
       "dependencies": [
         "build",
         "build:test"
@@ -56,8 +57,8 @@
     "@angular-devkit/schematics": "18.1.4"
   },
   "devDependencies": {
-    "@schematics/angular": "18.1.4",
-    "@angular/cli": "18.1.4"
+    "@angular/cli": "^21.0.5",
+    "@schematics/angular": "21.0.4"
   },
   "files": [
     "lib",

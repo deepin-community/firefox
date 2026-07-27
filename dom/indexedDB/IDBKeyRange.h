@@ -1,20 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_idbkeyrange_h__
-#define mozilla_dom_idbkeyrange_h__
+#ifndef mozilla_dom_idbkeyrange_h_
+#define mozilla_dom_idbkeyrange_h_
 
 #include "js/RootingAPI.h"
 #include "js/Value.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/IndexedDatabaseManager.h"
 #include "mozilla/dom/indexedDB/Key.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsISupports.h"
 #include "nsString.h"
 
 class mozIStorageStatement;
@@ -26,14 +22,14 @@ class ErrorResult;
 namespace dom {
 
 class GlobalObject;
+class IDBTransaction;
 
 namespace indexedDB {
 class SerializedKeyRange;
 }  // namespace indexedDB
 
-class IDBKeyRange : public nsISupports {
+class IDBKeyRange {
  protected:
-  nsCOMPtr<nsISupports> mGlobal;
   indexedDB::Key mLower;
   indexedDB::Key mUpper;
   JS::Heap<JS::Value> mCachedLowerVal;
@@ -47,12 +43,13 @@ class IDBKeyRange : public nsISupports {
   bool mRooted : 1;
 
  public:
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(IDBKeyRange)
+  NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(IDBKeyRange)
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(IDBKeyRange)
 
   // aCx is allowed to be null, but only if aVal.isUndefined().
   static void FromJSVal(JSContext* aCx, JS::Handle<JS::Value> aVal,
-                        RefPtr<IDBKeyRange>* aKeyRange, ErrorResult& aRv);
+                        RefPtr<IDBKeyRange>* aKeyRange, ErrorResult& aRv,
+                        IDBTransaction* aTransaction = nullptr);
 
   [[nodiscard]] static RefPtr<IDBKeyRange> FromSerialized(
       const indexedDB::SerializedKeyRange& aKeyRange);
@@ -99,8 +96,6 @@ class IDBKeyRange : public nsISupports {
   bool WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto,
                   JS::MutableHandle<JSObject*> aReflector);
 
-  nsISupports* GetParentObject() const { return mGlobal; }
-
   void GetLower(JSContext* aCx, JS::MutableHandle<JS::Value> aResult,
                 ErrorResult& aRv);
 
@@ -112,8 +107,7 @@ class IDBKeyRange : public nsISupports {
   bool UpperOpen() const { return mUpperOpen; }
 
  protected:
-  IDBKeyRange(nsISupports* aGlobal, bool aLowerOpen, bool aUpperOpen,
-              bool aIsOnly);
+  IDBKeyRange(bool aLowerOpen, bool aUpperOpen, bool aIsOnly);
 
   virtual ~IDBKeyRange();
 };
@@ -121,4 +115,4 @@ class IDBKeyRange : public nsISupports {
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_idbkeyrange_h__
+#endif  // mozilla_dom_idbkeyrange_h_

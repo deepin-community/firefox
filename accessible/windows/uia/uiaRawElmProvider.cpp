@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,30 +15,25 @@
 #include "ia2AccessibleTable.h"
 #include "ia2AccessibleTableCell.h"
 #include "LocalAccessible-inl.h"
+#include "mozilla/a11y/Compatibility.h"
 #include "mozilla/a11y/RemoteAccessible.h"
-#include "mozilla/StaticPrefs_accessibility.h"
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "MsaaAccessible.h"
 #include "MsaaRootAccessible.h"
 #include "nsAccessibilityService.h"
 #include "nsAccUtils.h"
+#include "nsIAccessibleAnnouncementEvent.h"
 #include "nsIAccessiblePivot.h"
 #include "nsTextEquivUtils.h"
 #include "Pivot.h"
 #include "Relation.h"
 #include "RootAccessible.h"
+#include "TextLeafRange.h"
+#include "UiaText.h"
+#include "UiaTextRange.h"
 
 using namespace mozilla;
 using namespace mozilla::a11y;
-
-#ifdef __MINGW32__
-// These constants are missing in mingw-w64. This code should be removed once
-// we update to a version which includes them.
-const long UIA_CustomLandmarkTypeId = 80000;
-const long UIA_FormLandmarkTypeId = 80001;
-const long UIA_MainLandmarkTypeId = 80002;
-const long UIA_NavigationLandmarkTypeId = 80003;
-const long UIA_SearchLandmarkTypeId = 80004;
-#endif  // __MINGW32__
 
 // Helper functions
 
@@ -98,13 +91,75 @@ class LabelTextLeafRule : public PivotRule {
 
 static void MaybeRaiseUiaLiveRegionEvent(Accessible* aAcc,
                                          uint32_t aGeckoEvent) {
-  if (!::UiaClientsAreListening()) {
-    return;
-  }
   if (Accessible* live = nsAccUtils::GetLiveRegionRoot(aAcc)) {
     auto* uia = MsaaAccessible::GetFrom(live);
     ::UiaRaiseAutomationEvent(uia, UIA_LiveRegionChangedEventId);
   }
+}
+
+static bool HasTextPattern(Accessible* aAcc) {
+  // The Text pattern must be supported for documents and editable text controls
+  // on the web:
+  // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-textpattern-and-embedded-objects-overview#webpage-and-text-input-controls-in-edge
+  // It is also recommended that the Text pattern be supported for the Text
+  // control type:
+  // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-about-text-and-textrange-patterns#control-types
+  // If we don't support this for the Text control type, when Narrator is
+  // continuously reading a document, it doesn't respect the starting position
+  // of the cursor and doesn't move the cursor as it reads. See bug 1949920.
+  constexpr uint64_t editableRootStates = states::EDITABLE | states::FOCUSABLE;
+  return aAcc->IsText() || (aAcc->IsDoc() && !aAcc->IsRoot()) ||
+         (aAcc->IsHyperText() &&
+          (aAcc->State() & editableRootStates) == editableRootStates);
+}
+
+static Accessible* GetTextContainer(Accessible* aDescendant) {
+  // "An element that implements the TextChild control pattern must be a child,
+  // or descendent, of an element that supports the Text control pattern."
+  // https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcore/nn-uiautomationcore-itextchildprovider#remarks
+  for (Accessible* ancestor = aDescendant->Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    if (HasTextPattern(ancestor)) {
+      return ancestor;
+    }
+  }
+  return nullptr;
+}
+
+static MsaaAccessible* GetTextPatternProviderFor(Accessible* aOrigin) {
+  if (HasTextPattern(aOrigin)) {
+    return MsaaAccessible::GetFrom(aOrigin);
+  }
+  return MsaaAccessible::GetFrom(GetTextContainer(aOrigin));
+}
+
+static bool IsOption(Accessible* aAcc) {
+  const role accRole = aAcc->Role();
+  return accRole == roles::OPTION || accRole == roles::COMBOBOX_OPTION;
+}
+
+static bool IsSingleSelectOption(Accessible* aAcc) {
+  if (!IsOption(aAcc)) {
+    return false;
+  }
+  Accessible* container =
+      nsAccUtils::GetSelectableContainer(aAcc, aAcc->State());
+  return !container || !(container->State() & states::MULTISELECTABLE);
+}
+
+static bool MustSelectUsingDoAction(Accessible* aAcc) {
+  // 1. Gecko doesn't treat radio buttons/radio menu items as selectable, but
+  // UIA does.
+  // 2. Gecko exposes the selectable state for tabs, but it doesn't support
+  // TakeSelection for them.
+  // 3. Gecko exposes the selectable state for all options, but it doesn't
+  // support TakeSelection for some of them; e.g. XULMenuitemAccessible when
+  // used for a combo box. TakeSelection also doesn't work for ARIA listboxes
+  // which use aria-activedescendant. However, we can't support multi select
+  // list boxes using DoAction, so we only use DoAction for options in a single
+  // select list box.
+  return IsRadio(aAcc) || aAcc->Role() == roles::PAGETAB ||
+         IsSingleSelectOption(aAcc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,13 +173,18 @@ Accessible* uiaRawElmProvider::Acc() const {
 /* static */
 void uiaRawElmProvider::RaiseUiaEventForGeckoEvent(Accessible* aAcc,
                                                    uint32_t aGeckoEvent) {
-  if (!StaticPrefs::accessibility_uia_enable()) {
+  if (!Compatibility::IsUiaEnabled() || !::UiaClientsAreListening()) {
     return;
   }
   auto* uia = MsaaAccessible::GetFrom(aAcc);
   if (!uia) {
     return;
   }
+  // Some UIA events include or depend on data that might not be cached yet. We
+  // shouldn't request additional cache domains in this case because a client
+  // might not even care about these events. Instead, we use explicit client
+  // queries as a signal to request domains.
+  CacheDomainActivationBlocker cacheBlocker;
   PROPERTYID property = 0;
   _variant_t newVal;
   bool gotNewVal = false;
@@ -134,6 +194,12 @@ void uiaRawElmProvider::RaiseUiaEventForGeckoEvent(Accessible* aAcc,
     case nsIAccessibleEvent::EVENT_DESCRIPTION_CHANGE:
       property = UIA_FullDescriptionPropertyId;
       break;
+    case nsIAccessibleEvent::EVENT_DOCUMENT_LOAD_COMPLETE:
+      // There is a UiaRaiseAsyncContentLoadedEvent function, but the client API
+      // doesn't have a specialized event handler for this event. Also, Chromium
+      // uses UiaRaiseAutomationEvent for this event.
+      ::UiaRaiseAutomationEvent(uia, UIA_AsyncContentLoadedEventId);
+      return;
     case nsIAccessibleEvent::EVENT_FOCUS:
       ::UiaRaiseAutomationEvent(uia, UIA_AutomationFocusChangedEventId);
       return;
@@ -157,11 +223,13 @@ void uiaRawElmProvider::RaiseUiaEventForGeckoEvent(Accessible* aAcc,
       return;
     case nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED:
     case nsIAccessibleEvent::EVENT_TEXT_SELECTION_CHANGED:
-      ::UiaRaiseAutomationEvent(uia, UIA_Text_TextSelectionChangedEventId);
+      ::UiaRaiseAutomationEvent(GetTextPatternProviderFor(aAcc),
+                                UIA_Text_TextSelectionChangedEventId);
       return;
     case nsIAccessibleEvent::EVENT_TEXT_INSERTED:
     case nsIAccessibleEvent::EVENT_TEXT_REMOVED:
-      ::UiaRaiseAutomationEvent(uia, UIA_Text_TextChangedEventId);
+      ::UiaRaiseAutomationEvent(GetTextPatternProviderFor(aAcc),
+                                UIA_Text_TextChangedEventId);
       MaybeRaiseUiaLiveRegionEvent(aAcc, aGeckoEvent);
       return;
     case nsIAccessibleEvent::EVENT_TEXT_VALUE_CHANGE:
@@ -177,7 +245,7 @@ void uiaRawElmProvider::RaiseUiaEventForGeckoEvent(Accessible* aAcc,
       gotNewVal = true;
       break;
   }
-  if (property && ::UiaClientsAreListening()) {
+  if (property) {
     // We can't get the old value. Thankfully, clients don't seem to need it.
     _variant_t oldVal;
     if (!gotNewVal) {
@@ -192,7 +260,7 @@ void uiaRawElmProvider::RaiseUiaEventForGeckoEvent(Accessible* aAcc,
 void uiaRawElmProvider::RaiseUiaEventForStateChange(Accessible* aAcc,
                                                     uint64_t aState,
                                                     bool aEnabled) {
-  if (!StaticPrefs::accessibility_uia_enable()) {
+  if (!Compatibility::IsUiaEnabled() || !::UiaClientsAreListening()) {
     return;
   }
   auto* uia = MsaaAccessible::GetFrom(aAcc);
@@ -232,10 +300,45 @@ void uiaRawElmProvider::RaiseUiaEventForStateChange(Accessible* aAcc,
       return;
   }
   MOZ_ASSERT(property);
-  if (::UiaClientsAreListening()) {
-    // We can't get the old value. Thankfully, clients don't seem to need it.
-    _variant_t oldVal;
-    ::UiaRaiseAutomationPropertyChangedEvent(uia, property, oldVal, newVal);
+  // We can't get the old value. Thankfully, clients don't seem to need it.
+  _variant_t oldVal;
+  ::UiaRaiseAutomationPropertyChangedEvent(uia, property, oldVal, newVal);
+}
+
+/* static */
+void uiaRawElmProvider::RaiseUiaNotificationEvent(
+    Accessible* aAcc, const nsAString& aAnnouncement, uint16_t aPriority) {
+  if (!Compatibility::IsUiaEnabled() || !::UiaClientsAreListening()) {
+    return;
+  }
+  static const StaticDynamicallyLinkedFunctionPtr<
+      decltype(&::UiaRaiseNotificationEvent)>
+      sUiaRaiseNotificationEvent(L"UIAutomationCore.dll",
+                                 "UiaRaiseNotificationEvent");
+  if (!sUiaRaiseNotificationEvent) {
+    // UiaRaiseNotificationEvent is only available on Windows 10 version 1709
+    // and later.
+    return;
+  }
+  // Find the nearest Accessible that is in the UIA control view.
+  uiaRawElmProvider* uia = nullptr;
+  for (Accessible* acc = aAcc; acc; acc = acc->Parent()) {
+    auto* maybeUia = MsaaAccessible::GetFrom(acc);
+    if (!maybeUia) {
+      break;
+    }
+    if (maybeUia->IsControl()) {
+      uia = maybeUia;
+      break;
+    }
+  }
+  if (uia) {
+    sUiaRaiseNotificationEvent(
+        uia, NotificationKind_ActionCompleted,
+        aPriority == nsIAccessibleAnnouncementEvent::ASSERTIVE
+            ? NotificationProcessing_ImportantAll
+            : NotificationProcessing_All,
+        _bstr_t(PromiseFlatString(aAnnouncement).get()), _bstr_t(L""));
   }
 }
 
@@ -262,6 +365,8 @@ uiaRawElmProvider::QueryInterface(REFIID aIid, void** aInterface) {
     *aInterface = static_cast<ISelectionItemProvider*>(this);
   } else if (aIid == IID_ISelectionProvider) {
     *aInterface = static_cast<ISelectionProvider*>(this);
+  } else if (aIid == IID_ITextChildProvider) {
+    *aInterface = static_cast<ITextChildProvider*>(this);
   } else if (aIid == IID_IToggleProvider) {
     *aInterface = static_cast<IToggleProvider*>(this);
   } else if (aIid == IID_IValueProvider) {
@@ -318,7 +423,7 @@ uiaRawElmProvider::GetRuntimeId(__RPC__deref_out_opt SAFEARRAY** aRuntimeIds) {
   *aRuntimeIds = SafeArrayCreateVector(VT_I4, 0, 2);
   if (!*aRuntimeIds) return E_OUTOFMEMORY;
 
-  for (LONG i = 0; i < (LONG)ArrayLength(ids); i++)
+  for (LONG i = 0; i < (LONG)std::size(ids); i++)
     SafeArrayPutElement(*aRuntimeIds, &i, (void*)&(ids[i]));
 
   return S_OK;
@@ -384,8 +489,14 @@ uiaRawElmProvider::GetPatternProvider(
       // Per the UIA documentation, we should only expose the Invoke pattern "if
       // the same behavior is not exposed through another control pattern
       // provider".
+      // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-implementinginvoke#implementation-guidelines-and-conventions
+      // However, it's not possible to support the SelectionItem pattern
+      // properly for ARIA multi select options, so we expose the Invoke pattern
+      // as well. Furthermore, Core AAM says we should do this for all options:
+      // https://w3c.github.io/core-aam/#role-map-option
       if (acc->ActionCount() > 0 && !HasTogglePattern() &&
-          !HasExpandCollapsePattern() && !HasSelectionItemPattern()) {
+          !HasExpandCollapsePattern() &&
+          (!HasSelectionItemPattern() || IsOption(acc))) {
         RefPtr<IInvokeProvider> invoke = this;
         invoke.forget(aPatternProvider);
       }
@@ -439,20 +550,24 @@ uiaRawElmProvider::GetPatternProvider(
         item.forget(aPatternProvider);
       }
       return S_OK;
-    case UIA_TextPatternId: {
-      // Only documents and editable text controls should have the Text pattern.
-      // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-textpattern-and-embedded-objects-overview#webpage-and-text-input-controls-in-edge
-      constexpr uint64_t editableRootStates =
-          states::EDITABLE | states::FOCUSABLE;
-      if (acc->IsDoc() ||
-          (acc->IsHyperText() &&
-           (acc->State() & editableRootStates) == editableRootStates)) {
-        auto text =
-            GetPatternFromDerived<ia2AccessibleHypertext, ITextProvider>();
+    case UIA_TextChildPatternId:
+      if (GetTextContainer(acc)) {
+        RefPtr<ITextChildProvider> textChild = this;
+        textChild.forget(aPatternProvider);
+      }
+      return S_OK;
+    case UIA_TextPatternId:
+      if (HasTextPattern(acc)) {
+        auto text = MakeRefPtr<UiaText>(static_cast<MsaaAccessible*>(this));
         text.forget(aPatternProvider);
       }
       return S_OK;
-    }
+    case UIA_TextPattern2Id:
+      if (HasTextPattern(acc)) {
+        auto text = MakeRefPtr<UiaText>(static_cast<MsaaAccessible*>(this));
+        text.forget(aPatternProvider);
+      }
+      return S_OK;
     case UIA_TogglePatternId:
       if (HasTogglePattern()) {
         RefPtr<IToggleProvider> toggle = this;
@@ -485,13 +600,14 @@ uiaRawElmProvider::GetPropertyValue(PROPERTYID aPropertyId,
   switch (aPropertyId) {
     // Accelerator Key / shortcut.
     case UIA_AcceleratorKeyPropertyId: {
-      if (!localAcc) {
-        // KeyboardShortcut is only currently relevant for LocalAccessible.
-        break;
-      }
       nsAutoString keyString;
 
-      localAcc->KeyboardShortcut().ToString(keyString);
+      if (!acc->GetStringARIAAttr(nsGkAtoms::aria_keyshortcuts, keyString)) {
+        if (localAcc) {
+          // KeyboardShortcut is only currently relevant for LocalAccessible.
+          localAcc->KeyboardShortcut().ToString(keyString);
+        }
+      }
 
       if (!keyString.IsEmpty()) {
         aPropertyValue->vt = VT_BSTR;
@@ -552,6 +668,20 @@ uiaRawElmProvider::GetPropertyValue(PROPERTYID aPropertyId,
           // correct default (false) even if the attribute isn't specified.
           ariaProperties.AppendLiteral("atomic=false");
         }
+      }
+      if (acc->HasCustomActions()) {
+        if (!ariaProperties.IsEmpty()) {
+          ariaProperties += ';';
+        }
+        ariaProperties.AppendLiteral("hasactions=true");
+      }
+      nsAutoString current;
+      if (acc->GetStringARIAAttr(nsGkAtoms::aria_current, current)) {
+        if (!ariaProperties.IsEmpty()) {
+          ariaProperties += ';';
+        }
+        ariaProperties.AppendLiteral("current=");
+        ariaProperties.Append(current);
       }
       if (!ariaProperties.IsEmpty()) {
         aPropertyValue->vt = VT_BSTR;
@@ -662,6 +792,18 @@ uiaRawElmProvider::GetPropertyValue(PROPERTYID aPropertyId,
           (acc->State() & states::FOCUSABLE) ? VARIANT_TRUE : VARIANT_FALSE;
       return S_OK;
 
+    case UIA_IsOffscreenPropertyId:
+      aPropertyValue->vt = VT_BOOL;
+      aPropertyValue->boolVal =
+          (acc->State() & states::OFFSCREEN) ? VARIANT_TRUE : VARIANT_FALSE;
+      return S_OK;
+
+    case UIA_IsPasswordPropertyId:
+      aPropertyValue->vt = VT_BOOL;
+      aPropertyValue->boolVal =
+          (acc->State() & states::PROTECTED) ? VARIANT_TRUE : VARIANT_FALSE;
+      return S_OK;
+
     case UIA_LabeledByPropertyId:
       if (Accessible* target = GetLabeledBy()) {
         aPropertyValue->vt = VT_UNKNOWN;
@@ -720,6 +862,17 @@ uiaRawElmProvider::GetPropertyValue(PROPERTYID aPropertyId,
       aPropertyValue->vt = VT_I4;
       aPropertyValue->lVal = acc->GroupPosition().setSize;
       return S_OK;
+
+    default: {
+      // These can't be included as case statements because they are not
+      // constant expressions.
+      const UiaRegistrations& registrations = GetUiaRegistrations();
+      if (aPropertyId == registrations.mAccessibleActions) {
+        aPropertyValue->vt = VT_UNKNOWN | VT_ARRAY;
+        aPropertyValue->parray = AccRelationsToUiaArray({RelationType::ACTION});
+        return S_OK;
+      }
+    }
   }
 
   return S_OK;
@@ -980,6 +1133,11 @@ uiaRawElmProvider::get_Value(__RPC__deref_out_opt BSTR* aRetVal) {
   }
   nsAutoString value;
   acc->Value(value);
+  if (value.IsEmpty() && acc->IsDoc()) {
+    // Exposing the URl via the Value pattern doesn't seem to be documented
+    // anywhere. However, Chromium does it, as does the IA2 -> UIA proxy.
+    nsAccUtils::DocumentURL(acc, value);
+  }
   *aRetVal = ::SysAllocStringLen(value.get(), value.Length());
   if (!*aRetVal) {
     return E_OUTOFMEMORY;
@@ -1145,7 +1303,7 @@ uiaRawElmProvider::Select() {
   if (!acc) {
     return CO_E_OBJNOTCONNECTED;
   }
-  if (IsRadio(acc)) {
+  if (MustSelectUsingDoAction(acc)) {
     acc->DoAction(0);
   } else {
     acc->TakeSelection();
@@ -1159,7 +1317,7 @@ uiaRawElmProvider::AddToSelection() {
   if (!acc) {
     return CO_E_OBJNOTCONNECTED;
   }
-  if (IsRadio(acc)) {
+  if (MustSelectUsingDoAction(acc)) {
     acc->DoAction(0);
   } else {
     acc->SetSelected(true);
@@ -1214,6 +1372,43 @@ uiaRawElmProvider::get_SelectionContainer(
   }
   RefPtr<IRawElementProviderSimple> uia = MsaaAccessible::GetFrom(container);
   uia.forget(aRetVal);
+  return S_OK;
+}
+
+// ITextChildProvider methods
+
+STDMETHODIMP
+uiaRawElmProvider::get_TextContainer(
+    __RPC__deref_out_opt IRawElementProviderSimple** aRetVal) {
+  if (!aRetVal) {
+    return E_INVALIDARG;
+  }
+  *aRetVal = nullptr;
+  Accessible* acc = Acc();
+  if (!acc) {
+    return CO_E_OBJNOTCONNECTED;
+  }
+  if (Accessible* container = GetTextContainer(acc)) {
+    RefPtr<IRawElementProviderSimple> uia = MsaaAccessible::GetFrom(container);
+    uia.forget(aRetVal);
+  }
+  return S_OK;
+}
+
+STDMETHODIMP
+uiaRawElmProvider::get_TextRange(
+    __RPC__deref_out_opt ITextRangeProvider** aRetVal) {
+  if (!aRetVal) {
+    return E_INVALIDARG;
+  }
+  *aRetVal = nullptr;
+  Accessible* acc = Acc();
+  if (!acc) {
+    return CO_E_OBJNOTCONNECTED;
+  }
+  TextLeafRange range = TextLeafRange::FromAccessible(acc);
+  auto uiaRange = MakeRefPtr<UiaTextRange>(range);
+  uiaRange.forget(aRetVal);
   return S_OK;
 }
 
@@ -1301,7 +1496,7 @@ long uiaRawElmProvider::GetControlType() const {
     return uiaControlType;                                                   \
     break;
   switch (acc->Role()) {
-#include "RoleMap.h"
+#include "RoleMap.inc"
   }
 #undef ROLE
   MOZ_CRASH("Unknown role.");
@@ -1325,7 +1520,7 @@ bool uiaRawElmProvider::HasValuePattern() const {
   Accessible* acc = Acc();
   MOZ_ASSERT(acc);
   if (acc->HasNumericValue() || acc->IsCombobox() || acc->IsHTMLLink() ||
-      acc->IsTextField()) {
+      acc->IsTextField() || acc->IsDoc()) {
     return true;
   }
   const nsRoleMapEntry* roleMapEntry = acc->ARIARoleMap();
@@ -1472,4 +1667,30 @@ SAFEARRAY* a11y::AccessibleArrayToUiaArray(const nsTArray<Accessible*>& aAccs) {
     ++indices[0];
   }
   return uias;
+}
+
+const UiaRegistrations& a11y::GetUiaRegistrations() {
+  static UiaRegistrations sRegistrations = {};
+  static bool sRegistered = false;
+  if (sRegistered) {
+    return sRegistrations;
+  }
+  RefPtr<IUIAutomationRegistrar> registrar;
+  if (FAILED(CoCreateInstance(CLSID_CUIAutomationRegistrar, nullptr,
+                              CLSCTX_INPROC_SERVER, IID_IUIAutomationRegistrar,
+                              getter_AddRefs(registrar)))) {
+    return sRegistrations;
+  }
+  UIAutomationPropertyInfo actionsInfo = {
+      // https://w3c.github.io/core-aam/#ariaActions
+      // {8C787AC3-0405-4C94-AC09-7A56A173F7EF}
+      {0x8C787AC3,
+       0x0405,
+       0x4C94,
+       {0xAC, 0x09, 0x7A, 0x56, 0xA1, 0x73, 0xF7, 0xEF}},
+      L"AccessibleActions",
+      UIAutomationType_ElementArray};
+  registrar->RegisterProperty(&actionsInfo, &sRegistrations.mAccessibleActions);
+  sRegistered = true;
+  return sRegistrations;
 }

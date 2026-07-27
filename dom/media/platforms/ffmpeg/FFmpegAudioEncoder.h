@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,7 @@
 namespace mozilla {
 
 template <int V>
-class FFmpegAudioEncoder : public MediaDataEncoder {};
+class FFmpegAudioEncoder : public FFmpegDataEncoder<V> {};
 
 template <>
 class FFmpegAudioEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
@@ -30,22 +28,25 @@ class FFmpegAudioEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
                      const RefPtr<TaskQueue>& aTaskQueue,
                      const EncoderConfig& aConfig);
 
+  RefPtr<InitPromise> Init() override;
+
   nsCString GetDescriptionName() const override;
 
  protected:
   virtual ~FFmpegAudioEncoder() = default;
   // Methods only called on mTaskQueue.
-  virtual nsresult InitSpecific() override;
+  virtual MediaResult InitEncoder() override;
 #if LIBAVCODEC_VERSION_MAJOR >= 58
-  Result<EncodedData, nsresult> EncodeOnePacket(Span<float> aSamples,
-                                                media::TimeUnit aPts);
-  Result<EncodedData, nsresult> EncodeInputWithModernAPIs(
+  Result<EncodedData, MediaResult> EncodeOnePacket(Span<float> aSamples,
+                                                   media::TimeUnit aPts);
+  Result<EncodedData, MediaResult> EncodeInputWithModernAPIs(
       RefPtr<const MediaData> aSample) override;
-  Result<MediaDataEncoder::EncodedData, nsresult> DrainWithModernAPIs()
+  Result<MediaDataEncoder::EncodedData, MediaResult> DrainWithModernAPIs()
       override;
 #endif
-  virtual RefPtr<MediaRawData> ToMediaRawData(AVPacket* aPacket) override;
-  Result<already_AddRefed<MediaByteBuffer>, nsresult> GetExtraData(
+  virtual Result<RefPtr<MediaRawData>, MediaResult> ToMediaRawData(
+      AVPacket* aPacket) override;
+  Result<already_AddRefed<MediaByteBuffer>, MediaResult> GetExtraData(
       AVPacket* aPacket) override;
   // Most audio codecs (except PCM) require a very specific frame size.
   Maybe<TimedPacketizer<float, float>> mPacketizer;

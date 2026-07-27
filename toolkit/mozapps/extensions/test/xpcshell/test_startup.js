@@ -7,6 +7,15 @@
 
 Services.prefs.setIntPref("extensions.autoDisableScopes", 0);
 
+if (AppConstants.platform == "android") {
+  // On desktop, the pref is not set, so the default (SCOPE_ALL) value is used.
+  // On mobile, extensions.enabledScopes is set (to 5) in geckoview-prefs.js
+  // For this test to behave consistently across platforms, force the default
+  // value to the same value as on desktop.
+  const defaultPrefs = Services.prefs.getDefaultBranch("");
+  defaultPrefs.setIntPref("extensions.enabledScopes", AddonManager.SCOPE_ALL);
+}
+
 const ID1 = getID(1);
 const ID2 = getID(2);
 const ID3 = getID(3);
@@ -72,7 +81,7 @@ add_task(async function test_scan_profile() {
     Assert.notEqual(addon, null);
     Assert.equal(addon.id, id);
     Assert.notEqual(addon.syncGUID, null);
-    Assert.ok(addon.syncGUID.length >= 9);
+    Assert.greaterOrEqual(addon.syncGUID.length, 9);
     Assert.equal(addon.version, initialVersion(n));
     Assert.ok(isExtensionInBootstrappedList(profileDir, id));
     Assert.ok(hasFlag(addon.permissions, AddonManager.PERM_CAN_UNINSTALL));

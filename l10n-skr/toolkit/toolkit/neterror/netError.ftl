@@ -72,7 +72,6 @@ neterror-dns-not-found-trr-unknown-problem = غیر متوقع مسئلہ
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } اساݙے قابل اعتماد DNS حل کنندہ دے ذریعے ایں سائٹ دے پتے کیتے تہاݙی درخواست دی حفاظت نہیں کر سڳدا۔ اتھاں کیوں ہے:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } اَساݙے محفوظ ڈی این ایس فراہم کنندہ دے ذریعے اِیں سائٹ دے پتے کِیتے تُہاݙی عرضی دی راکھی نِھیں کر سڳدا۔ اِتّھاں کیوں ہِے:
 neterror-dns-not-found-native-fallback-heuristic = تہاݙے نیٹ ورک تے HTTPs تے ڈی این ایس غیرفعال کر ݙتا ڳئے۔
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } { $trrDomain } نال جڑݨ دے قابل کائنا ہا۔
 
@@ -148,3 +147,8 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = جے تساں <b>{ $mitm }<
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> دے کول ہک سیکورٹی پالیسی ہے جینکوں HTTP Strict Transport Security (HSTS) آہدے ہن، جیندا مطلب ہے جو { -brand-short-name } صرف ایں کنوں محفوظ طریقے نال جڑ سڳدا ہے۔ تساں ایں سائٹ کوں ݙیکھݨ کیتے کوئی رعایت شامل نہیں کر سڳدے۔
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-denied-port-access = ایہ پتہ ہک نیٹ ورک پورٹ استعمال کریندا ہے جیڑھا عام طور تے ویب براؤزنگ دے علاوہ ٻئے مقاصد کیتے استعمال تھیندا ہے۔ { -brand-short-name }  تہاݙے تحفظ دی درخواست کوں منسوخ کر ݙتا ہے۔

@@ -46,22 +46,3 @@ experimental-features-js-warp-description = JavaScript دی کارکردگی ت�
 experimental-features-ime-search =
     .label = ایڈریس بار: IME کمپوزیشن دے دوران نتائج ݙکھاؤ۔
 experimental-features-ime-search-description = ہک IME (ان پٹ میتھڈ ایڈیٹر) ہک اینجھا ٹول ہے جیڑھا تہاکوں معیاری کی بورڈ دا استعمال کریندے ہوئے پیچیدہ علامتاں، جیویں پوادھی ایشیائی یا ہندی تحریری زباناں وِچ استعمال تھیوݨ والیاں علامتاں داخل کرݨ دی اجازت ݙیندا ہے۔ ایں تجربے کوں فعال کرݨ کنوں ایڈریس بار پینل کھلا رہسے، تلاش دے نتیجے تے تجویزاں ݙکھیسے، جݙاں جو ٹیکسٹ داخل کرݨ کیتے IME دا استعمال کریسن۔ نوٹ کرو جو IME ہک پینل ݙکھا سڳدا ہے جیڑھا ایڈریس بار دے نتائج دا احاطہ کریندا ہے، ایں سانگے ایہ ترجیح صرف IME کیتے تجویز کیتی ویندی ہے جیڑھی ایں ونکی دے پینل دا استعمال نہ کرے۔
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = تصویر وچ تصویر: ٹیب سوئچ تے خودکار کھلݨ
-experimental-features-auto-pip-description = ٹیباں سوئچ کرݨ ویلے فعال وڈیواں تے تصویر وچ تصویر فعال کرو۔
-genai-settings-chat-title =
-    .label = اے آئی چیٹ بوٹ
-# Updated sidebar settings
-sidebar-title =
-    .label = بغلی بار
-vertical-tabs-title =
-    .label = عمودی ٹیباں
-experimental-features-group-browsing =
-    .label = براؤزنگ
-experimental-features-group-developer-tools =
-    .label = ڈویلپر ٹولز
-experimental-features-group-webpage-display =
-    .label = ویب پیج ڈسپلے
-experimental-features-group-customize-browsing =
-    .label = آپݨی براؤزنگ دی تخصیص کرو

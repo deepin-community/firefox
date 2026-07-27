@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -183,8 +183,8 @@ webrtc-allow-share-screen-and-audio-capture-unsafe-delegation = Να επιτρ�
 
 ##
 
-webrtc-share-screen-warning = Να μοιράζεστε οθόνες μόνο με αξιόπιστες ιστοσελίδες. Η κοινή χρήση μπορεί να επιτρέψει σε παραπλανητικές ιστοσελίδες να περιηγηθούν με την ταυτότητά σας και να υποκλέψουν τα προσωπικά δεδομένα σας.
-webrtc-share-browser-warning = Να μοιράζεστε το { -brand-short-name } μόνο με αξιόπιστες ιστοσελίδες. Η κοινή χρήση μπορεί να επιτρέψει σε παραπλανητικές ιστοσελίδες να περιηγηθούν με την ταυτότητά σας και να υποκλέψουν τα προσωπικά δεδομένα σας.
+webrtc-share-screen-warning = Να κάνετε κοινή χρήση οθόνης μόνο με ιστοτόπους που εμπιστεύεστε. Η κοινή χρήση μπορεί να επιτρέψει σε παραπλανητικούς ιστοτόπους να περιηγηθούν με την ταυτότητά σας και να υποκλέψουν τα προσωπικά σας δεδομένα.
+webrtc-share-browser-warning = Να κάνετε κοινή χρήση του { -brand-short-name } μόνο με ιστοτόπους που εμπιστεύεστε. Η κοινή χρήση μπορεί να επιτρέψει σε παραπλανητικούς ιστοτόπους να περιηγηθούν με την ταυτότητά σας και να υποκλέψουν τα προσωπικά σας δεδομένα.
 webrtc-share-screen-learn-more = Μάθετε περισσότερα
 webrtc-pick-window-or-screen = Επιλέξτε παράθυρο ή οθόνη
 webrtc-share-entire-screen = Ολόκληρη η οθόνη

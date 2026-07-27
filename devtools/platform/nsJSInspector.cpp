@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,12 +10,8 @@
 
 #define JSINSPECTOR_CONTRACTID "@mozilla.org/jsinspector;1"
 
-#define JSINSPECTOR_CID                              \
-  {                                                  \
-    0xec5aa99c, 0x7abb, 0x4142, {                    \
-      0xac, 0x5f, 0xaa, 0xb2, 0x41, 0x9e, 0x38, 0xe2 \
-    }                                                \
-  }
+#define JSINSPECTOR_CID \
+  {0xec5aa99c, 0x7abb, 0x4142, {0xac, 0x5f, 0xaa, 0xb2, 0x41, 0x9e, 0x38, 0xe2}}
 
 namespace mozilla {
 namespace jsinspector {

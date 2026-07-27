@@ -1,21 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _SDPENUM_H_
-#define _SDPENUM_H_
+#ifndef DOM_MEDIA_WEBRTC_SDP_SDPENUM_H_
+#define DOM_MEDIA_WEBRTC_SDP_SDPENUM_H_
 
 #include <ostream>
 
 #include "mozilla/Assertions.h"
+#include "mozilla/TypedEnumBits.h"
 
 namespace mozilla::sdp {
 
 enum NetType { kNetTypeNone, kInternet };
 
-inline std::ostream& operator<<(std::ostream& os, sdp::NetType t) {
+inline std::ostream& operator<<(std::ostream& os, const sdp::NetType t) {
   switch (t) {
     case sdp::kNetTypeNone:
       MOZ_ASSERT(false);
@@ -28,7 +27,7 @@ inline std::ostream& operator<<(std::ostream& os, sdp::NetType t) {
 
 enum AddrType { kAddrTypeNone, kIPv4, kIPv6 };
 
-inline std::ostream& operator<<(std::ostream& os, sdp::AddrType t) {
+inline std::ostream& operator<<(std::ostream& os, const sdp::AddrType t) {
   switch (t) {
     case sdp::kAddrTypeNone:
       MOZ_ASSERT(false);
@@ -47,7 +46,9 @@ enum Direction {
   kRecv = 2
 };
 
-inline std::ostream& operator<<(std::ostream& os, sdp::Direction d) {
+MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(Direction);
+
+inline std::ostream& operator<<(std::ostream& os, const sdp::Direction d) {
   switch (d) {
     case sdp::kSend:
       return os << "send";

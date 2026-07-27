@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = ਮਨਜ਼ੂਰ ਕਰੋ
     .accesskey = A
+permissions-add =
+    .label = ਜੋੜੋ
+    .accesskey = A
 permissions-button-off =
     .label = ਬੰਦ ਕਰੋ
     .accesskey = O
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = ਸਾਰੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਹਟਾਓ
     .accesskey = e
+permissions-save-changes-2 =
+    .buttonlabelaccept = ਤਬਦੀਲੀਆਂ ਨੂੰ ਸੰਭਾਲੋ
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = ਤਬਦੀਲੀਆਂ ਨੂੰ ਸੰਭਾਲੋ
     .buttonaccesskeyaccept = S
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = ਤੁਸੀਂ ਦੱਸ ਸਕਦੇ ਹੋ ਕਿ ਕਿਹੜੀਆਂ ਵੈਬਸਾਈਟਾਂ ਨੂੰ ਕੂਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟਾ ਵਰਤਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ ਉਸ ਸਾਈਟ ਦਾ ਸਹੀ ਸਿਰਨਾਵਾਂ ਲਿਖੋ, ਜਿਸ ਦਾ ਤੁਸੀਂ ਬੰਦੋਬਸਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ ਅਤੇ ਫਿਰ ਪਾਬੰਦੀ ਲਾਓ, ਸੈਸ਼ਨ ਲਈ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਾਂ ਇਜਾਜ਼ਤ ਦਿਓ।
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = ਛੋਟਾਂ - ਬੰਦ ਕਰਨ ਸਮੇਂ ਅਤੀਤ ਨੂੰ ਮਿਟਾਓ
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = ਤੁਸੀਂ ਦੱਸ ਸਕਦੇ ਹੋ ਕਿ { -brand-short-name } ਬੰਦ ਹੋਣ ਦੌਰਾਨ ਅਤੀਤ ਨੂੰ ਮਿਟਾਉਣ ਸਮੇਂ ਕਿਹੜੀਆਂ ਵੈੱਬ ਸਾਇਟਾਂ ਨੂੰ ਉਹਨਾਂ ਦਾ ਡਾਟਾ ਰੱਖਣ ਦੀ ਇਜਾਜ਼ਤ ਹੋਵੇਗੀ। ਉਸ ਵੈੱਬ ਸਾਇਟ ਦੀ ਠੀਕ ਐਡਰੈੱਸ ਦਿਓ, ਜਿਸ ਨੂੰ ਤੁਸੀਂ ਇਜ਼ਾਜਤ ਦਿੰਦੇ ਹੋ, ਅਤੇ ਮਨਜ਼ੂਰ ਨੂੰ ਦਬਾਓ।
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = ਤੁਸੀਂ ਖਾਸ ਵੈੱਬਸਾਈਟਾਂ ਲਈ ਸਿਰਫ਼-HTTPS ਢੰਗ ਨੂੰ ਬੰਦ ਕਰ ਸਕਦੇ ਹੋ। { -brand-short-name } ਉਹਨਾਂ ਸਾਈਟਾਂ ਲਈ ਸੁਰੱਖਿਅਤ HTTPS ਕਨੈਕਸ਼ਨ ਵਾਸਤੇ ਅੱਪਗਰੇਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਨਹੀਂ ਕਰੇਗਾ। ਛੋਟਾਂ ਪ੍ਰਾਈਵੇਟ ਵਿੰਡੋਆਂ ਉੱਤੇ ਲਾਗੂ ਨਹੀਂ ਹੁੰਦੀਆਂ ਹਨ।
 permissions-exceptions-https-only-desc2 = ਤੁਸੀਂ ਖਾਸ ਵੈੱਬਸਾਈਟਾਂ ਲਈ ਸਿਰਫ਼-HTTPS ਢੰਗ ਨੂੰ ਬੰਦ ਕਰ ਸਕਦੇ ਹੋ। { -brand-short-name } ਉਹਨਾਂ ਵੈੱਬਸਾਈਟਾਂ ਲਈ ਕਨੈਕਸ਼ਨ ਨੂੰ ਸੁਰੱਖਿਅਤ HTTPS ਵਾਸਤੇ ਅੱਪਗਰੇਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਨਹੀਂ ਕਰੇਗਾ।
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = ਮਨਜ਼ੂਰ ਕੀਤੀਆਂ ਵੈੱਬਸਾਈਟਾਂ - ਪੌਪਅੱਪ ਅਤੇ ਤੀਜੀ ਧਿਰ ਰੀ-ਡਾਇਰੈਕਟ
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = ਤੁਸੀਂ ਦੱਸ ਸਕਦੇ ਹੋ ਕਿ ਕਿਹੜੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਸੁਤੰਤਰ-ਧਿਰ ਫਰੇਮਾਂ ਵਲੋਂ ਪੌਪ-ਅੱਪ ਵਿੰਡੋ ਖੋਲ੍ਹਣ ਅਤੀ ਰੀ-ਡਾਇਰੈਕਟ ਕਰਨ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿੱਤੀ ਜਾਵੇਗਾ।
 
 ## Exceptions - Pop-ups
 
@@ -151,12 +171,12 @@ permissions-site-location-disable-desc = ਇਹ ਉੱਤੇ ਸੂਚੀਬੱ�
 ## Site Permissions - Virtual Reality
 
 permissions-site-xr-window2 =
-    .title = ਸੈਟਿੰਗਾਂ - ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਇਜਾਜ਼ਤਾਂ
+    .title = ਸੈਟਿੰਗਾਂ - ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਇਜਾਜ਼ਤਾਂ
     .style = { permissions-window2.style }
-permissions-site-xr-desc = ਹੇਠਲੀਆਂ ਵੈਬਸਾਈਟਾਂ ਨੇ ਤੁਹਾਡੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਹੈ। ਤੁਸੀਂ ਇਹ ਨਿਰਧਾਰਤ ਕਰ ਸਕਦੇ ਹੋ ਕਿ ਕਿਹੜੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਹੈ। ਤੁਸੀਂ ਆਪਣੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਨਵੀਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਪਾਬੰਦੀ ਵੀ ਲਾ ਸਕਦੇ ਹੋ।
+permissions-site-xr-desc = ਹੇਠਲੀਆਂ ਵੈਬਸਾਈਟਾਂ ਨੇ ਤੁਹਾਡੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਹੈ। ਤੁਸੀਂ ਇਹ ਨਿਰਧਾਰਤ ਕਰ ਸਕਦੇ ਹੋ ਕਿ ਕਿਹੜੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਹੈ। ਤੁਸੀਂ ਆਪਣੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਨਵੀਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਪਾਬੰਦੀ ਵੀ ਲਾ ਸਕਦੇ ਹੋ।
 permissions-site-xr-disable-label =
-    .label = ਤੁਹਾਡੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਪੁੱਛਣ ਦੀਆਂ ਨਵੀਆਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ
-permissions-site-xr-disable-desc = ਇਹ ਉੱਤੇ ਸੂਚੀਬੱਧ ਨਾ ਹੋਣ ਵਾਲੀਆਂ ਕਿਸੇ ਵੀ ਵੈਬਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦੀ ਬੇਨਤੀ ਕਰਨ ਤੋਂ ਰੋਕੇਗਾ। ਤੁਹਾਡੇ ਮਸ਼ੀਨੀ ਅਸਲੀਅਤ ਡਿਵਾਈਸ ਤੱਕ ਪਹੁੰਚ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣ ਲਈ ਕੁਝ ਵੈਬਸਾਈਟ ਫੀਚਰ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹਨ।
+    .label = ਤੁਹਾਡੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਪੁੱਛਣ ਦੀਆਂ ਨਵੀਆਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ
+permissions-site-xr-disable-desc = ਇਹ ਉੱਤੇ ਸੂਚੀਬੱਧ ਨਾ ਹੋਣ ਵਾਲੀਆਂ ਕਿਸੇ ਵੀ ਵੈਬਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦੀ ਬੇਨਤੀ ਕਰਨ ਤੋਂ ਰੋਕੇਗਾ। ਤੁਹਾਡੇ ਵਰਚੁਅਲ ਰਿਐਲਟੀ ਡਿਵਾਈਸ ਤੱਕ ਪਹੁੰਚ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣ ਲਈ ਕੁਝ ਵੈਬਸਾਈਟ ਫੀਚਰ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹਨ।
 
 ## Site Permissions - Camera
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = ਹੇਠਲੀਆਂ ਵੈਬਸਾਈਟਾਂ
 permissions-site-camera-disable-label =
     .label = ਤੁਹਾਡੇ ਕੈਮਰੇ ਲਈ ਪਹੁੰਚ ਲਈ ਪੁੱਛਣ ਦੀਆਂ ਨਵੀਆਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਰੋਕ ਲਗਾਓ
 permissions-site-camera-disable-desc = ਇਹ ਉੱਤੇ ਸੂਚੀਬੱਧ ਨਾ ਹੋਣ ਵਾਲੀਆਂ ਕਿਸੇ ਵੀ ਵੈਬਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦੀ ਬੇਨਤੀ ਕਰਨ ਤੋਂ ਰੋਕੇਗਾ। ਤੁਹਾਡੇ ਕੈਮਰੇ ਤੱਕ ਪਹੁੰਚ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣ ਲਈ ਕੁਝ ਵੈਬਸਾਈਟ ਫੀਚਰ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹਨ।
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = ਸੈਟਿੰਗਾਂ - ਡਿਵਾਈਸ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = ਇਹਨਾਂ ਵੈੱਬਸਾਈਟਾਂ ਨੇ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਹੈ। ਤੁਸੀਂ ਇਹ ਕਰਨ ਲਈ ਸਾਈਟਾਂ ਨੂੰ ਮਨਜ਼ੂਰੀ ਦੇ ਜਾਂ ਪਾਬੰਦੀ ਲਗਾ ਸਕਦੇ ਹੋ।
+permissions-site-localhost-disable-label =
+    .label = ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਹੋਰ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ
+permissions-site-localhost-disable-desc = ਇਹ ਉੱਤੇ ਦਿੱਤੀਆਂ ਕਿਸੇ ਵੀ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਬੇਨਤੀ ਕਰਨ ਤੋਂ ਰੋਕੇਗਾ। ਅਜਿਹਾ ਕਰਨ ਨਾਲ ਕੁਝ ਵੈੱਬਸਾਈਟ ਫ਼ੀਚਰ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਹੀਂ ਕਰਨਗੇ।
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = ਸੈਟਿੰਗਾਂ - ਲੋਕਲ ਨੈੱਟਵਰਕ ਡਿਵਾਈਸ
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = ਇਹਨਾਂ ਵੈੱਬਸਾਈਟਾਂ ਨੇ ਤੁਹਾਡੇ ਵਾਈ-ਫਾਈ ਜਾਂ ਲੋਕਲ ਨੈੱਟਵਰਕਾਂ ਉੱਤੇ ਇਹਨਾਂ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਹੈ। ਤੁਸੀਂ ਇਹ ਕਰਨ ਲਈ ਸਾਈਟਾਂ ਨੂੰ ਮਨਜ਼ੂਰੀ ਦੇ ਜਾਂ ਪਾਬੰਦੀ ਲਗਾ ਸਕਦੇ ਹੋ।
+permissions-site-local-network-disable-label =
+    .label = ਤੁਹਾਡੇ ਵਾਈ-ਫਾਈ ਜਾਂ ਲੋਕਲ ਨੈੱਟਵਰਕ ਰਾਹੀਂ ਕਨੈਕਟ ਹੋਏ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਉੱਤੇ ਨਵੀਆਂ ਬੇਨਤੀਆਂ ਉੱਤੇ ਰੋਕ ਲਾਓ।
+permissions-site-local-network-disable-desc = ਇਹ ਉੱਤੇ ਦਿੱਤੀਆਂ ਕਿਸੇ ਵੀ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਵਾਈ-ਫਾਈ ਜਾਂ ਲੋਕਲ ਨੈੱਟਵਰਕ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਕਨੈਕਟ ਹੋਏ ਕਿਸੇ ਵੀ ਡਿਵਾਈਸ ਉੱਤੇ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਬੇਨਤੀ ਕਰਨ ਤੋਂ ਰੋਕੇਗਾ। ਅਜਿਹਾ ਕਰਨ ਨਾਲ ਕੁਝ ਵੈੱਬਸਾਈਟ ਫ਼ੀਚਰ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਹੀਂ ਕਰਨਗੇ।
 
 ## Site Permissions - Microphone
 

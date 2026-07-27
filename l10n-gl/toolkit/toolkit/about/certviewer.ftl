@@ -36,6 +36,7 @@ certificate-viewer-key-size = Tamaño da chave
 certificate-viewer-inc-locality = Localidade da sede
 certificate-viewer-locality = Localidade
 certificate-viewer-location = Localización
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID de rexistro
 certificate-viewer-method = Método
 certificate-viewer-modulus = Módulo
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = Información da autoridade (AIA)
 certificate-viewer-certificate-policies = Políticas do certificado
 certificate-viewer-embedded-scts = SCT incorporados
 certificate-viewer-crl-endpoints = Puntos de destino de CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Descargar
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }. pem
 certificate-viewer-download-pem-chain = PEM (cadea)
     .download = { $fileName }-cadea.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Esta extensión foi marcada como crítica, o que significa que os clientes deben rexeitar o certificado se non o entenden.

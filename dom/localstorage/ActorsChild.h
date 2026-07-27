@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define mozilla_dom_localstorage_ActorsChild_h
 
 #include <cstdint>
+
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/PBackgroundLSDatabaseChild.h"
 #include "mozilla/dom/PBackgroundLSObserverChild.h"
@@ -45,17 +44,16 @@ class LSSnapshot;
  * Most of the interesting bits happen via PBackgroundLSSnapshot.
  *
  * Mutual raw pointers are maintained between LSDatabase and this class that are
- * cleared at either (expected) when the child starts the deletion process
- * (SendDeleteMeInternal) or unexpected actor death (ActorDestroy).
+ * cleared at either (expected) when the child starts the shutdown process
+ * (Shutdown) or unexpected actor death (ActorDestroy).
  *
  * See `PBackgroundLSDatabase.ipdl` for more information.
  *
  *
  * ## Low-Level Lifecycle ##
  * - Created by LSObject::EnsureDatabase if it had to create a database.
- * - Deletion begun by LSDatabase's destructor invoking SendDeleteMeInternal
- *   which will result in the parent sending __delete__ which destroys the
- *   actor.
+ * - Shutdown begun by LSDatabase's destructor invoking Shutdown which destroys
+ *   the actor.
  */
 class LSDatabaseChild final : public PBackgroundLSDatabaseChild {
   friend class mozilla::ipc::BackgroundChildImpl;
@@ -77,7 +75,7 @@ class LSDatabaseChild final : public PBackgroundLSDatabaseChild {
 
   ~LSDatabaseChild();
 
-  void SendDeleteMeInternal();
+  void Shutdown();
 
   // IPDL methods are only called by IPDL.
   void ActorDestroy(ActorDestroyReason aWhy) override;
@@ -158,7 +156,7 @@ class LSRequestChild final : public PBackgroundLSRequestChild {
 
  public:
   void AssertIsOnOwningThread() const {
-    NS_ASSERT_OWNINGTHREAD(LSReqeustChild);
+    NS_ASSERT_OWNINGTHREAD(LSRequestChild);
   }
 
   bool Finishing() const;
@@ -176,7 +174,7 @@ class LSRequestChild final : public PBackgroundLSRequestChild {
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
   mozilla::ipc::IPCResult Recv__delete__(
-      const LSRequestResponse& aResponse) override;
+      LSRequestResponse&& aResponse) override;
 
   mozilla::ipc::IPCResult RecvReady() override;
 };
@@ -185,7 +183,7 @@ class NS_NO_VTABLE LSRequestChildCallback {
  public:
   NS_INLINE_DECL_PURE_VIRTUAL_REFCOUNTING
 
-  virtual void OnResponse(const LSRequestResponse& aResponse) = 0;
+  virtual void OnResponse(LSRequestResponse&& aResponse) = 0;
 
  protected:
   virtual ~LSRequestChildCallback() = default;
@@ -209,7 +207,7 @@ class LSSimpleRequestChild final : public PBackgroundLSSimpleRequestChild {
 
  public:
   void AssertIsOnOwningThread() const {
-    NS_ASSERT_OWNINGTHREAD(LSSimpleReqeustChild);
+    NS_ASSERT_OWNINGTHREAD(LSSimpleRequestChild);
   }
 
  private:

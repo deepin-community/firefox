@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Genomsökning pågår
 contentanalysis-slow-agent-dialog-body-file = { $agent } granskar "{ $filename }" mot din organisations datapolicy. Detta kan ta en stund.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } granskar "{ $filename }" och { $count } ytterligare objekt mot din organisations datapolicy. Detta kan ta en stund.
+       *[other] { $agent } granskar "{ $filename }" och { $count } ytterligare objekt mot din organisations datapolicy. Detta kan ta en stund.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } granskar vad du klistrat in mot din organisations datapolicy. Detta kan ta en stund.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = urklipp
 contentanalysis-operationtype-dropped-text = släppt text
 contentanalysis-operationtype-print = skriva ut
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = uppladdning av "{ $filename }"
+contentanalysis-upload-description = uppladdning av "{ $filename }"
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = nedladdning av "{ $filename }"
 contentanalysis-warndialogtitle = Det här innehållet kan vara osäkert
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Innehållsanalys svarade med { $respon
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Din organisation använder programvara för att förhindra dataförlust som har blockerat detta innehåll: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Ett fel uppstod i kommunikationen med programvaran för att förhindra dataförlust. Överföring nekad för resurs: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Ett fel uppstod i kommunikationen med { $agent }. Överföring nekad för resurs: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Det gick inte att ansluta till { $agent }. Överföring nekad för resurs: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Misslyckad signaturverifiering för { $agent }. Överföring nekad för resurs: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Uppladdning av "{ $filename }" nekad
 contentanalysis-error-message-dropped-text = Dra och släpp nekad.
 contentanalysis-error-message-clipboard = Klistra in nekad.
 contentanalysis-error-message-print = Utskrift nekad.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Anslutningen till { $agent } avbröts. { $contentName } har blockerats.
 contentanalysis-block-dialog-title-upload-file = Du har inte behörighet att ladda upp den här filen
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Enligt din organisations dataskyddspolicy har du inte tillåtelse att ladda upp filen "{ $filename }". Kontakta din administratör för mer information.
+contentanalysis-block-dialog-title-download-file = Du har inte behörighet att ladda ner den här filen
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Enligt din organisations dataskyddspolicy har du inte tillåtelse att ladda ner filen "{ $filename }". Kontakta din administratör för mer information.
 contentanalysis-block-dialog-title-clipboard = Du har inte tillåtelse att klistra in det här innehållet
 contentanalysis-block-dialog-body-clipboard = Enligt din organisations dataskyddspolicy har du inte tillåtelse att klistra in detta innehåll. Kontakta din administratör för mer information.
 contentanalysis-block-dialog-title-dropped-text = Du har inte tillåtelse att dra och släppa detta innehåll

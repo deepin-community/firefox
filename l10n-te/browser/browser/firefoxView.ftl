@@ -5,10 +5,17 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = వివిధ కిటికీలలో, పరికలాలలో మీ ఇటీవలి విహరణను చూడండి
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
+firefoxview-page-label =
+    .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = మూసివేయి
     .aria-label = మూసివేయి
@@ -30,6 +37,11 @@ firefoxview-closed-tabs-description2 = ఈ కిటికీలో మూసి
 firefoxview-closed-tabs-placeholder-header = ఇటీవల మూసిన ట్యాబులేమీ లేవు
 # refers to the last tab that was used
 firefoxview-pickup-tabs-badge = చివరిగా చూసింది
+# Variables:
+#  $intensity (String): Colorway intensity
+#  $collection (String): Colorway Collection name
+firefoxview-colorway-description = { $intensity } · { $collection }
+firefoxview-synced-tabs-placeholder-header = చూడడానికి ఇంకా ఏమీలేదు
 firefoxview-collapse-button-show =
     .title = జాబితా చూపించు
 firefoxview-collapse-button-hide =
@@ -83,12 +95,28 @@ firefoxview-search-text-box-history =
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = ఇటీవల మూసిన ట్యాబులలో వెతకండి
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = ట్యాబులలో వెతకండి
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = తెరిచివున్న ట్యాబులలో వెతుకు
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } సైటు
+       *[other] { $count } సైట్లు
+    }
+firefoxview-sort-history-by-date-label = తేదీ వారీగా క్రమపర్చు
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
 
 firefoxview-history-date-today = ఈరోజు - { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-yesterday = నిన్న - { DATETIME($date, dateStyle: "full") }
+firefoxview-history-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 # When history is sorted by site, this heading is used in place of a domain, in
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
@@ -97,15 +125,6 @@ firefoxview-history-site-localhost = (స్థానిక ఫైళ్లు)
 ##
 
 firefoxview-show-all-history = మొత్తం చరిత్రను చూపించు
-
-## Message displayed in Firefox View when the user has no history data
-
-
-##
-
-
-## Message displayed in Firefox View when the user has chosen to never remember History
-
 
 ##
 
@@ -116,19 +135,10 @@ firefoxview-import-history-close-button =
 
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
-
-## Message displayed in Firefox View when the user has no recently closed tabs data
-
+firefoxview-import-history-header = వేరే విహరిణి నుండి చరిత్రను దిగుమతి చేయి
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
-
-## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
-## Variables:
-##  $tabTitle (string) - Title of pinned tab that will be opened when selected
-
-
-## These tooltips will be displayed when hovering over an unpinned Open Tab
-## Variables:
-##   $url (string) - URL of tab that will be opened when selected
-
+firefoxview-syncedtabs-connect-another-device = మరొక పరికరాన్ని అనుసంధానించండి
+firefoxview-tabs =
+    .title = ట్యాబులు

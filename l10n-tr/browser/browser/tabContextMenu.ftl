@@ -2,11 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Yeni sekme
     .accesskey = Y
 reload-tab =
     .label = Sekmeyi tazele
+    .accesskey = z
+reload-tab2 =
+    .label = Tazele
     .accesskey = z
 select-all-tabs =
     .label = Tüm sekmeleri seç
@@ -20,19 +27,31 @@ tab-context-play-tabs =
 duplicate-tab =
     .label = Sekmeyi çoğalt
     .accesskey = o
+duplicate-tab2 =
+    .label = Çoğalt
+    .accesskey = o
 duplicate-tabs =
     .label = Sekmeleri çoğalt
+    .accesskey = o
+duplicate-tabs2 =
+    .label = Çoğalt
     .accesskey = o
 # The following string is displayed on a menuitem that will close the tabs from the start of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Left" and in right-to-left languages this should use "Right".
 close-tabs-to-the-start =
     .label = Soldaki sekmeleri kapat
     .accesskey = o
+close-tabs-to-the-start-vertical =
+    .label = Üstteki sekmeleri kapat
+    .accesskey = Ü
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Sağdaki sekmeleri kapat
     .accesskey = a
+close-tabs-to-the-end-vertical =
+    .label = Alttaki sekmeleri kapat
+    .accesskey = l
 close-other-tabs =
     .label = Diğer sekmeleri kapat
     .accesskey = D
@@ -42,9 +61,15 @@ reload-tabs =
 pin-tab =
     .label = Sekmeyi sabitle
     .accesskey = S
+tab-context-pin-tab2 =
+    .label = Sabitle
+    .accesskey = S
 unpin-tab =
     .label = Normal sekmeye dönüştür
     .accesskey = N
+tab-context-unpin-tab2 =
+    .label = Sabitleneni kaldır
+    .accesskey = S
 pin-selected-tabs =
     .label = Sekmeleri sabitle
     .accesskey = S
@@ -57,9 +82,16 @@ bookmark-selected-tabs =
 tab-context-bookmark-tab =
     .label = Sekmeyi yer imlerine ekle…
     .accesskey = m
+# Context menu item used to bookmark 1 or more selected tabs
+tab-context-bookmark-tab2 =
+    .label = Yer imlerine ekle
+    .accesskey = Y
 tab-context-open-in-new-container-tab =
     .label = Yeni kapsayıcı sekmede aç
     .accesskey = k
+tab-context-open-in-new-container-tab2 =
+    .label = Yeni kapsayıcı sekmede aç
+    .accesskey = e
 move-to-start =
     .label = En başa taşı
     .accesskey = E
@@ -69,6 +101,10 @@ move-to-end =
 move-to-new-window =
     .label = Yeni pencereye taşı
     .accesskey = Y
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = { $profileName } profiline taşı
 tab-context-close-multiple-tabs =
     .label = Birden çok sekmeyi kapat
     .accesskey = B
@@ -78,6 +114,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Paylaş
     .accesskey = P
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Sağda yeni sekme
+    .accesskey = a
+tab-context-new-tab-open-vertical =
+    .label = Altta yeni sekme
+    .accesskey = A
+tab-context-new-group =
+    .label = Yeni grup
+    .accesskey = u
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -98,6 +144,14 @@ tab-context-close-n-tabs =
            *[other] { $tabCount } sekmeyi kapat
         }
     .accesskey = e
+tab-context-close-n-tabs2 =
+    .label =
+        { $tabCount ->
+            [1] Kapat
+            [one] { $tabCount } sekmeyi kapat
+           *[other] { $tabCount } sekmeyi kapat
+        }
+    .accesskey = K
 tab-context-move-tabs =
     .label =
         { $tabCount ->
@@ -106,6 +160,35 @@ tab-context-move-tabs =
            *[other] Sekmeleri taşı
         }
     .accesskey = t
+# Context menu option, highlighting this shows a submenu of potential destinations to move two tabs of a split view together to (tab groups, windows, profiles, start, end, etc.)
+tab-context-move-split-view =
+    .label = Ayrık görünümü taşı
+    .accesskey = A
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Cihaza gönder
+            [one] { $tabCount } sekmeyi cihaza gönder
+           *[other] { $tabCount } sekmeyi cihaza gönder
+        }
+    .accesskey = C
+tab-context-send-to-device2 =
+    .label = Cihazıma gönder
+    .accesskey = C
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-mobile =
+    .label =
+        { $tabCount ->
+            [1] Mobil cihaza gönder
+            [one] Mobil cihaza gönder
+           *[other] { $tabCount } sekmeyi mobil cihaza gönder
+        }
+    .accesskey = m
+# Verb: share a collection of selected tabs as a link
+tab-context-share-selected-tabs =
+    .label = Paylaşılabilir bağlantı oluştur
+    .accesskey = P
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -113,3 +196,15 @@ tab-context-send-tabs-to-device =
            *[other] { $tabCount } sekmeyi cihaza gönder
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Sekmeyi boşalt
+            [one] Sekmeyi boşalt
+           *[other] { $tabCount } sekmeyi boşalt
+        }
+    .accesskey = l
+# Context menu option, alternate label for unloading the content of 1 or more tabs to reduce memory usage
+tab-context-unload-tabs =
+    .label = Boşalt
+    .accesskey = o

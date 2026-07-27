@@ -2,16 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
 browser-main-window-window-titles =
@@ -19,14 +18,17 @@ browser-main-window-window-titles =
     .data-title-private = { -brand-full-name } (privaatne veebilehitsemine)
     .data-content-title-default = { $content-title } — { -brand-full-name }
     .data-content-title-private = { $content-title } — { -brand-full-name } (privaatne veebilehitsemine)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
@@ -43,6 +45,78 @@ browser-main-window-mac-window-titles =
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } (privaatne veebilehitsemine)
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } (privaatne veebilehitsemine)
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (privaatne veebilehitsemine)
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } (privaatne veebilehitsemine)
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } (privaatne veebilehitsemine)
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } —  Privaatne veebilehitsemine
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (Privaatne veebilehitsemine)
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Privaatne veebilehitsemine
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Privaatne veebilehitsemine
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } —  Privaatne veebilehitsemine
+       *[other] { -brand-full-name } (privaatne veebilehitsemine)
+    }
 
 ##
 
@@ -96,11 +170,44 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Hangi abi
 urlbar-search-tips-confirm = Olgu, sain aru
+urlbar-search-tips-confirm-short = Sain aru
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Nipp:
+urlbar-result-menu-button =
+    .title = Ava menüü
+urlbar-result-menu-button-feedback = Tagasiside
+    .title = Ava menüü
+urlbar-result-menu-learn-more2 = Lisateave
+    .accesskey = t
+urlbar-result-menu-remove-from-history2 = Eemalda ajaloost
+    .accesskey = E
+urlbar-result-menu-tip-get-help2 = Otsi abi
+    .accesskey = a
+urlbar-result-menu-dismiss-suggestion2 = Loobu sellest soovitusest
+    .accesskey = b
+urlbar-result-menu-manage-firefox-suggest2 = Halda { -firefox-suggest-brand-name }i
+    .accesskey = H
+urlbar-result-menu-learn-more =
+    .label = Lisateave
+    .accesskey = t
+urlbar-result-menu-remove-from-history =
+    .label = Eemalda ajaloost
+    .accesskey = E
+urlbar-result-menu-tip-get-help =
+    .label = Otsi abi
+    .accesskey = a
+urlbar-result-menu-dismiss-suggestion =
+    .label = Loobu sellest soovitusest
+    .accesskey = b
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Lisateave { -firefox-suggest-brand-name } kohta
+    .accesskey = L
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Halda { -firefox-suggest-brand-name }i
+    .accesskey = H
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -109,6 +216,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Sisesta vähem, leia rohkem: otsi otsingumootoriga { $engineName } otse oma aadressiribalt.
 urlbar-search-tips-redirect-2 = Alusta oma otsingut aadressiribalt, et näha soovitusi otsingumootorilt { $engineName } ning oma lehitsemise ajaloost.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Otsimine muutus just lihtsamaks. Proovi siin aadressiribal otsingut täpsustada. Selle asemel URL-i kuvamiseks ava seadetes Otsing.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Kiiremaks otsimiseks vali see otsetee.
@@ -155,8 +264,20 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Lisa see leht järjehoidjatesse ({ $shortcut })
 
+## Searchbar context menu
+
+clear-search-history =
+    .label = Kustuta otsingu ajalugu
+    .accesskey = j
+
 ## Page Action Context Menu
 
+page-action-manage-extension2 =
+    .label = Halda laiendust
+    .accesskey = H
+page-action-remove-extension2 =
+    .label = Eemalda laiendus
+    .accesskey = E
 
 ## Auto-hide Context Menu
 
@@ -220,10 +341,31 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Vaata lisasid
+quickactions-cmd-addons2 = lisad
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Järjehoidjate haldamine
+quickactions-cmd-bookmarks = järjehoidjad
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Hiljutise ajaloo tühjendamine
+quickactions-cmd-clearrecenthistory = hiljutise ajaloo tühjendamine, ajalugu
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Tühjenda ajalugu
+quickactions-cmd-clearhistory = ajaloo tühjendamine
+# Opens about:downloads page
+quickactions-downloads2 = Allalaadimiste vaatamine
+quickactions-cmd-downloads = allalaadimised
+# Opens about:addons page in the extensions section
+quickactions-extensions = Laienduste haldamine
+quickactions-cmd-extensions = laiendused
+# Opens a SUMO article explaining how to refresh
 quickactions-refresh = Värskenda { -brand-short-name }
+# Restarts the browser
 quickactions-restart = Taaskäivita { -brand-short-name }
+# Opens a SUMO article explaining how to update the browser
 quickactions-update = Uuenda { -brand-short-name }
 
 ## Bookmark Panel
@@ -397,9 +539,6 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Jagamise kaitse selleks seansiks keelatakse
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -457,13 +596,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Laiendus:
+urlbar-go-button2 =
+    .title = Mine aadressiribal olevale aadressile
 urlbar-go-button =
     .tooltiptext = Mine aadressiribal olevale aadressile
 urlbar-page-action-button =
     .tooltiptext = Lehe toimingud
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -509,6 +651,26 @@ urlbar-result-action-copy-to-clipboard = Kopeeri
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Järjehoidjad
+urlbar-searchmode-tabs =
+    .label = Kaardid
+urlbar-searchmode-history =
+    .label = Ajalugu
+urlbar-searchmode-actions =
+    .label = Tegevused
+urlbar-searchmode-bookmarks2 = Järjehoidjad
+urlbar-searchmode-tabs2 = Kaardid
+urlbar-searchmode-history2 = Ajalugu
+urlbar-searchmode-actions2 = Tegevused
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Lisa “{ $engineName }”
+    .title = Lisa otsingumootor “{ $engineName }”
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -541,11 +703,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Sulge lugemisvaade
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -647,7 +804,7 @@ repair-text-encoding-button =
     .label = Paranda teksti kodeering
     .tooltiptext = Tuvasta lehe sisu alusel korrektne kodeering
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -695,6 +852,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = P
 
 panel-save-update-username = Kasutajanimi
 panel-save-update-password = Parool
+panel-save-update-username-2 =
+    .label = Kasutajanimi
+panel-save-update-password-2 =
+    .label = Parool
 
 ##
 
@@ -789,20 +950,6 @@ data-reporting-notification-button =
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Privaatne veebilehitsemine
 
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
-
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } keelas sellel lehel automaatse uuestilaadimise.
@@ -810,9 +957,6 @@ refresh-blocked-redirect-label = { -brand-short-name } keelas sellel lehel autom
 refresh-blocked-allow =
     .label = Luba
     .accesskey = L
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

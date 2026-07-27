@@ -8,11 +8,81 @@
 newtab-page-title = Nýr flipi
 newtab-settings-button =
     .title = Sérsníða nýju flipasíðuna
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button =
+    .title = Sérsníða þessa síðu
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button-label once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button-label = Sérsníða
+newtab-customize-panel-label =
+    .label = Sérsníða
+newtab-personalize-settings-icon-label =
+    .title = Sérsníða nýjan flipa
+    .aria-label = Stillingar
+newtab-settings-dialog-label =
+    .aria-label = Stillingar
 newtab-personalize-icon-label =
     .title = Sérsníða nýjan flipa
     .aria-label = Sérsníða nýjan flipa
 newtab-personalize-dialog-label =
     .aria-label = Sérsníða
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Nýir flipar
+
+## Firefox Home content
+
+home-prefs-firefox-logo-header =
+    .label = { -brand-short-name }-táknmerki
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } röð
+           *[other] { $num } raðir
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Forritsauki ({ $extension })
+home-restore-defaults-srd =
+    .label = Endurheimta sjálfgefin gildi
+    .accesskey = r
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (sjálfgefið)
+home-mode-choice-custom-srd =
+    .label = Sérsniðin vefslóð…
+home-mode-choice-blank-srd =
+    .label = Tóm síða
+home-prefs-shortcuts-header-srd =
+    .label = Flýtileiðir
+home-prefs-shortcuts-select =
+    .aria-label = Flýtileiðir
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Kostaðar flýtileiðir
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Kostaðar sögur
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Heimsóttar síður
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Bókamerki
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Síðasta niðurhal
+home-prefs-recent-activity-header-srd =
+    .label = Nýleg virkni
+home-prefs-recent-activity-select =
+    .aria-label = Nýleg virkni
+home-prefs-weather-header-srd =
+    .label = Veður
+home-prefs-support-firefox-header-srd =
+    .label = Styddu við { -brand-product-name }
+home-prefs-mission-message-learn-more-link-srd = Finndu út hvernig
 
 ## Search box component.
 
@@ -39,19 +109,22 @@ newtab-search-box-input =
     .placeholder = Leita á vefnum
     .aria-label = Leita á vefnum
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Bæta við leitarvél
 newtab-topsites-add-shortcut-header = Nýr flýtilykill
 newtab-topsites-edit-topsites-header = Breyta toppsíðu
 newtab-topsites-edit-shortcut-header = Breyta flýtilykli
 newtab-topsites-add-shortcut-label = Bæta við flýtileið
+newtab-topsites-add-shortcut-title =
+    .title = Bæta við flýtileið
+    .aria-label = Bæta við flýtileið
 newtab-topsites-title-label = Titill
 newtab-topsites-title-input =
     .placeholder = Settu inn titil
 newtab-topsites-url-label = Vefslóð
 newtab-topsites-url-input =
-    .placeholder = Slá inn eða líma vefslóð
+    .placeholder = Skrifaðu eða límdu vefslóð
 newtab-topsites-url-validation = Gildrar vefslóðar krafist
 newtab-topsites-image-url-label = Sérsniðin myndslóð
 newtab-topsites-use-image-link = Nota sérsniðna mynd…
@@ -74,6 +147,14 @@ newtab-confirm-delete-history-p2 = Ekki er ekki hægt að bakfæra þessa aðger
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Kostað
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (fest)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +190,23 @@ newtab-menu-save-to-pocket = Vista í { -pocket-brand-name }
 newtab-menu-delete-pocket = Eyða úr { -pocket-brand-name }
 newtab-menu-archive-pocket = Safna í { -pocket-brand-name }
 newtab-menu-show-privacy-info = Styrktaraðilar okkar og friðhelgi þín
+newtab-menu-about-fakespot = Um { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Tilkynna
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Loka á
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = Kanna nánar
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Hætta að fylgjast með viðfangsefni
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Sýsla með kostað efni
+newtab-menu-our-sponsors-and-your-privacy = Styrktaraðilar okkar og friðhelgi þín
+newtab-menu-report-this-ad = Tilkynna þessa auglýsingu
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +268,8 @@ newtab-label-sponsored-by = Styrkt af { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } mín
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Kostað
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +332,6 @@ newtab-pocket-learn-more = Frekari upplýsingar
 newtab-pocket-cta-button = Sækja { -pocket-brand-name }
 newtab-pocket-cta-text = Vistaðu sögurnar sem þú elskar í { -pocket-brand-name } og fáðu innblástur í huga þinn með heillandi lesningu.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er hluti af { -brand-product-name } fjölskyldunni
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Vista
 newtab-pocket-saved = Vistað
 
@@ -244,7 +343,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ekki fyrir mig
-newtab-toast-thumbs-up-or-down = Takk. Álit þitt mun hjálpa okkur að bæta streymið þitt.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Takk. Álit þitt mun hjálpa okkur að bæta streymið þitt.
 newtab-toast-dismiss-button =
     .title = Afgreiða
     .aria-label = Afgreiða
@@ -264,9 +365,21 @@ newtab-error-fallback-refresh-link = Endurlestu síðu til að reyna aftur.
 
 newtab-custom-shortcuts-title = Flýtileiðir
 newtab-custom-shortcuts-subtitle = Vefsvæði sem þú vistar eða heimsækir
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Flýtileiðir
     .description = Vefsvæði sem þú vistar eða heimsækir
+newtab-custom-shortcuts-nova =
+    .label = Flýtileiðir
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } röð
+           *[other] { $num } raðir
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -277,19 +390,38 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Kostaðar flýtileiðir
 newtab-custom-pocket-title = Mælt með af { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Úrvalsefni í umsjón { -pocket-brand-name }, hluta af { -brand-product-name } fjölskyldunni
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Sögur sem mælt er með
     .description = Úrvalsefni sem safnað hefur verið af aðstandendum { -brand-product-name }
+newtab-recommended-stories-toggle =
+    .label = Sögur sem mælt er með
+newtab-custom-stories-personalized-toggle =
+    .label = Sögur
+newtab-custom-stories-personalized-checkbox =
+    .label = Sérsniðnar sögur byggðar á virkni þinni
+newtab-custom-stories-personalized-checkbox-label = Sérsniðnar sögur byggðar á virkni þinni
 newtab-custom-pocket-sponsored = Kostaðar sögur
 newtab-custom-pocket-show-recent-saves = Sýna nýlega vistað
 newtab-custom-recent-title = Nýleg virkni
 newtab-custom-recent-subtitle = Úrval af nýlegum síðum og efni
-newtab-custom-recent-toggle =
-    .label = Nýleg virkni
-    .description = Úrval af nýlegum síðum og efni
 newtab-custom-weather-toggle =
     .label = Veður
     .description = Veðurspá dagsins í skyndi
+newtab-custom-widget-weather-toggle =
+    .label = Veður
+newtab-custom-widget-lists-toggle =
+    .label = Listar
+newtab-custom-widget-timer-toggle =
+    .label = Tímamælir
+newtab-custom-widget-section-title = Viðmótshlutar
+newtab-custom-widget-section-toggle =
+    .label = Viðmótshlutar
+newtab-widget-manage-title = Viðmótshlutar
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Loka
+    .aria-label = Loka valmynd
 newtab-custom-close-button = Loka
 newtab-custom-settings = Sýsla með fleiri stillingar
 
@@ -297,6 +429,16 @@ newtab-custom-settings = Sýsla með fleiri stillingar
 
 newtab-wallpaper-title = Bakgrunnar
 newtab-wallpaper-reset = Endurstilla á sjálfgefið
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
+newtab-wallpaper-upload-image = Senda inn mynd
+newtab-wallpaper-custom-color = Veldu lit
+newtab-wallpaper-toggle-title =
+    .label = Bakgrunnar
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Myndin er stærri en takmörkin á stærð skráa { $file_size }MB. Reyndu að senda inn minni skrá.
+newtab-wallpaper-error-upload-file-type = Ekki var hægt að senda inn skrána þína. Reyndu aftur með annarri myndskrá.
+newtab-wallpaper-error-file-type = Ekki var hægt að senda inn skrána þína. Reyndu aftur með annarri skráartegund.
 newtab-wallpaper-light-red-panda = Rauð panda
 newtab-wallpaper-light-mountain = Hvítt fjall
 newtab-wallpaper-light-sky = Himinn með fjólubláum og bleikum skýjum
@@ -309,9 +451,12 @@ newtab-wallpaper-dark-panda = Rauð panda falin í skógi
 newtab-wallpaper-dark-sky = Borgarlandslag með næturhimni
 newtab-wallpaper-dark-mountain = Fjöllótt landslag
 newtab-wallpaper-dark-city = Fjólublátt borgarlandslag
+newtab-wallpaper-dark-fox-anniversary = Refur á gangstétt nálægt skógi
+newtab-wallpaper-light-fox-anniversary = Refur í grasi með þokufullu fjallalandslagi
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Heillitir
 newtab-wallpaper-blue = Blátt
 newtab-wallpaper-light-blue = Ljósblátt
@@ -338,8 +483,12 @@ newtab-wallpaper-abstract-purple = Fjólublá form
 newtab-wallpaper-abstract-orange = Appelsínugul form
 newtab-wallpaper-gradient-orange = Litstigull appelsínugult og bleikt
 newtab-wallpaper-abstract-blue-purple = Blá og fjólublá form
+newtab-wallpaper-abstract-white-curves = Hvíttt með skyggðum línum
+newtab-wallpaper-abstract-purple-green = Fjólublár og grænn ljósleitur litstigull
+newtab-wallpaper-abstract-blue-purple-waves = Blá og fjólublá bylgjuform
+newtab-wallpaper-abstract-black-waves = Svört bylgjuform
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Ljósmyndir
 newtab-wallpaper-beach-at-sunrise = Strönd við sólarupprás
@@ -348,6 +497,12 @@ newtab-wallpaper-storm-sky = Stormský
 newtab-wallpaper-sky-with-pink-clouds = Himinn með bleikum skýjum
 newtab-wallpaper-red-panda-yawns-in-a-tree = Rauð panda geispar í tré
 newtab-wallpaper-white-mountains = Hvít fjöll
+newtab-wallpaper-hot-air-balloons = Fjölbreyttir litir á heitaloftbelgjum í dagsbirtu
+newtab-wallpaper-starry-canyon = Blá stjörnubjört nótt
+newtab-wallpaper-suspension-bridge = Ljósmynd af gráum hengibrúm í dagsbirtu
+newtab-wallpaper-sand-dunes = Hvítar sandöldur
+newtab-wallpaper-palm-trees = Skuggamynd af kókospálmatrjám við sólarlag
+newtab-wallpaper-blue-flowers = Nærmynd af bláblöðóttum blómum í blóma
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +518,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Himneskt
+newtab-wallpaper-celestial-lunar-eclipse = Tunglmyrkvi
+newtab-wallpaper-celestial-earth-night = Næturmynd frá lágri braut um jörðu
+newtab-wallpaper-celestial-starry-sky = Stjörnubjartur himinn
+newtab-wallpaper-celestial-eclipse-time-lapse = Tímaruna tunglmyrkva
+newtab-wallpaper-celestial-black-hole = Svarthols-vetrarbrautarmynd
+newtab-wallpaper-celestial-river = Gervihnattamynd af fljóti
+
 ## New Tab Weather
 
 # Variables:
@@ -373,7 +545,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Kostað
 newtab-weather-menu-change-location = Breyta staðsetningu
-newtab-weather-change-location-search-input = Leita að staðsetningu
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Leita að staðsetningu
+    .aria-label = Leita að staðsetningu
 newtab-weather-menu-weather-display = Birting veðurs
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
@@ -389,8 +563,21 @@ newtab-weather-menu-change-temperature-units-fahrenheit = Skipta yfir í Fahrenh
 newtab-weather-menu-change-temperature-units-celsius = Skipta yfir í Selsíus
 newtab-weather-menu-hide-weather = Fela veður á nýjum flipa
 newtab-weather-menu-learn-more = Kanna nánar
+newtab-weather-menu-detect-my-location = Greina staðsetningu mína
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Veðurgögn eru ekki tiltæk í augnablikinu.
+newtab-weather-opt-in-see-weather = Viltu sjá veðrið á staðnum þínum?
+newtab-weather-opt-in-not-now =
+    .label = Ekki núna
+newtab-weather-opt-in-yes =
+    .label = Já
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = New York borg
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Sjá veðurspá í { $provider }
+    .aria-description = { $provider } ∙ Kostað
 
 ## Topic Labels
 
@@ -431,3 +618,161 @@ newtab-topic-selection-button-maybe-later = Kannski seinna
 newtab-topic-selection-privacy-link = Sjáðu hvernig við verndum og stjórnum gögnum
 newtab-topic-selection-button-update-interests = Uppfærðu áhugamálin þín
 newtab-topic-selection-button-pick-interests = Veldu áhugamálin þín
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Fylgjast með
+newtab-section-following-button = Fylgist með
+newtab-section-unfollow-button = Hætta að fylgjast með
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Fínstilltu streymið þitt
+newtab-section-follow-highlight-subtitle = Fylgstu með áhugaefnum þínum til að sjá meira af því sem þér líkar.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Loka á
+newtab-section-blocked-button = Lokað á
+newtab-section-unblock-button = Opna fyrir
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Ekki núna
+newtab-section-confirm-block-topic-p1 = Ertu viss um að þú viljir loka á þetta umfjöllunarefni?
+newtab-section-confirm-block-topic-p2 = Umfjöllunarefni sem lokað er á munu ekki lengur birtast í streyminu þínu.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Loka á { $topic }
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Umfjöllunarefni
+newtab-section-manage-topics-button-v2 =
+    .label = Sýsla með umfjöllunarefni
+newtab-section-mangage-topics-followed-topics = Fylgst með
+newtab-section-mangage-topics-followed-topics-empty-state = Þú hefur ekki fylgst með neinu umfjöllunarefni ennþá.
+newtab-section-mangage-topics-blocked-topics = Lokað á
+newtab-section-mangage-topics-blocked-topics-empty-state = Þú hefur ekki lokað á neitt umfjöllunarefni ennþá.
+newtab-custom-wallpaper-title = Sérsniðnir bakgrunnar eru hér
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Sendu inn þinn eigin bakgrunn eða veldu sérsniðinn lit til að gera { -brand-product-name } að þínu.
+newtab-custom-wallpaper-cta = Prófaðu það
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Veldu bakgrunn til að gera { -brand-product-name } að þínu
+newtab-new-user-custom-wallpaper-subtitle = Láttu nýja flipa verða heimilislegri með sérsniðnum bakgrunnum og litum.
+newtab-new-user-custom-wallpaper-cta = Prófa það núna
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Sækja { -brand-product-name } fyrir farsíma
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Skannaðu kóðann til að vafra á öruggan hátt.
+newtab-download-mobile-highlight-body-variant-b = Taktu upp þráðinn þar sem frá var horfið þegar þú samstillir flipa, lykilorð og fleira.
+newtab-download-mobile-highlight-body-variant-c = Vissir þú að þú getur tekið { -brand-product-name } með þér hvert sem er? Sami vafrinn, í vasanum þínum.
+newtab-download-mobile-highlight-image =
+    .aria-label = QR-kóði til að sækja { -brand-product-name } fyrir farsíma
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Eftirlætin þín innan seilingar
+newtab-shortcuts-highlight-subtitle = Bættu við flýtileið til að hafa uppáhaldsvefina þína í eins-smells fjarlægð.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Af hverju ertu að tilkynna þetta?
+newtab-report-ads-reason-not-interested =
+    .label = Ég hef ekki áhuga
+newtab-report-ads-reason-inappropriate =
+    .label = Þetta er óviðeigandi
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Ég hef séð það of oft
+newtab-report-content-wrong-category =
+    .label = Rangur flokkur
+newtab-report-content-outdated =
+    .label = Úrelt
+newtab-report-content-inappropriate-offensive =
+    .label = Óviðeigandi eða særandi
+newtab-report-content-spam-misleading =
+    .label = Ruslpóstur eða villandi
+newtab-report-cancel = Hætta við
+newtab-report-submit = Senda inn
+newtab-toast-thanks-for-reporting =
+    .message = Takk fyrir að tilkynna þetta.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Möguleikarnir eru endalausir. Bættu við einum í viðbót.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Nýtt
+newtab-widget-lists-label-beta =
+    .label = Beta-prófunarútgáfa
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Lokið ({ $number })
+newtab-widget-task-list-menu-copy = Afrita
+newtab-widget-lists-menu-edit = Breyta heiti á lista
+newtab-widget-lists-menu-edit2 =
+    .aria-label = Breyta heiti á lista
+newtab-widget-lists-menu-create = Búa til nýjan lista
+newtab-widget-lists-menu-delete = Eyða þessum lista
+newtab-widget-lists-menu-copy = Afrita lista á klippispjald
+newtab-widget-lists-menu-learn-more = Frekari upplýsingar
+newtab-widget-lists-button-add-item = Bæta við atriði
+newtab-widget-lists-input-add-an-item2 =
+    .placeholder = Bæta við atriði
+    .aria-label = Bæta við atriði
+newtab-widget-lists-input-error = Settu inn texta til að bæta við atriði.
+newtab-widget-lists-input-menu-open-link = Opna tengil
+newtab-widget-lists-input-menu-move-up = Færa upp
+newtab-widget-lists-input-menu-move-down = Færa niður
+newtab-widget-lists-input-menu-delete = Eyða
+newtab-widget-lists-input-menu-edit = Breyta
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Búa til nýjan lista
+newtab-widget-lists-name-label-default =
+    .label = Verkefnalisti
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Verkefnalisti
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new2 =
+    .placeholder = Nýr listi
+    .aria-label = Breyta heiti á lista
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-notification-title = Tímamælir
+newtab-widget-timer-notification-focus = Einbeitingartíminn er liðinn. Vel gert. Þarftu pásu?
+newtab-widget-timer-notification-break = Hléið þitt er búið. Ertu til í að einbeita þér?
+newtab-widget-timer-notification-warning = Slökkt er á tilkynningum
+newtab-widget-timer-mode-focus =
+    .label = Einbeiting
+newtab-widget-timer-mode-break =
+    .label = Hlé
+newtab-widget-timer-label-play =
+    .label = Spila
+newtab-widget-timer-label-pause =
+    .label = Í bið
+newtab-widget-timer-reset =
+    .title = Endurstilla
+newtab-widget-timer-menu-notifications = Slökkva á tilkynningum
+newtab-widget-timer-menu-notifications-on = Kveikja á tilkynningum
+newtab-widget-timer-menu-learn-more = Fræðast meira
+newtab-widget-message-title = Vertu einbeittur með listum og innbyggðum tímamæli
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Frá fljótlegum áminningum til daglegra verkefna, einbeitingarlotum til teygingahléa - haltu þér við verkefnin og á réttum tíma.
+newtab-promo-card-title = Styddu við { -brand-product-name }
+newtab-promo-card-body = Styrktaraðilar okkar styðja markmið okkar að byggja upp betri vef
+newtab-promo-card-cta = Fræðast meira
+newtab-promo-card-dismiss-button =
+    .title = Afgreiða
+    .aria-label = Afgreiða

@@ -1,17 +1,17 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef FAKE_DECRYPTOR_H__
-#define FAKE_DECRYPTOR_H__
+#ifndef FAKE_DECRYPTOR_H_
+#define FAKE_DECRYPTOR_H_
+
+#include <string>
 
 #include "content_decryption_module.h"
-#include <string>
 
 class FakeDecryptor : public cdm::ContentDecryptionModule_10 {
  public:
-  explicit FakeDecryptor(cdm::Host_10* aHost);
+  explicit FakeDecryptor(cdm::Host_11* aHost);
 
   void Initialize(bool aAllowDistinctiveIdentifier, bool aAllowPersistentState,
                   bool aUseHardwareSecureCodecs) override {
@@ -93,7 +93,7 @@ class FakeDecryptor : public cdm::ContentDecryptionModule_10 {
 
   static void Message(const std::string& aMessage);
 
-  cdm::Host_10* mHost;
+  cdm::Host_11* mHost;
 
   static FakeDecryptor* sInstance;
 

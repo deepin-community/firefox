@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,10 +18,8 @@ using mozilla::TimeDuration;
 
 static const long NanoSecPerSec = 1000000000;
 
-// Android 4.4 or earlier & macOS 10.12 has the clock functions, but not
-// pthread_condattr_setclock.
-#if defined(HAVE_CLOCK_MONOTONIC) && \
-    !(defined(__ANDROID__) && __ANDROID_API__ < 21) && !defined(__APPLE__)
+// macOS has the clock functions, but not pthread_condattr_setclock.
+#if defined(HAVE_CLOCK_MONOTONIC) && !defined(__APPLE__)
 #  define CV_USE_CLOCK_API
 #endif
 

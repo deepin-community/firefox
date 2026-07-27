@@ -1,27 +1,24 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsStyleUtil.h"
-#include "nsStyleConsts.h"
 
-#include "mozilla/dom/Document.h"
 #include "mozilla/ExpandedPrincipal.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/PolicyContainer.h"
 #include "mozilla/intl/MozLocaleBindings.h"
 #include "mozilla/intl/oxilangtag_ffi_generated.h"
-#include "mozilla/TextUtils.h"
-#include "nsIContent.h"
 #include "nsCSSProps.h"
 #include "nsContentUtils.h"
-#include "nsROCSSPrimitiveValue.h"
-#include "nsStyleStruct.h"
+#include "nsIContent.h"
 #include "nsIContentPolicy.h"
 #include "nsIContentSecurityPolicy.h"
 #include "nsLayoutUtils.h"
 #include "nsPrintfCString.h"
-#include <cctype>
+#include "nsROCSSPrimitiveValue.h"
+#include "nsStyleConsts.h"
+#include "nsStyleStruct.h"
 
 using namespace mozilla;
 
@@ -115,51 +112,49 @@ bool nsStyleUtil::ValueIncludes(const nsAString& aValueList,
 
   while (p < p_end) {
     // skip leading space
-    while (p != p_end && nsContentUtils::IsHTMLWhitespace(*p)) ++p;
+    while (p != p_end && nsContentUtils::IsHTMLWhitespace(*p)) {
+      ++p;
+    }
 
     const char16_t* val_start = p;
 
     // look for space or end
-    while (p != p_end && !nsContentUtils::IsHTMLWhitespace(*p)) ++p;
+    while (p != p_end && !nsContentUtils::IsHTMLWhitespace(*p)) {
+      ++p;
+    }
 
     const char16_t* val_end = p;
 
     if (val_start < val_end &&
-        aValue.Equals(Substring(val_start, val_end), aComparator))
+        aValue.Equals(Substring(val_start, val_end), aComparator)) {
       return true;
+    }
 
     ++p;  // we know the next character is not whitespace
   }
   return false;
 }
 
-void nsStyleUtil::AppendEscapedCSSString(const nsAString& aString,
-                                         nsAString& aReturn,
-                                         char16_t quoteChar) {
-  MOZ_ASSERT(quoteChar == '\'' || quoteChar == '"',
+void nsStyleUtil::AppendQuotedCSSString(const nsACString& aString,
+                                        nsACString& aReturn, char aQuoteChar) {
+  MOZ_ASSERT(aQuoteChar == '\'' || aQuoteChar == '"',
              "CSS strings must be quoted with ' or \"");
 
-  aReturn.Append(quoteChar);
+  aReturn.Append(aQuoteChar);
 
-  const char16_t* in = aString.BeginReading();
-  const char16_t* const end = aString.EndReading();
+  const char* in = aString.BeginReading();
+  const char* const end = aString.EndReading();
   for (; in != end; in++) {
-    if (*in < 0x20 || *in == 0x7F) {
-      // Escape U+0000 through U+001F and U+007F numerically.
-      aReturn.AppendPrintf("\\%x ", *in);
-    } else {
-      if (*in == '"' || *in == '\'' || *in == '\\') {
-        // Escape backslash and quote characters symbolically.
-        // It's not technically necessary to escape the quote
-        // character that isn't being used to delimit the string,
-        // but we do it anyway because that makes testing simpler.
-        aReturn.Append(char16_t('\\'));
-      }
-      aReturn.Append(*in);
+    if (*in == '\\' || *in == aQuoteChar) {
+      // Escape backslash and quote characters symbolically.
+      // It's not technically necessary to escape the quote
+      // character that isn't being used to delimit the string,
+      // but we do it anyway because that makes testing simpler.
+      aReturn.Append('\\');
     }
+    aReturn.Append(*in);
   }
-
-  aReturn.Append(quoteChar);
+  aReturn.Append(aQuoteChar);
 }
 
 /* static */
@@ -180,7 +175,9 @@ void nsStyleUtil::AppendEscapedCSSIdent(const nsAString& aIdent,
   const char16_t* in = aIdent.BeginReading();
   const char16_t* const end = aIdent.EndReading();
 
-  if (in == end) return;
+  if (in == end) {
+    return;
+  }
 
   // A leading dash does not need to be escaped as long as it is not the
   // *only* character in the identifier.
@@ -346,10 +343,11 @@ bool nsStyleUtil::CSPAllowsInlineStyle(
                                   ->OverridesCSP(aDocument->NodePrincipal())) {
     nsCOMPtr<nsIExpandedPrincipal> ep = do_QueryInterface(aTriggeringPrincipal);
     if (ep) {
+      // Bug 1548468: Move CSP off ExpandedPrincipal
       csp = ep->GetCsp();
     }
   } else {
-    csp = aDocument->GetCsp();
+    csp = PolicyContainer::GetCSP(aDocument->GetPolicyContainer());
   }
 
   if (!csp) {

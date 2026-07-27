@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,15 +17,14 @@
 #include "mozilla/dom/PBackgroundLSRequestChild.h"
 #include "mozilla/dom/PBackgroundLSSimpleRequestChild.h"
 #include "mozilla/dom/PBackgroundSDBConnectionChild.h"
+#include "mozilla/dom/CookieStoreChild.h"
 #include "mozilla/dom/PFileSystemRequestChild.h"
-#include "mozilla/dom/EndpointForReportChild.h"
 #include "mozilla/dom/PVsync.h"
 #include "mozilla/dom/TemporaryIPCBlobChild.h"
 #include "mozilla/dom/cache/ActorUtils.h"
 #include "mozilla/dom/indexedDB/PBackgroundIndexedDBUtilsChild.h"
 #include "mozilla/dom/indexedDB/ThreadLocal.h"
 #include "mozilla/dom/quota/PQuotaChild.h"
-#include "mozilla/dom/RemoteWorkerChild.h"
 #include "mozilla/dom/RemoteWorkerControllerChild.h"
 #include "mozilla/dom/RemoteWorkerServiceChild.h"
 #include "mozilla/dom/ServiceWorkerChild.h"
@@ -39,7 +36,6 @@
 #include "mozilla/ipc/PBackgroundTestChild.h"
 #include "mozilla/net/PUDPSocketChild.h"
 #include "mozilla/dom/network/UDPSocketChild.h"
-#include "mozilla/dom/WebAuthnTransactionChild.h"
 #include "mozilla/dom/MIDIPortChild.h"
 #include "mozilla/dom/MIDIManagerChild.h"
 #include "nsID.h"
@@ -75,8 +71,6 @@ using mozilla::dom::PServiceWorkerRegistrationChild;
 using mozilla::dom::StorageDBChild;
 using mozilla::dom::cache::PCacheChild;
 using mozilla::dom::cache::PCacheStreamControlChild;
-
-using mozilla::dom::WebAuthnTransactionChild;
 
 using mozilla::dom::PMIDIManagerChild;
 using mozilla::dom::PMIDIPortChild;
@@ -127,7 +121,6 @@ void BackgroundChildImpl::ProcessingError(Result aCode, const char* aReason) {
       HANDLE_CASE(MsgNotAllowed);
       HANDLE_CASE(MsgPayloadError);
       HANDLE_CASE(MsgProcessingError);
-      HANDLE_CASE(MsgRouteError);
       HANDLE_CASE(MsgValueError);
 
 #undef HANDLE_CASE
@@ -289,18 +282,6 @@ bool BackgroundChildImpl::DeallocPFileCreatorChild(PFileCreatorChild* aActor) {
   return true;
 }
 
-PUDPSocketChild* BackgroundChildImpl::AllocPUDPSocketChild(
-    const Maybe<PrincipalInfo>& aPrincipalInfo, const nsACString& aFilter) {
-  MOZ_CRASH("AllocPUDPSocket should not be called");
-  return nullptr;
-}
-
-bool BackgroundChildImpl::DeallocPUDPSocketChild(PUDPSocketChild* child) {
-  UDPSocketChild* p = static_cast<UDPSocketChild*>(child);
-  p->ReleaseIPDLReference();
-  return true;
-}
-
 // -----------------------------------------------------------------------------
 // BroadcastChannel API
 // -----------------------------------------------------------------------------
@@ -319,6 +300,26 @@ bool BackgroundChildImpl::DeallocPBroadcastChannelChild(
   MOZ_ASSERT(child);
   return true;
 }
+
+// -----------------------------------------------------------------------------
+// CookieStore API
+// -----------------------------------------------------------------------------
+
+dom::PCookieStoreChild* BackgroundChildImpl::AllocPCookieStoreChild() {
+  RefPtr<dom::CookieStoreChild> child = new dom::CookieStoreChild();
+  return child.forget().take();
+}
+
+bool BackgroundChildImpl::DeallocPCookieStoreChild(PCookieStoreChild* aActor) {
+  RefPtr<dom::CookieStoreChild> child =
+      dont_AddRef(static_cast<dom::CookieStoreChild*>(aActor));
+  MOZ_ASSERT(child);
+  return true;
+}
+
+// -----------------------------------------------------------------------------
+// Camera API
+// -----------------------------------------------------------------------------
 
 camera::PCamerasChild* BackgroundChildImpl::AllocPCamerasChild() {
 #ifdef MOZ_WEBRTC
@@ -389,20 +390,6 @@ bool BackgroundChildImpl::DeallocPMessagePortChild(PMessagePortChild* aActor) {
   return true;
 }
 
-dom::PWebAuthnTransactionChild*
-BackgroundChildImpl::AllocPWebAuthnTransactionChild() {
-  MOZ_CRASH("PWebAuthnTransaction actor should be manually constructed!");
-  return nullptr;
-}
-
-bool BackgroundChildImpl::DeallocPWebAuthnTransactionChild(
-    PWebAuthnTransactionChild* aActor) {
-  MOZ_ASSERT(aActor);
-  RefPtr<dom::WebAuthnTransactionChild> child =
-      dont_AddRef(static_cast<dom::WebAuthnTransactionChild*>(aActor));
-  return true;
-}
-
 already_AddRefed<PServiceWorkerChild>
 BackgroundChildImpl::AllocPServiceWorkerChild(
     const IPCServiceWorkerDescriptor&) {
@@ -420,18 +407,6 @@ BackgroundChildImpl::AllocPServiceWorkerRegistrationChild(
     const IPCServiceWorkerRegistrationDescriptor&) {
   MOZ_CRASH("Shouldn't be called.");
   return {};
-}
-
-dom::PEndpointForReportChild* BackgroundChildImpl::AllocPEndpointForReportChild(
-    const nsAString& aGroupName, const PrincipalInfo& aPrincipalInfo) {
-  return new dom::EndpointForReportChild();
-}
-
-bool BackgroundChildImpl::DeallocPEndpointForReportChild(
-    PEndpointForReportChild* aActor) {
-  MOZ_ASSERT(aActor);
-  delete static_cast<dom::EndpointForReportChild*>(aActor);
-  return true;
 }
 
 }  // namespace mozilla::ipc

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -52,7 +50,12 @@ void BaselineFrame::trace(JSTracer* trc, const JSJitFrameIter& frameIterator) {
     TraceRoot(trc, &argsObj_, "baseline-args-obj");
   }
 
-  if (runningInInterpreter()) {
+  mozilla::DebugOnly<bool> isBaselineSelfHosted =
+      this->script()->selfHosted() && !runningInInterpreter();
+  MOZ_ASSERT_IF(
+      JS::Prefs::experimental_self_hosted_cache() && isBaselineSelfHosted,
+      isRealmIndependent());
+  if (runningInInterpreter() || isRealmIndependent()) {
     TraceRoot(trc, &interpreterScript_, "baseline-interpreterScript");
   }
 
@@ -105,14 +108,6 @@ bool BaselineFrame::pushVarEnvironment(JSContext* cx, Handle<Scope*> scope) {
   return js::PushVarEnvironmentObject(cx, scope, this);
 }
 
-#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-ArrayObject* BaselineFrame::getOrCreateDisposeCapability(JSContext* cx) {
-  JSObject* env = environmentChain();
-  return env->as<DisposableEnvironmentObject>().getOrCreateDisposeCapability(
-      cx);
-}
-#endif
-
 void BaselineFrame::setInterpreterFields(JSScript* script, jsbytecode* pc) {
   uint32_t pcOffset = script->pcToOffset(pc);
   interpreterScript_ = script;
@@ -134,7 +129,7 @@ void BaselineFrame::setInterpreterFieldsForPrologue(JSScript* script) {
   }
 }
 
-bool BaselineFrame::initForOsr(InterpreterFrame* fp, uint32_t numStackValues) {
+void BaselineFrame::initForOsr(InterpreterFrame* fp, uint32_t numStackValues) {
   mozilla::PodZero(this);
 
   envChain_ = fp->environmentChain();
@@ -175,14 +170,14 @@ bool BaselineFrame::initForOsr(InterpreterFrame* fp, uint32_t numStackValues) {
     *valueSlot(i) = fp->slots()[i];
   }
 
+  // The InterpreterFrame won't be used anymore, but a GC might still trace it.
+  // Clear its stack slots to avoid keeping GC things alive.
+  std::fill_n(fp->slots(), numStackValues, UndefinedValue());
+
   if (fp->isDebuggee()) {
     // For debuggee frames, update any Debugger.Frame objects for the
     // InterpreterFrame to point to the BaselineFrame.
-    if (!DebugAPI::handleBaselineOsr(cx, fp, this)) {
-      return false;
-    }
+    DebugAPI::handleBaselineOsr(cx, fp, this);
     setIsDebuggee();
   }
-
-  return true;
 }

@@ -1,16 +1,12 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { XPCShellContentUtils } from "resource://testing-common/XPCShellContentUtils.sys.mjs";
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
   ExtensionTestCommon: "resource://testing-common/ExtensionTestCommon.sys.mjs",
@@ -231,7 +227,7 @@ class ExtensionWrapper {
       await this.extension.shutdown();
     }
 
-    if (AppConstants.platform === "android") {
+    if (AppConstants.MOZ_GECKOVIEW) {
       // We need a way to notify the embedding layer that an extension has been
       // uninstalled, so that the java layer can be updated too.
       Services.obs.notifyObservers(
@@ -394,6 +390,14 @@ class AOMExtensionWrapper extends ExtensionWrapper {
             this.addonPromise = null;
           }
         );
+        // Ensure we are still listening to the AOM addon events (e.g. to
+        // still received calls to the onUninstalled method after the test may
+        // have restarted the AddonManager using the related AddonTestUtils methods).
+        //
+        // AddonManager will have already cleared the previously registered
+        // addon listeners when shutdown is simulated through the related
+        // AddonTestUtils methods.
+        lazy.AddonManager.addAddonListener(this);
       // FALLTHROUGH
       case "addon-manager-shutdown":
         if (this.state === "uninitialized") {
@@ -428,7 +432,7 @@ class AOMExtensionWrapper extends ExtensionWrapper {
         let [extension] = args;
         if (extension.id === this.id) {
           this.state = "running";
-          if (AppConstants.platform === "android") {
+          if (AppConstants.MOZ_GECKOVIEW) {
             // We need a way to notify the embedding layer that a new extension
             // has been installed, so that the java layer can be updated too.
             Services.obs.notifyObservers(
@@ -781,8 +785,6 @@ export var ExtensionTestUtils = {
    * @param {string} [options.redirectUrl]
    *        An optional URL that the initial page is expected to
    *        redirect to.
-   *
-   * @returns {XPCShellContentUtils.ContentPage}
    */
   loadContentPage(url, options) {
     return XPCShellContentUtils.loadContentPage(url, options);

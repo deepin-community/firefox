@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -18,8 +17,8 @@ includes: [testTypedArray.js, propertyHelper.js]
 features: [Reflect, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([42, 43]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([42, 43]));
   sample.foo = true;
   sample.bar = true;
 
@@ -55,6 +54,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.sameValue(desc.set, fnset, "accessor's set");
   verifyNotEnumerable(sample, "bar");
   verifyNotConfigurable(sample, "bar");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

@@ -8,12 +8,13 @@
  */
 add_task(async function test_browser_translations_full_page_multiple_windows() {
   const window1 = window;
+  await focusWindow(window1);
   const testPage1 = await loadTestPage({
     page: SPANISH_PAGE_URL,
     languagePairs: LANGUAGE_PAIRS,
   });
 
-  const window2 = await BrowserTestUtils.openNewBrowserWindow();
+  const window2 = await openNewFocusedBrowserWindow();
 
   const testPage2 = await loadTestPage({
     win: window2,
@@ -29,18 +30,18 @@ add_task(async function test_browser_translations_full_page_multiple_windows() {
   await FullPageTranslationsTestUtils.openPanel({
     expectedFromLanguage: "es",
     expectedToLanguage: "en",
-    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
   });
   await FullPageTranslationsTestUtils.clickTranslateButton({
     downloadHandler: testPage1.resolveDownloads,
   });
-  await FullPageTranslationsTestUtils.assertPageIsTranslated(
-    "es",
-    "en",
-    testPage1.runInPage,
-    "Window 1 gets translated",
-    window1
-  );
+  await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated({
+    fromLanguage: "es",
+    toLanguage: "en",
+    runInPage: testPage1.runInPage,
+    message: "Window 1 gets translated",
+    win: window1,
+  });
 
   await focusWindow(window2);
 
@@ -51,13 +52,13 @@ add_task(async function test_browser_translations_full_page_multiple_windows() {
     expectedToLanguage: "en",
   });
   await FullPageTranslationsTestUtils.clickTranslateButton({ win: window2 });
-  await FullPageTranslationsTestUtils.assertPageIsTranslated(
-    "es",
-    "en",
-    testPage2.runInPage,
-    "Window 2 gets translated",
-    window2
-  );
+  await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated({
+    fromLanguage: "es",
+    toLanguage: "en",
+    runInPage: testPage2.runInPage,
+    message: "Window 2 gets translated",
+    win: window2,
+  });
 
   await testPage2.cleanup();
   await BrowserTestUtils.closeWindow(window2);

@@ -1,14 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsIClassInfoImpl_h__
-#define nsIClassInfoImpl_h__
+#ifndef nsIClassInfoImpl_h_
+#define nsIClassInfoImpl_h_
 
 #include "mozilla/Alignment.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/MacroArgs.h"
 #include "mozilla/MacroForEach.h"
 #include "nsIClassInfo.h"
@@ -118,11 +115,12 @@ class GenericClassInfo : public nsIClassInfo {
 
 #define NS_IMPL_CLASSINFO(_class, _getscriptablehelper, _flags, _cid)       \
   NS_DECL_CI_INTERFACE_GETTER(_class)                                       \
-  static const GenericClassInfo::ClassInfoData k##_class##ClassInfoData = { \
-      NS_CI_INTERFACE_GETTER_NAME(_class),                                  \
-      _getscriptablehelper,                                                 \
-      _flags | nsIClassInfo::SINGLETON_CLASSINFO,                           \
-      _cid,                                                                 \
+  MOZ_GLOBINIT static const GenericClassInfo::ClassInfoData                 \
+      k##_class##ClassInfoData = {                                          \
+          NS_CI_INTERFACE_GETTER_NAME(_class),                              \
+          _getscriptablehelper,                                             \
+          _flags | nsIClassInfo::SINGLETON_CLASSINFO,                       \
+          _cid,                                                             \
   };                                                                        \
   mozilla::AlignedStorage2<GenericClassInfo> k##_class##ClassInfoDataPlace; \
   nsIClassInfo* NS_CLASSINFO_NAME(_class) = nullptr;
@@ -190,4 +188,4 @@ class GenericClassInfo : public nsIClassInfo {
   NS_IMPL_QUERY_INTERFACE_CI(aClass, __VA_ARGS__) \
   NS_IMPL_CI_INTERFACE_GETTER(aClass, __VA_ARGS__)
 
-#endif  // nsIClassInfoImpl_h__
+#endif  // nsIClassInfoImpl_h_

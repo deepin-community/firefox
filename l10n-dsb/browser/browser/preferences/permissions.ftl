@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Dowóliś
     .accesskey = D
+permissions-add =
+    .label = Pśidaś
+    .accesskey = P
 permissions-button-off =
     .label = Znjemóžniś
     .accesskey = n
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Wšykne websedła wótwónoźeś
     .accesskey = s
+permissions-save-changes-2 =
+    .buttonlabelaccept = Změny składowaś
+    .buttonaccesskeyaccept = s
 permission-dialog =
     .buttonlabelaccept = Změny składowaś
     .buttonaccesskeyaccept = s
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Móžośo pódaś, kótare websedła směju pśecej abo njesměju nigda cookieje a sedłowe daty wužywaś. Zapišćo eksaktnu adresu sedła, kótarež cośo zastojaś a klikniśo pótom na Blokěrowaś, Za pósejźenje dowóliś abo Dowóliś.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Wuwześa – Historiju pśi kóńcenju lašowaś
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Móžośo pódaś, kótare websedła swóje daty wobchowaju, gaž { -brand-short-name } historiju pśi zacynjanju lašujo. Zapódajśo eksaktnu adresu sedła, kótarež cośo zastojaś a klikniśo pón na Dowóliś.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Móžóśo modus Jano-HTTPS za wěste websedła znjemóžniś. { -brand-short-name } njewopytajo, zwisk za te sedła na wěsty HTTPS aktualizěrowaś. Wuwześa za priwatne wokna njepłaśe.
 permissions-exceptions-https-only-desc2 = Móžóśo modus Jano-HTTPS za wěste websedła znjemóžniś. { -brand-short-name } njewopytajo, zwisk za te sedła na wěsty HTTPS aktualizěrowaś.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Dowólone websedła – wuskokujuce wokna a dalejpósrědnjenja tśeśich póbitowarjow
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Móžośo póstajiś, kótare websedła směju wuskokujuce wokna wócyniś a se pśez wobłuki tśeśich póbitowarjow dalej pósrědniś.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = Slědujuce websedła su pominali pśistup k waše
 permissions-site-camera-disable-label =
     .label = Nowe pominanja za pśistupom na wašu kameru blokěrowaś
 permissions-site-camera-disable-desc = To buźo websedłam, kótarež górjejce w lisćinje pódane njejsu, pominanje za pśistupom k wašej kamerje zajźowaś. Gaž pśistup k wašej kamerje blokěrujośo, móžo se staś, až někotare funkcije websedła njefunkcioněruju.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Nastajenja – Rědowe nałoženja a słužby
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Toś te websedła su pšosyli wó pśistup k nałoženjam a słužbam na toś tom rěźe. Móžośo rozsuźiś, lěc sedłam dowólujośo abo zakazujośo to cyniś.
+permissions-site-localhost-disable-label =
+    .label = Blokěrujśo nowe napšašowanja za pśistupom k nałoženjam a słužbam na toś tom rěźe
+permissions-site-localhost-disable-desc = To tomu zajźujo, až websedła, kótarež górjejce njejsu nalicone, wó pśistup k nałoženjam a słužbam na toś tom rěźe pšose. Gaž to cyniśo, někotare funkcije websedła snaź wěcej korektnje njefunkcioněruju.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Nastajenja – Rědy lokalneje seśi
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Toś te websedła su pšosyli wó pśistup k nałoženjam a słužbam na rědach, kótarež su z wašeju lokalneju seśu WLAN zwězane. Móžośo rozsuźiś, lěc sedłam dowólujośo abo zakazujośo to cyniś.
+permissions-site-local-network-disable-label =
+    .label = Blokěrujśo nowe napšašowanja za pśistupom k nałoženjam a słužbam na rědach, kótarež su z wašeju lokalneju seśu WLAN zwězane.
+permissions-site-local-network-disable-desc = To tomu zajźujo, až websedła, kótarež njejsu górjejce nalicone, wó pśistup k nałoženjam a słužbam na rědach pšose, kótarež su z rědami WLAN abo lokalneju seśu zwězane. Gaž to cyniśo, někotare funkcije websedła snaź wěcej korektnje njefunkcioněruju.
 
 ## Site Permissions - Microphone
 

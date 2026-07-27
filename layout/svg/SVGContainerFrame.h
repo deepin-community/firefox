@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef LAYOUT_SVG_SVGCONTAINERFRAME_H_
 #define LAYOUT_SVG_SVGCONTAINERFRAME_H_
 
-#include "mozilla/Attributes.h"
+#include <memory>
+
 #include "mozilla/ISVGDisplayableFrame.h"
-#include "mozilla/UniquePtr.h"
 #include "nsContainerFrame.h"
 #include "nsIFrame.h"
 #include "nsQueryFrame.h"
@@ -76,8 +74,6 @@ class SVGContainerFrame : public nsContainerFrame {
   void InsertFrames(ChildListID aListID, nsIFrame* aPrevFrame,
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aFrameList) override;
-  void RemoveFrame(DestroyContext&, ChildListID, nsIFrame*) override;
-
   void BuildDisplayList(nsDisplayListBuilder* aBuilder,
                         const nsDisplayListSet& aLists) override {}
 
@@ -117,6 +113,7 @@ class SVGDisplayContainerFrame : public SVGContainerFrame,
   NS_DECL_ABSTRACT_FRAME(SVGDisplayContainerFrame)
 
   // nsIFrame:
+  void DidSetComputedStyle(ComputedStyle*) override;
   void InsertFrames(ChildListID aListID, nsIFrame* aPrevFrame,
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aFrameList) override;
@@ -134,9 +131,9 @@ class SVGDisplayContainerFrame : public SVGContainerFrame,
                 imgDrawingParams& aImgParams) override;
   nsIFrame* GetFrameForPoint(const gfxPoint& aPoint) override;
   void ReflowSVG() override;
-  void NotifySVGChanged(uint32_t aFlags) override;
+  void NotifySVGChanged(ChangeFlags aFlags) override;
   SVGBBox GetBBoxContribution(const Matrix& aToBBoxUserspace,
-                              uint32_t aFlags) override;
+                              SVGBBoxFlags aFlags) override;
   bool IsDisplayContainer() override { return true; }
   gfxMatrix GetCanvasTM() override;
 
@@ -144,7 +141,7 @@ class SVGDisplayContainerFrame : public SVGContainerFrame,
   /**
    * Cached canvasTM value.
    */
-  UniquePtr<gfxMatrix> mCanvasTM;
+  std::unique_ptr<gfxMatrix> mCanvasTM;
 };
 
 }  // namespace mozilla

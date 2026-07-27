@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -24,8 +23,8 @@ includes: [testTypedArray.js]
 features: [align-detached-buffer-semantics-with-web-reality, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA(1);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg(1));
 
   Object.defineProperty(sample, "test262", {
     set: function() {
@@ -38,6 +37,6 @@ testWithTypedArrayConstructors(function(TA) {
   });
 
   assert.sameValue(sample.test262, undefined, 'The value of sample.test262 is expected to equal `undefined`');
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

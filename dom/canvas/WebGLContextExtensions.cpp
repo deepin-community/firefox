@@ -1,18 +1,17 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "WebGLContext.h"
 #include "ClientWebGLExtensions.h"
 #include "GLContext.h"
-#include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/dom/ToJSValue.h"
-#include "mozilla/EnumeratedRange.h"
-#include "mozilla/StaticPrefs_webgl.h"
-#include "nsString.h"
+#include "WebGLContext.h"
 #include "WebGLContextUtils.h"
 #include "WebGLExtensions.h"
+#include "mozilla/EnumeratedRange.h"
+#include "mozilla/StaticPrefs_webgl.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/ToJSValue.h"
+#include "nsString.h"
 
 namespace mozilla {
 
@@ -124,7 +123,7 @@ RefPtr<ClientWebGLExtensionBase> ClientWebGLContext::GetExtension(
   if (!IsSupported(ext, callerType)) return nullptr;
 
   auto& extSlot = mNotLost->extensions[UnderlyingValue(ext)];
-  if (MOZ_UNLIKELY(!extSlot)) {
+  if (!extSlot) [[unlikely]] {
     extSlot = [&]() -> RefPtr<ClientWebGLExtensionBase> {
       switch (ext) {
         // ANGLE_

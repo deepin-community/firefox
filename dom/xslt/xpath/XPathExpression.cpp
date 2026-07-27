@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,7 +20,7 @@
 
 namespace mozilla::dom {
 
-class EvalContextImpl : public txIEvalContext {
+class MOZ_STACK_CLASS EvalContextImpl : public txIEvalContext {
  public:
   EvalContextImpl(const txXPathNode& aContextNode, uint32_t aContextPosition,
                   uint32_t aContextSize, txResultRecycler* aRecycler)
@@ -121,8 +120,8 @@ already_AddRefed<XPathResult> XPathExpression::EvaluateWithContext(
     return nullptr;
   }
 
-  UniquePtr<txXPathNode> contextNode(
-      txXPathNativeNode::createXPathNode(&aContextNode));
+  Maybe<txXPathNode> contextNode =
+      txXPathNativeNode::createXPathNode(&aContextNode);
   if (!contextNode) {
     aRv.Throw(NS_ERROR_FAILURE);
     return nullptr;

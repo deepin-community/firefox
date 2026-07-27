@@ -40,23 +40,57 @@ export class AboutNewTabParent extends JSWindowActorParent {
     }
   }
 
+  /**
+   * When newtab is disabled, we show an empty page. For consistency with
+   * about:blank and historical behavior, avoid a persistent SH entry for
+   * it if it's the initial document.
+   */
+  makeTransientIfDisabledAndInitial() {
+    if (Services.prefs.getBoolPref("browser.newtabpage.enabled", true)) {
+      return;
+    }
+
+    const sh = this.browsingContext.sessionHistory;
+    if (!sh || sh.count > 1) {
+      return;
+    }
+
+    const entry = sh.getEntryAtIndex(0);
+    if (entry.URI.spec === "about:newtab") {
+      entry.setTransient();
+    }
+  }
+
   async receiveMessage(message) {
     switch (message.name) {
       case "AboutNewTabVisible":
-        await lazy.ASRouter.waitForInitialized;
-        lazy.ASRouter.sendTriggerMessage({
-          browser: this.browsingContext.top.embedderElement,
-          // triggerId and triggerContext
-          id: "defaultBrowserCheck",
-          context: { source: "newtab" },
-        });
+        {
+          const browsingContext = this.browsingContext;
+          // for all of the await's within this switch
+          // check if the Parent actor is still active
+          // helps avoid test failures
+          await lazy.ASRouter.waitForInitialized;
+          if (!browsingContext.isDiscarded) {
+            await lazy.ASRouter.sendTriggerMessage({
+              browser: browsingContext.top.embedderElement,
+              // triggerId and triggerContext
+              id: "defaultBrowserCheck",
+              context: { source: "newtab" },
+            });
+          }
+          if (!browsingContext.isDiscarded) {
+            await lazy.ASRouter.sendTriggerMessage({
+              browser: browsingContext.top.embedderElement,
+              id: "newtabMessageCheck",
+            });
+          }
+        }
         break;
-
       case "Init": {
         let browsingContext = this.browsingContext;
         let browser = browsingContext.top.embedderElement;
         if (!browser) {
-          return;
+          return null;
         }
 
         let tabDetails = {
@@ -75,9 +109,11 @@ export class AboutNewTabParent extends JSWindowActorParent {
         break;
       }
 
-      case "Load":
+      case "Load": {
         this.notifyActivityStreamChannel("onNewTabLoad", message);
+        this.makeTransientIfDisabledAndInitial();
         break;
+      }
 
       case "Unload": {
         let tabDetails = this.getTabDetails();
@@ -88,7 +124,7 @@ export class AboutNewTabParent extends JSWindowActorParent {
         }
 
         if (!tabDetails) {
-          return;
+          return null;
         }
 
         tabDetails.browser.removeEventListener("EndSwapDocShells", this);
@@ -99,10 +135,27 @@ export class AboutNewTabParent extends JSWindowActorParent {
         break;
       }
 
-      case "ActivityStream:ContentToMain":
+      case "ActivityStream:ContentToMain": {
         this.notifyActivityStreamChannel("onMessage", message);
         break;
+      }
+
+      case "AssignRenderer": {
+        // This could have been called by the remote renderer host document
+        // early during startup, before we've had a chance to have
+        // ActivityStream initialize and (most importantly here) register the
+        // MozNewTabRemoteRendererProtocol parent actor. So if that's the case,
+        // we wait for that startup to complete before continuing.
+        if (!lazy.AboutNewTab.activityStream) {
+          await lazy.AboutNewTab.activityStreamPromise;
+        }
+        const rendererActor = this.browsingContext.currentWindowGlobal.getActor(
+          "MozNewTabRemoteRendererProtocol"
+        );
+        return rendererActor.assignRenderer();
+      }
     }
+    return null;
   }
 
   notifyActivityStreamChannel(name, message, tabDetails) {

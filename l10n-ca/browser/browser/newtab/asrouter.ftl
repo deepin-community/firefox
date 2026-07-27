@@ -30,8 +30,8 @@ cfr-doorhanger-extension-author = per { $name }
 cfr-doorhanger-extension-notification = Recomanació
 # .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Recomanació
-    .tooltiptext = Recomanació d'extensió
-    .a11y-announcement = Recomanació d'extensió disponible
+    .tooltiptext = Recomanació d’extensió
+    .a11y-announcement = Recomanació d’extensió disponible
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 # .a11y-announcement is extracted in JS and announced via A11y.announce.
@@ -59,15 +59,22 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } usuaris
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
-cfr-doorhanger-bookmark-fxa-header = Sincronitzeu les adreces d'interès a tot arreu.
-cfr-doorhanger-bookmark-fxa-body = Una gran troballa! No us quedeu sense aquesta adreça d'interès en els vostres dispositius mòbils. Creeu un { -fxaccount-brand-name }.
-cfr-doorhanger-bookmark-fxa-body-2 = Una gran troballa! No us quedeu sense aquesta adreça d'interès en els vostres dispositius mòbils. Creeu un compte per començar.
-cfr-doorhanger-bookmark-fxa-link-text = Sincronitza ara les adreces d'interès…
+cfr-doorhanger-bookmark-fxa-header = Sincronitzeu les adreces d’interès a tot arreu.
+cfr-doorhanger-bookmark-fxa-body = Una gran troballa! No us quedeu sense aquesta adreça d’interès en els vostres dispositius mòbils. Creeu un { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = Una gran troballa! No us quedeu sense aquesta adreça d’interès en els vostres dispositius mòbils. Creeu un compte per començar.
+cfr-doorhanger-bookmark-fxa-link-text = Sincronitza ara les adreces d’interès…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Botó Tanca
     .title = Tanca
+fxa-adoption-addresses-backup-title = Fem una còpia de seguretat de les adreces desades
+fxa-adoption-addresses-backup-subtitle = Protegiu les adreces desades sincronitzant-les amb els vostres dispositius amb xifratge.
+fxa-adoption-credit-cards-backup-title = Fem una còpia de seguretat dels vostres mètodes de pagament
+fxa-adoption-credit-cards-backup-subtitle = Protegiu els vostres mètodes de pagament sincronitzant-los amb els vostres dispositius amb xifratge.
+fxa-adoption-bookmarks-treatment-backup-title = Fem una còpia de seguretat de les vostres adreces d'interès
+fxa-adoption-bookmarks-treatment-backup-subtitle = Protegiu les adreces d'interès sincronitzant-les amb els dispositius amb xifratge.
+fxa-adoption-primary-button-label = Registra't
 
 ## Protections panel
 
@@ -103,14 +110,14 @@ cfr-doorhanger-milestone-close-button = Tanca
 
 cfr-doorhanger-doh-body = La vostra privadesa és important. Ara el { -brand-short-name } encamina de forma segura les vostres sol·licituds DNS, sempre que sigui possible, a un servei associat per protegir-vos mentre navegueu.
 cfr-doorhanger-doh-header = Consultes DNS més segures i xifrades
-cfr-doorhanger-doh-primary-button-2 = D'acord
+cfr-doorhanger-doh-primary-button-2 = D’acord
     .accesskey = D
 cfr-doorhanger-doh-secondary-button = Inhabilita
     .accesskey = h
 
 ## Full Video Support CFR message
 
-cfr-doorhanger-video-support-body = És possible que els vídeos d'aquest lloc no es reprodueixin correctament en aquesta versió del { -brand-short-name }. Per reproduir els vídeos correctament, actualitzeu el { -brand-short-name } ara.
+cfr-doorhanger-video-support-body = És possible que els vídeos d’aquest lloc no es reprodueixin correctament en aquesta versió del { -brand-short-name }. Per reproduir els vídeos correctament, actualitzeu el { -brand-short-name } ara.
 cfr-doorhanger-video-support-header = Actualitzeu el { -brand-short-name } per reproduir el vídeo
 cfr-doorhanger-video-support-primary-button = Actualitza ara
     .accesskey = A
@@ -134,11 +141,11 @@ spotlight-public-wifi-vpn-link = Ara no
 spotlight-better-internet-header = Fer una Internet millor és responsabilitat de tots nosaltres
 spotlight-better-internet-body = Utilitzant el { -brand-short-name } doneu suport a una Internet oberta, accessible i millor per a tothom.
 spotlight-peace-mind-header = Teniu les espatlles ben cobertes
-spotlight-peace-mind-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3000 elements de seguiment per usuari. Creiem que no s'hauria d'interposar res entre l'usuari i el bon contingut d'Internet, i menys els atacs a la privadesa provocats per aquests elements de seguiment.
+spotlight-peace-mind-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3000 elements de seguiment per usuari. Creiem que no s’hauria d’interposar res entre l’usuari i el bon contingut d’Internet, i menys els atacs a la privadesa provocats per aquests elements de seguiment.
 spotlight-pin-primary-button =
     { PLATFORM() ->
-        [macos] Fixa'l al Dock
-       *[other] Fixa'l a la barra de tasques
+        [macos] Fixa’l al Dock
+       *[other] Fixa’l a la barra de tasques
     }
 spotlight-pin-secondary-button = Ara no
 
@@ -166,7 +173,7 @@ mr2022-background-update-toast-primary-button-label = Obre el { -brand-shorter-n
 # Windows. Try to not exceed the width of the English text (compare it using a
 # variable font like Arial): the button can only fit 1-2 additional characters,
 # exceeding characters will be truncated.
-mr2022-background-update-toast-secondary-button-label = Recorda-m'ho més tard
+mr2022-background-update-toast-secondary-button-label = Recorda-m’ho més tard
 
 ## Firefox View CFR
 
@@ -175,13 +182,13 @@ firefoxview-cfr-primarybutton = Prova-ho
 firefoxview-cfr-secondarybutton = Ara no
     .accesskey = A
 firefoxview-cfr-header-v2 = Continueu des d’on ho deixeu
-firefoxview-cfr-body-v2 = Recupereu les pestanyes tancades recentment i salteu d'un dispositiu a l'altre de forma transparent amb la { -firefoxview-brand-name }.
+firefoxview-cfr-body-v2 = Recupereu les pestanyes tancades recentment i salteu d’un dispositiu a l’altre de forma transparent amb la { -firefoxview-brand-name }.
 
 ## Firefox View Spotlight
 
 firefoxview-spotlight-promo-title = Us presentem la { -firefoxview-brand-name }
 # “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
-firefoxview-spotlight-promo-subtitle = Voleu aquella pestanya que teniu oberta en el telèfon? Recupereu-la a l'instant. Necessiteu un lloc que tot just heu visitat ara mateix? Amb el { -firefoxview-brand-name } és dit i fet.
+firefoxview-spotlight-promo-subtitle = Voleu accedir a una pestanya que teniu oberta en el telèfon? Recupereu-la a l’instant. Necessiteu tornar a un lloc que tot just acabeu de visitar? Amb la { -firefoxview-brand-name } és dit i fet.
 firefoxview-spotlight-promo-primarybutton = Com funciona?
 firefoxview-spotlight-promo-secondarybutton = Omet
 
@@ -192,7 +199,7 @@ colorways-cfr-primarybutton = Tria la combinació de colors
 # "shades" refers to the different color options available to users in colorways.
 colorways-cfr-body = Acoloriu el navegador amb aquests tons exclusius del { -brand-short-name } inspirats en veus que han canviat la cultura.
 colorways-cfr-header-28days = Les combinacions de colors de Veus independents caduquen el 16 de gener
-colorways-cfr-header-14days = Les combinacions de colors de Veus independents caduquen d'aquí a dues setmanes
+colorways-cfr-header-14days = Les combinacions de colors de Veus independents caduquen d’aquí a dues setmanes
 colorways-cfr-header-7days = Les combinacions de colors de Veus independents caduquen aquesta setmana
 colorways-cfr-header-today = Les combinacions de colors de Veus independents caduquen avui
 
@@ -211,7 +218,7 @@ cookie-banner-blocker-onboarding-learn-more = Més informació
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
 july-jam-headline = Teniu les espatlles ben cobertes
-july-jam-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3.000 elements de seguiment per usuari, per tal d'oferir-vos un accés segur i ràpid al bon contingut d'Internet.
+july-jam-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3.000 elements de seguiment per usuari, per tal d’oferir-vos un accés segur i ràpid al bon contingut d’Internet.
 july-jam-set-default-primary = Obre els enllaços amb el { -brand-short-name }
 fox-doodle-pin-headline = Ben tornat
 # “indie” is short for the term “independent”.
@@ -225,27 +232,48 @@ fox-doodle-pin-secondary = Ara no
 set-default-pdf-handler-headline = <strong>Ara podeu obrir els fitxers PDF en el { -brand-short-name }.</strong> Editeu o signeu formularis directament en el navegador. Per a canviar, cerqueu «PDF» en els paràmetres.
 set-default-pdf-handler-primary = Entesos
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Signeu a la línia de punts, o a qualsevol lloc!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Dibuixeu, escriviu o pugeu la vostra signatura i col·loqueu-la exactament on vulgueu. Deseu les vostres signatures habituals per a la propera vegada.
+annotations-make-default-pdf-handler-title = Voleu que el { -brand-short-name } sigui el vostre editor de PDF per defecte?
+annotations-make-default-pdf-handler-subtitle = Tindreu accés a les nostres eines cada vegada que obriu un PDF.
+annotations-make-default-pdf-primary-cta-label = Defineix per defecte
+annotations-make-default-pdf-next-label = Següent
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Penseu adquirir un dispositiu nou en el futur?
-fxa-sync-cfr-body = Assegureu-vos que les adreces d'interès, les contrasenyes i les pestanyes més recents us acompanyin quan obriu el navegador { -brand-product-name } en un dispositiu nou.
+fxa-sync-cfr-body = Assegureu-vos que les adreces d’interès, les contrasenyes i les pestanyes més recents us acompanyin quan obriu el navegador { -brand-product-name } en un dispositiu nou.
 fxa-sync-cfr-primary = Més informació
     .accesskey = M
-fxa-sync-cfr-secondary = Recorda-m'ho més tard
+fxa-sync-cfr-secondary = Recorda-m’ho més tard
     .accesskey = R
 
 ## Device Migration FxA Spotlight
 
 device-migration-fxa-spotlight-heavy-user-header = No oblideu fer una còpia de seguretat de les vostres dades
+device-migration-fxa-spotlight-heavy-user-body = Assegureu-vos que la informació important, com ara adreces d’interès i contrasenyes, estigui actualitzada i protegida a tots els vostres dispositius.
 device-migration-fxa-spotlight-heavy-user-primary-button = Inicia
+device-migration-fxa-spotlight-older-device-header = Tranquil·litat, del { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Un compte manté la vostra informació important actualitzada i protegida en qualsevol dispositiu que connecteu.
 device-migration-fxa-spotlight-older-device-primary-button = Crea un compte
 device-migration-fxa-spotlight-getting-new-device-header-2 = Penseu adquirir un dispositiu nou en el futur?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Seguiu uns quants passos senzills endur-vos els marcadors, l'historial i les contrasenyes quan comenceu a utilitzar un dispositiu nou.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Com puc fer una còpia de seguretat de les meves dades
+device-migration-fxa-spotlight-sync-header = Navegueu sense perdre el ritme
+device-migration-fxa-spotlight-sync-body = Sincronitzeu tota la informació important amb xifratge, com ara marcadors i contrasenyes. Podeu accedir-hi a qualsevol lloc on utilitzeu el { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Primers passos
 
 ## Set as Default PDF Reader Infobar
 
 # The question portion of the following message should have the <strong> and </strong> tags surrounding it.
-pdf-default-notification-message = <strong>Voleu que el { -brand-short-name } sigui el lector de PDF per defecte?</strong> Feu servir el { -brand-short-name } per llegir i editar els documents PDF desats a l'ordinador.
+pdf-default-notification-message = <strong>Voleu que el { -brand-short-name } sigui el lector de PDF per defecte?</strong> Feu servir el { -brand-short-name } per llegir i editar els documents PDF desats a l’ordinador.
 pdf-default-notification-set-default-button =
     .label = Defineix per defecte
 pdf-default-notification-decline-button =
@@ -253,7 +281,7 @@ pdf-default-notification-decline-button =
 
 ## Launch on login infobar notification
 
-launch-on-login-infobar-message = <strong>Voleu que s'obri el { -brand-short-name } cada vegada que reinicieu l'ordinador?</strong> Ara podeu configurar el { -brand-short-name } perquè s'obri automàticament quan reinicieu el dispositiu.
+launch-on-login-infobar-message = <strong>Voleu que s’obri el { -brand-short-name } cada vegada que reinicieu l’ordinador?</strong> Ara podeu configurar el { -brand-short-name } perquè s’obri automàticament quan reinicieu el dispositiu.
 launch-on-login-learnmore = Més informació
 launch-on-login-infobar-confirm-button = Sí, obre el { -brand-short-name }
     .accesskey = S
@@ -263,11 +291,205 @@ launch-on-login-infobar-reject-button = Ara no
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
-launch-on-login-infobar-final-message = <strong>Voleu que s'obri el { -brand-short-name } cada vegada que reinicieu l'ordinador?</strong> Per gestionar les preferències d'inici, cerqueu «inici» en els paràmetres.
+launch-on-login-infobar-final-message = <strong>Voleu que s’obri el { -brand-short-name } cada vegada que reinicieu l’ordinador?</strong> Per gestionar les preferències d’inici, cerqueu «inici» en els paràmetres.
 launch-on-login-infobar-final-reject-button = No, gràcies
     .accesskey = N
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Voleu obrir el { -brand-short-name } la propera vegada que s'iniciï l'ordinador?
+launch-on-login-spotlight-startup-checkbox = Inicia el { -brand-short-name } a l'inici
+launch-on-login-spotlight-pin-taskbar-checkbox = Fixa a la barra de tasques
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Obre les finestres i pestanyes anteriors
+launch-on-login-spotlight-primary-button = Desa i tanca el { -brand-short-name }
+
 ## Tail Fox Set Default Spotlight
 
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Allibereu-vos dels elements de seguiment
+tail-fox-spotlight-subtitle = Acomiadeu-vos dels carregosos elements de seguiment de publicitat i gaudiu d'una experiència d'Internet més segura i més ràpida.
 tail-fox-spotlight-primary-button = Obre els enllaços amb el { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ara no
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Torneu a la privadesa integrada
+welcome-back-spotlight-subtitle = Us tornem a donar la benvinguda a l'únic gran navegador impulsat per una entitat sense ànim de lucre. Protegim les vostres dades amb mesures addicionals allà on navegueu.
+welcome-back-embedded-import-title = Importeu les vostres dades i que el { -brand-short-name } us faci sentir com a casa
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Les versions anteriors del { -brand-short-name } poden començar a tenir problemes el 14 de gener de 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Actualitzeu per continuar utilitzant el { -brand-short-name } a partir del 14 de març de 2025.</strong>
+root-certificate-succession-infobar-link = Per què he de fer l'actualització?
+root-certificate-succession-infobar-primary-button =
+    .label = Actualitza ara
+    .accesskey = u
+root-certificate-succession-infobar-secondary-button =
+    .label = Més tard
+    .accesskey = M
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Us heu perdut una actualització important del { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Algunes parts del navegador deixaran de funcionar aviat si no l'actualitzeu. Ara és un bon moment per obtenir les nostres proteccions i funcions més recents.
+root-certificate-windows-background-notification-learn-more-button = Més informació
+root-certificate-windows-background-notification-update-button = Actualitza el { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Tanca
+    .aria-label = Tanca
+fxa-menu-message-sign-up-button = Registre
+fxa-menu-message-sign-in-button = Inicia la sessió
+fxa-menu-message-sync-button = Inicia la sincronització
+fxa-menu-message-sync-devices-primary-text = Sincronitzeu tots els dispositius
+fxa-menu-message-sync-devices-secondary-text = Obteniu a l'instant la vostra informació (com ara marcadors i contrasenyes) a qualsevol lloc on utilitzeu el { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Accediu a l'instant a les adreces d'interès, les contrasenyes i molt més a qualsevol lloc on hàgiu iniciat la sessió al { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronitzeu tots els dispositius
+fxa-menu-message-backup-data-primary-text = Feu una còpia de seguretat de les dades del navegador
+fxa-menu-message-backup-data-secondary-text = Protegiu automàticament les adreces d'interès, les contrasenyes i altra informació a tots els vostres dispositius.
+fxa-menu-message-backup-data-collapsed-text = Feu una còpia de seguretat de les dades del navegador
+fxa-menu-message-backup-sync-primary-text = Protegiu i sincronitzeu les vostres dades
+fxa-menu-message-backup-sync-secondary-text = La sincronització fa una còpia de seguretat de la major part de les vostres dades perquè pugueu accedir-hi a qualsevol lloc on feu servir el { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronitzeu i feu una còpia de seguretat de les dades
+fxa-menu-message-mobile-primary-text = Envieu pestanyes al telèfon
+fxa-menu-message-mobile-secondary-text = Repreneu la feina on la vau deixar a l'instant sincronitzant les pestanyes amb un dispositiu mòbil.
+fxa-menu-message-mobile-collapsed-text = Sincronitzeu amb el telèfon
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Ben tornat
+multi-cta-fox-doodle-set-default-checkbox = Defineix el { -brand-short-name } com a navegador per defecte
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fixa el { -brand-short-name } al menú d’inici
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantén el { -brand-short-name } al Dock
+       *[other] Fixa el { -brand-short-name } a la barra de tasques
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Comença a navegar
+multi-cta-fox-doodle-main-browser-primary-button-label = Fes que el { -brand-short-name } sigui el meu navegador principal
+multi-cta-fox-doodle-quick-reminder-subtitle = Us volem recordar que podeu tenir el vostre navegador centrat en la privadesa preferit a un sol clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Tingueu el vostre navegador preferit centrat en la privadesa a un sol clic. Definiu el { -brand-short-name } com a navegador predeterminat per a obrir enllaços i fixeu-lo a l'acoblador.
+       *[other] Tingueu el vostre navegador preferit centrat en la privadesa a un sol clic. Definiu { -brand-short-name } com a navegador predeterminat per a obrir enllaços i fixeu-lo a la barra de tasques.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Tingueu el vostre navegador preferit centrat en la privadesa a un sol clic. Definiu el { -brand-short-name } com a navegador predeterminat per a obrir enllaços i fixeu-lo a la barra de tasques i al menú d'inici.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Actualitzaràs des del Windows 10 aviat?
+windows-10-eos-sync-spotlight-subtitle = Feu una còpia de seguretat de les contrasenyes i les adreces d'interès per a poder fer el salt a qualsevol dispositiu.
+windows-10-eos-sync-spotlight-primary-label = Feu una còpia de seguretat del { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Actualitzeu al Windows 11? No perdeu les adreces d'interès ni les contrasenyes.
+windows-10-eos-sync-toast-subtitle = Feu una còpia de seguretat de les vostres dades perquè el { -brand-short-name } estigui a punt en qualsevol moment, en aquest PC o en el següent.
+windows-10-eos-sync-toast-primary-label = Primers passos
+windows-10-eos-sync-toast-secondary-label = Recorda-m’ho més tard
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = El { -brand-product-name } no està precarregat com altres navegadors de grans empreses tecnològiques. Aquesta és la qüestió.
+windows-10-eos-challenger-sync-callout-subtitle = Quan feu una còpia de seguretat de les adreces d'interès i les contrasenyes del { -brand-product-name }, és més fàcil portar el navegador que trieu al dispositiu següent.
+windows-10-eos-challenger-pin-callout-subtitle = Fixeu el { -brand-shorter-name } a la barra de tasques perquè el navegador que trieu hi sigui sempre quan el necessiteu.
+windows-10-eos-challenger-sync-primary-button = Fes una còpia de seguretat del { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Fixa el { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = El { -brand-product-name } bloqueja els miners de criptomonedes, els elements de seguiment de les xarxes socials i els generadors d'empremtes dactilars.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Els elements de seguiment no poden identificar el vostre dispositiu ni seguir-vos per la web, perquè no els ho permetem.
+windows-10-eos-sync-callout-privacy-screen-2-title = Protegiu les contrasenyes i les adreces d'interès per al proper dispositiu.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Fer una còpia de seguretat del { -brand-shorter-name } et permet endur-te fàcilment les dades i la configuració de seguretat,
+windows-10-eos-sync-callout-privacy-info-button = Mostra'm què s'ha blocat
+windows-10-eos-callout-addons-title = Proveu els complements: millores senzilles, grans impactes
+windows-10-eos-callout-addons-subtitle = Aquestes extensions s'han escollit per fomentar la productivitat, la seguretat i la concentració.
+windows-10-eos-callout-addons-primary-button = Mostra'm les seleccions
+windows-10-eos-sync-callout-addons-title = No perdeu els complements quan actualitzeu des del Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Sincronitzeu ara perquè els complements del { -brand-product-name } estiguin sempre disponibles, fins i tot després d'un canvi de dispositiu.
+windows-10-eos-sync-callout-next-button = Següent
+windows-10-eos-sync-callout-get-started-button = Inicia
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Ja són aquí les les pestanyes verticals i els grups de pestanyes!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = A petició popular, el { -brand-product-name } presenta noves funcions per optimitzar la vostra navegació i reduir les distraccions.
+windows-10-eos-feature-toast-whats-new-button = Descobriu les novetats
+windows-10-eos-feature-toast-dismiss-button = Descarta
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft ha deixat d'oferir suport per al Windows 10</strong> Feu una còpia de seguretat de la vostra informació per tenir el { -brand-product-name } a punt per al Windows 11.
+windows-10-eos-global-infobar-primary-button = Activa la còpia de seguretat
+    .accesskey = A
+windows-10-eos-global-infobar-learn-more-link = Més informació
+    .accessKey = M
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>La protecció contra el seguiment estricta pot fer que els llocs web no funcionin correctament.</strong> Resoleu els problemes habituals desblocant els elements essencials que podrien contenir elements de seguiment.
+etp-strict-exceptions-infobar-learn-more = Més informació
+etp-strict-exceptions-infobar-button = Aplica les correccions
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Ara no
+    .accesskey = A
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = El { -brand-short-name } no és el navegador per defecte
+set-default-menu-message-simple-layout-title-variant = El { -brand-short-name } no és el navegador principal
+set-default-menu-message-row-layout-title = Feu que el { -brand-short-name } sigui el vostre navegador principal
+set-default-menu-message-row-layout-title-variant = Feu que el { -brand-short-name } sigui el navegador per defecte
+set-default-menu-message-row-layout-subtitle = Obteniu velocitat, seguretat i privadesa cada cop que navegueu.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Tingueu el { -brand-short-name } ben a mà: feu que sigui el navegador per defecte i tingueu-lo al Dock.
+       *[other] Tingueu el { -brand-short-name } ben a mà: feu que sigui el navegador per defecte i tingueu-lo a la barra de tasques.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] Tingueu el { -brand-short-name } a mà
+       *[other] Obriu tots els enllaços amb el { -brand-short-name }
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Establiu-lo com a predeterminat i tingueu-lo al Dock
+       *[other] Aconseguiu una navegació més ràpida i protecció automàtica de la privadesa.
+    }
+set-default-menu-message-primary-button = Estableix com a predeterminat
+set-default-menu-message-primary-button-variant = Estableix com a navegador principal
+set-default-menu-message-primary-button-short-variant = Feu que el { -brand-short-name } sigui el navegador per defecte
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 màscares de correu electrònic, de regal
+relay-50-masks-announcement-subtitle = Ara obteniu 50 màscares gratuïtes (en lloc de 5). Feu-ne servir una per a cada compte per mantenir la vostra adreça electrònica real privada.
+relay-50-masks-announcement-primary-button = Ves a { -relay-brand-name }
+    .accesskey = V
+relay-50-masks-announcement-secondary-button = Ignora
+    .accesskey = I
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = El <strong>{ -brand-product-name } té un nou aspecte</strong>. Esteu veient un avenç d'una versió preliminar i no definitiva abans del llançament que es farà a finals d'any.
+nova-early-access-share-feedback-link = Comparteix els comentaris
+    .accesskey = C
+nova-early-access-infobar-primary-button = Entesos
+    .accesskey = E

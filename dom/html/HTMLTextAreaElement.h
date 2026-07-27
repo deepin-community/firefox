@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,11 +12,11 @@
 #include "mozilla/dom/ConstraintValidation.h"
 #include "mozilla/dom/HTMLFormElement.h"
 #include "mozilla/dom/HTMLInputElementBinding.h"
-#include "nsIControllers.h"
 #include "nsCOMPtr.h"
 #include "nsGenericHTMLElement.h"
-#include "nsStubMutationObserver.h"
 #include "nsGkAtoms.h"
+#include "nsIControllers.h"
+#include "nsStubMutationObserver.h"
 
 class nsIControllers;
 class nsPresContext;
@@ -74,11 +72,7 @@ class HTMLTextAreaElement final : public TextControlElement,
   void SetLastValueChangeWasInteractive(bool);
 
   // TextControlElement
-  bool IsSingleLineTextControlOrTextArea() const override { return true; }
   void SetValueChanged(bool aValueChanged) override;
-  bool IsSingleLineTextControl() const override;
-  bool IsTextArea() const override;
-  bool IsPasswordTextControl() const override;
   Maybe<int32_t> GetCols() override;
   int32_t GetWrapCols() override;
   int32_t GetRows() override;
@@ -86,24 +80,16 @@ class HTMLTextAreaElement final : public TextControlElement,
   bool ValueChanged() const override;
   void GetTextEditorValue(nsAString& aValue) const override;
   MOZ_CAN_RUN_SCRIPT TextEditor* GetTextEditor() override;
-  TextEditor* GetTextEditorWithoutCreation() const override;
+  TextEditor* GetExtantTextEditor() const override;
   nsISelectionController* GetSelectionController() override;
-  nsFrameSelection* GetConstFrameSelection() override;
+  nsFrameSelection* GetIndependentFrameSelection() const override;
   TextControlState* GetTextControlState() const override { return mState; }
-  nsresult BindToFrame(nsTextControlFrame* aFrame) override;
-  MOZ_CAN_RUN_SCRIPT void UnbindFromFrame(nsTextControlFrame* aFrame) override;
-  MOZ_CAN_RUN_SCRIPT nsresult CreateEditor() override;
-  void SetPreviewValue(const nsAString& aValue) override;
-  void GetPreviewValue(nsAString& aValue) override;
   void SetAutofillState(const nsAString& aState) override {
     SetFormAutofillState(aState);
   }
   void GetAutofillState(nsAString& aState) override {
     GetFormAutofillState(aState);
   }
-  void EnablePreview() override;
-  bool IsPreviewEnabled() override;
-  void InitializeKeyboardEventListeners() override;
   void UpdatePlaceholderShownState();
   void OnValueChanged(ValueChangeKind, bool aNewValueEmpty,
                       const nsAString* aKnownNewValue) override;
@@ -121,12 +107,12 @@ class HTMLTextAreaElement final : public TextControlElement,
                       nsAttrValue& aResult) override;
   nsMapRuleToAttributesFunc GetAttributeMappingFunction() const override;
   nsChangeHint GetAttributeChangeHint(const nsAtom* aAttribute,
-                                      int32_t aModType) const override;
+                                      AttrModType aModType) const override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
-  void GetEventTargetParent(EventChainPreVisitor& aVisitor) override;
-  nsresult PreHandleEvent(EventChainVisitor& aVisitor) override;
-  nsresult PostHandleEvent(EventChainPostVisitor& aVisitor) override;
+  void GetEventTargetParent(EventChainPreVisitor&) override;
+  nsresult PreHandleEvent(EventChainVisitor&) override;
+  MOZ_CAN_RUN_SCRIPT nsresult PostHandleEvent(EventChainPostVisitor&) override;
 
   bool IsHTMLFocusable(IsFocusableFlags, bool* aIsFocusable,
                        int32_t* aTabIndex) override;
@@ -167,10 +153,12 @@ class HTMLTextAreaElement final : public TextControlElement,
                                 ValidityStateType aType) override;
 
   // Web IDL binding methods
-  void GetAutocomplete(DOMString& aValue);
+  void GetAutocomplete(nsAString& aValue);
   void SetAutocomplete(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::autocomplete, aValue, aRv);
   }
+  void GetAutocompleteInfo(AutocompleteInfo& aInfo);
+
   uint32_t Cols() { return GetColsOrDefault(); }
   void SetCols(uint32_t aCols, ErrorResult& aError) {
     uint32_t cols = aCols ? aCols : DEFAULT_COLS;
@@ -186,8 +174,9 @@ class HTMLTextAreaElement final : public TextControlElement,
   void SetDisabled(bool aDisabled, ErrorResult& aError) {
     SetHTMLBoolAttr(nsGkAtoms::disabled, aDisabled, aError);
   }
-  // nsGenericHTMLFormControlElementWithState::GetForm is fine
-  using nsGenericHTMLFormControlElementWithState::GetForm;
+  // nsGenericHTMLFormControlElementWithState::GetForm* is fine
+  using nsGenericHTMLFormControlElementWithState::GetFormForBindings;
+  using nsGenericHTMLFormControlElementWithState::GetFormInternal;
   int32_t MaxLength() const { return GetIntAttr(nsGkAtoms::maxlength, -1); }
   int32_t UsedMaxLength() const final { return MaxLength(); }
   void SetMaxLength(int32_t aMaxLength, ErrorResult& aError) {
@@ -271,13 +260,14 @@ class HTMLTextAreaElement final : public TextControlElement,
       uint32_t aSelectionStart, uint32_t aSelectionEnd,
       const Optional<nsAString>& aDirecton, ErrorResult& aError);
   nsIControllers* GetControllers(ErrorResult& aError);
+  nsIControllers* GetExtantControllers() const { return mControllers; }
   // XPCOM adapter function widely used throughout code, leaving it as is.
   nsresult GetControllers(nsIControllers** aResult);
 
   MOZ_CAN_RUN_SCRIPT nsIEditor* GetEditorForBindings();
   bool HasEditor() const {
     MOZ_ASSERT(mState);
-    return !!mState->GetTextEditorWithoutCreation();
+    return !!mState->GetExtantTextEditor();
   }
 
   bool IsInputEventTarget() const { return true; }
@@ -292,6 +282,11 @@ class HTMLTextAreaElement final : public TextControlElement,
   using nsGenericHTMLFormControlElementWithState::IsSingleLineTextControl;
 
   JSObject* WrapNode(JSContext*, JS::Handle<JSObject*> aGivenProto) override;
+  void ResetIfUnchanged() {
+    if (!mValueChanged) {
+      Reset();
+    }
+  }
 
   nsCOMPtr<nsIControllers> mControllers;
   /** https://html.spec.whatwg.org/#user-interacted */
@@ -313,6 +308,7 @@ class HTMLTextAreaElement final : public TextControlElement,
   bool mIsPreviewEnabled = false;
 
   nsContentUtils::AutocompleteAttrState mAutocompleteAttrState;
+  nsContentUtils::AutocompleteAttrState mAutocompleteInfoState;
 
   void FireChangeEventIfNeeded();
 
@@ -321,15 +317,11 @@ class HTMLTextAreaElement final : public TextControlElement,
   /** The state of the text editor (selection controller and the editor) **/
   TextControlState* mState;
 
-  MOZ_CAN_RUN_SCRIPT void SelectAll();
   /**
    * Get the value, whether it is from the content or the frame.
    * @param aValue the value [out]
-   * @param aIgnoreWrap whether to ignore the wrap attribute when getting the
-   *        value.  If this is true, linebreaks will not be inserted even if
-   *        wrap=hard.
    */
-  void GetValueInternal(nsAString& aValue, bool aIgnoreWrap) const;
+  void GetValueInternal(nsAString& aValue) const;
 
   /**
    * Setting the value.

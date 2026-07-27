@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,7 +21,6 @@
 #include "mozilla/Services.h"
 #include "mozilla/SpinEventLoopUntil.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/File.h"
@@ -49,8 +46,6 @@
 #include "nsXPCOMPrivate.h"
 #include "prthread.h"
 
-#include <functional>
-
 #ifdef RELEASE_OR_BETA
 #  define THREADSAFETY_ASSERT MOZ_ASSERT
 #else
@@ -72,6 +67,11 @@ using namespace mozilla::ipc;
 using namespace mozilla::net;
 
 namespace {
+
+// This exists so that [Assert]IsOnBackgroundThread() can continue to work
+// during shutdown. We can rely on TLS being 0 initialized, so only the
+// background thread itself needs to ever set this flag.
+static MOZ_THREAD_LOCAL(bool) sTLSIsOnBackgroundThread;
 
 class ChildImpl;
 
@@ -122,10 +122,6 @@ class ParentImpl final : public BackgroundParentImpl {
   // This is only modified on the main thread.
   static StaticRefPtr<nsITimer> sShutdownTimer;
 
-  // This exists so that that [Assert]IsOnBackgroundThread() can continue to
-  // work during shutdown.
-  static Atomic<PRThread*> sBackgroundPRThread;
-
   // Maintains a count of live actors so that the background thread can be shut
   // down when it is no longer needed.
   // May be incremented on either the background thread (by an existing actor)
@@ -164,7 +160,8 @@ class ParentImpl final : public BackgroundParentImpl {
   }
 
   static bool IsOnBackgroundThread() {
-    return PR_GetCurrentThread() == sBackgroundPRThread;
+    MOZ_ASSERT(sTLSIsOnBackgroundThread.initialized());
+    return sTLSIsOnBackgroundThread.get();
   }
 
   static void AssertIsOnBackgroundThread() {
@@ -257,17 +254,12 @@ class ChildImpl final : public BackgroundChildImpl {
 
  public:
   struct ThreadLocalInfo {
-    ThreadLocalInfo()
-#ifdef DEBUG
-        : mClosed(false)
-#endif
-    {
-    }
+    ThreadLocalInfo() = default;
 
     RefPtr<ChildImpl> mActor;
     UniquePtr<BackgroundChildImpl::ThreadLocal> mConsumerThreadLocal;
 #ifdef DEBUG
-    bool mClosed;
+    bool mClosed = false;
 #endif
   };
 
@@ -474,7 +466,7 @@ class ChildImpl final : public BackgroundChildImpl {
         return nullptr;
       }
       strongActor->SetActorAlive();
-      threadLocalInfo->mActor = strongActor;
+      threadLocalInfo->mActor = strongActor.forget();
 
       // Dispatch to the background task queue to create the relevant actor in
       // the remote process.
@@ -485,7 +477,7 @@ class ChildImpl final : public BackgroundChildImpl {
               NS_WARNING("Failed to create toplevel actor");
             }
           }));
-      return strongActor;
+      return threadLocalInfo->mActor;
     }
 
    private:
@@ -734,8 +726,6 @@ nsTArray<IToplevelProtocol*>* ParentImpl::sLiveActorsForBackgroundThread;
 
 StaticRefPtr<nsITimer> ParentImpl::sShutdownTimer;
 
-Atomic<PRThread*> ParentImpl::sBackgroundPRThread;
-
 Atomic<uint64_t> ParentImpl::sLiveActorCount;
 
 bool ParentImpl::sShutdownObserverRegistered = false;
@@ -746,7 +736,8 @@ bool ParentImpl::sShutdownHasStarted = false;
 // ChildImpl Static Members
 // -----------------------------------------------------------------------------
 
-ChildImpl::ThreadInfoWrapper ChildImpl::sParentAndContentProcessThreadInfo;
+MOZ_GLOBINIT ChildImpl::ThreadInfoWrapper
+    ChildImpl::sParentAndContentProcessThreadInfo;
 
 bool ChildImpl::sShutdownHasStarted = false;
 
@@ -898,11 +889,8 @@ bool ParentImpl::CreateBackgroundThread() {
           "IPDL Background", getter_AddRefs(thread),
           NS_NewRunnableFunction(
               "Background::ParentImpl::CreateBackgroundThreadRunnable", []() {
-                DebugOnly<PRThread*> oldBackgroundThread =
-                    sBackgroundPRThread.exchange(PR_GetCurrentThread());
-
-                MOZ_ASSERT_IF(oldBackgroundThread,
-                              PR_GetCurrentThread() != oldBackgroundThread);
+                MOZ_ASSERT(sTLSIsOnBackgroundThread.initialized());
+                sTLSIsOnBackgroundThread.set(true);
               })))) {
     NS_WARNING("NS_NewNamedThread failed!");
     return false;
@@ -948,7 +936,7 @@ void ParentImpl::ShutdownBackgroundThread() {
 
       MOZ_ALWAYS_SUCCEEDS(shutdownTimer->InitWithNamedFuncCallback(
           &ShutdownTimerCallback, &closure, kShutdownTimerDelayMS,
-          nsITimer::TYPE_ONE_SHOT, "ParentImpl::ShutdownTimerCallback"));
+          nsITimer::TYPE_ONE_SHOT, "ParentImpl::ShutdownTimerCallback"_ns));
 
       SpinEventLoopUntil("ParentImpl::ShutdownBackgroundThread"_ns,
                          [&]() { return !sLiveActorCount; });
@@ -958,16 +946,7 @@ void ParentImpl::ShutdownBackgroundThread() {
       MOZ_ALWAYS_SUCCEEDS(shutdownTimer->Cancel());
     }
 
-    // Dispatch this runnable to unregister the PR thread from the profiler.
-    MOZ_ALWAYS_SUCCEEDS(thread->Dispatch(NS_NewRunnableFunction(
-        "Background::ParentImpl::ShutdownBackgroundThreadRunnable", []() {
-          // It is possible that another background thread was created while
-          // this thread was shutting down. In that case we can't assert
-          // anything about sBackgroundPRThread and we should not modify it
-          // here.
-          sBackgroundPRThread.compareExchange(PR_GetCurrentThread(), nullptr);
-        })));
-
+    // Shutdown will process all remaining events.
     MOZ_ALWAYS_SUCCEEDS(thread->Shutdown());
   }
 }
@@ -1151,6 +1130,8 @@ void ChildImpl::Startup() {
   // assert that we're being called on the main thread here.
 
   sParentAndContentProcessThreadInfo.Startup();
+
+  sTLSIsOnBackgroundThread.infallibleInit();
 
   nsCOMPtr<nsIObserverService> observerService = services::GetObserverService();
   MOZ_RELEASE_ASSERT(observerService);

@@ -59,14 +59,22 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } მომხმარებელი
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = დაასინქრონეთ სანიშნები ყველგან.
 cfr-doorhanger-bookmark-fxa-body = რაც მთავარია! ახლა უკვე არ დარჩებით სანიშნის გარეშე თქვენს მობილურ მოწყობილობებზე. გამოიყენეთ { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = რაც მთავარია! ახლა უკვე არ დარჩებით სანიშნის გარეშე თქვენს მობილურ მოწყობილობებზე. გამოიყენეთ დაიწყეთ ანგარიშის გამოყენება.
 cfr-doorhanger-bookmark-fxa-link-text = დაასინქრონეთ სანიშნები ახლავე...
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = დახურვის ღილაკი
     .title = დახურვა
+fxa-adoption-addresses-backup-title = დაამარქაფეთ თქვენი შენახული მისამართები
+fxa-adoption-addresses-backup-subtitle = დაიცავით თქვენი შენახული მისამართები დაშიფრულად დასინქრონებით სხვადასხვა მოწყობილობაზე.
+fxa-adoption-credit-cards-backup-title = დაამარქაფეთ თქვენი გადახდის საშუალებები
+fxa-adoption-credit-cards-backup-subtitle = დაიცავით თქვენი გადახდის საშუალებები დაშიფრულად დასინქრონებით სხვადასხვა მოწყობილობაზე.
+fxa-adoption-bookmarks-treatment-backup-title = სინჯეთ თქვენი სანიშნების დამარქაფება
+fxa-adoption-bookmarks-treatment-backup-subtitle = დაიცავით თქვენი სანიშნები დაშიფრულად დასინქრონებით სხვადასხვა მოწყობილობაზე.
+fxa-adoption-primary-button-label = ანგარიშის შექმნა
 
 ## Protections panel
 
@@ -101,7 +109,7 @@ cfr-doorhanger-milestone-close-button = დახურვა
 
 ## DOH Message
 
-cfr-doorhanger-doh-body = თქვენი პირადულობა უმნიშვნელოვანესია. { -brand-short-name } ახლა უკვე უსაფრთხოდ გადაამისამართებს თქვენს DNS-მოთხოვნებს, როცა კი შესაძლებელი იქნება, პარტნიორი მომსახურების მეშვეობით, რომ გვერდების მონახულებისას მუდამ დაცული იყოთ.
+cfr-doorhanger-doh-body = თქვენი პირადულობა უმნიშვნელოვანესია. { -brand-short-name } ახლა უკვე უსაფრთხოდ ამისამართებს თქვენს DNS-მოთხოვნებს, როცა კი შესაძლებელია ჩვენი მოკავშირე მომსახურებით, რომ გვერდების მონახულებისას მუდამ დაცული იყოთ.
 cfr-doorhanger-doh-header = მეტად უსაფრთხო, დაშიფრული DNS-გარდაქმნები
 cfr-doorhanger-doh-primary-button-2 = კარგი
     .accesskey = კ
@@ -181,7 +189,7 @@ firefoxview-cfr-body-v2 = დაიბრუნეთ ახლახან დ�
 
 firefoxview-spotlight-promo-title = გაიცანით { -firefoxview-brand-name }
 # “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
-firefoxview-spotlight-promo-subtitle = გსურთ ამ ჩანართის ტელეფონზე ხილვა? წაიყოლეთ თან. დაგჭირდათ ადრე მონახულებული გვერდი? ბუფ და უცებ გაჩნდება { -firefoxview-brand-name(case: "ins") }.
+firefoxview-spotlight-promo-subtitle = გსურთ ამ ჩანართის ტელეფონზე ხილვა? გაიყოლეთ თან. დაგჭირდათ ადრე მონახულებული გვერდი? ბუფ და უცებ გაჩნდება { -firefoxview-brand-name(case: "ins") }.
 firefoxview-spotlight-promo-primarybutton = ნახეთ, როგორ მუშაობს
 firefoxview-spotlight-promo-secondarybutton = გამოტოვება
 
@@ -204,8 +212,9 @@ cfr-cbh-confirm-button = ფუნთუშის მოთხოვნები
     .accesskey = უ
 cfr-cbh-dismiss-button = ახლა არა
     .accesskey = ა
-cookie-banner-blocker-cfr-header = { -brand-short-name } ახლახან დაგეხმარათ ფუნთუშების არიდებაში
-cookie-banner-blocker-cfr-body = თავისთავად იზღუდება ფუნთუშების ამომხტომი მოთხოვნები, რომ გაუძნელდეს საიტებს თქვენს მოქმედებეზე თვალის დევნება.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ახლახან დაგეხმარათ ფუნთუშების მოთხოვნის არიდებაში
+cookie-banner-blocker-onboarding-body = ნაკლები ხელის შემშლელი და მეთვალყურე შიგთავსი საიტზე.
+cookie-banner-blocker-onboarding-learn-more = ვრცლად
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -224,10 +233,24 @@ fox-doodle-pin-secondary = ახლა არა
 set-default-pdf-handler-headline = <strong>თქვენს PDF-ებს ახლა უკვე გახნის { -brand-short-name }.</strong> ჩაასწორეთ ან დაამატეთ ხელმოწერა პირდაპირ ბრაუზერიდან. შესაცვლელად მონახეთ „PDF“ პარამეტრებში.
 set-default-pdf-handler-primary = გასაგებია
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = ხელმოწერა წყვეტილ ხაზზე — ან სადაც მოგიხერხდებათ!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = მოხაზეთ, აკრიფეთ ან ატვირთეთ თქვენი ხელმოწერა, შემდეგ კი განათავსეთ ზუსტად სადაც გსურთ. გადაინახეთ საჭირო ხელმოწერები სხვა დროისთვისაც.
+annotations-make-default-pdf-handler-title = გახდეს { -brand-short-name } ნაგულისხმევი PDF-შემსწორებელი?
+annotations-make-default-pdf-handler-subtitle = წვდომა გექნებათ ჩვენს ხელსაწყოებთან PDF-ფაილის ყოველი გახსნისას.
+annotations-make-default-pdf-primary-cta-label = ნაგულისხმევად დაყენება
+annotations-make-default-pdf-next-label = შემდეგი
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = ახალ მოწყობილობაზე გადადიხართ?
-fxa-sync-cfr-body = თან წაიყოლეთ თქვენი უახლესი სანიშნები, პაროლები და ჩანართები ახალი { -brand-product-name }-ბრაუზერის გახსნისთანავე.
+fxa-sync-cfr-body = თან გაიყოლეთ თქვენი უახლესი სანიშნები, პაროლები და ჩანართები ახალი { -brand-product-name }-ბრაუზერის გახსნისთანავე.
 fxa-sync-cfr-primary = ვრცლად
     .accesskey = ც
 fxa-sync-cfr-secondary = მოგვიანებით შეხსენება
@@ -235,10 +258,6 @@ fxa-sync-cfr-secondary = მოგვიანებით შეხსენე
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = ძველ მოწყობილობას იყენებთ?
-device-migration-fxa-spotlight-body = გადაინახეთ მონაცემები, რომ არ დაგეკარგოთ მნიშვნელოვანი ინფორმაცია, მათ შორის სანიშნები და პაროლები — მით უფრო, თუ ახალ მოწყობილობაზე აპირებთ გადასვლას.
-device-migration-fxa-spotlight-primary-button = როგორაა შესაძლებელი დამარქაფება
-device-migration-fxa-spotlight-link = მოგვიანებით შეხსენება
 device-migration-fxa-spotlight-heavy-user-header = არ დაგავიწყდეთ მონაცემების დამარქაფება
 device-migration-fxa-spotlight-heavy-user-body = დარწმუნდით, რომ მნიშვნელოვანი მონაცემები – მათ შორის სანიშნები და პაროლები – განახლებული და დაცულია თქვენს ყველა მოწყობილობაზე.
 device-migration-fxa-spotlight-heavy-user-primary-button = დაიწყეთ
@@ -246,8 +265,11 @@ device-migration-fxa-spotlight-older-device-header = სიმშვიდეზ
 device-migration-fxa-spotlight-older-device-body = ანგარიში უზრუნველყოფს თქვენი მნიშვნელოვანი მონაცემების მზადყოფნასა და დაცულობას ყველა დაკავშირებულ მოწყობილობაზე.
 device-migration-fxa-spotlight-older-device-primary-button = შექმენით ანგარიში
 device-migration-fxa-spotlight-getting-new-device-header-2 = ახალ მოწყობილობაზე გადადიხართ?
-device-migration-fxa-spotlight-getting-new-device-body-2 = მიჰყევით რამდენიმე მარტივ ნაბიჯს, რომ თან წაიყოლოთ თქვენი სანიშნები, ისტორია და პაროლები ახალ მოწყობილობაზე გადასვლისას.
+device-migration-fxa-spotlight-getting-new-device-body-2 = მიჰყევით რამდენიმე მარტივ ნაბიჯს, რომ თან გაიყოლოთ თქვენი სანიშნები, ისტორია და პაროლები ახალ მოწყობილობაზე გადასვლისას.
 device-migration-fxa-spotlight-getting-new-device-primary-button = როგორაა შესაძლებელი დამარქაფება
+device-migration-fxa-spotlight-sync-header = მოინახულეთ გვერდები შეუფერხებლად
+device-migration-fxa-spotlight-sync-body = დაასინქრონეთ ყველა თქვენი მნიშვნელოვანი მონაცემი დაშიფვრით – მათ შორის სანიშნები და პაროლები. ყველაფერი შეგიძლიათ წაიღოთ თან ნებისმიერ ადგილას, სადაც გიყენიათ { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = დაიწყეთ
 
 ## Set as Default PDF Reader Infobar
 
@@ -262,7 +284,7 @@ pdf-default-notification-decline-button =
 
 launch-on-login-infobar-message = <strong>კომპიუტერის ყოველი ჩართვისას გიწევთ გახსნათ { -brand-short-name }?</strong> ახლა უკვე შეგიძლიათ მიუთითოთ, რომ { -brand-short-name } თავისით გაეშვას მოწყობილობის ხელახლა ჩართვისას.
 launch-on-login-learnmore = ვრცლად
-launch-on-login-infobar-confirm-button = დიახ, გაეშვას { -brand-short-name }
+launch-on-login-infobar-confirm-button = დიახ, თავისით გაეშვას { -brand-short-name }
     .accesskey = დ
 launch-on-login-infobar-reject-button = ახლა არა
     .accesskey = ა
@@ -273,3 +295,191 @@ launch-on-login-infobar-reject-button = ახლა არა
 launch-on-login-infobar-final-message = <strong>გაიხსნას { -brand-short-name } კომპიუტერის ყოველი ჩართვისას?</strong> ჩართვისას გაშვების გასამართად პარამეტრებში მოიძიეთ „startup“.
 launch-on-login-infobar-final-reject-button = არა, გმადლობთ
     .accesskey = რ
+
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = გაეშვას { -brand-short-name } შემდეგ ჯერზე კომპიუტერის ჩართვისას?
+launch-on-login-spotlight-startup-checkbox = გაეშვას { -brand-short-name } ჩართვისას
+launch-on-login-spotlight-pin-taskbar-checkbox = სამუშაო ზოლზე მიმაგრება
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = წინა ფანჯრებისა და ჩანართების გახსნა
+launch-on-login-spotlight-primary-button = შეინახოს და დაიხუროს { -brand-short-name }
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = მოიცილეთ კუდში დადევნებული მეთვალყურეები
+tail-fox-spotlight-subtitle = დაემშვიდობეთ მომაბეზრებელ სარეკლამო მეთვალყურეებს და მოიწყვეთ უსაფრთხო, სწრაფი გარემო გვერდების თვალიერებისას.
+tail-fox-spotlight-primary-button = ბმულების გასახსნელად გამოიყენებოდეს { -brand-short-name }
+tail-fox-spotlight-secondary-button = ახლა არა
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = დაუბრუნდით თანმომყოლ პირადულობას
+welcome-back-spotlight-subtitle = კეთილი იყოს თქვენი დაბრუნება ერთადერთ მოწინავე ბრაუზერში, რომელსაც ზურგს უმაგრებს არამომგებიანი დაწესებულება. ჩვენ სიფრთხილის განსაკუთრებულ ზომებს ვიღებთ თქვენი მონაცემების დასაცავად, სადაც არ უნდა გადაადგილდებოდეთ.
+welcome-back-embedded-import-title = გადმოიტანეთ თქვენი მონაცემები და მოირგეთ { -brand-short-name }, რომ თავი იგრძნოთ შინ.
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } პროგრამის ძველ ვერსიებს შესაძლოა, ხარვეზები დაეწყოს 2025 წლის 14 იანვრიდან.</strong>
+root-certificate-succession-infobar-march-message = <strong>განაახლეთ { -brand-short-name }, რომ შეუფერხებლად განაგრძოთ მისით სარგებლობა 2025 წლის 14 მარტის შემდეგ.</strong>
+root-certificate-succession-infobar-link = რა საჭიროა განახლება?
+root-certificate-succession-infobar-primary-button =
+    .label = ახლავე განახლება
+    .accesskey = ა
+root-certificate-succession-infobar-secondary-button =
+    .label = მოგვიანებით
+    .accesskey = მ
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = მნიშვნელოვანი განახლება გამოტოვეთ, რომელსაც საჭიროებს { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = ბრაუზერის სხვადასხვა ნაწილი მალე შეწყვეტს მუშაობას, თუ არ განაახლებთ. ახლა მშვენიერი დროა უახლესი დაცვისა და შესაძლებლობების გამოსაცდელად.
+root-certificate-windows-background-notification-learn-more-button = ვრცლად
+root-certificate-windows-background-notification-update-button = განახლდეს { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = დახურვა
+    .aria-label = დახურვა
+fxa-menu-message-sign-up-button = ანგარიშის შექმნა
+fxa-menu-message-sign-in-button = შესვლა
+fxa-menu-message-sync-button = დასინქ. დაწყება
+fxa-menu-message-sync-devices-primary-text = დასინქრონება ყველა მოწყობილობაზე
+fxa-menu-message-sync-devices-secondary-text = დაუყოვნებლივ მიიღეთ თქვენს მონაცემებთან წვდომა – მათ შორის სანიშნებსა და პაროლებთან ყველგან, სადაც გიყენიათ { -brand-short-name }
+fxa-menu-message-sync-devices-secondary-text2 = მყისიერად მიიღეთ თქვენი სანიშნები, პაროლები და სხვ. ანგარიშზე შესვლით ყველგან, სადაც გიყენიათ { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = დასინქრონება ყველა მოწყობილობაზე
+fxa-menu-message-backup-data-primary-text = ბრაუზერის მონაცემების დამარქაფება
+fxa-menu-message-backup-data-secondary-text = სანიშნების, პაროლებისა და სხვა მონაცემების თავისთავადი დაცვა ყველა თქვენს მოწყობილობაზე.
+fxa-menu-message-backup-data-collapsed-text = მონაცემების დასინქრონება
+fxa-menu-message-backup-sync-primary-text = გქონდეთ მონაცემები დაცული და დასინქრონებული
+fxa-menu-message-backup-sync-secondary-text = სინქრონიზაცია თქვენი მონაცემების უმეტესობას ამარქაფებს, ასე რომ შეგიძლიათ მათთან წვდომა ყველგან, სადაც { -brand-short-name } გიყენიათ.
+fxa-menu-message-backup-sync-collapsed-text = დასინქრონება და დამარქაფება
+fxa-menu-message-mobile-primary-text = გაგზავნეთ ჩანართები თქვენს ტელეფონზე
+fxa-menu-message-mobile-secondary-text = განაგრძეთ იქიდან, სადაც გაჩერდით, ჩანართების მობილურ მოწყობილობასთან სინქრონიზაციით.
+fxa-menu-message-mobile-collapsed-text = დაასინქრონეთ ტელეფონთან
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = კეთილი იყოს თქვენი დაბრუნება
+multi-cta-fox-doodle-set-default-checkbox = აქციეთ { -brand-short-name } ნაგულისხმევად
+multi-cta-fox-doodle-pin-startmenu-checkbox = მიამაგრეთ { -brand-short-name } საწყის მენიუში
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] დარჩეს { -brand-short-name } Dock-ზოლზე
+       *[other] მიამაგრეთ { -brand-short-name } ამოცანათა ზოლზე
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = დაიწყეთ მოგზაურობა ინტერნეტში
+multi-cta-fox-doodle-main-browser-primary-button-label = გახდეს { -brand-short-name } ჩემი ძირითადი ბრაუზერი
+multi-cta-fox-doodle-quick-reminder-subtitle = აქვე შეხსენება, რომ თქვენი საყვარელი პირადულობის უზრუნველმყოფი ბრაუზერი შეგიძლიათ იქონიოთ თითის ერთ გაწვდენაზე.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა Dock-ზოლზე.
+       *[other] გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა ზოლზე.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა ზოლსა თუ საწყის მენიუში.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = მალე აპირებთ განახლებით ჩაანაცვლოთ Windows 10?
+windows-10-eos-sync-spotlight-subtitle = დაამარქაფეთ პაროლები და სანიშნები, რომ მზად იყოთ მნიშვნელოვანი ცვლილებებისთვის ნებისმიერ მოწყობილობაზე.
+windows-10-eos-sync-spotlight-primary-label = დაამარქაფეთ თქვენი { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = გსურთ განახლებით დააყენოთ Windows 11? ნუ დაკარგავთ სანიშნებსა და პაროლებს.
+windows-10-eos-sync-toast-subtitle = დაამარქაფეთ მონაცემები, რომ { -brand-short-name } მზად იყოს, ნებისმიერ დროს თან გამოგყვეთ ამ თუ სხვა კომპიუტერზე.
+windows-10-eos-sync-toast-primary-label = დაიწყეთ
+windows-10-eos-sync-toast-secondary-label = მოგვიანებით შეხსენება
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } არაა წინასწარვე ჩატვირთული, როგორც სხვა დიდ ტექკომპანიების ბრაუზერებში. ესაა მთავარი სხვაობა.
+windows-10-eos-challenger-sync-callout-subtitle = { -brand-product-name } თუ დამარქაფებული გექნებათ სანიშნებითა და პაროლებით, უფრო იოლი იქნება სასურველი ბრაუზერის სხვა მოწყობილობაზე გადატანა.
+windows-10-eos-challenger-pin-callout-subtitle = მიამაგრეთ { -brand-shorter-name } თქვენს ამოცანათა ზოლზე, რომ სასურველი ბრაუზერი მუდამ ახლოს გქონდეთ, როცა დაგჭირდებათ.
+windows-10-eos-challenger-sync-primary-button = დაამარქაფეთ { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = მიამაგრეთ { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } ზღუდავს კრიპტოგამომმუშავებლებს, სოცქსელის მეთვალყურეებსა და მომხმარებლის ამომცნობებს.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = მეთვალყურეები ვერ ამოიცნობენ თქვენს მოწყობილობას და ვერ დაგედევნებიან მთელ ვებსივრცეში — იმიტომ რომ ჩვენ არ მივცემთ ამის საშუალებას.
+windows-10-eos-sync-callout-privacy-screen-2-title = დაიცავით თქვენი პაროლები და სანიშნები მომავალი მოწყობილობისთვის.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = { -brand-shorter-name } თუ დამარქაფებული გექნებათ, უფრო იოლად შეძლებთ ყველგან თან გაიყოლოთ მონაცემები გამართული პირადულობით.
+windows-10-eos-sync-callout-privacy-info-button = იხილეთ, რა იზღუდება
+windows-10-eos-callout-addons-title = მოსინჯეთ დამატებები: იოლი განახლებებით, ფართო შესაძლებლობებით
+windows-10-eos-callout-addons-subtitle = ეს გაფართოებები შერჩეულია იმისთვის, რომ დაგეხმაროთ შედეგიანობაში, უსაფრთხოებასა და ყურადღების მოკრებაში.
+windows-10-eos-callout-addons-primary-button = იხილეთ ჩვენი შერჩეული
+windows-10-eos-sync-callout-addons-title = ნუ დაკარგავთ დამატებებს, როცა გადაწყვეტთ განაახლოთ Windows 10
+windows-10-eos-sync-callout-addons-subtitle = დაასინქრონეთ ახლავე და { -brand-product-name } თქვენს დამატებებს მუდმივად შეინარჩუნებს მოწყობილობის შეცვლის შემთხვევაშიც.
+windows-10-eos-sync-callout-next-button = შემდეგი
+windows-10-eos-sync-callout-get-started-button = დაიწყეთ
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = შვეული ჩანართები და ჩანართთა ჯგუფები უკვე ხელმისაწვდომია!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = ხალხის მოთხოვნით { -brand-product-name } ამატებს ახალ შესაძლებლობებს გვერდების იოლად მონახულებისა და მეტად შედეგიანად საქმიანობისთვის.
+windows-10-eos-feature-toast-whats-new-button = გაეცანით სიახლეებს
+windows-10-eos-feature-toast-dismiss-button = აცილება
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong> Microsoft აცხადებს, რომ უკვე მხარდაუჭერელია Windows 10.</strong> დაამარქაფეთ თქვენი მონაცემები, რომ მზად გქონდეთ { -brand-product-name }, როცა დააპირებთ დააყენოთ Windows 11.
+windows-10-eos-global-infobar-primary-button = მარქაფის ჩართვა
+    .accesskey = ქ
+windows-10-eos-global-infobar-learn-more-link = ვრცლად
+    .accessKey = ლ
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>თვალთვალისგან მკაცრმა დაცვამ შესაძლოა საიტების გაუმართაობა გამოიწვიოს.</strong> გამოასწორეთ გავრცელებული ხარვეზები მეთვალყურეთა შემცველ აუცილებელ ნაწილებზე შეზღუდვების მოხსნით.
+etp-strict-exceptions-infobar-learn-more = ვრცლად
+etp-strict-exceptions-infobar-button = გამოსწორება
+    .accesskey = წ
+etp-strict-exceptions-infobar-not-now = ახლა არა
+    .accesskey = რ
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } ნაგულისხმევი ბრაუზერი არაა
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } თქვენი ძირითადი ბრაუზერი არაა
+set-default-menu-message-row-layout-title = აქციეთ { -brand-short-name } თქვენს ძირითად ბრაუზერად
+set-default-menu-message-row-layout-title-variant = აქციეთ { -brand-short-name } თქვენს ნაგულისხმევ ბრაუზერად
+set-default-menu-message-row-layout-subtitle = სისწრაფე, უსაფრთხოება და პირადულობა, გვერდების ყოველი მონახულებისას.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] მუდამ ხელთ იქონიეთ { -brand-short-name } — აქციეთ ნაგულისხმევ ბრაუზერად და დატოვეთ Dock-ზე.
+       *[other] მუდამ ხელთ იქონიეთ { -brand-short-name } — აქციეთ ნაგულისხმევ ბრაუზერად და დატოვეთ სამუშაო ზოლზე.
+    }
+set-default-menu-message-primary-button = ნაგულისხმევად დაყენება
+set-default-menu-message-primary-button-variant = ძირითად ბრაუზერად დაყენება
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = ელფოსტის 50 ნიღაბი ჩვენზეა
+relay-50-masks-announcement-subtitle = ახლა უკვე გეძლევათ 50 ნიღაბი უფასოდ (5-იდან). თითოეული გამოიყენეთ სხვადასხვა ანგარიშისთვის თქვენი ნამდვილი ელფოსტის პირადულობისთვის.
+relay-50-masks-announcement-primary-button = იხილეთ { -relay-brand-name }
+    .accesskey = ხ
+relay-50-masks-announcement-secondary-button = აცილება
+    .accesskey = ც
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } იძენს ახალ იერსახეს.</strong> თქვენ ხედავთ ადრეულ ვერსიას, ჯერ კიდევ დაუხვეწავს, მიმდინარე წლის ბოლოს გამოშვებამდე.
+nova-early-access-share-feedback-link = გამოგვეხმაურეთ
+    .accesskey = მ
+nova-early-access-infobar-primary-button = გასაგებია
+    .accesskey = გ

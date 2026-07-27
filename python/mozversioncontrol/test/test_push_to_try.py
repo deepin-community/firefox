@@ -14,6 +14,9 @@ from mozversioncontrol import MissingVCSExtension, get_repository_object
 
 
 def test_push_to_try(repo, monkeypatch):
+    if repo.vcs == "src":
+        pytest.skip("src repo cannot push")
+
     commit_message = "commit message"
     vcs = get_repository_object(repo.dir)
 
@@ -77,7 +80,7 @@ def test_push_to_try(repo, monkeypatch):
             (str(tool), "revert", "-a"),
         ]
         expected_inputs = []
-    else:
+    elif repo.vcs == "git":
         expected = [
             (str(tool), "cinnabar", "--version"),
             (str(tool), "rev-parse", "HEAD"),
@@ -133,6 +136,106 @@ def test_push_to_try(repo, monkeypatch):
             """
             ),
         ]
+    else:
+        assert repo.vcs == "jj"
+        expected = [
+            (str(vcs._git._tool), "cinnabar", "--version"),
+            (
+                str(tool),
+                "--quiet",
+                "operation",
+                "log",
+                "-n1",
+                "--no-graph",
+                "-T",
+                "id.short(16)",
+            ),
+            (
+                str(tool),
+                "--quiet",
+                "log",
+                "--no-graph",
+                "-r",
+                "trunk()..@ ~ description(exact:'')",
+                "-T",
+                "'  ' ++ description.first_line() ++ '\n'",
+            ),
+            (
+                str(tool),
+                "--quiet",
+                "log",
+                "-n0",
+                "-T",
+                '"snapshot: prepare_try_push"',
+            ),
+            (
+                str(tool),
+                "--quiet",
+                "operation",
+                "log",
+                "-n1",
+                "--no-graph",
+                "-T",
+                "id.short(16)",
+            ),
+            (
+                str(tool),
+                "--quiet",
+                "new",
+                "-m",
+                "commit message",
+                'coalesce(@ ~ (empty() & description(exact:"")) ~ bookmarks(), @-)',
+            ),
+            (str(tool), "--quiet", "file", "track", "extra-file"),
+            (str(tool), "--quiet", "file", "track", "other/extra-file"),
+            (str(tool), "--quiet", "log", "-n0", "-T", '"snapshot: prepare_try_push"'),
+            (
+                str(tool),
+                "--quiet",
+                "bookmark",
+                "move",
+                "--from",
+                "heads(@- & bookmarks())",
+                "--to",
+                "@",
+            ),
+            (
+                str(tool),
+                "--quiet",
+                "--ignore-working-copy",
+                "log",
+                "--no-graph",
+                "-n1",
+                "-r",
+                "@",
+                "-T",
+                "change_id.short()",
+            ),
+            (str(vcs._git._tool), "remote"),
+            (
+                str(vcs._git._tool),
+                "remote",
+                "add",
+                "mach_tryserver",
+                "hg::ssh://hg.mozilla.org/try",
+            ),
+            (str(tool), "--quiet", "git", "import"),
+            (
+                str(tool),
+                "--quiet",
+                "git",
+                "push",
+                "--remote",
+                "mach_tryserver",
+                "--change",
+                None,
+                "--allow-new",
+                "--allow-empty-description",
+            ),
+            (str(tool), "--quiet", "operation", "restore", ""),
+            (str(tool), "--quiet", "git", "remote", "remove", "mach_tryserver"),
+        ]
+        expected_inputs = []
 
     for i, value in enumerate(captured_commands):
         assert value == expected[i]
@@ -146,7 +249,7 @@ def test_push_to_try(repo, monkeypatch):
 
 
 def test_push_to_try_missing_extensions(repo, monkeypatch):
-    if repo.vcs != "git":
+    if repo.vcs not in ("git", "jj"):
         return
 
     vcs = get_repository_object(repo.dir)
@@ -160,6 +263,8 @@ def test_push_to_try_missing_extensions(repo, monkeypatch):
         return orig(*args, **kwargs)
 
     monkeypatch.setattr(vcs, "_run", cinnabar_raises)
+    if hasattr(vcs, "_git"):
+        monkeypatch.setattr(vcs._git, "_run", cinnabar_raises)
 
     with pytest.raises(MissingVCSExtension):
         vcs.push_to_try("commit message")

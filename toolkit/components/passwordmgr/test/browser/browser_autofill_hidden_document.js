@@ -23,12 +23,15 @@ async function getDocumentVisibilityState(browser) {
 }
 
 add_setup(async function () {
-  Services.prefs.setBoolPref("signon.usernameOnlyForm.enabled", true);
-  registerCleanupFunction(() => {
-    Services.prefs.clearUserPref("signon.usernameOnlyForm.enabled");
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["signon.usernameOnlyForm.enabled", true],
+      ["signon.rustMirror.enabled", false],
+    ],
   });
 
-  Services.logins.removeAllUserFacingLogins();
+  await Services.logins.removeAllUserFacingLoginsAsync();
   let login = LoginTestUtils.testData.formLogin({
     origin: "https://example.org",
     formActionOrigin: "https://example.org",
@@ -182,7 +185,7 @@ testUrlsWithForm.forEach(testUrl => {
       "The first tab should be backgrounded"
     );
 
-    const dialogObserved = waitForMPDialog("authenticate", tab1.ownerGlobal);
+    const dialogObserved = waitForMPDialog("authenticate", tab1.documentGlobal);
 
     // In this case we will try to autofill while hidden, so look for the passwordmgr-processed-form
     // to be observed

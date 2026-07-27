@@ -24,16 +24,6 @@ add_task(async function test_expand_minimal_and_full() {
               { name: "partnerCode", value: "abc" },
               { name: "starbase", value: "Regula_I" },
               { name: "experiment", value: "Genesis" },
-              {
-                name: "accessPoint",
-                searchAccessPoint: {
-                  addressbar: "addressbar",
-                  contextmenu: "contextmenu",
-                  homepage: "homepage",
-                  newtab: "newtab",
-                  searchbar: "searchbar",
-                },
-              },
             ],
             searchTermParamName: "search",
           },
@@ -45,6 +35,10 @@ add_task(async function test_expand_minimal_and_full() {
           trending: {
             base: "https://example.com/3",
             searchTermParamName: "trending",
+          },
+          visualSearch: {
+            base: "https://example.com/4",
+            searchTermParamName: "visual",
           },
         },
       },
@@ -68,7 +62,7 @@ add_task(async function test_expand_minimal_and_full() {
 
   Assert.equal(
     fullConfig.length,
-    4,
-    "Should have 2 engines, defaultEngines and engineOrders."
+    5,
+    "Should have 2 engines, defaultEngines, engineOrders and availableLocales."
   );
 });

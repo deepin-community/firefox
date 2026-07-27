@@ -41,6 +41,14 @@ class SHistoryListener {
       return null;
     }
 
+    // In a private session, when the first loaded uri is one of the about pages, the
+    // browsingContext.currentURI is null which causes a crash (see Bug 1928295).
+    // TODO: Remove this if check when Bug 1915362 gets implemented where the partial
+    // state update will be fixing this issue. See Bug 1933630.
+    if (!browsingContext.currentURI?.spec) {
+      return null;
+    }
+
     const fromIndex = collectFull ? -1 : this._fromIndex;
     this._fromIndex = kNoIndex;
 
@@ -53,7 +61,7 @@ class SHistoryListener {
 
     if (writeToCache) {
       const win =
-        browsingContext.embedderElement?.ownerGlobal ||
+        browsingContext.embedderElement?.documentGlobal ||
         browsingContext.currentWindowGlobal?.browsingContext?.window;
 
       GeckoViewSessionStore.onTabStateUpdate(permanentKey, win, {
@@ -125,7 +133,7 @@ export var GeckoViewSessionStore = {
         }
         break;
       }
-      case "browsing-context-discarded":
+      case "browsing-context-discarded": {
         const permanentKey = aSubject?.embedderElement?.permanentKey;
         if (permanentKey) {
           this._browserSHistoryListener
@@ -133,12 +141,12 @@ export var GeckoViewSessionStore = {
             ?.unregister(permanentKey);
         }
         break;
+      }
     }
   },
 
   onTabStateUpdate(permanentKey, win, data) {
-    win.WindowEventDispatcher.sendRequest({
-      type: "GeckoView:StateUpdated",
+    win.WindowEventDispatcher.sendRequest("GeckoView:StateUpdated", {
       data: data.data,
     });
   },
@@ -209,14 +217,15 @@ export var GeckoViewSessionStore = {
     if (listener) {
       const historychange =
         // If it is not the scheduled update (tab closed, window closed etc),
-        // try to store the loading non-web-controlled page opened in _blank
-        // first.
+        // try to store the loading non-web-controlled page first.
         (forStorage &&
-          lazy.SessionHistory.collectNonWebControlledBlankLoadingSession(
+          lazy.SessionHistory.collectNonWebControlledLoadingSession(
             browsingContext
           )) ||
         listener.collect(permanentKey, browsingContext, {
-          collectFull: !!update.sHistoryNeeded,
+          // TODO: See Bug 1915362 where partial history collection will be implemented for better
+          // performance and uncomment the line below. See Bug 1933630.
+          // collectFull: !!update.sHistoryNeeded,
           writeToCache: false,
         });
 
@@ -226,7 +235,7 @@ export var GeckoViewSessionStore = {
     }
 
     const win =
-      browsingContext.embedderElement?.ownerGlobal ||
+      browsingContext.embedderElement?.documentGlobal ||
       browsingContext.currentWindowGlobal?.browsingContext?.window;
 
     this.onTabStateUpdate(permanentKey, win, update);

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -30,8 +28,8 @@
 #include "mozilla/dom/StorageUtils.h"
 #include "mozilla/JSONStringWriteFuncs.h"
 #include "mozilla/JSONWriter.h"
+#include "nsIEffectiveTLDService.h"
 #include "nsIURL.h"
-#include "nsEffectiveTLDService.h"
 #include "nsIURIMutator.h"
 #include "mozilla/StaticPrefs_permissions.h"
 #include "nsIURIMutator.h"
@@ -345,7 +343,8 @@ already_AddRefed<BasePrincipal> BasePrincipal::FromJSON(
           reinterpret_cast<const JS::Latin1Char*>(aJSON.BeginReading()),
           aJSON.Length(), &handler)) {
     NS_WARNING(
-        nsPrintfCString("Unable to parse: %s", aJSON.BeginReading()).get());
+        nsPrintfCString("Unable to parse: %s", PromiseFlatCString(aJSON).get())
+            .get());
     MOZ_ASSERT(false,
                "Unable to parse string as JSON to deserialize as a principal");
     return nullptr;
@@ -372,7 +371,7 @@ nsresult BasePrincipal::ToJSON(nsACString& aJSON) {
 }
 
 nsresult BasePrincipal::ToJSON(JSONWriter& aWriter) {
-  static_assert(eKindMax < ArrayLength(JSONEnumKeyStrings));
+  static_assert(eKindMax < std::size(JSONEnumKeyStrings));
 
   aWriter.Start(JSONWriter::CollectionStyle::SingleLineStyle);
 
@@ -538,7 +537,7 @@ BasePrincipal::EqualsForPermission(nsIPrincipal* aOther, bool aExactHost,
   }
 
   nsCOMPtr<nsIEffectiveTLDService> tldService =
-      do_GetService(NS_EFFECTIVETLDSERVICE_CONTRACTID);
+      mozilla::components::EffectiveTLD::Service();
   if (!tldService) {
     NS_ERROR("Should have a tld service!");
     return NS_ERROR_FAILURE;
@@ -546,7 +545,7 @@ BasePrincipal::EqualsForPermission(nsIPrincipal* aOther, bool aExactHost,
 
   // This loop will not loop forever, as GetNextSubDomain will eventually fail
   // with NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS.
-  while (otherHost != ourHost) {
+  while (otherHost != ourHost && otherHost.Length() > ourHost.Length()) {
     rv = tldService->GetNextSubDomain(otherHost, otherHost);
     if (NS_FAILED(rv)) {
       if (rv == NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS) {
@@ -556,7 +555,7 @@ BasePrincipal::EqualsForPermission(nsIPrincipal* aOther, bool aExactHost,
     }
   }
 
-  *aResult = true;
+  *aResult = otherHost == ourHost;
   return NS_OK;
 }
 
@@ -856,7 +855,7 @@ BasePrincipal::HasFirstpartyStorageAccess(mozIDOMWindow* aCheckWindow,
     return NS_ERROR_UNEXPECTED;
   }
 
-  *aOutAllowed = ShouldAllowAccessFor(win, uri, aRejectedReason);
+  *aOutAllowed = ShouldAllowAccessFor(win, uri, true, aRejectedReason);
   return NS_OK;
 }
 
@@ -1067,6 +1066,12 @@ NS_IMETHODIMP
 BasePrincipal::IsURIInPrefList(const char* aPref, bool* aResult) {
   AssertIsOnMainThread();
   *aResult = false;
+
+  if (Kind() != eContentPrincipal) {
+    // We don't store prefs for non-content principals.
+    return NS_OK;
+  }
+
   nsCOMPtr<nsIURI> prinURI;
   nsresult rv = GetURI(getter_AddRefs(prinURI));
   if (NS_FAILED(rv) || !prinURI) {
@@ -1254,6 +1259,20 @@ already_AddRefed<BasePrincipal> BasePrincipal::CreateContentPrincipal(
     nsIURI* aURI, const OriginAttributes& aAttrs, nsIURI* aInitialDomain) {
   MOZ_ASSERT(aURI);
 
+  // Blob URLs don't derive the principal directly from the URL in the same way
+  // as normal content principals, and may have a non-content principal.
+  if (aURI->SchemeIs(BLOBURI_SCHEME)) {
+    MOZ_ASSERT(!aInitialDomain,
+               "an initial domain for a blob URI makes no sense");
+    nsCOMPtr<nsIPrincipal> blobPrincipal;
+    if (!dom::BlobURLProtocolHandler::GetBlobURLPrincipal(
+            aURI, aAttrs, getter_AddRefs(blobPrincipal))) {
+      // This isn't a valid Blob URL, give up and return a null principal.
+      return NullPrincipal::Create(aAttrs);
+    }
+    return blobPrincipal.forget().downcast<BasePrincipal>();
+  }
+
   nsAutoCString originNoSuffix;
   nsresult rv =
       ContentPrincipal::GenerateOriginNoSuffixFromURI(aURI, originNoSuffix);
@@ -1299,16 +1318,6 @@ already_AddRefed<BasePrincipal> BasePrincipal::CreateContentPrincipal(
     return principal.forget();
   }
 #endif
-
-  nsCOMPtr<nsIPrincipal> blobPrincipal;
-  if (dom::BlobURLProtocolHandler::GetBlobURLPrincipal(
-          aURI, getter_AddRefs(blobPrincipal))) {
-    MOZ_ASSERT(blobPrincipal);
-    MOZ_ASSERT(!aInitialDomain,
-               "an initial domain for a blob URI makes no sense");
-    RefPtr<BasePrincipal> principal = Cast(blobPrincipal);
-    return principal.forget();
-  }
 
   // Mint a content principal.
   RefPtr<ContentPrincipal> principal =
@@ -1416,14 +1425,14 @@ BasePrincipal::GetLocalStorageQuotaKey(nsACString& aKey) {
     rv = url->GetDirectory(baseDomain);
     NS_ENSURE_SUCCESS(rv, rv);
   } else {
-    nsCOMPtr<nsIEffectiveTLDService> eTLDService(
-        do_GetService(NS_EFFECTIVETLDSERVICE_CONTRACTID, &rv));
+    nsCOMPtr<nsIEffectiveTLDService> eTLDService =
+        mozilla::components::EffectiveTLD::Service(&rv);
     NS_ENSURE_SUCCESS(rv, rv);
 
     nsAutoCString eTLDplusOne;
     rv = eTLDService->GetBaseDomain(uri, 0, eTLDplusOne);
     if (NS_SUCCEEDED(rv)) {
-      baseDomain = eTLDplusOne;
+      baseDomain = std::move(eTLDplusOne);
     } else if (rv == NS_ERROR_HOST_IS_IP_ADDRESS ||
                rv == NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS) {
       rv = NS_OK;
@@ -1459,7 +1468,12 @@ BasePrincipal::GetNextSubDomainPrincipal(
   }
 
   nsCString subDomain;
-  rv = nsEffectiveTLDService::GetInstance()->GetNextSubDomain(host, subDomain);
+  nsCOMPtr<nsIEffectiveTLDService> eTLDService =
+      mozilla::components::EffectiveTLD::Service();
+  if (!eTLDService) {
+    return NS_OK;
+  }
+  rv = eTLDService->GetNextSubDomain(host, subDomain);
 
   if (NS_FAILED(rv) || subDomain.IsEmpty()) {
     return NS_OK;
@@ -1607,3 +1621,9 @@ void BasePrincipal::WriteJSONProperty(JSONWriter& aWriter,
 }
 
 }  // namespace mozilla
+
+uint32_t nsIPrincipal::GetHashValue() const {
+  auto* bp = mozilla::BasePrincipal::Cast(this);
+  return mozilla::HashGeneric(bp->GetOriginNoSuffixHash(),
+                              bp->GetOriginSuffixHash());
+}

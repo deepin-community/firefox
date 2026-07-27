@@ -2,13 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CryptoUtils } from "resource://services-crypto/utils.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-import { clearTimeout, setTimeout } from "resource://gre/modules/Timer.sys.mjs";
 
 import { FxAccountsStorageManager } from "resource://gre/modules/FxAccountsStorage.sys.mjs";
 
 import {
+  ATTACHED_CLIENTS_CACHE_DURATION,
   ERRNO_INVALID_AUTH_TOKEN,
   ERROR_AUTH_ERROR,
   ERROR_INVALID_PARAMETER,
@@ -28,7 +27,8 @@ import {
   ON_DEVICE_DISCONNECTED_NOTIFICATION,
   POLL_SESSION,
   PREF_ACCOUNT_ROOT,
-  PREF_LAST_FXA_USER,
+  PREF_LAST_FXA_USER_EMAIL,
+  PREF_LAST_FXA_USER_UID,
   SERVER_ERRNO_TO_ERROR,
   log,
   logPII,
@@ -38,6 +38,7 @@ import {
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  CryptoUtils: "moz-src:///services/crypto/modules/utils.sys.mjs",
   FxAccountsClient: "resource://gre/modules/FxAccountsClient.sys.mjs",
   FxAccountsCommands: "resource://gre/modules/FxAccountsCommands.sys.mjs",
   FxAccountsConfig: "resource://gre/modules/FxAccountsConfig.sys.mjs",
@@ -65,14 +66,11 @@ XPCOMUtils.defineLazyPreferenceGetter(
   true
 );
 
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "oauthEnabled",
-  "identity.fxaccounts.oauth.enabled",
-  true
-);
-
 export const ERROR_INVALID_ACCOUNT_STATE = "ERROR_INVALID_ACCOUNT_STATE";
+
+// Cached tokens with less than this many seconds remaining are considered
+// expired and will trigger a new token fetch.
+const OAUTH_MIN_TIME_LEFT_SECS = 60;
 
 // An AccountState object holds all state related to one specific account.
 // It is considered "private" to the FxAccounts modules.
@@ -109,7 +107,6 @@ export function AccountState(storageManager) {
 
 AccountState.prototype = {
   oauthTokens: null,
-  whenVerifiedDeferred: null,
   whenKeysReadyDeferred: null,
 
   // If the storage manager has been nuked then we are no longer current.
@@ -118,12 +115,6 @@ AccountState.prototype = {
   },
 
   abort() {
-    if (this.whenVerifiedDeferred) {
-      this.whenVerifiedDeferred.reject(
-        new Error("Verification aborted; Another user signing in")
-      );
-      this.whenVerifiedDeferred = null;
-    }
     if (this.whenKeysReadyDeferred) {
       this.whenKeysReadyDeferred.reject(
         new Error("Key fetching aborted; Another user signing in")
@@ -249,8 +240,14 @@ AccountState.prototype = {
     let key = getScopeKey(scopeArray);
     let result = this.oauthTokens[key];
     if (result) {
-      // later we might want to check an expiry date - but we currently
-      // have no such concept, so just return it.
+      // Check expiry if present (old tokens without expiresAt never expire)
+      if (result.expiresAt != null) {
+        const nowSecs = Math.floor(Date.now() / 1000);
+        if (result.expiresAt <= nowSecs + OAUTH_MIN_TIME_LEFT_SECS) {
+          log.debug("getCachedToken returning null for expired token");
+          return null;
+        }
+      }
       log.trace("getCachedToken returning cached token");
       return result;
     }
@@ -412,23 +409,56 @@ export class FxAccounts {
   /**
    * Returns an array listing all the OAuth clients connected to the
    * authenticated user's account. This includes browsers and web sessions - no
-   * filtering is done of the set returned by the FxA server.
+   * filtering is done of the set returned by the FxA server. This is using a cached
+   * result if it's not older than 4 hours. If the cached data is too old or
+   * missing, it fetches new data and updates the cache.
    *
-   * @typedef {Object} AttachedClient
-   * @property {String} id - OAuth `client_id` of the client.
-   * @property {Number} lastAccessedDaysAgo - How many days ago the client last
+   * @typedef {object} AttachedClient
+   * @property {string} id - OAuth `client_id` of the client.
+   * @property {number} lastAccessedDaysAgo - How many days ago the client last
    *    accessed the FxA server APIs.
    *
    * @returns {Array.<AttachedClient>} A list of attached clients.
    */
-  async listAttachedOAuthClients() {
-    // We expose last accessed times in 'days ago'
+  async listAttachedOAuthClients(forceRefresh = false) {
+    const now = Date.now();
+
+    // Check if cached data is still valid
+    if (
+      this._cachedClients &&
+      now - this._cachedClientsTimestamp < ATTACHED_CLIENTS_CACHE_DURATION &&
+      !forceRefresh
+    ) {
+      return this._cachedClients;
+    }
+
+    // Cache is empty or expired, fetch new data
+    let clients = null;
+    try {
+      clients = await this._fetchAttachedOAuthClients();
+      this._cachedClients = clients;
+      this._cachedClientsTimestamp = now;
+    } catch (error) {
+      log.error("Could not update attached clients list ", error);
+      clients = [];
+    }
+
+    return clients;
+  }
+
+  /**
+   * This private method actually fetches the clients from the server.
+   * It should not be called directly by consumers of this API.
+   *
+   * @returns {Array.<AttachedClient>}
+   * @private
+   */
+  async _fetchAttachedOAuthClients() {
     const ONE_DAY = 24 * 60 * 60 * 1000;
 
     return this._withSessionToken(async sessionToken => {
-      const response = await this._internal.fxAccountsClient.attachedClients(
-        sessionToken
-      );
+      const response =
+        await this._internal.fxAccountsClient.attachedClients(sessionToken);
       const attachedClients = response.body;
       const timestamp = response.headers["x-timestamp"];
       const now =
@@ -476,7 +506,8 @@ export class FxAccounts {
     }
   }
 
-  /** Gets both the OAuth token and the users scoped keys for that token
+  /**
+   * Gets both the OAuth token and the users scoped keys for that token
    * and verifies that both operations were done for the same user,
    * preventing race conditions where a caller
    * can get the key for one user, and the id of another if the user
@@ -507,6 +538,10 @@ export class FxAccounts {
     });
   }
 
+  resetFxAccountsClient() {
+    this._internal.resetFxAccountsClient();
+  }
+
   /**
    * Remove an OAuth token from the token cache. Callers should call this
    * after they determine a token is invalid, so a new token will be fetched
@@ -531,7 +566,9 @@ export class FxAccounts {
    *        {
    *          email: String: The user's email address
    *          uid: String: The user's unique id
-   *          verified: Boolean: email verification status
+   *          verified: Boolean: Firefox verification status. If false, the account should
+   *                    be considered partially logged-in to this Firefox. This may be false
+   *                    even if the underying account verfied status is true.
    *          displayName: String or null if not known.
    *          avatar: URL of the avatar for the user. May be the default
    *                  avatar, or null in edge-cases (eg, if there's an account
@@ -543,13 +580,21 @@ export class FxAccounts {
    *        or null if no user is signed in. This function never fails except
    *        in pathological cases (eg, file-system errors, etc)
    */
-  getSignedInUser() {
+  getSignedInUser(addnFields = []) {
     // Note we don't return the session token, but use it to see if we
-    // should fetch the profile.
-    const ACCT_DATA_FIELDS = ["email", "uid", "verified", "sessionToken"];
+    // should fetch the profile. Ditto scopedKeys re verified.
+    const ACCT_DATA_FIELDS = [
+      "email",
+      "uid",
+      "verified",
+      "scopedKeys",
+      "sessionToken",
+    ];
     const PROFILE_FIELDS = ["displayName", "avatar", "avatarDefault"];
     return this._withCurrentAccountState(async currentState => {
-      const data = await currentState.getUserAccountData(ACCT_DATA_FIELDS);
+      const data = await currentState.getUserAccountData(
+        ACCT_DATA_FIELDS.concat(addnFields)
+      );
       if (!data) {
         return null;
       }
@@ -557,12 +602,7 @@ export class FxAccounts {
         await this.signOut();
         return null;
       }
-      if (!this._internal.isUserEmailVerified(data) && !lazy.oauthEnabled) {
-        // If the email is not verified, start polling for verification,
-        // but return null right away.  We don't want to return a promise
-        // that might not be fulfilled for a long time.
-        this._internal.startVerifiedCheck(data);
-      }
+      delete data.scopedKeys;
 
       let profileData = null;
       if (data.sessionToken) {
@@ -635,18 +675,19 @@ export class FxAccounts {
     });
   }
 
-  /** Returns a promise that resolves to true if we can currently connect (ie,
-   *  sign in, or re-connect after a password change) to a Firefox Account.
-   *  If this returns false, the caller can assume that some UI was shown
-   *  which tells the user why we could not connect.
+  /**
+   * Returns a promise that resolves to true if we can currently connect (ie,
+   * sign in, or re-connect after a password change) to a Firefox Account.
+   * If this returns false, the caller can assume that some UI was shown
+   * which tells the user why we could not connect.
    *
-   *  Currently, the primary password being locked is the only reason why
-   *  this returns false, and in this scenario, the primary password unlock
-   *  dialog will have been shown.
+   * Currently, the primary password being locked is the only reason why
+   * this returns false, and in this scenario, the primary password unlock
+   * dialog will have been shown.
    *
-   *  This currently doesn't need to return a promise, but does so that
-   *  future enhancements, such as other explanatory UI which requires
-   *  async can work without modification of the call-sites.
+   * This currently doesn't need to return a promise, but does so that
+   * future enhancements, such as other explanatory UI which requires
+   * async can work without modification of the call-sites.
    */
   static canConnectAccount() {
     return Promise.resolve(!lazy.mpLocked() || lazy.ensureMPUnlocked());
@@ -678,8 +719,7 @@ export class FxAccounts {
    *
    */
   resendVerificationEmail() {
-    return this._withSessionToken((token, currentState) => {
-      this._internal.startPollEmailStatus(currentState, token, "start");
+    return this._withSessionToken((token, _currentState) => {
       return this._internal.fxAccountsClient.resendVerificationEmail(token);
     }, false);
   }
@@ -697,13 +737,6 @@ export class FxAccounts {
   updateDeviceRegistration() {
     return this._withCurrentAccountState(_ => {
       return this._internal.updateDeviceRegistration();
-    });
-  }
-
-  // we should try and kill this too.
-  whenVerified(data) {
-    return this._withCurrentAccountState(_ => {
-      return this._internal.whenVerified(data);
     });
   }
 
@@ -747,9 +780,8 @@ FxAccountsInternal.prototype = {
   // to help with our mocking story.
   initialize() {
     ChromeUtils.defineLazyGetter(this, "fxaPushService", function () {
-      return Cc["@mozilla.org/fxaccounts/push;1"].getService(
-        Ci.nsISupports
-      ).wrappedJSObject;
+      return Cc["@mozilla.org/fxaccounts/push;1"].getService(Ci.nsISupports)
+        .wrappedJSObject;
     });
 
     this.keys = new lazy.FxAccountsKeys(this);
@@ -770,7 +802,11 @@ FxAccountsInternal.prototype = {
       ];
     }
 
-    this.currentTimer = null;
+    // This holds the list of attached clients from the /account/attached_clients endpoint
+    // Most calls to that endpoint generally don't need fresh data so we try to prevent
+    // as many network requests as possible
+    this._cachedAttachedClients = null;
+    this._cachedAttachedClientsTimestamp = 0;
     // This object holds details about, and storage for, the current user. It
     // is replaced when a different user signs in. Instead of using it directly,
     // you should try and use `withCurrentAccountState`.
@@ -796,7 +832,7 @@ FxAccountsInternal.prototype = {
         throw this._error(ERROR_NO_ACCOUNT);
       }
 
-      if (!this.isUserEmailVerified(data)) {
+      if (!data.verified) {
         // Signed-in user has not verified email
         throw this._error(ERROR_UNVERIFIED_ACCOUNT);
       }
@@ -812,7 +848,7 @@ FxAccountsInternal.prototype = {
       throw this._error(ERROR_NO_ACCOUNT);
     }
 
-    if (mustBeVerified && !this.isUserEmailVerified(data)) {
+    if (mustBeVerified && !data.verified) {
       // Signed-in user has not verified email
       throw this._error(ERROR_UNVERIFIED_ACCOUNT);
     }
@@ -829,6 +865,11 @@ FxAccountsInternal.prototype = {
     } catch (err) {
       return this._handleTokenError(err);
     }
+  },
+
+  resetFxAccountsClient() {
+    this._fxAccountsClient = null;
+    this._oauth = null;
   },
 
   get fxAccountsClient() {
@@ -856,7 +897,15 @@ FxAccountsInternal.prototype = {
   _commands: null,
   get commands() {
     if (!this._commands) {
-      this._commands = new lazy.FxAccountsCommands(this);
+      // FxAccountsCommands registers a shutdown blocker and must not be
+      // instantiated if shutdown already started.
+      if (
+        !Services.startup.isInOrBeyondShutdownPhase(
+          Ci.nsIAppStartup.SHUTDOWN_PHASE_APPSHUTDOWNCONFIRMED
+        )
+      ) {
+        this._commands = new lazy.FxAccountsCommands(this);
+      }
     }
     return this._commands;
   },
@@ -1011,10 +1060,6 @@ FxAccountsInternal.prototype = {
     // really something we should commit to? Why not let the write happen in
     // the background? Already does for updateAccountData ;)
     await currentAccountState.promiseInitialized;
-    // Starting point for polling if new user
-    if (!this.isUserEmailVerified(credentials) && !lazy.oauthEnabled) {
-      this.startVerifiedCheck(credentials);
-    }
     await this.notifyObservers(ONLOGIN_NOTIFICATION);
     await this.updateDeviceRegistration();
     return currentAccountState.resolve();
@@ -1049,11 +1094,6 @@ FxAccountsInternal.prototype = {
    * Reset state such that any previous flow is canceled.
    */
   abortExistingFlow() {
-    if (this.currentTimer) {
-      log.debug("Polling aborted; Another user signing in");
-      clearTimeout(this.currentTimer);
-      this.currentTimer = 0;
-    }
     if (this._profile) {
       this._profile.tearDown();
       this._profile = null;
@@ -1069,25 +1109,12 @@ FxAccountsInternal.prototype = {
     return this.currentAccountState.abort();
   },
 
-  async checkVerificationStatus() {
-    log.trace("checkVerificationStatus");
-    let state = this.currentAccountState;
-    let data = await state.getUserAccountData();
-    if (!data) {
-      log.trace("checkVerificationStatus - no user data");
-      return null;
-    }
-
-    // Always check the verification status, even if the local state indicates
-    // we're already verified. If the user changed their password, the check
-    // will fail, and we'll enter the reauth state.
-    log.trace("checkVerificationStatus - forcing verification status check");
-    return this.startPollEmailStatus(state, data.sessionToken, "push");
-  },
-
-  /** Destroyes an OAuth Token by sending a request to the FxA server
-   * @param { Object } tokenData: The token's data, with `tokenData.token` being the token itself
-   **/
+  /**
+   * Destroyes an OAuth Token by sending a request to the FxA server
+   *
+   * @param {object} tokenData
+   *  The token's data, with `tokenData.token` being the token itself
+   */
   destroyOAuthToken(tokenData) {
     return this.fxAccountsClient.oauthDestroy(OAUTH_CLIENT_ID, tokenData.token);
   },
@@ -1104,6 +1131,19 @@ FxAccountsInternal.prototype = {
     return Promise.all(promises);
   },
 
+  // We need to do a one-off migration of a preference to protect against
+  // accidentally merging sync data.
+  // We replace a previously hashed email with a hashed uid.
+  _migratePreviousAccountNameHashPref(uid) {
+    if (Services.prefs.prefHasUserValue(PREF_LAST_FXA_USER_EMAIL)) {
+      Services.prefs.setStringPref(
+        PREF_LAST_FXA_USER_UID,
+        lazy.CryptoUtils.sha256Base64(uid)
+      );
+      Services.prefs.clearUserPref(PREF_LAST_FXA_USER_EMAIL);
+    }
+  },
+
   async signOut(localOnly) {
     let sessionToken;
     let tokensToRevoke;
@@ -1112,6 +1152,7 @@ FxAccountsInternal.prototype = {
     if (data) {
       sessionToken = data.sessionToken;
       tokensToRevoke = data.oauthTokens;
+      this._migratePreviousAccountNameHashPref(data.uid);
     }
     await this.notifyObservers(ON_PRELOGOUT_NOTIFICATION);
     await this._signOutLocal();
@@ -1171,61 +1212,6 @@ FxAccountsInternal.prototype = {
     return this.currentAccountState.getUserAccountData(fieldNames);
   },
 
-  isUserEmailVerified: function isUserEmailVerified(data) {
-    return !!(data && data.verified);
-  },
-
-  /**
-   * Setup for and if necessary do email verification polling.
-   */
-  loadAndPoll() {
-    let currentState = this.currentAccountState;
-    return currentState.getUserAccountData().then(data => {
-      if (data) {
-        if (!this.isUserEmailVerified(data)) {
-          this.startPollEmailStatus(
-            currentState,
-            data.sessionToken,
-            "browser-startup"
-          );
-        }
-      }
-      return data;
-    });
-  },
-
-  startVerifiedCheck(data) {
-    log.debug("startVerifiedCheck", data && data.verified);
-    if (logPII()) {
-      log.debug("startVerifiedCheck with user data", data);
-    }
-
-    // Get us to the verified state. This returns a promise that will fire when
-    // verification is complete.
-
-    // The callers of startVerifiedCheck never consume a returned promise (ie,
-    // this is simply kicking off a background fetch) so we must add a rejection
-    // handler to avoid runtime warnings about the rejection not being handled.
-    this.whenVerified(data).catch(err =>
-      log.info("startVerifiedCheck promise was rejected: " + err)
-    );
-  },
-
-  whenVerified(data) {
-    let currentState = this.currentAccountState;
-    if (data.verified) {
-      log.debug("already verified");
-      return currentState.resolve(data);
-    }
-    if (!currentState.whenVerifiedDeferred) {
-      log.debug("whenVerified promise starts polling for verified email");
-      this.startPollEmailStatus(currentState, data.sessionToken, "start");
-    }
-    return currentState.whenVerifiedDeferred.promise.then(result =>
-      currentState.resolve(result)
-    );
-  },
-
   async notifyObservers(topic, data) {
     for (let f of this.observerPreloads) {
       try {
@@ -1236,130 +1222,6 @@ FxAccountsInternal.prototype = {
     Services.obs.notifyObservers(null, topic, data);
   },
 
-  startPollEmailStatus(currentState, sessionToken, why) {
-    log.debug("entering startPollEmailStatus: " + why);
-    // If we were already polling, stop and start again.  This could happen
-    // if the user requested the verification email to be resent while we
-    // were already polling for receipt of an earlier email.
-    if (this.currentTimer) {
-      log.debug(
-        "startPollEmailStatus starting while existing timer is running"
-      );
-      clearTimeout(this.currentTimer);
-      this.currentTimer = null;
-    }
-
-    this.pollStartDate = Date.now();
-    if (!currentState.whenVerifiedDeferred) {
-      currentState.whenVerifiedDeferred = Promise.withResolvers();
-      // This deferred might not end up with any handlers (eg, if sync
-      // is yet to start up.)  This might cause "A promise chain failed to
-      // handle a rejection" messages, so add an error handler directly
-      // on the promise to log the error.
-      currentState.whenVerifiedDeferred.promise.then(
-        () => {
-          log.info("the user became verified");
-          // We are now ready for business. This should only be invoked once
-          // per setSignedInUser(), regardless of whether we've rebooted since
-          // setSignedInUser() was called.
-          this.notifyObservers(ONVERIFIED_NOTIFICATION);
-        },
-        err => {
-          log.info("the wait for user verification was stopped: " + err);
-        }
-      );
-    }
-    return this.pollEmailStatus(currentState, sessionToken, why);
-  },
-
-  // We return a promise for testing only. Other callers can ignore this,
-  // since verification polling continues in the background.
-  async pollEmailStatus(currentState, sessionToken, why) {
-    log.debug("entering pollEmailStatus: " + why);
-    let nextPollMs;
-    try {
-      const response = await this.checkEmailStatus(sessionToken, {
-        reason: why,
-      });
-      log.debug("checkEmailStatus -> " + JSON.stringify(response));
-      if (response && response.verified) {
-        await this.onPollEmailSuccess(currentState);
-        return;
-      }
-    } catch (error) {
-      if (error && error.code && error.code == 401) {
-        let error = new Error("Verification status check failed");
-        this._rejectWhenVerified(currentState, error);
-        return;
-      }
-      if (error && error.retryAfter) {
-        // If the server told us to back off, back off the requested amount.
-        nextPollMs = (error.retryAfter + 3) * 1000;
-        log.warn(
-          `the server rejected our email status check and told us to try again in ${nextPollMs}ms`
-        );
-      } else {
-        log.error(`checkEmailStatus failed to poll`, error);
-      }
-    }
-    if (why == "push") {
-      return;
-    }
-    let pollDuration = Date.now() - this.pollStartDate;
-    // Polling session expired.
-    if (pollDuration >= this.POLL_SESSION) {
-      if (currentState.whenVerifiedDeferred) {
-        let error = new Error("User email verification timed out.");
-        this._rejectWhenVerified(currentState, error);
-      }
-      log.debug("polling session exceeded, giving up");
-      return;
-    }
-    // Poll email status again after a short delay.
-    if (nextPollMs === undefined) {
-      let currentMinute = Math.ceil(pollDuration / 60000);
-      nextPollMs =
-        why == "start" &&
-        currentMinute < this.VERIFICATION_POLL_START_SLOWDOWN_THRESHOLD
-          ? this.VERIFICATION_POLL_TIMEOUT_INITIAL
-          : this.VERIFICATION_POLL_TIMEOUT_SUBSEQUENT;
-    }
-    this._scheduleNextPollEmailStatus(
-      currentState,
-      sessionToken,
-      nextPollMs,
-      why
-    );
-  },
-
-  // Easy-to-mock testable method
-  _scheduleNextPollEmailStatus(currentState, sessionToken, nextPollMs, why) {
-    log.debug("polling with timeout = " + nextPollMs);
-    this.currentTimer = setTimeout(() => {
-      this.pollEmailStatus(currentState, sessionToken, why);
-    }, nextPollMs);
-  },
-
-  async onPollEmailSuccess(currentState) {
-    try {
-      await currentState.updateUserAccountData({ verified: true });
-      const accountData = await currentState.getUserAccountData();
-      this._setLastUserPref(accountData.email);
-      // Now that the user is verified, we can proceed to fetch keys
-      if (currentState.whenVerifiedDeferred) {
-        currentState.whenVerifiedDeferred.resolve(accountData);
-        delete currentState.whenVerifiedDeferred;
-      }
-    } catch (e) {
-      log.error(e);
-    }
-  },
-
-  _rejectWhenVerified(currentState, error) {
-    currentState.whenVerifiedDeferred.reject(error);
-    delete currentState.whenVerifiedDeferred;
-  },
-
   /**
    * Does the actual fetch of an oauth token for getOAuthToken()
    * using the account session token.
@@ -1367,9 +1229,10 @@ FxAccountsInternal.prototype = {
    * It's split out into a separate method so that we can easily
    * stash in-flight calls in a cache.
    *
-   * @param {String} scopeString
-   * @param {Number} ttl
-   * @returns {Promise<string>}
+   * @param {string} sessionToken
+   * @param {string} scopeString
+   * @param {number} ttl
+   * @returns {Promise<{token: string, expiresAt: number|null}>}
    * @private
    */
   async _doTokenFetchWithSessionToken(sessionToken, scopeString, ttl) {
@@ -1379,7 +1242,12 @@ FxAccountsInternal.prototype = {
       scopeString,
       ttl
     );
-    return result.access_token;
+    return {
+      token: result.access_token,
+      expiresAt: result.expires_in
+        ? Math.floor(Date.now() / 1000) + result.expires_in
+        : null,
+    };
   },
 
   getOAuthToken(options = {}) {
@@ -1425,7 +1293,7 @@ FxAccountsInternal.prototype = {
         scopeString,
         options.ttl
       )
-        .then(token => {
+        .then(tokenInfo => {
           // As a sanity check, ensure something else hasn't raced getting a token
           // of the same scope. If something has we just make noise rather than
           // taking any concrete action because it should never actually happen.
@@ -1433,11 +1301,14 @@ FxAccountsInternal.prototype = {
             log.error(`detected a race for oauth token with scope ${scope}`);
           }
           // If we got one, cache it.
-          if (token) {
-            let entry = { token };
+          if (tokenInfo.token) {
+            let entry = { token: tokenInfo.token };
+            if (tokenInfo.expiresAt != null) {
+              entry.expiresAt = tokenInfo.expiresAt;
+            }
             currentState.setCachedToken(scope, entry);
           }
-          return token;
+          return tokenInfo.token;
         })
         .finally(() => {
           // Remove ourself from the in-flight map. There's no need to check the
@@ -1480,9 +1351,9 @@ FxAccountsInternal.prototype = {
     });
   },
 
-  /** Sets the user to be verified in the account state,
-   * This prevents any polling for the user's verification state from the FxA server
-   **/
+  /**
+   * Sets the user to be verified in the account state,
+   */
   async setUserVerified() {
     await this.withCurrentAccountState(async currentState => {
       const userData = await currentState.getUserAccountData();
@@ -1491,19 +1362,6 @@ FxAccountsInternal.prototype = {
       }
     });
     await this.notifyObservers(ONVERIFIED_NOTIFICATION);
-  },
-
-  async _getVerifiedAccountOrReject() {
-    let data = await this.currentAccountState.getUserAccountData();
-    if (!data) {
-      // No signed-in user
-      throw this._error(ERROR_NO_ACCOUNT);
-    }
-    if (!this.isUserEmailVerified(data)) {
-      // Signed-in user has not verified email
-      throw this._error(ERROR_UNVERIFIED_ACCOUNT);
-    }
-    return data;
   },
 
   // _handle* methods used by push, used when the account/device status is
@@ -1546,15 +1404,7 @@ FxAccountsInternal.prototype = {
     await this.notifyObservers(ON_DEVICE_DISCONNECTED_NOTIFICATION, data);
   },
 
-  _setLastUserPref(newEmail) {
-    Services.prefs.setStringPref(
-      PREF_LAST_FXA_USER,
-      CryptoUtils.sha256Base64(newEmail)
-    );
-  },
-
   async _handleEmailUpdated(newEmail) {
-    this._setLastUserPref(newEmail);
     await this.currentAccountState.updateUserAccountData({ email: newEmail });
   },
 
@@ -1589,10 +1439,19 @@ FxAccountsInternal.prototype = {
   },
 
   _error(aError, aDetails) {
-    log.error("FxA rejecting with error ${aError}, details: ${aDetails}", {
-      aError,
-      aDetails,
-    });
+    // Expected on profiles with no signed-in user; demote to debug to avoid noise.
+    const isExpected =
+      aError === ERROR_NO_ACCOUNT || aError === ERROR_UNVERIFIED_ACCOUNT;
+    const logFn = isExpected ? log.debug : log.error;
+    if (aDetails) {
+      logFn.call(
+        log,
+        "FxA rejecting with error ${aError}, details: ${aDetails}",
+        { aError, aDetails }
+      );
+    } else {
+      logFn.call(log, "FxA rejecting with error ${aError}", { aError });
+    }
     let reason = new Error(aError);
     if (aDetails) {
       reason.details = aDetails;
@@ -1686,12 +1545,5 @@ export function getFxAccountsSingleton() {
   }
 
   fxAccountsSingleton = new FxAccounts();
-
-  // XXX Bug 947061 - We need a strategy for resuming email verification after
-  // browser restart
-  fxAccountsSingleton._internal.loadAndPoll();
-
   return fxAccountsSingleton;
 }
-
-// `AccountState` is exported for tests.

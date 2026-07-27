@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_DateTimeInputTypes_h__
-#define mozilla_dom_DateTimeInputTypes_h__
+#ifndef mozilla_dom_DateTimeInputTypes_h_
+#define mozilla_dom_DateTimeInputTypes_h_
 
 #include "mozilla/dom/InputType.h"
 
@@ -62,8 +60,9 @@ class DateInputType : public DateTimeInputTypeBase {
 
   nsresult GetBadInputMessage(nsAString& aMessage) override;
 
-  StringToNumberResult ConvertStringToNumber(const nsAString&) const override;
-  bool ConvertNumberToString(Decimal aValue,
+  StringToNumberResult ConvertStringToNumber(const nsAString&,
+                                             Localized) const override;
+  bool ConvertNumberToString(Decimal, Localized,
                              nsAString& aResultString) const override;
 
  private:
@@ -80,9 +79,9 @@ class TimeInputType : public DateTimeInputTypeBase {
 
   nsresult GetBadInputMessage(nsAString& aMessage) override;
 
-  StringToNumberResult ConvertStringToNumber(const nsAString&) const override;
-  bool ConvertNumberToString(Decimal aValue,
-                             nsAString& aResultString) const override;
+  StringToNumberResult ConvertStringToNumber(const nsAString&,
+                                             Localized) const override;
+  bool ConvertNumberToString(Decimal, Localized, nsAString&) const override;
   bool IsRangeOverflow() const override;
   bool IsRangeUnderflow() const override;
   nsresult GetRangeOverflowMessage(nsAString& aMessage) override;
@@ -106,9 +105,9 @@ class WeekInputType : public DateTimeInputTypeBase {
   }
 
   nsresult GetBadInputMessage(nsAString& aMessage) override;
-  StringToNumberResult ConvertStringToNumber(const nsAString&) const override;
-  bool ConvertNumberToString(Decimal aValue,
-                             nsAString& aResultString) const override;
+  StringToNumberResult ConvertStringToNumber(const nsAString&,
+                                             Localized) const override;
+  bool ConvertNumberToString(Decimal, Localized, nsAString&) const override;
 
  private:
   explicit WeekInputType(HTMLInputElement* aInputElement)
@@ -123,9 +122,9 @@ class MonthInputType : public DateTimeInputTypeBase {
   }
 
   nsresult GetBadInputMessage(nsAString& aMessage) override;
-  StringToNumberResult ConvertStringToNumber(const nsAString&) const override;
-  bool ConvertNumberToString(Decimal aValue,
-                             nsAString& aResultString) const override;
+  StringToNumberResult ConvertStringToNumber(const nsAString&,
+                                             Localized) const override;
+  bool ConvertNumberToString(Decimal, Localized, nsAString&) const override;
 
  private:
   explicit MonthInputType(HTMLInputElement* aInputElement)
@@ -140,9 +139,9 @@ class DateTimeLocalInputType : public DateTimeInputTypeBase {
   }
 
   nsresult GetBadInputMessage(nsAString& aMessage) override;
-  StringToNumberResult ConvertStringToNumber(const nsAString&) const override;
-  bool ConvertNumberToString(Decimal aValue,
-                             nsAString& aResultString) const override;
+  StringToNumberResult ConvertStringToNumber(const nsAString&,
+                                             Localized) const override;
+  bool ConvertNumberToString(Decimal, Localized, nsAString&) const override;
 
  private:
   explicit DateTimeLocalInputType(HTMLInputElement* aInputElement)
@@ -151,4 +150,4 @@ class DateTimeLocalInputType : public DateTimeInputTypeBase {
 
 }  // namespace mozilla::dom
 
-#endif /* mozilla_dom_DateTimeInputTypes_h__ */
+#endif /* mozilla_dom_DateTimeInputTypes_h_ */

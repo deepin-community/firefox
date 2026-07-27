@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = 끝으로 이동
     .accesskey = E
 fxviewtabrow-move-tab-window = 새 창으로 이동
     .accesskey = W
+fxviewtabrow-send-to-device = 기기로 보내기
+    .accesskey = n
+fxviewtabrow-send-to-mobile = 모바일로 보내기
+    .accesskey = n
 fxviewtabrow-send-tab = 탭을 기기로 보내기
     .accesskey = n
 fxviewtabrow-pin-tab = 탭 고정
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = 탭 음소거 해제
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } 옵션
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = 음소거 { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = 음소거 해제 { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = 탭 음소거
 fxviewtabrow-unmute-tab-button-no-context =
     .title = 탭 음소거 해제
+fxviewtabrow-send-to-mobile-connect-device = 탭을 보내려면 기기를 연결하세요
+fxviewtabrow-send-to-mobile-device-missing2 = 사용자의 기기가 없나요?
+fxviewtabrow-send-to-mobile-not-verified = 계정 확인되지 않음
+fxviewtabrow-send-to-mobile-verify-account = 계정 확인
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = 탭을 보내려면 로그인하세요
+fxviewtabrow-send-to-mobile-turn-on-sync = 탭을 보내려면 동기화를 켜세요

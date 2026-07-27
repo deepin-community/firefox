@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2023, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -41,7 +41,7 @@ DECLARE_ALIGNED(16, static const uint8_t, kSlidingWindowMask[]) = {
 
 // clang-format on
 
-static INLINE void get_abs_diff(const uint8_t *frame1, const uint32_t stride1,
+static inline void get_abs_diff(const uint8_t *frame1, const uint32_t stride1,
                                 const uint8_t *frame2, const uint32_t stride2,
                                 const uint32_t block_width,
                                 const uint32_t block_height,
@@ -71,10 +71,10 @@ static void apply_temporal_filter(
     const uint32_t *luma_sse_sum, const double inv_num_ref_pixels,
     const double decay_factor, const double inv_factor,
     const double weight_factor, const double *d_factor, int tf_wgt_calc_lvl) {
-  assert(((block_width == 16) || (block_width == 32)) &&
-         ((block_height == 16) || (block_height == 32)));
+  assert(((block_width == 64) || (block_width == 32)) &&
+         ((block_height == 64) || (block_height == 32)));
 
-  uint32_t acc_5x5_neon[BH][BW];
+  uint32_t diff_sse[BH][BW];
   const uint8x16x2_t vmask = vld1q_u8_x2(kSlidingWindowMask);
   const uint8x16_t pad_tbl0 = vld1q_u8(kLoadPad[0]);
   const uint8x16_t pad_tbl1 = vld1q_u8(kLoadPad[1]);
@@ -109,23 +109,32 @@ static void apply_temporal_filter(
     vsrc[1][0] = vsrc[2][0];
     vsrc[1][1] = vsrc[2][1];
 
+    uint32x4_t sum_01 = vdupq_n_u32(0);
+    uint32x4_t sum_23 = vdupq_n_u32(0);
+
+    sum_01 = vdotq_u32(sum_01, vsrc[0][0], vsrc[0][0]);
+    sum_01 = vdotq_u32(sum_01, vsrc[1][0], vsrc[1][0]);
+    sum_01 = vdotq_u32(sum_01, vsrc[2][0], vsrc[2][0]);
+    sum_01 = vdotq_u32(sum_01, vsrc[3][0], vsrc[3][0]);
+    sum_01 = vdotq_u32(sum_01, vsrc[4][0], vsrc[4][0]);
+
+    sum_23 = vdotq_u32(sum_23, vsrc[0][1], vsrc[0][1]);
+    sum_23 = vdotq_u32(sum_23, vsrc[1][1], vsrc[1][1]);
+    sum_23 = vdotq_u32(sum_23, vsrc[2][1], vsrc[2][1]);
+    sum_23 = vdotq_u32(sum_23, vsrc[3][1], vsrc[3][1]);
+    sum_23 = vdotq_u32(sum_23, vsrc[4][1], vsrc[4][1]);
+
     for (unsigned int row = 0; row < block_height; row++) {
-      uint32x4_t sum_01 = vdupq_n_u32(0);
-      uint32x4_t sum_23 = vdupq_n_u32(0);
+      uint32x4_t sum_luma = vld1q_u32(luma_sse_sum + row * BW + col);
+      uint32x4_t sum_0123 = vpaddq_u32(sum_01, sum_23);
 
-      sum_01 = vdotq_u32(sum_01, vsrc[0][0], vsrc[0][0]);
-      sum_01 = vdotq_u32(sum_01, vsrc[1][0], vsrc[1][0]);
-      sum_01 = vdotq_u32(sum_01, vsrc[2][0], vsrc[2][0]);
-      sum_01 = vdotq_u32(sum_01, vsrc[3][0], vsrc[3][0]);
-      sum_01 = vdotq_u32(sum_01, vsrc[4][0], vsrc[4][0]);
+      vst1q_u32(&diff_sse[row][col], vaddq_u32(sum_0123, sum_luma));
 
-      sum_23 = vdotq_u32(sum_23, vsrc[0][1], vsrc[0][1]);
-      sum_23 = vdotq_u32(sum_23, vsrc[1][1], vsrc[1][1]);
-      sum_23 = vdotq_u32(sum_23, vsrc[2][1], vsrc[2][1]);
-      sum_23 = vdotq_u32(sum_23, vsrc[3][1], vsrc[3][1]);
-      sum_23 = vdotq_u32(sum_23, vsrc[4][1], vsrc[4][1]);
+      uint32x4_t sub_01 = vdotq_u32(vdupq_n_u32(0), vsrc[0][0], vsrc[0][0]);
+      uint32x4_t sub_23 = vdotq_u32(vdupq_n_u32(0), vsrc[0][1], vsrc[0][1]);
 
-      vst1q_u32(&acc_5x5_neon[row][col], vpaddq_u32(sum_01, sum_23));
+      sum_01 = vsubq_u32(sum_01, sub_01);
+      sum_23 = vsubq_u32(sum_23, sub_23);
 
       // Push all rows in the sliding window up one.
       for (int i = 0; i < 4; i++) {
@@ -153,19 +162,25 @@ static void apply_temporal_filter(
         vsrc[4][0] = vsrc[3][0];
         vsrc[4][1] = vsrc[3][1];
       }
+
+      sum_01 = vdotq_u32(sum_01, vsrc[4][0], vsrc[4][0]);
+      sum_23 = vdotq_u32(sum_23, vsrc[4][1], vsrc[4][1]);
     }
   }
 
   // Perform filtering.
   if (tf_wgt_calc_lvl == 0) {
     for (unsigned int i = 0, k = 0; i < block_height; i++) {
+      const int y32 = i / (block_height / 2);
+      const int y16 = (i % (block_height / 2)) / (block_height / 4);
+
       for (unsigned int j = 0; j < block_width; j++, k++) {
         const int pixel_value = frame[i * stride + j];
-        const uint32_t diff_sse = acc_5x5_neon[i][j] + luma_sse_sum[i * BW + j];
 
-        const double window_error = diff_sse * inv_num_ref_pixels;
-        const int subblock_idx =
-            (i >= block_height / 2) * 2 + (j >= block_width / 2);
+        const double window_error = diff_sse[i][j] * inv_num_ref_pixels;
+        const int x32 = j / (block_width / 2);
+        const int x16 = (j % (block_width / 2)) / (block_width / 4);
+        const int subblock_idx = (y32 * 2 + x32) * 4 + (y16 * 2 + x16);
         const double block_error = (double)subblock_mses[subblock_idx];
         const double combined_error =
             weight_factor * window_error + block_error * inv_factor;
@@ -180,13 +195,16 @@ static void apply_temporal_filter(
     }
   } else {
     for (unsigned int i = 0, k = 0; i < block_height; i++) {
+      const int y32 = i / (block_height / 2);
+      const int y16 = (i % (block_height / 2)) / (block_height / 4);
+
       for (unsigned int j = 0; j < block_width; j++, k++) {
         const int pixel_value = frame[i * stride + j];
-        const uint32_t diff_sse = acc_5x5_neon[i][j] + luma_sse_sum[i * BW + j];
 
-        const double window_error = diff_sse * inv_num_ref_pixels;
-        const int subblock_idx =
-            (i >= block_height / 2) * 2 + (j >= block_width / 2);
+        const double window_error = diff_sse[i][j] * inv_num_ref_pixels;
+        const int x32 = j / (block_width / 2);
+        const int x16 = (j % (block_width / 2)) / (block_width / 4);
+        const int subblock_idx = (y32 * 2 + x32) * 4 + (y16 * 2 + x16);
         const double block_error = (double)subblock_mses[subblock_idx];
         const double combined_error =
             weight_factor * window_error + block_error * inv_factor;
@@ -212,7 +230,7 @@ void av1_apply_temporal_filter_neon_dotprod(
     int tf_wgt_calc_lvl, const uint8_t *pred, uint32_t *accum,
     uint16_t *count) {
   const int is_high_bitdepth = frame_to_filter->flags & YV12_FLAG_HIGHBITDEPTH;
-  assert(block_size == BLOCK_32X32 && "Only support 32x32 block with Neon!");
+  assert(block_size == BLOCK_64X64 && "Only support 64x64 block with Neon!");
   assert(TF_WINDOW_LENGTH == 5 && "Only support window length 5 with Neon!");
   assert(!is_high_bitdepth && "Only support low bit-depth with Neon!");
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
@@ -243,16 +261,16 @@ void av1_apply_temporal_filter_neon_dotprod(
   // Smaller strength -> smaller filtering weight.
   double s_decay = pow((double)filter_strength / TF_STRENGTH_THRESHOLD, 2);
   s_decay = CLIP(s_decay, 1e-5, 1);
-  double d_factor[4] = { 0 };
+  double d_factor[NUM_16X16] = { 0 };
   uint8_t frame_abs_diff[SSE_STRIDE * BH] = { 0 };
   uint32_t luma_sse_sum[BW * BH] = { 0 };
 
-  for (int subblock_idx = 0; subblock_idx < 4; subblock_idx++) {
+  double distance_threshold = min_frame_size * TF_SEARCH_DISTANCE_THRESHOLD;
+  distance_threshold = AOMMAX(distance_threshold, 1);
+  for (int subblock_idx = 0; subblock_idx < NUM_16X16; subblock_idx++) {
     // Larger motion vector -> smaller filtering weight.
     const MV mv = subblock_mvs[subblock_idx];
     const double distance = sqrt(pow(mv.row, 2) + pow(mv.col, 2));
-    double distance_threshold = min_frame_size * TF_SEARCH_DISTANCE_THRESHOLD;
-    distance_threshold = AOMMAX(distance_threshold, 1);
     d_factor[subblock_idx] = distance / distance_threshold;
     d_factor[subblock_idx] = AOMMAX(d_factor[subblock_idx], 1);
   }
@@ -284,15 +302,37 @@ void av1_apply_temporal_filter_neon_dotprod(
     // will be more accurate. The luma sse sum is reused in both chroma
     // planes.
     if (plane == AOM_PLANE_U) {
-      for (unsigned int i = 0; i < plane_h; i++) {
-        for (unsigned int j = 0; j < plane_w; j++) {
-          for (int ii = 0; ii < (1 << ss_y_shift); ++ii) {
-            for (int jj = 0; jj < (1 << ss_x_shift); ++jj) {
-              const int yy = (i << ss_y_shift) + ii;  // Y-coord on Y-plane.
-              const int xx = (j << ss_x_shift) + jj;  // X-coord on Y-plane.
-              luma_sse_sum[i * BW + j] +=
-                  (frame_abs_diff[yy * SSE_STRIDE + xx + 2] *
-                   frame_abs_diff[yy * SSE_STRIDE + xx + 2]);
+      if (ss_x_shift == 1 && ss_y_shift == 1) {
+        for (unsigned int i = 0; i < plane_h; ++i) {
+          const uint8_t *src = &frame_abs_diff[2 * i * SSE_STRIDE + 2];
+          uint32_t *dst = luma_sse_sum + i * BW;
+
+          for (unsigned int j = 0; j < plane_w; j += 8) {
+            const uint8x16_t s0 = vld1q_u8(src + j * 2);
+            const uint8x16_t s1 = vld1q_u8(src + SSE_STRIDE + j * 2);
+
+            uint8x16x2_t tmp = vzipq_u8(s0, s1);
+
+            const uint32x4_t sum0 =
+                vdotq_u32(vdupq_n_u32(0), tmp.val[0], tmp.val[0]);
+            const uint32x4_t sum1 =
+                vdotq_u32(vdupq_n_u32(0), tmp.val[1], tmp.val[1]);
+
+            vst1q_u32(dst + j, sum0);
+            vst1q_u32(dst + j + 4, sum1);
+          }
+        }
+      } else {
+        for (unsigned int i = 0; i < plane_h; i++) {
+          for (unsigned int j = 0; j < plane_w; j++) {
+            for (int ii = 0; ii < (1 << ss_y_shift); ++ii) {
+              for (int jj = 0; jj < (1 << ss_x_shift); ++jj) {
+                const int yy = (i << ss_y_shift) + ii;  // Y-coord on Y-plane.
+                const int xx = (j << ss_x_shift) + jj;  // X-coord on Y-plane.
+                luma_sse_sum[i * BW + j] +=
+                    (frame_abs_diff[yy * SSE_STRIDE + xx + 2] *
+                     frame_abs_diff[yy * SSE_STRIDE + xx + 2]);
+              }
             }
           }
         }

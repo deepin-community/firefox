@@ -3,16 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Note: This is currently placed under browser/base/content so that we can
-# get the strings to appear without having our localization community need
-# to go through and translate everything. Once these strings are ready for
-# translation, we'll move it to the locales folder.
-
-
-## These strings are used so that the window has a title in tools that
-## enumerate/look for window titles. It is not normally visible anywhere.
-
-
 ## Used as list items in sharing menu
 
 webrtc-item-camera = ceamara
@@ -27,7 +17,6 @@ webrtc-item-browser = cluaisín
 
 # This is used for the website origin for the sharing menu if no readable origin could be deduced from the URL.
 webrtc-sharing-menuitem-unknown-host = Foinse anaithnid
-
 # Variables:
 #   $origin (String): The website origin (e.g. www.mozilla.org)
 #   $itemList (String): A formatted list of items (e.g. "camera, microphone and tab audio")
@@ -36,11 +25,6 @@ webrtc-sharing-menuitem =
 webrtc-sharing-menu =
     .label = Cluaisíní atá ag comhroinnt gléasanna
     .accesskey = g
-
-## These strings will display as a tooltip on supported systems where we show
-## device sharing state in the OS notification area. We do not use these strings
-## on macOS, as global menu bar items do not have native tooltips.
-
 
 ## Tooltips used by the legacy global sharing indicator
 
@@ -62,14 +46,13 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
     .label = Bainistigh an Chomhroinnt
 webrtc-indicator-menuitem-control-sharing-on =
     .label = Bainistigh an Chomhroinnt ar “{ $streamTitle }”
-
 webrtc-indicator-menuitem-sharing-camera-with =
     .label = Ceamara á chomhroinnt le “{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
@@ -81,7 +64,6 @@ webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
             [many] Ceamara á chomhroinnt le { $tabCount } gcluaisín
            *[other] Ceamara á chomhroinnt le { $tabCount } cluaisín
         }
-
 webrtc-indicator-menuitem-sharing-microphone-with =
     .label = Micreafón á chomhroinnt le “{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
@@ -93,7 +75,6 @@ webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
             [many] Micreafón á chomhroinnt le { $tabCount } gcluaisín
            *[other] Micreafón á chomhroinnt le { $tabCount } cluaisín
         }
-
 webrtc-indicator-menuitem-sharing-application-with =
     .label = Feidhmchlár á chomhroinnt le “{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-application-with-n-tabs =
@@ -105,7 +86,6 @@ webrtc-indicator-menuitem-sharing-application-with-n-tabs =
             [many] Feidhmchlár á chomhroinnt le { $tabCount } gcluaisín
            *[other] Feidhmchlár á chomhroinnt le { $tabCount } cluaisín
         }
-
 webrtc-indicator-menuitem-sharing-screen-with =
     .label = Scáileán á chomhroinnt le “{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
@@ -117,7 +97,6 @@ webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
             [many] Scáileán á chomhroinnt le { $tabCount } gcluaisín
            *[other] Scáileán á chomhroinnt le { $tabCount } cluaisín
         }
-
 webrtc-indicator-menuitem-sharing-window-with =
     .label = Fuinneog á comhroinnt le “{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-window-with-n-tabs =
@@ -129,7 +108,6 @@ webrtc-indicator-menuitem-sharing-window-with-n-tabs =
             [many] Fuinneog á comhroinnt le { $tabCount } gcluaisín
            *[other] Fuinneog á comhroinnt le { $tabCount } cluaisín
         }
-
 webrtc-indicator-menuitem-sharing-browser-with =
     .label = Cluaisín á chomhroinnt le “{ $streamTitle }”
 # This message is shown when the contents of a tab is shared during a WebRTC
@@ -143,15 +121,6 @@ webrtc-indicator-menuitem-sharing-browser-with-n-tabs =
             [many] Cluaisíní á gcomhroinnt le { $tabCount } gcluaisín
            *[other] Cluaisíní á gcomhroinnt le { $tabCount } cluaisín
         }
-
-## Variables:
-##   $origin (String): the website origin (e.g. www.mozilla.org).
-
-
-## Variables:
-##   $origin (String): the first party origin.
-##   $thirdParty (String): the third party origin.
-
 
 ##
 
@@ -181,7 +150,6 @@ webrtc-action-allow =
 ##
 
 webrtc-remember-allow-checkbox = Meabhraigh an cinneadh seo
-
 webrtc-reason-for-no-permanent-allow-screen = Ní féidir le { -brand-short-name } rochtain bhuan ar do scáileán a cheadú.
 webrtc-reason-for-no-permanent-allow-audio = Ní féidir le { -brand-short-name } rochtain bhuan ar d'fhuaim a cheadú gan fiafraí cé acu cluaisín atá le roinnt.
 webrtc-reason-for-no-permanent-allow-insecure = Níl do cheangal leis an suíomh seo slán. Le go gcoinneofar slán thú, tabharfaidh { -brand-short-name } rochtain dó don seisiún seo amháin.

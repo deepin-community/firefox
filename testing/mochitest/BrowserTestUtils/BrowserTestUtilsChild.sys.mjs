@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -192,9 +191,16 @@ export class BrowserTestUtilsChild extends JSWindowActorChild {
         return new Promise(resolve => {
           let filterFn;
           if (aMessage.data.filterFunctionSource) {
-            /* eslint-disable-next-line no-eval */
-            filterFn = eval(
-              `(() => (${aMessage.data.filterFunctionSource}))()`
+            // eslint-disable-next-line mozilla/reject-globalThis-modification
+            let sb = Cu.Sandbox(globalThis, {
+              sandboxPrototype: {
+                __proto__: globalThis,
+                content: this.contentWindow,
+              },
+            });
+            filterFn = Cu.evalInSandbox(
+              `(() => (${aMessage.data.filterFunctionSource}))()`,
+              sb
             );
           }
 
@@ -294,19 +300,20 @@ export class BrowserTestUtilsChild extends JSWindowActorChild {
     }
   }
 
-  synthesizeMouse(data, window) {
-    let target = data.target;
+  #getTarget(data, window) {
+    let { target, targetFn } = data;
     if (typeof target == "string") {
-      target = this.document.querySelector(target);
-    } else if (typeof data.targetFn == "string") {
-      let runnablestr = `
-        (() => {
-          return (${data.targetFn});
-        })();`;
-      /* eslint-disable no-eval */
-      target = eval(runnablestr)();
-      /* eslint-enable no-eval */
+      return this.document.querySelector(target);
     }
+    if (typeof targetFn == "string") {
+      let sb = Cu.Sandbox(window, { sandboxPrototype: window });
+      return Cu.evalInSandbox(`(${targetFn})()`, sb);
+    }
+    return null;
+  }
+
+  synthesizeMouse(data, window) {
+    let target = this.#getTarget(data, window);
 
     let left = data.x;
     let top = data.y;
@@ -315,7 +322,7 @@ export class BrowserTestUtilsChild extends JSWindowActorChild {
         // Account for nodes found in iframes.
         let cur = target;
         do {
-          // eslint-disable-next-line mozilla/use-ownerGlobal
+          // eslint-disable-next-line mozilla/use-documentGlobal
           let frame = cur.ownerDocument.defaultView.frameElement;
           let rect = frame.getBoundingClientRect();
 
@@ -339,6 +346,12 @@ export class BrowserTestUtilsChild extends JSWindowActorChild {
         left += rect.width / 2;
         top += rect.height / 2;
       }
+    } else {
+      dump(
+        `Target not found for selector ${data.target} ` +
+          `and targetFn ${data.targetFn} ` +
+          `in document ${this.document.documentURI}\n`
+      );
     }
 
     let result;
@@ -360,25 +373,14 @@ export class BrowserTestUtilsChild extends JSWindowActorChild {
   }
 
   synthesizeTouch(data, window) {
-    let target = data.target;
-    if (typeof target == "string") {
-      target = this.document.querySelector(target);
-    } else if (typeof data.targetFn == "string") {
-      let runnablestr = `
-        (() => {
-          return (${data.targetFn});
-        })();`;
-      /* eslint-disable no-eval */
-      target = eval(runnablestr)();
-      /* eslint-enable no-eval */
-    }
+    let target = this.#getTarget(data, window);
 
     if (target) {
       if (target.ownerDocument !== this.document) {
         // Account for nodes found in iframes.
         let cur = target;
         do {
-          cur = cur.ownerGlobal.frameElement;
+          cur = cur.documentGlobal.frameElement;
         } while (cur && cur.ownerDocument !== this.document);
 
         // node must be in this document tree.

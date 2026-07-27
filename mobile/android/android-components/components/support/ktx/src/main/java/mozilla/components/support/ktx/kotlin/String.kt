@@ -17,9 +17,12 @@ import android.webkit.URLUtil
 import androidx.annotation.VisibleForTesting
 import androidx.core.net.toUri
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
+import mozilla.components.support.base.utils.MAX_URI_LENGTH
 import mozilla.components.support.ktx.android.net.commonPrefixes
 import mozilla.components.support.ktx.android.net.hostWithoutCommonPrefixes
+import mozilla.components.support.ktx.util.RegistrableDomainSpan
 import mozilla.components.support.ktx.util.URLStringUtils
+import mozilla.components.support.ktx.util.applyRegistrableDomainSpan
 import java.io.File
 import java.net.IDN
 import java.net.MalformedURLException
@@ -45,11 +48,6 @@ private const val MAILTO = "mailto:"
 
 // Number of last digits to be shown when credit card number is obfuscated.
 private const val LAST_VISIBLE_DIGITS_COUNT = 4
-
-// This is used for truncating URLs to prevent extreme cases from
-// slowing down UI rendering e.g. in case of a bookmarklet or a data URI.
-// https://github.com/mozilla-mobile/android-components/issues/5249
-const val MAX_URI_LENGTH = 25000
 
 private const val FILE_PREFIX = "file://"
 private const val MAX_VALID_PORT = 65_535
@@ -139,6 +137,16 @@ fun String.isIpv4OrIpv6(): Boolean {
 fun String.isUrl() = URLStringUtils.isURLLike(this)
 
 /**
+ * Checks if this String is a URL of a content resource.
+ */
+fun String.isContentUrl() = this.startsWith("content://")
+
+/**
+ * Checks if this String is an about URL.
+ */
+fun String.isAboutUrl() = this.startsWith("about:")
+
+/**
  * Checks if this String is a URL of an extension page.
  */
 fun String.isExtensionUrl() = this.startsWith("moz-extension://")
@@ -152,7 +160,7 @@ fun String.isResourceUrl() = this.startsWith("resource://")
  * Appends `http` scheme if no scheme is present in this String.
  */
 fun String.toNormalizedUrl(): String {
-    val s = this.trim()
+    val s = this.sanitizeURL()
     // Most commonly we'll encounter http or https schemes.
     // For these, avoid running through toNormalizedURL as an optimization.
     return if (!s.startsWith("http://") &&
@@ -163,6 +171,18 @@ fun String.toNormalizedUrl(): String {
         s
     }
 }
+
+/**
+ * Add a [RegistrableDomainSpan] marker to [url] for evidentiating the registrable domain.
+ * When the registrable domain could not be identified the [RegistrableDomainSpan] marker won't be applied.
+ *
+ * To get the indexes of the domain use the [getRegistrableDomainIndexRange] method.
+ *
+ * @param url The url to identify the registrable domain in and mark it with [RegistrableDomainSpan].
+ * @param publicSuffixList The [PublicSuffixList] to use to identify the registrable domain.
+ */
+suspend fun String.applyRegistrableDomainSpan(publicSuffixList: PublicSuffixList) =
+    applyRegistrableDomainSpan(this, publicSuffixList)
 
 fun String.isPhone() = re.phoneish.matches(this)
 
@@ -237,6 +257,12 @@ fun String.tryGetHostFromUrl(): String = try {
 }
 
 /**
+ * Parse and extract the host component if this [String] is valid URL. Otherwise returns the trimmed string.
+ * Subdomains (e.g. "www.") are preserved.
+ */
+fun String.extractHostUrl(): String = toNormalizedUrl().toUri().host ?: trim()
+
+/**
  * Returns `true` if this string is a valid URL that contains [searchParameters] in its query parameters.
  */
 fun String.urlContainsQueryParameters(searchParameters: String): Boolean = try {
@@ -292,10 +318,10 @@ fun String.stripDefaultPort(): String {
 }
 
 /**
- * Remove any unwanted character in url like spaces at the beginning or end.
+ * Remove leading and trailing whitespace and eliminate newline characters.
  */
 fun String.sanitizeURL(): String {
-    return this.trim()
+    return this.trim().replace("\n", "")
 }
 
 /**
@@ -324,7 +350,9 @@ private fun String.replaceEscapedCharacters(): String {
 }
 
 /**
- * Replaces continuous spaces with a single space.
+ * Replaces continuous spaces with a single space. Here `\s` matches the ASCII whitespace
+ * characters and `\p{Z}` matches Unicode whitespace characters. For more information, refer to
+ * [Unicode Space Separator Category Docs](https://www.compart.com/en/unicode/category/Zs).
  */
 private fun String.replaceContinuousSpaces(): String {
     val escapedCharactersRegex = "[\\p{Z}\\s]+".toRegex()
@@ -387,12 +415,12 @@ inline fun <C, R> C?.ifNullOrEmpty(defaultValue: () -> R): C where C : CharSeque
     if (isNullOrEmpty()) defaultValue() else this
 
 /**
- * Get the representative part of the URL. Usually this is the eTLD part of the host.
+ * Get the representative part of the URL. Usually this is the host with common prefixes (like "www.") removed.
  *
  * For example this method will return "facebook.com" for "https://www.facebook.com/foobar".
  */
 fun String.getRepresentativeSnippet(): String {
-    val uri = Uri.parse(this)
+    val uri = this.toUri()
 
     val host = uri.hostWithoutCommonPrefixes
     if (!host.isNullOrEmpty()) {

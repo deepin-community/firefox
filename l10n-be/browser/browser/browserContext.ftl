@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Адкрыць спасылку ў новай картцы
     .accesskey = й
+main-context-menu-open-link-split-view =
+    .label = Адкрыць спасылку ў падзеленым выглядзе
+    .accesskey = ь
 main-context-menu-open-link-container-tab =
     .label = Адкрыць спасылку ў новай картцы кантэйнера
     .accesskey = ы
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Захаваць спасылку ў { -pocket-brand-name }
     .accesskey = ў
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Капіяваць адрас электроннай пошты
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Капіяваць спасылку
     .accesskey = с
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Капіяваць спасылку без элементаў сачэння сайта
-    .accesskey = н
+main-context-menu-preview-link =
+    .label = Папярэдні прагляд спасылкі
+    .accesskey = к
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Капіяваць чыстую спасылку
+    .accesskey = л
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Схаваць элементы кіравання
     .accesskey = к
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Увесь экран
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Паглядзець апісанне
     .accesskey = а
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Пошук выявы з дапамогай { $engine }
+    .accesskey = у
 main-context-menu-video-save-as =
     .label = Захаваць відэа як…
     .accesskey = в
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Даслаць гук поштай…
     .accesskey = Д
+main-context-menu-send-to-device-2 =
+    .label = Даслаць на прыладу
+    .accesskey = р
+main-context-menu-send-to-mobile-2 =
+    .label = Адаслаць на мабільны
+    .accesskey = ь
+main-context-menu-send-to-mobile-sign-in = Увайдзіце, каб дасылаць карткі
+main-context-menu-send-to-mobile-enable-sync2 = Уключыць сінхранізацыю для адпраўкі картак
+main-context-menu-send-to-mobile-connect-phone2 = Падключыце свой тэлефон
+main-context-menu-send-to-mobile-device-missing2 = Не бачыце вашай прылады?
+main-context-menu-send-to-mobile-sign-in-from-link = Увайдзіце, каб даслаць спасылку
+main-context-menu-send-to-mobile-sign-in-from-page = Увайдзіце, каб даслаць старонку
+main-context-menu-send-to-mobile-enable-sync3 = Уключыць сінхранізацыю, каб дасылаць карткі
+main-context-menu-send-to-mobile-enable-sync-from-link = Уключыць сінхранізацыю, каб даслаць спасылку
+main-context-menu-send-to-mobile-enable-sync-from-page = Уключыць сінхранізацыю, каб даслаць старонку
+main-context-menu-send-to-mobile-connect-phone3 = Падключыць прыладу, каб дасылаць карткі
+main-context-menu-send-to-mobile-connect-phone-from-link = Падключыць прыладу, каб даслаць спасылку
+main-context-menu-send-to-mobile-connect-phone-from-page = Падключыць прыладу, каб даслаць старонку
 main-context-menu-save-to-pocket =
     .label = Захаваць старонку ў { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Даслаць старонку на прыладу
     .accesskey = п
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Выкарыстаць захаваны лагін
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Дадаць ключавое слова для гэтага пошуку…
     .accesskey = к
+main-context-menu-add-engine =
+    .label = Дадаць пашукавік
+    .accesskey = а
 main-context-menu-link-send-to-device =
     .label = Даслаць спасылку на прыладу
     .accesskey = п
+main-context-menu-link-send-to-mobile =
+    .label = Адаслаць спасылку на мабільны
+    .accesskey = ь
 main-context-menu-frame =
     .label = Гэтая рамка
     .accesskey = р
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Паказаць пароль
     .accesskey = а
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Новае
+main-context-menu-pdfjs-copy-page =
+    .label = Капіяваць старонку
+main-context-menu-pdfjs-cut-page =
+    .label = Выразаць старонку
+main-context-menu-pdfjs-delete-page =
+    .label = Выдаліць старонку
+main-context-menu-pdfjs-save-page =
+    .label = Захаваць вылучэнне як…

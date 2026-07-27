@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,12 +7,8 @@
 
 #include "2D.h"
 
-#include "mozilla/Vector.h"
-
 #include "Filters.h"
 #include "Logging.h"
-
-#include <vector>
 
 namespace mozilla {
 namespace gfx {
@@ -40,6 +34,9 @@ class SourceSurfaceOffset : public SourceSurface {
   virtual already_AddRefed<SourceSurface> GetUnderlyingSurface() override {
     return mSurface->GetUnderlyingSurface();
   }
+  virtual SurfaceType GetUnderlyingType() const override {
+    return mSurface->GetUnderlyingType();
+  }
 
  private:
   RefPtr<SourceSurface> mSurface;
@@ -51,6 +48,8 @@ class DrawTargetOffset : public DrawTarget {
   DrawTargetOffset();
 
   bool Init(DrawTarget* aDrawTarget, IntPoint aOrigin);
+
+  virtual bool IsValid() const override { return mDrawTarget->IsValid(); }
 
   // We'll pestimistically return true here
   virtual bool IsTiledDrawTarget() const override { return true; }
@@ -121,6 +120,9 @@ class DrawTargetOffset : public DrawTarget {
   virtual void PushClip(const Path* aPath) override;
   virtual void PushClipRect(const Rect& aRect) override;
   virtual void PopClip() override;
+  virtual bool RemoveAllClips() override {
+    return mDrawTarget->RemoveAllClips();
+  }
   virtual void PushLayer(bool aOpaque, Float aOpacity, SourceSurface* aMask,
                          const Matrix& aMaskTransform,
                          const IntRect& aBounds = IntRect(),

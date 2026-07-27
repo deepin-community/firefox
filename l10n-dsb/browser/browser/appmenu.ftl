@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Aktulaizacija njejo móžna – system jo inkompatibelny
 appmenuitem-banner-update-restart =
     .label = Aktualizacija k dispoziciji – něnto znowego startowaś
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Dostańśo nowy { -brand-short-name }. Wobchowajśo wšykne swóje rejtariki.
+appmenu-nova-update-link = Za aktualizaciju znowego startowaś
+appmenu-nova-fxa-sign-in = Pśizjawiś
+appmenu-nova-switch-device-promo =
+    .message = Dostanjośo skóro nowy rěd? Wzejśo { -brand-short-name } ze sobu!
+appmenu-nova-switch-device-link = Kak waše daty migrěrujośo
 appmenuitem-new-tab =
     .label = Nowy rejtarik
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Nowe priwatne wokno
 appmenuitem-history =
     .label = Historija
+appmenuitem-tab-groups =
+    .label = Kupki rejtarikow
 appmenuitem-downloads =
     .label = Ześěgnjenja
 appmenuitem-passwords =
     .label = Gronidła
+appmenuitem-extensions-and-themes =
+    .label = Rozšyrjenja a drastwy
+appmenuitem-extensions =
+    .label = Rozšyrjenja
 appmenuitem-addons-and-themes =
     .label = Dodanki a drastwy
 appmenuitem-print =
@@ -34,7 +48,7 @@ appmenuitem-print =
 appmenuitem-find-in-page =
     .label = Na boku pytaś…
 appmenuitem-translate =
-    .label = Bok pśełožyś…
+    .label = Bok pśełožowaś…
 appmenuitem-zoom =
     .value = Skalěrowaś
 appmenuitem-more-tools =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Synchronizěrowaś a daty składowaś
 appmenu-fxa-signed-in-label = Pśizjawiś
 appmenu-fxa-setup-sync =
     .label = Synchronizaciju zmóžniś…
+appmenu-fxa-setup-sync-new = Zmóžniś
 appmenuitem-save-page =
     .label = Bok składowaś ako…
+appmenuitem-fxa-sync-off-title = Synchronizacija jo znjemóžnjona
+appmenuitem-fxa-sync-off-description = Mějśo pśistup k swójim cytańskim znamjenjam, gronidłam a wěcej a šćitajśo je.
 
 ## What's New panel in App menu.
 
@@ -125,14 +142,14 @@ whatsnew-panel-footer-checkbox =
 ## "Enable Profiler Menu Button".
 
 profiler-popup-button-idle =
-    .label = Profilowak
+    .label = Wugbaśowa analyza
     .tooltiptext = Nagrajśo wugbaśowy profil
 profiler-popup-button-recording =
-    .label = Profilowak
-    .tooltiptext = Profilowak profil registrěrujo
+    .label = Wugbaśowa analyza
+    .tooltiptext = Wugbaśowa analyza profil registrěrujo
 profiler-popup-button-capturing =
-    .label = Profilowak
-    .tooltiptext = Profilowak profil nagrawa
+    .label = Wugbaśowa analyza
+    .tooltiptext = Wugbaśowa analyza profil nagrawa
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Dalšne informacije pokazaś
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Strg+Umsch+2
     }
+profiler-button-dropmarker =
+    .label = Wugbaśowu analyzu wócyniś
+    .tooltiptext = Wugbaśowu analyzu wócyniś
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,16 +209,24 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Pśednastajenje za wuslěźenje zmólkow awdio a wideo w { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Medije
+profiler-popup-presets-ml-description = Pśednastajenje za wuslěźenje zmólkow mašinelnego wuknjenja w { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Mašinelne wuknjenje
 profiler-popup-presets-networking-description = Pśednastajenje za wuslěźenje seśowych zmólkow w { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Seś
-profiler-popup-presets-power-description = Pśednastajenje za wuslěźenje zmóylkow wužywanja energije w { -brand-shorter-name }, z niskeju pótrjebu.
+profiler-popup-presets-networking-with-logs-label =
+    .label = Seśowe zwězki z protokolami
+profiler-popup-presets-power-description = Pśednastajenje za wuslěźenje zmólkow wužywanja energije w { -brand-shorter-name }, z niskeju pótrjebu.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energija
 profiler-popup-presets-debug-description = Pśednastajenje za pytanje zmólkow w { -brand-shorter-name }. Wusoka dodatna śěža, njewužywajśo jo za wugbaśowe źěło, ale wužywajśo jo, aby se na rozměśe zaźaržanja wobglědowaka fokusěrował.
 profiler-popup-presets-debug-label =
     .label = Za zmólkami pytaś
+profiler-popup-presets-web-compat-description = Dopórucone pśednastajenje za pytanje problemow z webkompatibelnosću we websedłach, město až se wugbaśeju slědujo.
+profiler-popup-presets-web-compat-label =
+    .label = Webkompatibelnosć
 profiler-popup-presets-custom-label =
     .label = Swójski
 
@@ -264,6 +292,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Symbolowu rědku pśiměriś…
+appmenu-abouttranslations =
+    .label = Pśełožyś…
+appmenu-edit-pdf =
+    .label = PDF wobźěłaś…
 appmenu-developer-tools-subheader = Rědy wobglědowaka
 appmenu-developer-tools-extensions =
     .label = Rozšyrjenja za wuwijarje
@@ -273,9 +305,47 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Pśizjawśo se pla swójogo konta
+appmenuitem-monitor-description2 = Dostańśo warnowanja wó datowych źěrach
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Dostańśo warnowanja wó datowych źěrach
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Źaržćo swóju e-mail priwatnu
 appmenuitem-relay-description = Maskěrujśo swóju napšawdnu e-mailowu adresu a swój telefon
+appmenuitem-services-relay-description = Startujśo delu e-mailowych maskow
+appmenuitem-vpn-title2 = Schowajśo swójo stojnišćo z { -mozilla-vpn-brand-name }
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Wobstarajśo se šćit za ceły rěd
 appmenuitem-vpn-description = Šćitajśo swóju aktiwitu online
+appmenu-services-header = Móje słužby
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Rědy priwatnosći
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Wopytajśo druge šćitańske rědy wót Mozilla:
+appmenu-other-protection-header = Testujśo druge šćitańske rědy wót { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Druge profile
+appmenu-manage-profiles =
+    .label = Profile zastojaś
+appmenu-copy-profile =
+    .label = Toś ten profil kopěrowaś
+appmenu-create-profile2 =
+    .label = Nowy profil załožyś
+appmenu-create-profile =
+    .label = Nowy profil
+appmenu-edit-profile =
+    .aria-label = Profil wobźěłaś
+appmenu-edit-this-profile =
+    .label = Toś ten profil wobźěłaś
+appmenu-profile-current-in-use = Aktualny profil se wužywa
+appmenu-profiles-2 =
+    .label = Profile
+appmenu-profiles-header = Profile
+appmenu-all-profiles =
+    .label = Wšykne profile
+appmenu-secure-sync-header = Wěsta synchronizacija

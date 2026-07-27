@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- */
 // Copyright 2011 the V8 project authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -852,6 +849,8 @@ void Decoder::DecodeType01(Instruction* instr) {
     }
   } else if ((type == 1) && instr->IsNopType1()) {
     Format(instr, "nop'cond");
+  } else if ((type == 1) && instr->IsYieldType1()) {
+    Format(instr, "yield'cond");
   } else if ((type == 1) && instr->IsCsdbType1()) {
     Format(instr, "csdb'cond");
   } else {

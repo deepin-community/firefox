@@ -1,12 +1,8 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-
-import { PrivateBrowsingUtils } from "resource://gre/modules/PrivateBrowsingUtils.sys.mjs";
-import { TelemetryController } from "resource://gre/modules/TelemetryController.sys.mjs";
 
 const PREF_SSL_IMPACT_ROOTS = [
   "security.tls.version.",
@@ -45,7 +41,36 @@ class CaptivePortalObserver {
   }
 }
 
-export class NetErrorParent extends JSWindowActorParent {
+export class EscapablePageParent extends JSWindowActorParent {
+  /**
+   * Re-direct the browser to the previous page or a known-safe page if no
+   * previous page is found in history.  This function is used when the user
+   * browses to a secure page with certificate issues and is presented with
+   * about:certerror.  The "Go Back" button should take the user to the previous
+   * or a default start page so that even when their own homepage is on a server
+   * that has certificate errors, we can get them somewhere safe.
+   */
+  leaveErrorPage(browser, allowGoingBack = true) {
+    if (!browser.canGoBack || !allowGoingBack) {
+      // If the unsafe page is the first or the only one in history, we need to
+      // go somewhere:
+      let safePage = "about:blank";
+
+      // Ideally we use the homepage...
+      if (AppConstants.MOZ_BUILD_APP == "browser") {
+        safePage = lazy.HomePage.getForErrorPage(browser.documentGlobal);
+      }
+      browser.fixupAndLoadURIString(safePage, {
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
+      });
+    } else {
+      browser.goBack();
+    }
+  }
+}
+
+export class NetErrorParent extends EscapablePageParent {
   constructor() {
     super();
     this.captivePortalObserver = new CaptivePortalObserver(this);
@@ -72,85 +97,6 @@ export class NetErrorParent extends JSWindowActorParent {
     }
 
     return false;
-  }
-
-  async ReportBlockingError(bcID, scheme, host, port, path, xfoAndCspInfo) {
-    // For reporting X-Frame-Options error and CSP: frame-ancestors errors, We
-    // are collecting 4 pieces of information.
-    // 1. The X-Frame-Options in the response header.
-    // 2. The CSP: frame-ancestors in the response header.
-    // 3. The URI of the frame who triggers this error.
-    // 4. The top-level URI which loads the frame.
-    //
-    // We will exclude the query strings from the reporting URIs.
-    //
-    // More details about the data we send can be found in
-    // https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/telemetry/data/xfocsp-error-report-ping.html
-    //
-
-    let topBC = BrowsingContext.get(bcID).top;
-    let topURI = topBC.currentWindowGlobal.documentURI;
-
-    // Get the URLs without query strings.
-    let frame_uri = `${scheme}://${host}${port == -1 ? "" : ":" + port}${path}`;
-    let top_uri = `${topURI.scheme}://${topURI.hostPort}${topURI.filePath}`;
-
-    TelemetryController.submitExternalPing(
-      "xfocsp-error-report",
-      {
-        ...xfoAndCspInfo,
-        frame_hostname: host,
-        top_hostname: topURI.host,
-        frame_uri,
-        top_uri,
-      },
-      { addClientId: false, addEnvironment: false }
-    );
-  }
-
-  /**
-   * Return the default start page for the cases when the user's own homepage is
-   * infected, so we can get them somewhere safe.
-   */
-  getDefaultHomePage(win) {
-    let url;
-    if (
-      !PrivateBrowsingUtils.isWindowPrivate(win) &&
-      AppConstants.MOZ_BUILD_APP == "browser"
-    ) {
-      url = lazy.HomePage.getDefault();
-    }
-    url ||= win.BROWSER_NEW_TAB_URL || "about:blank";
-
-    // If url is a pipe-delimited set of pages, just take the first one.
-    if (url.includes("|")) {
-      url = url.split("|")[0];
-    }
-    return url;
-  }
-
-  /**
-   * Re-direct the browser to the previous page or a known-safe page if no
-   * previous page is found in history.  This function is used when the user
-   * browses to a secure page with certificate issues and is presented with
-   * about:certerror.  The "Go Back" button should take the user to the previous
-   * or a default start page so that even when their own homepage is on a server
-   * that has certificate errors, we can get them somewhere safe.
-   */
-  goBackFromErrorPage(browser) {
-    if (!browser.canGoBack) {
-      // If the unsafe page is the first or the only one in history, go to the
-      // start page.
-      browser.fixupAndLoadURIString(
-        this.getDefaultHomePage(browser.ownerGlobal),
-        {
-          triggeringPrincipal:
-            Services.scriptSecurityManager.getSystemPrincipal(),
-        }
-      );
-    } else {
-      browser.goBack();
-    }
   }
 
   /**
@@ -257,7 +203,7 @@ export class NetErrorParent extends JSWindowActorParent {
         this.browser.reload();
         break;
       case "Browser:OpenCaptivePortalPage":
-        this.browser.ownerGlobal.CaptivePortalWatcher.ensureCaptivePortalTab();
+        this.browser.documentGlobal.CaptivePortalWatcher.ensureCaptivePortalTab();
         break;
       case "Browser:PrimeMitm":
         this.primeMitm(this.browser);
@@ -266,7 +212,7 @@ export class NetErrorParent extends JSWindowActorParent {
         Services.prefs.clearUserPref("security.enterprise_roots.enabled");
         Services.prefs.clearUserPref("security.enterprise_roots.auto-enabled");
         break;
-      case "Browser:ResetSSLPreferences":
+      case "Browser:ResetSSLPreferences": {
         let prefSSLImpact = PREF_SSL_IMPACT_ROOTS.reduce((prefs, root) => {
           return prefs.concat(Services.prefs.getChildList(root));
         }, []);
@@ -275,39 +221,31 @@ export class NetErrorParent extends JSWindowActorParent {
         }
         this.browser.reload();
         break;
+      }
       case "Browser:SSLErrorGoBack":
-        this.goBackFromErrorPage(this.browser);
+        this.leaveErrorPage(this.browser);
         break;
-      case "GetChangedCertPrefs":
+      case "GetChangedCertPrefs": {
         let hasChangedCertPrefs = this.hasChangedCertPrefs();
         this.sendAsyncMessage("HasChangedCertPrefs", {
           hasChangedCertPrefs,
         });
         break;
-      case "ReportBlockingError":
-        this.ReportBlockingError(
-          this.browsingContext.id,
-          message.data.scheme,
-          message.data.host,
-          message.data.port,
-          message.data.path,
-          message.data.xfoAndCspInfo
-        );
-        break;
+      }
       case "DisplayOfflineSupportPage":
         this.displayOfflineSupportPage(message.data.supportPageSlug);
         break;
       case "Browser:CertExceptionError":
         switch (message.data.elementId) {
           case "viewCertificate": {
-            let certs = message.data.failedCertChain.map(certBase64 =>
+            let certs = message.data.handshakeCertificates.map(certBase64 =>
               encodeURIComponent(certBase64)
             );
             let certsStringURL = certs.map(elem => `cert=${elem}`);
             certsStringURL = certsStringURL.join("&");
             let url = `about:certificate?${certsStringURL}`;
 
-            let window = this.browser.ownerGlobal;
+            let window = this.browser.documentGlobal;
             if (AppConstants.MOZ_BUILD_APP === "browser") {
               window.switchToTabHavingURI(url, true, {});
             } else {
@@ -317,26 +255,31 @@ export class NetErrorParent extends JSWindowActorParent {
           }
         }
         break;
-      case "Browser:AddTRRExcludedDomain":
-        let domain = message.data.hostname;
+      case "Browser:AddTRRExcludedDomain": {
+        let uri = this.browsingContext.currentURI;
+        if (uri instanceof Ci.nsINestedURI) {
+          uri = uri.QueryInterface(Ci.nsINestedURI).innermostURI;
+        }
         let excludedDomains = Services.prefs.getStringPref(
           "network.trr.excluded-domains"
         );
-        excludedDomains += `, ${domain}`;
+        excludedDomains += `, ${uri.asciiHost}`;
         Services.prefs.setStringPref(
           "network.trr.excluded-domains",
           excludedDomains
         );
         break;
-      case "OpenTRRPreferences":
+      }
+      case "OpenTRRPreferences": {
         let browser = this.browsingContext.top.embedderElement;
         if (!browser) {
           break;
         }
 
-        let win = browser.ownerGlobal;
+        let win = browser.documentGlobal;
         win.openPreferences("privacy-doh");
         break;
+      }
     }
   }
 }

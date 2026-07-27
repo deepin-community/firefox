@@ -7,6 +7,10 @@ let bookmarkPanel;
 let folders;
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+
   await PlacesUtils.bookmarks.eraseEverything();
 
   Services.prefs.clearUserPref("browser.bookmarks.defaultLocation");
@@ -67,10 +71,16 @@ add_task(async function test_selectChoose() {
   await promisePopup;
 
   // Click the choose item.
-  EventUtils.synthesizeMouseAtCenter(
-    document.getElementById("editBMPanel_chooseFolderMenuItem"),
-    {}
-  );
+  if (menuList.menupopup.isNativeMenu) {
+    menuList.menupopup.activateItem(
+      document.getElementById("editBMPanel_chooseFolderMenuItem")
+    );
+  } else {
+    EventUtils.synthesizeMouseAtCenter(
+      document.getElementById("editBMPanel_chooseFolderMenuItem"),
+      {}
+    );
+  }
 
   await TestUtils.waitForCondition(
     () => !folderTreeRow.hidden,
@@ -147,10 +157,16 @@ add_task(async function test_selectBookmarksMenu() {
   await promisePopup;
 
   // Click the bookmarks menu item.
-  EventUtils.synthesizeMouseAtCenter(
-    document.getElementById("editBMPanel_bmRootItem"),
-    {}
-  );
+  if (menuList.menupopup.isNativeMenu) {
+    menuList.menupopup.activateItem(
+      document.getElementById("editBMPanel_bmRootItem")
+    );
+  } else {
+    EventUtils.synthesizeMouseAtCenter(
+      document.getElementById("editBMPanel_bmRootItem"),
+      {}
+    );
+  }
 
   await TestUtils.waitForCondition(
     () => menuList.getAttribute("selectedGuid") == expectedGuid,
@@ -199,10 +215,16 @@ add_task(async function test_selectBookmarksMenu() {
   );
   EventUtils.synthesizeMouseAtCenter(menuList, {});
   await promisePopup;
-  EventUtils.synthesizeMouseAtCenter(
-    document.getElementById("editBMPanel_toolbarFolderItem"),
-    {}
-  );
+  if (menuList.menupopup.isNativeMenu) {
+    menuList.menupopup.activateItem(
+      document.getElementById("editBMPanel_toolbarFolderItem")
+    );
+  } else {
+    EventUtils.synthesizeMouseAtCenter(
+      document.getElementById("editBMPanel_toolbarFolderItem"),
+      {}
+    );
+  }
   await TestUtils.waitForCondition(
     () => menuList.getAttribute("selectedGuid") == toolbarGuid,
     "Should select the toolbar folder item"

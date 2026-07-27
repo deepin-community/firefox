@@ -37,8 +37,8 @@ class OkHttpClient(
     )
 
     override fun fetch(request: Request): Response {
-        if (request.private) {
-            throw IllegalArgumentException("Client doesn't support private request")
+        require(!request.private) {
+            "Client doesn't support private request"
         }
 
         if (request.isDataUri()) {
@@ -111,7 +111,7 @@ private fun okhttp3.Response.toResponse(): Response {
         url = request.url.toString(),
         headers = headers,
         status = code,
-        body = if (body != null) Response.Body(body.byteStream(), headers["Content-Type"]) else Response.Body.empty(),
+        body = Response.Body(body.byteStream(), headers["Content-Type"]),
     )
 }
 

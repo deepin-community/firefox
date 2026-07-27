@@ -3,7 +3,7 @@
  */
 
 const frameSource =
-  "<a href='about:mozilla'>some text</a><a id='other' href='about:about'>other text</a>";
+  "<head><title>Frame title</title></head><a href='about:mozilla'>some text</a><a id='other' href='about:about'>other text</a>";
 const sources = [
   `<html><iframe id="f" srcdoc="${frameSource}"></iframe></html>`,
   `<html><iframe id="f" src="https://example.com/document-builder.sjs?html=${frameSource}"></iframe></html>`,
@@ -11,7 +11,11 @@ const sources = [
 
 async function getPreviewText(previewBrowser) {
   return SpecialPowers.spawn(previewBrowser, [], function () {
-    return content.document.body.textContent;
+    // We don't delete elements complete outside of the selection, instead applying
+    // `display: none` to them. Need to use `innerText` to take this into account.
+    // This can cause a layout flush that hides issues, but they should be covered
+    // by reftests with `reftest-print-range`.
+    return content.document.body.innerText;
   });
 }
 
@@ -42,6 +46,8 @@ add_task(async function print_selection() {
         });
 
         await waitForPreviewVisible();
+
+        helper.assertSettingsMatch({ title: "Frame title" });
 
         let previewBrowser = document.querySelector(
           ".printPreviewBrowser[previewtype='selection']"
@@ -171,11 +177,12 @@ add_task(async function print_selection_switch() {
 
     helper.assertSettingsMatch({
       printSelectionOnly: false,
+      title: "",
     });
 
     await helper.assertSettingsChanged(
-      { printSelectionOnly: false },
-      { printSelectionOnly: true },
+      { printSelectionOnly: false, title: "" },
+      { printSelectionOnly: true, title: "Article title" },
       async () => {
         await helper.waitForPreview(() => helper.click(printSelect));
         let text = await getPreviewText(getCurrentBrowser("selection"));
@@ -184,8 +191,8 @@ add_task(async function print_selection_switch() {
     );
 
     await helper.assertSettingsChanged(
-      { printSelectionOnly: true },
-      { printSelectionOnly: false },
+      { printSelectionOnly: true, title: "Article title" },
+      { printSelectionOnly: false, title: "" },
       async () => {
         await helper.waitForPreview(() => helper.click(printSource));
         let text = await getPreviewText(getCurrentBrowser("source"));

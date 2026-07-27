@@ -4,14 +4,29 @@
 
 package mozilla.components.browser.state.reducer
 
+import kotlinx.coroutines.test.runTest
+import mozilla.components.browser.state.action.ContentAction
+import mozilla.components.browser.state.selector.findTabOrCustomTabOrSelectedTab
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.ContentState
+import mozilla.components.browser.state.state.SecurityInfo.Unknown
 import mozilla.components.browser.state.state.TabSessionState
+import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertIs
 
 class ContentStateReducerTest {
+    @Test
+    fun `GIVEN a new ContentState THEN it's security status is unknown`() {
+        val defaultContentState = ContentState("emptyStateUrl")
+
+        assertIs<Unknown>(defaultContentState.securityInfo)
+    }
+
     @Test
     fun `updateContentState will return a new BrowserState with updated ContentState`() {
         val initialContentState = ContentState("emptyStateUrl")
@@ -22,5 +37,43 @@ class ContentStateReducerTest {
 
         assertFalse(browserState == result)
         assertEquals("updatedUrl", result.tabs[0].content.url)
+    }
+
+    @Test
+    fun `WHEN entering pdf viewer THEN mark the current tab as showing a pdf`() = runTest {
+        val currentTabId = "test"
+        val currentTab = TabSessionState(
+            id = currentTabId,
+            content = ContentState(
+                url = "https://mozilla.org",
+                isPdf = false,
+            ),
+        )
+        val browserStore = BrowserStore(
+            initialState = BrowserState(tabs = listOf(mock(), currentTab)),
+        )
+
+        browserStore.dispatch(ContentAction.EnteredPdfViewer(currentTabId))
+
+        assertTrue(browserStore.state.findTabOrCustomTabOrSelectedTab(currentTabId)!!.content.isPdf)
+    }
+
+    @Test
+    fun `WHEN exiting pdf viewer THEN mark the current tab as not showing a pdf`() = runTest {
+        val currentTabId = "test"
+        val currentTab = TabSessionState(
+            id = currentTabId,
+            content = ContentState(
+                url = "https://mozilla.org",
+                isPdf = true,
+            ),
+        )
+        val browserStore = BrowserStore(
+            initialState = BrowserState(tabs = listOf(mock(), currentTab)),
+        )
+
+        browserStore.dispatch(ContentAction.ExitedPdfViewer(currentTabId))
+
+        assertFalse(browserStore.state.findTabOrCustomTabOrSelectedTab(currentTabId)!!.content.isPdf)
     }
 }

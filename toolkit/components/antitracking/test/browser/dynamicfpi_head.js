@@ -1,4 +1,3 @@
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,10 +47,6 @@ this.DynamicFPIHelper = {
       await SpecialPowers.pushPrefEnv({
         set: [
           ["dom.storage_access.enabled", true],
-          [
-            "privacy.partition.always_partition_third_party_non_cookie_storage",
-            true,
-          ],
           ["privacy.trackingprotection.enabled", false],
           ["privacy.trackingprotection.pbmode.enabled", false],
           ["privacy.trackingprotection.annotate_channels", true],
@@ -151,8 +146,8 @@ this.DynamicFPIHelper = {
               ok(false, "Unknown message");
             });
 
-            content.document.body.appendChild(ifr);
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
           });
         }
       );

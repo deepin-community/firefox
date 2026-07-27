@@ -8,14 +8,34 @@
 //! This is meant to be used as a building block of an UTS 46
 //! implementation, such as the `idna` crate.
 
-use crate::CanonicalCompositionsV1Marker;
-use crate::CanonicalDecompositionDataV1Marker;
-use crate::CanonicalDecompositionTablesV1Marker;
-use crate::CompatibilityDecompositionTablesV1Marker;
 use crate::ComposingNormalizer;
-use crate::NormalizerError;
-use crate::Uts46DecompositionSupplementV1Marker;
+use crate::ComposingNormalizerBorrowed;
+use crate::IgnorableBehavior;
+use crate::IteratorPolicy;
+use crate::NormalizerNfcV2;
+use crate::NormalizerNfdTablesV1;
+use crate::NormalizerNfkdTablesV1;
+use crate::NormalizerUts46DataV1;
+use icu_collections::codepointtrie::CharIterWithTrie;
+use icu_collections::codepointtrie::CodePointTrie;
+use icu_provider::DataError;
 use icu_provider::DataProvider;
+
+type Trie46<'trie> = CodePointTrie<'trie, u32>;
+
+#[derive(Debug)]
+struct Uts46MapNormalizePolicy;
+
+impl IteratorPolicy for Uts46MapNormalizePolicy {
+    const IGNORABLE_BEHAVIOR: IgnorableBehavior = IgnorableBehavior::Ignored;
+}
+
+#[derive(Debug)]
+struct Uts46NormalizeValidatePolicy;
+
+impl IteratorPolicy for Uts46NormalizeValidatePolicy {
+    const IGNORABLE_BEHAVIOR: IgnorableBehavior = IgnorableBehavior::ReplacementCharacter;
+}
 
 // Implementation note: Despite merely wrapping a `ComposingNormalizer`,
 // having a `Uts46Mapper` serves two purposes:
@@ -27,60 +47,55 @@ use icu_provider::DataProvider;
 //    writing this, it looked like such processing was needed but
 //    now isn't needed after all.)
 
-/// A mapper that knows how to performs the subsets of UTS 46 processing
-/// documented on the methods.
+/// A borrowed version of a mapper that knows how to performs the
+/// subsets of UTS 46 processing documented on the methods.
 #[derive(Debug)]
-pub struct Uts46Mapper {
-    normalizer: ComposingNormalizer,
+pub struct Uts46MapperBorrowed<'a> {
+    normalizer: ComposingNormalizerBorrowed<'a>,
 }
 
 #[cfg(feature = "compiled_data")]
-impl Default for Uts46Mapper {
+impl Default for Uts46MapperBorrowed<'static> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Uts46Mapper {
-    /// Construct with compiled data.
-    #[cfg(feature = "compiled_data")]
-    pub const fn new() -> Self {
+impl Uts46MapperBorrowed<'static> {
+    /// Cheaply converts a [`Uts46MapperBorrowed<'static>`] into a [`Uts46Mapper`].
+    ///
+    /// Note: Due to branching and indirection, using [`Uts46Mapper`] might inhibit some
+    /// compile-time optimizations that are possible with [`Uts46MapperBorrowed`].
+    pub const fn static_to_owned(self) -> Uts46Mapper {
         Uts46Mapper {
-            normalizer: ComposingNormalizer::new_uts46(),
+            normalizer: self.normalizer.static_to_owned(),
         }
     }
 
-    /// Construct with provider.
-    #[doc = icu_provider::gen_any_buffer_unstable_docs!(UNSTABLE, Self::new)]
-    pub fn try_new<D>(provider: &D) -> Result<Self, NormalizerError>
-    where
-        D: DataProvider<CanonicalDecompositionDataV1Marker>
-            + DataProvider<Uts46DecompositionSupplementV1Marker>
-            + DataProvider<CanonicalDecompositionTablesV1Marker>
-            + DataProvider<CompatibilityDecompositionTablesV1Marker>
-            // UTS 46 tables merged into CompatibilityDecompositionTablesV1Marker
-            + DataProvider<CanonicalCompositionsV1Marker>
-            + ?Sized,
-    {
-        let normalizer = ComposingNormalizer::try_new_uts46_unstable(provider)?;
-
-        Ok(Uts46Mapper { normalizer })
+    /// Construct with compiled data.
+    #[cfg(feature = "compiled_data")]
+    pub const fn new() -> Self {
+        Uts46MapperBorrowed {
+            normalizer: ComposingNormalizerBorrowed::new_uts46(),
+        }
     }
+}
 
+impl Uts46MapperBorrowed<'_> {
     /// Returns an iterator adaptor that turns an `Iterator` over `char`
     /// into an iterator yielding a `char` sequence that gets the following
     /// operations from the "Map" and "Normalize" steps of the "Processing"
     /// section of UTS 46 lazily applied to it:
     ///
-    /// 1. The _ignored_ characters are ignored.
-    /// 2. The _mapped_ characters are mapped.
-    /// 3. The _disallowed_ characters are replaced with U+FFFD,
+    /// 1. The `ignored` characters are ignored.
+    /// 2. The `mapped` characters are mapped.
+    /// 3. The `disallowed` characters are replaced with U+FFFD,
     ///    which itself is a disallowed character.
-    /// 4. The _deviation_ characters are treated as _mapped_ or _valid_
+    /// 4. The `deviation` characters are treated as `mapped` or `valid`
     ///    as appropriate.
-    /// 5. The _disallowed_STD3_valid_ characters are treated as allowed.
-    /// 6. The _disallowed_STD3_mapped_ characters are treated as
-    ///    _mapped_.
+    /// 5. The `disallowed_STD3_valid` characters are treated as allowed.
+    /// 6. The `disallowed_STD3_mapped` characters are treated as
+    ///    `mapped`.
     /// 7. The result is normalized to NFC.
     ///
     /// Notably:
@@ -94,8 +109,13 @@ impl Uts46Mapper {
         &'delegate self,
         iter: I,
     ) -> impl Iterator<Item = char> + 'delegate {
-        self.normalizer
-            .normalize_iter_private(iter, crate::IgnorableBehavior::Ignored)
+        let mut ret =
+            self.normalizer
+                .normalize_iter_private::<_, Trie46, Uts46MapNormalizePolicy>(
+                    CharIterWithTrie::new(iter, self.normalizer.trie::<Trie46<'_>>()),
+                );
+        ret.decomposition.init(); // Discard the U+0000.
+        ret
     }
 
     /// Returns an iterator adaptor that turns an `Iterator` over `char`
@@ -103,15 +123,15 @@ impl Uts46Mapper {
     /// operations from the NFC check and statucs steps of the "Validity
     /// Criteria" section of UTS 46 lazily applied to it:
     ///
-    /// 1. The _ignored_ characters are treated as _disallowed_.
-    /// 2. The _mapped_ characters are mapped.
-    /// 3. The _disallowed_ characters are replaced with U+FFFD,
+    /// 1. The `ignored` characters are treated as `disallowed`.
+    /// 2. The `mapped` characters are mapped.
+    /// 3. The `disallowed` characters are replaced with U+FFFD,
     ///    which itself is a disallowed character.
-    /// 4. The _deviation_ characters are treated as _mapped_ or _valid_
+    /// 4. The `deviation` characters are treated as `mapped` or `valid`
     ///    as appropriate.
-    /// 5. The _disallowed_STD3_valid_ characters are treated as allowed.
-    /// 6. The _disallowed_STD3_mapped_ characters are treated as
-    ///    _mapped_.
+    /// 5. The `disallowed_STD3_valid` characters are treated as allowed.
+    /// 6. The `disallowed_STD3_mapped` characters are treated as
+    ///    `mapped`.
     /// 7. The result is normalized to NFC.
     ///
     /// Notably:
@@ -126,11 +146,63 @@ impl Uts46Mapper {
     ///   and status requirements. In particular, this comparison results
     ///   in _mapped_ characters resulting in error like "Validity Criteria"
     ///   requires.
+    #[inline]
     pub fn normalize_validate<'delegate, I: Iterator<Item = char> + 'delegate>(
         &'delegate self,
         iter: I,
     ) -> impl Iterator<Item = char> + 'delegate {
-        self.normalizer
-            .normalize_iter_private(iter, crate::IgnorableBehavior::ReplacementCharacter)
+        let mut ret = self
+            .normalizer
+            .normalize_iter_private::<_, Trie46, Uts46NormalizeValidatePolicy>(
+                CharIterWithTrie::new(iter, self.normalizer.trie::<Trie46<'_>>()),
+            );
+        ret.decomposition.init(); // Discard the U+0000.
+        ret
+    }
+}
+
+/// A mapper that knows how to performs the subsets of UTS 46 processing
+/// documented on the methods.
+#[derive(Debug)]
+pub struct Uts46Mapper {
+    normalizer: ComposingNormalizer,
+}
+
+#[cfg(feature = "compiled_data")]
+impl Default for Uts46Mapper {
+    fn default() -> Self {
+        Self::new().static_to_owned()
+    }
+}
+
+impl Uts46Mapper {
+    /// Constructs a borrowed version of this type for more efficient querying.
+    pub fn as_borrowed(&self) -> Uts46MapperBorrowed<'_> {
+        Uts46MapperBorrowed {
+            normalizer: self.normalizer.as_borrowed(),
+        }
+    }
+
+    /// Construct with compiled data.
+    #[cfg(feature = "compiled_data")]
+    #[expect(clippy::new_ret_no_self)]
+    pub const fn new() -> Uts46MapperBorrowed<'static> {
+        Uts46MapperBorrowed::new()
+    }
+
+    /// Construct with provider.
+    #[doc = icu_provider::gen_buffer_unstable_docs!(UNSTABLE, Self::new)]
+    pub fn try_new<D>(provider: &D) -> Result<Self, DataError>
+    where
+        D: DataProvider<NormalizerUts46DataV1>
+            + DataProvider<NormalizerNfdTablesV1>
+            + DataProvider<NormalizerNfkdTablesV1>
+            // UTS 46 tables merged into NormalizerNfkdTablesV1
+            + DataProvider<NormalizerNfcV2>
+            + ?Sized,
+    {
+        let normalizer = ComposingNormalizer::try_new_uts46_unstable(provider)?;
+
+        Ok(Uts46Mapper { normalizer })
     }
 }

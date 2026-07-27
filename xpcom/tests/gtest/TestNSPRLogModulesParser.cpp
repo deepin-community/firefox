@@ -1,11 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "NSPRLogModulesParser.h"
-#include "mozilla/ArrayUtils.h"
 #include "gtest/gtest.h"
 
 using namespace mozilla;
@@ -56,7 +53,7 @@ TEST(NSPRLogModulesParser, LevelSpecified)
 
   auto* currTest = expected;
 
-  for (size_t i = 0; i < MOZ_ARRAY_LENGTH(expected); i++) {
+  for (size_t i = 0; i < std::size(expected); i++) {
     bool callbackInvoked = false;
     mozilla::NSPRLogModulesParser(
         currTest->first,
@@ -80,7 +77,7 @@ TEST(NSPRLogModulesParser, Multiple)
       {"Qux", mozilla::LogLevel::Verbose},
   };
 
-  const size_t kExpectedCount = MOZ_ARRAY_LENGTH(expected);
+  const size_t kExpectedCount = std::size(expected);
 
   auto* currTest = expected;
 
@@ -106,7 +103,7 @@ TEST(NSPRLogModulesParser, Characters)
       {"invalid", mozilla::LogLevel::Error},
   };
 
-  const size_t kExpectedCount = MOZ_ARRAY_LENGTH(expected);
+  const size_t kExpectedCount = std::size(expected);
 
   auto* currTest = expected;
 
@@ -148,7 +145,7 @@ TEST(NSPRLogModulesParser, RustModules)
       {"crate::mod::*", mozilla::LogLevel::Info},
   };
 
-  const size_t kExpectedCount = MOZ_ARRAY_LENGTH(expected);
+  const size_t kExpectedCount = std::size(expected);
 
   auto* currTest = expected;
 

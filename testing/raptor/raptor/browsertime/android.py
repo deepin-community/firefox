@@ -5,10 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import shutil
-import tempfile
 
-import mozcrash
 from cmdline import CHROME_ANDROID_APPS, FIREFOX_ANDROID_APPS
 from logger.logger import RaptorLogger
 from mozdevice import ADBDeviceFactory
@@ -44,7 +41,7 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
     """
 
     def __init__(self, app, binary, activity=None, intent=None, **kwargs):
-        super(BrowsertimeAndroid, self).__init__(
+        super().__init__(
             app,
             binary,
             **kwargs,
@@ -57,7 +54,11 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
         if self.device is None:
             self.device = ADBDeviceFactory(verbose=True)
             if not self.config.get("disable_perf_tuning", False):
-                tune_performance(self.device, log=LOG)
+                tune_performance(
+                    self.device,
+                    log=LOG,
+                    test_names=self._test_names,
+                )
 
     @property
     def android_external_storage(self):
@@ -99,12 +100,10 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
         ]
 
         if self.config["app"] in CHROME_ANDROID_APPS:
-            args_list.extend(
-                [
-                    "--browser",
-                    "chrome",
-                ]
-            )
+            args_list.extend([
+                "--browser",
+                "chrome",
+            ])
             if self.config["app"] == "cstm-car-m":
                 args_list.extend(["--chrome.android.package", "org.chromium.chrome"])
         else:
@@ -116,24 +115,20 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
                 )
                 activity = "mozilla.telemetry.glean.debug.GleanDebugActivity"
 
-            if int(self.device.shell_output("getprop ro.build.version.release")) > 11:
-                args_list.extend(
-                    [
-                        '--firefox.geckodriverArgs="--android-storage"',
-                        '--firefox.geckodriverArgs="app"',
-                    ]
-                )
+            # all hardware we test on is android 11+
+            args_list.extend([
+                '--firefox.geckodriverArgs="--android-storage"',
+                '--firefox.geckodriverArgs="app"',
+            ])
 
-            args_list.extend(
-                [
-                    "--browser",
-                    "firefox",
-                    "--firefox.android.package",
-                    self.config["binary"],
-                    "--firefox.android.activity",
-                    activity,
-                ]
-            )
+            args_list.extend([
+                "--browser",
+                "firefox",
+                "--firefox.android.package",
+                self.config["binary"],
+                "--firefox.android.activity",
+                activity,
+            ])
 
         if self.config["app"] == "geckoview":
             # This is needed as geckoview is crashing on shutdown and is throwing marionette errors similar to 1768889
@@ -147,29 +142,26 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
             # special non-default one there
             if self.config.get("intent") is not None:
                 args_list.extend(["--firefox.android.intentArgument=-a"])
-                args_list.extend(
-                    ["--firefox.android.intentArgument", self.config["intent"]]
-                )
+                args_list.extend([
+                    "--firefox.android.intentArgument",
+                    self.config["intent"],
+                ])
 
                 # Change glean ping names in all cases on Fenix
-                args_list.extend(
-                    [
-                        "--firefox.android.intentArgument=--es",
-                        "--firefox.android.intentArgument=startNext",
-                        "--firefox.android.intentArgument=" + self.config["activity"],
-                        "--firefox.android.intentArgument=--esa",
-                        "--firefox.android.intentArgument=sourceTags",
-                        "--firefox.android.intentArgument=automation",
-                        "--firefox.android.intentArgument=--ez",
-                        "--firefox.android.intentArgument=performancetest",
-                        "--firefox.android.intentArgument=true",
-                    ]
-                )
+                args_list.extend([
+                    "--firefox.android.intentArgument=--es",
+                    "--firefox.android.intentArgument=startNext",
+                    "--firefox.android.intentArgument=" + self.config["activity"],
+                    "--firefox.android.intentArgument=--esa",
+                    "--firefox.android.intentArgument=sourceTags",
+                    "--firefox.android.intentArgument=automation",
+                    "--firefox.android.intentArgument=--ez",
+                    "--firefox.android.intentArgument=performancetest",
+                    "--firefox.android.intentArgument=true",
+                ])
 
                 args_list.extend(["--firefox.android.intentArgument=-d"])
-                args_list.extend(
-                    ["--firefox.android.intentArgument", str("about:blank")]
-                )
+                args_list.extend(["--firefox.android.intentArgument", "about:blank"])
 
         return args_list
 
@@ -207,12 +199,12 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
         return args_list
 
     def build_browser_profile(self):
-        super(BrowsertimeAndroid, self).build_browser_profile()
+        super().build_browser_profile()
 
         if self.config["app"] in FIREFOX_ANDROID_APPS:
             # Merge in the Android profile.
             path = os.path.join(self.profile_data_dir, "raptor-android")
-            LOG.info("Merging profile: {}".format(path))
+            LOG.info(f"Merging profile: {path}")
             self.profile.merge(path)
 
             # There's no great way to have "after" advice in Python, so we do this
@@ -236,32 +228,8 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
         if self.device.exists(self.geckodriver_profile):
             self.device.rm(self.geckodriver_profile, force=True, recursive=True)
 
-    def check_for_crashes(self):
-        super(BrowsertimeAndroid, self).check_for_crashes()
-
-        try:
-            dump_dir = tempfile.mkdtemp()
-            remote_dir = os.path.join(self.geckodriver_profile, "minidumps")
-            if not self.device.is_dir(remote_dir):
-                return
-            self.device.pull(remote_dir, dump_dir)
-            self.crashes += mozcrash.log_crashes(
-                LOG, dump_dir, self.config["symbols_path"]
-            )
-        except Exception as e:
-            LOG.error(
-                "Could not pull the crash data!",
-                exc_info=True,
-            )
-            raise e
-        finally:
-            try:
-                shutil.rmtree(dump_dir)
-            except Exception:
-                LOG.warning("unable to remove directory: %s" % dump_dir)
-
     def run_test_setup(self, test):
-        super(BrowsertimeAndroid, self).run_test_setup(test)
+        super().run_test_setup(test)
 
         self.set_reverse_ports()
 
@@ -271,16 +239,17 @@ class BrowsertimeAndroid(PerftestAndroid, Browsertime):
             self.remove_mozprofile_delimiters_from_profile()
 
     def run_tests(self, tests, test_names):
+        self._test_names = test_names
         self.setup_adb_device()
 
         if self.config["app"] in CHROME_ANDROID_APPS:
             # Make sure that chrome is enabled on the device
             self.device.shell_output("pm enable com.android.chrome")
 
-        return super(BrowsertimeAndroid, self).run_tests(tests, test_names)
+        return super().run_tests(tests, test_names)
 
     def run_test_teardown(self, test):
         LOG.info("removing reverse socket connections")
         self.device.remove_socket_connections("reverse")
 
-        super(BrowsertimeAndroid, self).run_test_teardown(test)
+        super().run_test_teardown(test)

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -41,6 +40,13 @@ nsresult nsUnixSystemProxySettings::GetPACURI(nsACString& aResult) {
   // Make sure we return an empty result.
   aResult.Truncate();
   return NS_OK;
+}
+
+NS_IMETHODIMP nsUnixSystemProxySettings::SetSystemProxyInfo(
+    const nsACString& aHost, int32_t aPort, const nsACString& aPacFileUrl,
+    const nsTArray<nsCString>& aExclusionList) {
+  MOZ_ASSERT(false, "Did not expect to be called on this platform");
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 nsresult nsUnixSystemProxySettings::GetProxyForURI(const nsACString& aSpec,

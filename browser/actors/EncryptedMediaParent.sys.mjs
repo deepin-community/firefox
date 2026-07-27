@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -109,6 +108,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
         if (keySystem != "org.w3.clearkey") {
           this.showPopupNotificationForSuccess(browser, keySystem);
         }
+        this.reportEMEDecryptionProbe();
         // ... and bail!
         return;
 
@@ -195,7 +195,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
 
     // Don't bother creating it if it's already there:
     if (
-      aBrowser.ownerGlobal.PopupNotifications.getNotification(
+      aBrowser.documentGlobal.PopupNotifications.getNotification(
         "drmContentPlaying",
         aBrowser
       )
@@ -203,12 +203,13 @@ export class EncryptedMediaParent extends JSWindowActorParent {
       return;
     }
 
-    let msgPrefix = "eme-notifications-drm-content-playing";
-    let msgId = msgPrefix;
-    let manageLabelId = msgPrefix + "-manage";
-    let manageAccessKeyId = msgPrefix + "-manage-accesskey";
-    let dismissLabelId = msgPrefix + "-dismiss";
-    let dismissAccessKeyId = msgPrefix + "-dismiss-accesskey";
+    let msgId = "eme-notifications-drm-content-playing";
+    let manageLabelId = "eme-notifications-drm-content-playing-manage";
+    let manageAccessKeyId =
+      "eme-notifications-drm-content-playing-manage-accesskey";
+    let dismissLabelId = "eme-notifications-drm-content-playing-dismiss";
+    let dismissAccessKeyId =
+      "eme-notifications-drm-content-playing-dismiss-accesskey";
 
     let [
       message,
@@ -241,7 +242,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
       label: manageLabel,
       accessKey: manageAccessKey,
       callback() {
-        aBrowser.ownerGlobal.openPreferences("general-drm");
+        aBrowser.documentGlobal.openPreferences("general-drm");
       },
       dismiss: true,
     };
@@ -263,7 +264,7 @@ export class EncryptedMediaParent extends JSWindowActorParent {
         "drm-content",
       hideClose: true,
     };
-    aBrowser.ownerGlobal.PopupNotifications.show(
+    aBrowser.documentGlobal.PopupNotifications.show(
       aBrowser,
       "drmContentPlaying",
       message,
@@ -272,5 +273,43 @@ export class EncryptedMediaParent extends JSWindowActorParent {
       secondaryActions,
       options
     );
+  }
+
+  async reportEMEDecryptionProbe() {
+    let hasHardwareDecryption = false;
+    let hasSoftwareClearlead = false;
+    let hasHardwareClearlead = false;
+    let hasWMF = false;
+
+    // Get CDM capabilities from the GMP process.
+    let infos = [];
+    let cdmInfo = await ChromeUtils.getGMPContentDecryptionModuleInformation();
+    infos.push(...cdmInfo);
+
+    // Get CDM capabilities from the MFCDM process, if exists.
+    if (ChromeUtils.getWMFContentDecryptionModuleInformation !== undefined) {
+      hasWMF = true;
+      cdmInfo = await ChromeUtils.getWMFContentDecryptionModuleInformation();
+      infos.push(...cdmInfo);
+    }
+
+    for (let info of infos) {
+      if (info.isHardwareDecryption) {
+        hasHardwareDecryption = true;
+      }
+      if (info.clearlead) {
+        if (info.isHardwareDecryption) {
+          hasHardwareClearlead = true;
+        } else {
+          hasSoftwareClearlead = true;
+        }
+      }
+    }
+    Glean.mediadrm.decryption.has_hardware_decryption.set(
+      hasHardwareDecryption
+    );
+    Glean.mediadrm.decryption.has_hardware_clearlead.set(hasHardwareClearlead);
+    Glean.mediadrm.decryption.has_software_clearlead.set(hasSoftwareClearlead);
+    Glean.mediadrm.decryption.has_wmf.set(hasWMF);
   }
 }

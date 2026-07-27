@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -83,7 +82,7 @@ nsHyphenationManager* nsHyphenationManager::Instance() {
       obs->AddObserver(sInstance, kMemoryPressureNotification, false);
     }
 
-    RegisterStrongMemoryReporter(new HyphenReporter());
+    RegisterStrongMemoryReporter(MakeAndAddRef<HyphenReporter>());
   }
   return sInstance;
 }
@@ -330,12 +329,11 @@ void nsHyphenationManager::LoadAliases() {
 }
 
 void nsHyphenationManager::ShareHyphDictToProcess(
-    nsIURI* aURI, base::ProcessId aPid, base::SharedMemoryHandle* aOutHandle,
-    uint32_t* aOutSize) {
+    nsIURI* aURI, base::ProcessId aPid,
+    mozilla::ipc::ReadOnlySharedMemoryHandle* aOutHandle) {
   MOZ_ASSERT(XRE_IsParentProcess());
   // aURI will be referring to an omnijar resource (otherwise just bail).
-  *aOutHandle = base::SharedMemory::NULLHandle();
-  *aOutSize = 0;
+  *aOutHandle = nullptr;
 
   // Extract the locale code from the URI, and get the corresponding
   // hyphenator (loading it into shared memory if necessary).
@@ -358,7 +356,7 @@ void nsHyphenationManager::ShareHyphDictToProcess(
     return;
   }
 
-  hyph->CloneHandle(aOutHandle, aOutSize);
+  *aOutHandle = hyph->CloneHandle();
 }
 
 size_t nsHyphenationManager::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) {

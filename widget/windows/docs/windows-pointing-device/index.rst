@@ -234,7 +234,7 @@ the diversity of hardware:
     and movements must be identified and labelled to allow for clear
     software-user interaction.
 
-    .. image:: apple_vision_user.webp
+    .. image:: apple_vision_user.jpg
         :width: 25%
 
     .. image:: apple_vision.jpg
@@ -568,7 +568,7 @@ Windows and the Web Platform:
 
 
     Firefox does not appear to have ever used these APIs to allow tablet pen
-    input, with the exception of `one piece of code <https://searchfox.org/mozilla-central/rev/e6cb503ac22402421186e7488d4250cc1c5fecab/widget/windows/InkCollector.cpp>`__
+    input, with the exception of :searchfox:`one piece of code <mozilla-central/rev/e6cb503ac22402421186e7488d4250cc1c5fecab:widget/windows/InkCollector.cpp>`
     to detect when the pen leaves the Firefox window to solve
     `Bug 1016232 <https://bugzilla.mozilla.org/show_bug.cgi?id=1016232>`__.
 
@@ -1194,8 +1194,7 @@ Here is an explanation of the codepaths Firefox uses to handle pointer input:
     handle. It will then handle the rest of the gesture itself.
 
     DirectManipulation is used for all top-level and popup windows as long as
-    it isn't disabled via the ``apz.allow_zooming``,
-    ``apz.windows.use_direct_manipulation``, or
+    it isn't disabled via the ``apz.allow_zooming`` or
     ``apz.windows.force_disable_direct_manipulation`` prefs.
 
 3.  If the pointing device is touch, the next action depends on

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +13,6 @@
 #include "BasePoint3D.h"
 #include "BasePoint4D.h"
 #include "BaseSize.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/gfx/NumericTools.h"
 
 #include <cmath>
@@ -85,23 +82,37 @@ struct MOZ_EMPTY_BASES IntPointTyped
     return IntPointTyped(int32_t(floorf(aX + 0.5f)),
                          int32_t(floorf(aY + 0.5f)));
   }
+  static IntPointTyped Round(double aX, double aY) {
+    return IntPointTyped(int32_t(floor(aX + 0.5)), int32_t(floor(aY + 0.5)));
+  }
 
   static IntPointTyped Ceil(float aX, float aY) {
     return IntPointTyped(int32_t(ceilf(aX)), int32_t(ceilf(aY)));
+  }
+  static IntPointTyped Ceil(double aX, double aY) {
+    return IntPointTyped(int32_t(ceil(aX)), int32_t(ceil(aY)));
   }
 
   static IntPointTyped Floor(float aX, float aY) {
     return IntPointTyped(int32_t(floorf(aX)), int32_t(floorf(aY)));
   }
+  static IntPointTyped Floor(double aX, double aY) {
+    return IntPointTyped(int32_t(floor(aX)), int32_t(floor(aY)));
+  }
 
-  static IntPointTyped Truncate(float aX, float aY) {
+  template <typename F>
+  static IntPointTyped Truncate(F aX, F aY) {
     return IntPointTyped(int32_t(aX), int32_t(aY));
   }
 
-  static IntPointTyped Round(const PointTyped<Units, float>& aPoint);
-  static IntPointTyped Ceil(const PointTyped<Units, float>& aPoint);
-  static IntPointTyped Floor(const PointTyped<Units, float>& aPoint);
-  static IntPointTyped Truncate(const PointTyped<Units, float>& aPoint);
+  template <typename F>
+  static IntPointTyped Round(const PointTyped<Units, F>& aPoint);
+  template <typename F>
+  static IntPointTyped Ceil(const PointTyped<Units, F>& aPoint);
+  template <typename F>
+  static IntPointTyped Floor(const PointTyped<Units, F>& aPoint);
+  template <typename F>
+  static IntPointTyped Truncate(const PointTyped<Units, F>& aPoint);
 
   // XXX When all of the code is ported, the following functions to convert to
   // and from unknown types should be removed.
@@ -165,13 +176,13 @@ struct MOZ_EMPTY_BASES PointTyped
 typedef PointTyped<UnknownUnits> Point;
 typedef PointTyped<UnknownUnits, double> PointDouble;
 
-template <class Units>
-IntPointTyped<Units> RoundedToInt(const PointTyped<Units>& aPoint) {
+template <class Units, class F>
+IntPointTyped<Units> RoundedToInt(const PointTyped<Units, F>& aPoint) {
   return IntPointTyped<Units>::Round(aPoint.x, aPoint.y);
 }
 
-template <class Units>
-IntPointTyped<Units> TruncatedToInt(const PointTyped<Units>& aPoint) {
+template <class Units, class F>
+IntPointTyped<Units> TruncatedToInt(const PointTyped<Units, F>& aPoint) {
   return IntPointTyped<Units>::Truncate(aPoint.x, aPoint.y);
 }
 
@@ -204,26 +215,30 @@ typedef Point3DTyped<UnknownUnits> Point3D;
 typedef Point3DTyped<UnknownUnits, double> PointDouble3D;
 
 template <typename Units>
+template <typename F>
 IntPointTyped<Units> IntPointTyped<Units>::Round(
-    const PointTyped<Units, float>& aPoint) {
+    const PointTyped<Units, F>& aPoint) {
   return IntPointTyped::Round(aPoint.x, aPoint.y);
 }
 
 template <typename Units>
+template <typename F>
 IntPointTyped<Units> IntPointTyped<Units>::Ceil(
-    const PointTyped<Units, float>& aPoint) {
+    const PointTyped<Units, F>& aPoint) {
   return IntPointTyped::Ceil(aPoint.x, aPoint.y);
 }
 
 template <typename Units>
+template <typename F>
 IntPointTyped<Units> IntPointTyped<Units>::Floor(
-    const PointTyped<Units, float>& aPoint) {
+    const PointTyped<Units, F>& aPoint) {
   return IntPointTyped::Floor(aPoint.x, aPoint.y);
 }
 
 template <typename Units>
+template <typename F>
 IntPointTyped<Units> IntPointTyped<Units>::Truncate(
-    const PointTyped<Units, float>& aPoint) {
+    const PointTyped<Units, F>& aPoint) {
   return IntPointTyped::Truncate(aPoint.x, aPoint.y);
 }
 

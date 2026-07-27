@@ -5,7 +5,7 @@
 
 ## Confirmation hints
 
-confirmation-hint-breakage-report-sent = Hlášení byla odesláno. Děkujeme.
+confirmation-hint-breakage-report-sent = Hlášení bylo odesláno. Děkujeme.
 confirmation-hint-login-removed = Přihlašovací údaje odstraněny.
 confirmation-hint-password-removed = Heslo odstraněno
 confirmation-hint-page-bookmarked = Uloženo do záložek
@@ -31,3 +31,5 @@ confirmation-hint-duplicate-tabs-closed =
         [many] Zavřeno { $tabCount } panelů
        *[other] Zavřeno { $tabCount } panelů
     }
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = Přesunuto do nabídky

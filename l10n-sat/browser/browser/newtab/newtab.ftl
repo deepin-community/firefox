@@ -8,11 +8,68 @@
 newtab-page-title = ᱱᱟᱶᱟ ᱴᱮᱵᱽ
 newtab-settings-button =
     .title = ᱟᱢᱟᱜ ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱥᱟᱦᱴᱟ ᱥᱟᱡᱟᱣ ᱢᱮ
+newtab-personalize-settings-icon-label =
+    .title = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱥᱟᱡᱟᱣ ᱢᱮ
+    .aria-label = ᱥᱟᱡᱟᱣᱠᱚ
+newtab-settings-dialog-label =
+    .aria-label = ᱥᱟᱡᱟᱣ ᱠᱚ
 newtab-personalize-icon-label =
     .title = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱥᱟᱡᱟᱣ ᱢᱮ
     .aria-label = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱥᱟᱡᱟᱣ ᱢᱮ
 newtab-personalize-dialog-label =
     .aria-label = ᱥᱟᱡᱟᱣ
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱠᱚ
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } ᱫᱷᱟᱹᱲ
+            [two] { $num } ᱫᱷᱟᱹᱲ ᱠᱤᱱ
+           *[other] { $num } ᱫᱷᱟᱹᱲ ᱠᱚ
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ({ $extension })
+home-restore-defaults-srd =
+    .label = ᱦᱩᱲᱟᱹᱜ ᱠᱚ ᱡᱚᱜᱟᱣ ᱫᱚᱦᱲᱟᱹ
+    .accesskey = R
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (ᱢᱩᱞ)
+home-mode-choice-custom-srd =
+    .label = ᱠᱩᱥᱤᱭᱟᱠ URLs…
+home-mode-choice-blank-srd =
+    .label = ᱮᱠᱷᱮᱱᱟ ᱥᱟᱦᱴᱟ
+home-prefs-shortcuts-header-srd =
+    .label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
+home-prefs-shortcuts-select =
+    .aria-label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = ᱠᱟᱹᱢᱤᱼᱤᱡ ᱠᱷᱟᱴᱚ ᱢᱟᱪᱷᱟ ᱠᱚ
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = ᱜᱟᱲᱚ ᱠᱟᱱ ᱠᱟᱹᱦᱱᱤ ᱠᱚ
+home-prefs-highlights-option-visited-pages-srd =
+    .label = ᱦᱤᱨᱤ ᱠᱟᱱ ᱥᱟᱦᱴᱟ
+home-prefs-highlights-options-bookmarks-srd =
+    .label = ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = ᱱᱮᱱᱮ ᱰᱟᱣᱱᱞᱚᱰ ᱠᱟᱱ
+home-prefs-recent-activity-header-srd =
+    .label = ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱚ
+home-prefs-recent-activity-select =
+    .aria-label = ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱚ
 
 ## Search box component.
 
@@ -39,12 +96,16 @@ newtab-search-box-input =
     .placeholder = ᱣᱮᱵᱽ ᱨᱮ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
     .aria-label = ᱣᱮᱵᱽ ᱨᱮ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ ᱥᱮᱞᱮᱫ ᱢᱮ
 newtab-topsites-add-shortcut-header = ᱱᱟᱶᱟ ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
 newtab-topsites-edit-topsites-header = ᱪᱮᱛᱟᱱ ᱨᱤᱱ ᱥᱟᱭᱤᱴ ᱥᱟᱯᱲᱟᱣ ᱢᱮ
 newtab-topsites-edit-shortcut-header = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ ᱥᱟᱯᱲᱟᱣ ᱢᱮ
+newtab-topsites-add-shortcut-label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ ᱥᱮᱞᱮᱫᱽ ᱢᱮ
+newtab-topsites-add-shortcut-title =
+    .title = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ ᱥᱮᱞᱮᱫᱽ ᱢᱮ
+    .aria-label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ ᱥᱮᱞᱮᱫᱽ ᱢᱮ
 newtab-topsites-title-label = ᱧᱩᱛᱩᱢ
 newtab-topsites-title-input =
     .placeholder = ᱧᱩᱛᱩᱢ ᱟᱫᱮᱨ ᱢᱮ
@@ -108,6 +169,9 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } ᱨᱮ ᱥᱟᱧᱪᱟᱣ �
 newtab-menu-delete-pocket = { -pocket-brand-name } ᱠᱷᱚᱱ ᱢᱮᱴᱟᱣ ᱢᱮ
 newtab-menu-archive-pocket = { -pocket-brand-name } ᱨᱮ ᱫᱚᱦᱚ ᱵᱟᱭ ᱠᱟᱜ ᱢᱮ
 newtab-menu-show-privacy-info = ᱟᱞᱮ ᱠᱟᱹᱢᱤᱠᱚ ᱟᱨ ᱟᱢᱟᱜ ᱱᱤᱥᱚᱱ ᱠᱚ
+newtab-menu-about-fakespot = { -fakespot-brand-name } ᱵᱚᱵᱚᱛ
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -196,6 +260,9 @@ newtab-section-header-recent-activity = ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤ
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } ᱨᱮᱭᱟᱜ ᱵᱟᱛᱟᱣᱟᱜ
+newtab-section-header-stories = ᱢᱚᱱᱮᱼᱜᱷᱟᱱᱴᱟ ᱠᱟᱹᱦᱱᱤ ᱠᱚ
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = ᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱦᱮᱸᱧᱟᱜ ᱦᱟᱛᱟᱣ
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -204,6 +271,8 @@ newtab-empty-section-highlights = ᱵᱽᱨᱟᱣᱡᱤᱝ ᱮᱛᱚᱦᱚᱵ �
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = ᱡᱷᱚᱛᱚ ᱪᱟᱵᱟ ᱮᱱᱟ ᱾ { $provider } ᱠᱷᱚᱱ ᱟᱨᱦᱚᱸ ᱰᱷᱮᱨ ᱠᱟᱹᱦᱱᱤ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱭᱚᱢ ᱛᱮ ᱧᱮᱞ ᱢᱮ ᱾ ᱵᱟᱝ ᱛᱟᱹᱝᱜᱤ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟᱢ ? ᱣᱮᱵᱽ ᱡᱟᱠᱟᱛ ᱠᱷᱚᱱ ᱟᱨᱦᱚᱸ ᱱᱟᱯᱟᱭ ᱠᱟᱹᱦᱤᱱᱤ ᱧᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱧᱩᱛᱩᱢᱟᱱ ᱡᱤᱱᱤᱥ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = ᱡᱷᱚᱛᱚ ᱪᱟᱵᱟ ᱮᱱᱟ ᱾ ᱰᱷᱮᱨ ᱠᱟᱹᱦᱱᱤ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱭᱚᱢ ᱛᱮ ᱧᱮᱞ ᱢᱮ ᱾ ᱵᱟᱝ ᱛᱟᱹᱝᱜᱤ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟᱢ ? ᱣᱮᱵᱽ ᱡᱟᱠᱟᱛ ᱠᱷᱚᱱ ᱟᱨᱦᱚᱸ ᱱᱟᱯᱟᱭ ᱠᱟᱹᱦᱤᱱᱤ ᱧᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱧᱩᱛᱩᱢᱟᱱ ᱡᱤᱱᱤᱥ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -224,9 +293,23 @@ newtab-pocket-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 newtab-pocket-cta-button = { -pocket-brand-name } ᱧᱟᱢ ᱢᱮ
 newtab-pocket-cta-text = { -pocket-brand-name } ᱨᱮ ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱠᱟᱹᱦᱱᱤ ᱠᱚ ᱥᱟᱧᱪᱟᱣ ᱢᱮ, ᱟᱨ ᱵᱮᱥ ᱡᱤᱱᱤᱥ ᱠᱚ ᱮᱢᱟᱱ ᱯᱟᱲᱦᱟᱣ ᱢᱮ ᱾
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ᱫᱚ { -brand-product-name } ᱜᱷᱟᱨᱚᱧᱡᱽ ᱨᱮᱭᱟᱜ ᱦᱟᱹᱴᱤᱧ ᱠᱟᱱᱟ
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = ᱥᱟᱺᱪᱟᱣ ᱢᱮ
 newtab-pocket-saved = ᱥᱟᱺᱪᱟᱣᱮᱱᱟ
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = ᱱᱚᱠᱟ ᱞᱮᱠᱷᱟ ᱟᱨᱦᱚᱸ
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = ᱤᱧ ᱞᱟᱹᱜᱤᱫ ᱫᱚ ᱵᱟᱝᱟ
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = ᱥᱟᱨᱦᱟᱣ ᱾ ᱟᱢᱟᱜ ᱢᱚᱱᱚᱛ ᱟᱞᱮ ᱟᱢᱟᱜ ᱢᱚᱱᱚᱛ ᱥᱩᱫᱷᱨᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ ᱜᱚᱲᱚ ᱞᱮ ᱮᱢᱟᱭᱟ ᱾
+newtab-toast-dismiss-button =
+    .title = ᱵᱚᱸᱫ
+    .aria-label = ᱵᱚᱸᱫ
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -243,9 +326,22 @@ newtab-error-fallback-refresh-link = ᱫᱩᱦᱲᱟᱹ ᱠᱩᱨᱩᱢᱩᱴᱩ
 
 newtab-custom-shortcuts-title = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
 newtab-custom-shortcuts-subtitle = ᱟᱢ ᱥᱟᱺᱪᱟᱣ ᱠᱟᱫ ᱟᱨ ᱵᱟᱝ ᱪᱟᱞᱟᱜ ᱠᱟᱱ ᱥᱟᱭᱤᱴ ᱠᱚ
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
     .description = ᱟᱢ ᱥᱟᱺᱪᱟᱣ ᱠᱟᱫ ᱟᱨ ᱵᱟᱝ ᱪᱟᱞᱟᱜ ᱠᱟᱱ ᱥᱟᱭᱤᱴ ᱠᱚ
+newtab-custom-shortcuts-nova =
+    .label = ᱠᱷᱟᱴᱚᱢᱟᱪᱷᱟ
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } ᱛᱷᱟᱨ
+            [two] { $num } ᱛᱷᱟᱨ ᱠᱤᱱ
+           *[other] { $num } ᱛᱷᱟᱨ ᱠᱚ
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -257,15 +353,169 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = ᱠᱟᱹᱢᱤᱼᱤᱡ ᱠᱷᱟᱴᱚ ᱢᱟᱪᱷᱟ ᱠᱚ
 newtab-custom-pocket-title = { -pocket-brand-name } ᱮᱛ ᱵᱟᱛᱟᱣᱟᱜ
 newtab-custom-pocket-subtitle = { -pocket-brand-name } ᱫᱚ { -brand-product-name } ᱜᱷᱟᱨᱚᱸᱡᱽ ᱨᱮᱱᱟᱜ ᱢᱤᱫ ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ ᱞᱮᱠᱷᱟᱛᱮ ᱠᱭᱩᱨᱮᱴ ᱠᱟᱱᱟ
-newtab-custom-pocket-toggle =
-    .label = { -pocket-brand-name } ᱮᱛ ᱵᱟᱛᱟᱣᱟᱜ
-    .description = { -pocket-brand-name } ᱫᱚ { -brand-product-name } ᱜᱷᱟᱨᱚᱸᱡᱽ ᱨᱮᱱᱟᱜ ᱢᱤᱫ ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ ᱞᱮᱠᱷᱟᱛᱮ ᱠᱭᱩᱨᱮᱴ ᱠᱟᱱᱟ
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
+newtab-custom-stories-toggle =
+    .label = ᱥᱚᱞᱦᱟ ᱟᱠᱟᱱ ᱠᱟᱹᱦᱱᱤ ᱠᱚ
+    .description = { -brand-product-name } ᱜᱷᱟᱨᱚᱧᱡᱽ ᱦᱚᱛᱮᱛᱮ ᱠᱭᱩᱨᱮᱴ ᱟᱠᱟᱱ ᱥᱟᱨᱦᱟᱣᱮᱱ ᱡᱤᱱᱤᱥ
+newtab-recommended-stories-toggle =
+    .label = ᱥᱚᱞᱦᱟ ᱟᱠᱟᱱ ᱠᱟᱹᱦᱱᱤ ᱠᱚ
 newtab-custom-pocket-sponsored = ᱜᱟᱲᱚ ᱠᱟᱱ ᱠᱟᱹᱦᱱᱤ ᱠᱚ
 newtab-custom-pocket-show-recent-saves = ᱱᱮᱱᱮ ᱥᱟᱧᱪᱟᱣ ᱠᱚ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 newtab-custom-recent-title = ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱚ
 newtab-custom-recent-subtitle = ᱱᱚᱱᱮᱛᱚᱜᱟᱜ ᱥᱟᱭᱤᱴ ᱟᱨ ᱡᱤᱱᱤᱥ ᱨᱮᱭᱟᱜ ᱢᱤᱫᱴᱟᱝ ᱵᱟᱪᱷᱟᱣ
-newtab-custom-recent-toggle =
-    .label = ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱚ
-    .description = ᱱᱚᱱᱮᱛᱚᱜᱟᱜ ᱥᱟᱭᱤᱴ ᱟᱨ ᱡᱤᱱᱤᱥ ᱨᱮᱭᱟᱜ ᱢᱤᱫᱴᱟᱝ ᱵᱟᱪᱷᱟᱣ
+newtab-custom-weather-toggle =
+    .label = ᱦᱚᱭ ᱦᱤᱥᱤᱫ
+    .description = ᱢᱤᱫ ᱧᱮᱞ ᱛᱮ ᱛᱮᱦᱮᱧᱟᱜ ᱯᱷᱚᱨᱠᱟᱥᱴ
 newtab-custom-close-button = ᱵᱚᱸᱫᱚᱭ ᱢᱮ
 newtab-custom-settings = ᱥᱟᱡᱟᱣ ᱠᱚ ᱥᱚᱢᱵᱷᱲᱟᱣ ᱢᱮ
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = ᱠᱟᱸᱛᱷᱪᱤᱛᱟᱹᱨ
+newtab-wallpaper-reset = ᱢᱩᱞ ᱞᱮᱠᱷᱟ ᱛᱮ ᱨᱤᱥᱮᱴ ᱢᱮ
+newtab-wallpaper-toggle-title =
+    .label = ᱠᱟᱸᱛᱷᱪᱤᱛᱟᱹᱨ
+newtab-wallpaper-light-red-panda = ᱟᱨᱟᱜ ᱯᱟᱱᱰᱟ
+newtab-wallpaper-light-mountain = ᱯᱟᱸᱰ ᱵᱩᱨᱩ
+newtab-wallpaper-light-sky = ᱵᱮᱝᱜᱟᱲ ᱟᱨ ᱜᱩᱞᱟᱯᱤ ᱨᱤᱢᱤᱞ ᱥᱟᱶ ᱥᱮᱨᱢᱟ
+newtab-wallpaper-light-color = ᱞᱤᱞ, ᱜᱩᱞᱟᱯᱤ ᱟᱨ ᱥᱟᱥᱟᱝ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-light-landscape = ᱞᱤᱞ ᱠᱩᱦᱲᱟ ᱵᱩᱨᱩ ᱞᱮᱱᱰᱥᱠᱮᱯ
+newtab-wallpaper-light-beach = ᱛᱟᱞᱮ ᱫᱟᱨᱮ ᱥᱟᱶ ᱵᱤᱪ
+newtab-wallpaper-dark-aurora = Aurora Borealis
+newtab-wallpaper-dark-color = ᱟᱨᱟᱜ ᱟᱨ ᱞᱤᱞ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-dark-panda = ᱟᱨᱟᱜ ᱯᱟᱱᱰᱟ ᱵᱤᱨ ᱨᱮ ᱩᱠᱩ ᱟᱠᱟᱱᱟ
+newtab-wallpaper-dark-sky = ᱧᱤᱱᱫᱟᱹ ᱥᱮᱨᱢᱟ ᱥᱟᱶ ᱥᱚᱦᱚᱨ ᱞᱮᱱᱰᱥᱠᱮᱯ
+newtab-wallpaper-dark-mountain = ᱞᱮᱱᱰᱥᱠᱮᱯ ᱵᱩᱨᱩ
+newtab-wallpaper-dark-city = ᱵᱮᱝᱜᱟᱲ ᱥᱚᱦᱚᱨ ᱞᱮᱱᱰᱥᱠᱮᱯ
+newtab-wallpaper-dark-fox-anniversary = ᱵᱤᱨ ᱥᱩᱨ ᱨᱮ ᱯᱷᱩᱴᱷᱯᱟᱛᱷ ᱨᱮ ᱢᱤᱫᱴᱟᱹᱝ ᱛᱩᱭᱩ
+newtab-wallpaper-light-fox-anniversary = ᱢᱤᱫ ᱛᱩᱭᱩ ᱢᱤᱫ ᱜᱷᱟᱸᱥ ᱯᱟᱦᱴᱟ ᱨᱮ ᱢᱤᱫ ᱠᱩᱦᱲᱟ ᱵᱩᱨᱩ ᱞᱮᱱᱰᱥᱠᱮᱯ ᱥᱟᱶ
+
+## Solid Colors
+
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
+newtab-wallpaper-category-title-colors = ᱠᱮᱴᱮᱡ ᱨᱚᱝ
+newtab-wallpaper-blue = ᱞᱤᱞ
+newtab-wallpaper-light-blue = ᱦᱟᱞᱠᱟ ᱞᱤᱞ
+newtab-wallpaper-light-purple = ᱦᱟᱞᱠᱟ ᱵᱮᱝᱜᱟᱲ
+newtab-wallpaper-light-green = ᱦᱟᱞᱠᱟ ᱦᱟᱹᱨᱭᱟᱹᱲ
+newtab-wallpaper-green = ᱦᱟᱹᱨᱤᱭᱟᱹᱲ
+newtab-wallpaper-beige = ᱵᱮᱜᱤ
+newtab-wallpaper-yellow = ᱥᱟᱥᱟᱝ
+newtab-wallpaper-orange = ᱥᱟᱱᱛᱨᱟ
+newtab-wallpaper-pink = ᱜᱩᱞᱟᱹᱯ
+newtab-wallpaper-light-pink = ᱦᱟᱞᱠᱟ ᱜᱩᱞᱟᱯᱤ
+newtab-wallpaper-red = ᱟᱨᱟᱜ
+newtab-wallpaper-dark-blue = ᱦᱮᱱᱫᱮ ᱞᱤᱞ
+newtab-wallpaper-dark-purple = ᱧᱩᱛ ᱵᱮᱝᱜᱩᱱᱤ
+newtab-wallpaper-dark-green = ᱧᱩᱛ ᱦᱟᱹᱨᱤᱭᱟᱹᱲ
+newtab-wallpaper-brown = ᱢᱟᱹᱴᱤᱭᱟᱹᱲ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = ᱮᱵᱽᱥᱴᱨᱟᱠᱴ
+newtab-wallpaper-abstract-green = ᱦᱟᱹᱨᱭᱟᱹᱲ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-abstract-blue = ᱞᱤᱞ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-abstract-purple = ᱵᱮᱝᱜᱟᱲ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-abstract-orange = ᱞᱮᱢᱵᱚ ᱜᱚᱲᱦᱚᱱ
+newtab-wallpaper-gradient-orange = ᱜᱽᱨᱮᱰᱤᱭᱮᱱᱴ ᱞᱮᱢᱵᱚ ᱟᱨ ᱜᱩᱞᱟᱯᱤ
+newtab-wallpaper-abstract-blue-purple = ᱞᱤᱞ ᱟᱨ ᱵᱮᱝᱜᱩᱱᱤ ᱜᱚᱲᱦᱚᱱ
+
+## Firefox
+
+newtab-wallpaper-category-title-photographs = ᱯᱷᱳᱴᱳᱜᱽᱨᱟᱯᱷ
+newtab-wallpaper-beach-at-sunrise = ᱥᱤᱛᱩᱝ ᱩᱰᱩᱝ ᱨᱮ ᱫᱚᱨᱭᱟ ᱟᱲᱮ
+newtab-wallpaper-beach-at-sunset = ᱵᱮᱲᱟ ᱦᱟᱹᱥᱩᱨ ᱨᱮ ᱫᱚᱨᱭᱟ ᱟᱲᱮ
+newtab-wallpaper-storm-sky = ᱦᱚᱭᱫᱟᱜ ᱥᱮᱨᱢᱟ
+newtab-wallpaper-sky-with-pink-clouds = ᱜᱩᱞᱟᱯᱤ ᱨᱤᱢᱤᱞ ᱥᱟᱶ ᱥᱮᱨᱢᱟ
+newtab-wallpaper-red-panda-yawns-in-a-tree = ᱟᱨᱟᱜ ᱯᱟᱱᱰᱟ ᱫᱟᱨᱮ ᱨᱮ ᱡᱟᱢᱵᱮ ᱮᱫᱟᱭ
+newtab-wallpaper-white-mountains = ᱯᱟᱸᱰ ᱵᱩᱨᱩᱠᱚ
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = ᱪᱤᱛᱟᱹᱨᱤᱭᱟᱹ <a data-l10n-name="name-link">{ $author_string }</a> ᱨᱮ <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = ᱨᱚᱝ ᱨᱮᱭᱟᱜ ᱟᱨᱮᱡ ᱧᱮᱞ ᱵᱤᱲᱟᱹᱣ ᱢᱮ
+newtab-wallpaper-feature-highlight-content = ᱟᱢᱟᱜ ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱣᱟᱞᱯᱮᱯᱟᱨ ᱥᱟᱶ ᱢᱤᱫ ᱛᱟᱜᱽᱲᱟ ᱧᱮᱞ ᱮᱢᱚᱜ ᱢᱮ ᱾
+newtab-wallpaper-feature-highlight-button = ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = ᱵᱚᱸᱫ
+    .aria-label = ᱴᱟᱴᱠᱟ ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } ᱨᱮ ᱨᱮ ᱯᱷᱚᱨᱠᱟᱥᱴ ᱧᱮᱞ ᱢᱮ
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ ᱥᱯᱚᱱᱥᱚᱨ ᱟᱠᱟᱱ
+newtab-weather-menu-change-location = ᱡᱟᱭᱜᱟ ᱵᱚᱫᱚᱞ ᱢᱮ
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = ᱡᱟᱭᱜᱟ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+    .aria-label = ᱡᱟᱭᱜᱟ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+newtab-weather-menu-weather-display = ᱦᱚᱭ ᱦᱤᱥᱤᱫ ᱩᱫᱩᱜ
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = ᱟᱞᱜᱟ
+newtab-weather-menu-change-weather-display-simple = ᱟᱞᱜᱟ ᱧᱮᱞ ᱛᱮ ᱵᱚᱫᱚᱞ ᱢᱮ
+newtab-weather-menu-weather-display-option-detailed = ᱵᱤᱵᱨᱚᱬ ᱠᱚ
+newtab-weather-menu-change-weather-display-detailed = ᱯᱩᱥᱴᱟᱹᱣ ᱧᱮᱞ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ
+newtab-weather-menu-temperature-units = ᱞᱚᱞᱚᱢᱟᱯ ᱭᱩᱱᱤᱴ
+newtab-weather-menu-temperature-option-fahrenheit = ᱯᱷᱟᱨᱮᱱᱦᱮᱭᱤᱴ
+newtab-weather-menu-temperature-option-celsius = ᱥᱮᱞᱥᱤᱭᱚᱥ
+newtab-weather-menu-change-temperature-units-fahrenheit = ᱯᱷᱟᱨᱮᱱᱦᱟᱭᱤᱴ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ
+newtab-weather-menu-change-temperature-units-celsius = ᱥᱮᱞᱥᱤᱭᱟᱥ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ
+newtab-weather-menu-hide-weather = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱨᱮ ᱦᱚᱭ ᱦᱤᱥᱤᱫ ᱩᱠᱩᱭ ᱢᱮ
+newtab-weather-menu-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
+# This message is shown if user is working offline
+newtab-weather-error-not-available = ᱱᱤᱛᱚᱜ ᱫᱚ ᱦᱚᱭ ᱦᱤᱥᱤᱫ ᱰᱟᱴᱟ ᱵᱟᱝ ᱧᱟᱢᱚᱜ ᱠᱟᱱᱟ ᱾
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = { $provider } ᱨᱮ ᱨᱮ ᱯᱷᱚᱨᱠᱟᱥᱴ ᱧᱮᱞ ᱢᱮ
+    .aria-description = { $provider } ∙ ᱥᱯᱚᱱᱥᱚᱨ ᱟᱠᱟᱱ
+
+## Topic Labels
+
+newtab-topic-label-business = ᱵᱮᱯᱟᱨ
+newtab-topic-label-career = ᱠᱮᱨᱤᱭᱚᱨ
+newtab-topic-label-education = ᱥᱮᱪᱮᱫ
+newtab-topic-label-arts = ᱨᱚᱢᱚᱡᱽ
+newtab-topic-label-food = ᱡᱚᱢᱟᱜ
+newtab-topic-label-health = ᱦᱚᱲᱢᱚ ᱥᱟᱶᱟᱨ
+newtab-topic-label-hobbies = ᱜᱮᱢᱤᱝ
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = ᱴᱟᱠᱟ
+newtab-topic-label-society-parenting = ᱟᱭᱳ-ᱵᱟᱵᱟ ᱵᱮᱵᱷᱟᱨ
+newtab-topic-label-government = ᱨᱟᱡᱽᱱᱤᱛᱤ
+newtab-topic-label-education-science = ᱥᱟᱬᱮᱥ
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = ᱡᱤᱭᱚᱱ ᱦᱮᱠᱥ
+newtab-topic-label-sports = ᱠᱷᱮᱞ
+newtab-topic-label-tech = ᱴᱮᱠ
+newtab-topic-label-travel = ᱫᱟᱬᱟᱱ
+newtab-topic-label-home = ᱚᱲᱟᱜ ᱟᱨ ᱵᱟᱜᱟᱱ
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = ᱟᱢᱟᱜ ᱯᱷᱤᱰ ᱵᱮᱥ ᱴᱩᱱ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱛᱟᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = ᱵᱟᱨ ᱵᱟᱝᱠᱷᱟᱱ ᱵᱟᱹᱲᱛᱤ ᱥᱟᱛᱟᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾ ᱟᱞᱮ ᱨᱮᱱ ᱜᱟᱹᱠᱷᱩᱲᱤᱭᱟᱹ ᱠᱩᱨᱮᱴᱚᱨ ᱠᱚ ᱟᱢᱟᱜ ᱨᱚᱜ ᱞᱮᱠᱟ ᱠᱟᱹᱦᱱᱤ ᱠᱚ ᱯᱟᱹᱦᱤᱞᱟᱜ ᱠᱚ ᱮᱢᱟ ᱾ ᱡᱟᱦᱟᱸ ᱚᱠᱛᱚ ᱨᱮᱜᱮ ᱟᱯᱰᱮᱴ ᱢᱮ ᱾
+newtab-topic-selection-save-button = ᱥᱟᱺᱪᱟᱣ ᱢᱮ
+newtab-topic-selection-cancel-button = ᱵᱟᱹᱰᱨᱟᱹ
+newtab-topic-selection-button-maybe-later = ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱛᱟᱭᱚᱢ ᱛᱮ
+newtab-topic-selection-privacy-link = ᱵᱟᱰᱟᱭ ᱢᱮ ᱪᱮᱫ ᱞᱮᱠᱟ ᱟᱞᱮ ᱰᱟᱴᱟ ᱵᱚᱱ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱵᱚᱱ ᱪᱟᱞᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ
+newtab-topic-selection-button-update-interests = ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱠᱚ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮ
+newtab-topic-selection-button-pick-interests = ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱠᱚ ᱵᱟᱪᱷᱟᱣ ᱢᱮ

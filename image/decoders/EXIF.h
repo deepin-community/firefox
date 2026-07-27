@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,19 +31,23 @@ enum class ResolutionUnit : uint8_t {
 
 class EXIFParser {
  public:
-  static EXIFData Parse(const uint8_t* aData, const uint32_t aLength,
+  // aExpectExifIdCode Determines whether to expect the leading "Exif\0\0". True
+  // for exif in jpeg, false for exif in png.
+  static EXIFData Parse(bool aExpectExifIdCode, const uint8_t* aData,
+                        const uint32_t aLength,
                         const gfx::IntSize& aRealImageSize) {
-    EXIFParser parser;
+    EXIFParser parser(aExpectExifIdCode);
     return parser.ParseEXIF(aData, aLength, aRealImageSize);
   }
 
  private:
-  EXIFParser()
+  explicit EXIFParser(bool aExpectExifIdCode)
       : mStart(nullptr),
         mCurrent(nullptr),
         mLength(0),
         mRemainingLength(0),
-        mByteOrder(ByteOrder::Unknown) {}
+        mByteOrder(ByteOrder::Unknown),
+        mExpectExifIdCode(aExpectExifIdCode) {}
 
   EXIFData ParseEXIF(const uint8_t* aData, const uint32_t aLength,
                      const gfx::IntSize& aRealImageSize);
@@ -63,6 +66,8 @@ class EXIFParser {
   void JumpTo(const uint32_t aOffset);
 
   uint32_t CurrentOffset() const { return mCurrent - mStart; }
+
+  uint32_t TIFFHeaderStart() const;
 
   class ScopedJump {
     EXIFParser& mParser;
@@ -88,6 +93,7 @@ class EXIFParser {
   uint32_t mLength;
   uint32_t mRemainingLength;
   ByteOrder mByteOrder;
+  bool mExpectExifIdCode;
 };
 
 }  // namespace mozilla::image

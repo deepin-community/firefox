@@ -1,4 +1,3 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,18 +6,18 @@
 // chunk data, which may be either 32-bit hashes or complete 256-bit hashes.
 // Chunk numbers are represented in ChunkSet.h.
 
-#ifndef SBEntries_h__
-#define SBEntries_h__
+#ifndef SBEntries_h_
+#define SBEntries_h_
 
+#include "mozilla/crypto_hash_sha2.h"
+#include "mozilla/Base64.h"
 #include "nsTArray.h"
 #include "nsString.h"
-#include "nsICryptoHash.h"
 #include "nsNetUtil.h"
 #include "nsIOutputStream.h"
 #include "nsClassHashtable.h"
 #include "nsComponentManagerUtils.h"
 #include "nsTHashMap.h"
-#include "plbase64.h"
 
 namespace mozilla {
 namespace safebrowsing {
@@ -39,27 +38,10 @@ struct SafebrowsingHash {
     // From the protocol doc:
     // Each entry in the chunk is composed
     // of the SHA 256 hash of a suffix/prefix expression.
-    nsresult rv;
-    nsCOMPtr<nsICryptoHash> hash =
-        do_CreateInstance(NS_CRYPTO_HASH_CONTRACTID, &rv);
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    rv = hash->Init(nsICryptoHash::SHA256);
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    rv = hash->Update(
-        reinterpret_cast<const uint8_t*>(aPlainText.BeginReading()),
-        aPlainText.Length());
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    nsAutoCString hashed;
-    rv = hash->Finish(false, hashed);
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    NS_ASSERTION(hashed.Length() >= sHashSize,
-                 "not enough characters in the hash");
-
-    memcpy(buf, hashed.BeginReading(), sHashSize);
+    uint8_t hash[COMPLETE_SIZE];
+    crypto_hash_sha256(reinterpret_cast<const uint8_t*>(aPlainText.Data()),
+                       aPlainText.Length(), hash);
+    memcpy(buf, hash, sHashSize);
 
     return NS_OK;
   }
@@ -87,12 +69,8 @@ struct SafebrowsingHash {
   }
 
   void ToString(nsACString& aStr) const {
-    // Base64 represents 6-bits data as 8-bits output.
-    uint32_t len = ((sHashSize + 2) / 3) * 4;
-
-    aStr.SetLength(len);
-    PL_Base64Encode((char*)buf, sHashSize, aStr.BeginWriting());
-    MOZ_ASSERT(aStr.BeginReading()[len] == '\0');
+    [[maybe_unused]] nsresult nr = Base64Encode((char*)buf, sHashSize, aStr);
+    MOZ_ASSERT(NS_SUCCEEDED(nr));
   }
 
   nsCString ToString() const {
@@ -344,4 +322,4 @@ void CopyClassHashTable(const T& aSource, T& aDestination) {
 }  // namespace safebrowsing
 }  // namespace mozilla
 
-#endif  // SBEntries_h__
+#endif  // SBEntries_h_

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,7 +11,11 @@
 #include "nsIObserver.h"
 #include "nsTArray.h"
 
-#include "mozilla/PRemoteDecoderManagerChild.h"
+#include "mozilla/PRemoteMediaManagerChild.h"
+
+#if defined(NIGHTLY_BUILD) && !defined(MOZ_NO_SMART_CARDS)
+#  include "mozilla/psm/PKCS11ModuleParent.h"
+#endif  // NIGHTLY_BUILD && !MOZ_NO_SMART_CARDS
 
 namespace mozilla {
 
@@ -45,13 +47,17 @@ class UtilityProcessManager final : public UtilityProcessHost::Listener {
   using SharedLaunchPromise = MozPromise<T, LaunchError, false>;
 
   using StartRemoteDecodingUtilityPromise =
-      LaunchPromise<Endpoint<PRemoteDecoderManagerChild>>;
+      LaunchPromise<Endpoint<PRemoteMediaManagerChild>>;
   using JSOraclePromise = GenericNonExclusivePromise;
 
 #ifdef XP_WIN
   using WindowsUtilsPromise = LaunchPromise<RefPtr<dom::WindowsUtilsParent>>;
   using WinFileDialogPromise = LaunchPromise<widget::filedialog::ProcessProxy>;
 #endif
+
+#if defined(NIGHTLY_BUILD) && !defined(MOZ_NO_SMART_CARDS)
+  using PKCS11ModulePromise = LaunchPromise<RefPtr<psm::PKCS11ModuleParent>>;
+#endif  // NIGHTLY_BUILD && !MOZ_NO_SMART_CARDS
 
   static RefPtr<UtilityProcessManager> GetSingleton();
 
@@ -82,6 +88,10 @@ class UtilityProcessManager final : public UtilityProcessHost::Listener {
   // reused; this will always return a fresh actor.
   RefPtr<WinFileDialogPromise> CreateWinFileDialogActor();
 #endif
+
+#if defined(NIGHTLY_BUILD) && !defined(MOZ_NO_SMART_CARDS)
+  RefPtr<PKCS11ModulePromise> StartPKCS11Module();
+#endif  // NIGHTLY_BUILD && !MOZ_NO_SMART_CARDS
 
   void OnProcessUnexpectedShutdown(UtilityProcessHost* aHost);
 

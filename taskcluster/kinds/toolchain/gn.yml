@@ -6,7 +6,7 @@ task-defaults:
     description: "gn toolchain build"
     attributes:
         local-toolchain: true
-    worker-type: b-linux-gcp
+    worker-type: b-linux-docker-amd
     worker:
         max-run-time: 1800
     run:
@@ -44,6 +44,6 @@ win64-gn:
         script: build-gn-win64.sh
     fetches:
         fetch:
-            - ninja
+            - win64-ninja
         toolchain:
             - vs-toolchain

@@ -15,6 +15,7 @@ const Commands = {
   networkCommand: "devtools/shared/commands/network/network-command",
   objectCommand: "devtools/shared/commands/object/object-command",
   resourceCommand: "devtools/shared/commands/resource/resource-command",
+  responsiveCommand: "devtools/shared/commands/responsive/responsive-command",
   rootResourceCommand:
     "devtools/shared/commands/root-resource/root-resource-command",
   scriptCommand: "devtools/shared/commands/script/script-command",
@@ -31,13 +32,21 @@ const Commands = {
  * For a given descriptor and its related Targets, already initialized,
  * return the dictionary with all command instances.
  * This dictionary is lazy and commands will be loaded and instanciated on-demand.
+ *
+ * @param {DescriptorFront} descriptorFront
+ * @param {boolean} enableWindowGlobalThreadActors: Used by one test.
  */
-async function createCommandsDictionary(descriptorFront) {
+async function createCommandsDictionary(
+  descriptorFront,
+  enableWindowGlobalThreadActors
+) {
   // Bug 1675763: Watcher actor is not available in all situations yet.
   let watcherFront;
   const supportsWatcher = descriptorFront.traits?.watcher;
   if (supportsWatcher) {
-    watcherFront = await descriptorFront.getWatcher();
+    watcherFront = await descriptorFront.getWatcher({
+      enableWindowGlobalThreadActors,
+    });
   }
   const { client } = descriptorFront;
 

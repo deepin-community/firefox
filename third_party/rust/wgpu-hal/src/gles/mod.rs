@@ -62,8 +62,6 @@ in shaders, getting buffers and builtins to work correctly is a bit tricky.
 We never emulate `base_vertex` and gl_VertexID behaves as `@builtin(vertex_index)` does, so we
 never need to do anything about that.
 
-We always advertise support for `VERTEX_AND_INSTANCE_INDEX_RESPECTS_RESPECTIVE_FIRST_VALUE_IN_INDIRECT_DRAW`.
-
 ### GL 4.2+ with ARB_shader_draw_parameters
 
 - `@builtin(instance_index)` translates to `gl_InstanceID + gl_BaseInstance`
@@ -95,33 +93,40 @@ mod adapter;
 mod command;
 mod conv;
 mod device;
+mod fence;
 mod queue;
 
-use crate::{CopyExtent, TextureDescriptor};
+pub use fence::Fence;
 
 #[cfg(not(any(windows, webgl)))]
 pub use self::egl::{AdapterContext, AdapterContextLock};
 #[cfg(not(any(windows, webgl)))]
-use self::egl::{Instance, Surface};
+pub use self::egl::{Instance, Surface};
 
 #[cfg(webgl)]
 pub use self::web::AdapterContext;
 #[cfg(webgl)]
-use self::web::{Instance, Surface};
+pub use self::web::{Instance, Surface};
 
 #[cfg(windows)]
 use self::wgl::AdapterContext;
 #[cfg(windows)]
-use self::wgl::{Instance, Surface};
+pub use self::wgl::{Instance, Surface};
+
+use alloc::{boxed::Box, string::String, string::ToString as _, sync::Arc, vec::Vec};
+use core::{
+    cell::Cell,
+    fmt,
+    ops::Range,
+    sync::atomic::{AtomicU32, AtomicU8},
+};
+use parking_lot::Mutex;
 
 use arrayvec::ArrayVec;
-
 use glow::HasContext;
-
 use naga::FastHashMap;
-use parking_lot::Mutex;
-use std::sync::atomic::{AtomicU32, AtomicU8};
-use std::{fmt, ops::Range, sync::Arc};
+
+use crate::{CopyExtent, TextureDescriptor};
 
 #[derive(Clone, Debug)]
 pub struct Api;
@@ -132,11 +137,13 @@ const MAX_TEXTURE_SLOTS: usize = 16;
 const MAX_SAMPLERS: usize = 16;
 const MAX_VERTEX_ATTRIBUTES: usize = 16;
 const ZERO_BUFFER_SIZE: usize = 256 << 10;
-const MAX_PUSH_CONSTANTS: usize = 64;
-// We have to account for each push constant may need to be set for every shader.
-const MAX_PUSH_CONSTANT_COMMANDS: usize = MAX_PUSH_CONSTANTS * crate::MAX_CONCURRENT_SHADER_STAGES;
+const MAX_IMMEDIATES: usize = 64;
+// We have to account for each immediate data may need to be set for every shader.
+const MAX_IMMEDIATES_COMMANDS: usize = MAX_IMMEDIATES * crate::MAX_CONCURRENT_SHADER_STAGES;
 
 impl crate::Api for Api {
+    const VARIANT: wgt::Backend = wgt::Backend::Gl;
+
     type Instance = Instance;
     type Surface = Surface;
     type Adapter = Adapter;
@@ -226,6 +233,8 @@ bitflags::bitflags! {
         ///
         /// When this is true, instance offset emulation via vertex buffer rebinding and a shader uniform will be disabled.
         const FULLY_FEATURED_INSTANCING = 1 << 16;
+        /// Supports direct multisampled rendering to a texture without needing a resolve texture.
+        const MULTISAMPLED_RENDER_TO_TEXTURE = 1 << 17;
     }
 }
 
@@ -247,17 +256,12 @@ bitflags::bitflags! {
 
 type BindTarget = u32;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 enum VertexAttribKind {
+    #[default]
     Float, // glVertexAttribPointer
     Integer, // glVertexAttribIPointer
-           //Double,  // glVertexAttribLPointer
-}
-
-impl Default for VertexAttribKind {
-    fn default() -> Self {
-        Self::Float
-    }
+             //Double,  // glVertexAttribLPointer
 }
 
 #[derive(Clone, Debug)]
@@ -271,7 +275,9 @@ struct AdapterShared {
     context: AdapterContext,
     private_caps: PrivateCapabilities,
     features: wgt::Features,
+    limits: wgt::Limits,
     workarounds: Workarounds,
+    options: wgt::GlBackendOptions,
     shading_language_version: naga::back::glsl::Version,
     next_shader_id: AtomicU32,
     program_cache: Mutex<ProgramCache>,
@@ -292,7 +298,14 @@ pub struct Device {
     main_vao: glow::VertexArray,
     #[cfg(all(native, feature = "renderdoc"))]
     render_doc: crate::auxil::renderdoc::RenderDoc,
-    counters: wgt::HalCounters,
+    counters: Arc<wgt::HalCounters>,
+}
+
+impl Drop for Device {
+    fn drop(&mut self) {
+        let gl = &self.shared.context.lock();
+        unsafe { gl.delete_vertex_array(self.main_vao) };
+    }
 }
 
 pub struct ShaderClearProgram {
@@ -316,14 +329,27 @@ pub struct Queue {
     current_index_buffer: Mutex<Option<glow::Buffer>>,
 }
 
+impl Drop for Queue {
+    fn drop(&mut self) {
+        let gl = &self.shared.context.lock();
+        unsafe { gl.delete_framebuffer(self.draw_fbo) };
+        unsafe { gl.delete_framebuffer(self.copy_fbo) };
+        unsafe { gl.delete_buffer(self.zero_buffer) };
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Buffer {
     raw: Option<glow::Buffer>,
     target: BindTarget,
     size: wgt::BufferAddress,
+    /// Flags to use within calls to [`Device::map_buffer`](crate::Device::map_buffer).
     map_flags: u32,
-    data: Option<Arc<std::sync::Mutex<Vec<u8>>>>,
-    offset_of_current_mapping: Arc<std::sync::Mutex<wgt::BufferAddress>>,
+    /// True if the GL buffer is actually mapped, i.e. not "fake-mapped" with
+    /// an empty slice
+    mapped: Cell<bool>,
+    data: Option<Arc<MaybeMutex<Vec<u8>>>>,
+    offset_of_current_mapping: Arc<MaybeMutex<wgt::BufferAddress>>,
 }
 
 #[cfg(send_sync)]
@@ -344,8 +370,20 @@ pub enum TextureInner {
         target: BindTarget,
     },
     #[cfg(webgl)]
+    /// Render to a `WebGLFramebuffer`
+    ///
+    /// This is a web feature
     ExternalFramebuffer {
         inner: web_sys::WebGlFramebuffer,
+    },
+    #[cfg(native)]
+    /// Render to a `glow::NativeFramebuffer`
+    /// Useful when the framebuffer to draw to
+    /// has a non-zero framebuffer ID
+    ///
+    /// This is a native feature
+    ExternalNativeFramebuffer {
+        inner: glow::NativeFramebuffer,
     },
 }
 
@@ -363,6 +401,8 @@ impl TextureInner {
             Self::Texture { raw, target } => (raw, target),
             #[cfg(webgl)]
             Self::ExternalFramebuffer { .. } => panic!("Unexpected external framebuffer"),
+            #[cfg(native)]
+            Self::ExternalNativeFramebuffer { .. } => panic!("unexpected external framebuffer"),
         }
     }
 }
@@ -370,19 +410,21 @@ impl TextureInner {
 #[derive(Debug)]
 pub struct Texture {
     pub inner: TextureInner,
-    pub drop_guard: Option<crate::DropGuard>,
     pub mip_level_count: u32,
     pub array_layer_count: u32,
     pub format: wgt::TextureFormat,
-    #[allow(unused)]
     pub format_desc: TextureFormatDesc,
     pub copy_size: CopyExtent,
+
+    // The `drop_guard` field must be the last field of this struct so it is dropped last.
+    // Do not add new fields after it.
+    pub drop_guard: Option<crate::DropGuard>,
 }
 
 impl crate::DynTexture for Texture {}
 impl crate::DynSurfaceTexture for Texture {}
 
-impl std::borrow::Borrow<dyn crate::DynTexture> for Texture {
+impl core::borrow::Borrow<dyn crate::DynTexture> for Texture {
     fn borrow(&self) -> &dyn crate::DynTexture {
         self
     }
@@ -457,11 +499,24 @@ impl Texture {
         };
 
         log::error!(
-            "wgpu-hal heuristics assumed that the view dimension will be equal to `{got}` rather than `{view_dimension:?}`.\n{}\n{}\n{}\n{}",
-            "`D2` textures with `depth_or_array_layers == 1` are assumed to have view dimension `D2`",
-            "`D2` textures with `depth_or_array_layers > 1` are assumed to have view dimension `D2Array`",
-            "`D2` textures with `depth_or_array_layers == 6` are assumed to have view dimension `Cube`",
-            "`D2` textures with `depth_or_array_layers > 6 && depth_or_array_layers % 6 == 0` are assumed to have view dimension `CubeArray`",
+            concat!(
+                "wgpu-hal heuristics assumed that ",
+                "the view dimension will be equal to `{}` rather than `{:?}`.\n",
+                "`D2` textures with ",
+                "`depth_or_array_layers == 1` ",
+                "are assumed to have view dimension `D2`\n",
+                "`D2` textures with ",
+                "`depth_or_array_layers > 1` ",
+                "are assumed to have view dimension `D2Array`\n",
+                "`D2` textures with ",
+                "`depth_or_array_layers == 6` ",
+                "are assumed to have view dimension `Cube`\n",
+                "`D2` textures with ",
+                "`depth_or_array_layers > 6 && depth_or_array_layers % 6 == 0` ",
+                "are assumed to have view dimension `CubeArray`\n",
+            ),
+            got,
+            view_dimension,
         );
     }
 }
@@ -504,15 +559,18 @@ struct BindGroupLayoutInfo {
 
 #[derive(Debug)]
 pub struct PipelineLayout {
-    group_infos: Box<[BindGroupLayoutInfo]>,
+    group_infos: Box<[Option<BindGroupLayoutInfo>]>,
     naga_options: naga::back::glsl::Options,
 }
 
 impl crate::DynPipelineLayout for PipelineLayout {}
 
 impl PipelineLayout {
+    /// # Panics
+    /// If the pipeline layout does not contain a bind group layout used by
+    /// the resource binding.
     fn get_slot(&self, br: &naga::ResourceBinding) -> u8 {
-        let group_info = &self.group_infos[br.group as usize];
+        let group_info = self.group_infos[br.group as usize].as_ref().unwrap();
         group_info.binding_to_slot[br.binding as usize]
     }
 }
@@ -553,8 +611,14 @@ impl crate::DynBindGroup for BindGroup {}
 type ShaderId = u32;
 
 #[derive(Debug)]
+pub enum ShaderModuleSource {
+    Naga(crate::NagaShader),
+    Passthrough { source: String },
+}
+
+#[derive(Debug)]
 pub struct ShaderModule {
-    naga: crate::NagaShader,
+    source: ShaderModuleSource,
     label: Option<String>,
     id: ShaderId,
 }
@@ -598,7 +662,7 @@ struct VertexBufferDesc {
 }
 
 #[derive(Clone, Debug)]
-struct PushConstantDesc {
+struct ImmediateDesc {
     location: glow::UniformLocation,
     ty: naga::TypeInner,
     offset: u32,
@@ -606,9 +670,9 @@ struct PushConstantDesc {
 }
 
 #[cfg(send_sync)]
-unsafe impl Sync for PushConstantDesc {}
+unsafe impl Sync for ImmediateDesc {}
 #[cfg(send_sync)]
-unsafe impl Send for PushConstantDesc {}
+unsafe impl Send for ImmediateDesc {}
 
 /// For each texture in the pipeline layout, store the index of the only
 /// sampler (in this layout) that the texture is used with.
@@ -619,7 +683,8 @@ struct PipelineInner {
     program: glow::Program,
     sampler_map: SamplerBindMap,
     first_instance_location: Option<glow::UniformLocation>,
-    push_constant_descs: ArrayVec<PushConstantDesc, MAX_PUSH_CONSTANT_COMMANDS>,
+    immediates_descs: ArrayVec<ImmediateDesc, MAX_IMMEDIATES_COMMANDS>,
+    clip_distance_count: u32,
 }
 
 #[derive(Clone, Debug)]
@@ -653,12 +718,13 @@ struct ProgramStage {
     shader_id: ShaderId,
     entry_point: String,
     zero_initialize_workgroup_memory: bool,
+    constant_hash: Vec<u8>,
 }
 
 #[derive(PartialEq, Eq, Hash)]
 struct ProgramCacheKey {
     stages: ArrayVec<ProgramStage, 3>,
-    group_to_binding_to_slot: Box<[Box<[u8]>]>,
+    group_to_binding_to_slot: Box<[Option<Box<[u8]>>]>,
 }
 
 type ProgramCache = FastHashMap<ProgramCacheKey, Result<Arc<PipelineInner>, crate::PipelineError>>;
@@ -667,7 +733,7 @@ type ProgramCache = FastHashMap<ProgramCacheKey, Result<Arc<PipelineInner>, crat
 pub struct RenderPipeline {
     inner: Arc<PipelineInner>,
     primitive: wgt::PrimitiveState,
-    vertex_buffers: Box<[VertexBufferDesc]>,
+    vertex_buffers: Box<[Option<VertexBufferDesc>]>,
     vertex_attributes: Box<[AttributeDesc]>,
     color_targets: Box<[ColorTargetDesc]>,
     depth: Option<DepthState>,
@@ -702,57 +768,6 @@ pub struct QuerySet {
 }
 
 impl crate::DynQuerySet for QuerySet {}
-
-#[derive(Debug)]
-pub struct Fence {
-    last_completed: crate::FenceValue,
-    pending: Vec<(crate::FenceValue, glow::Fence)>,
-}
-
-impl crate::DynFence for Fence {}
-
-#[cfg(any(
-    not(target_arch = "wasm32"),
-    all(
-        feature = "fragile-send-sync-non-atomic-wasm",
-        not(target_feature = "atomics")
-    )
-))]
-unsafe impl Send for Fence {}
-#[cfg(any(
-    not(target_arch = "wasm32"),
-    all(
-        feature = "fragile-send-sync-non-atomic-wasm",
-        not(target_feature = "atomics")
-    )
-))]
-unsafe impl Sync for Fence {}
-
-impl Fence {
-    fn get_latest(&self, gl: &glow::Context) -> crate::FenceValue {
-        let mut max_value = self.last_completed;
-        for &(value, sync) in self.pending.iter() {
-            let status = unsafe { gl.get_sync_status(sync) };
-            if status == glow::SIGNALED {
-                max_value = value;
-            }
-        }
-        max_value
-    }
-
-    fn maintain(&mut self, gl: &glow::Context) {
-        let latest = self.get_latest(gl);
-        for &(value, sync) in self.pending.iter() {
-            if value <= latest {
-                unsafe {
-                    gl.delete_sync(sync);
-                }
-            }
-        }
-        self.pending.retain(|&(value, _)| value > latest);
-        self.last_completed = latest;
-    }
-}
 
 #[derive(Debug)]
 pub struct AccelerationStructure;
@@ -870,7 +885,7 @@ enum Command {
     },
     #[cfg(webgl)]
     CopyExternalImageToTexture {
-        src: wgt::ImageCopyExternalImage,
+        src: wgt::CopyExternalImageSourceInfo,
         dst: glow::Texture,
         dst_target: BindTarget,
         dst_format: wgt::TextureFormat,
@@ -918,6 +933,8 @@ enum Command {
     BindAttachment {
         attachment: u32,
         view: TextureView,
+        depth_slice: Option<u32>,
+        sample_count: u32,
     },
     ResolveAttachment {
         attachment: u32,
@@ -940,8 +957,8 @@ enum Command {
     // It is also more efficient to emit a single command instead of two for
     // this.
     ClearDepthAndStencil(f32, u32),
-    BufferBarrier(glow::Buffer, crate::BufferUses),
-    TextureBarrier(crate::TextureUses),
+    BufferBarrier(glow::Buffer, wgt::BufferUses),
+    TextureBarrier(wgt::TextureUses),
     SetViewport {
         rect: crate::Rect<i32>,
         depth: Range<f32>,
@@ -1002,10 +1019,14 @@ enum Command {
     InsertDebugMarker(Range<u32>),
     PushDebugGroup(Range<u32>),
     PopDebugGroup,
-    SetPushConstants {
-        uniform: PushConstantDesc,
+    SetImmediates {
+        uniform: ImmediateDesc,
         /// Offset from the start of the `data_bytes`
         offset: u32,
+    },
+    SetClipDistances {
+        old_count: u32,
+        new_count: u32,
     },
 }
 
@@ -1042,6 +1063,7 @@ pub struct CommandEncoder {
     cmd_buffer: CommandBuffer,
     state: command::State,
     private_caps: PrivateCapabilities,
+    counters: Arc<wgt::HalCounters>,
 }
 
 impl fmt::Debug for CommandEncoder {
@@ -1072,7 +1094,7 @@ fn gl_debug_message_callback(source: u32, gltype: u32, id: u32, severity: u32, m
     let log_severity = match severity {
         glow::DEBUG_SEVERITY_HIGH => log::Level::Error,
         glow::DEBUG_SEVERITY_MEDIUM => log::Level::Warn,
-        glow::DEBUG_SEVERITY_LOW => log::Level::Info,
+        glow::DEBUG_SEVERITY_LOW => log::Level::Debug,
         glow::DEBUG_SEVERITY_NOTIFICATION => log::Level::Trace,
         _ => unreachable!(),
     };
@@ -1093,16 +1115,36 @@ fn gl_debug_message_callback(source: u32, gltype: u32, id: u32, severity: u32, m
     let _ = std::panic::catch_unwind(|| {
         log::log!(
             log_severity,
-            "GLES: [{}/{}] ID {} : {}",
-            source_str,
-            type_str,
-            id,
-            message
+            "GLES: [{source_str}/{type_str}] ID {id} : {message}"
         );
     });
 
+    #[cfg(feature = "validation_canary")]
     if cfg!(debug_assertions) && log_severity == log::Level::Error {
         // Set canary and continue
         crate::VALIDATION_CANARY.add(message.to_string());
+    }
+}
+
+// If we are using `std`, then use `Mutex` to provide `Send` and `Sync`
+cfg_if::cfg_if! {
+    if #[cfg(gles_with_std)] {
+        type MaybeMutex<T> = std::sync::Mutex<T>;
+
+        fn lock<T>(mutex: &MaybeMutex<T>) -> std::sync::MutexGuard<'_, T> {
+            mutex.lock().unwrap()
+        }
+    } else {
+        // It should be impossible for any build configuration to trigger this error
+        // It is intended only as a guard against changes elsewhere causing the use of
+        // `RefCell` here to become unsound.
+        #[cfg(all(send_sync, not(feature = "fragile-send-sync-non-atomic-wasm")))]
+        compile_error!("cannot provide non-fragile Send+Sync without std");
+
+        type MaybeMutex<T> = core::cell::RefCell<T>;
+
+        fn lock<T>(mutex: &MaybeMutex<T>) -> core::cell::RefMut<'_, T> {
+            mutex.borrow_mut()
+        }
     }
 }

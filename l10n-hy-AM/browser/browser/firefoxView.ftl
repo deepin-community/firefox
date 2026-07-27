@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Փակել
     .aria-label = Փակել
-firefoxview-empty-state-icon =
-    .alt = Ուշադրություն.
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Հենց հիմա
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -31,19 +29,18 @@ firefoxview-tabpickup-description = Բացեք էջերը այլ սարքերի�
 firefoxview-tabpickup-progress-label = { $percentValue }% ավարտված է
 firefoxview-tabpickup-step-signin-header = Անխափան փոխարկեք սարքերի միջև
 firefoxview-tabpickup-step-signin-primarybutton = Շարունակել
-firefoxview-syncedtabs-signin-header = Վերցրեք ներդիրները ցանկացած վայրից
-firefoxview-syncedtabs-signin-primarybutton = Մուտք գործեք կամ գրանցվեք
+firefoxview-syncedtabs-signin-header-2 = Ձեր { -brand-product-name }-ը ձեր բոլոր սարքերի վրա
+firefoxview-syncedtabs-signin-primarybutton-2 = Մուտք գործել
 firefoxview-tabpickup-adddevice-description = Ներբեռնեք { -brand-product-name } բջջային հեռախոսի համար և մուտք գործեք այնտեղ:
 firefoxview-tabpickup-adddevice-learn-how = Իմանալ ինչպես
 firefoxview-tabpickup-adddevice-primarybutton = Ստացեք { -brand-product-name } բջջայինի համար
-firefoxview-syncedtabs-adddevice-header = Մուտք գործեք { -brand-product-name } ձեր մյուս սարքերում
+firefoxview-syncedtabs-adddevice-header-2 = Վերցրեք ներդիրները ցանկացած վայրից
 firefoxview-syncedtabs-adddevice-primarybutton = Փորձեք { -brand-product-name }-ը բջջայինի համար
 firefoxview-tabpickup-synctabs-header = Միացնել ներդիրների համաժամացումը
 firefoxview-tabpickup-synctabs-description = Թույլատրել { -brand-short-name }-ին տարածել ներդիրները՝ սարքերի միջև:
 firefoxview-tabpickup-synctabs-learn-how = Իմանալ ինչպես
 firefoxview-tabpickup-synctabs-primarybutton = Համաժամեցված ներդիրները
 firefoxview-syncedtabs-synctabs-header = Թարմացրեք ձեր համաժամացման կարգավորումները
-firefoxview-syncedtabs-synctabs-checkbox = Թույլատրել բաց ներդիրներին համաժամեցնել
 firefoxview-syncedtabs-loading-header = Համաժամացում
 firefoxview-tabpickup-fxa-admin-disabled-header = Ձեր կազմակերպությունն անջատել է համաժամացումը
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name }-ը չի կարողանում համաժամացնել ներդիրները սարքերի միջև, քանզի Ձեր ադմինիստրատորն անջատել է համաժամացումը:
@@ -51,6 +48,7 @@ firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name }
 firefoxview-tabpickup-network-offline-header = Ստուգեք կապակցումը համացանցին
 firefoxview-tabpickup-network-offline-description = Եթե դուք օգտվում եք հրապատից կամ փոխանորդից, ստուգեք, թե արդյոք { -brand-short-name }-ն ունի համացանցին հասանելիության թույլտվություն:
 firefoxview-tabpickup-network-offline-primarybutton = Կրկին փորձել
+firefoxview-tabpickup-sync-error-header = Մենք խնդիրներ ունենք համաժամեցման հետ
 firefoxview-tabpickup-sync-error-primarybutton = Կրկին փորձել
 firefoxview-tabpickup-sync-disconnected-header = Շարունակելու համար միացրեք համաժամացումը
 firefoxview-tabpickup-sync-disconnected-primarybutton = Միացրեք համաժամացումը կարգավորումներում
@@ -68,7 +66,6 @@ firefoxview-mobile-confirmation-description = Այժմ կարող եք բերե�
 firefoxview-closed-tabs-title = Վերջին փակվածը
 firefoxview-closed-tabs-description2 = Վերաբացեք ձեր փակած էջերը այս պատուհանում:
 firefoxview-closed-tabs-placeholder-header = Վերջին փակված ներդիրներ չկան
-firefoxview-closed-tabs-placeholder-body2 = Երբ փակում եք ներդիրը, կարող եք այն վերցնել այստեղից:
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -102,6 +99,8 @@ firefoxview-history-nav = Պատմություն
 firefoxview-history-header = Պատմություն
 firefoxview-history-context-delete = Ջնջել Պատմությունից
     .accesskey = D
+firefoxview-history-context-forget-site = Մոռանալ այս կայքի մասին
+    .accesskey = F
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -133,8 +132,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Պատուհան՝ { $winID } (ընթացիկ)
-firefoxview-opentabs-focus-tab =
-    .title = Փոխարկել այս ներդիրին
 firefoxview-show-more = Ցուցադրել ավելին
 firefoxview-show-less = Ցուցադրել ավելի քիչ
 firefoxview-show-all = Ցուցադրել բոլորը
@@ -146,12 +143,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Որոնման պատմություն
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Որոնել էջանիշեր
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Որոնել վերջերս փակված ներդիրները
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Որոնել համաժամեցված ներդիրներ
+firefoxview-search-text-box-tabs =
+    .placeholder = Որոնել ներդիրներ
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Որոնել բաց ներդիրները
@@ -174,10 +174,6 @@ firefoxview-sort-history-by-date-label = Տեսակավորել ըստ՝ ամս�
 firefoxview-sort-history-by-site-label = Տեսակավորել ըստ՝ կայքի
 firefoxview-sort-open-tabs-by-recency-label = Տեսակավորել ըստ՝ վերջին գործողության
 firefoxview-sort-open-tabs-by-order-label = Տեսակավորել ըստ` ներդիրի հերթականության
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Անցնել { $url }-ին
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -189,26 +185,22 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # When history is sorted by site, this heading is used in place of a domain, in
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
-firefoxview-history-site-localhost = (Տեղային ֆայլեր)
+firefoxview-history-site-localhost = (տեղային ֆայլեր)
 
 ##
 
 firefoxview-show-all-history = Ցուցադրել ամբողջ պատմությունը
-firefoxview-view-more-browsing-history = Դիտեք զննարկման ավելի շատ պատմություն
 
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Վերադարձեք այնտեղ, որտեղ եղել եք
+firefoxview-history-empty-description = Ինչպես որ դիտարկում եք, ձեր այցելած էջերը կցուցադրվեն այստեղ:
 
 ##
 
 # Button text for choosing a browser within the ’Import history from another browser’ banner
 firefoxview-choose-browser-button = Ընտրեք դիտարկիչը
     .title = Ընտրեք դիտարկիչը
-
-## Message displayed in Firefox View when the user has chosen to never remember History
-
-firefoxview-dont-remember-history-empty-header = Ցույց տալու ոչինչ չկա
 
 ##
 
@@ -242,7 +234,7 @@ firefoxview-opentabs-pinned-tab =
     .title = Փոխարկվել { $tabTitle }-ին
 # This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
 firefoxview-opentabs-bookmarked-pinned-tab =
-    .title = Փոխարկվել (էջանշված) { $tabTitle }-ին
+    .title = Փոխարկել (էջանշված) { $tabTitle }-ին
 
 ## These tooltips will be displayed when hovering over an unpinned Open Tab
 ## Variables:

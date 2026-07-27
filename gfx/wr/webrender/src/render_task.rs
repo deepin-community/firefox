@@ -2,35 +2,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use api::{CompositeOperator, FilterPrimitive, FilterPrimitiveInput, FilterPrimitiveKind};
-use api::{LineStyle, LineOrientation, ClipMode, MixBlendMode, ColorF, ColorSpace, FilterOpGraphPictureBufferId};
-use api::MAX_RENDER_TASK_SIZE;
+use api::{LineStyle, LineOrientation, ColorF, FilterOpGraphPictureBufferId};
+use api::{MAX_RENDER_TASK_SIZE, SVGFE_GRAPH_MAX};
 use api::units::*;
+use std::time::Duration;
 use crate::box_shadow::BLUR_SAMPLE_SCALE;
-use crate::clip::{ClipDataStore, ClipItemKind, ClipStore, ClipNodeRange};
+use crate::render_task_graph::SubTaskRange;
+use crate::clip::ClipNodeRange;
 use crate::command_buffer::{CommandBufferIndex, QuadFlags};
 use crate::pattern::{PatternKind, PatternShaderInput};
+use crate::profiler::{add_text_marker};
 use crate::spatial_tree::SpatialNodeIndex;
-use crate::filterdata::SFilterData;
-use crate::frame_builder::{FrameBuilderConfig, FrameBuildingState};
-use crate::gpu_cache::{GpuCache, GpuCacheAddress, GpuCacheHandle};
-use crate::gpu_types::{BorderInstance, ImageSource, UvRectKind, TransformPaletteId};
-use crate::internal_types::{CacheTextureId, FastHashMap, FilterGraphNode, FilterGraphOp, FilterGraphPictureReference, SVGFE_CONVOLVE_VALUES_LIMIT, TextureSource, Swizzle};
-use crate::picture::{ResolvedSurfaceTexture, MAX_SURFACE_SIZE};
+use crate::frame_builder::FrameBuilderConfig;
+use crate::gpu_types::{BorderInstance, UvRectKind, BlurEdgeMode, ClipSpace};
+use crate::internal_types::{CacheTextureId, FastHashMap, TextureSource, Swizzle};
+use crate::svg_filter::{FilterGraphNode, FilterGraphOp, FilterGraphPictureReference, SVGFE_CONVOLVE_VALUES_LIMIT};
+use crate::picture::ResolvedSurfaceTexture;
+use crate::tile_cache::MAX_SURFACE_SIZE;
+use crate::transform::GpuTransformId;
 use crate::prim_store::ClipData;
-use crate::prim_store::gradient::{
-    FastLinearGradientTask, RadialGradientTask,
-    ConicGradientTask, LinearGradientTask,
-};
-use crate::resource_cache::{ResourceCache, ImageRequest};
+use crate::resource_cache::ImageRequest;
 use std::{usize, f32, i32, u32};
-use crate::renderer::{GpuBufferAddress, GpuBufferBuilderF};
+use crate::renderer::{GpuBufferAddress, GpuBufferBuilder, GpuBufferBuilderF};
 use crate::render_backend::DataStores;
 use crate::render_target::{ResolveOp, RenderTargetKind};
 use crate::render_task_graph::{PassId, RenderTaskId, RenderTaskGraphBuilder};
-use crate::render_task_cache::{RenderTaskCacheEntryHandle, RenderTaskCacheKey, RenderTaskCacheKeyKind, RenderTaskParent};
-use crate::segment::EdgeAaSegmentMask;
-use crate::surface::SurfaceBuilder;
+use crate::render_task_cache::RenderTaskCacheEntryHandle;
+use crate::segment::EdgeMask;
 use smallvec::SmallVec;
 
 const FLOATS_PER_RENDER_TASK_INFO: usize = 8;
@@ -45,11 +43,17 @@ fn render_task_sanity_check(size: &DeviceIntSize) {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTaskAddress(pub i32);
+
+impl std::fmt::Debug for RenderTaskAddress {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "#{}", self.0)
+    }
+}
 
 impl Into<RenderTaskAddress> for RenderTaskId {
     fn into(self) -> RenderTaskAddress {
@@ -158,6 +162,14 @@ pub struct CachedTask {
 #[derive(Debug)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct ImageRequestTask {
+    pub request: ImageRequest,
+    pub is_composited: bool,
+}
+
+#[derive(Debug)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct CacheMaskTask {
     pub actual_rect: DeviceRect,
     pub root_spatial_node_index: SpatialNodeIndex,
@@ -189,12 +201,10 @@ pub struct EmptyTask {
 pub struct PrimTask {
     pub pattern: PatternKind,
     pub pattern_input: PatternShaderInput,
-    pub device_pixel_scale: DevicePixelScale,
     pub content_origin: DevicePoint,
     pub prim_address_f: GpuBufferAddress,
-    pub raster_spatial_node_index: SpatialNodeIndex,
-    pub transform_id: TransformPaletteId,
-    pub edge_flags: EdgeAaSegmentMask,
+    pub transform_id: GpuTransformId,
+    pub edge_flags: EdgeMask,
     pub quad_flags: QuadFlags,
     pub prim_needs_scissor_rect: bool,
     pub texture_input: RenderTaskId,
@@ -223,7 +233,7 @@ pub struct PictureTask {
     pub valid_rect: Option<DeviceIntRect>,
     pub cmd_buffer_index: CommandBufferIndex,
     pub resolve_op: Option<ResolveOp>,
-
+    pub content_size: DeviceIntSize,
     pub can_use_shared_surface: bool,
 }
 
@@ -255,13 +265,14 @@ pub struct BlurTask {
     pub blur_std_deviation: f32,
     pub target_kind: RenderTargetKind,
     pub blur_region: DeviceIntSize,
+    pub edge_mode: BlurEdgeMode,
 }
 
 impl BlurTask {
     // In order to do the blur down-scaling passes without introducing errors, we need the
     // source of each down-scale pass to be a multuple of two. If need be, this inflates
     // the source size so that each down-scale pass will sample correctly.
-    pub fn adjusted_blur_source_size(original_size: DeviceSize, mut std_dev: DeviceSize) -> DeviceIntSize {
+    pub fn adjusted_blur_source_size(original_size: DeviceSize, mut std_dev: DeviceSize) -> DeviceSize {
         let mut adjusted_size = original_size;
         let mut scale_factor = 1.0;
         while std_dev.width > MAX_BLUR_STD_DEVIATION && std_dev.height > MAX_BLUR_STD_DEVIATION {
@@ -274,7 +285,7 @@ impl BlurTask {
             adjusted_size = (original_size.to_f32() / scale_factor).ceil();
         }
 
-        (adjusted_size * scale_factor).round().to_i32()
+        (adjusted_size * scale_factor).round()
     }
 }
 
@@ -315,37 +326,11 @@ pub struct LineDecorationTask {
 #[derive(Debug)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
-pub enum SvgFilterInfo {
-    Blend(MixBlendMode),
-    Flood(ColorF),
-    LinearToSrgb,
-    SrgbToLinear,
-    Opacity(f32),
-    ColorMatrix(Box<[f32; 20]>),
-    DropShadow(ColorF),
-    Offset(DeviceVector2D),
-    ComponentTransfer(SFilterData),
-    Composite(CompositeOperator),
-    // TODO: This is used as a hack to ensure that a blur task's input is always in the blur's previous pass.
-    Identity,
-}
-
-#[derive(Debug)]
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
-pub struct SvgFilterTask {
-    pub info: SvgFilterInfo,
-    pub extra_gpu_cache_handle: Option<GpuCacheHandle>,
-}
-
-#[derive(Debug)]
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct SVGFEFilterTask {
     pub node: FilterGraphNode,
     pub op: FilterGraphOp,
     pub content_origin: DevicePoint,
-    pub extra_gpu_cache_handle: Option<GpuCacheHandle>,
+    pub extra_gpu_data: Option<GpuBufferAddress>,
 }
 
 #[cfg_attr(feature = "capture", derive(Serialize))]
@@ -368,7 +353,7 @@ pub struct RenderTaskData {
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub enum RenderTaskKind {
-    Image(ImageRequest),
+    Image(ImageRequestTask),
     Cached(CachedTask),
     Picture(PictureTask),
     CacheMask(CacheMaskTask),
@@ -380,11 +365,6 @@ pub enum RenderTaskKind {
     Blit(BlitTask),
     Border(BorderTask),
     LineDecoration(LineDecorationTask),
-    FastLinearGradient(FastLinearGradientTask),
-    LinearGradient(LinearGradientTask),
-    RadialGradient(RadialGradientTask),
-    ConicGradient(ConicGradientTask),
-    SvgFilter(SvgFilterTask),
     SVGFENode(SVGFEFilterTask),
     TileComposite(TileCompositeTask),
     Prim(PrimTask),
@@ -432,11 +412,6 @@ impl RenderTaskKind {
             RenderTaskKind::Blit(..) => "Blit",
             RenderTaskKind::Border(..) => "Border",
             RenderTaskKind::LineDecoration(..) => "LineDecoration",
-            RenderTaskKind::FastLinearGradient(..) => "FastLinearGradient",
-            RenderTaskKind::LinearGradient(..) => "LinearGradient",
-            RenderTaskKind::RadialGradient(..) => "RadialGradient",
-            RenderTaskKind::ConicGradient(..) => "ConicGradient",
-            RenderTaskKind::SvgFilter(..) => "SvgFilter",
             RenderTaskKind::SVGFENode(..) => "SVGFENode",
             RenderTaskKind::TileComposite(..) => "TileComposite",
             RenderTaskKind::Prim(..) => "Prim",
@@ -452,15 +427,10 @@ impl RenderTaskKind {
             RenderTaskKind::LineDecoration(..) |
             RenderTaskKind::Readback(..) |
             RenderTaskKind::Border(..) |
-            RenderTaskKind::FastLinearGradient(..) |
-            RenderTaskKind::LinearGradient(..) |
-            RenderTaskKind::RadialGradient(..) |
-            RenderTaskKind::ConicGradient(..) |
             RenderTaskKind::Picture(..) |
             RenderTaskKind::Blit(..) |
             RenderTaskKind::TileComposite(..) |
-            RenderTaskKind::Prim(..) |
-            RenderTaskKind::SvgFilter(..) => {
+            RenderTaskKind::Prim(..)  => {
                 RenderTargetKind::Color
             }
             RenderTaskKind::SVGFENode(..) => {
@@ -518,6 +488,7 @@ impl RenderTaskKind {
         clear_color: Option<ColorF>,
         cmd_buffer_index: CommandBufferIndex,
         can_use_shared_surface: bool,
+        content_size: Option<DeviceIntSize>,
     ) -> Self {
         render_task_sanity_check(&size);
 
@@ -533,18 +504,17 @@ impl RenderTaskKind {
             cmd_buffer_index,
             resolve_op: None,
             can_use_shared_surface,
+            content_size: content_size.unwrap_or(size),
         })
     }
 
     pub fn new_prim(
         pattern: PatternKind,
         pattern_input: PatternShaderInput,
-        raster_spatial_node_index: SpatialNodeIndex,
-        device_pixel_scale: DevicePixelScale,
         content_origin: DevicePoint,
         prim_address_f: GpuBufferAddress,
-        transform_id: TransformPaletteId,
-        edge_flags: EdgeAaSegmentMask,
+        transform_id: GpuTransformId,
+        edge_flags: EdgeMask,
         quad_flags: QuadFlags,
         prim_needs_scissor_rect: bool,
         texture_input: RenderTaskId,
@@ -552,8 +522,6 @@ impl RenderTaskKind {
         RenderTaskKind::Prim(PrimTask {
             pattern,
             pattern_input,
-            raster_spatial_node_index,
-            device_pixel_scale,
             content_origin,
             prim_address_f,
             transform_id,
@@ -614,32 +582,13 @@ impl RenderTaskKind {
         outer_rect: DeviceIntRect,
         clip_node_range: ClipNodeRange,
         root_spatial_node_index: SpatialNodeIndex,
-        clip_store: &mut ClipStore,
-        gpu_cache: &mut GpuCache,
-        gpu_buffer_builder: &mut GpuBufferBuilderF,
-        resource_cache: &mut ResourceCache,
         rg_builder: &mut RenderTaskGraphBuilder,
-        clip_data_store: &mut ClipDataStore,
         device_pixel_scale: DevicePixelScale,
         fb_config: &FrameBuilderConfig,
-        surface_builder: &mut SurfaceBuilder,
     ) -> RenderTaskId {
-        // Step through the clip sources that make up this mask. If we find
-        // any box-shadow clip sources, request that image from the render
-        // task cache. This allows the blurred box-shadow rect to be cached
-        // in the texture cache across frames.
-        // TODO(gw): Consider moving this logic outside this function, especially
-        //           as we add more clip sources that depend on render tasks.
-        // TODO(gw): If this ever shows up in a profile, we could pre-calculate
-        //           whether a ClipSources contains any box-shadows and skip
-        //           this iteration for the majority of cases.
         let task_size = outer_rect.size();
 
-        // If we have a potentially tiled clip mask, clear the mask area first. Otherwise,
-        // the first (primary) clip mask will overwrite all the clip mask pixels with
-        // blending disabled to set to the initial value.
-
-        let clip_task_id = rg_builder.add().init(
+        rg_builder.add().init(
             RenderTask::new_dynamic(
                 task_size,
                 RenderTaskKind::CacheMask(CacheMaskTask {
@@ -650,71 +599,7 @@ impl RenderTaskKind {
                     clear_to_one: fb_config.gpu_supports_fast_clears,
                 }),
             )
-        );
-
-        for i in 0 .. clip_node_range.count {
-            let clip_instance = clip_store.get_instance_from_range(&clip_node_range, i);
-            let clip_node = &mut clip_data_store[clip_instance.handle];
-            match clip_node.item.kind {
-                ClipItemKind::BoxShadow { ref mut source } => {
-                    let (cache_size, cache_key) = source.cache_key
-                        .as_ref()
-                        .expect("bug: no cache key set")
-                        .clone();
-                    let blur_radius_dp = cache_key.blur_radius_dp as f32;
-                    let device_pixel_scale = DevicePixelScale::new(cache_key.device_pixel_scale.to_f32_px());
-
-                    // Request a cacheable render task with a blurred, minimal
-                    // sized box-shadow rect.
-                    source.render_task = Some(resource_cache.request_render_task(
-                        RenderTaskCacheKey {
-                            size: cache_size,
-                            kind: RenderTaskCacheKeyKind::BoxShadow(cache_key),
-                        },
-                        gpu_cache,
-                        gpu_buffer_builder,
-                        rg_builder,
-                        None,
-                        false,
-                        RenderTaskParent::RenderTask(clip_task_id),
-                        surface_builder,
-                        |rg_builder, _| {
-                            let clip_data = ClipData::rounded_rect(
-                                source.minimal_shadow_rect.size(),
-                                &source.shadow_radius,
-                                ClipMode::Clip,
-                            );
-
-                            // Draw the rounded rect.
-                            let mask_task_id = rg_builder.add().init(RenderTask::new_dynamic(
-                                cache_size,
-                                RenderTaskKind::new_rounded_rect_mask(
-                                    source.minimal_shadow_rect.min,
-                                    clip_data,
-                                    device_pixel_scale,
-                                    fb_config,
-                                ),
-                            ));
-
-                            // Blur it
-                            RenderTask::new_blur(
-                                DeviceSize::new(blur_radius_dp, blur_radius_dp),
-                                mask_task_id,
-                                rg_builder,
-                                RenderTargetKind::Alpha,
-                                None,
-                                cache_size,
-                            )
-                        }
-                    ));
-                }
-                ClipItemKind::Rectangle { .. } |
-                ClipItemKind::RoundedRectangle { .. } |
-                ClipItemKind::Image { .. } => {}
-            }
-        }
-
-        clip_task_id
+        )
     }
 
     // Write (up to) 8 floats of data specific to the type
@@ -745,7 +630,7 @@ impl RenderTaskKind {
             RenderTaskKind::Prim(ref task) => {
                 [
                     // NOTE: This must match the render task data format for Picture tasks currently
-                    task.device_pixel_scale.0,
+                    DevicePixelScale::identity().0,
                     task.content_origin.x,
                     task.content_origin.y,
                     0.0,
@@ -793,22 +678,11 @@ impl RenderTaskKind {
             RenderTaskKind::Scaling(..) |
             RenderTaskKind::Border(..) |
             RenderTaskKind::LineDecoration(..) |
-            RenderTaskKind::FastLinearGradient(..) |
-            RenderTaskKind::LinearGradient(..) |
-            RenderTaskKind::RadialGradient(..) |
-            RenderTaskKind::ConicGradient(..) |
             RenderTaskKind::TileComposite(..) |
             RenderTaskKind::Blit(..) => {
                 [0.0; 4]
             }
 
-            RenderTaskKind::SvgFilter(ref task) => {
-                match task.info {
-                    SvgFilterInfo::Opacity(opacity) => [opacity, 0.0, 0.0, 0.0],
-                    SvgFilterInfo::Offset(offset) => [offset.x, offset.y, 0.0, 0.0],
-                    _ => [0.0; 4]
-                }
-            }
             RenderTaskKind::SVGFENode(_task) => {
                 // we don't currently use this for SVGFE filters.
                 // see SVGFEFilterInstance instead
@@ -837,43 +711,9 @@ impl RenderTaskKind {
 
     pub fn write_gpu_blocks(
         &mut self,
-        gpu_cache: &mut GpuCache,
+        gpu_buffer: &mut GpuBufferBuilder,
     ) {
         match self {
-            RenderTaskKind::SvgFilter(ref mut filter_task) => {
-                match filter_task.info {
-                    SvgFilterInfo::ColorMatrix(ref matrix) => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            for i in 0..5 {
-                                request.push([matrix[i*4], matrix[i*4+1], matrix[i*4+2], matrix[i*4+3]]);
-                            }
-                        }
-                    }
-                    SvgFilterInfo::DropShadow(color) |
-                    SvgFilterInfo::Flood(color) => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push(color.to_array());
-                        }
-                    }
-                    SvgFilterInfo::ComponentTransfer(ref data) => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(request) = gpu_cache.request(handle) {
-                            data.update(request);
-                        }
-                    }
-                    SvgFilterInfo::Composite(ref operator) => {
-                        if let CompositeOperator::Arithmetic(k_vals) = operator {
-                            let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                            if let Some(mut request) = gpu_cache.request(handle) {
-                                request.push(*k_vals);
-                            }
-                        }
-                    }
-                    _ => {},
-                }
-            }
             RenderTaskKind::SVGFENode(ref mut filter_task) => {
                 match filter_task.op {
                     FilterGraphOp::SVGFEBlendDarken => {}
@@ -892,21 +732,19 @@ impl RenderTaskKind {
                     FilterGraphOp::SVGFEBlendSaturation => {}
                     FilterGraphOp::SVGFEBlendColor => {}
                     FilterGraphOp::SVGFEBlendLuminosity => {}
-                    FilterGraphOp::SVGFEColorMatrix{values: matrix} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            for i in 0..5 {
-                                request.push([matrix[i*4], matrix[i*4+1], matrix[i*4+2], matrix[i*4+3]]);
-                            }
+                    FilterGraphOp::SVGFEColorMatrix { values: matrix } => {
+                        let mut writer = gpu_buffer.f32.write_blocks(5);
+                        for i in 0..5 {
+                            writer.push_one([matrix[i*4], matrix[i*4+1], matrix[i*4+2], matrix[i*4+3]]);
                         }
+                        filter_task.extra_gpu_data = Some(writer.finish());
                     }
                     FilterGraphOp::SVGFEComponentTransfer => unreachable!(),
                     FilterGraphOp::SVGFEComponentTransferInterned{..} => {}
                     FilterGraphOp::SVGFECompositeArithmetic{k1, k2, k3, k4} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push([k1, k2, k3, k4]);
-                        }
+                        let mut writer = gpu_buffer.f32.write_blocks(1);
+                        writer.push_one([k1, k2, k3, k4]);
+                        filter_task.extra_gpu_data = Some(writer.finish());
                     }
                     FilterGraphOp::SVGFECompositeATop => {}
                     FilterGraphOp::SVGFECompositeIn => {}
@@ -917,44 +755,40 @@ impl RenderTaskKind {
                     FilterGraphOp::SVGFEConvolveMatrixEdgeModeDuplicate{order_x, order_y, kernel, divisor, bias, target_x, target_y, kernel_unit_length_x, kernel_unit_length_y, preserve_alpha} |
                     FilterGraphOp::SVGFEConvolveMatrixEdgeModeNone{order_x, order_y, kernel, divisor, bias, target_x, target_y, kernel_unit_length_x, kernel_unit_length_y, preserve_alpha} |
                     FilterGraphOp::SVGFEConvolveMatrixEdgeModeWrap{order_x, order_y, kernel, divisor, bias, target_x, target_y, kernel_unit_length_x, kernel_unit_length_y, preserve_alpha} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push([-target_x as f32, -target_y as f32, order_x as f32, order_y as f32]);
-                            request.push([kernel_unit_length_x as f32, kernel_unit_length_y as f32, 1.0 / divisor, bias]);
-                            assert!(SVGFE_CONVOLVE_VALUES_LIMIT == 25);
-                            request.push([kernel[0], kernel[1], kernel[2], kernel[3]]);
-                            request.push([kernel[4], kernel[5], kernel[6], kernel[7]]);
-                            request.push([kernel[8], kernel[9], kernel[10], kernel[11]]);
-                            request.push([kernel[12], kernel[13], kernel[14], kernel[15]]);
-                            request.push([kernel[16], kernel[17], kernel[18], kernel[19]]);
-                            request.push([kernel[20], 0.0, 0.0, preserve_alpha as f32]);
-                        }
+                        let mut writer = gpu_buffer.f32.write_blocks(8);
+                        assert!(SVGFE_CONVOLVE_VALUES_LIMIT == 25);
+                        writer.push_one([-target_x as f32, -target_y as f32, order_x as f32, order_y as f32]);
+                        writer.push_one([kernel_unit_length_x as f32, kernel_unit_length_y as f32, 1.0 / divisor, bias]);
+                        writer.push_one([kernel[0], kernel[1], kernel[2], kernel[3]]);
+                        writer.push_one([kernel[4], kernel[5], kernel[6], kernel[7]]);
+                        writer.push_one([kernel[8], kernel[9], kernel[10], kernel[11]]);
+                        writer.push_one([kernel[12], kernel[13], kernel[14], kernel[15]]);
+                        writer.push_one([kernel[16], kernel[17], kernel[18], kernel[19]]);
+                        writer.push_one([kernel[20], 0.0, 0.0, preserve_alpha as f32]);
+                        filter_task.extra_gpu_data = Some(writer.finish());
                     }
                     FilterGraphOp::SVGFEDiffuseLightingDistant{..} => {}
                     FilterGraphOp::SVGFEDiffuseLightingPoint{..} => {}
                     FilterGraphOp::SVGFEDiffuseLightingSpot{..} => {}
                     FilterGraphOp::SVGFEDisplacementMap{scale, x_channel_selector, y_channel_selector} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push([x_channel_selector as f32, y_channel_selector as f32, scale, 0.0]);
-                        }
+                        let mut writer = gpu_buffer.f32.write_blocks(1);
+                        writer.push_one([x_channel_selector as f32, y_channel_selector as f32, scale, 0.0]);
+                        filter_task.extra_gpu_data = Some(writer.finish());
                     }
-                    FilterGraphOp::SVGFEDropShadow{color, ..} |
-                    FilterGraphOp::SVGFEFlood{color} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push(color.to_array());
-                        }
-                    }
+                    FilterGraphOp::SVGFEDropShadow { color, .. } |
+                    FilterGraphOp::SVGFEFlood { color } => {
+                        let mut writer = gpu_buffer.f32.write_blocks(1);
+                        writer.push_one(color.to_array());
+                        filter_task.extra_gpu_data = Some(writer.finish());
+                     }
                     FilterGraphOp::SVGFEGaussianBlur{..} => {}
                     FilterGraphOp::SVGFEIdentity => {}
-                    FilterGraphOp::SVGFEImage{..} => {}
-                    FilterGraphOp::SVGFEMorphologyDilate{radius_x, radius_y} |
-                    FilterGraphOp::SVGFEMorphologyErode{radius_x, radius_y} => {
-                        let handle = filter_task.extra_gpu_cache_handle.get_or_insert_with(GpuCacheHandle::new);
-                        if let Some(mut request) = gpu_cache.request(handle) {
-                            request.push([radius_x, radius_y, 0.0, 0.0]);
-                        }
+                    FilterGraphOp::SVGFEImage {..} => {}
+                    FilterGraphOp::SVGFEMorphologyDilate { radius_x, radius_y } |
+                    FilterGraphOp::SVGFEMorphologyErode { radius_x, radius_y } => {
+                        let mut writer = gpu_buffer.f32.write_blocks(1);
+                        writer.push_one([radius_x, radius_y, 0.0, 0.0]);
+                        filter_task.extra_gpu_data = Some(writer.finish());
                     }
                     FilterGraphOp::SVGFEOpacity{..} => {}
                     FilterGraphOp::SVGFESourceAlpha => {}
@@ -1009,27 +843,11 @@ pub type TaskDependencies = SmallVec<[RenderTaskId;2]>;
 
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
-pub struct MaskSubPass {
-    pub clip_node_range: ClipNodeRange,
-    pub prim_spatial_node_index: SpatialNodeIndex,
-    pub prim_address_f: GpuBufferAddress,
-}
-
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
-pub enum SubPass {
-    Masks {
-        masks: MaskSubPass,
-    },
-}
-
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTask {
     pub location: RenderTaskLocation,
     pub children: TaskDependencies,
     pub kind: RenderTaskKind,
-    pub sub_pass: Option<SubPass>,
+    pub sub_tasks: SubTaskRange,
 
     // TODO(gw): These fields and perhaps others can become private once the
     //           frame_graph / render_task source files are unified / cleaned up.
@@ -1040,9 +858,9 @@ pub struct RenderTask {
     ///
     /// Will be set to None if the render task is cached, in which case the texture cache
     /// manages the handle.
-    pub uv_rect_handle: GpuCacheHandle,
+    pub uv_rect_handle: GpuBufferAddress,
     pub cache_handle: Option<RenderTaskCacheEntryHandle>,
-    uv_rect_kind: UvRectKind,
+    pub uv_rect_kind: UvRectKind,
 }
 
 impl RenderTask {
@@ -1058,10 +876,10 @@ impl RenderTask {
             kind,
             free_after: PassId::MAX,
             render_on: PassId::MIN,
-            uv_rect_handle: GpuCacheHandle::new(),
+            uv_rect_handle: GpuBufferAddress::INVALID,
             uv_rect_kind: UvRectKind::Rect,
             cache_handle: None,
-            sub_pass: None,
+            sub_tasks: SubTaskRange::empty(),
         }
     }
 
@@ -1084,6 +902,7 @@ impl RenderTask {
     pub fn new_image(
         size: DeviceIntSize,
         request: ImageRequest,
+        is_composited: bool,
     ) -> Self {
         // Note: this is a special constructor for image render tasks that does not
         // do the render task size sanity check. This is because with SWGL we purposefully
@@ -1096,13 +915,16 @@ impl RenderTask {
         RenderTask {
             location: RenderTaskLocation::CacheRequest { size, },
             children: TaskDependencies::new(),
-            kind: RenderTaskKind::Image(request),
+            kind: RenderTaskKind::Image(ImageRequestTask {
+                request,
+                is_composited,
+            }),
             free_after: PassId::MAX,
             render_on: PassId::MIN,
-            uv_rect_handle: GpuCacheHandle::new(),
+            uv_rect_handle: GpuBufferAddress::INVALID,
             uv_rect_kind: UvRectKind::Rect,
             cache_handle: None,
-            sub_pass: None,
+            sub_tasks: SubTaskRange::empty(),
         }
     }
 
@@ -1118,10 +940,10 @@ impl RenderTask {
             kind: RenderTaskKind::Test(target),
             free_after: PassId::MAX,
             render_on: PassId::MIN,
-            uv_rect_handle: GpuCacheHandle::new(),
+            uv_rect_handle: GpuBufferAddress::INVALID,
             uv_rect_kind: UvRectKind::Rect,
             cache_handle: None,
-            sub_pass: None,
+            sub_tasks: SubTaskRange::empty(),
         }
     }
 
@@ -1172,6 +994,7 @@ impl RenderTask {
         target_kind: RenderTargetKind,
         mut blur_cache: Option<&mut BlurTaskCache>,
         blur_region: DeviceIntSize,
+        edge_mode: BlurEdgeMode,
     ) -> RenderTaskId {
         // Adjust large std deviation value.
         let mut adjusted_blur_std_deviation = blur_std_deviation;
@@ -1231,6 +1054,7 @@ impl RenderTask {
                     blur_std_deviation: adjusted_blur_std_deviation.height,
                     target_kind,
                     blur_region,
+                    edge_mode,
                 }),
             ).with_uv_rect_kind(uv_rect_kind));
             rg_builder.add_dependency(blur_task_v, downscaling_src_task_id);
@@ -1241,6 +1065,7 @@ impl RenderTask {
                     blur_std_deviation: adjusted_blur_std_deviation.width,
                     target_kind,
                     blur_region,
+                    edge_mode,
                 }),
             ).with_uv_rect_kind(uv_rect_kind));
             rg_builder.add_dependency(task_id, blur_task_v);
@@ -1294,343 +1119,12 @@ impl RenderTask {
         task_id
     }
 
-    pub fn new_svg_filter(
-        filter_primitives: &[FilterPrimitive],
-        filter_datas: &[SFilterData],
-        rg_builder: &mut RenderTaskGraphBuilder,
-        content_size: DeviceIntSize,
-        uv_rect_kind: UvRectKind,
-        original_task_id: RenderTaskId,
-        device_pixel_scale: DevicePixelScale,
-    ) -> RenderTaskId {
-
-        if filter_primitives.is_empty() {
-            return original_task_id;
-        }
-
-        // Resolves the input to a filter primitive
-        let get_task_input = |
-            input: &FilterPrimitiveInput,
-            filter_primitives: &[FilterPrimitive],
-            rg_builder: &mut RenderTaskGraphBuilder,
-            cur_index: usize,
-            outputs: &[RenderTaskId],
-            original: RenderTaskId,
-            color_space: ColorSpace,
-        | {
-            // TODO(cbrewster): Not sure we can assume that the original input is sRGB.
-            let (mut task_id, input_color_space) = match input.to_index(cur_index) {
-                Some(index) => (outputs[index], filter_primitives[index].color_space),
-                None => (original, ColorSpace::Srgb),
-            };
-
-            match (input_color_space, color_space) {
-                (ColorSpace::Srgb, ColorSpace::LinearRgb) => {
-                    task_id = RenderTask::new_svg_filter_primitive(
-                        smallvec![task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::SrgbToLinear,
-                        rg_builder,
-                    );
-                },
-                (ColorSpace::LinearRgb, ColorSpace::Srgb) => {
-                    task_id = RenderTask::new_svg_filter_primitive(
-                        smallvec![task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::LinearToSrgb,
-                        rg_builder,
-                    );
-                },
-                _ => {},
-            }
-
-            task_id
-        };
-
-        let mut outputs = vec![];
-        let mut cur_filter_data = 0;
-        for (cur_index, primitive) in filter_primitives.iter().enumerate() {
-            let render_task_id = match primitive.kind {
-                FilterPrimitiveKind::Identity(ref identity) => {
-                    // Identity does not create a task, it provides its input's render task
-                    get_task_input(
-                        &identity.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    )
-                }
-                FilterPrimitiveKind::Blend(ref blend) => {
-                    let input_1_task_id = get_task_input(
-                        &blend.input1,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-                    let input_2_task_id = get_task_input(
-                        &blend.input2,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_1_task_id, input_2_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Blend(blend.mode),
-                        rg_builder,
-                    )
-                },
-                FilterPrimitiveKind::Flood(ref flood) => {
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Flood(flood.color),
-                        rg_builder,
-                    )
-                }
-                FilterPrimitiveKind::Blur(ref blur) => {
-                    let width_std_deviation = blur.width * device_pixel_scale.0;
-                    let height_std_deviation = blur.height * device_pixel_scale.0;
-                    let input_task_id = get_task_input(
-                        &blur.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    RenderTask::new_blur(
-                        DeviceSize::new(width_std_deviation, height_std_deviation),
-                        // TODO: This is a hack to ensure that a blur task's input is always
-                        // in the blur's previous pass.
-                        RenderTask::new_svg_filter_primitive(
-                            smallvec![input_task_id],
-                            content_size,
-                            uv_rect_kind,
-                            SvgFilterInfo::Identity,
-                            rg_builder,
-                        ),
-                        rg_builder,
-                        RenderTargetKind::Color,
-                        None,
-                        content_size,
-                    )
-                }
-                FilterPrimitiveKind::Opacity(ref opacity) => {
-                    let input_task_id = get_task_input(
-                        &opacity.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Opacity(opacity.opacity),
-                        rg_builder,
-                    )
-                }
-                FilterPrimitiveKind::ColorMatrix(ref color_matrix) => {
-                    let input_task_id = get_task_input(
-                        &color_matrix.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::ColorMatrix(Box::new(color_matrix.matrix)),
-                        rg_builder,
-                    )
-                }
-                FilterPrimitiveKind::DropShadow(ref drop_shadow) => {
-                    let input_task_id = get_task_input(
-                        &drop_shadow.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    let blur_std_deviation = drop_shadow.shadow.blur_radius * device_pixel_scale.0;
-                    let offset = drop_shadow.shadow.offset * LayoutToWorldScale::new(1.0) * device_pixel_scale;
-
-                    let offset_task_id = RenderTask::new_svg_filter_primitive(
-                        smallvec![input_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Offset(offset),
-                        rg_builder,
-                    );
-
-                    let blur_task_id = RenderTask::new_blur(
-                        DeviceSize::new(blur_std_deviation, blur_std_deviation),
-                        offset_task_id,
-                        rg_builder,
-                        RenderTargetKind::Color,
-                        None,
-                        content_size,
-                    );
-
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_task_id, blur_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::DropShadow(drop_shadow.shadow.color),
-                        rg_builder,
-                    )
-                }
-                FilterPrimitiveKind::ComponentTransfer(ref component_transfer) => {
-                    let input_task_id = get_task_input(
-                        &component_transfer.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    let filter_data = &filter_datas[cur_filter_data];
-                    cur_filter_data += 1;
-                    if filter_data.is_identity() {
-                        input_task_id
-                    } else {
-                        RenderTask::new_svg_filter_primitive(
-                            smallvec![input_task_id],
-                            content_size,
-                            uv_rect_kind,
-                            SvgFilterInfo::ComponentTransfer(filter_data.clone()),
-                            rg_builder,
-                        )
-                    }
-                }
-                FilterPrimitiveKind::Offset(ref info) => {
-                    let input_task_id = get_task_input(
-                        &info.input,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    let offset = info.offset * LayoutToWorldScale::new(1.0) * device_pixel_scale;
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Offset(offset),
-                        rg_builder,
-                    )
-                }
-                FilterPrimitiveKind::Composite(info) => {
-                    let input_1_task_id = get_task_input(
-                        &info.input1,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-                    let input_2_task_id = get_task_input(
-                        &info.input2,
-                        filter_primitives,
-                        rg_builder,
-                        cur_index,
-                        &outputs,
-                        original_task_id,
-                        primitive.color_space
-                    );
-
-                    RenderTask::new_svg_filter_primitive(
-                        smallvec![input_1_task_id, input_2_task_id],
-                        content_size,
-                        uv_rect_kind,
-                        SvgFilterInfo::Composite(info.operator),
-                        rg_builder,
-                    )
-                }
-            };
-            outputs.push(render_task_id);
-        }
-
-        // The output of a filter is the output of the last primitive in the chain.
-        let mut render_task_id = *outputs.last().unwrap();
-
-        // Convert to sRGB if needed
-        if filter_primitives.last().unwrap().color_space == ColorSpace::LinearRgb {
-            render_task_id = RenderTask::new_svg_filter_primitive(
-                smallvec![render_task_id],
-                content_size,
-                uv_rect_kind,
-                SvgFilterInfo::LinearToSrgb,
-                rg_builder,
-            );
-        }
-
-        render_task_id
-    }
-
-    pub fn new_svg_filter_primitive(
-        tasks: TaskDependencies,
-        target_size: DeviceIntSize,
-        uv_rect_kind: UvRectKind,
-        info: SvgFilterInfo,
-        rg_builder: &mut RenderTaskGraphBuilder,
-    ) -> RenderTaskId {
-        let task_id = rg_builder.add().init(RenderTask::new_dynamic(
-            target_size,
-            RenderTaskKind::SvgFilter(SvgFilterTask {
-                extra_gpu_cache_handle: None,
-                info,
-            }),
-        ).with_uv_rect_kind(uv_rect_kind));
-
-        for child_id in tasks {
-            rg_builder.add_dependency(task_id, child_id);
-        }
-
-        task_id
-    }
-
-    pub fn add_sub_pass(
+    pub fn set_sub_tasks(
         &mut self,
-        sub_pass: SubPass,
+        sub_tasks: SubTaskRange,
     ) {
-        assert!(self.sub_pass.is_none(), "multiple sub-passes are not supported for now");
-        self.sub_pass = Some(sub_pass);
+        assert!(self.sub_tasks.is_empty());
+        self.sub_tasks = sub_tasks;
     }
 
     /// Creates render tasks from PictureCompositeMode::SVGFEGraph.
@@ -1642,15 +1136,20 @@ impl RenderTask {
     /// * render_target.rs : add_svg_filter_node_instances
     pub fn new_svg_filter_graph(
         filter_nodes: &[(FilterGraphNode, FilterGraphOp)],
-        frame_state: &mut FrameBuildingState,
+        rg_builder: &mut RenderTaskGraphBuilder,
+        gpu_buffer: &mut GpuBufferBuilderF,
         data_stores: &mut DataStores,
-        uv_rect_kind: UvRectKind,
+        _uv_rect_kind: UvRectKind,
         original_task_id: RenderTaskId,
-        surface_rects_task_size: DeviceIntSize,
-        surface_rects_clipped: DeviceRect,
-        surface_rects_clipped_local: PictureRect,
+        source_subregion: LayoutRect,
+        target_subregion: LayoutRect,
+        prim_subregion: LayoutRect,
+        subregion_to_device_scale_x: f32,
+        subregion_to_device_scale_y: f32,
+        subregion_to_device_offset_x: f32,
+        subregion_to_device_offset_y: f32,
     ) -> RenderTaskId {
-        const BUFFER_LIMIT: usize = 256;
+        const BUFFER_LIMIT: usize = SVGFE_GRAPH_MAX;
         let mut task_by_buffer_id: [RenderTaskId; BUFFER_LIMIT] = [RenderTaskId::INVALID; BUFFER_LIMIT];
         let mut subregion_by_buffer_id: [LayoutRect; BUFFER_LIMIT] = [LayoutRect::zero(); BUFFER_LIMIT];
         // If nothing replaces this value (all node subregions are empty), we
@@ -1667,40 +1166,6 @@ impl RenderTask {
         // These assumptions are verified with asserts in this function as
         // appropriate.
 
-        // Converts a UvRectKind::Quad to a subregion, we need this for
-        // SourceGraphic because it could source from a larger image when doing
-        // a dirty rect update.  In theory this can be used for blur output as
-        // well but it doesn't seem to be necessary from early testing.
-        //
-        // See calculate_uv_rect_kind in picture.rs for how these were generated.
-        fn subregion_for_uvrectkind(kind: &UvRectKind, rect: LayoutRect) -> LayoutRect {
-            let used =
-            match kind {
-                UvRectKind::Quad{top_left: tl, top_right: _tr, bottom_left: _bl, bottom_right: br} => {
-                    LayoutRect::new(
-                        LayoutPoint::new(
-                            rect.min.x + rect.width() * tl.x / tl.w,
-                            rect.min.y + rect.height() * tl.y / tl.w,
-                        ),
-                        LayoutPoint::new(
-                            rect.min.x + rect.width() * br.x / br.w,
-                            rect.min.y + rect.height() * br.y / br.w,
-                        ),
-                    )
-                }
-                UvRectKind::Rect => {
-                    rect
-                }
-            };
-            // For some reason, the following test passes a uv_rect_kind that
-            // resolves to [-.2, -.2, -.2, -.2]
-            // reftest layout/reftests/svg/filters/dynamic-filter-invalidation-01.svg
-            match used.is_empty() {
-                true => rect,
-                false => used,
-            }
-        }
-
         // Make a UvRectKind::Quad that represents a task for a node, which may
         // have an inflate border, must be a Quad because the surface_rects
         // compositing shader expects it to be one, we don't actually use this
@@ -1708,24 +1173,7 @@ impl RenderTask {
         // this works, it projects from clipped rect to unclipped rect, where
         // our clipped rect is simply task_size minus the inflate, and unclipped
         // is our full task_size
-        fn uv_rect_kind_for_task_size(task_size: DeviceIntSize, inflate: i16) -> UvRectKind {
-            let unclipped = DeviceRect::new(
-                DevicePoint::new(
-                    inflate as f32,
-                    inflate as f32,
-                ),
-                DevicePoint::new(
-                    task_size.width as f32 - inflate as f32,
-                    task_size.height as f32 - inflate as f32,
-                ),
-            );
-            let clipped = DeviceRect::new(
-                DevicePoint::zero(),
-                DevicePoint::new(
-                    task_size.width as f32,
-                    task_size.height as f32,
-                ),
-            );
+        fn uv_rect_kind_for_task_size(clipped: DeviceRect, unclipped: DeviceRect) -> UvRectKind {
             let scale_x = 1.0 / clipped.width();
             let scale_y = 1.0 / clipped.height();
             UvRectKind::Quad{
@@ -1747,43 +1195,6 @@ impl RenderTask {
                     0.0, 1.0),
             }
         }
-
-        // Determine the local space to device pixel scaling in the most robust
-        // way, this accounts for local to device transform and
-        // device_pixel_scale (if the task is shrunk in get_surface_rects).
-        //
-        // This has some precision issues because surface_rects_clipped was
-        // rounded already, so it's not exactly the same transform that
-        // get_surface_rects performed, but it is very close, since it is not
-        // quite the same we have to round the offset a certain way to avoid
-        // introducing subpixel offsets caused by the slight deviation.
-        let subregion_to_device_scale_x = surface_rects_clipped.width() / surface_rects_clipped_local.width();
-        let subregion_to_device_scale_y = surface_rects_clipped.height() / surface_rects_clipped_local.height();
-        let subregion_to_device_offset_x = surface_rects_clipped.min.x - (surface_rects_clipped_local.min.x * subregion_to_device_scale_x).floor();
-        let subregion_to_device_offset_y = surface_rects_clipped.min.y - (surface_rects_clipped_local.min.y * subregion_to_device_scale_y).floor();
-
-        // We will treat the entire SourceGraphic coordinate space as being this
-        // subregion, which is how large the source picture task is.
-        let filter_subregion: LayoutRect = surface_rects_clipped.cast_unit();
-
-        // Calculate the used subregion (invalidation rect) for SourceGraphic
-        // that we are painting for, the intermediate task sizes are based on
-        // this portion of SourceGraphic, this also serves as a clip on the
-        // SourceGraphic, which is necessary for this reftest:
-        // layout/reftests/svg/filters/svg-filter-chains/clip-original-SourceGraphic.svg
-        let source_subregion =
-            subregion_for_uvrectkind(
-                &uv_rect_kind,
-                surface_rects_clipped.cast_unit(),
-            )
-            .intersection(&filter_subregion)
-            .unwrap_or(LayoutRect::zero())
-            .round_out();
-
-        // This is the rect for the output picture we are producing
-        let output_rect = filter_subregion.to_i32();
-        // Output to the same subregion we were provided
-        let output_subregion = filter_subregion;
 
         // Iterate the filter nodes and create tasks
         let mut made_dependency_on_source = false;
@@ -2052,6 +1463,7 @@ impl RenderTask {
             //
             // Also look up the child tasks while we are here.
             let mut used_subregion = LayoutRect::zero();
+            let mut combined_input_subregion = LayoutRect::zero();
             let node_inputs: Vec<(FilterGraphPictureReference, RenderTaskId)> = node.inputs.iter().map(|input| {
                 let (subregion, task) =
                     match input.buffer_id {
@@ -2089,6 +1501,7 @@ impl RenderTask {
                         ),
                     );
                 used_subregion = used_subregion.union(&target_subregion);
+                combined_input_subregion = combined_input_subregion.union(&subregion);
                 (FilterGraphPictureReference{
                     buffer_id: input.buffer_id,
                     // Apply offset to the placement of the input subregion.
@@ -2108,7 +1521,11 @@ impl RenderTask {
                 .round();
 
             // Clip the used subregion we calculated from the inputs to fit
-            // within the node's specified subregion.
+            // within the node's specified subregion, but we want to keep a copy
+            // of the combined input subregion for sizing tasks that involve
+            // blurs as their intermediate stages will have to be downscaled if
+            // very large, and we want that to be at the same alignment as the
+            // node output itself.
             used_subregion = used_subregion
                 .intersection(&full_subregion)
                 .unwrap_or(LayoutRect::zero())
@@ -2133,12 +1550,8 @@ impl RenderTask {
                 FilterGraphOp::SVGFEBlendScreen => {},
                 FilterGraphOp::SVGFEBlendSoftLight => {},
                 FilterGraphOp::SVGFEColorMatrix{values} => {
-                    if values[3] != 0.0 ||
-                        values[7] != 0.0 ||
-                        values[11] != 0.0 ||
-                        values[15] != 1.0 ||
-                        values[19] != 0.0 {
-                        // Manipulating alpha can easily create new
+                    if values[19] > 0.0 {
+                        // Manipulating alpha offset can easily create new
                         // pixels outside of input subregions
                         used_subregion = full_subregion;
                     }
@@ -2159,10 +1572,10 @@ impl RenderTask {
                     // in FilterSupport.cpp for more information.
                     //
                     // Any other case uses the union of input subregions
-                    if k4 != 0.0 {
+                    if k4 > 0.0 {
                         // Can produce pixels anywhere in the subregion.
                         used_subregion = full_subregion;
-                    } else  if k1 != 0.0 && k2 == 0.0 && k3 == 0.0 && k4 == 0.0 {
+                    } else  if k1 > 0.0 && k2 == 0.0 && k3 == 0.0 {
                         // Can produce pixels where both exist.
                         used_subregion = full_subregion
                             .intersection(&node_inputs[0].0.subregion)
@@ -2170,13 +1583,13 @@ impl RenderTask {
                             .intersection(&node_inputs[1].0.subregion)
                             .unwrap_or(LayoutRect::zero());
                     }
-                    else if k2 != 0.0 && k3 == 0.0 && k4 == 0.0 {
+                    else if k2 > 0.0 && k3 == 0.0 {
                         // Can produce pixels where source exists.
                         used_subregion = full_subregion
                             .intersection(&node_inputs[0].0.subregion)
                             .unwrap_or(LayoutRect::zero());
                     }
-                    else if k2 == 0.0 && k3 != 0.0 && k4 == 0.0 {
+                    else if k2 == 0.0 && k3 > 0.0 {
                         // Can produce pixels where background exists.
                         used_subregion = full_subregion
                             .intersection(&node_inputs[1].0.subregion)
@@ -2239,7 +1652,9 @@ impl RenderTask {
                 },
                 FilterGraphOp::SVGFESourceAlpha |
                 FilterGraphOp::SVGFESourceGraphic => {
-                    used_subregion = source_subregion;
+                    used_subregion = source_subregion
+                        .intersection(&full_subregion)
+                        .unwrap_or(LayoutRect::zero());
                 },
                 FilterGraphOp::SVGFESpecularLightingDistant{..} => {},
                 FilterGraphOp::SVGFESpecularLightingPoint{..} => {},
@@ -2262,65 +1677,96 @@ impl RenderTask {
                 },
             }
 
-            // If this is the output node, apply the output clip.
-            let node_inflate = node.inflate;
-            let mut create_output_task = false;
-            if is_output {
-                // If we're drawing a subregion that encloses output_subregion
-                // we can just crop the node to output_subregion.
-                if used_subregion.to_i32().contains_box(&output_rect) {
-                    used_subregion = output_subregion;
-                } else {
-                    // We'll have to create an extra blit task after this task
-                    // so that there is transparent black padding around it.
-                    create_output_task = true;
-                }
-            }
-
-            // Convert subregion from layout pixels to integer device pixels and
-            // then calculate size afterwards so it reflects the used pixel area
-            //
-            // This can be an empty rect if the source_subregion invalidation
-            // rect didn't request any pixels of this node, but we can't skip
-            // creating tasks that have no size because they would leak in the
-            // render task graph with no consumers
-            let node_task_rect: DeviceIntRect = used_subregion.to_i32().cast_unit();
-            let mut node_task_size = node_task_rect.size().cast_unit();
-
-            // We have to limit the render target sizes we're asking for on the
-            // intermediate nodes; it's not feasible to allocate extremely large
-            // surfaces.  Note that the SVGFEFilterTask code can adapt to any
-            // scaling that we use here, input subregions simply have to be in
-            // the same space as the target subregion, which we're not changing,
-            // and operator parameters like kernel_unit_length are also in that
-            // space.  Blurs will do this same logic if their intermediate is
-            // too large.  We use a simple halving calculation here so that
-            // pixel alignment is still vaguely sensible.
-            while node_task_size.width as usize + node_inflate as usize * 2 > MAX_SURFACE_SIZE ||
-                node_task_size.height as usize + node_inflate as usize * 2 > MAX_SURFACE_SIZE {
-                node_task_size.width >>= 1;
-                node_task_size.height >>= 1;
-            }
+            add_text_marker(
+                "SVGFEGraph",
+                &format!("{}({})", op.kind(), filter_index),
+                Duration::from_micros((used_subregion.width() * used_subregion.height() / 1000.0) as u64),
+            );
 
             // SVG spec requires that a later node sampling pixels outside
             // this node's subregion will receive a transparent black color
-            // for those samples, we achieve this by adding a 1 pixel border
-            // around the target rect, which works fine with the clamping of the
-            // texture fetch in the shader, and to account for the offset we
-            // have to make a UvRectKind::Quad mapping for later nodes to use
-            // when sampling this output, if they use feOffset or have a
-            // larger target rect those samples will be clamped to the
-            // transparent black border and thus meet spec.
-            node_task_size.width += node_inflate as i32 * 2;
-            node_task_size.height += node_inflate as i32 * 2;
+            // for those samples, we achieve this by adding a 1 pixel inflate
+            // around the target rect, which works fine with the
+            // edgemode=duplicate behavior of the texture fetch in the shader,
+            // all of the out of bounds reads are transparent black.
+            //
+            // If this is the output node, we don't apply the inflate, knowing
+            // that the pixels outside of the invalidation rect will not be used
+            // so it is okay if they duplicate outside the view.
+            let mut node_inflate = node.inflate;
+            if is_output {
+                // Use the provided target subregion (invalidation rect)
+                used_subregion = target_subregion;
+                node_inflate = 0;
+            }
+
+            // We can't render tasks larger than a certain size, if this node
+            // is too large (particularly with blur padding), we need to render
+            // at a reduced resolution, later nodes can still be full resolution
+            // but for example blurs are not significantly harmed by reduced
+            // resolution in most cases.
+            let mut device_to_render_scale = 1.0;
+            let mut render_to_device_scale = 1.0;
+            let mut subregion = used_subregion;
+            let padded_subregion = match op {
+                FilterGraphOp::SVGFEGaussianBlur{std_deviation_x, std_deviation_y} |
+                FilterGraphOp::SVGFEDropShadow{std_deviation_x, std_deviation_y, ..} => {
+                    used_subregion
+                    .inflate(
+                        std_deviation_x.ceil() * BLUR_SAMPLE_SCALE,
+                        std_deviation_y.ceil() * BLUR_SAMPLE_SCALE)
+                }
+                _ => used_subregion,
+            }.union(&combined_input_subregion);
+            while
+                padded_subregion.scale(device_to_render_scale, device_to_render_scale).round().width() + node_inflate as f32 * 2.0 > MAX_SURFACE_SIZE as f32 ||
+                padded_subregion.scale(device_to_render_scale, device_to_render_scale).round().height() + node_inflate as f32 * 2.0 > MAX_SURFACE_SIZE as f32 {
+                device_to_render_scale *= 0.5;
+                render_to_device_scale *= 2.0;
+                // If the rendering was scaled, we need to snap used_subregion
+                // to the correct granularity or we'd have misaligned sampling
+                // when this is used as an input later.
+                subregion = used_subregion
+                    .scale(device_to_render_scale, device_to_render_scale)
+                    .round()
+                    .scale(render_to_device_scale, render_to_device_scale);
+            }
+
+            // This is the rect we will be actually producing as a render task,
+            // it is sometimes the case that subregion is empty, but we
+            // must make a task or else the earlier tasks would not be properly
+            // linked into the frametree, causing a leak.
+            let node_task_rect: DeviceRect =
+                subregion
+                .scale(device_to_render_scale, device_to_render_scale)
+                .round()
+                .inflate(node_inflate as f32, node_inflate as f32)
+                .cast_unit();
+            let node_task_size = node_task_rect.to_i32().size();
+            let node_task_size =
+                if node_task_size.width < 1 || node_task_size.height < 1 {
+                    DeviceIntSize::new(1, 1)
+                } else {
+                    node_task_size
+                };
 
             // Make the uv_rect_kind for this node's task to use, this matters
             // only on the final node because we don't use it internally
-            let node_uv_rect_kind =
-                uv_rect_kind_for_task_size(node_task_size, node_inflate);
+            let node_uv_rect_kind = uv_rect_kind_for_task_size(
+                subregion
+                .scale(device_to_render_scale, device_to_render_scale)
+                .round()
+                .inflate(node_inflate as f32, node_inflate as f32)
+                .cast_unit(),
+                prim_subregion
+                .scale(device_to_render_scale, device_to_render_scale)
+                .round()
+                .inflate(node_inflate as f32, node_inflate as f32)
+                .cast_unit(),
+            );
 
             // Create task for this node
-            let mut task_id;
+            let task_id;
             match op {
                 FilterGraphOp::SVGFEGaussianBlur { std_deviation_x, std_deviation_y } => {
                     // Note: wrap_prim_with_filters copies the SourceGraphic to
@@ -2336,65 +1782,52 @@ impl RenderTask {
 
                     // We have to make a copy of the input that is padded with
                     // transparent black for the area outside the subregion, so
-                    // that the blur task does not duplicate at the edges, and
-                    // this is also where we have to adjust size to account for
-                    // for downscaling of the image in the blur task to avoid
-                    // introducing sampling artifacts on the downscale
-                    let mut adjusted_blur_std_deviation = DeviceSize::new(
-                        std_deviation_x,
-                        std_deviation_y,
+                    // that the blur task does not duplicate at the edges
+                    let adjusted_blur_std_deviation = DeviceSize::new(
+                        std_deviation_x.clamp(0.0, (i32::MAX / 2) as f32) * device_to_render_scale,
+                        std_deviation_y.clamp(0.0, (i32::MAX / 2) as f32) * device_to_render_scale,
                     );
                     let blur_subregion = blur_input.subregion
+                        .scale(device_to_render_scale, device_to_render_scale)
                         .inflate(
-                            std_deviation_x.ceil() * BLUR_SAMPLE_SCALE,
-                            std_deviation_y.ceil() * BLUR_SAMPLE_SCALE);
-                    let blur_task_size = blur_subregion.size().cast_unit();
+                            adjusted_blur_std_deviation.width * BLUR_SAMPLE_SCALE,
+                            adjusted_blur_std_deviation.height * BLUR_SAMPLE_SCALE)
+                        .round_out();
+                    let blur_task_size = blur_subregion
+                        .size()
+                        .cast_unit()
+                        .max(DeviceSize::new(1.0, 1.0));
                     // Adjust task size to prevent potential sampling errors
-                    let mut adjusted_blur_task_size =
+                    let adjusted_blur_task_size =
                         BlurTask::adjusted_blur_source_size(
                             blur_task_size,
                             adjusted_blur_std_deviation,
-                        );
+                        ).max(DeviceSize::new(1.0, 1.0));
                     // Now change the subregion to match the revised task size,
                     // keeping it centered should keep animated radius smooth.
                     let corner = LayoutPoint::new(
-                            blur_subregion.min.x + ((
-                                blur_task_size.width as i32 -
-                                adjusted_blur_task_size.width) / 2) as f32,
-                            blur_subregion.min.y + ((
-                                blur_task_size.height as i32 -
-                                adjusted_blur_task_size.height) / 2) as f32,
+                            blur_subregion.min.x.floor() + ((
+                                blur_task_size.width -
+                                adjusted_blur_task_size.width) * 0.5).floor(),
+                            blur_subregion.min.y.floor() + ((
+                                blur_task_size.height -
+                                adjusted_blur_task_size.height) * 0.5).floor(),
+                        );
+                    // Recalculate the blur_subregion to match, and if render
+                    // scale is used, undo that so it is in the same subregion
+                    // coordinate system as the node
+                    let blur_subregion =
+                        LayoutRect::new(
+                            corner,
+                            LayoutPoint::new(
+                                corner.x + adjusted_blur_task_size.width,
+                                corner.y + adjusted_blur_task_size.height,
+                            ),
                         )
-                        .floor();
-                    // Recalculate the blur_subregion to match, note that if the
-                    // task was downsized it doesn't affect the size of this
-                    // rect, so we don't have to scale blur_input.subregion for
-                    // input purposes as they are the same scale.
-                    let blur_subregion = LayoutRect::new(
-                        corner,
-                        LayoutPoint::new(
-                            corner.x + adjusted_blur_task_size.width as f32,
-                            corner.y + adjusted_blur_task_size.height as f32,
-                        ),
-                    );
-                    // For extremely large blur radius we have to limit size,
-                    // see comments on node_task_size above for more details.
-                    while adjusted_blur_task_size.to_i32().width as usize > MAX_SURFACE_SIZE ||
-                        adjusted_blur_task_size.to_i32().height as usize > MAX_SURFACE_SIZE {
-                        adjusted_blur_task_size.width >>= 1;
-                        adjusted_blur_task_size.height >>= 1;
-                        adjusted_blur_std_deviation.width *= 0.5;
-                        adjusted_blur_std_deviation.height *= 0.5;
-                        if adjusted_blur_task_size.width < 2 {
-                            adjusted_blur_task_size.width = 2;
-                        }
-                        if adjusted_blur_task_size.height < 2 {
-                            adjusted_blur_task_size.height = 2;
-                        }
-                    }
+                        .scale(render_to_device_scale, render_to_device_scale);
 
-                    let input_subregion_task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
-                        adjusted_blur_task_size,
+                    let input_subregion_task_id = rg_builder.add().init(RenderTask::new_dynamic(
+                        adjusted_blur_task_size.to_i32(),
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
                                 node: FilterGraphNode{
@@ -2406,12 +1839,12 @@ impl RenderTask {
                                 },
                                 op: FilterGraphOp::SVGFEIdentity,
                                 content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(UvRectKind::Rect));
                     // Adding the dependencies sets the inputs for this task
-                    frame_state.rg_builder.add_dependency(input_subregion_task_id, source_task_id);
+                    rg_builder.add_dependency(input_subregion_task_id, source_task_id);
 
                     // TODO: We should do this blur in the correct
                     // colorspace, linear=true is the default in SVG and
@@ -2422,13 +1855,14 @@ impl RenderTask {
                         RenderTask::new_blur(
                             adjusted_blur_std_deviation,
                             input_subregion_task_id,
-                            frame_state.rg_builder,
+                            rg_builder,
                             RenderTargetKind::Color,
                             None,
-                            adjusted_blur_task_size,
+                            adjusted_blur_task_size.to_i32(),
+                            BlurEdgeMode::Duplicate,
                         );
 
-                    task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
+                    task_id = rg_builder.add().init(RenderTask::new_dynamic(
                         node_task_size,
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
@@ -2445,16 +1879,16 @@ impl RenderTask {
                                             source_padding: LayoutRect::zero(),
                                             target_padding: LayoutRect::zero(),
                                         }].to_vec(),
-                                    subregion: used_subregion,
+                                    subregion,
                                 },
                                 op: FilterGraphOp::SVGFEIdentity,
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                content_origin: node_task_rect.min,
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(node_uv_rect_kind));
                     // Adding the dependencies sets the inputs for this task
-                    frame_state.rg_builder.add_dependency(task_id, blur_task_id);
+                    rg_builder.add_dependency(task_id, blur_task_id);
                 }
                 FilterGraphOp::SVGFEDropShadow { color, dx, dy, std_deviation_x, std_deviation_y } => {
                     // Note: wrap_prim_with_filters copies the SourceGraphic to
@@ -2470,65 +1904,52 @@ impl RenderTask {
 
                     // We have to make a copy of the input that is padded with
                     // transparent black for the area outside the subregion, so
-                    // that the blur task does not duplicate at the edges, and
-                    // this is also where we have to adjust size to account for
-                    // for downscaling of the image in the blur task to avoid
-                    // introducing sampling artifacts on the downscale
-                    let mut adjusted_blur_std_deviation = DeviceSize::new(
-                        std_deviation_x,
-                        std_deviation_y,
+                    // that the blur task does not duplicate at the edges
+                    let adjusted_blur_std_deviation = DeviceSize::new(
+                        std_deviation_x.clamp(0.0, (i32::MAX / 2) as f32) * device_to_render_scale,
+                        std_deviation_y.clamp(0.0, (i32::MAX / 2) as f32) * device_to_render_scale,
                     );
                     let blur_subregion = blur_input.subregion
+                        .scale(device_to_render_scale, device_to_render_scale)
                         .inflate(
-                            std_deviation_x.ceil() * BLUR_SAMPLE_SCALE,
-                            std_deviation_y.ceil() * BLUR_SAMPLE_SCALE);
-                    let blur_task_size = blur_subregion.size().cast_unit();
+                            adjusted_blur_std_deviation.width * BLUR_SAMPLE_SCALE,
+                            adjusted_blur_std_deviation.height * BLUR_SAMPLE_SCALE)
+                        .round_out();
+                    let blur_task_size = blur_subregion
+                        .size()
+                        .cast_unit()
+                        .max(DeviceSize::new(1.0, 1.0));
                     // Adjust task size to prevent potential sampling errors
-                    let mut adjusted_blur_task_size =
+                    let adjusted_blur_task_size =
                         BlurTask::adjusted_blur_source_size(
                             blur_task_size,
                             adjusted_blur_std_deviation,
-                        );
+                        ).max(DeviceSize::new(1.0, 1.0));
                     // Now change the subregion to match the revised task size,
                     // keeping it centered should keep animated radius smooth.
                     let corner = LayoutPoint::new(
-                            blur_subregion.min.x + ((
-                                blur_task_size.width as i32 -
-                                adjusted_blur_task_size.width) / 2) as f32,
-                            blur_subregion.min.y + ((
-                                blur_task_size.height as i32 -
-                                adjusted_blur_task_size.height) / 2) as f32,
+                            blur_subregion.min.x.floor() + ((
+                                blur_task_size.width -
+                                adjusted_blur_task_size.width) * 0.5).floor(),
+                            blur_subregion.min.y.floor() + ((
+                                blur_task_size.height -
+                                adjusted_blur_task_size.height) * 0.5).floor(),
+                        );
+                    // Recalculate the blur_subregion to match, and if render
+                    // scale is used, undo that so it is in the same subregion
+                    // coordinate system as the node
+                    let blur_subregion =
+                        LayoutRect::new(
+                            corner,
+                            LayoutPoint::new(
+                                corner.x + adjusted_blur_task_size.width,
+                                corner.y + adjusted_blur_task_size.height,
+                            ),
                         )
-                        .floor();
-                    // Recalculate the blur_subregion to match, note that if the
-                    // task was downsized it doesn't affect the size of this
-                    // rect, so we don't have to scale blur_input.subregion for
-                    // input purposes as they are the same scale.
-                    let blur_subregion = LayoutRect::new(
-                        corner,
-                        LayoutPoint::new(
-                            corner.x + adjusted_blur_task_size.width as f32,
-                            corner.y + adjusted_blur_task_size.height as f32,
-                        ),
-                    );
-                    // For extremely large blur radius we have to limit size,
-                    // see comments on node_task_size above for more details.
-                    while adjusted_blur_task_size.to_i32().width as usize > MAX_SURFACE_SIZE ||
-                        adjusted_blur_task_size.to_i32().height as usize > MAX_SURFACE_SIZE {
-                        adjusted_blur_task_size.width >>= 1;
-                        adjusted_blur_task_size.height >>= 1;
-                        adjusted_blur_std_deviation.width *= 0.5;
-                        adjusted_blur_std_deviation.height *= 0.5;
-                        if adjusted_blur_task_size.width < 2 {
-                            adjusted_blur_task_size.width = 2;
-                        }
-                        if adjusted_blur_task_size.height < 2 {
-                            adjusted_blur_task_size.height = 2;
-                        }
-                    }
+                        .scale(render_to_device_scale, render_to_device_scale);
 
-                    let input_subregion_task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
-                        adjusted_blur_task_size,
+                    let input_subregion_task_id = rg_builder.add().init(RenderTask::new_dynamic(
+                        adjusted_blur_task_size.to_i32(),
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
                                 node: FilterGraphNode{
@@ -2547,13 +1968,13 @@ impl RenderTask {
                                     inflate: 0,
                                 },
                                 op: FilterGraphOp::SVGFEIdentity,
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                content_origin: node_task_rect.min,
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(UvRectKind::Rect));
                     // Adding the dependencies sets the inputs for this task
-                    frame_state.rg_builder.add_dependency(input_subregion_task_id, source_task_id);
+                    rg_builder.add_dependency(input_subregion_task_id, source_task_id);
 
                     // The shadow compositing only cares about alpha channel
                     // which is always linear, so we can blur this in sRGB or
@@ -2563,17 +1984,18 @@ impl RenderTask {
                         RenderTask::new_blur(
                             adjusted_blur_std_deviation,
                             input_subregion_task_id,
-                            frame_state.rg_builder,
+                            rg_builder,
                             RenderTargetKind::Color,
                             None,
-                            adjusted_blur_task_size,
+                            adjusted_blur_task_size.to_i32(),
+                            BlurEdgeMode::Duplicate,
                         );
 
                     // Now we make the compositing task, for this we need to put
                     // the blurred shadow image at the correct subregion offset
-                    let blur_subregion = blur_subregion
+                    let blur_subregion_translated = blur_subregion
                         .translate(LayoutVector2D::new(dx, dy));
-                    task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
+                    task_id = rg_builder.add().init(RenderTask::new_dynamic(
                         node_task_size,
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
@@ -2587,13 +2009,13 @@ impl RenderTask {
                                         // Shadow picture
                                         FilterGraphPictureReference{
                                             buffer_id: blur_input.buffer_id,
-                                            subregion: blur_subregion,
+                                            subregion: blur_subregion_translated,
                                             inflate: 0,
                                             offset: LayoutVector2D::zero(),
                                             source_padding: LayoutRect::zero(),
                                             target_padding: LayoutRect::zero(),
                                         }].to_vec(),
-                                    subregion: used_subregion,
+                                    subregion,
                                 },
                                 op: FilterGraphOp::SVGFEDropShadow{
                                     color,
@@ -2601,14 +2023,14 @@ impl RenderTask {
                                     dx: 0.0, dy: 0.0,
                                     std_deviation_x: 0.0, std_deviation_y: 0.0,
                                 },
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                content_origin: node_task_rect.min,
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(node_uv_rect_kind));
                     // Adding the dependencies sets the inputs for this task
-                    frame_state.rg_builder.add_dependency(task_id, source_task_id);
-                    frame_state.rg_builder.add_dependency(task_id, blur_task_id);
+                    rg_builder.add_dependency(task_id, source_task_id);
+                    rg_builder.add_dependency(task_id, blur_task_id);
                 }
                 FilterGraphOp::SVGFESourceAlpha |
                 FilterGraphOp::SVGFESourceGraphic => {
@@ -2616,7 +2038,7 @@ impl RenderTask {
                     // a fake input binding to make the shader do the copy.  In
                     // the case of SourceAlpha the shader will zero the RGB but
                     // we don't have to care about that distinction here.
-                    task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
+                    task_id = rg_builder.add().init(RenderTask::new_dynamic(
                         node_task_size,
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
@@ -2628,50 +2050,46 @@ impl RenderTask {
                                         FilterGraphPictureReference{
                                             buffer_id: FilterOpGraphPictureBufferId::None,
                                             // This is what makes the mapping
-                                            // actually work - this has to be
-                                            // the subregion of the whole filter
-                                            // because that is the size of the
-                                            // input task, it will be cropped to
-                                            // the used area (source_subregion).
-                                            subregion: filter_subregion,
+                                            // actually work.
+                                            subregion: source_subregion.cast_unit(),
                                             offset: LayoutVector2D::zero(),
                                             inflate: 0,
                                             source_padding: LayoutRect::zero(),
                                             target_padding: LayoutRect::zero(),
                                         }
                                     ].to_vec(),
-                                    subregion: used_subregion,
+                                    subregion: source_subregion.cast_unit(),
                                 },
                                 op: op.clone(),
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                content_origin: source_subregion.min.cast_unit(),
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(node_uv_rect_kind));
-                    frame_state.rg_builder.add_dependency(task_id, original_task_id);
+                    rg_builder.add_dependency(task_id, original_task_id);
                     made_dependency_on_source = true;
                 }
                 FilterGraphOp::SVGFEComponentTransferInterned { handle, creates_pixels: _ } => {
                     // FIXME: Doing this in prepare_interned_prim_for_render
                     // doesn't seem to be enough, where should it be done?
                     let filter_data = &mut data_stores.filter_data[handle];
-                    filter_data.update(frame_state);
-                    // ComponentTransfer has a gpu_cache_handle that we need to
+                    filter_data.write_gpu_blocks(gpu_buffer);
+                    // ComponentTransfer has a gpu buffer address that we need to
                     // pass along
-                    task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
+                    task_id = rg_builder.add().init(RenderTask::new_dynamic(
                         node_task_size,
                         RenderTaskKind::SVGFENode(
-                            SVGFEFilterTask{
+                            SVGFEFilterTask {
                                 node: FilterGraphNode{
                                     kept_by_optimizer: true,
                                     linear: node.linear,
                                     inputs: node_inputs.iter().map(|input| {input.0}).collect(),
-                                    subregion: used_subregion,
+                                    subregion,
                                     inflate: node_inflate,
                                 },
                                 op: op.clone(),
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: Some(filter_data.gpu_cache_handle),
+                                content_origin: node_task_rect.min,
+                                extra_gpu_data: Some(filter_data.gpu_buffer_address),
                             }
                         ),
                     ).with_uv_rect_kind(node_uv_rect_kind));
@@ -2683,14 +2101,14 @@ impl RenderTask {
                             made_dependency_on_source = true;
                         }
                         if *input_task != RenderTaskId::INVALID {
-                            frame_state.rg_builder.add_dependency(task_id, *input_task);
+                            rg_builder.add_dependency(task_id, *input_task);
                         }
                     }
                 }
                 _ => {
                     // This is the usual case - zero, one or two inputs that
                     // reference earlier node results.
-                    task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
+                    task_id = rg_builder.add().init(RenderTask::new_dynamic(
                         node_task_size,
                         RenderTaskKind::SVGFENode(
                             SVGFEFilterTask{
@@ -2698,12 +2116,12 @@ impl RenderTask {
                                     kept_by_optimizer: true,
                                     linear: node.linear,
                                     inputs: node_inputs.iter().map(|input| {input.0}).collect(),
-                                    subregion: used_subregion,
+                                    subregion,
                                     inflate: node_inflate,
                                 },
                                 op: op.clone(),
-                                content_origin: DevicePoint::zero(),
-                                extra_gpu_cache_handle: None,
+                                content_origin: node_task_rect.min,
+                                extra_gpu_data: None,
                             }
                         ),
                     ).with_uv_rect_kind(node_uv_rect_kind));
@@ -2715,7 +2133,7 @@ impl RenderTask {
                             made_dependency_on_source = true;
                         }
                         if *input_task != RenderTaskId::INVALID {
-                            frame_state.rg_builder.add_dependency(task_id, *input_task);
+                            rg_builder.add_dependency(task_id, *input_task);
                         }
                     }
                 }
@@ -2725,52 +2143,16 @@ impl RenderTask {
             // to look them up quickly, since nodes can only depend on previous
             // nodes in the same list
             task_by_buffer_id[filter_index] = task_id;
-            subregion_by_buffer_id[filter_index] = used_subregion;
+            subregion_by_buffer_id[filter_index] = subregion;
 
             // The final task we create is the output picture.
             output_task_id = task_id;
-            if create_output_task {
-                // If the final node subregion is smaller than the output rect,
-                // we need to pad it with transparent black to match SVG spec,
-                // as the output task rect is larger than the invalidated area,
-                // ideally the origin and size of the picture we return should
-                // be used instead of the get_rect result for sizing geometry,
-                // as it would allow us to produce a much smaller rect.
-                let output_uv_rect_kind =
-                    uv_rect_kind_for_task_size(surface_rects_task_size, 0);
-                task_id = frame_state.rg_builder.add().init(RenderTask::new_dynamic(
-                    surface_rects_task_size,
-                    RenderTaskKind::SVGFENode(
-                        SVGFEFilterTask{
-                            node: FilterGraphNode{
-                                kept_by_optimizer: true,
-                                linear: false,
-                                inputs: [FilterGraphPictureReference{
-                                    buffer_id: FilterOpGraphPictureBufferId::None,
-                                    subregion: used_subregion,
-                                    offset: LayoutVector2D::zero(),
-                                    inflate: node_inflate,
-                                    source_padding: LayoutRect::zero(),
-                                    target_padding: LayoutRect::zero(),
-                                }].to_vec(),
-                                subregion: output_subregion,
-                                inflate: 0,
-                            },
-                            op: FilterGraphOp::SVGFEIdentity,
-                            content_origin: surface_rects_clipped.min,
-                            extra_gpu_cache_handle: None,
-                        }
-                    ),
-                ).with_uv_rect_kind(output_uv_rect_kind));
-                frame_state.rg_builder.add_dependency(task_id, output_task_id);
-                output_task_id = task_id;
-            }
         }
 
         // If no tasks referenced the SourceGraphic, we actually have to create
         // a fake dependency so that it does not leak.
         if !made_dependency_on_source && output_task_id != original_task_id {
-            frame_state.rg_builder.add_dependency(output_task_id, original_task_id);
+            rg_builder.add_dependency(output_task_id, original_task_id);
         }
 
         output_task_id
@@ -2780,8 +2162,8 @@ impl RenderTask {
         self.uv_rect_kind
     }
 
-    pub fn get_texture_address(&self, gpu_cache: &GpuCache) -> GpuCacheAddress {
-        gpu_cache.get_address(&self.uv_rect_handle)
+    pub fn get_texture_address(&self) -> GpuBufferAddress {
+        self.uv_rect_handle
     }
 
     pub fn get_target_texture(&self) -> CacheTextureId {
@@ -2790,10 +2172,10 @@ impl RenderTask {
                 assert_ne!(texture_id, CacheTextureId::INVALID);
                 texture_id
             }
-            RenderTaskLocation::Existing { .. } |
-            RenderTaskLocation::CacheRequest { .. } |
-            RenderTaskLocation::Unallocated { .. } |
-            RenderTaskLocation::Static { .. } => {
+            RenderTaskLocation::Static { surface: StaticRenderTaskSurface::TextureCache { texture, .. }, .. } => {
+                texture
+            }
+            _ => {
                 unreachable!();
             }
         }
@@ -2860,34 +2242,6 @@ impl RenderTask {
         self.kind.target_kind()
     }
 
-    pub fn write_gpu_blocks(
-        &mut self,
-        target_rect: DeviceIntRect,
-        gpu_cache: &mut GpuCache,
-    ) {
-        profile_scope!("write_gpu_blocks");
-
-        self.kind.write_gpu_blocks(gpu_cache);
-
-        if self.cache_handle.is_some() {
-            // The uv rect handle of cached render tasks is requested and set by the
-            // render task cache.
-            return;
-        }
-
-        if let Some(mut request) = gpu_cache.request(&mut self.uv_rect_handle) {
-            let p0 = target_rect.min.to_f32();
-            let p1 = target_rect.max.to_f32();
-            let image_source = ImageSource {
-                p0,
-                p1,
-                user_data: [0.0; 4],
-                uv_rect_kind: self.uv_rect_kind,
-            };
-            image_source.write_gpu_blocks(&mut request);
-        }
-    }
-
     /// Called by the render task cache.
     ///
     /// Tells the render task that it is cached (which means its gpu cache
@@ -2895,4 +2249,59 @@ impl RenderTask {
     pub fn mark_cached(&mut self, handle: RenderTaskCacheEntryHandle) {
         self.cache_handle = Some(handle);
     }
+}
+
+/// A rendering operation applied on top of a render task.
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub enum SubTask {
+    RectangleClip(RectangleClipSubTask),
+    ImageClip(ImageClipSubTask),
+}
+
+/// A (rounded) rectangle clip applied to a render task using the multiply
+/// blend mode on top of the content being clipped.
+#[derive(Debug)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct RectangleClipSubTask {
+    /// Quad primitive address for this clip.
+    pub quad_address: GpuBufferAddress,
+    /// Location of the (rounded) rectangle parameters.
+    pub clip_address: GpuBufferAddress,
+    /// The coordinate space of the clip.
+    /// - If primitive space, then the clip's quad primitive is positioned using
+    ///   the transform of the primitive being clipped. clip_transform_id is used
+    ///   by the shader to map from that space to the clip's local space.
+    ///   This is used when the clip and raster space are indifferent coordinate
+    ///   systems.
+    /// - If raster space, then the clip's quad primitive is positioned directly
+    ///   using rectangles in raster space (no transforms). The clip parameters
+    ///   are still potentially in a different space so clip_transform_id is used
+    ///   to map from raster to clip space (this transform is assumed to be a
+    ///   scale-offset).
+    pub clip_space: ClipSpace,
+    /// Transform applied to the quad primitive of the clip.
+    pub quad_transform_id: GpuTransformId,
+    /// Transform from the quad primitive's space to the clip's local space.
+    pub clip_transform_id: GpuTransformId,
+    pub quad_flags: QuadFlags,
+    pub needs_scissor_rect: bool,
+    pub rounded_rect_fast_path: bool,
+}
+
+/// An clip applied to a render task using the multiply blend mode on top of
+/// the content being clipped.
+#[derive(Debug)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct ImageClipSubTask {
+    /// Quad primitive address for this clip.
+    pub quad_address: GpuBufferAddress,
+    /// Transform from the clip's local space to raster space (to position the
+    /// clip's quad primitive).
+    pub quad_transform_id: GpuTransformId,
+    pub src_task: RenderTaskId,
+    pub quad_flags: QuadFlags,
+    pub needs_scissor_rect: bool,
 }

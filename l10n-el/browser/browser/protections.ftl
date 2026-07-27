@@ -40,7 +40,7 @@ graph-today = Σήμερα
 # This string is used to describe the graph for screenreader users.
 graph-legend-description = Ένα γράφημα με τον συνολικό αριθμό κάθε τύπου ιχνηλάτη που έχει αποκλειστεί αυτήν την εβδομάδα.
 social-tab-title = Ιχνηλάτες κοινωνικών δικτύων
-social-tab-contant = Τα κοινωνικά δίκτυα τοποθετούν ιχνηλάτες σε άλλες ιστοσελίδες για να παρακολουθούν ό,τι κάνετε και βλέπετε στο διαδίκτυο. Αυτό επιτρέπει στις εταιρείες κοινωνικών μέσων να μάθουν περισσότερα για εσάς πέρα από αυτά που κοινοποιείτε στα προφίλ κοινωνικών μέσων σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
+social-tab-contant = Τα μέσα κοινωνικής δικτύωσης τοποθετούν ιχνηλάτες σε άλλους ιστοτόπους για να παρακολουθούν ό,τι κάνετε και βλέπετε στο διαδίκτυο. Αυτό επιτρέπει στις εταιρείες να μαθαίνουν περισσότερα για εσάς, πέρα από αυτά που κοινοποιείτε στα δημόσια προφίλ σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 cookie-tab-title = Cookie καταγραφής μεταξύ ιστοτόπων
 cookie-tab-content = Αυτά τα cookie σάς ακολουθούν από ιστότοπο σε ιστότοπο για να συλλέξουν δεδομένα για ό,τι κάνετε στο διαδίκτυο. Δημιουργούνται από τρίτους, όπως διαφημιστές και εταιρείες ανάλυσης. Η φραγή των cookie καταγραφής μεταξύ ιστοτόπων μειώνει τον αριθμό των διαφημίσεων που σας καταγράφουν. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 tracker-tab-title = Περιεχόμενο καταγραφής
@@ -48,7 +48,7 @@ tracker-tab-description = Οι ιστότοποι ενδέχεται να φορ
 fingerprinter-tab-title = Fingerprinter
 fingerprinter-tab-content = Τα fingerprinter συλλέγουν ρυθμίσεις από το πρόγραμμα περιήγησης και τον υπολογιστή σας για να δημιουργήσουν ένα προφίλ για εσάς. Με τη χρήση αυτού του ψηφιακού αποτυπώματος, μπορούν να σας καταγράφουν σε διάφορους ιστοτόπους. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 cryptominer-tab-title = Cryptominer
-cryptominer-tab-content = Τα cryptominers χρησιμοποιούν την υπολογιστική ισχύ του συστήματός σας για να κάνουν εξόρυξη κρυπτονομισμάτων. Τα σενάρια εξόρυξης κρυπτονομισμάτων καταναλώνουν μπαταρία, επιβραδύνουν τον υπολογιστή σας, ενώ ενδέχεται να δείτε αυξημένες χρεώσεις στο λογαριασμό τους ρεύματός σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
+cryptominer-tab-content = Τα cryptominer χρησιμοποιούν την υπολογιστική ισχύ του συστήματός σας για να κάνουν εξόρυξη κρυπτονομισμάτων. Τα σενάρια εξόρυξης κρυπτονομισμάτων καταναλώνουν μπαταρία, επιβραδύνουν τον υπολογιστή σας, ενώ ενδέχεται να δείτε αυξημένες χρεώσεις στον λογαριασμό ρεύματός σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 protections-close-button2 =
     .aria-label = Κλείσιμο
     .title = Κλείσιμο
@@ -203,3 +203,61 @@ bar-tooltip-cryptominer =
             [one] { $count } cryptominer ({ $percentage }%)
            *[other] { $count } cryptominer ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Προστασία απορρήτου
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } αποκλεισμός αυτήν την εβδομάδα
+       *[other] { $count } αποκλεισμοί αυτήν την εβδομάδα
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } ιχνηλάτης
+       *[other] { $count } ιχνηλάτες
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } fingerprinter
+       *[other] { $count } fingerprinter
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } cookie καταγραφής
+       *[other] { $count } cookie καταγραφής
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } ιχνηλάτης κοινωνικών δικτύων
+       *[other] { $count } ιχνηλάτες κοινωνικών δικτύων
+    }
+privacy-metrics-empty = Δεν αποκλείστηκαν ιχνηλάτες αυτήν την εβδομάδα. Το { -brand-short-name } σάς προστατεύει από τις ακόλουθες απειλές κατά την περιήγησή σας.
+privacy-metrics-loading = Φόρτωση στατιστικών προστασίας…
+privacy-metrics-error = Δεν είναι δυνατή η φόρτωση των στατιστικών προστασίας.
+privacy-metrics-private-window = Το { -brand-short-name } συνεχίζει να αποκλείει τους ιχνηλάτες στα ιδιωτικά παράθυρα, αλλά δεν διατηρείται αρχείο καταγραφής των αποκλεισμένων στοιχείων.
+
+## VPN promo card and banner
+
+protections-vpn-title = Λάβετε προστασία απορρήτου πέρα από το πρόγραμμα περιήγησης
+protections-vpn-header-content = Προστατέψτε ολόκληρη τη συσκευή σας με το { -mozilla-vpn-brand-name }. Με ένα πάτημα κρυπτογραφεί όλη την κίνηση και αποκρύπτει την τοποθεσία σας.
+protections-get-vpn-link = Απόκτηση του { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: Έχετε εγγραφεί
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [one] Η χρήση του { -mozilla-vpn-brand-name } κρυπτογραφεί όλη την κίνηση και αποκρύπτει την τοποθεσία σας, σε έως και { $count } συσκευή. Αξιοποιήστε στο έπακρο τη συνδρομή σας, προσθέτοντάς την από το <a data-l10n-name="playstore-link">Google Play Store</a> ή το <a data-l10n-name="appstore-link">Apple App Store </a>.
+       *[other] Η χρήση του { -mozilla-vpn-brand-name } κρυπτογραφεί όλη την κίνηση και αποκρύπτει την τοποθεσία σας, σε έως και { $count } συσκευών. Αξιοποιήστε στο έπακρο τη συνδρομή σας, προσθέτοντάς την από το <a data-l10n-name="playstore-link">Google Play Store</a> ή το <a data-l10n-name="appstore-link">Apple App Store </a>.
+    }
+protections-vpn-banner-header = Προστασία που εκτείνεται πέρα από το πρόγραμμα περιήγησης
+protections-vpn-banner-content = Δοκιμάστε το { -mozilla-vpn-brand-name } και δείτε γιατί αναφέρει το TechRadar: «Η ταχύτητα, η απλότητα και η χαμηλή μηνιαία τιμή του, το κάνουν να αξίζει την προσοχή σας».
+protections-vpn-banner-link = Απόκτηση του { -mozilla-vpn-brand-name }

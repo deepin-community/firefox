@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,7 +12,6 @@
 #include "nsIHttpChannelInternal.h"
 #include "nsURLHelper.h"
 #include "nsIStreamConverterService.h"
-#include <algorithm>
 #include "nsContentSecurityManager.h"
 #include "nsHttp.h"
 #include "nsNetUtil.h"
@@ -47,13 +45,15 @@ void nsPartChannel::InitializeByteRange(int64_t aStart, int64_t aEnd) {
 }
 
 nsresult nsPartChannel::SendOnStartRequest(nsISupports* aContext) {
-  return mListener->OnStartRequest(this);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnStartRequest(this);
 }
 
 nsresult nsPartChannel::SendOnDataAvailable(nsISupports* aContext,
                                             nsIInputStream* aStream,
                                             uint64_t aOffset, uint32_t aLen) {
-  return mListener->OnDataAvailable(this, aStream, aOffset, aLen);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnDataAvailable(this, aStream, aOffset, aLen);
 }
 
 nsresult nsPartChannel::SendOnStopRequest(nsISupports* aContext,
@@ -474,6 +474,12 @@ nsMultiMixedConv::OnStartRequest(nsIRequest* request) {
     if (NS_SUCCEEDED(rv)) {
       mRootContentSecurityPolicy = csp;
     }
+    nsCString contentDisposition;
+    rv = httpChannel->GetResponseHeader("content-disposition"_ns,
+                                        contentDisposition);
+    if (NS_SUCCEEDED(rv)) {
+      mRootContentDisposition = contentDisposition;
+    }
   } else {
     // try asking the channel directly
     rv = mChannel->GetContentType(contentType);
@@ -496,7 +502,7 @@ nsMultiMixedConv::OnStartRequest(nsIRequest* request) {
     return NS_ERROR_CORRUPTED_CONTENT;
   }
   p.SkipWhites();
-  Unused << p.ReadUntil(Token::Char(';'), mBoundary);
+  (void)p.ReadUntil(Token::Char(';'), mBoundary);
   mBoundary.Trim(
       " \"");  // ignoring potential quoted string formatting violations
   if (mBoundary.IsEmpty()) {
@@ -592,8 +598,9 @@ nsMultiMixedConv::OnStopRequest(nsIRequest* request, nsresult aStatus) {
     // the middle of sending data. if we were, mPartChannel,
     // above, would have been non-null.
 
-    (void)mFinalListener->OnStartRequest(request);
-    (void)mFinalListener->OnStopRequest(request, aStatus);
+    nsCOMPtr<nsIStreamListener> finalListener = mFinalListener;
+    (void)finalListener->OnStartRequest(request);
+    (void)finalListener->OnStopRequest(request, aStatus);
   }
 
   nsCOMPtr<nsIMultiPartChannelListener> multiListener =
@@ -850,7 +857,11 @@ nsresult nsMultiMixedConv::SendStart() {
   rv = mPartChannel->SetContentLength(mContentLength);
   if (NS_FAILED(rv)) return rv;
 
-  mPartChannel->SetContentDisposition(mContentDisposition);
+  if (!mRootContentDisposition.IsEmpty()) {
+    mPartChannel->SetContentDisposition(mRootContentDisposition);
+  } else {
+    mPartChannel->SetContentDisposition(mContentDisposition);
+  }
 
   // Each part of a multipart/replace response can be used
   // for the top level document.  We must inform upper layers
@@ -993,7 +1004,10 @@ nsresult nsMultiMixedConv::ProcessHeader() {
       mResponseHeaderValue.CompressWhitespace();
       if (!StaticPrefs::network_cookie_prevent_set_cookie_from_multipart() &&
           httpInternal) {
-        DebugOnly<nsresult> rv = httpInternal->SetCookie(mResponseHeaderValue);
+        AutoTArray<nsCString, 1> cookieHeaderArray;
+        cookieHeaderArray.AppendElement(mResponseHeaderValue);
+        DebugOnly<nsresult> rv =
+            httpInternal->SetCookieHeaders(cookieHeaderArray);
         MOZ_ASSERT(NS_SUCCEEDED(rv));
       }
       break;
@@ -1008,6 +1022,12 @@ nsresult nsMultiMixedConv::ProcessHeader() {
         mByteRangeStart = mByteRangeEnd = 0;
       } else if (!p.ReadInteger(&mByteRangeStart) || !p.CheckChar('-') ||
                  !p.ReadInteger(&mByteRangeEnd)) {
+        return NS_ERROR_CORRUPTED_CONTENT;
+      }
+      // RFC 7233 Section 4.2: "A Content-Range field value is invalid if
+      // it contains a byte-range-resp that has a last-byte-pos value less
+      // than its first-byte-pos value."
+      if (mByteRangeStart > mByteRangeEnd) {
         return NS_ERROR_CORRUPTED_CONTENT;
       }
       mIsByteRangeRequest = true;

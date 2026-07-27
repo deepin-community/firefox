@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,9 +10,11 @@
 #include "AccessibleStates.h"
 
 #include "AccAttributes.h"
+#include "ApplicationAccessible.h"
 #include "Compatibility.h"
 #include "ia2AccessibleRelation.h"
 #include "IUnknownImpl.h"
+#include "nsAccUtils.h"
 #include "nsCoreUtils.h"
 #include "nsIAccessibleTypes.h"
 #include "mozilla/a11y/PDocAccessible.h"
@@ -77,7 +77,7 @@ ia2Accessible::get_nRelations(long* aNRelations) {
     return CO_E_OBJNOTCONNECTED;
   }
 
-  for (uint32_t idx = 0; idx < ArrayLength(sRelationTypePairs); idx++) {
+  for (uint32_t idx = 0; idx < std::size(sRelationTypePairs); idx++) {
     if (sRelationTypePairs[idx].second == IA2_RELATION_NULL) continue;
 
     Relation rel = acc->RelationByType(sRelationTypePairs[idx].first);
@@ -98,13 +98,12 @@ ia2Accessible::get_relation(long aRelationIndex,
   }
 
   long relIdx = 0;
-  for (uint32_t idx = 0; idx < ArrayLength(sRelationTypePairs); idx++) {
+  for (uint32_t idx = 0; idx < std::size(sRelationTypePairs); idx++) {
     if (sRelationTypePairs[idx].second == IA2_RELATION_NULL) continue;
 
     RelationType relationType = sRelationTypePairs[idx].first;
     Relation rel = acc->RelationByType(relationType);
-    RefPtr<ia2AccessibleRelation> ia2Relation =
-        new ia2AccessibleRelation(relationType, &rel);
+    auto ia2Relation = MakeRefPtr<ia2AccessibleRelation>(relationType, &rel);
     if (ia2Relation->HasTargets()) {
       if (relIdx == aRelationIndex) {
         ia2Relation.forget(aRelation);
@@ -131,14 +130,13 @@ ia2Accessible::get_relations(long aMaxRelations,
   }
 
   for (uint32_t idx = 0;
-       idx < ArrayLength(sRelationTypePairs) && *aNRelations < aMaxRelations;
+       idx < std::size(sRelationTypePairs) && *aNRelations < aMaxRelations;
        idx++) {
     if (sRelationTypePairs[idx].second == IA2_RELATION_NULL) continue;
 
     RelationType relationType = sRelationTypePairs[idx].first;
     Relation rel = acc->RelationByType(relationType);
-    RefPtr<ia2AccessibleRelation> ia2Rel =
-        new ia2AccessibleRelation(relationType, &rel);
+    auto ia2Rel = MakeRefPtr<ia2AccessibleRelation>(relationType, &rel);
     if (ia2Rel->HasTargets()) {
       ia2Rel.forget(aRelation + (*aNRelations));
       (*aNRelations)++;
@@ -165,7 +163,7 @@ ia2Accessible::role(long* aRole) {
   a11y::role geckoRole;
   geckoRole = acc->Role();
   switch (geckoRole) {
-#include "RoleMap.h"
+#include "RoleMap.inc"
     default:
       MOZ_CRASH("Unknown role.");
   }
@@ -352,6 +350,22 @@ ia2Accessible::get_windowHandle(HWND* aWindowHandle) {
   if (!acc) return CO_E_OBJNOTCONNECTED;
 
   *aWindowHandle = MsaaAccessible::GetHWNDFor(acc);
+  if (!*aWindowHandle && !Compatibility::IsUiaEnabled()) {
+    // Bug 1890155: This can happen if a document is detached from its embedder.
+    // The document might be about to die or it might be moving to a different
+    // embedder; e.g. a tab in a different window. The IA2 -> UIA proxy may
+    // crash if we return a null HWND. For now, pick an arbitrary top level
+    // Gecko HWND. This might be wrong, but only briefly, since the document
+    // will either die or move very soon, at which point this method will
+    // return the correct answer.
+    // TODO This hack should be removed once we only use our native UIA
+    // implementation.
+    if (ApplicationAccessible* app = ApplicationAcc()) {
+      if (LocalAccessible* firstRoot = app->LocalFirstChild()) {
+        *aWindowHandle = MsaaAccessible::GetHWNDFor(firstRoot);
+      }
+    }
+  }
   return S_OK;
 }
 
@@ -429,6 +443,22 @@ ia2Accessible::get_attributes(BSTR* aAttributes) {
   // The format is name:value;name:value; with \ for escaping these
   // characters ":;=,\".
   RefPtr<AccAttributes> attributes = acc->Attributes();
+  if (acc->Role() == roles::HEADING) {
+    // IAccessible2 expects heading level to be exposed as an object attribute.
+    // However, all other group position info is exposed via groupPosition.
+    nsAccUtils::SetAccGroupAttrs(attributes, acc);
+  } else if (acc->IsEditableRoot()) {
+    // JAWS requires text-model:a1 to be specified on editable text controls
+    // with a role other than ROLE_SYSTEM_TEXT outside of web content in order
+    // for it to use IAccessibleText. For example, this is needed for the
+    // Firefox address bar, which has role="combobox". Although we don't really
+    // need to expose it on editable text controls beyond this specific case,
+    // there's no harm in doing so and Chromium also does this. This attribute
+    // is documented here:
+    // https://wiki.linuxfoundation.org/accessibility/ia2/ia2_implementation_guide#iaccessibletext_model
+    RefPtr<nsAtom> textModel = NS_Atomize("text-model");
+    attributes->SetAttributeStringCopy(textModel, u"a1"_ns);
+  }
   return ConvertToIA2Attributes(attributes, aAttributes);
 }
 
@@ -484,7 +514,7 @@ ia2Accessible::get_relationTargetsOfType(BSTR aType, long aMaxTargets,
   *aNTargets = 0;
 
   Maybe<RelationType> relationType;
-  for (uint32_t idx = 0; idx < ArrayLength(sRelationTypePairs); idx++) {
+  for (uint32_t idx = 0; idx < std::size(sRelationTypePairs); idx++) {
     if (wcscmp(aType, sRelationTypePairs[idx].second) == 0) {
       relationType.emplace(sRelationTypePairs[idx].first);
       break;

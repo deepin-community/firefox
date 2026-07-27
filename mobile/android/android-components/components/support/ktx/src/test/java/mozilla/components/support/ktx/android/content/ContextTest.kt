@@ -7,11 +7,13 @@ package mozilla.components.support.ktx.android.content
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
+import android.content.Intent.EXTRA_CHOOSER_CUSTOM_ACTIONS
 import android.content.Intent.EXTRA_INTENT
 import android.content.Intent.EXTRA_STREAM
 import android.content.Intent.EXTRA_SUBJECT
@@ -54,7 +56,6 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.robolectric.shadows.ShadowCameraCharacteristics
-import org.robolectric.shadows.ShadowProcess
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
@@ -109,12 +110,11 @@ class ContextTest {
     }
 
     @Test
-    @Config(shadows = [ShadowFileProvider::class])
     fun `shareMedia invokes startActivity`() {
         val context = spy(testContext)
         val argCaptor = argumentCaptor<Intent>()
 
-        val result = context.shareMedia("filePath", "*/*", "subject", "message")
+        val result = context.shareMedia("fakeUri".toUri(), "*/*", "subject", "message")
 
         verify(context).startActivity(argCaptor.capture())
         assertTrue(result)
@@ -131,7 +131,7 @@ class ContextTest {
         assertEquals(ACTION_SEND, shareIntent.action)
 
         @Suppress("DEPRECATION")
-        assertEquals(ShadowFileProvider.FAKE_URI_RESULT, shareIntent.extras!![EXTRA_STREAM])
+        assertEquals("fakeUri".toUri(), shareIntent.extras!![EXTRA_STREAM])
         assertEquals("subject", shareIntent.extras!!.getString(EXTRA_SUBJECT))
         assertEquals("message", shareIntent.extras!!.getString(EXTRA_TEXT))
         assertTrue(shareIntent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
@@ -140,7 +140,6 @@ class ContextTest {
 
     @Suppress("UNREACHABLE_CODE")
     @Test
-    @Config(shadows = [ShadowFileProvider::class])
     fun `shareMedia returns false if the chooser could not be shown`() {
         val context = spy(
             object : FakeContext() {
@@ -150,34 +149,34 @@ class ContextTest {
         )
         doReturn(testContext.resources).`when`(context).resources
 
-        val result = context.shareMedia("filePath", "*/*", "subject", "message")
+        val result = context.shareMedia("fakeUri".toUri(), "*/*", "subject", "message")
 
         assertFalse(result)
     }
 
     @Test
-    @Config(shadows = [ShadowFileProvider::class], sdk = [Build.VERSION_CODES.Q])
+    @Config(sdk = [Build.VERSION_CODES.Q])
     fun `shareMedia will show a thumbnail starting with Android 10`() {
         val context = spy(testContext)
         val argCaptor = argumentCaptor<Intent>()
 
-        val result = context.shareMedia("filePath", "*/*", "subject", "message")
+        val result = context.shareMedia("fakeUri".toUri(), "*/*", "subject", "message")
 
         verify(context).startActivity(argCaptor.capture())
         assertTrue(result)
         // verify all the properties we set for the share Intent
         val chooserIntent = argCaptor.value
         assertEquals(1, chooserIntent.clipData!!.itemCount)
-        assertEquals(ShadowFileProvider.FAKE_URI_RESULT, chooserIntent.clipData!!.getItemAt(0).uri)
+        assertEquals("fakeUri".toUri(), chooserIntent.clipData!!.getItemAt(0).uri)
     }
 
     @Test
-    @Config(shadows = [ShadowFileProvider::class], sdk = [Build.VERSION_CODES.LOLLIPOP, Build.VERSION_CODES.P])
+    @Config(sdk = [Build.VERSION_CODES.O, Build.VERSION_CODES.P])
     fun `shareMedia will not show a thumbnail prior to Android 10`() {
         val context = spy(testContext)
         val argCaptor = argumentCaptor<Intent>()
 
-        val result = context.shareMedia("filePath", "*/*", "subject", "message")
+        val result = context.shareMedia("fakeUri".toUri(), "*/*", "subject", "message")
 
         verify(context).startActivity(argCaptor.capture())
         assertTrue(result)
@@ -230,20 +229,20 @@ class ContextTest {
     }
 
     @Test
+    @Config(shadows = [ShadowApplicationProcessName::class])
     fun `isMainProcess must only return true if we are in the main process`() {
-        val myPid = Int.MAX_VALUE
-
+        ShadowApplicationProcessName.processName = testContext.packageName
         assertTrue(testContext.isMainProcess())
 
-        ShadowProcess.setPid(myPid)
+        ShadowApplicationProcessName.processName = "${testContext.packageName}:notmain"
         isMainProcess = null
-
         assertFalse(testContext.isMainProcess())
     }
 
     @Test
+    @Config(shadows = [ShadowApplicationProcessName::class])
     fun `runOnlyInMainProcess must only run if we are in the main process`() {
-        val myPid = Int.MAX_VALUE
+        ShadowApplicationProcessName.processName = testContext.packageName
         var wasExecuted = false
 
         testContext.runOnlyInMainProcess {
@@ -253,8 +252,8 @@ class ContextTest {
         assertTrue(wasExecuted)
 
         wasExecuted = false
-        ShadowProcess.setPid(myPid)
-        isMainProcess = false
+        ShadowApplicationProcessName.processName = "${testContext.packageName}:notmain"
+        isMainProcess = null
 
         testContext.runOnlyInMainProcess {
             wasExecuted = true
@@ -344,4 +343,16 @@ object ShadowFileProvider {
         authority: String?,
         file: File,
     ) = FAKE_URI_RESULT
+}
+
+@Implements(Application::class)
+class ShadowApplicationProcessName : ShadowApplication() {
+    companion object {
+        @JvmField
+        var processName: String = ""
+
+        @JvmStatic
+        @Implementation(minSdk = Build.VERSION_CODES.P)
+        fun getProcessName(): String = processName
+    }
 }

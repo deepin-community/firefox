@@ -92,7 +92,15 @@ export class WebDriverBiDiConnection extends WebSocketConnection {
    *     Error object with `status`, `message` and `stack` attributes.
    */
   sendError(id, err) {
-    const webDriverError = lazy.error.wrap(err);
+    // Convert specific MessageHandler errors to WebDriver errors
+    let webDriverError;
+    switch (err.name) {
+      case "DiscardedBrowsingContextError":
+        webDriverError = lazy.error.wrap(err, lazy.error.NoSuchFrameError);
+        break;
+      default:
+        webDriverError = lazy.error.wrap(err);
+    }
 
     this.send({
       type: "error",
@@ -115,7 +123,7 @@ export class WebDriverBiDiConnection extends WebSocketConnection {
   sendEvent(method, params) {
     this.send({ type: "event", method, params });
 
-    if (Services.profiler?.IsActive()) {
+    if (Services.profiler.IsActive()) {
       ChromeUtils.addProfilerMarker(
         "BiDi: Event",
         { category: "Remote-Protocol" },
@@ -170,13 +178,15 @@ export class WebDriverBiDiConnection extends WebSocketConnection {
     super.onPacket(packet);
 
     const { id, method, params } = packet;
-    const startTime = Cu.now();
+
+    let errorMessage = "";
+    const startTime = ChromeUtils.now();
 
     try {
       // First check for mandatory field in the command packet
       lazy.assert.positiveInteger(
         id,
-        lazy.pprint`Expected "id" to be a postive integer, got ${id}`
+        lazy.pprint`Expected "id" to be a positive integer, got ${id}`
       );
       lazy.assert.string(
         method,
@@ -248,14 +258,15 @@ export class WebDriverBiDiConnection extends WebSocketConnection {
         Services.obs.removeObserver(this, "quit-application-requested");
       }
     } catch (e) {
+      errorMessage = ` - Error: ${e.message}`;
       this.sendError(id, e);
     }
 
-    if (Services.profiler?.IsActive()) {
+    if (Services.profiler.IsActive()) {
       ChromeUtils.addProfilerMarker(
         "BiDi: Command",
         { startTime, category: "Remote-Protocol" },
-        `${method} (${id})`
+        `${method} (${id})${errorMessage}`
       );
     }
   }

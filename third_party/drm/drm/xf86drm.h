@@ -1,10 +1,10 @@
 /**
- * \file xf86drm.h 
+ * \file xf86drm.h
  * OS-independent header for DRM user-level library interface.
  *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
  */
- 
+
 /*
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -44,7 +44,7 @@ extern "C" {
 #endif
 
 #ifndef DRM_MAX_MINOR
-#define DRM_MAX_MINOR   64
+#define DRM_MAX_MINOR   64 /* deprecated */
 #endif
 
 #if defined(__linux__)
@@ -98,7 +98,7 @@ extern "C" {
      + MAX3(sizeof(DRM_PRIMARY_MINOR_NAME), \
             sizeof(DRM_CONTROL_MINOR_NAME), \
             sizeof(DRM_RENDER_MINOR_NAME)) \
-     + sizeof("144") /* highest possible node number */ \
+     + sizeof("1048575") /* highest possible node number 2^MINORBITS - 1 */ \
      + 1) /* NULL-terminator */
 
 #define DRM_ERR_NO_DEVICE  (-1001)
@@ -197,9 +197,9 @@ typedef enum {
 typedef enum {
     /** \name Flags for DMA buffer dispatch */
     /*@{*/
-    DRM_DMA_BLOCK        = 0x01, /**< 
+    DRM_DMA_BLOCK        = 0x01, /**<
 				  * Block until buffer dispatched.
-				  * 
+				  *
 				  * \note the buffer may not yet have been
 				  * processed by the hardware -- getting a
 				  * hardware lock with the hardware quiescent
@@ -693,7 +693,7 @@ extern int           drmGetLock(int fd,
 			        drmLockFlags flags);
 extern int           drmUnlock(int fd, drm_context_t context);
 extern int           drmFinish(int fd, int context, drmLockFlags flags);
-extern int	     drmGetContextPrivateMapping(int fd, drm_context_t ctx_id, 
+extern int	     drmGetContextPrivateMapping(int fd, drm_context_t ctx_id,
 						 drm_handle_t * handle);
 
 /* AGP/GART support: X server (root) only */
@@ -779,7 +779,7 @@ typedef struct _drmEventContext {
 	int version;
 
 	void (*vblank_handler)(int fd,
-			       unsigned int sequence, 
+			       unsigned int sequence,
 			       unsigned int tv_sec,
 			       unsigned int tv_usec,
 			       void *user_data);
@@ -843,6 +843,7 @@ extern char *drmGetRenderDeviceNameFromFd(int fd);
 #define DRM_BUS_USB       1
 #define DRM_BUS_PLATFORM  2
 #define DRM_BUS_HOST1X    3
+#define DRM_BUS_FAUX      4
 
 typedef struct _drmPciBusInfo {
     uint16_t domain;
@@ -889,6 +890,12 @@ typedef struct _drmHost1xDeviceInfo {
     char **compatible; /* NULL terminated list of compatible strings */
 } drmHost1xDeviceInfo, *drmHost1xDeviceInfoPtr;
 
+#define DRM_FAUX_DEVICE_NAME_LEN 512
+
+typedef struct _drmFauxBusInfo {
+    char name[DRM_FAUX_DEVICE_NAME_LEN];
+} drmFauxBusInfo, *drmFauxBusInfoPtr;
+
 typedef struct _drmDevice {
     char **nodes; /* DRM_NODE_MAX sized array */
     int available_nodes; /* DRM_NODE_* bitmask */
@@ -898,6 +905,7 @@ typedef struct _drmDevice {
         drmUsbBusInfoPtr usb;
         drmPlatformBusInfoPtr platform;
         drmHost1xBusInfoPtr host1x;
+        drmFauxBusInfoPtr faux;
     } businfo;
     union {
         drmPciDeviceInfoPtr pci;
@@ -919,6 +927,18 @@ extern int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_device
 
 extern int drmGetDeviceFromDevId(dev_t dev_id, uint32_t flags, drmDevicePtr *device);
 
+/**
+ * Get the node type (DRM_NODE_PRIMARY or DRM_NODE_RENDER) from a device ID.
+ *
+ * Returns negative errno on error.
+ */
+extern int drmGetNodeTypeFromDevId(dev_t devid);
+
+/**
+ * Check if two drmDevice pointers represent the same DRM device.
+ *
+ * Returns 1 if the devices are equal, 0 otherwise.
+ */
 extern int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b);
 
 extern int drmSyncobjCreate(int fd, uint32_t flags, uint32_t *handle);
@@ -947,6 +967,8 @@ extern int drmSyncobjTransfer(int fd,
 			      uint32_t dst_handle, uint64_t dst_point,
 			      uint32_t src_handle, uint64_t src_point,
 			      uint32_t flags);
+extern int drmSyncobjEventfd(int fd, uint32_t handle, uint64_t point, int ev_fd,
+                             uint32_t flags);
 
 extern char *
 drmGetFormatModifierVendor(uint64_t modifier);

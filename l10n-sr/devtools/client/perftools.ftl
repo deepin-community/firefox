@@ -33,19 +33,39 @@ perftools-description-local-build =
     If you’re profiling a build that you have compiled yourself, on this
     machine, please add your build’s objdir to the list below so that
     it can be used to look up symbol information.
+perftools-pick-local-build-directory = Изаберите директоријум изградње
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Sampling interval:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
 
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
+
 ##
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Buffer size:
-
 perftools-custom-threads-label = Add custom threads by name:
-
 perftools-devtools-interval-label = Interval:
 perftools-devtools-threads-label = Threads:
 perftools-devtools-settings-label = Settings
@@ -70,6 +90,14 @@ perftools-button-restart = Restart
 perftools-button-add-directory = Add a directory
 perftools-button-remove-directory = Remove selected
 perftools-button-edit-settings = Edit Settings…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Још радњи
+perftools-menu-more-actions-restart-with-profiling = Поново покрените { -brand-shorter-name } са укљученим профилисањем при покретању
+perftools-menu-more-actions-copy-for-startup = Умножите променљиве окружења за профилисање при покретању
+perftools-menu-more-actions-copy-for-perf-tests = Умножите параметре за тестове перформанси
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -113,7 +141,6 @@ perftools-thread-jvm-pool =
 ##
 
 perftools-record-all-registered-threads = Bypass selections above and record all registered threads
-
 perftools-tools-threads-input-label =
     .title = These thread names are a comma separated list that is used to enable profiling of the threads in the profiler. The name needs to be only a partial match of the thread name to be included. It is whitespace sensitive.
 
@@ -121,7 +148,6 @@ perftools-tools-threads-input-label =
 ## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>New</b>: { -profiler-brand-name } is now integrated into Developer Tools. <a>Learn more</a> about this powerful new tool.
-
 perftools-onboarding-close-button =
     .aria-label = Close the onboarding message
 
@@ -129,33 +155,33 @@ perftools-onboarding-close-button =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/shared/background.jsm.js
+# devtools/client/performance-new/shared/background.sys.mjs
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Web Developer
 perftools-presets-web-developer-description = Recommended preset for most web app debugging, with low overhead.
-
 perftools-presets-firefox-label = { -brand-shorter-name }
 perftools-presets-firefox-description = Recommended preset for profiling { -brand-shorter-name }.
-
 perftools-presets-graphics-label = Graphics
 perftools-presets-graphics-description = Preset for investigating graphics bugs in { -brand-shorter-name }.
-
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
-
+perftools-presets-ml-label = Машинско учење
+perftools-presets-ml-description2 = Подешеност за истраживање грешака машинског учења у { -brand-shorter-name }.
 perftools-presets-networking-label = Networking
 perftools-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
-
+perftools-presets-networking-with-logs-label = Умрежавање са записницима
+perftools-presets-networking-with-logs-description = Унапред подешено за истраживање мрежних грешака у { -brand-shorter-name }-у, укључујући мрежне записнике. Ови записници могу да садрже осетљиве податке као што су УРЛ-ови које посећујете.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Power
 perftools-presets-power-description = Preset for investigating power use bugs in { -brand-shorter-name }, with low overhead.
-
+perftools-presets-debug-label = Уклањање грешака
+perftools-presets-debug-description = Подешеност за уклањање грешака у { -brand-shorter-name }. Високо оптерећење, не користите за рад на перформансама већ за фокусирање на разумевање понашања прегледача.
+perftools-presets-web-compat-label = Веб компатибилност
+perftools-presets-web-compat-description = Препоручена подешеност за уклањање грешака у вези са веб компатибилношћу на веб страницама, радије него за праћење перформанси.
 perftools-presets-custom-label = Custom
-
-##
-

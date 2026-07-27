@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/MouseScrollEvent.h"
-#include "mozilla/dom/MouseEventBinding.h"
+#include "MouseScrollEvent.h"
+
 #include "mozilla/MouseEvents.h"
-#include "prtime.h"
+#include "mozilla/dom/MouseEventBinding.h"
 
 namespace mozilla::dom {
 
@@ -30,18 +28,18 @@ MouseScrollEvent::MouseScrollEvent(EventTarget* aOwner,
   mDetail = mEvent->AsMouseScrollEvent()->mDelta;
 }
 
-void MouseScrollEvent::InitMouseScrollEvent(
+void MouseScrollEvent::InitMouseScrollEventInternal(
     const nsAString& aType, bool aCanBubble, bool aCancelable,
-    nsGlobalWindowInner* aView, int32_t aDetail, int32_t aScreenX,
-    int32_t aScreenY, int32_t aClientX, int32_t aClientY, bool aCtrlKey,
+    nsGlobalWindowInner* aView, int32_t aDetail, double aScreenX,
+    double aScreenY, double aClientX, double aClientY, bool aCtrlKey,
     bool aAltKey, bool aShiftKey, bool aMetaKey, uint16_t aButton,
     EventTarget* aRelatedTarget, int32_t aAxis) {
   NS_ENSURE_TRUE_VOID(!mEvent->mFlags.mIsBeingDispatched);
 
-  MouseEvent::InitMouseEvent(aType, aCanBubble, aCancelable, aView, aDetail,
-                             aScreenX, aScreenY, aClientX, aClientY, aCtrlKey,
-                             aAltKey, aShiftKey, aMetaKey, aButton,
-                             aRelatedTarget);
+  MouseEvent::InitMouseEventInternal(aType, aCanBubble, aCancelable, aView,
+                                     aDetail, aScreenX, aScreenY, aClientX,
+                                     aClientY, aCtrlKey, aAltKey, aShiftKey,
+                                     aMetaKey, aButton, aRelatedTarget);
   mEvent->AsMouseScrollEvent()->mIsHorizontal =
       (aAxis == MouseScrollEvent_Binding::HORIZONTAL_AXIS);
 }

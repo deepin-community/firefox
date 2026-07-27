@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define mozilla_dom_PromiseWorkerProxy_h
 
 #include <cstdint>
+
 #include "js/TypeDecls.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Mutex.h"
@@ -116,8 +115,7 @@ class WorkerPrivate;
 // references to it are dropped.
 
 class PromiseWorkerProxy : public PromiseNativeHandler,
-                           public StructuredCloneHolderBase,
-                           public SingleWriterLockOwner {
+                           public StructuredCloneHolderBase {
   friend class PromiseWorkerProxyRunnable;
 
   NS_DECL_THREADSAFE_ISUPPORTS
@@ -131,8 +129,6 @@ class PromiseWorkerProxy : public PromiseNativeHandler,
                                   JSStructuredCloneWriter* aWorker,
                                   PromiseWorkerProxy* aProxy,
                                   JS::Handle<JSObject*> aObj);
-
-  bool OnWritingThread() const override;
 
   struct PromiseWorkerProxyStructuredCloneCallbacks {
     ReadCallbackOp Read;
@@ -210,8 +206,9 @@ class PromiseWorkerProxy : public PromiseNativeHandler,
   const PromiseWorkerProxyStructuredCloneCallbacks* mCallbacks;
 
   // Ensure the worker and the main thread won't race to access |mCleanedUp|.
-  // Should be a MutexSingleWriter, but that causes a lot of issues when you
-  // expose the lock via Lock().
+  // This could perhaps be a type similar to `EventTargetAndLockCapability`
+  // guarding `mCleanedUp` and `mWorkerRef`, however doing so naively could
+  // inflate the size of this object.
   Mutex mCleanUpLock;
 };
 }  // namespace mozilla::dom

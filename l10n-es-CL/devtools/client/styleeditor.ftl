@@ -22,7 +22,7 @@ styleeditor-options-button =
     .tooltiptext = Opciones del Editor de estilo
 styleeditor-at-rules = At-rules
 styleeditor-editor-textbox =
-    .data-placeholder = Ingrese CSS aquí.
+    .data-placeholder = Ingresa CSS aquí.
 styleeditor-no-stylesheet = Esta página no tiene hoja de estilo.
 styleeditor-no-stylesheet-tip = Quizás desee <a data-l10n-name="append-new-stylesheet">añadir una nueva hoja de estilo</a>?
 styleeditor-open-link-new-tab =
@@ -54,3 +54,7 @@ styleeditor-pretty-print-button =
 # Title for the pretty print button in the editor footer, when it's disabled
 styleeditor-pretty-print-button-disabled =
     .title = Solo se pueden imprimir archivos CSS embellecidos
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = No se puede imprimir una hoja de estilo de sólo lectura.

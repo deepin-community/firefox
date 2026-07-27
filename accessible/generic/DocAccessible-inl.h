@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -53,12 +51,8 @@ inline void DocAccessible::FireDelayedEvent(AccEvent* aEvent) {
 
 inline void DocAccessible::FireDelayedEvent(uint32_t aEventType,
                                             LocalAccessible* aTarget) {
-  RefPtr<AccEvent> event = new AccEvent(aEventType, aTarget);
+  auto event = MakeRefPtr<AccEvent>(aEventType, aTarget);
   FireDelayedEvent(event);
-}
-
-inline void DocAccessible::BindChildDocument(DocAccessible* aDocument) {
-  mNotificationController->ScheduleChildDocBinding(aDocument);
 }
 
 template <class Class, class... Args>
@@ -73,6 +67,7 @@ inline void DocAccessible::HandleNotification(
 
 inline void DocAccessible::UpdateText(nsIContent* aTextNode) {
   NS_ASSERTION(mNotificationController, "The document was shut down!");
+  MOZ_ASSERT(aTextNode->IsText());
 
   // Ignore the notification if initial tree construction hasn't been done yet.
   if (mNotificationController && HasLoadState(eTreeConstructed)) {
@@ -87,15 +82,16 @@ inline void DocAccessible::NotifyOfLoad(uint32_t aLoadEventType) {
   // If the document is loaded completely then network activity was presumingly
   // caused by file loading. Fire busy state change event.
   if (HasLoadState(eCompletelyLoaded) && IsLoadEventTarget()) {
-    RefPtr<AccEvent> stateEvent =
-        new AccStateChangeEvent(this, states::BUSY, false);
+    auto stateEvent =
+        MakeRefPtr<AccStateChangeEvent>(this, states::BUSY, false);
     FireDelayedEvent(stateEvent);
   }
 }
 
 inline void DocAccessible::MaybeNotifyOfValueChange(
     LocalAccessible* aAccessible) {
-  if (aAccessible->IsCombobox() || aAccessible->Role() == roles::ENTRY ||
+  if (aAccessible->IsCombobox() || aAccessible->IsPassword() ||
+      aAccessible->Role() == roles::ENTRY ||
       aAccessible->Role() == roles::SPINBUTTON) {
     FireDelayedEvent(nsIAccessibleEvent::EVENT_TEXT_VALUE_CHANGE, aAccessible);
   }
@@ -121,16 +117,6 @@ inline void DocAccessible::CreateSubtree(LocalAccessible* aChild) {
   }
 #endif
 
-  // Fire events for ARIA elements.
-  if (aChild->HasARIARole()) {
-    roles::Role role = aChild->ARIARole();
-    if (role == roles::MENUPOPUP) {
-      FireDelayedEvent(nsIAccessibleEvent::EVENT_MENUPOPUP_START, aChild);
-    } else if (role == roles::ALERT) {
-      FireDelayedEvent(nsIAccessibleEvent::EVENT_ALERT, aChild);
-    }
-  }
-
   // XXX: do we really want to send focus to focused DOM node not taking into
   // account active item?
   if (focusedAcc) {
@@ -141,7 +127,7 @@ inline void DocAccessible::CreateSubtree(LocalAccessible* aChild) {
 }
 
 inline DocAccessible::AttrRelProviders* DocAccessible::GetRelProviders(
-    dom::Element* aElement, const nsAString& aID) const {
+    dom::Element* aElement, nsAtom* aID) const {
   DependentIDsHashtable* hash = mDependentIDsHashes.Get(
       aElement->GetUncomposedDocOrConnectedShadowRoot());
   if (hash) {
@@ -151,7 +137,8 @@ inline DocAccessible::AttrRelProviders* DocAccessible::GetRelProviders(
 }
 
 inline DocAccessible::AttrRelProviders* DocAccessible::GetOrCreateRelProviders(
-    dom::Element* aElement, const nsAString& aID) {
+    dom::Element* aElement, nsAtom* aID) {
+  // TODO (bug 1983819): need to update when reference targets change
   dom::DocumentOrShadowRoot* docOrShadowRoot =
       aElement->GetUncomposedDocOrConnectedShadowRoot();
   DependentIDsHashtable* hash =
@@ -161,7 +148,7 @@ inline DocAccessible::AttrRelProviders* DocAccessible::GetOrCreateRelProviders(
 }
 
 inline void DocAccessible::RemoveRelProvidersIfEmpty(dom::Element* aElement,
-                                                     const nsAString& aID) {
+                                                     nsAtom* aID) {
   dom::DocumentOrShadowRoot* docOrShadowRoot =
       aElement->GetUncomposedDocOrConnectedShadowRoot();
   DependentIDsHashtable* hash = mDependentIDsHashes.Get(docOrShadowRoot);

@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Dewisiadau
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Gosodiadau…
+menu-application-set-as-default =
+    .label = Gosod { -brand-shorter-name } fel eich Porwr Arferol
 menu-application-services =
     .label = Gwasanaethau
 menu-application-hide-this =
@@ -102,6 +95,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Rhannu
     .accesskey = R
+menu-file-share-qrcode =
+    .label = Cynhyrchu cod QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Cynhyrchu Cod QR
+    .accesskey = C
 menu-file-print-setup =
     .label = Gosodiad Tudalen…
     .accesskey = o
@@ -137,7 +136,7 @@ menu-view =
     .accesskey = o
 menu-view-toolbars-menu =
     .label = Barrau Offer
-    .accesskey = B
+    .accesskey = O
 menu-view-customize-toolbar2 =
     .label = Cyfaddasu'r Bar Offer…
     .accesskey = B
@@ -150,8 +149,6 @@ menu-view-history-button =
     .label = Hanes
 menu-view-synced-tabs-sidebar =
     .label = Tabiau wedi'u Cydweddu
-menu-view-megalist-sidebar =
-    .label = Cyfrineiriau
 menu-view-full-zoom =
     .label = Chwyddo
     .accesskey = h
@@ -175,7 +172,7 @@ menu-view-page-style-no-style =
     .accesskey = D
 menu-view-page-basic-style =
     .label = Arddull Tudalen Sylfaenol
-    .accesskey = S
+    .accesskey = A
 menu-view-repair-text-encoding =
     .label = Trwsio Amgodio Testun
     .accesskey = T
@@ -259,6 +256,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Nodau Tudalen Symudol
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Proffiliau
+menu-profiles-manage-profiles =
+    .label = Rheoli proffiliau
+menu-profiles-new-profile =
+    .label = Proffil newydd
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (cyfredol)
+menu-profiles-menu =
+    .label = Proffiliau
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -267,6 +280,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Llwythi i lawr
     .accesskey = L
+menu-tools-extensions-and-themes =
+    .label = Estyniadau a Themâu
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Ychwanegion a Themâu
     .accesskey = Y
@@ -292,8 +308,11 @@ menu-tools-page-source =
     .label = Cod Gwreiddiol y Dudalen
     .accesskey = o
 menu-tools-page-info =
-    .label = Gwybodaeth am y Dudalen
-    .accesskey = w
+    .label = Manylion y Dudalen
+    .accesskey = M
+menu-tools-edit-pdf =
+    .label = Golygu PDF…
+    .accesskey = P
 menu-settings =
     .label = Gosodiadau
     .accesskey =
@@ -330,12 +349,12 @@ menu-get-help =
     .label = Derbyn Cymorth
     .accesskey = D
 menu-help-more-troubleshooting-info =
-    .label = Rhagor o Wybodaeth i Ddatrys Problemau
-    .accesskey = R
+    .label = Gwybodaeth am Ddatrys Problemau
+    .accesskey = G
 menu-help-report-site-issue =
-    .label = Adrodd ar Fater Gwefan…
+    .label = Adrodd am Fater Gwefan…
 menu-help-share-ideas =
-    .label = Rhannwch Syniadau ac Adborth…
+    .label = Rhannu Syniadau ac Adborth…
     .accesskey = R
 menu-help-enter-troubleshoot-mode2 =
     .label = Y Modd Datrys Problemau…
@@ -349,10 +368,10 @@ menu-help-switch-device =
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =
-    .label = Adroddwch ar wefan twyllodrus…
-    .accesskey = t
+    .label = Adrodd am Wefan Twyllodrus…
+    .accesskey = A
 menu-help-not-deceptive =
     .label = Nid yw hon yn wefan twyllodrus…
     .accesskey = t
 menu-report-broken-site =
-    .label = Adrodd ar Wefan wedi Torri
+    .label = Adrodd am Wefan wedi Torri

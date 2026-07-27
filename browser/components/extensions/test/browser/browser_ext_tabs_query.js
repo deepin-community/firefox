@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 requestLongerTimeout(2);
@@ -73,7 +71,7 @@ add_task(async function () {
   );
   let tab3 = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
-    "http://test1.example.org/MochiKit/"
+    "http://test1.example.org/Http2Server/"
   );
 
   // test simple queries
@@ -104,7 +102,7 @@ add_task(async function () {
           );
           browser.test.assertEq(
             tabs[2].url,
-            "http://test1.example.org/MochiKit/",
+            "http://test1.example.org/Http2Server/",
             "tab 2 url correct"
           );
 
@@ -127,14 +125,14 @@ add_task(async function () {
     background: function () {
       browser.tabs.query(
         {
-          url: "http://*/MochiKit*",
+          url: "http://*/Http2Server*",
         },
         function (tabs) {
           browser.test.assertEq(tabs.length, 1, "should have one tab");
 
           browser.test.assertEq(
             tabs[0].url,
-            "http://test1.example.org/MochiKit/",
+            "http://test1.example.org/Http2Server/",
             "tab 0 url correct"
           );
 
@@ -157,7 +155,7 @@ add_task(async function () {
     background: function () {
       browser.tabs.query(
         {
-          url: ["http://*/MochiKit*", "http://*.com/*"],
+          url: ["http://*/Http2Server*", "http://*.com/*"],
         },
         function (tabs) {
           browser.test.assertEq(tabs.length, 2, "should have two tabs");
@@ -171,7 +169,7 @@ add_task(async function () {
           );
           browser.test.assertEq(
             tabs[1].url,
-            "http://test1.example.org/MochiKit/",
+            "http://test1.example.org/Http2Server/",
             "tab 1 url correct"
           );
 
@@ -231,7 +229,7 @@ add_task(async function () {
       );
       browser.test.assertEq(
         tabs[2].title,
-        "mochitest index /MochiKit/",
+        "mochitest index /Http2Server/",
         "tab 2 title correct"
       );
 
@@ -311,7 +309,12 @@ add_task(async function () {
       "window has the required resolution"
     );
 
-    let { clientHeight, clientWidth } = gBrowser.selectedBrowser;
+    let clientHeight;
+    let clientWidth;
+    await window.promiseDocumentFlushed(() => {
+      clientHeight = gBrowser.selectedBrowser.clientHeight;
+      clientWidth = gBrowser.selectedBrowser.clientWidth;
+    });
 
     extension.sendMessage("check-size");
     let dims = await extension.awaitMessage("dims");

@@ -1,31 +1,30 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ErrorList.h"
+#include "ReadableStreamAbstract.h"
+#include "ReadableStreamDefaultControllerAbstract.h"
 #include "ReadableStreamPipeTo.h"
+#include "WritableStreamAbstract.h"
+#include "WritableStreamDefaultControllerAbstract.h"
 #include "js/RootingAPI.h"
 #include "js/String.h"
 #include "js/TypeDecls.h"
 #include "js/Value.h"
 #include "mozilla/AlreadyAddRefed.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/DOMExceptionBinding.h"
+#include "mozilla/dom/MessageChannel.h"
+#include "mozilla/dom/MessageEvent.h"
+#include "mozilla/dom/MessagePort.h"
+#include "mozilla/dom/Promise-inl.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/dom/TransformStream.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsIDOMEventListener.h"
 #include "nsIGlobalObject.h"
-#include "mozilla/ErrorResult.h"
-#include "mozilla/ResultVariant.h"
-#include "mozilla/dom/DOMException.h"
-#include "mozilla/dom/MessageEvent.h"
-#include "mozilla/dom/MessageChannel.h"
-#include "mozilla/dom/MessagePort.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/dom/Promise-inl.h"
-#include "mozilla/dom/ReadableStream.h"
-#include "mozilla/dom/WritableStream.h"
-#include "mozilla/dom/TransformStream.h"
 #include "nsISupportsImpl.h"
 
 namespace mozilla::dom {
@@ -287,6 +286,7 @@ static bool PackAndPostMessageHandlingError(
   PackAndPostMessage(aCx, aPort, aType, aValue, rv);
 
   // Step 2: If result is an abrupt completion,
+  rv.WouldReportJSException();
   if (rv.Failed()) {
     // Step 2.2: Perform ! CrossRealmTransformSendError(port, result.[[Value]]).
     MOZ_ALWAYS_TRUE(ToJSValue(aCx, std::move(rv), aError));
@@ -697,16 +697,16 @@ class CrossRealmReadableUnderlyingSourceAlgorithms final
   explicit CrossRealmReadableUnderlyingSourceAlgorithms(MessagePort* aPort)
       : mPort(aPort) {}
 
-  void StartCallback(JSContext* aCx, ReadableStreamController& aController,
+  void StartCallback(JSContext* aCx, ReadableStreamControllerBase& aController,
                      JS::MutableHandle<JS::Value> aRetVal,
                      ErrorResult& aRv) override {
     // Step 6. Let startAlgorithm be an algorithm that returns undefined.
     aRetVal.setUndefined();
   }
 
-  already_AddRefed<Promise> PullCallback(JSContext* aCx,
-                                         ReadableStreamController& aController,
-                                         ErrorResult& aRv) override {
+  already_AddRefed<Promise> PullCallback(
+      JSContext* aCx, ReadableStreamControllerBase& aController,
+      ErrorResult& aRv) override {
     // Step 7: Let pullAlgorithm be the following steps:
 
     // Step 7.1: Perform ! PackAndPostMessage(port, "pull", undefined).

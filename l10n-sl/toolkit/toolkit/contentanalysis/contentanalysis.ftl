@@ -13,6 +13,17 @@ contentanalysis-slow-agent-dialog-header = Pregledovanje v teku
 contentanalysis-slow-agent-dialog-body-file = { $agent } pregleduje, ali je “{ $filename }” skladen s pravilniki vaše organizacije. To lahko traja nekaj časa.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } pregleduje, ali sta “{ $filename }” in še { $count } predmet skladen s pravilniki vaše organizacije. To lahko traja nekaj časa.
+        [two] { $agent } pregleduje, ali so “{ $filename }” in še { $count } predmeta skladni s pravilniki vaše organizacije. To lahko traja nekaj časa.
+        [few] { $agent } pregleduje, ali so “{ $filename }” in še { $count } predmeti skladni s pravilniki vaše organizacije. To lahko traja nekaj časa.
+       *[other] { $agent } pregleduje, ali so “{ $filename }” in še { $count } predmetov skladni s pravilniki vaše organizacije. To lahko traja nekaj časa.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } pregleduje, ali je prilepljena vsebina skladna s pravilniki vaše organizacije. To lahko traja nekaj časa.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +36,9 @@ contentanalysis-operationtype-clipboard = odložišče
 contentanalysis-operationtype-dropped-text = spuščeno besedilo
 contentanalysis-operationtype-print = natisni
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = naloži { $filename }
+contentanalysis-upload-description = nalaganje »{ $filename }«
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = prenos »{ $filename }«
 contentanalysis-warndialogtitle = Ta vsebina morda ni varna
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -58,10 +71,18 @@ contentanalysis-error-message-upload-file = Nalaganje datoteke "{ $filename }" z
 contentanalysis-error-message-dropped-text = Vlečenje in spuščanje zavrnjeno.
 contentanalysis-error-message-clipboard = Lepljenje zavrnjeno.
 contentanalysis-error-message-print = Tiskanje zavrnjeno.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Povezava z { $agent } je potekla. Vsebina { $contentName } je bila zavrnjena.
 contentanalysis-block-dialog-title-upload-file = Za nalaganje te datoteke nimate dovoljenja
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Po pravilnikih o varstvu podatkov vaše organizacije nimate dovoljenja za nalaganje datoteke "{ $filename }". Za več informacij se obrnite na skrbnika.
+contentanalysis-block-dialog-title-download-file = Za prenos te datoteke nimate dovoljenja
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Po pravilnikih o varstvu podatkov vaše organizacije nimate dovoljenja za prenos datoteke »{ $filename }«. Za več informacij se obrnite na skrbnika.
 contentanalysis-block-dialog-title-clipboard = Za lepljenje te vsebine nimate dovoljenja
 contentanalysis-block-dialog-body-clipboard = Po pravilnikih o varstvu podatkov vaše organizacije nimate dovoljenja za lepljenje te vsebine. Za več informacij se obrnite na skrbnika.
 contentanalysis-block-dialog-title-dropped-text = Za spuščanje te vsebine nimate dovoljenja

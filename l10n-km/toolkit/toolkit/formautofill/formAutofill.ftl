@@ -3,11 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## OS Prompt Dialog
-
-
 ## The credit card capture doorhanger
 
+credit-card-capture-cancel-button =
+    .label = មិន​មែន​ឥឡូវ
+    .accessKey = W
 
 # Used on the doorhanger when an credit card change is detected.
 

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -52,7 +51,8 @@ bool StateUpdatingCommandBase::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  if (!htmlEditor->IsModifiable() || !htmlEditor->IsSelectionEditable()) {
+  if (!htmlEditor->IsModifiable() || !htmlEditor->IsSelectionEditable() ||
+      !htmlEditor->IsStyleEditable()) {
     return false;
   }
   if (aCommand == Command::FormatAbsolutePosition) {
@@ -127,10 +127,11 @@ nsresult PasteNoFormattingCommand::DoCommand(Command aCommand,
     return NS_ERROR_FAILURE;
   }
   // Known live because we hold a ref above in "editor"
-  nsresult rv = MOZ_KnownLive(htmlEditor)
-                    ->PasteNoFormattingAsAction(
-                        nsIClipboard::kGlobalClipboard,
-                        EditorBase::DispatchPasteEvent::Yes, aPrincipal);
+  nsresult rv =
+      MOZ_KnownLive(htmlEditor)
+          ->PasteNoFormattingAsAction(nsIClipboard::kGlobalClipboard,
+                                      EditorBase::DispatchPasteEvent::Yes,
+                                      nullptr, aPrincipal);
   NS_WARNING_ASSERTION(
       NS_SUCCEEDED(rv),
       "HTMLEditor::PasteNoFormattingAsAction(DispatchPasteEvent::Yes) failed");
@@ -355,7 +356,8 @@ bool RemoveListCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  if (!htmlEditor->IsModifiable() || !htmlEditor->IsSelectionEditable()) {
+  if (!htmlEditor->IsModifiable() || !htmlEditor->IsSelectionEditable() ||
+      !htmlEditor->IsStyleEditable()) {
     return false;
   }
 
@@ -400,7 +402,8 @@ bool IndentCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult IndentCommand::DoCommand(Command aCommand, EditorBase& aEditorBase,
@@ -433,7 +436,8 @@ bool OutdentCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult OutdentCommand::DoCommand(Command aCommand, EditorBase& aEditorBase,
@@ -466,7 +470,8 @@ bool MultiStateCommandBase::IsCommandEnabled(Command aCommand,
     return false;
   }
   // should be disabled sometimes, like if the current selection is an image
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult MultiStateCommandBase::DoCommand(Command aCommand,
@@ -965,7 +970,8 @@ bool DecreaseZIndexCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  if (!htmlEditor->IsAbsolutePositionEditorEnabled()) {
+  if (!htmlEditor->IsAbsolutePositionEditorEnabled() ||
+      !htmlEditor->IsStyleEditable()) {
     return false;
   }
   RefPtr<Element> positionedElement = htmlEditor->GetPositionedElement();
@@ -1007,7 +1013,8 @@ bool IncreaseZIndexCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  if (!htmlEditor->IsAbsolutePositionEditorEnabled()) {
+  if (!htmlEditor->IsAbsolutePositionEditorEnabled() ||
+      !htmlEditor->IsStyleEditable()) {
     return false;
   }
   return !!htmlEditor->GetPositionedElement();
@@ -1046,7 +1053,8 @@ bool RemoveStylesCommand::IsCommandEnabled(Command aCommand,
     return false;
   }
   // test if we have any styles?
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult RemoveStylesCommand::DoCommand(Command aCommand,
@@ -1084,7 +1092,8 @@ bool IncreaseFontSizeCommand::IsCommandEnabled(Command aCommand,
     return false;
   }
   // test if we are at max size?
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult IncreaseFontSizeCommand::DoCommand(Command aCommand,
@@ -1120,7 +1129,8 @@ bool DecreaseFontSizeCommand::IsCommandEnabled(Command aCommand,
     return false;
   }
   // test if we are at min size?
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 nsresult DecreaseFontSizeCommand::DoCommand(Command aCommand,
@@ -1212,7 +1222,8 @@ bool InsertTagCommand::IsCommandEnabled(Command aCommand,
   if (!htmlEditor) {
     return false;
   }
-  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable();
+  return htmlEditor->IsModifiable() && htmlEditor->IsSelectionEditable() &&
+         htmlEditor->IsStyleEditable();
 }
 
 // corresponding STATE_ATTRIBUTE is: src (img) and href (a)
@@ -1234,9 +1245,18 @@ nsresult InsertTagCommand::DoCommand(Command aCommand, EditorBase& aEditorBase,
   if (NS_WARN_IF(!newElement)) {
     return NS_ERROR_FAILURE;
   }
+  HTMLEditor::InsertElementOptions options{
+      HTMLEditor::InsertElementOption::DeleteSelection};
+  // We did insert <img> without splitting ancestor inline elements, but the
+  // other browsers split them.  Therefore, let's do it only when the document
+  // is content.
+  if (tagName == nsGkAtoms::img &&
+      htmlEditor->GetDocument()->IsContentDocument()) {
+    options += HTMLEditor::InsertElementOption::SplitAncestorInlineElements;
+  }
   nsresult rv =
       MOZ_KnownLive(htmlEditor)
-          ->InsertElementAtSelectionAsAction(newElement, true, aPrincipal);
+          ->InsertElementAtSelectionAsAction(newElement, options, aPrincipal);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertElementAtSelectionAsAction() failed");
   return rv;
@@ -1297,9 +1317,17 @@ nsresult InsertTagCommand::DoCommandParam(Command aCommand,
     return rv;
   }
 
+  HTMLEditor::InsertElementOptions options{
+      HTMLEditor::InsertElementOption::DeleteSelection};
+  // We did insert <img> without splitting ancestor inline elements, but the
+  // other browsers split them.  Therefore, let's do it only when the document
+  // is content.
+  if (htmlEditor->GetDocument()->IsContentDocument()) {
+    options += HTMLEditor::InsertElementOption::SplitAncestorInlineElements;
+  }
   nsresult rv =
       MOZ_KnownLive(htmlEditor)
-          ->InsertElementAtSelectionAsAction(newElement, true, aPrincipal);
+          ->InsertElementAtSelectionAsAction(newElement, options, aPrincipal);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertElementAtSelectionAsAction() failed");
   return rv;

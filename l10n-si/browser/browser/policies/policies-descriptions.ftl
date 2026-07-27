@@ -15,6 +15,7 @@ policy-AllowedDomainsForApps = ගූගල් වැඩබිමට ප්‍�
 policy-AppAutoUpdate = ස්වයංක්‍රීයව යෙදුම යාවත්කාල වීම සබල හෝ අබල කරන්න.
 policy-AppUpdateURL = අභිරුචි යෙදුම් යාවත්කාල ඒ.ස.නි. සකසන්න.
 policy-Authentication = සහාය දක්වන වියමන අඩවි සඳහා අනුකලිත සත්‍යාපනය වින්‍යාස කරන්න.
+policy-AutofillAddressEnabled = ලිපින සඳහා ස්වයං පිරවීම සබල කරන්න.
 policy-AutofillCreditCardEnabled = ගෙවීම් ක්‍රම සඳහා ස්වයං පිරවීම සබල කරන්න.
 policy-BackgroundAppUpdate2 = පසුබිම් යාවත්කාලකරනය සබල හෝ අබල කරන්න.
 policy-BlockAboutAddons = එක්කහු කළමණාකරු වෙත ප්‍රවේශය අවහිර කරන්න (about:addons).
@@ -61,10 +62,8 @@ policy-ExtensionUpdate = දිගු ස්වයංක්‍රීයව ය�
 policy-FirefoxHome2 = { -firefox-home-brand-name } වින්‍යාස කරන්න.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = මුල් පිටුව සකසා විකල්ප ලෙස අගුළු දමන්න.
+policy-HttpsOnlyMode = HTTPS-පමණි ප්‍රකාරය සබල වීමට ඉඩ දෙන්න.
 policy-InstallAddonsPermission = ඇතැම් අඩවි වලට එක්කහු ස්ථාපනය කිරීමට ඉඩදෙන්න.
-
-## Do not translate "SameSite", it's the name of a cookie attribute.
-
 
 ##
 

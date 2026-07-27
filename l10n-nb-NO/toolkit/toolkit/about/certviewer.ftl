@@ -36,10 +36,17 @@ certificate-viewer-key-size = Nøkkelstørrelse
 certificate-viewer-inc-locality = Organisasjonsplassering
 certificate-viewer-locality = Sted
 certificate-viewer-location = Adresse
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Loggnavn
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Logg-ID
 certificate-viewer-method = Metode
 certificate-viewer-modulus = Modulus
 certificate-viewer-name = Navn
+certificate-viewer-surname = Etternavn
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Fornavn
 certificate-viewer-not-after = Ikke etter
 certificate-viewer-not-before = Ikke før
 certificate-viewer-organization = Organisasjon
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Autoritetsinfo (AIA)
 certificate-viewer-certificate-policies = Regler for sertifikat
 certificate-viewer-embedded-scts = Innebygde SCT-er
 certificate-viewer-crl-endpoints = CRL-endpoints
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Last ned
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Denne utvidelsen er merket som kritisk, noe som betyr at klienter må avvise sertifikatet hvis de ikke forstår det.
@@ -112,6 +117,8 @@ certificate-viewer-export = Eksporter
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ukjent)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = sertifikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

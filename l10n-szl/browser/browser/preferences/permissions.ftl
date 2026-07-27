@@ -5,77 +5,62 @@
 permissions-window2 =
     .title = Wyjōntki
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Adresa strōny
     .accesskey = d
-
 permissions-block =
     .label = Szperuj
     .accesskey = S
-
 permissions-session =
     .label = Przizwōl na ta sesyjo
     .accesskey = P
-
 permissions-allow =
     .label = Przizwōl
     .accesskey = z
-
 permissions-button-off =
     .label = Wyłōncz
     .accesskey = W
-
 permissions-button-off-temporarily =
     .label = Wyłōncz czasowo
     .accesskey = W
-
 permissions-site-name =
     .label = Strōna
-
 permissions-status =
     .label = Status
-
 permissions-remove =
     .label = Wyciep strōna
     .accesskey = W
-
 permissions-remove-all =
     .label = Wyciep wszyskie strōny
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = Spamiyntej zmiany
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = Spamiyntej zmiany
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = Bazowe do wszyskich strōn:
-
 permissions-searchbox =
     .placeholder = Szukej
-
 permissions-capabilities-autoplay-allow =
     .label = Zgoda na klang i video
 permissions-capabilities-autoplay-block =
     .label = Szperuj klang
 permissions-capabilities-autoplay-blockall =
     .label = Szperuj klang i video
-
 permissions-capabilities-allow =
     .label = Przizwōl
 permissions-capabilities-block =
     .label = Szperuj
 permissions-capabilities-prompt =
     .label = Zawdy sie pytej
-
 permissions-capabilities-listitem-allow =
     .value = Przizwōl
 permissions-capabilities-listitem-block =
     .value = Szperuj
 permissions-capabilities-listitem-allow-session =
     .value = Przizwōl na ta sesyjo
-
 permissions-capabilities-listitem-off =
     .value = Wyłōnczōne
 permissions-capabilities-listitem-off-temporarily =
@@ -183,8 +168,3 @@ permissions-site-microphone-desc = Te strōny poprosiyły ô zgoda na dostymp do
 permissions-site-microphone-disable-label =
     .label = Szperuj nowe prośby ô zgoda na dostymp do twojigo mikrofōnu
 permissions-site-microphone-disable-desc = Skuli tego strōny, co ich niy ma na wykazie, niy bydōm mogły prosić ô zgoda na dostymp do twojigo mikrofōnu. Przi zaszperowanym dostympie do mikrofōnu niykere funkcyje strōn mogōm niy fungować dobrze.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

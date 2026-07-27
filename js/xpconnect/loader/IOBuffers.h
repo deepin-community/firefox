@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +10,6 @@
 #include "mozilla/EndianUtils.h"
 #include "mozilla/EnumSet.h"
 #include "mozilla/Range.h"
-#include "mozilla/Span.h"
 #include "nsString.h"
 #include "nsTArray.h"
 
@@ -66,12 +64,18 @@ class OutputBuffer {
 
 class InputBuffer {
  public:
-  explicit InputBuffer(const Range<uint8_t>& buffer) : data(buffer) {}
+  explicit InputBuffer(const Range<const uint8_t>& buffer) : data(buffer) {}
+
+  // Since the other constructor stores `buffer` by reference, we must ensure
+  // no implicit conversions occur (which would result in a reference to a
+  // temporary being stored).
+  template <typename T>
+  explicit InputBuffer(T) = delete;
 
   const uint8_t* read(size_t size) {
     MOZ_ASSERT(checkCapacity(size));
 
-    auto buf = &data[cursor_];
+    const auto* buf = &data[cursor_];
     cursor_ += size;
     return buf;
   }
@@ -138,7 +142,7 @@ class InputBuffer {
   bool error_ = false;
 
  public:
-  const Range<uint8_t>& data;
+  const Range<const uint8_t>& data;
   size_t cursor_ = 0;
 };
 

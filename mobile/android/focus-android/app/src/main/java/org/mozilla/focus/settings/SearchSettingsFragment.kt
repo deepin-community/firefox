@@ -16,6 +16,9 @@ import org.mozilla.focus.ext.showToolbar
 import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.state.Screen
 
+/**
+ * Settings fragment for search-related options.
+ */
 class SearchSettingsFragment :
     BaseSettingsFragment(),
     SharedPreferences.OnSharedPreferenceChangeListener {
@@ -58,13 +61,6 @@ class SearchSettingsFragment :
                 ShowSearchSuggestions.changedFromSettings.record(
                     ShowSearchSuggestions.ChangedFromSettingsExtra(sharedPreferences.getBoolean(key, false)),
                 )
-        }
-    }
-
-    companion object {
-
-        fun newInstance(): SearchSettingsFragment {
-            return SearchSettingsFragment()
         }
     }
 }

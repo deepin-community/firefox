@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 reload-tab =
     .label = Превчитај јазиче
     .accesskey = р
@@ -33,10 +37,10 @@ unpin-tab =
     .accesskey = т
 pin-selected-tabs =
     .label = Закачи јазичиња
-    .accesskey = П
+    .accesskey = З
 unpin-selected-tabs =
     .label = Откачи јазичиња
-    .accesskey = п
+    .accesskey = т
 bookmark-selected-tabs =
     .label = Обележи јазичиња…
     .accesskey = Б
@@ -49,7 +53,3 @@ move-to-end =
 move-to-new-window =
     .label = Премести во нов прозорец
     .accesskey = П
-
-## Variables:
-##  $tabCount (Number): the number of tabs that are affected by the action.
-

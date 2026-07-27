@@ -7,18 +7,19 @@
 #include <utility>
 
 #include "AnnexB.h"
-#include "api/video_codecs/h264_profile_level_id.h"
 #include "ImageContainer.h"
-#include "media/base/media_constants.h"
 #include "MediaData.h"
-#include "modules/video_coding/utility/vp8_header_parser.h"
-#include "modules/video_coding/utility/vp9_uncompressed_header_parser.h"
-#include "mozilla/Maybe.h"
-#include "mozilla/gfx/Point.h"
-#include "mozilla/media/MediaUtils.h"
-#include "mozilla/StaticPrefs_media.h"
 #include "PEMFactory.h"
 #include "VideoUtils.h"
+#include "api/video_codecs/h264_profile_level_id.h"
+#include "media/base/media_constants.h"
+#include "modules/video_coding/utility/vp8_header_parser.h"
+#include "modules/video_coding/utility/vp9_uncompressed_header_parser.h"
+#include "mozilla/Assertions.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/gfx/Point.h"
+#include "mozilla/media/MediaUtils.h"
 
 namespace mozilla {
 
@@ -46,13 +47,25 @@ CodecType ConvertWebrtcCodecTypeToCodecType(
       return CodecType::VP9;
     case webrtc::VideoCodecType::kVideoCodecH264:
       return CodecType::H264;
-    default:
-      MOZ_MAKE_COMPILER_ASSUME_IS_UNREACHABLE("Unsupported codec type");
+    case webrtc::VideoCodecType::kVideoCodecAV1:
+      return CodecType::AV1;
+    case webrtc::VideoCodecType::kVideoCodecGeneric:
+    case webrtc::VideoCodecType::kVideoCodecH265:
+      return CodecType::Unknown;
   }
+  MOZ_CRASH("Unsupported codec type");
+  return CodecType::Unknown;
 }
 
-bool WebrtcMediaDataEncoder::CanCreate(
+/* static */
+media::EncodeSupportSet WebrtcMediaDataEncoder::SupportsCodec(
     const webrtc::VideoCodecType aCodecType) {
+  if (aCodecType != webrtc::VideoCodecType::kVideoCodecH264 &&
+      aCodecType != webrtc::VideoCodecType::kVideoCodecVP8 &&
+      aCodecType != webrtc::VideoCodecType::kVideoCodecVP9) {
+    // TODO: Bug 1980201 - Add support for remaining codecs (e.g. AV1, HEVC).
+    return {};
+  }
   auto factory = MakeRefPtr<PEMFactory>();
   CodecType type = ConvertWebrtcCodecTypeToCodecType(aCodecType);
   return factory->SupportsCodec(type);
@@ -76,11 +89,11 @@ static const char* PacketModeStr(const webrtc::CodecSpecificInfo& aInfo) {
 
 static std::pair<H264_PROFILE, H264_LEVEL> ConvertProfileLevel(
     const webrtc::CodecParameterMap& aParameters) {
-  const absl::optional<webrtc::H264ProfileLevelId> profileLevel =
+  const std::optional<webrtc::H264ProfileLevelId> profileLevel =
       webrtc::ParseSdpForH264ProfileLevelId(aParameters);
 
   if (!profileLevel) {
-    // TODO: Eveluate if there is a better default setting.
+    // TODO: Evaluate if there is a better default setting.
     return std::make_pair(H264_PROFILE::H264_PROFILE_MAIN,
                           H264_LEVEL::H264_LEVEL_3_1);
   }
@@ -123,6 +136,7 @@ WebrtcMediaDataEncoder::WebrtcMediaDataEncoder(
                             "WebrtcMediaDataEncoder::mTaskQueue")),
       mFactory(new PEMFactory()),
       mCallbackMutex("WebrtcMediaDataEncoderCodec encoded callback mutex"),
+      mPendingMutex("WebrtcMediaDataEncoderCodec pending frames mutex"),
       mFormatParams(aFormat.parameters),
       // Use the same lower and upper bound as h264_video_toolbox_encoder which
       // is an encoder from webrtc's upstream codebase.
@@ -152,8 +166,8 @@ static void InitCodecSpecficInfo(webrtc::CodecSpecificInfo& aInfo,
   switch (aCodecSettings->codecType) {
     case webrtc::VideoCodecType::kVideoCodecH264: {
       aInfo.codecSpecific.H264.packetization_mode =
-          aParameters.count(cricket::kH264FmtpPacketizationMode) == 1 &&
-                  aParameters.at(cricket::kH264FmtpPacketizationMode) == "1"
+          aParameters.count(webrtc::kH264FmtpPacketizationMode) == 1 &&
+                  aParameters.at(webrtc::kH264FmtpPacketizationMode) == "1"
               ? webrtc::H264PacketizationMode::NonInterleaved
               : webrtc::H264PacketizationMode::SingleNalUnit;
       break;
@@ -182,8 +196,8 @@ int32_t WebrtcMediaDataEncoder::InitEncode(
 
   // TODO: enable max output size setting when supported.
   if (aCodecSettings->codecType == webrtc::VideoCodecType::kVideoCodecH264 &&
-      !(mFormatParams.count(cricket::kH264FmtpPacketizationMode) == 1 &&
-        mFormatParams.at(cricket::kH264FmtpPacketizationMode) == "1")) {
+      !(mFormatParams.count(webrtc::kH264FmtpPacketizationMode) == 1 &&
+        mFormatParams.at(webrtc::kH264FmtpPacketizationMode) == "1")) {
     LOG("Some platform encoders don't support setting max output size."
         " Falling back to SW");
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
@@ -251,14 +265,14 @@ already_AddRefed<MediaDataEncoder> WebrtcMediaDataEncoder::CreateEncoder(
   }
 
   CodecType type;
-  Maybe<EncoderConfig::CodecSpecific> specific;
+  EncoderConfig::CodecSpecific specific{void_t{}};
   switch (aCodecSettings->codecType) {
     case webrtc::VideoCodecType::kVideoCodecH264: {
       type = CodecType::H264;
       std::pair<H264_PROFILE, H264_LEVEL> profileLevel =
           ConvertProfileLevel(mFormatParams);
-      specific.emplace(H264Specific(profileLevel.first, profileLevel.second,
-                                    H264BitStreamFormat::ANNEXB));
+      specific.emplace<H264Specific>(profileLevel.first, profileLevel.second,
+                                     H264BitStreamFormat::ANNEXB);
       break;
     }
     case webrtc::VideoCodecType::kVideoCodecVP8: {
@@ -267,9 +281,9 @@ already_AddRefed<MediaDataEncoder> WebrtcMediaDataEncoder::CreateEncoder(
       const webrtc::VideoCodecComplexity complexity =
           aCodecSettings->GetVideoEncoderComplexity();
       const bool frameDropEnabled = aCodecSettings->GetFrameDropEnabled();
-      specific.emplace(VP8Specific(MapComplexity(complexity), false,
-                                   vp8.numberOfTemporalLayers, vp8.denoisingOn,
-                                   vp8.automaticResizeOn, frameDropEnabled));
+      specific.emplace<VP8Specific>(MapComplexity(complexity), false,
+                                    vp8.numberOfTemporalLayers, vp8.denoisingOn,
+                                    vp8.automaticResizeOn, frameDropEnabled);
       break;
     }
     case webrtc::VideoCodecType::kVideoCodecVP9: {
@@ -278,10 +292,10 @@ already_AddRefed<MediaDataEncoder> WebrtcMediaDataEncoder::CreateEncoder(
       const webrtc::VideoCodecComplexity complexity =
           aCodecSettings->GetVideoEncoderComplexity();
       const bool frameDropEnabled = aCodecSettings->GetFrameDropEnabled();
-      specific.emplace(VP9Specific(
+      specific.emplace<VP9Specific>(
           MapComplexity(complexity), false, vp9.numberOfTemporalLayers,
           vp9.denoisingOn, vp9.automaticResizeOn, frameDropEnabled,
-          vp9.adaptiveQpMode, vp9.numberOfSpatialLayers, vp9.flexibleMode));
+          vp9.adaptiveQpMode, vp9.numberOfSpatialLayers, vp9.flexibleMode);
       break;
     }
     default:
@@ -289,7 +303,7 @@ already_AddRefed<MediaDataEncoder> WebrtcMediaDataEncoder::CreateEncoder(
   }
   EncoderConfig config(
       type, {aCodecSettings->width, aCodecSettings->height}, Usage::Realtime,
-      dom::ImageBitmapFormat::YUV420P, dom::ImageBitmapFormat::YUV420P,
+      EncoderConfig::SampleFormat(dom::ImageBitmapFormat::YUV420P),
       aCodecSettings->maxFramerate, keyframeInterval,
       mBitrateAdjuster.GetTargetBitrateBps(), mMinBitrateBps, mMaxBitrateBps,
       BitrateMode::Variable, HardwarePreference::None, ScalabilityMode::None,
@@ -328,6 +342,10 @@ int32_t WebrtcMediaDataEncoder::Shutdown() {
     mCallback = nullptr;
     mError = NS_OK;
   }
+  {
+    MutexAutoLock lock(mPendingMutex);
+    mPendingFrames.Clear();
+  }
   if (mEncoder) {
     media::Await(do_AddRef(mTaskQueue), mEncoder->Shutdown());
     mEncoder = nullptr;
@@ -358,13 +376,11 @@ static already_AddRefed<VideoData> CreateVideoDataFromWebrtcVideoFrame(
       new RecyclingPlanarYCbCrImage(new BufferRecycleBin());
   image->CopyData(yCbCrData);
 
-  // Although webrtc::VideoFrame::timestamp_rtp_ will likely be deprecated,
-  // webrtc::EncodedImage and the VPx encoders still use it in the imported
-  // version of libwebrtc. Not using the same timestamp values generates
-  // discontinuous time and confuses the video receiver when switching from
-  // platform to libwebrtc encoder.
-  TimeUnit timestamp =
-      media::TimeUnit(aFrame.timestamp(), cricket::kVideoCodecClockrate);
+  // Use the input frame's microsecond timestamp ("webrtc time") as the
+  // encoder's time base. This matches what libwebrtc's own encoders do, and
+  // gives the encode-complete handler a unique key with which to recover
+  // the original rtp_timestamp from PendingFrame metadata.
+  TimeUnit timestamp = TimeUnit::FromMicroseconds(aFrame.timestamp_us());
   return VideoData::CreateFromImage(image->GetSize(), 0, timestamp, aDuration,
                                     image, aIsKeyFrame, timestamp);
 }
@@ -449,44 +465,122 @@ int32_t WebrtcMediaDataEncoder::Encode(
       TimeUnit::FromSeconds(1.0 / mMaxFrameRate));
   const gfx::IntSize displaySize = data->mDisplay;
 
+  // Record per-frame metadata for the encoder output to recover, keyed by
+  // the input timestamp which the encoder preserves. Evict the oldest
+  // entry rather than refuse new inputs when at capacity, so the encoder
+  // is never starved.
+  AutoTArray<PendingFrame, 1> oldFrames;
+  {
+    MutexAutoLock lock(mPendingMutex);
+    while (mPendingFrames.Length() >= kMaxFramesInFlight) {
+      oldFrames.AppendElement(mPendingFrames[0]);
+      mPendingFrames.RemoveElementAt(0);
+    }
+    MOZ_ASSERT(mPendingFrames.IsEmpty() ||
+               mPendingFrames.LastElement().mTime < data->mTime);
+    mPendingFrames.AppendElement(PendingFrame{
+        .mTime = data->mTime, .mRtpTimestamp = aInputFrame.rtp_timestamp()});
+  }
+  if (!oldFrames.IsEmpty()) {
+    MutexAutoLock lock(mCallbackMutex);
+    if (mCallback) {
+      for (auto& frame : oldFrames) {
+        // Capacity exceeded; the eviction is our own doing. Honour the
+        // EncodedImageCallback contract by reporting it.
+        mCallback->OnFrameDropped(frame.mRtpTimestamp, /*spatial_id=*/0,
+                                  /*is_end_of_temporal_unit=*/false);
+      }
+    }
+  }
+
   mEncoder->Encode(data)->Then(
       mTaskQueue, __func__,
-      [self = RefPtr<WebrtcMediaDataEncoder>(this), this,
+      [self = RefPtr(this), this,
        displaySize](MediaDataEncoder::EncodedData aFrames) {
         LOG_V("Received encoded frame, nums %zu width %d height %d",
               aFrames.Length(), displaySize.width, displaySize.height);
         for (auto& frame : aFrames) {
+          const TimeUnit& frameTime = frame->mTime;
+          Maybe<PendingFrame> matched;
+          AutoTArray<uint32_t, 4> droppedRtps;
+          {
+            MutexAutoLock lock(mPendingMutex);
+            // Walk the queue from the front. Anything older than this
+            // output is an input the encoder skipped; the matching entry
+            // (if any) supplies the per-frame metadata.
+            size_t numToRemove = 0;
+            while (numToRemove < mPendingFrames.Length()) {
+              const PendingFrame& pendingFrame = mPendingFrames[numToRemove];
+              if (pendingFrame.mTime > frameTime) {
+                break;
+              }
+              if (pendingFrame.mTime == frameTime) {
+                matched = Some(pendingFrame);
+                ++numToRemove;
+                break;
+              }
+              droppedRtps.AppendElement(pendingFrame.mRtpTimestamp);
+              ++numToRemove;
+            }
+            mPendingFrames.RemoveElementsAt(0, numToRemove);
+          }
+
+          webrtc::EncodedImage image;
+          if (matched.isSome()) {
+            image.SetEncodedData(webrtc::EncodedImageBuffer::Create(
+                frame->Data(), frame->Size()));
+            image._encodedWidth = displaySize.width;
+            image._encodedHeight = displaySize.height;
+            image.SetRtpTimestamp(matched->mRtpTimestamp);
+            image.capture_time_ms_ =
+                webrtc::Timestamp::Micros(matched->mTime.ToMicroseconds()).ms();
+            image._frameType = frame->mKeyframe
+                                   ? webrtc::VideoFrameType::kVideoFrameKey
+                                   : webrtc::VideoFrameType::kVideoFrameDelta;
+            GetVPXQp(mCodecSpecific.codecType, image);
+            UpdateCodecSpecificInfo(mCodecSpecific, displaySize,
+                                    frame->mKeyframe);
+          }
+
           MutexAutoLock lock(mCallbackMutex);
           if (!mCallback) {
-            break;
+            return;
           }
-          webrtc::EncodedImage image;
-          image.SetEncodedData(
-              webrtc::EncodedImageBuffer::Create(frame->Data(), frame->Size()));
-          image._encodedWidth = displaySize.width;
-          image._encodedHeight = displaySize.height;
-          CheckedInt64 time =
-              TimeUnitToFrames(frame->mTime, cricket::kVideoCodecClockrate);
-          if (!time.isValid()) {
-            self->mError = MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
-                                       "invalid timestamp from encoder");
-            break;
+          for (uint32_t rtp : droppedRtps) {
+            // The encoder skipped this input; honour the
+            // EncodedImageCallback contract by reporting the drop.
+            mCallback->OnFrameDropped(rtp, /*spatial_id=*/0,
+                                      /*is_end_of_temporal_unit=*/false);
           }
-          image.SetRtpTimestamp(time.value());
-          image._frameType = frame->mKeyframe
-                                 ? webrtc::VideoFrameType::kVideoFrameKey
-                                 : webrtc::VideoFrameType::kVideoFrameDelta;
-          GetVPXQp(mCodecSpecific.codecType, image);
-          UpdateCodecSpecificInfo(mCodecSpecific, displaySize,
-                                  frame->mKeyframe);
-
-          LOG_V("Send encoded image");
-          self->mCallback->OnEncodedImage(image, &mCodecSpecific);
-          self->mBitrateAdjuster.Update(image.size());
+          if (matched.isSome()) {
+            LOG_V("Send encoded image");
+            mCallback->OnEncodedImage(image, &mCodecSpecific);
+            mBitrateAdjuster.Update(image.size());
+          }
         }
       },
-      [self = RefPtr<WebrtcMediaDataEncoder>(this)](const MediaResult& aError) {
-        self->mError = aError;
+      [self = RefPtr(this), this](const MediaResult& aError) {
+        // Encoder errored asynchronously; drain any pending inputs and
+        // report them as drops to honour the EncodedImageCallback contract.
+        AutoTArray<uint32_t, kMaxFramesInFlight> droppedTimestamps;
+        {
+          MutexAutoLock lock(mPendingMutex);
+          droppedTimestamps.SetCapacity(mPendingFrames.Length());
+          for (const auto& pendingFrame : mPendingFrames) {
+            droppedTimestamps.AppendElement(pendingFrame.mRtpTimestamp);
+          }
+          mPendingFrames.Clear();
+        }
+        MutexAutoLock lock(mCallbackMutex);
+        if (mCallback) {
+          for (uint32_t ts : droppedTimestamps) {
+            // We never call image.set_end_of_temporal_unit(true) on the
+            // encoded output path either, so don't claim it here.
+            mCallback->OnFrameDropped(ts, /*spatial_id=*/0,
+                                      /*is_end_of_temporal_unit=*/false);
+          }
+        }
+        mError = aError;
       });
   return WEBRTC_VIDEO_CODEC_OK;
 }

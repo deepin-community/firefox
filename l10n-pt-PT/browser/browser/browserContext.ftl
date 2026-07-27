@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Abrir ligação num novo separador
     .accesskey = s
+main-context-menu-open-link-split-view =
+    .label = Abrir ligação na vista dividida
+    .accesskey = v
 main-context-menu-open-link-container-tab =
     .label = Abrir ligação num novo separador contentor
     .accesskey = b
@@ -149,12 +152,10 @@ main-context-menu-save-link-to-pocket =
     .label = Guardar ligação no { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
-    .label = Copiar endereço de email
+    .label = Copiar endereço de e-mail
     .accesskey = e
 main-context-menu-copy-phone =
     .label = Copiar número de telefone
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copiar ligação
     .accesskey = l
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copiar ligação do site sem monitorização
-    .accesskey = s
+main-context-menu-preview-link =
+    .label = Pré-visualizar ligação
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copiar ligação limpa
+    .accesskey = g
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Ocultar controlos
     .accesskey = c
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Ecrã completo
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Ver descrição
     .accesskey = d
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Procurar imagem com { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Guardar vídeo como…
     .accesskey = v
@@ -283,6 +293,15 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Enviar áudio por e-mail…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Enviar para dispositivo
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Enviar para Telemóvel
+    .accesskey = n
+main-context-menu-send-to-mobile-enable-sync2 = Ative a sincronização para enviar um separador
+main-context-menu-send-to-mobile-connect-phone2 = Ligar o seu telemóvel
+main-context-menu-send-to-mobile-device-missing2 = Não vê o seu dispositivo?
 main-context-menu-save-to-pocket =
     .label = Guardar página no { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +309,7 @@ main-context-menu-send-to-device =
     .label = Enviar página para dispositivo
     .accesskey = d
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Utilizar credencial guardada
@@ -319,9 +336,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Adicionar uma palavra-chave para esta pesquisa…
     .accesskey = A
+main-context-menu-add-engine =
+    .label = Adicionar motor de pesquisa
+    .accesskey = s
 main-context-menu-link-send-to-device =
     .label = Enviar ligação para dispositivo
     .accesskey = d
+main-context-menu-link-send-to-mobile =
+    .label = Enviar ligação para Telemóvel
+    .accesskey = T
 main-context-menu-frame =
     .label = Este frame
     .accesskey = t
@@ -389,3 +412,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Revelar palavra-passe
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nova
+main-context-menu-pdfjs-copy-page =
+    .label = Copiar página
+main-context-menu-pdfjs-cut-page =
+    .label = Cortar página
+main-context-menu-pdfjs-delete-page =
+    .label = Eliminar página
+main-context-menu-pdfjs-save-page =
+    .label = Guardar seleção como…

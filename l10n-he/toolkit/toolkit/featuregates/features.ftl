@@ -10,6 +10,11 @@ experimental-features-css-masonry2 =
 # by various online articles and is technical in nature.
 experimental-features-web-gpu2 =
     .label = Web API: WebGPU
+# The title of the experiment should be kept in English as it may be referenced
+# by various online articles and is technical in nature.
+experimental-features-media-jxl =
+    .label = מדיה: JPEG XL
+experimental-features-media-jxl-description = כשאפשרות זו מופעלת, { -brand-short-name } תומך בתבנית JPEG XL (או JXL). זוהי תבנית קובץ תמונה משופרת התומכת במעבר ללא הפסד מקובצי JPEG מסורתיים. ניתן לעיין ב<a data-l10n-name="bugzilla">תקלה 1539075</a> לפרטים נוספים.
 experimental-features-devtools-compatibility-panel =
     .label = כלי פיתוח: חלונית תאימות
 # about:home should be kept in English, as it refers to the the URI for
@@ -30,25 +35,7 @@ experimental-features-webrtc-global-mute-toggles-description = הוספת פקד
 experimental-features-js-warp =
     .label = JavaScript JIT: Warp
 experimental-features-js-warp-description = הפעלת Warp, מיזם לשיפור הביצועים וניצול הזיכרון של JavaScript.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = תמונה בתוך תמונה: פתיחה אוטומטית בעת מעבר ללשונית אחרת
-experimental-features-auto-pip-description = הפעלת תמונה בתוך תמונה בסרטונים פעילים בעת מעבר ללשוניות אחרות.
-genai-settings-chat-title =
-    .label = צ’אט בוט AI
-# Updated sidebar settings
-sidebar-title =
-    .label = סרגל צד
-sidebar-description = גישה קלה להיסטוריה שלך, ללשוניות ממכשירים אחרים, להרחבות סרגל צד ועוד תוך כדי גלישה. <a data-l10n-name="connect">מתן משוב</a>
-vertical-tabs-title =
-    .label = לשוניות אנוכיות
-vertical-tabs-description = העברת הלשוניות שלך מהחלק העליון של הדפדפן לצד. פעולה זו מחייבת אותך לנסות גם את סרגל הצד. <a data-l10n-name="connect">מתן משוב</a>
-experimental-features-group-browsing =
-    .label = גלישה
-experimental-features-group-developer-tools =
-    .label = כלי פיתוח
-experimental-features-group-webpage-display =
-    .label = תצוגה של דפי אינטרנט
-experimental-features-group-customize-browsing =
-    .label = התאמה אישית של הגלישה שלך
-experimental-features-group-customize-browsing-description = אם תנסו את התכונות האלה, <a data-l10n-name="connect">שקלו לשתף את המחשבות שלכם ב־Connect</a>
+# Search during IME
+experimental-features-ime-search =
+    .label = שורת הכתובת: הצגת תוצאות במהלך הרכבת קלט IME
+experimental-features-ime-search-description = קלט IME‏ (Input Method Editor) הוא כלי שמאפשר להזין סימנים מורכבים, כמו אלו המשמשים בשפות מזרח־אסייתיות או בשפות הודיות, באמצעות מקלדת רגילה. הפעלת ניסוי זה תשאיר את חלונית שורת הכתובת פתוחה ותציג תוצאות חיפוש והצעות בזמן הזנת טקסט באמצעות IME. יש לשים לב שייתכן שה־IME יציג חלונית שתסתיר את תוצאות שורת הכתובת, ולכן מומלץ להשתמש בהעדפה זו רק עם IME שאינו משתמש בחלונית מסוג זה.

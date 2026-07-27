@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -40,8 +38,8 @@ class RValueAllocation {
     CST_UNDEFINED = 0x01,
     CST_NULL = 0x02,
     DOUBLE_REG = 0x03,
-    ANY_FLOAT_REG = 0x04,
-    ANY_FLOAT_STACK = 0x05,
+    FLOAT32_REG = 0x04,
+    FLOAT32_STACK = 0x05,
 #if defined(JS_NUNBOX32)
     UNTYPED_REG_REG = 0x06,
     UNTYPED_REG_STACK = 0x07,
@@ -55,6 +53,12 @@ class RValueAllocation {
     // Recover instructions.
     RECOVER_INSTRUCTION = 0x0a,
     RI_WITH_DEFAULT_CST = 0x0b,
+
+    // IntPtr value.
+    INTPTR_CST = 0x0c,
+    INTPTR_REG = 0x0d,
+    INTPTR_STACK = 0x0e,
+    INTPTR_INT32_STACK = 0x0f,
 
     // The JSValueType is packed in the Mode.
     TYPED_REG_MIN = 0x10,
@@ -76,6 +80,7 @@ class RValueAllocation {
 #elif defined(JS_PUNBOX64)
     INT64_REG = 0x31,
     INT64_STACK = 0x32,
+    INT64_INT32_STACK = 0x33,
 #endif
 
     // This mask can be used with any other valid mode. When this flag is
@@ -205,12 +210,12 @@ class RValueAllocation {
     return RValueAllocation(DOUBLE_REG, payloadOfFloatRegister(reg));
   }
 
-  // ANY_FLOAT_REG or ANY_FLOAT_STACK
-  static RValueAllocation AnyFloat(FloatRegister reg) {
-    return RValueAllocation(ANY_FLOAT_REG, payloadOfFloatRegister(reg));
+  // FLOAT32_REG or FLOAT32_STACK
+  static RValueAllocation Float32(FloatRegister reg) {
+    return RValueAllocation(FLOAT32_REG, payloadOfFloatRegister(reg));
   }
-  static RValueAllocation AnyFloat(int32_t offset) {
-    return RValueAllocation(ANY_FLOAT_STACK, payloadOfStackOffset(offset));
+  static RValueAllocation Float32(int32_t offset) {
+    return RValueAllocation(FLOAT32_STACK, payloadOfStackOffset(offset));
   }
 
   // TYPED_REG or TYPED_STACK
@@ -283,6 +288,28 @@ class RValueAllocation {
                             payloadOfIndex(cstIndex));
   }
 
+  // IntPtr
+#if !defined(JS_64BIT)
+  static RValueAllocation IntPtrConstant(uint32_t index) {
+    return RValueAllocation(INTPTR_CST, payloadOfIndex(index));
+  }
+#else
+  static RValueAllocation IntPtrConstant(uint32_t lowIndex,
+                                         uint32_t highIndex) {
+    return RValueAllocation(INTPTR_CST, payloadOfIndex(lowIndex),
+                            payloadOfIndex(highIndex));
+  }
+#endif
+  static RValueAllocation IntPtr(Register reg) {
+    return RValueAllocation(INTPTR_REG, payloadOfRegister(reg));
+  }
+  static RValueAllocation IntPtr(int32_t offset) {
+    return RValueAllocation(INTPTR_STACK, payloadOfStackOffset(offset));
+  }
+  static RValueAllocation IntPtrInt32(int32_t offset) {
+    return RValueAllocation(INTPTR_INT32_STACK, payloadOfStackOffset(offset));
+  }
+
   // Int64
   static RValueAllocation Int64Constant(uint32_t lowIndex, uint32_t highIndex) {
     return RValueAllocation(INT64_CST, payloadOfIndex(lowIndex),
@@ -319,6 +346,11 @@ class RValueAllocation {
 
   static RValueAllocation Int64(int32_t stackOffset) {
     return RValueAllocation(INT64_STACK, payloadOfStackOffset(stackOffset));
+  }
+
+  static RValueAllocation Int64Int32(int32_t stackOffset) {
+    return RValueAllocation(INT64_INT32_STACK,
+                            payloadOfStackOffset(stackOffset));
   }
 #endif
 
@@ -414,7 +446,7 @@ class SnapshotWriter {
   RValueAllocMap allocMap_;
 
   // This is only used to assert sanity.
-  uint32_t allocWritten_;
+  uint32_t allocWritten_ = 0;
 
   // Used to report size of the snapshot in the spew messages.
   SnapshotOffset lastStart_;
@@ -449,11 +481,11 @@ class MNode;
 class RecoverWriter {
   CompactBufferWriter writer_;
 
-  uint32_t instructionCount_;
-  uint32_t instructionsWritten_;
+  uint32_t instructionCount_ = 0;
+  uint32_t instructionsWritten_ = 0;
 
  public:
-  SnapshotOffset startRecover(uint32_t instructionCount);
+  RecoverOffset startRecover(uint32_t instructionCount);
 
   void writeInstruction(const MNode* rp);
 

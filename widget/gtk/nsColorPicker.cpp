@@ -1,11 +1,15 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <gtk/gtk.h>
 
-#include "mozilla/Maybe.h"
+#ifdef MOZ_X11
+#  include "X11UndefineNone.h"
+#endif
+
+#include "mozilla/dom/BrowsingContext.h"
+#include "mozilla/dom/CanonicalBrowsingContext.h"
 #include "mozilla/dom/HTMLInputElement.h"
 #include "nsColor.h"
 #include "nsColorPicker.h"
@@ -13,6 +17,7 @@
 #include "nsIWidget.h"
 #include "WidgetUtils.h"
 #include "nsPIDOMWindow.h"
+#include "gfxPlatform.h"
 
 using mozilla::dom::HTMLInputElement;
 
@@ -61,33 +66,25 @@ GtkColorSelection* nsColorPicker::WidgetGetColorSelection(GtkWidget* widget) {
 }
 #endif
 
-NS_IMETHODIMP nsColorPicker::Init(mozIDOMWindowProxy* aParent,
-                                  const nsAString& title,
-                                  const nsAString& initialColor,
-                                  const nsTArray<nsString>& aDefaultColors) {
-  auto* parent = nsPIDOMWindowOuter::From(aParent);
-  mParentWidget = mozilla::widget::WidgetUtils::DOMWindowToWidget(parent);
-  mTitle = title;
-  mInitialColor = initialColor;
+nsresult nsColorPicker::InitNative(const nsTArray<nsString>& aDefaultColors) {
+  mParentWidget =
+      mBrowsingContext->Canonical()->GetParentProcessWidgetContaining();
   mDefaultColors.Assign(aDefaultColors);
 
   return NS_OK;
 }
 
-NS_IMETHODIMP nsColorPicker::Open(
-    nsIColorPickerShownCallback* aColorPickerShownCallback) {
+nsresult nsColorPicker::OpenNative() {
+  // Don't attempt to open a real color-picker in headless mode.
+  if (gfxPlatform::IsHeadless()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
   auto maybeColor = HTMLInputElement::ParseSimpleColor(mInitialColor);
   if (maybeColor.isNothing()) {
     return NS_ERROR_FAILURE;
   }
   nscolor color = maybeColor.value();
-
-  if (mCallback) {
-    // It means Open has already been called: this is not allowed
-    NS_WARNING("mCallback is already set. Open called twice?");
-    return NS_ERROR_FAILURE;
-  }
-  mCallback = aColorPickerShownCallback;
 
   NS_ConvertUTF16toUTF8 title(mTitle);
   GtkWindow* parent_window =

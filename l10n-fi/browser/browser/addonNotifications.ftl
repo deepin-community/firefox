@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Tämä sivusto pyytää pääsyä MIDI-laitteisiisi (Musical Instrument Digital Interface). Pääsy laitteeseen voidaan ottaa käyttöön asentamalla lisäosa.
 site-permission-install-first-prompt-midi-message = Tämän pääsyn turvallisuutta ei taata. Jatka vain, jos luotat tähän sivustoon.
+site-permission-install-first-prompt-serial-header = Tämä sivusto pyytää pääsyä sarjaportteihin. Pääsy laitteeseen voidaan ottaa käyttöön asentamalla lisäosa.
+site-permission-install-first-prompt-serial-message = Tämän pääsyn turvallisuutta ei taata. Jatka vain, jos luotat tähän sivustoon.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = Poistetaanko { $name }?
 addon-removal-message = Poistetaanko ”{ $name }” { -brand-shorter-name }-selaimesta?
 addon-removal-button = Poista
 addon-removal-abuse-report-checkbox = Raportoi tämä laajennus { -vendor-short-name }lle
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Jos käytät tämän mallin ominaisuuksia tai mallia käyttäviä laajennuksia, se lisätään uudelleen.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = Ladattua lisäosaa ei voitu asentaa, koska as
 addon-install-error-file-access = Lisäosaa { $addonName } ei voitu asentaa, koska { -brand-short-name } ei voi muokata tarvittavaa tiedostoa.
 addon-install-error-not-signed = { -brand-short-name } esti tätä sivustoa asentamasta varmentamatonta lisäosaa.
 addon-install-error-invalid-domain = Lisäosaa { $addonName } ei voi asentaa tästä sijainnista.
+addon-install-error-no-addon-name-file-access = Lisäosaa ei voitu asentaa, koska { -brand-short-name } ei voi muokata tarvittavaa tiedostoa.
 addon-local-install-error-network-failure = Tätä lisäosaa ei voitu asentaa tiedostojärjestelmävirheen vuoksi.
 addon-local-install-error-incorrect-hash = Tätä lisäosaa ei voitu asentaa koska se ei vastaa { -brand-short-name }in odottamaa lisäosaa.
 addon-local-install-error-corrupt-file = Tätä lisäosaa ei voitu asentaa koska lisäosapaketti on ilmeisesti vaurioitunut.
 addon-local-install-error-file-access = Lisäosaa { $addonName } ei voitu asentaa, koska { -brand-short-name } ei pysty muokkaamaan vaadittua tiedostoa.
 addon-local-install-error-not-signed = Tätä lisäosaa ei voitu asentaa koska sitä ei ole varmennettu.
+addon-local-install-no-addon-name-error-file-access = Lisäosaa ei voitu asentaa, koska { -brand-short-name } ei voi muokata tarvittavaa tiedostoa.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Lisäosaa { $addonName } ei voitu asentaa, koska lisäosa ei ole yhteensopiva { -brand-short-name }in version { $appVersion } kanssa.
+addon-install-error-hard-blocked = { $addonName } rikkoo Mozillan käytäntöjä, eikä sitä voida asentaa { -brand-short-name }iin.
+addon-install-error-soft-blocked2 = { $addonName } on rajoitettu, eikä sitä voi asentaa { -brand-short-name }iin.
 addon-install-error-blocklisted = { $addonName } ei voitu asentaa, koska sen on raportoitu aiheuttavan vakaus- tai tietosuojaongelmia.
+addon-install-error-soft-blocked = { $addonName } rikkoo Mozillan käytäntöjä, eikä sitä voida asentaa { -brand-short-name }iin.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Et voi asentaa lisäosaa { $addonName } loppukäyttäjänä. Sen voi asentaa vain yrityskäytäntöjä käyttävä organisaatio.

@@ -156,6 +156,8 @@ login-item-copied-username-button-text = Copïwyd
 login-item-password-label = Cyfrinair
 login-item-password-reveal-checkbox =
     .aria-label = Dangos cyfrinair
+login-item-password-conceal-checkbox =
+    .aria-label = Cuddio'r cyfrinair
 login-item-copy-password-button-text = Copïo
 login-item-copied-password-button-text = Copïwyd
 login-item-save-changes-button = Cadw Newidiadau
@@ -374,7 +376,7 @@ confirm-discard-changes-dialog-confirm-button = Dileu
 ## Breach Alert notification
 
 about-logins-breach-alert-title = Tor-data Gwefan
-breach-alert-text = Cafodd cyfrineiriau eu ryddhau neu eu dwyn o'r wefan hon ers i chi ddiweddaru'ch manylion mewngofnodi ddiwethaf. Newid eich cyfrinair i ddiogelu eich cyfrif.
+breach-alert-text = Cafodd cyfrineiriau eu ryddhau neu eu dwyn o'r wefan hon ers i chi ddiweddaru'ch manylion mewngofnodi ddiwethaf. Newidiwch eich cyfrinair i ddiogelu'ch cyfrif.
 about-logins-breach-alert-date = Digwyddodd y tor-data hwn ar { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"

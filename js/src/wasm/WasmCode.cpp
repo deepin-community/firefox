@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2016 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +23,7 @@
 
 #include <algorithm>
 
-#include "jsnum.h"
-
+#include "builtin/Number.h"
 #include "jit/Disassemble.h"
 #include "jit/ExecutableAllocator.h"
 #include "jit/FlushICache.h"  // for FlushExecutionContextForAllThreads
@@ -63,7 +60,8 @@ size_t LinkData::SymbolicLinkArray::sizeOfExcludingThis(
   return size;
 }
 
-static uint32_t RoundupCodeLength(uint32_t codeLength) {
+static uint32_t RoundupExecutableCodePageSize(uint32_t codeLength) {
+  static_assert(MaxCodeBytesPerProcess <= INT32_MAX, "rounding won't overflow");
   // AllocateExecutableMemory() requires a multiple of ExecutableCodePageSize.
   return RoundUp(codeLength, ExecutableCodePageSize);
 }
@@ -75,12 +73,9 @@ UniqueCodeBytes wasm::AllocateCodeBytes(
     return nullptr;
   }
 
-  static_assert(MaxCodeBytesPerProcess <= INT32_MAX, "rounding won't overflow");
-  uint32_t roundedCodeLength = RoundupCodeLength(codeLength);
-
-  void* p =
-      AllocateExecutableMemory(roundedCodeLength, ProtectionSetting::Writable,
-                               MemCheckKind::MakeUndefined);
+  MOZ_RELEASE_ASSERT(codeLength == RoundupExecutableCodePageSize(codeLength));
+  void* p = AllocateExecutableMemory(codeLength, ProtectionSetting::Writable,
+                                     MemCheckKind::MakeUndefined);
 
   // If the allocation failed and the embedding gives us a last-ditch attempt
   // to purge all memory (which, in gecko, does a purging GC/CC/GC), do that
@@ -88,8 +83,7 @@ UniqueCodeBytes wasm::AllocateCodeBytes(
   if (!p && allowLastDitchGC) {
     if (OnLargeAllocationFailure) {
       OnLargeAllocationFailure();
-      p = AllocateExecutableMemory(roundedCodeLength,
-                                   ProtectionSetting::Writable,
+      p = AllocateExecutableMemory(codeLength, ProtectionSetting::Writable,
                                    MemCheckKind::MakeUndefined);
     }
   }
@@ -102,18 +96,14 @@ UniqueCodeBytes wasm::AllocateCodeBytes(
   // ensure it's not nested (OnLargeAllocationFailure can trigger GC).
   writable.emplace();
 
-  // Zero the padding.
-  memset(((uint8_t*)p) + codeLength, 0, roundedCodeLength - codeLength);
-
   // We account for the bytes allocated in WasmModuleObject::create, where we
   // have the necessary JSContext.
-
-  return UniqueCodeBytes((uint8_t*)p, FreeCode(roundedCodeLength));
+  return UniqueCodeBytes((uint8_t*)p, FreeCode(codeLength));
 }
 
 void FreeCode::operator()(uint8_t* bytes) {
   MOZ_ASSERT(codeLength);
-  MOZ_ASSERT(codeLength == RoundupCodeLength(codeLength));
+  MOZ_ASSERT(codeLength == RoundupExecutableCodePageSize(codeLength));
 
 #ifdef MOZ_VTUNE
   vtune::UnmarkBytes(bytes, codeLength);
@@ -143,7 +133,7 @@ bool wasm::StaticallyLink(jit::AutoMarkJitCodeWritableForThread& writable,
     const CodeBlock& bestBlock = maybeCode->funcCodeBlock(far.targetFuncIndex);
     uint32_t stubRangeIndex = bestBlock.funcToCodeRange[far.targetFuncIndex];
     const CodeRange& stubRange = bestBlock.codeRanges[stubRangeIndex];
-    uint8_t* stubBase = bestBlock.segment->base();
+    uint8_t* stubBase = bestBlock.base();
     MacroAssembler::patchFarJump(base + far.jumpOffset,
                                  stubBase + stubRange.funcUncheckedCallEntry());
   }
@@ -193,339 +183,218 @@ void wasm::StaticallyUnlink(uint8_t* base, const LinkData& linkData) {
   }
 }
 
-static bool AppendToString(const char* str, UTF8Bytes* bytes) {
-  return bytes->append(str, strlen(str)) && bytes->append('\0');
+CodeSource::CodeSource(jit::MacroAssembler& masm, const LinkData* linkData,
+                       const Code* code)
+    : masm_(&masm),
+      bytes_(nullptr),
+      length_(masm.bytesNeeded()),
+      linkData_(linkData),
+      code_(code) {}
+
+CodeSource::CodeSource(const uint8_t* bytes, uint32_t length,
+                       const LinkData& linkData, const Code* code)
+    : masm_(nullptr),
+      bytes_(bytes),
+      length_(length),
+      linkData_(&linkData),
+      code_(code) {}
+
+bool CodeSource::copyAndLink(jit::AutoMarkJitCodeWritableForThread& writable,
+                             uint8_t* codeStart) const {
+  // Copy the machine code over
+  if (masm_) {
+    masm_->executableCopy(codeStart);
+  } else {
+    memcpy(codeStart, bytes_, length_);
+  }
+
+  // Use link data if we have it, or else fall back to basic linking using the
+  // MacroAssembler.
+  if (linkData_) {
+    return StaticallyLink(writable, codeStart, *linkData_, code_);
+  }
+
+  // We must always have link data if we're coming from raw bytes.
+  MOZ_ASSERT(masm_);
+  // If we didn't provide link data, then we shouldn't have provided the code
+  // object.
+  MOZ_ASSERT(!code_);
+  PatchDebugSymbolicAccesses(codeStart, *masm_);
+  for (const CodeLabel& label : masm_->codeLabels()) {
+    Assembler::Bind(codeStart, label);
+  }
+  return true;
 }
 
-static void SendCodeRangesToProfiler(
-    const uint8_t* segmentBase, const CodeMetadata& codeMeta,
-    const CodeMetadataForAsmJS* codeMetaForAsmJS,
-    const CodeRangeVector& codeRanges) {
-  bool enabled = false;
-  enabled |= PerfEnabled();
-#ifdef MOZ_VTUNE
-  enabled |= vtune::IsProfilingActive();
-#endif
-  if (!enabled) {
-    return;
+size_t CodeSegment::AllocationAlignment() {
+  // If we are write-protecting code, all new code allocations must be rounded
+  // to the system page size.
+  if (JitOptions.writeProtectCode) {
+    return gc::SystemPageSize();
   }
 
-  for (const CodeRange& codeRange : codeRanges) {
-    if (!codeRange.hasFuncIndex()) {
-      continue;
-    }
-
-    uintptr_t start = uintptr_t(segmentBase + codeRange.begin());
-    uintptr_t size = codeRange.end() - codeRange.begin();
-
-    UTF8Bytes name;
-    bool ok;
-    if (codeMetaForAsmJS) {
-      ok = codeMetaForAsmJS->getFuncNameForAsmJS(codeRange.funcIndex(), &name);
-    } else {
-      ok = codeMeta.getFuncNameForWasm(NameContext::Standalone,
-                                       codeRange.funcIndex(), &name);
-    }
-    if (!ok) {
-      return;
-    }
-
-    // Avoid "unused" warnings
-    (void)start;
-    (void)size;
-
-    if (PerfEnabled()) {
-      const char* file = codeMeta.scriptedCaller().filename.get();
-      if (codeRange.isFunction()) {
-        if (!name.append('\0')) {
-          return;
-        }
-        CollectPerfSpewerWasmFunctionMap(
-            start, size, file,
-            codeMeta.funcBytecodeOffset(codeRange.funcIndex()), name.begin());
-      } else if (codeRange.isInterpEntry()) {
-        if (!AppendToString(" slow entry", &name)) {
-          return;
-        }
-        CollectPerfSpewerWasmMap(start, size, file, name.begin());
-      } else if (codeRange.isJitEntry()) {
-        if (!AppendToString(" fast entry", &name)) {
-          return;
-        }
-        CollectPerfSpewerWasmMap(start, size, file, name.begin());
-      } else if (codeRange.isImportInterpExit()) {
-        if (!AppendToString(" slow exit", &name)) {
-          return;
-        }
-        CollectPerfSpewerWasmMap(start, size, file, name.begin());
-      } else if (codeRange.isImportJitExit()) {
-        if (!AppendToString(" fast exit", &name)) {
-          return;
-        }
-        CollectPerfSpewerWasmMap(start, size, file, name.begin());
-      } else {
-        MOZ_CRASH("unhandled perf hasFuncIndex type");
-      }
-    }
-#ifdef MOZ_VTUNE
-    if (!vtune::IsProfilingActive()) {
-      continue;
-    }
-    if (!codeRange.isFunction()) {
-      continue;
-    }
-    if (!name.append('\0')) {
-      return;
-    }
-    vtune::MarkWasm(vtune::GenerateUniqueMethodID(), name.begin(), (void*)start,
-                    size);
-#endif
-  }
+  // Otherwise we can just use the standard JIT code alignment.
+  return jit::CodeAlignment;
 }
 
-bool CodeSegment::linkAndMakeExecutableSubRange(
-    jit::AutoMarkJitCodeWritableForThread& writable, const LinkData& linkData,
-    const Code* maybeCode, uint8_t* pageStart, uint8_t* codeStart,
-    uint32_t codeLength) {
-  // See ASCII art at CodeSegment::createFromMasmWithBumpAlloc (implementation)
-  // for the meaning of pageStart/codeStart/fuzz/codeLength.
-  MOZ_ASSERT(CodeSegment::IsPageAligned(uintptr_t(pageStart)));
-  MOZ_ASSERT(codeStart >= pageStart);
-  MOZ_ASSERT(codeStart - pageStart < ptrdiff_t(CodeSegment::PageSize()));
-  uint32_t fuzz = codeStart - pageStart;
-  if (!StaticallyLink(writable, codeStart, linkData, maybeCode)) {
-    return false;
+size_t CodeSegment::AlignAllocationBytes(uintptr_t bytes) {
+  return AlignBytes(bytes, AllocationAlignment());
+}
+
+bool CodeSegment::IsAligned(uintptr_t bytes) {
+  return bytes == AlignAllocationBytes(bytes);
+}
+
+bool CodeSegment::hasSpace(size_t bytes) const {
+  MOZ_ASSERT(CodeSegment::IsAligned(bytes));
+  return bytes <= capacityBytes() && lengthBytes_ <= capacityBytes() - bytes;
+}
+
+void CodeSegment::claimSpace(size_t bytes, uint8_t** claimedBase) {
+  MOZ_RELEASE_ASSERT(hasSpace(bytes));
+  *claimedBase = base() + lengthBytes_;
+  lengthBytes_ += bytes;
+}
+
+/* static */
+SharedCodeSegment CodeSegment::create(
+    mozilla::Maybe<jit::AutoMarkJitCodeWritableForThread>& writable,
+    size_t capacityBytes, bool allowLastDitchGC) {
+  MOZ_RELEASE_ASSERT(capacityBytes ==
+                     RoundupExecutableCodePageSize(capacityBytes));
+
+  UniqueCodeBytes codeBytes;
+  if (capacityBytes != 0) {
+    codeBytes = AllocateCodeBytes(writable, capacityBytes, allowLastDitchGC);
+    if (!codeBytes) {
+      return nullptr;
+    }
   }
+
+  return js_new<CodeSegment>(std::move(codeBytes), /*lengthBytes=*/0,
+                             capacityBytes);
+}
+
+// When allocating a single stub to a page, we should not always place the stub
+// at the beginning of the page as the stubs will tend to thrash the icache by
+// creating conflicts (everything ends up in the same cache set).  Instead,
+// locate stubs at different line offsets up to 3/4 the system page size (the
+// code allocation quantum).
+//
+// This may be called on background threads, hence the atomic.
+static uint32_t RandomPaddingForCodeLength(uint32_t codeLength) {
+  // The counter serves only to spread the code out, it has no other meaning and
+  // can wrap around.
+  static mozilla::Atomic<uint32_t, mozilla::MemoryOrdering::ReleaseAcquire>
+      counter(0);
+  // We assume that the icache line size is 64 bytes, which is close to
+  // universally true.
+  const size_t cacheLineSize = 64;
+  const size_t systemPageSize = gc::SystemPageSize();
+
+  // If we're not write-protecting code, then we do not need to add any padding
+  if (!JitOptions.writeProtectCode) {
+    return 0;
+  }
+
+  // Don't add more than 3/4 of a page of padding
+  size_t maxPadBytes = ((systemPageSize * 3) / 4);
+  size_t maxPadLines = maxPadBytes / cacheLineSize;
+
+  // If code length is close to a page boundary, avoid pushing it to a new page
+  size_t remainingBytesInPage =
+      AlignBytes(codeLength, systemPageSize) - codeLength;
+  size_t remainingLinesInPage = remainingBytesInPage / cacheLineSize;
+
+  // Limit padding to the smallest of the above
+  size_t padLinesAvailable = std::min(maxPadLines, remainingLinesInPage);
+
+  // Don't add any padding if none is available
+  if (padLinesAvailable == 0) {
+    return 0;
+  }
+
+  uint32_t random = counter++;
+  uint32_t padding = (random % padLinesAvailable) * cacheLineSize;
+  // "adding on the padding area doesn't change the total number of pages
+  //  required"
+  MOZ_ASSERT(AlignBytes(codeLength + padding, systemPageSize) ==
+             AlignBytes(codeLength, systemPageSize));
+  return padding;
+}
+
+/* static */
+SharedCodeSegment CodeSegment::allocate(const CodeSource& codeSource,
+                                        SharedCodeSegmentVector* segmentPool,
+                                        bool allowLastDitchGC,
+                                        uint8_t** codeStart,
+                                        uint32_t* allocationLength) {
+  mozilla::Maybe<AutoMarkJitCodeWritableForThread> writable;
+  uint32_t codeLength = codeSource.lengthBytes();
+  uint32_t paddingLength = RandomPaddingForCodeLength(codeLength);
+  *allocationLength =
+      CodeSegment::AlignAllocationBytes(paddingLength + codeLength);
+
+  // If we have a pool of segments, try to find one that has enough space. We
+  // just check the last segment in the pool for simplicity.
+  SharedCodeSegment segment;
+  if (segmentPool && !segmentPool->empty() &&
+      segmentPool->back()->hasSpace(*allocationLength)) {
+    segment = segmentPool->back();
+  } else {
+    uint32_t newSegmentCapacity =
+        RoundupExecutableCodePageSize(*allocationLength);
+    segment =
+        CodeSegment::create(writable, newSegmentCapacity, allowLastDitchGC);
+    if (!segment) {
+      return nullptr;
+    }
+    if (segmentPool && !segmentPool->append(segment)) {
+      return nullptr;
+    }
+  }
+
+  // Claim space in the segment we found or created
+  uint8_t* allocationStart = nullptr;
+  segment->claimSpace(*allocationLength, &allocationStart);
+  *codeStart = allocationStart + paddingLength;
+
+  // Check our constraints
+  MOZ_ASSERT(CodeSegment::IsAligned(uintptr_t(segment->base())));
+  MOZ_ASSERT(CodeSegment::IsAligned(allocationStart - segment->base()));
+  MOZ_ASSERT(CodeSegment::IsAligned(uintptr_t(allocationStart)));
+  MOZ_ASSERT(*codeStart >= allocationStart);
+  MOZ_ASSERT(codeLength <= *allocationLength);
+  MOZ_ASSERT_IF(JitOptions.writeProtectCode,
+                uintptr_t(allocationStart) % gc::SystemPageSize() == 0 &&
+                    *allocationLength % gc::SystemPageSize() == 0);
+  MOZ_ASSERT(uintptr_t(*codeStart) % jit::CodeAlignment == 0);
+
+  if (!writable) {
+    writable.emplace();
+  }
+  if (!codeSource.copyAndLink(*writable, *codeStart)) {
+    return nullptr;
+  }
+
+  // Clear the padding between the end of the code and the end of the
+  // allocation.
+  uint8_t* allocationEnd = allocationStart + *allocationLength;
+  uint8_t* codeEnd = *codeStart + codeLength;
+  MOZ_ASSERT(codeEnd <= allocationEnd);
+  size_t paddingAfterCode = allocationEnd - codeEnd;
+  // The swept code pattern is guaranteed to crash if it is ever executed.
+  memset(codeEnd, JS_SWEPT_CODE_PATTERN, paddingAfterCode);
 
   // Optimized compilation finishes on a background thread, so we must make sure
   // to flush the icaches of all the executing threads.
   // Reprotect the whole region to avoid having separate RW and RX mappings.
-  return ExecutableAllocator::makeExecutableAndFlushICache(pageStart,
-                                                           fuzz + codeLength);
-}
-
-bool CodeSegment::linkAndMakeExecutable(
-    jit::AutoMarkJitCodeWritableForThread& writable, const LinkData& linkData,
-    const Code* maybeCode) {
-  MOZ_ASSERT(base() == bytes_.get());
-  return linkAndMakeExecutableSubRange(
-      writable, linkData, maybeCode,
-      /*pageStart=*/base(), /*codeStart=*/base(),
-      /*codeLength=*/RoundupCodeLength(lengthBytes()));
-}
-
-/* static */
-SharedCodeSegment CodeSegment::createEmpty(size_t capacityBytes,
-                                           bool allowLastDitchGC) {
-  uint32_t codeLength = 0;
-  uint32_t codeCapacity = RoundupCodeLength(capacityBytes);
-  Maybe<AutoMarkJitCodeWritableForThread> writable;
-  UniqueCodeBytes codeBytes =
-      AllocateCodeBytes(writable, codeCapacity, allowLastDitchGC);
-  if (!codeBytes) {
+  if (*allocationLength != 0 &&
+      !ExecutableAllocator::makeExecutableAndFlushICache(allocationStart,
+                                                         *allocationLength)) {
     return nullptr;
   }
 
-  return js_new<CodeSegment>(std::move(codeBytes), codeLength, codeCapacity);
-}
-
-/* static */
-SharedCodeSegment CodeSegment::createFromMasm(MacroAssembler& masm,
-                                              const LinkData& linkData,
-                                              const Code* maybeCode,
-                                              bool allowLastDitchGC) {
-  uint32_t codeLength = masm.bytesNeeded();
-  if (codeLength == 0) {
-    return js_new<CodeSegment>(nullptr, 0, 0);
-  }
-
-  uint32_t codeCapacity = RoundupCodeLength(codeLength);
-  Maybe<AutoMarkJitCodeWritableForThread> writable;
-  UniqueCodeBytes codeBytes =
-      AllocateCodeBytes(writable, codeCapacity, allowLastDitchGC);
-  if (!codeBytes) {
-    return nullptr;
-  }
-
-  masm.executableCopy(codeBytes.get());
-
-  SharedCodeSegment segment =
-      js_new<CodeSegment>(std::move(codeBytes), codeLength, codeCapacity);
-  if (!segment ||
-      !segment->linkAndMakeExecutable(*writable, linkData, maybeCode)) {
-    return nullptr;
-  }
-
-  return segment;
-}
-
-/* static */
-SharedCodeSegment CodeSegment::createFromBytes(const uint8_t* unlinkedBytes,
-                                               size_t unlinkedBytesLength,
-                                               const LinkData& linkData,
-                                               bool allowLastDitchGC) {
-  uint32_t codeLength = unlinkedBytesLength;
-  if (codeLength == 0) {
-    return js_new<CodeSegment>(nullptr, 0, 0);
-  }
-
-  uint32_t codeCapacity = RoundupCodeLength(codeLength);
-  Maybe<AutoMarkJitCodeWritableForThread> writable;
-  UniqueCodeBytes codeBytes =
-      AllocateCodeBytes(writable, codeLength, allowLastDitchGC);
-  if (!codeBytes) {
-    return nullptr;
-  }
-
-  memcpy(codeBytes.get(), unlinkedBytes, unlinkedBytesLength);
-
-  SharedCodeSegment segment =
-      js_new<CodeSegment>(std::move(codeBytes), codeLength, codeCapacity);
-  if (!segment ||
-      !segment->linkAndMakeExecutable(*writable, linkData, nullptr)) {
-    return nullptr;
-  }
-  return segment;
-}
-
-// Helper for Code::createManyLazyEntryStubs
-// and CodeSegment::createFromMasmWithBumpAlloc
-SharedCodeSegment js::wasm::AllocateCodePagesFrom(
-    SharedCodeSegmentVector& lazySegments, uint32_t bytesNeeded,
-    bool allowLastDitchGC, size_t* offsetInSegment,
-    size_t* roundedUpAllocationSize) {
-  size_t codeLength = CodeSegment::PageRoundup(bytesNeeded);
-
-  if (lazySegments.length() == 0 ||
-      !lazySegments[lazySegments.length() - 1]->hasSpace(codeLength)) {
-    SharedCodeSegment newSegment =
-        CodeSegment::createEmpty(codeLength, allowLastDitchGC);
-    if (!newSegment) {
-      return nullptr;
-    }
-    if (!lazySegments.emplaceBack(std::move(newSegment))) {
-      return nullptr;
-    }
-  }
-
-  MOZ_ASSERT(lazySegments.length() > 0);
-  CodeSegment* segment = lazySegments[lazySegments.length() - 1].get();
-
-  uint8_t* codePtr = nullptr;
-  segment->claimSpace(codeLength, &codePtr);
-  *offsetInSegment = codePtr - segment->base();
-  if (roundedUpAllocationSize) {
-    *roundedUpAllocationSize = codeLength;
-  }
-  return segment;
-}
-
-// Note, this allocates from `code->lazyFuncSegments` only, not from
-// `code->lazyStubSegments`.
-/* static */
-SharedCodeSegment CodeSegment::createFromMasmWithBumpAlloc(
-    jit::MacroAssembler& masm, const LinkData& linkData, const Code* code,
-    bool allowLastDitchGC, uint8_t** codeStartOut, uint32_t* codeLengthOut,
-    uint32_t* metadataBiasOut) {
-  // Here's a picture that illustrates the relationship of the various
-  // variables.  This is an example for a machine with a 4KB page size, for an
-  // allocation ("CODE") which requires more than one page but less than two,
-  // in a Segment where the first page is already allocated.
-  //
-  // segment->base() (aligned at 4K = hardware page size)
-  // :
-  // :                      +4k                     +8k                    +12k
-  // :                       :                       :                       :
-  // +-----------------------+         +---------------------------------+   :
-  // |        IN USE         |         |   CODE              CODE        |   :
-  // +-----------------------+---------+---------------------------------+---+
-  // .                       .         .                                 .
-  // :    offsetInSegment    :  fuzz   :           codeLength            :
-  // :<--------------------->:<------->:<------------------------------->:
-  // :                       :         :                                 :
-  // :                       :         :     requestLength               :
-  // :                       :<----------------------------------------->:
-  // :                       :         :
-  // :          metadataBias           :
-  // :<------------------------------->:
-  //                         :         :
-  //                         :         codeStart
-  //                         :
-  //                         pageStart
-
-  // Values to be computed
-  SharedCodeSegment segment;
-  uint32_t requestLength;
-  uint8_t* pageStart;
-  uint8_t* codeStart;
-
-  // We have to allocate an integral number of hardware pages.  Hence it's very
-  // likely there will be space left over at the end of the last page, in which
-  // case we can move the real start point of the code forward a bit, so as to
-  // spread it out over more icache sets.  We'll compute the required movement
-  // into `fuzz`.
-  uint32_t fuzz;
-
-  // The number of bytes that we need, really.
-  uint32_t codeLength = masm.bytesNeeded();
-
-  {
-    auto guard = code->data().writeLock();
-
-    // Figure out the maximum number of instruction cache lines the allocation
-    // can be moved forwards from the start of a page, whilst not pushing the
-    // end of it into a new page.  Then choose `fuzz` pseudo-randomly on that
-    // basis.  We assume that the icache line size is 64 bytes, which is close
-    // to universally true.
-    const uint32_t cacheLineSize = 64;
-    int32_t bytesUnusedAtEndOfPage =
-        int32_t(CodeSegment::PageRoundup(codeLength) - codeLength);
-    MOZ_RELEASE_ASSERT(bytesUnusedAtEndOfPage >= 0 &&
-                       bytesUnusedAtEndOfPage <
-                           int32_t(CodeSegment::PageSize()));
-    uint32_t fuzzLinesAvailable =
-        uint32_t(bytesUnusedAtEndOfPage) / cacheLineSize;
-    // But don't overdo it (important if hardware page size is > 4k)
-    if (fuzzLinesAvailable > 63) {
-      fuzzLinesAvailable = 63;
-    }
-    // And so choose `fuzz` accordingly.
-    fuzz = guard->simplePRNG.get11RandomBits() % (fuzzLinesAvailable + 1);
-    fuzz *= cacheLineSize;
-
-    requestLength = fuzz + codeLength;
-    // "adding on the fuzz area doesn't change the total number of pages
-    //  required"
-    MOZ_RELEASE_ASSERT(CodeSegment::PageRoundup(requestLength) ==
-                       CodeSegment::PageRoundup(codeLength));
-
-    // Find a CodeSegment that has enough space
-    size_t offsetInSegment = 0;
-    segment = AllocateCodePagesFrom(guard->lazyFuncSegments, requestLength,
-                                    allowLastDitchGC, &offsetInSegment,
-                                    /*roundedUpAllocationSize=*/nullptr);
-    if (!segment) {
-      return nullptr;
-    }
-    MOZ_ASSERT(CodeSegment::IsPageAligned(uintptr_t(segment->base())));
-    MOZ_ASSERT(CodeSegment::IsPageAligned(offsetInSegment));
-
-    pageStart = segment->base() + offsetInSegment;
-    codeStart = pageStart + fuzz;
-  }
-
-  Maybe<AutoMarkJitCodeWritableForThread> writable;
-  writable.emplace();
-
-  masm.executableCopy(codeStart);
-  if (!segment->linkAndMakeExecutableSubRange(
-          *writable, linkData, code, pageStart, codeStart, codeLength)) {
-    return nullptr;
-  }
-
-  *codeStartOut = codeStart;
-  *codeLengthOut = codeLength;
-  *metadataBiasOut = codeStart - segment->base();
   return segment;
 }
 
@@ -537,30 +406,6 @@ void CodeSegment::addSizeOfMisc(MallocSizeOf mallocSizeOf, size_t* code,
 
 size_t CacheableChars::sizeOfExcludingThis(MallocSizeOf mallocSizeOf) const {
   return mallocSizeOf(get());
-}
-
-// When allocating a single stub to a page, we should not always place the stub
-// at the beginning of the page as the stubs will tend to thrash the icache by
-// creating conflicts (everything ends up in the same cache set).  Instead,
-// locate stubs at different line offsets up to 3/4 the system page size (the
-// code allocation quantum).
-//
-// This may be called on background threads, hence the atomic.
-
-static void PadCodeForSingleStub(MacroAssembler& masm) {
-  // Assume 64B icache line size
-  static uint8_t zeroes[64];
-
-  // The counter serves only to spread the code out, it has no other meaning and
-  // can wrap around.
-  static mozilla::Atomic<uint32_t, mozilla::MemoryOrdering::ReleaseAcquire>
-      counter(0);
-
-  uint32_t maxPadLines = ((gc::SystemPageSize() * 3) / 4) / sizeof(zeroes);
-  uint32_t padLines = counter++ % maxPadLines;
-  for (uint32_t i = 0; i < padLines; i++) {
-    masm.appendRawCode(zeroes, sizeof(zeroes));
-  }
 }
 
 static constexpr unsigned LAZY_STUB_LIFO_DEFAULT_CHUNK_SIZE = 8 * 1024;
@@ -576,12 +421,8 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
   JitContext jitContext;
   WasmMacroAssembler masm(alloc);
 
-  if (funcExportIndices.length() == 1) {
-    PadCodeForSingleStub(masm);
-  }
-
   const FuncExportVector& funcExports = tierCodeBlock.funcExports;
-  uint8_t* segmentBase = tierCodeBlock.segment->base();
+  uint8_t* codeBase = tierCodeBlock.base();
 
   CodeRangeVector codeRanges;
   DebugOnly<uint32_t> numExpectedRanges = 0;
@@ -591,7 +432,7 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
     // Exports that don't support a jit entry get only the interp entry.
     numExpectedRanges += (funcType.canHaveJitEntry() ? 2 : 1);
     void* calleePtr =
-        segmentBase + tierCodeBlock.codeRange(fe).funcUncheckedCallEntry();
+        codeBase + tierCodeBlock.codeRange(fe).funcUncheckedCallEntry();
     Maybe<ImmPtr> callee;
     callee.emplace(calleePtr, ImmPtr::NoCheckToken());
     if (!GenerateEntryStubs(masm, funcExportIndex, fe, funcType, callee,
@@ -604,6 +445,7 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
 
   masm.finish();
 
+  MOZ_ASSERT(masm.inliningContext().empty());
   MOZ_ASSERT(masm.callSites().empty());
   MOZ_ASSERT(masm.callSiteTargets().empty());
   MOZ_ASSERT(masm.trapSites().empty());
@@ -614,45 +456,39 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
     return false;
   }
 
-  size_t offsetInSegment = 0;
-  size_t codeLength = 0;
-  CodeSegment* segment =
-      AllocateCodePagesFrom(guard->lazyStubSegments, masm.bytesNeeded(),
-                            /* allowLastDitchGC = */ true, &offsetInSegment,
-                            &codeLength)
-          .get();
-  if (!segment) {
-    return false;
-  }
-  uint8_t* codePtr = segment->base() + offsetInSegment;
-  MOZ_ASSERT(CodeSegment::IsPageAligned(codeLength));
-
   UniqueCodeBlock stubCodeBlock =
       MakeUnique<CodeBlock>(CodeBlockKind::LazyStubs);
   if (!stubCodeBlock) {
     return false;
   }
-  stubCodeBlock->segment = segment;
-  stubCodeBlock->codeBase = codePtr;
-  stubCodeBlock->codeLength = codeLength;
-  stubCodeBlock->codeRanges = std::move(codeRanges);
 
-  {
-    AutoMarkJitCodeWritableForThread writable;
-    masm.executableCopy(codePtr);
-    PatchDebugSymbolicAccesses(codePtr, masm);
-    memset(codePtr + masm.bytesNeeded(), 0, codeLength - masm.bytesNeeded());
-
-    for (const CodeLabel& label : masm.codeLabels()) {
-      Assembler::Bind(codePtr, label);
-    }
-  }
-
-  if (!ExecutableAllocator::makeExecutableAndFlushICache(codePtr, codeLength)) {
+  // Allocate space in a code segment we can use
+  uint32_t codeLength = masm.bytesNeeded();
+  uint8_t* codeStart;
+  uint32_t allocationLength;
+  CodeSource codeSource(masm, nullptr, nullptr);
+  stubCodeBlock->segment = CodeSegment::allocate(
+      codeSource, &guard->lazyStubSegments,
+      /* allowLastDitchGC = */ false, &codeStart, &allocationLength);
+  if (!stubCodeBlock->segment) {
     return false;
   }
 
+  stubCodeBlock->codeBase = codeStart;
+  stubCodeBlock->codeLength = codeLength;
+  stubCodeBlock->codeRanges = std::move(codeRanges);
+
   *stubBlockIndex = guard->blocks.length();
+
+  if (!guard->lazyExports.reserve(guard->lazyExports.length() +
+                                  funcExportIndices.length()) ||
+      !addCodeBlock(guard, std::move(stubCodeBlock), nullptr)) {
+    return false;
+  }
+
+  // Everything after this point must be guaranteed to succeed. A failure after
+  // this point can leave things in an inconsistent state, and be observed if we
+  // retry to create a lazy stub.
 
   uint32_t codeRangeIndex = 0;
   for (uint32_t funcExportIndex : funcExportIndices) {
@@ -662,22 +498,10 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
     LazyFuncExport lazyExport(fe.funcIndex(), *stubBlockIndex, codeRangeIndex,
                               tierCodeBlock.kind);
 
-    // Offset the code range for the interp entry to where it landed in the
-    // segment.
-    CodeRange& interpRange = stubCodeBlock->codeRanges[codeRangeIndex];
-    MOZ_ASSERT(interpRange.isInterpEntry());
-    MOZ_ASSERT(interpRange.funcIndex() == fe.funcIndex());
-    interpRange.offsetBy(offsetInSegment);
     codeRangeIndex += 1;
 
-    // Offset the code range for the jit entry (if any) to where it landed in
-    // the segment.
     if (funcType.canHaveJitEntry()) {
-      CodeRange& jitRange = stubCodeBlock->codeRanges[codeRangeIndex];
-      MOZ_ASSERT(jitRange.isJitEntry());
-      MOZ_ASSERT(jitRange.funcIndex() == fe.funcIndex());
       codeRangeIndex += 1;
-      jitRange.offsetBy(offsetInSegment);
     }
 
     size_t exportIndex;
@@ -694,14 +518,17 @@ bool Code::createManyLazyEntryStubs(const WriteGuard& guard,
       MOZ_ASSERT(oldKind == CodeBlockKind::SharedStubs ||
                  oldKind == CodeBlockKind::BaselineTier);
       guard->lazyExports[exportIndex] = std::move(lazyExport);
-    } else if (!guard->lazyExports.insert(
-                   guard->lazyExports.begin() + exportIndex,
-                   std::move(lazyExport))) {
-      return false;
+    } else {
+      // We reserved memory earlier, this should not fail.
+      MOZ_RELEASE_ASSERT(guard->lazyExports.insert(
+          guard->lazyExports.begin() + exportIndex, std::move(lazyExport)));
     }
   }
 
-  return addCodeBlock(guard, std::move(stubCodeBlock), nullptr);
+  guard->blocks[*stubBlockIndex]->sendToProfiler(
+      *codeMeta_, *codeTailMeta_, codeMetaForAsmJS_, FuncIonPerfSpewerSpan(),
+      FuncBaselinePerfSpewerSpan());
+  return true;
 }
 
 bool Code::createOneLazyEntryStub(const WriteGuard& guard,
@@ -720,7 +547,6 @@ bool Code::createOneLazyEntryStub(const WriteGuard& guard,
   }
 
   const CodeBlock& block = *guard->blocks[stubBlockIndex];
-  const CodeSegment& segment = *block.segment;
   const CodeRangeVector& codeRanges = block.codeRanges;
 
   const FuncExport& fe = tierCodeBlock.funcExports[funcExportIndex];
@@ -734,7 +560,7 @@ bool Code::createOneLazyEntryStub(const WriteGuard& guard,
   const CodeRange& interpRange =
       codeRanges[codeRanges.length() - funcEntryRanges];
   MOZ_ASSERT(interpRange.isInterpEntry());
-  *interpEntry = segment.base() + interpRange.begin();
+  *interpEntry = block.base() + interpRange.begin();
 
   // The second created range is the jit entry
   if (funcType.canHaveJitEntry()) {
@@ -742,7 +568,7 @@ bool Code::createOneLazyEntryStub(const WriteGuard& guard,
         codeRanges[codeRanges.length() - funcEntryRanges + 1];
     MOZ_ASSERT(jitRange.isJitEntry());
     jumpTables_.setJitEntry(jitRange.funcIndex(),
-                            segment.base() + jitRange.begin());
+                            block.base() + jitRange.begin());
   }
   return true;
 }
@@ -756,19 +582,39 @@ bool Code::getOrCreateInterpEntry(uint32_t funcIndex,
 
   const FuncExport& fe = **funcExport;
   if (fe.hasEagerStubs()) {
-    *interpEntry = codeBlock.segment->base() + fe.eagerInterpEntryOffset();
+    *interpEntry = codeBlock.base() + fe.eagerInterpEntryOffset();
     return true;
   }
 
   MOZ_ASSERT(!codeMetaForAsmJS_, "only wasm can lazily export functions");
 
-  auto guard = data_.writeLock();
-  *interpEntry = lookupLazyInterpEntry(guard, funcIndex);
-  if (*interpEntry) {
+  auto tryGetOrCreate = [&]() -> bool {
+    auto guard = data_.writeLock();
+    *interpEntry = lookupLazyInterpEntry(guard, funcIndex);
+    if (*interpEntry) {
+      return true;
+    }
+
+    return createOneLazyEntryStub(guard, funcExportIndex, codeBlock,
+                                  interpEntry);
+  };
+
+  // Try to get or create the interpreter entry.
+  if (tryGetOrCreate()) {
     return true;
   }
 
-  return createOneLazyEntryStub(guard, funcExportIndex, codeBlock, interpEntry);
+  // The allocation failed. Release the lock and try a last-ditch GC before
+  // retrying, to avoid a mutex ordering violation between WasmCodeProtected
+  // and GlobalHelperThreadState.
+  if (!OnLargeAllocationFailure) {
+    return false;
+  }
+  OnLargeAllocationFailure();
+
+  // Try again. We need to redo the lookup too in the case that someone is
+  // racing with us.
+  return tryGetOrCreate();
 }
 
 bool Code::createTier2LazyEntryStubs(const WriteGuard& guard,
@@ -821,19 +667,16 @@ class Module::PartialTier2CompileTaskImpl : public PartialTier2CompileTask {
     if (!cancelled_) {
       AutoUnlockHelperThreadState unlock(locked);
 
-      // TODO: maybe have CompilePartialTier2 check `cancelled_` from time to
-      // time and return early if it is set?  See bug 1911060.
-      UniqueChars error;
-      bool success = CompilePartialTier2(*code_, funcIndex_, &error);
-
-      // FIXME: In the case `!success && !cancelled_`, compilation has failed
+      // In the case `!success && !cancelled_`, compilation has failed
       // and this function will be stuck in state TierUpState::Requested
-      // forever.  See bug 1911060.
-
+      // forever.
+      UniqueChars error;
       UniqueCharsVector warnings;
-      ReportTier2ResultsOffThread(success, mozilla::Some(funcIndex_),
-                                  code_->codeMeta().scriptedCaller(), error,
-                                  warnings);
+      bool success = CompilePartialTier2(*code_, funcIndex_, &error, &warnings,
+                                         &cancelled_);
+      ReportTier2ResultsOffThread(
+          cancelled_, success, mozilla::Some(funcIndex_),
+          code_->codeMeta().scriptedCaller(), error, warnings);
     }
 
     // The task is finished, release it.
@@ -845,15 +688,12 @@ class Module::PartialTier2CompileTaskImpl : public PartialTier2CompileTask {
   }
 };
 
+// The caller must call tryClaimTierUp() before.
 bool Code::requestTierUp(uint32_t funcIndex) const {
   // Note: this runs on the requesting (wasm-running) thread, not on a
   // compilation-helper thread.
-  MOZ_ASSERT(mode_ == CompileMode::LazyTiering);
-  FuncState& state = funcStates_[funcIndex - codeMeta_->numFuncImports];
-  if (!state.tierUpState.compareExchange(TierUpState::NotRequested,
-                                         TierUpState::Requested)) {
-    return true;
-  }
+  MOZ_ASSERT(funcStates_[funcIndex - codeMeta_->numFuncImports].tierUpState ==
+             TierUpState::Requested);
 
   auto task =
       js::MakeUnique<Module::PartialTier2CompileTaskImpl>(*this, funcIndex);
@@ -868,7 +708,8 @@ bool Code::requestTierUp(uint32_t funcIndex) const {
 }
 
 bool Code::finishTier2(UniqueCodeBlock tier2CodeBlock,
-                       UniqueLinkData tier2LinkData) const {
+                       UniqueLinkData tier2LinkData,
+                       const CompileAndLinkStats& tier2Stats) const {
   MOZ_RELEASE_ASSERT(mode_ == CompileMode::EagerTiering ||
                      mode_ == CompileMode::LazyTiering);
   MOZ_RELEASE_ASSERT(hasCompleteTier2_ == false &&
@@ -878,6 +719,9 @@ bool Code::finishTier2(UniqueCodeBlock tier2CodeBlock,
   CodeBlock* tier2CodePointer;
   {
     auto guard = data_.writeLock();
+
+    // Record the tier2 stats.
+    guard->tier2Stats.merge(tier2Stats);
 
     // Borrow the tier2 pointer before moving it into the block vector. This
     // ensures we maintain the invariant that completeTier2_ is never read if
@@ -931,12 +775,11 @@ bool Code::finishTier2(UniqueCodeBlock tier2CodeBlock,
     // Update jump vectors with pointers to tier-2 lazy entry stubs, if any.
     if (stub2Index) {
       const CodeBlock& block = *guard->blocks[*stub2Index];
-      const CodeSegment& segment = *block.segment;
       for (const CodeRange& cr : block.codeRanges) {
         if (!cr.isJitEntry()) {
           continue;
         }
-        jumpTables_.setJitEntry(cr.funcIndex(), segment.base() + cr.begin());
+        jumpTables_.setJitEntry(cr.funcIndex(), block.base() + cr.begin());
       }
     }
   }
@@ -944,7 +787,7 @@ bool Code::finishTier2(UniqueCodeBlock tier2CodeBlock,
   // And we update the jump vectors with pointers to tier-2 functions and eager
   // stubs.  Callers will continue to invoke tier-1 code until, suddenly, they
   // will invoke tier-2 code.  This is benign.
-  uint8_t* base = tier2CodePointer->segment->base();
+  uint8_t* base = tier2CodePointer->base();
   for (const CodeRange& cr : tier2CodePointer->codeRanges) {
     // These are racy writes that we just want to be visible, atomically,
     // eventually.  All hardware we care about will do this right.  But
@@ -968,10 +811,70 @@ bool Code::addCodeBlock(const WriteGuard& guard, UniqueCodeBlock block,
 
   CodeBlock* blockPtr = block.get();
   size_t codeBlockIndex = guard->blocks.length();
-  return guard->blocks.append(std::move(block)) &&
-         guard->blocksLinkData.append(std::move(maybeLinkData)) &&
-         blockMap_.insert(blockPtr) &&
-         blockPtr->initialize(*this, codeBlockIndex);
+
+  if (!guard->blocks.reserve(guard->blocks.length() + 1) ||
+      !guard->blocksLinkData.reserve(guard->blocksLinkData.length() + 1)) {
+    return false;
+  }
+
+  // If anything fails here, be careful to reset our state back so that we are
+  // not in an inconsistent state.
+  if (!blockPtr->initialize(*this, codeBlockIndex)) {
+    return false;
+  }
+
+  if (!blockMap_.insert(blockPtr)) {
+    // We don't need to deinitialize the blockPtr, because that will be
+    // automatically handled by its destructor.
+    return false;
+  }
+
+  guard->blocks.infallibleAppend(std::move(block));
+  guard->blocksLinkData.infallibleAppend(std::move(maybeLinkData));
+
+  return true;
+}
+
+SharedCodeSegment Code::createFuncCodeSegmentFromPool(
+    jit::MacroAssembler& masm, const LinkData& linkData, bool allowLastDitchGC,
+    uint8_t** codeStartOut, uint32_t* codeLengthOut) const {
+  uint32_t codeLength = masm.bytesNeeded();
+
+  auto tryAllocate = [&]() -> SharedCodeSegment {
+    auto guard = data_.writeLock();
+
+    uint8_t* codeStart;
+    uint32_t allocationLength;
+    CodeSource codeSource(masm, &linkData, this);
+    SharedCodeSegment result = CodeSegment::allocate(
+        codeSource, &guard->lazyFuncSegments,
+        /* allowLastDitchGC = */ false, &codeStart, &allocationLength);
+
+    if (!result) {
+      return nullptr;
+    }
+
+    *codeStartOut = codeStart;
+    *codeLengthOut = codeLength;
+    guard->tier2Stats.codeBytesMapped += allocationLength;
+    guard->tier2Stats.codeBytesUsed += codeLength;
+    return result;
+  };
+
+  // Try to allocate the code segment.
+  if (SharedCodeSegment segment = tryAllocate()) {
+    return segment;
+  }
+
+  // The allocation failed. Release the lock and try a last-ditch GC before
+  // retrying, to avoid a mutex ordering violation between WasmCodeProtected
+  // and GlobalHelperThreadState.
+  if (!allowLastDitchGC || !OnLargeAllocationFailure) {
+    return nullptr;
+  }
+
+  OnLargeAllocationFailure();
+  return tryAllocate();
 }
 
 const LazyFuncExport* Code::lookupLazyFuncExport(const WriteGuard& guard,
@@ -995,8 +898,7 @@ void* Code::lookupLazyInterpEntry(const WriteGuard& guard,
     return nullptr;
   }
   const CodeBlock& block = *guard->blocks[fe->lazyStubBlockIndex];
-  const CodeSegment& segment = *block.segment;
-  return segment.base() + block.codeRanges[fe->funcCodeRangeIndex].begin();
+  return block.base() + block.codeRanges[fe->funcCodeRangeIndex].begin();
 }
 
 CodeBlock::~CodeBlock() {
@@ -1010,9 +912,6 @@ bool CodeBlock::initialize(const Code& code, size_t codeBlockIndex) {
   this->code = &code;
   this->codeBlockIndex = codeBlockIndex;
   segment->setCode(code);
-
-  SendCodeRangesToProfiler(segment->base(), code.codeMeta(),
-                           code.codeMetaForAsmJS(), codeRanges);
 
   // In the case of tiering, RegisterCodeBlock() immediately makes this code
   // block live to access from other threads executing the containing
@@ -1030,30 +929,134 @@ bool CodeBlock::initialize(const Code& code, size_t codeBlockIndex) {
   return true;
 }
 
-void CodeBlock::offsetMetadataBy(uint32_t delta) {
-  if (delta == 0) {
+static JS::UniqueChars DescribeCodeRangeForProfiler(
+    const wasm::CodeMetadata& codeMeta,
+    const wasm::CodeTailMetadata& codeTailMeta,
+    const CodeMetadataForAsmJS* codeMetaForAsmJS, const CodeRange& codeRange,
+    CodeBlockKind codeBlockKind) {
+  uint32_t funcIndex = codeRange.funcIndex();
+  UTF8Bytes name;
+  bool ok;
+  if (codeMetaForAsmJS) {
+    ok = codeMetaForAsmJS->getFuncNameForAsmJS(funcIndex, &name);
+  } else {
+    ok = codeMeta.getFuncNameForWasm(NameContext::Standalone, funcIndex,
+                                     codeTailMeta.nameSectionPayload.get(),
+                                     &name);
+  }
+  if (!ok) {
+    return nullptr;
+  }
+  if (!name.append('\0')) {
+    return nullptr;
+  }
+
+  const char* category = "";
+  const char* filename = codeMeta.scriptedCaller().filename.get();
+  const char* suffix = "";
+  if (codeRange.isFunction()) {
+    category = "Wasm";
+    if (codeBlockKind == CodeBlockKind::BaselineTier) {
+      suffix = " [baseline]";
+    } else if (codeBlockKind == CodeBlockKind::OptimizedTier) {
+      suffix = " [optimized]";
+    }
+  } else if (codeRange.isInterpEntry()) {
+    category = "WasmTrampoline";
+    suffix = " slow entry";
+  } else if (codeRange.isJitEntry()) {
+    category = "WasmTrampoline";
+    suffix = " fast entry";
+  } else if (codeRange.isImportInterpExit()) {
+    category = "WasmTrampoline";
+    suffix = " slow exit";
+  } else if (codeRange.isImportJitExit()) {
+    category = "WasmTrampoline";
+    suffix = " fast exit";
+  }
+
+  return JS_smprintf("%s: %s: Function %s%s (WASM:%u)", category, filename,
+                     name.begin(), suffix, funcIndex);
+}
+
+void CodeBlock::sendToProfiler(
+    const CodeMetadata& codeMeta, const CodeTailMetadata& codeTailMeta,
+    const CodeMetadataForAsmJS* codeMetaForAsmJS,
+    FuncIonPerfSpewerSpan ionSpewers,
+    FuncBaselinePerfSpewerSpan baselineSpewers) const {
+  bool enabled = false;
+  enabled |= PerfEnabled();
+#ifdef MOZ_VTUNE
+  enabled |= vtune::IsProfilingActive();
+#endif
+  if (!enabled) {
     return;
   }
-  for (CodeRange& cr : codeRanges) {
-    cr.offsetBy(delta);
-  }
-  for (CallSite& cs : callSites) {
-    cs.offsetBy(delta);
-  }
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    for (TrapSite& ts : trapSites[trap]) {
-      ts.offsetBy(delta);
+
+  // We only ever have ion or baseline spewers, and they correspond with our
+  // code block kind.
+  MOZ_ASSERT(ionSpewers.empty() || baselineSpewers.empty());
+  MOZ_ASSERT_IF(kind == CodeBlockKind::BaselineTier, ionSpewers.empty());
+  MOZ_ASSERT_IF(kind == CodeBlockKind::OptimizedTier, baselineSpewers.empty());
+  bool hasSpewers = !ionSpewers.empty() || !baselineSpewers.empty();
+
+  // Save the collected Ion perf spewers with their IR/source information.
+  for (FuncIonPerfSpewer& funcIonSpewer : ionSpewers) {
+    const CodeRange& codeRange = this->codeRange(funcIonSpewer.funcIndex);
+    UniqueChars desc = DescribeCodeRangeForProfiler(
+        codeMeta, codeTailMeta, codeMetaForAsmJS, codeRange, kind);
+    if (!desc) {
+      return;
     }
+    uintptr_t start = uintptr_t(base() + codeRange.begin());
+    uintptr_t size = codeRange.end() - codeRange.begin();
+    funcIonSpewer.spewer.saveWasmProfile(start, size, desc);
   }
-  for (FuncExport& fe : funcExports) {
-    fe.offsetBy(delta);
+
+  // Save the collected baseline perf spewers with their IR/source information.
+  for (FuncBaselinePerfSpewer& funcBaselineSpewer : baselineSpewers) {
+    const CodeRange& codeRange = this->codeRange(funcBaselineSpewer.funcIndex);
+    UniqueChars desc = DescribeCodeRangeForProfiler(
+        codeMeta, codeTailMeta, codeMetaForAsmJS, codeRange, kind);
+    if (!desc) {
+      return;
+    }
+    uintptr_t start = uintptr_t(base() + codeRange.begin());
+    uintptr_t size = codeRange.end() - codeRange.begin();
+    funcBaselineSpewer.spewer.saveProfile(start, size, desc);
   }
-  stackMaps.offsetBy(delta);
-  for (TryNote& tn : tryNotes) {
-    tn.offsetBy(delta);
-  }
-  for (CodeRangeUnwindInfo& crui : codeRangeUnwindInfos) {
-    crui.offsetBy(delta);
+
+  // Save the rest of the code ranges.
+  for (const CodeRange& codeRange : codeRanges) {
+    if (!codeRange.hasFuncIndex()) {
+      continue;
+    }
+
+    // Skip functions when they have corresponding spewers, as they will have
+    // already handled the function.
+    if (codeRange.isFunction() && hasSpewers) {
+      continue;
+    }
+
+    UniqueChars desc = DescribeCodeRangeForProfiler(
+        codeMeta, codeTailMeta, codeMetaForAsmJS, codeRange, kind);
+    if (!desc) {
+      return;
+    }
+
+    uintptr_t start = uintptr_t(base() + codeRange.begin());
+    uintptr_t size = codeRange.end() - codeRange.begin();
+
+#ifdef MOZ_VTUNE
+    if (vtune::IsProfilingActive()) {
+      vtune::MarkWasm(vtune::GenerateUniqueMethodID(), desc.get(), (void*)start,
+                      size);
+    }
+#endif
+
+    if (PerfEnabled()) {
+      CollectPerfSpewerWasmMap(start, size, std::move(desc));
+    }
   }
 }
 
@@ -1062,6 +1065,7 @@ void CodeBlock::addSizeOfMisc(MallocSizeOf mallocSizeOf, size_t* code,
   segment->addSizeOfMisc(mallocSizeOf, code, data);
   *data += funcToCodeRange.sizeOfExcludingThis(mallocSizeOf) +
            codeRanges.sizeOfExcludingThis(mallocSizeOf) +
+           inliningContext.sizeOfExcludingThis(mallocSizeOf) +
            callSites.sizeOfExcludingThis(mallocSizeOf) +
            tryNotes.sizeOfExcludingThis(mallocSizeOf) +
            codeRangeUnwindInfos.sizeOfExcludingThis(mallocSizeOf) +
@@ -1072,38 +1076,23 @@ void CodeBlock::addSizeOfMisc(MallocSizeOf mallocSizeOf, size_t* code,
 }
 
 const CodeRange* CodeBlock::lookupRange(const void* pc) const {
-  CodeRange::OffsetInCode target((uint8_t*)pc - segment->base());
+  CodeRange::OffsetInCode target((uint8_t*)pc - base());
   return LookupInSorted(codeRanges, target);
 }
 
-struct CallSiteRetAddrOffset {
-  const CallSiteVector& callSites;
-  explicit CallSiteRetAddrOffset(const CallSiteVector& callSites)
-      : callSites(callSites) {}
-  uint32_t operator[](size_t index) const {
-    return callSites[index].returnAddressOffset();
-  }
-};
-
-const CallSite* CodeBlock::lookupCallSite(void* pc) const {
-  uint32_t target = ((uint8_t*)pc) - segment->base();
-  size_t lowerBound = 0;
-  size_t upperBound = callSites.length();
-
-  size_t match;
-  if (BinarySearch(CallSiteRetAddrOffset(callSites), lowerBound, upperBound,
-                   target, &match)) {
-    return &callSites[match];
-  }
-  return nullptr;
+bool CodeBlock::lookupCallSite(void* pc, CallSite* callSite) const {
+  uint32_t target = ((uint8_t*)pc) - base();
+  return callSites.lookup(target, inliningContext, callSite);
 }
 
 const StackMap* CodeBlock::lookupStackMap(uint8_t* pc) const {
-  return stackMaps.findMap(pc);
+  // We need to subtract the offset from the beginning of the codeblock.
+  uint32_t offsetInCodeBlock = pc - base();
+  return stackMaps.lookup(offsetInCodeBlock);
 }
 
 const wasm::TryNote* CodeBlock::lookupTryNote(const void* pc) const {
-  size_t target = (uint8_t*)pc - segment->base();
+  size_t target = (uint8_t*)pc - base();
 
   // We find the first hit (there may be multiple) to obtain the innermost
   // handler, which is why we cannot binary search here.
@@ -1116,30 +1105,10 @@ const wasm::TryNote* CodeBlock::lookupTryNote(const void* pc) const {
   return nullptr;
 }
 
-struct TrapSitePCOffset {
-  const TrapSiteVector& trapSites;
-  explicit TrapSitePCOffset(const TrapSiteVector& trapSites)
-      : trapSites(trapSites) {}
-  uint32_t operator[](size_t index) const { return trapSites[index].pcOffset; }
-};
-
-bool CodeBlock::lookupTrap(void* pc, Trap* trapOut,
-                           BytecodeOffset* bytecode) const {
-  uint32_t target = ((uint8_t*)pc) - segment->base();
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    const TrapSiteVector& trapSitesForKind = trapSites[trap];
-
-    size_t upperBound = trapSitesForKind.length();
-    size_t match;
-    if (BinarySearch(TrapSitePCOffset(trapSitesForKind), 0, upperBound, target,
-                     &match)) {
-      MOZ_ASSERT(containsCodePC(pc));
-      *trapOut = trap;
-      *bytecode = trapSitesForKind[match].bytecode;
-      return true;
-    }
-  }
-  return false;
+bool CodeBlock::lookupTrap(void* pc, Trap* kindOut, TrapSite* trapOut) const {
+  MOZ_ASSERT(containsCodePC(pc));
+  uint32_t target = ((uint8_t*)pc) - base();
+  return trapSites.lookup(target, inliningContext, kindOut, trapOut);
 }
 
 struct UnwindInfoPCOffset {
@@ -1150,7 +1119,7 @@ struct UnwindInfoPCOffset {
 };
 
 const CodeRangeUnwindInfo* CodeBlock::lookupUnwindInfo(void* pc) const {
-  uint32_t target = ((uint8_t*)pc) - segment->base();
+  uint32_t target = ((uint8_t*)pc) - base();
   size_t match;
   const CodeRangeUnwindInfo* info = nullptr;
   if (BinarySearch(UnwindInfoPCOffset(codeRangeUnwindInfos), 0,
@@ -1224,7 +1193,7 @@ bool JumpTables::initialize(CompileMode mode, const CodeMetadata& codeMeta,
     return false;
   }
 
-  uint8_t* codeBase = sharedStubs.segment->base();
+  uint8_t* codeBase = sharedStubs.base();
   for (const CodeRange& cr : sharedStubs.codeRanges) {
     if (cr.isFunction()) {
       setTieringEntry(cr.funcIndex(), codeBase + cr.funcTierEntry());
@@ -1233,7 +1202,7 @@ bool JumpTables::initialize(CompileMode mode, const CodeMetadata& codeMeta,
     }
   }
 
-  codeBase = tier1.segment->base();
+  codeBase = tier1.base();
   for (const CodeRange& cr : tier1.codeRanges) {
     if (cr.isFunction()) {
       setTieringEntry(cr.funcIndex(), codeBase + cr.funcTierEntry());
@@ -1245,10 +1214,12 @@ bool JumpTables::initialize(CompileMode mode, const CodeMetadata& codeMeta,
 }
 
 Code::Code(CompileMode mode, const CodeMetadata& codeMeta,
+           const CodeTailMetadata& codeTailMeta,
            const CodeMetadataForAsmJS* codeMetaForAsmJS)
     : mode_(mode),
       data_(mutexid::WasmCodeProtected),
       codeMeta_(&codeMeta),
+      codeTailMeta_(&codeTailMeta),
       codeMetaForAsmJS_(codeMetaForAsmJS),
       completeTier1_(nullptr),
       completeTier2_(nullptr),
@@ -1256,20 +1227,55 @@ Code::Code(CompileMode mode, const CodeMetadata& codeMeta,
                        CacheableCharsVector()),
       trapCode_(nullptr),
       debugStubOffset_(0),
-      requestTierUpStubOffset_(0) {}
+      requestTierUpStubOffset_(0),
+      updateCallRefMetricsStubOffset_(0) {}
+
+Code::~Code() { printStats(); }
+
+void Code::printStats() const {
+#ifdef JS_JITSPEW
+  auto guard = data_.readLock();
+
+  JS_LOG(wasmPerf, Info, "CM=..%06lx  Code::~Code <<<<",
+         0xFFFFFF & (unsigned long)uintptr_t(codeMeta_.get()));
+
+  // Module information
+  JS_LOG(wasmPerf, Info, "    %7zu functions in module", codeMeta_->numFuncs());
+  JS_LOG(wasmPerf, Info, "    %7zu bytecode bytes in module",
+         codeMeta_->codeSectionSize());
+  uint32_t numCallRefs = codeTailMeta_->numCallRefMetrics == UINT32_MAX
+                             ? 0
+                             : codeTailMeta_->numCallRefMetrics;
+  JS_LOG(wasmPerf, Info, "    %7u call_refs in module", numCallRefs);
+
+  // Tier information
+  JS_LOG(wasmPerf, Info, "            ------ Tier 1 ------");
+  guard->tier1Stats.print();
+  if (mode() != CompileMode::Once) {
+    JS_LOG(wasmPerf, Info, "            ------ Tier 2 ------");
+    guard->tier2Stats.print();
+  }
+
+  JS_LOG(wasmPerf, Info, ">>>>");
+#endif
+}
 
 bool Code::initialize(FuncImportVector&& funcImports,
                       UniqueCodeBlock sharedStubs,
                       UniqueLinkData sharedStubsLinkData,
                       UniqueCodeBlock tier1CodeBlock,
-                      UniqueLinkData tier1LinkData) {
+                      UniqueLinkData tier1LinkData,
+                      const CompileAndLinkStats& tier1Stats) {
   funcImports_ = std::move(funcImports);
 
   auto guard = data_.writeLock();
 
+  MOZ_ASSERT(guard->tier1Stats.empty());
+  guard->tier1Stats = tier1Stats;
+
   sharedStubs_ = sharedStubs.get();
   completeTier1_ = tier1CodeBlock.get();
-  trapCode_ = sharedStubs_->segment->base() + sharedStubsLinkData->trapOffset;
+  trapCode_ = sharedStubs_->base() + sharedStubsLinkData->trapOffset;
   if (!jumpTables_.initialize(mode_, *codeMeta_, *sharedStubs_,
                               *completeTier1_) ||
       !addCodeBlock(guard, std::move(sharedStubs),
@@ -1293,14 +1299,6 @@ bool Code::initialize(FuncImportVector&& funcImports,
   }
 
   return true;
-}
-
-uint32_t Code::getFuncIndex(JSFunction* fun) const {
-  MOZ_ASSERT(fun->isWasm() || fun->isAsmJSNative());
-  if (!fun->isWasmWithJitEntry()) {
-    return fun->wasmFuncIndex();
-  }
-  return jumpTables_.funcIndexFromJitEntry(fun->wasmJitEntry());
 }
 
 Tiers Code::completeTiers() const {
@@ -1363,22 +1361,6 @@ void Code::clearLinkData() const {
   }
 }
 
-bool Code::lookupFunctionTier(const CodeRange* codeRange, Tier* tier) const {
-  // This logic only works if the codeRange is a function, and therefore only
-  // exists in metadata and not a lazy stub tier. Generalizing to access lazy
-  // stubs would require taking a lock, which is undesirable for the profiler.
-  MOZ_ASSERT(codeRange->isFunction());
-  for (Tier t : completeTiers()) {
-    const CodeBlock& code = completeTierCodeBlock(t);
-    if (codeRange >= code.codeRanges.begin() &&
-        codeRange < code.codeRanges.end()) {
-      *tier = t;
-      return true;
-    }
-  }
-  return false;
-}
-
 // When enabled, generate profiling labels for every name in funcNames_ that is
 // the name of some Function CodeRange. This involves malloc() so do it now
 // since, once we start sampling, we'll be in a signal-handing context where we
@@ -1416,7 +1398,7 @@ bool Code::appendProfilingLabels(
     Int32ToCStringBuf cbuf;
     size_t bytecodeStrLen;
     const char* bytecodeStr = Uint32ToCString(
-        &cbuf, codeMeta().funcBytecodeOffset(codeRange.funcIndex()),
+        &cbuf, codeTailMeta().funcBytecodeOffset(codeRange.funcIndex()),
         &bytecodeStrLen);
     MOZ_ASSERT(bytecodeStr);
 
@@ -1426,8 +1408,9 @@ bool Code::appendProfilingLabels(
       ok =
           codeMetaForAsmJS()->getFuncNameForAsmJS(codeRange.funcIndex(), &name);
     } else {
-      ok = codeMeta().getFuncNameForWasm(NameContext::Standalone,
-                                         codeRange.funcIndex(), &name);
+      ok = codeMeta().getFuncNameForWasm(
+          NameContext::Standalone, codeRange.funcIndex(),
+          codeTailMeta().nameSectionPayload.get(), &name);
     }
     if (!ok || !name.append(" (", 2)) {
       return false;
@@ -1549,8 +1532,9 @@ void CodeBlock::disassemble(JSContext* cx, int kindSelection,
           ok = code->codeMetaForAsmJS()->getFuncNameForAsmJS(range.funcIndex(),
                                                              &namebuf);
         } else {
-          ok = code->codeMeta().getFuncNameForWasm(NameContext::Standalone,
-                                                   range.funcIndex(), &namebuf);
+          ok = code->codeMeta().getFuncNameForWasm(
+              NameContext::Standalone, range.funcIndex(),
+              code->codeTailMeta().nameSectionPayload.get(), &namebuf);
         }
         if (ok && namebuf.append('\0')) {
           funcName = namebuf.begin();
@@ -1562,7 +1546,7 @@ void CodeBlock::disassemble(JSContext* cx, int kindSelection,
       }
       printString(buf);
 
-      uint8_t* theCode = segment->base() + range.begin();
+      uint8_t* theCode = base() + range.begin();
       jit::Disassemble(theCode, range.end() - range.begin(), printString);
     }
   }
@@ -1577,7 +1561,7 @@ void Code::disassemble(JSContext* cx, Tier tier, int kindSelection,
 // Return a map with names and associated statistics
 MetadataAnalysisHashMap Code::metadataAnalysis(JSContext* cx) const {
   MetadataAnalysisHashMap hashmap;
-  if (!hashmap.reserve(14)) {
+  if (!hashmap.reserve(16)) {
     return hashmap;
   }
 
@@ -1633,6 +1617,16 @@ MetadataAnalysisHashMap Code::metadataAnalysis(JSContext* cx) const {
         codeBlock.funcExports.sizeOfExcludingThis(mallocSizeOf));
   }
 
+  size_t codeBytesUsedInTier1 = 0;
+  size_t codeBytesUsedInTier2 = 0;
+  {
+    auto guard = data_.readLock();
+    codeBytesUsedInTier1 = guard->tier1Stats.codeBytesUsed;
+    codeBytesUsedInTier2 = guard->tier2Stats.codeBytesUsed;
+  }
+  hashmap.putNewInfallible("tier1 code bytes used", codeBytesUsedInTier1);
+  hashmap.putNewInfallible("tier2 code bytes used", codeBytesUsedInTier2);
+
   return hashmap;
 }
 
@@ -1645,6 +1639,7 @@ void wasm::PatchDebugSymbolicAccesses(uint8_t* codeBase, MacroAssembler& masm) {
       case SymbolicAddress::PrintF32:
       case SymbolicAddress::PrintF64:
       case SymbolicAddress::PrintText:
+      case SymbolicAddress::Printf:
         break;
       default:
         MOZ_CRASH("unexpected symbol in PatchDebugSymbolicAccesses");

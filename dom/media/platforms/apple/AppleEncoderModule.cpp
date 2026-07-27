@@ -1,14 +1,15 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AppleEncoderModule.h"
 
+#include "AppleUtils.h"
 #include "AppleVTEncoder.h"
 #include "VideoUtils.h"
-#include "AppleUtils.h"
+
+using mozilla::media::EncodeSupport;
+using mozilla::media::EncodeSupportSet;
 
 namespace mozilla {
 
@@ -20,20 +21,25 @@ extern LazyLogModule sPEMLog;
   MOZ_LOG(sPEMLog, mozilla::LogLevel::Debug, \
           ("[AppleEncoderModule] %s: " fmt, __func__, ##__VA_ARGS__))
 
-bool AppleEncoderModule::SupportsCodec(CodecType aCodec) const {
-  return aCodec == CodecType::H264;
+EncodeSupportSet AppleEncoderModule::SupportsCodec(CodecType aCodec) const {
+  if (aCodec != CodecType::H264) {
+    return EncodeSupportSet{};
+  }
+  return EncodeSupportSet{EncodeSupport::HardwareEncode,
+                          EncodeSupport::SoftwareEncode};
 }
 
-bool AppleEncoderModule::Supports(const EncoderConfig& aConfig) const {
+EncodeSupportSet AppleEncoderModule::Supports(
+    const EncoderConfig& aConfig) const {
   if (!CanLikelyEncode(aConfig)) {
-    return false;
+    return EncodeSupportSet{};
   }
   // Only two temporal layers supported, and only from 11.3 and more recent
   if (aConfig.mScalabilityMode == ScalabilityMode::L1T3 ||
       (aConfig.mScalabilityMode != ScalabilityMode::None && !OSSupportsSVC())) {
-    return false;
+    return EncodeSupportSet{};
   }
-  return aConfig.mCodec == CodecType::H264;
+  return SupportsCodec(aConfig.mCodec);
 }
 
 already_AddRefed<MediaDataEncoder> AppleEncoderModule::CreateVideoEncoder(

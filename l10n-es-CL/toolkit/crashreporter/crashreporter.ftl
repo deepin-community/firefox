@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } tuvo un problema y fal
 crashreporter-plea = Para ayudarnos a diagnosticar y reparar este problema, puedes enviarnos un reporte de fallos.
 crashreporter-information = Esta aplicación se ejecuta después de un error para informar del problema a { -vendor-short-name }. No debería ejecutarse directamente.
 crashreporter-error = { -brand-short-name } ha tenido un problema y se cerrará. Desafortunadamente, el reportador de fallos no es capaz de enviar un informe sobre este problema.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Detalles: { $details }
+crashreporter-error-details-header = Detalles:
 crashreporter-no-run-message = Esta aplicación se ejecuta después de un error para informar del problema al fabricante de la aplicación. No debería ejecutarse directamente.
 crashreporter-button-details = Detalles…
 crashreporter-loading-details = Cargando…
 crashreporter-view-report-title = Contenido del informe
 crashreporter-comment-prompt = Añadir un comentario (los comentarios son públicos)
 crashreporter-report-info = Este reporte también contiene información acerca del estado de cuando se cayó la aplicación.
-crashreporter-send-report = Avisarle a { -vendor-short-name } de esta falla para que pueda corregirla.
-crashreporter-include-url = Incluir la dirección de la página en la que me encontraba.
+crashreporter-checkbox-test-hardware = Comprobar problemas de hardware y configuración en mi dispositivo.
+crashreporter-checkbox-send-report = Avisarle a { -vendor-short-name } de esta falla para que pueda corregirla.
+crashreporter-checkbox-include-url = Incluir la dirección de la página en la que me encontraba.
 crashreporter-submit-status = Tu reporte de fallos será enviado antes de salir o reiniciar.
+crashreporter-submit-waiting-hardware-tests = Comprobando problemas de hardware y configuración…
 crashreporter-submit-in-progress = Enviando tu informe…
 crashreporter-submit-success = ¡Informe enviado exitosamente!
 crashreporter-submit-failure = Hubo un problema al enviar tu informe.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Puede ver detalles de este problema en { $url }.
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Error al ejecutar minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = No se pudo abrir el archivo ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Falta el directorio de inicio
 # $to (String) - the destination path
 crashreporter-error-moving-path = Error al mover { $from } a { $to }
 crashreporter-error-version-eol = Fin de vida útil de la versión: ya no se aceptan informes de fallos.
+crashreporter-error-failed-to-generate-minidump = La aplicación no pudo generar información del fallo.

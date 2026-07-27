@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -77,6 +76,19 @@ interface nsIClipboardDataSnapshot : nsISupports {
    */
   void getData(in nsITransferable aTransferable,
                in nsIAsyncClipboardRequestCallback aCallback);
+
+  /**
+   * Filters the flavors that `aTransferable` can import (see
+   * `nsITransferable::flavorsTransferableCanImport`). Every specified flavors
+   * must exist in `flavorList`, or the request will be rejected. If the request
+   * remains valid, it retrieves the data for the first flavor. The data is then
+   * set for `aTransferable`.
+   *
+   * @param  aTransferable
+   *         The transferable which contains the flavors to be read.
+   * @result NS_OK if no errors
+   */
+  void getDataSync(in nsITransferable aTransferable);
 };
 
 [scriptable, uuid(ce23c1c4-58fd-4c33-8579-fa0796d9652c)]
@@ -152,7 +164,7 @@ interface nsIClipboard : nsISupports
    /**
     * Filters the flavors aTransferable can import (see
     * `nsITransferable::flavorsTransferableCanImport`) and gets the data for the
-    * first flavor. That data is set for aTransferable.
+    * first available flavor. That data is set for aTransferable.
     *
     * @param  aTransferable The transferable
     * @param  aWhichClipboard Specifies the clipboard to which this operation applies.

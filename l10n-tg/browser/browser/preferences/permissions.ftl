@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Иҷозат додан
     .accesskey = И
+permissions-add =
+    .label = Илова кардан
+    .accesskey = И
 permissions-button-off =
     .label = Хомӯш кардан
     .accesskey = Х
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Тоза кардани ҳамаи сомонаҳо
     .accesskey = Т
+permissions-save-changes-2 =
+    .buttonlabelaccept = Нигоҳ доштани тағйирот
+    .buttonaccesskeyaccept = Н
 permission-dialog =
     .buttonlabelaccept = Нигоҳ доштани тағйирот
     .buttonaccesskeyaccept = Н
@@ -92,6 +98,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Шумо метавонед реҷаи «Танҳо HTTPS»-ро барои сомонаҳои мушаххас хомӯш кунед. «{ -brand-short-name }» кӯшиш намекунад, ки барои ин сомонаҳои пайвастшавиро ба «HTTPS»-и бехатар такмил диҳад. Чунин истисноҳо ба равзанаҳои хусусӣ татбиқ намешаванд.
 permissions-exceptions-https-only-desc2 = Шумо метавонед реҷаи «Танҳо HTTPS»-ро барои сомонаҳои мушаххас хомӯш кунед. { -brand-short-name } кӯшиш намекунад, ки барои ин сомонаҳои пайвастшавиро ба HTTPS-и бехатар такмил диҳад.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Сомонаҳои иҷозатшуда - равзанаҳои зоҳиршаванда ва тағйири масир аз тарафҳои сеюм
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Шумо метавонед муайян кунед, ки ба кадом сомонаҳо барои кушодани равзанаҳои зоҳиршаванда ва интиқол аз чорчӯбаҳои тарафи сеюм иҷозат дода мешавад.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +180,26 @@ permissions-site-camera-desc = Сомонаҳои зерин дархост ка
 permissions-site-camera-disable-label =
     .label = Манъ кардани дархостҳои наве, ки иҷозати пайдокунии дастрасиро ба камераи шумо дархост мекунанд
 permissions-site-camera-disable-desc = Ин амал ҳамаи сомонаҳоеро, ки дар рӯйхати бодо вуҷуд надоранд, аз дархости иҷозат барои пайдо кардани дастрасӣ ба камераи шумо пешгирӣ мекунад. Амали манъкунии дастрасӣ ба камераи шумо метавонад баъзе хусусиятҳои сомонаро вайрон кунад.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Танзимот - Барномаҳо ва хизматҳои дастгоҳ
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Ин сомонаҳо барои пайдо кардани дастрасӣ ба барномаҳо ва хизматҳо дар ин дастгоҳ иҷозатро дархост карданд. Шумо метавонед ба ин сомонаҳо иҷозат диҳед ё онҳоро манъ кунед.
+permissions-site-localhost-disable-label =
+    .label = Дархостҳои навро манъ кунед, то дар ин дастгоҳ ба барномаҳо ва хизматҳо дастрасӣ пайдо накунанд
+permissions-site-localhost-disable-desc = Ин амал ҳамаи сомонаҳоеро, ки ба рӯйхати боло ворид нашудаанд, ҳангоми дархости дастрасӣ ба барномаҳо ва хизматҳо дар ин дастгоҳ манъ мекунад. Ин амал ҳам метавонад баъзе хусусиятҳои сомонаро нодуруст нишон диҳад.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Танзимот - Дастгоҳҳои шабакаи маҳаллӣ
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Ин сомонаҳо барои пайдо кардани дастрасӣ ба барномаҳо ва хизматҳо дар дастгоҳҳое, ки ба шабакаи маҳаллии «Wi-Fi»-и шумо пайваст шудаанд, иҷозатро дархост карданд. Шумо метавонед ба ин сомонаҳо иҷозат диҳед ё онҳоро манъ кунед.
+permissions-site-local-network-disable-label =
+    .label = Ба дархостҳои нав иҷозат надиҳед, то онҳо натавонад дар дастгоҳҳои пайвастшуда ба «Wi-Fi» ё шабакаи маҳаллии шумо ба барномаҳо ва хизматҳо дастрасӣ пайдо кунанд.
+permissions-site-local-network-disable-desc = Ин амал ҳамаи сомонаҳоеро, ки ба рӯйхати боло ворид нашудаанд, ҳангоми дархости дастрасӣ ба барномаҳо ва хизматҳо дар дастгоҳҳои пайвастшуда ба «Wi-Fi» ё шабакаи маҳаллии шумо манъ мекунад. Ин амал ҳам метавонад баъзе хусусиятҳои сомонаро нодуруст нишон диҳад.
 
 ## Site Permissions - Microphone
 

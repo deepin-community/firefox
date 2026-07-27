@@ -97,6 +97,13 @@ assertErrorMessage(
   /first argument must be a WebAssembly.Tag/
 );
 
+// Per spec, creating a new wasm exception with a JSTag value is rejected.
+assertErrorMessage(
+  () => new WebAssembly.Exception(WebAssembly.JSTag, [42]),
+  TypeError,
+  /cannot wrap a WebAssembly.JSTag exception/
+);
+
 const { tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8, tag9 } = wasmEvalText(
   `(module
      (tag (export "tag1") (param))
@@ -151,6 +158,39 @@ assertErrorMessage(
   TypeError,
   /second argument must be an object/
 );
+
+// Exnref cannot cross the JS/wasm boundary as a function parameter.
+var inst = wasmEvalText(`
+(module
+  (func (export "f") (result nullexnref)
+    unreachable
+  )
+)`);
+assertErrorMessage(() => inst.exports.f(), TypeError, /cannot pass value to or from JS/);
+
+inst = wasmEvalText(`
+(module
+  (func (export "f") (result exnref)
+    unreachable
+  )
+)`);
+assertErrorMessage(() => inst.exports.f(), TypeError, /cannot pass value to or from JS/);
+
+inst = wasmEvalText(`
+(module
+  (func (export "f") (result (ref exn))
+    unreachable
+  )
+)`);
+assertErrorMessage(() => inst.exports.f(), TypeError, /cannot pass value to or from JS/);
+
+inst = wasmEvalText(`
+(module
+  (func (export "f") (result (ref noexn))
+    unreachable
+  )
+)`);
+assertErrorMessage(() => inst.exports.f(), TypeError, /cannot pass value to or from JS/);
 
 // Test Exception methods.
 {

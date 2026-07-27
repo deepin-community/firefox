@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #include "mozilla/dom/SVGFEColorMatrixElement.h"
 
 #include "DOMSVGAnimatedNumberList.h"
-#include "mozilla/dom/SVGFEColorMatrixElementBinding.h"
-#include "mozilla/dom/Document.h"
 #include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGFEColorMatrixElementBinding.h"
 
 #define NUM_ENTRIES_IN_4x5_MATRIX 20
 
@@ -25,14 +23,15 @@ JSObject* SVGFEColorMatrixElement::WrapNode(JSContext* aCx,
 }
 
 SVGEnumMapping SVGFEColorMatrixElement::sTypeMap[] = {
-    {nsGkAtoms::matrix, SVG_FECOLORMATRIX_TYPE_MATRIX},
-    {nsGkAtoms::saturate, SVG_FECOLORMATRIX_TYPE_SATURATE},
-    {nsGkAtoms::hueRotate, SVG_FECOLORMATRIX_TYPE_HUE_ROTATE},
-    {nsGkAtoms::luminanceToAlpha, SVG_FECOLORMATRIX_TYPE_LUMINANCE_TO_ALPHA},
+    {nsGkAtoms::matrix, uint8_t(SVGFEColorMatrixType::Matrix)},
+    {nsGkAtoms::saturate, uint8_t(SVGFEColorMatrixType::Saturate)},
+    {nsGkAtoms::hueRotate, uint8_t(SVGFEColorMatrixType::HueRotate)},
+    {nsGkAtoms::luminanceToAlpha,
+     uint8_t(SVGFEColorMatrixType::LuminanceToAlpha)},
     {nullptr, 0}};
 
 SVGElement::EnumInfo SVGFEColorMatrixElement::sEnumInfo[1] = {
-    {nsGkAtoms::type, sTypeMap, SVG_FECOLORMATRIX_TYPE_MATRIX}};
+    {nsGkAtoms::type, sTypeMap, uint8_t(SVGFEColorMatrixType::Matrix)}};
 
 SVGElement::StringInfo SVGFEColorMatrixElement::sStringInfo[2] = {
     {nsGkAtoms::result, kNameSpaceID_None, true},
@@ -70,16 +69,17 @@ FilterPrimitiveDescription SVGFEColorMatrixElement::GetPrimitiveDescription(
     SVGFilterInstance* aInstance, const IntRect& aFilterSubregion,
     const nsTArray<bool>& aInputsAreTainted,
     nsTArray<RefPtr<SourceSurface>>& aInputImages) {
-  uint32_t type = mEnumAttributes[TYPE].GetAnimValue();
+  SVGFEColorMatrixType type =
+      SVGFEColorMatrixType(mEnumAttributes[TYPE].GetAnimValue());
   const SVGNumberList& values = mNumberListAttributes[VALUES].GetAnimValue();
 
   ColorMatrixAttributes atts;
   if (!mNumberListAttributes[VALUES].IsExplicitlySet() &&
-      (type == SVG_FECOLORMATRIX_TYPE_MATRIX ||
-       type == SVG_FECOLORMATRIX_TYPE_SATURATE ||
-       type == SVG_FECOLORMATRIX_TYPE_HUE_ROTATE)) {
-    atts.mType = (uint32_t)SVG_FECOLORMATRIX_TYPE_MATRIX;
-    static const float identityMatrix[] = {
+      (type == SVGFEColorMatrixType::Matrix ||
+       type == SVGFEColorMatrixType::Saturate ||
+       type == SVGFEColorMatrixType::HueRotate)) {
+    atts.mType = SVGFEColorMatrixType::Matrix;
+    static const auto identityMatrix = std::array{
         // clang-format off
         1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
@@ -87,7 +87,7 @@ FilterPrimitiveDescription SVGFEColorMatrixElement::GetPrimitiveDescription(
         0, 0, 0, 1, 0
         // clang-format on
     };
-    atts.mValues.AppendElements(identityMatrix, 20);
+    atts.mValues.AppendElements(Span(identityMatrix));
   } else {
     atts.mType = type;
     if (values.Length()) {
@@ -120,18 +120,18 @@ nsresult SVGFEColorMatrixElement::BindToTree(BindContext& aCtx,
 // SVGElement methods
 
 SVGElement::EnumAttributesInfo SVGFEColorMatrixElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGFEColorMatrixElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 SVGElement::NumberListAttributesInfo
 SVGFEColorMatrixElement::GetNumberListInfo() {
   return NumberListAttributesInfo(mNumberListAttributes, sNumberListInfo,
-                                  ArrayLength(sNumberListInfo));
+                                  std::size(sNumberListInfo));
 }
 
 }  // namespace mozilla::dom

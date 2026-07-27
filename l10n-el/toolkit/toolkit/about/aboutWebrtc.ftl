@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Τα αρχεία καταγρ�
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Αυτόματη ανανέωση
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Αυτόματη ανανέωση από προεπιλογή
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Ανανέωση
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Αποθήκευση σελίδας
 about-webrtc-debug-mode-msg-label = Λειτουργία ελέγχου σφαλμάτων
 about-webrtc-debug-mode-off-state-label = Έναρξη λειτουργίας ελέγχου σφαλμάτων
 about-webrtc-debug-mode-on-state-label = Διακοπή λειτουργίας ελέγχου σφαλμάτων
-about-webrtc-enable-logging-label = Ενεργοποίηση προεπιλογής καταγραφής WebRTC
 about-webrtc-stats-heading = Στατιστικά συνεδρίας
+about-webrtc-enable-logging-label = Ενεργοποίηση προεπιλογής καταγραφής WebRTC
 about-webrtc-peerconnections-section-heading = Στατιστικά RTCPeerConnection
 about-webrtc-peerconnections-section-show-msg = Εμφάνιση στατιστικών RTCPeerConnection
 about-webrtc-peerconnections-section-hide-msg = Απόκρυψη στατιστικών RTCPeerConnection
@@ -229,12 +227,9 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Στατιστικά καρέ βίντεο - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
-about-webrtc-save-page-msg = η σελίδα αποθηκεύτηκε στην διαδρομή: { $path }
+about-webrtc-save-page-msg = η σελίδα αποθηκεύτηκε στη διαδρομή: { $path }
 about-webrtc-debug-mode-off-state-msg = το αρχείο πληροφοριών μπορεί να βρεθεί στο: { $path }
 about-webrtc-debug-mode-on-state-msg = κατάσταση ελέγχου σφαλμάτων ενεργή, αρχείο καταγραφής στο: { $path }
 about-webrtc-aec-logging-off-state-msg = τα αρχεία καταγραφής μπορούν να βρεθούν στο: { $path }
@@ -242,7 +237,7 @@ about-webrtc-aec-logging-off-state-msg = τα αρχεία καταγραφής 
 # bug reports.
 # Variables:
 #  $path (String) - The path to which the file is saved.
-about-webrtc-save-page-complete-msg = Η σελίδα αποθηκεύτηκε στην διαδρομή: { $path }
+about-webrtc-save-page-complete-msg = Η σελίδα αποθηκεύτηκε στη διαδρομή: { $path }
 # This is the total number of frames encoded or decoded over an RTP stream.
 # Variables:
 #  $frames (Number) - The number of frames encoded or decoded.
@@ -322,6 +317,3 @@ about-webrtc-hide-msg-sdp = Απόκρυψη SDP
 about-webrtc-media-context-show-msg = Εμφάνιση πλαισίου πολυμέσων
 about-webrtc-media-context-hide-msg = Απόκρυψη πλαισίου πολυμέσων
 about-webrtc-media-context-heading = Πλαίσιο πολυμέσων
-
-##
-

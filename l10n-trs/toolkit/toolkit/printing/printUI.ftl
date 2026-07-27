@@ -92,6 +92,16 @@ printui-primary-button = Nārī ñadu’ua
 printui-primary-button-save = Na'nïnj sà'
 printui-cancel-button = Dūyichin'
 printui-close-button = Narán
+printui-loading = ‘Hiaj yūgui dàj gūruguì’ man
+# Reported by screen readers and other accessibility tools to indicate that
+# the print preview has focus.
+printui-preview-label =
+    .aria-label = Dàj gā man si Nārit ñadū'hua
+printui-pages-per-sheet = Nej pajinâ gānikāj ñanj
+# This is shown next to the Print button with an indefinite loading spinner
+# when the user prints a page and it is being sent to the printer.
+printui-print-progress-indicator = Narij ñadū’hua ñanj…
+printui-print-progress-indicator-saving = Na'nïn sà'aj...
 
 ## Paper sizes that may be supported by the Save to PDF destination:
 
@@ -111,3 +121,10 @@ printui-paper-tabloid = Tablôide
 
 ## Error messages shown when a user has an invalid input
 
+printui-error-invalid-scale = Gā’hue nāguīt nej numerô nū danïn 10 ngà 200.
+printui-error-invalid-margin = Nachrūn hue’ê dàj nìko gūnàj du’hua ñanj ruhuât nārīt.
+printui-error-invalid-copies = Da’hui nej ñanj nāhuī ñadū’hua ganikāj nej man nej numero nū dānïn 1 ngà 10000.
+# Variables
+# $numPages (integer) - Number of pages
+printui-error-invalid-range = Da’hui gāhuin nej numerô nū dānïn 1 ngà { $numPages }
+printui-error-invalid-start-overflow = Numero pajinâ “āsìj” da’hui man gā lij man doj gà’ da’ numero pajinâ “ndà”.

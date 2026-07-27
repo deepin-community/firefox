@@ -1,4 +1,3 @@
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,12 +8,9 @@ let { UrlClassifierTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/UrlClassifierTestUtils.sys.mjs"
 );
 
-const TEST_DOMAIN = "https://example.com/";
 const TEST_EMAIL_WEBAPP_DOMAIN = "https://test1.example.com/";
 const EMAIL_TRACKER_DOMAIN = "https://email-tracking.example.org/";
-const TEST_PATH = "browser/toolkit/components/url-classifier/tests/browser/";
 
-const TEST_PAGE = TEST_DOMAIN + TEST_PATH + "page.html";
 const TEST_EMAIL_WEBAPP_PAGE =
   TEST_EMAIL_WEBAPP_DOMAIN + TEST_PATH + "page.html";
 
@@ -43,17 +39,6 @@ async function clearTelemetry() {
   Services.telemetry
     .getKeyedHistogramById(TELEMETRY_EMAIL_TRACKER_EMBEDDED_PER_TAB)
     .clear();
-}
-
-async function loadImage(browser, url) {
-  return SpecialPowers.spawn(browser, [url], page => {
-    return new Promise(resolve => {
-      let image = new content.Image();
-      image.src = page + "?" + Math.random();
-      image.onload = _ => resolve(true);
-      image.onerror = _ => resolve(false);
-    });
-  });
 }
 
 async function getTelemetryProbe(key, label, checkCntFn) {

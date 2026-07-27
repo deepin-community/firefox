@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,13 @@
 #ifndef LAYOUT_SVG_SVGIMAGECONTEXT_H_
 #define LAYOUT_SVG_SVGIMAGECONTEXT_H_
 
+#include "Units.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/SVGContextPaint.h"
 #include "mozilla/SVGPreserveAspectRatio.h"
-#include "Units.h"
 
 class nsIFrame;
+class nsISVGPaintContext;
 
 namespace mozilla {
 
@@ -60,6 +59,10 @@ class SVGImageContext {
                                      const nsPresContext&, const ComputedStyle&,
                                      imgIContainer*);
 
+  static void MaybeStoreContextPaint(SVGImageContext& aContext,
+                                     nsISVGPaintContext* aPaintContext,
+                                     imgIContainer* aImgContainer);
+
   const Maybe<CSSIntSize>& GetViewportSize() const { return mViewportSize; }
 
   void SetViewportSize(const Maybe<CSSIntSize>& aSize) {
@@ -84,6 +87,14 @@ class SVGImageContext {
     return mContextPaint.get();
   }
 
+  SVGEmbeddingContextPaint* GetOrCreateContextPaint() {
+    if (!mContextPaint) {
+      mContextPaint = MakeRefPtr<SVGEmbeddingContextPaint>();
+    }
+
+    return mContextPaint.get();
+  }
+
   void ClearContextPaint() { mContextPaint = nullptr; }
 
   bool operator==(const SVGImageContext& aOther) const {
@@ -99,9 +110,7 @@ class SVGImageContext {
            mColorScheme == aOther.mColorScheme;
   }
 
-  bool operator!=(const SVGImageContext& aOther) const {
-    return !(*this == aOther);
-  }
+  bool operator!=(const SVGImageContext&) const = default;
 
   PLDHashNumber Hash() const {
     PLDHashNumber hash = 0;

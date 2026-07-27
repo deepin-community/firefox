@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,24 +5,23 @@
 #ifndef nsTreeBodyFrame_h
 #define nsTreeBodyFrame_h
 
+#include "SimpleXULLeafFrame.h"
+#include "imgINotificationObserver.h"
+#include "imgIRequest.h"
 #include "mozilla/AtomArray.h"
 #include "mozilla/Attributes.h"
-
-#include "nsITreeView.h"
+#include "mozilla/LookAndFeel.h"
+#include "nsIReflowCallback.h"
 #include "nsIScrollbarMediator.h"
 #include "nsITimer.h"
-#include "nsIReflowCallback.h"
+#include "nsITreeView.h"
+#include "nsScrollbarFrame.h"
 #include "nsTArray.h"
-#include "nsTreeStyleCache.h"
-#include "nsTreeColumns.h"
 #include "nsTHashMap.h"
 #include "nsTHashSet.h"
-#include "imgIRequest.h"
-#include "imgINotificationObserver.h"
-#include "nsScrollbarFrame.h"
 #include "nsThreadUtils.h"
-#include "SimpleXULLeafFrame.h"
-#include "mozilla/LookAndFeel.h"
+#include "nsTreeColumns.h"
+#include "nsTreeStyleCache.h"
 
 class nsFontMetrics;
 class nsOverflowChecker;
@@ -40,13 +37,12 @@ class ScrollbarActivity;
 
 // An entry in the tree's image cache
 struct nsTreeImageCacheEntry {
-  nsTreeImageCacheEntry() = default;
-  nsTreeImageCacheEntry(imgIRequest* aRequest,
-                        imgINotificationObserver* aListener)
-      : request(aRequest), listener(aListener) {}
+  nsTreeImageCacheEntry();
+  nsTreeImageCacheEntry(imgIRequest* aRequest, nsTreeImageListener* aListener);
+  ~nsTreeImageCacheEntry();
 
   nsCOMPtr<imgIRequest> request;
-  nsCOMPtr<imgINotificationObserver> listener;
+  RefPtr<nsTreeImageListener> listener;
 };
 
 // The actual frame that paints the cells and rows.
@@ -87,7 +83,6 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   nsresult GetTreeBody(mozilla::dom::Element** aElement);
   int32_t RowHeight() const;
   int32_t RowWidth();
-  int32_t GetHorizontalPosition() const;
   mozilla::Maybe<mozilla::CSSIntRegion> GetSelectionRegion();
   int32_t FirstVisibleRow() const { return mTopRowIndex; }
   int32_t LastVisibleRow() const { return mTopRowIndex + mPageLength; }
@@ -146,7 +141,7 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   void VisibilityChanged(bool aVisible) override { Invalidate(); }
   nsScrollbarFrame* GetScrollbarBox(bool aVertical) override {
     ScrollParts parts = GetScrollParts();
-    return aVertical ? parts.mVScrollbar : parts.mHScrollbar;
+    return aVertical ? parts.mVScrollbar : nullptr;
   }
   void ScrollbarActivityStarted() const override;
   void ScrollbarActivityStopped() const override;
@@ -175,12 +170,8 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   friend class nsTreeColumn;
 
   struct ScrollParts {
-    nsScrollbarFrame* mVScrollbar;
+    nsScrollbarFrame* mVScrollbar = nullptr;
     RefPtr<mozilla::dom::Element> mVScrollbarContent;
-    nsScrollbarFrame* mHScrollbar;
-    RefPtr<mozilla::dom::Element> mHScrollbarContent;
-    nsIFrame* mColumnsFrame;
-    mozilla::ScrollContainerFrame* mColumnsScrollFrame;
   };
 
   ImgDrawResult PaintTreeBody(gfxContext& aRenderingContext,
@@ -191,7 +182,6 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   mozilla::dom::XULTreeElement* GetBaseElement();
 
   bool GetVerticalOverflow() const { return mVerticalOverflow; }
-  bool GetHorizontalOverflow() const { return mHorizontalOverflow; }
 
   // This returns the property array where atoms are stored for style during
   // draw, whether the row currently being drawn is selected, hovered, etc.
@@ -285,15 +275,15 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
                          nsFontMetrics& aFontMetrics, nsRect& aTextRect);
 
   // A helper used when hit testing.
-  nsCSSAnonBoxPseudoStaticAtom* GetItemWithinCellAt(nscoord aX,
-                                                    const nsRect& aCellRect,
-                                                    int32_t aRowIndex,
-                                                    nsTreeColumn* aColumn);
+  mozilla::PseudoStyleType GetItemWithinCellAt(nscoord aX,
+                                               const nsRect& aCellRect,
+                                               int32_t aRowIndex,
+                                               nsTreeColumn* aColumn);
 
   // An internal hit test.  aX and aY are expected to be in twips in the
   // coordinate system of this frame.
   void GetCellAt(nscoord aX, nscoord aY, int32_t* aRow, nsTreeColumn** aCol,
-                 nsCSSAnonBoxPseudoStaticAtom** aChildElt);
+                 mozilla::PseudoStyleType* aChildElt);
 
   // Retrieve the area for the twisty for a cell.
   void GetTwistyRect(int32_t aRowIndex, nsTreeColumn* aColumn,
@@ -301,9 +291,10 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
                      nsPresContext* aPresContext,
                      ComputedStyle* aTwistyContext);
 
-  // Fetch an image from the image cache.
-  nsresult GetImage(int32_t aRowIndex, nsTreeColumn* aCol, bool aUseContext,
-                    ComputedStyle* aComputedStyle, imgIContainer** aResult);
+  // Fetch an image from the image cache, or request it.
+  already_AddRefed<imgIContainer> GetImage(int32_t aRowIndex,
+                                           nsTreeColumn* aCol, bool aUseContext,
+                                           ComputedStyle* aComputedStyle);
 
   // Returns the size of a given image.   This size *includes* border and
   // padding.  It does not include margins.
@@ -332,7 +323,7 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   // Looks up a ComputedStyle in the style cache.  On a cache miss we resolve
   // the pseudo-styles passed in and place them into the cache.
   ComputedStyle* GetPseudoComputedStyle(
-      nsCSSAnonBoxPseudoStaticAtom* aPseudoElement);
+      mozilla::PseudoStyleType aPseudoElement);
 
   // Retrieves the scrollbars and scrollview relevant to this treebody. We
   // traverse the frame tree under our base element, in frame order, looking
@@ -345,8 +336,7 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   void UpdateScrollbars(const ScrollParts& aParts);
 
   // Update the maxpos of the scrollbar.
-  void InvalidateScrollbars(const ScrollParts& aParts,
-                            AutoWeakFrame& aWeakColumnsFrame);
+  void InvalidateScrollbars(const ScrollParts& aParts);
 
   // Check overflow and generate events.
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void CheckOverflow(const ScrollParts& aParts);
@@ -363,7 +353,6 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   // Our internal scroll method, used by all the public scroll methods.
   nsresult ScrollInternal(const ScrollParts& aParts, int32_t aRow);
   nsresult ScrollToRowInternal(const ScrollParts& aParts, int32_t aRow);
-  nsresult ScrollHorzInternal(const ScrollParts& aParts, int32_t aPosition);
   nsresult EnsureRowIsVisibleInternal(const ScrollParts& aParts, int32_t aRow);
 
   // Convert client pixels into appunits in our coordinate space.
@@ -394,19 +383,10 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
 
   void InvalidateDropFeedback(int32_t aRow, int16_t aOrientation) {
     InvalidateRow(aRow);
-    if (aOrientation != nsITreeView::DROP_ON)
+    if (aOrientation != nsITreeView::DROP_ON) {
       InvalidateRow(aRow + aOrientation);
+    }
   }
-
- public:
-  /**
-   * Remove an nsITreeImageListener from being tracked by this frame. Only tree
-   * image listeners that are created by this frame are tracked.
-   *
-   * @param aListener A pointer to an nsTreeImageListener to no longer
-   *        track.
-   */
-  void RemoveTreeImageListener(nsTreeImageListener* aListener);
 
  protected:
   // Create a new timer. This method is used to delay various actions like
@@ -415,7 +395,7 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   // the timer fires and aType is type of timer - one shot or repeating.
   nsresult CreateTimer(const mozilla::LookAndFeel::IntID aID,
                        nsTimerCallbackFunc aFunc, int32_t aType,
-                       nsITimer** aTimer, const char* aName);
+                       nsITimer** aTimer, const nsACString& aName);
 
   static void OpenCallback(nsITimer* aTimer, void* aClosure);
 
@@ -540,8 +520,7 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   // A hashtable that maps from URLs to image request/listener pairs.  The URL
   // is provided by the view or by the ComputedStyle. The ComputedStyle
   // represents a resolved :-moz-tree-cell-image (or twisty) pseudo-element.
-  // It maps directly to an imgIRequest.
-  nsTHashMap<nsStringHashKey, nsTreeImageCacheEntry> mImageCache;
+  nsTHashMap<nsURIHashKey, nsTreeImageCacheEntry> mImageCache;
 
   // A scratch array used when looking up cached ComputedStyles.
   mozilla::AtomArray mScratchArray;
@@ -564,9 +543,6 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   // Our desired horizontal width (the width for which we actually have tree
   // columns).
   nscoord mHorzWidth;
-  // The amount by which to adjust the width of the last cell.
-  // This depends on whether or not the columnpicker and scrollbars are present.
-  nscoord mAdjustWidth;
 
   // Our last reflowed rect, used for invalidation, see ManageReflowCallback().
   Maybe<nsRect> mLastReflowRect;
@@ -591,18 +567,12 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
   bool mHasFixedRowCount;
 
   bool mVerticalOverflow;
-  bool mHorizontalOverflow;
 
   bool mReflowCallbackPosted;
 
-  // Set while we flush layout to take account of effects of
-  // overflow/underflow event handlers
+  // Set while we flush layout to take account of effects of overflow/underflow
+  // event handlers
   bool mCheckingOverflow;
-
-  // Hash set to keep track of which listeners we created and thus
-  // have pointers to us.
-  nsTHashSet<nsTreeImageListener*> mCreatedListeners;
-
 };  // class nsTreeBodyFrame
 
 #endif

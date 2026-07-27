@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set et sw=2 ts=4: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -44,9 +42,9 @@ class nsNotifyAddrListener : public nsINetworkLinkService,
                                    mozilla::SHA1Sum& sha1);
 
  protected:
-  bool mLinkUp;
-  bool mStatusKnown;
-  bool mCheckAttempted;
+  mozilla::Atomic<bool, mozilla::Relaxed> mLinkUp{true};
+  mozilla::Atomic<bool, mozilla::Relaxed> mStatusKnown{false};
+  bool mCheckAttempted{false};
 
   nsresult Shutdown(void);
   nsresult NotifyObservers(const char* aTopic, const char* aData);
@@ -68,29 +66,30 @@ class nsNotifyAddrListener : public nsINetworkLinkService,
   void calculateNetworkId(void);
   bool findMac(char* gateway);
 
-  mozilla::Mutex mMutex MOZ_UNANNOTATED;
-  nsCString mNetworkId;
-  nsTArray<nsCString> mDnsSuffixList;
-  nsTArray<mozilla::net::NetAddr> mDNSResolvers;
+  mozilla::Mutex mMutex{"nsNotifyAddrListener::mMutex"};
+  nsCString mNetworkId MOZ_GUARDED_BY(mMutex);
+  nsTArray<nsCString> mDnsSuffixList MOZ_GUARDED_BY(mMutex);
+  nsTArray<mozilla::net::NetAddr> mDNSResolvers MOZ_GUARDED_BY(mMutex);
 
-  HANDLE mCheckEvent;
+  HANDLE mCheckEvent{nullptr};
 
   // set true when mCheckEvent means shutdown
-  mozilla::Atomic<bool> mShutdown;
+  mozilla::Atomic<bool> mShutdown{false};
 
   // Contains a set of flags that codify the reasons for which
   // the platform indicates DNS should be used instead of TRR.
-  mozilla::Atomic<uint32_t, mozilla::Relaxed> mPlatformDNSIndications;
+  mozilla::Atomic<uint32_t, mozilla::Relaxed> mPlatformDNSIndications{
+      NONE_DETECTED};
 
   // This is a checksum of various meta data for all network interfaces
   // considered UP at last check.
-  ULONG mIPInterfaceChecksum;
+  ULONG mIPInterfaceChecksum{0};
 
   // start time of the checking
   mozilla::TimeStamp mStartTime;
 
   // Flag set while coalescing change events
-  bool mCoalescingActive;
+  bool mCoalescingActive{false};
 
   // Time stamp for first event during coalescing
   mozilla::TimeStamp mChangeTime;

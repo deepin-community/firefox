@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } ذخیرہ �
 autofill-edit-payment-method-os-prompt-macos = محفوظ شدہ ادائیگی دے طریقہ کار دی معلومات ݙِکھاؤ
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } محفوظ شدہ ادائیگی دے طریقہ کار دی معلومات ݙِکھاوݨ دی کوشِش کرین٘دا پِیا ہِے۔ ہیٹھ اِیں ونڈوز اکاؤنٹ تئیں رسائی دی تصدیق کرو۔
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } محفوظ شدہ ادائیگی دے طریقہ کار دی معلومات ݙِکھاوݨ دی کوشِش کرین٘دا پِیا ہِے۔
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = فارم آٹو فل اختیارات
 autofill-options-link-osx = فارم آٹو فل ترجیحاں
 
@@ -81,3 +81,6 @@ autofill-category-name = ناں
 autofill-category-organization = تنظیم
 autofill-category-tel = فون
 autofill-category-email = ای میل
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ہک غیر محفوظ سائٹ دا پتہ لایا ہے۔ فارم آٹو فل عارضی طور تے غیر فعال ہے۔

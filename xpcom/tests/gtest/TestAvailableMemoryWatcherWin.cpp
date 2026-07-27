@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,6 @@
 #include "mozilla/gtest/MozAssertions.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/SpinEventLoopUntil.h"
-#include "mozilla/Unused.h"
 #include "mozilla/Vector.h"
 #include "nsComponentManagerUtils.h"
 #include "nsIObserver.h"
@@ -48,7 +45,8 @@ bool WaitUntil(const ConditionT& aCondition, uint32_t aTimeoutMs) {
       [](nsITimer*, void* isTimeout) {
         *reinterpret_cast<bool*>(isTimeout) = true;
       },
-      &isTimeout, aTimeoutMs, nsITimer::TYPE_ONE_SHOT, __func__);
+      &isTimeout, aTimeoutMs, nsITimer::TYPE_ONE_SHOT,
+      "xpcom-tests:WaitUntil"_ns);
 
   SpinEventLoopUntil("xpcom-tests:WaitUntil"_ns, [&]() -> bool {
     if (isTimeout) {
@@ -177,7 +175,7 @@ class MemoryEater {
       // VirtualAlloc consumes the commit space, but we need to *touch* memory
       // to consume physical memory
       TouchMemory(page.get(), currentSize);
-      Unused << aOutput.emplaceBack(std::move(page));
+      (void)aOutput.emplaceBack(std::move(page));
     }
     return true;
   }
@@ -534,6 +532,8 @@ TEST_F(AvailableMemoryWatcherFixture, AlwaysActive) {
   telemetryEvent.ValidateLastEvent(cx.GetJSContext());
 }
 
+// skip-if asan, Bug 1940978
+#if !(defined(MOZ_ASAN))
 TEST_F(AvailableMemoryWatcherFixture, InactiveToActive) {
   AutoJSContextWithGlobal cx(mCleanGlobal);
   MemoryWatcherTelemetryEvent telemetryEvent(cx.GetJSContext());
@@ -569,6 +569,7 @@ TEST_F(AvailableMemoryWatcherFixture, InactiveToActive) {
 
   telemetryEvent.ValidateLastEvent(cx.GetJSContext());
 }
+#endif
 
 TEST_F(AvailableMemoryWatcherFixture, HighCommitSpace_AlwaysActive) {
   // Setting a low threshold simulates a high commit space.

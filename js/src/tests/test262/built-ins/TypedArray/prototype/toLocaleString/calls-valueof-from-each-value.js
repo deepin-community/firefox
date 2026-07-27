@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -49,11 +48,11 @@ Number.prototype.toLocaleString = function() {
 var arr = [42, 0];
 var expected = ["hacks1", "hacks2"].join(separator);
 
-testWithTypedArrayConstructors(function(TA, N) {
+testWithTypedArrayConstructors(function(TA) {
   var sample = new TA(arr);
   calls = 0;
   assert.sameValue(sample.toLocaleString(), expected, "returns expected value");
   assert.sameValue(calls, 2, "valueOf called once for each item");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

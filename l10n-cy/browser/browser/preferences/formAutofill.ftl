@@ -17,7 +17,9 @@ autofill-manage-remove-button = Tynnu
 autofill-manage-add-button = Ychwanegu…
 autofill-manage-edit-button = Golygu…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Cadw cyfeiriad?
 address-capture-save-doorhanger-description = Cadw manylion i { -brand-short-name } er mwyn i chi allu llenwi ffurflenni'n gyflym.
@@ -41,71 +43,81 @@ address-capture-learn-more-button =
     .label = Darllen rhagor
 address-capture-open-menu-button =
     .aria-label = Agor dewislen
+address-capture-edit-address-link = Golygu cyfeiriad
+    .aria-label = Golygu cyfeiriad
 address-capture-edit-address-button =
     .aria-label = Golygu cyfeiriad
 # The dialog title for creating addresses in browser preferences.
 autofill-add-address-title = Ychwanegu cyfeiriad
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Golygu cyfeiriad
-autofill-address-name = Enw
 autofill-address-given-name = Enw Cyntaf
 autofill-address-additional-name = Enw Canol
 autofill-address-family-name = Enw Olaf
+autofill-address-name = Enw
 autofill-address-organization = Corff
 autofill-address-street-address = Cyfeiriad Stryd
 autofill-address-street = Cyfeiriad Stryd
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Cymdogaeth
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Pentref eu Dref
 autofill-address-island = Ynys
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Tref
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Tref/Dinas
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Ardal
-# Used in GB, NO, SE
-autofill-address-post-town = Tref post
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
+autofill-address-post-town = Tref Post
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Maestref
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Ardal/Talaith
 autofill-address-state = Sir
 autofill-address-county = Sir
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Plwyf
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Rhaglawiaeth
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Ardal
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Adran
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirad
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pinio
 autofill-address-postal-code = Cod Post
+# Postal code field.
 autofill-address-zip = Cod Zip
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
-
-##
-
 
 ##
 
@@ -135,13 +147,29 @@ autofill-message-tooltip = Gweld neges am awtolenwi
 autofill-add-card-title = Ychwanegu cerdyn
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title2 = Golygu cerdyn
+autofill-card-number-2 =
+    .label = Rhif y Cerdyn
 autofill-card-number = Rhif y Cerdyn
 autofill-card-invalid-number = Rhowch rif cerdyn dilys
+autofill-card-name-on-card-2 =
+    .label = Enw ar y Cerdyn
+autofill-card-expires-month-2 =
+    .label = Yn dod i ben mis
+autofill-card-expires-year-2 =
+    .label = Yn dod i ben blwyddyn
+autofill-card-billing-address-2 =
+    .label = Cyfeiriad Archebion
 autofill-card-name-on-card = Enw ar y Cerdyn
 autofill-card-expires-month = Mis Dod i Ben
 autofill-card-expires-year = Blwyddyn Daw i Ben
 autofill-card-billing-address = Cyfeiriad Archebion
 autofill-card-network = Mathau o Gerdyn
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = cardiau credyd, credyd, cardiau, cardiau debyd, debyd, waled, talu
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

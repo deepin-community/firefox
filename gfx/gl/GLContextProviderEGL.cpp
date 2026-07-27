@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -61,7 +60,6 @@
 #include "GLContextProvider.h"
 #include "GLLibraryEGL.h"
 #include "GLLibraryLoader.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_gfx.h"
@@ -106,7 +104,7 @@ class WaylandOffscreenGLSurface {
   struct wl_egl_window* mEGLWindow = nullptr;
 };
 
-static nsTHashMap<nsPtrHashKey<void>, WaylandOffscreenGLSurface*>
+constinit static nsTHashMap<nsPtrHashKey<void>, WaylandOffscreenGLSurface*>
     sWaylandOffscreenGLSurfaces;
 
 void DeleteWaylandOffscreenGLSurface(EGLSurface surface) {
@@ -340,26 +338,8 @@ EGLSurface GLContextEGL::CreateEGLSurfaceForCompositorWidget(
   EGLNativeWindowType window =
       GET_NATIVE_WINDOW_FROM_COMPOSITOR_WIDGET(aCompositorWidget);
   if (!window) {
-#ifdef MOZ_WIDGET_GTK
-    // RenderCompositorEGL does not like EGL_NO_SURFACE as it fallbacks
-    // to SW rendering or claims itself as paused.
-    // In case we're missing valid native window because aCompositorWidget
-    // hidden, just create a fallback EGLSurface. Actual EGLSurface will be
-    // created by widget code later when aCompositorWidget becomes visible.
-    mozilla::gfx::IntSize pbSize(16, 16);
-#  ifdef MOZ_WAYLAND
-    if (GdkIsWaylandDisplay()) {
-      return CreateWaylandOffscreenSurface(*egl, aConfig, pbSize);
-    } else
-#  endif
-    {
-      return CreatePBufferSurfaceTryingPowerOfTwo(*egl, aConfig, LOCAL_EGL_NONE,
-                                                  pbSize);
-    }
-#else
     gfxCriticalNote << "window is null";
     return EGL_NO_SURFACE;
-#endif
   }
 
   return mozilla::gl::CreateSurfaceFromNativeWindow(*egl, window, aConfig);
@@ -567,21 +547,17 @@ void GLContextEGL::SetDamage(const nsIntRegion& aDamageRegion) {
 
 void GLContextEGL::GetWSIInfo(nsCString* const out) const {
   out->AppendLiteral("EGL_VENDOR: ");
-  out->Append(
-      (const char*)mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_VENDOR));
+  out->Append(mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_VENDOR));
 
   out->AppendLiteral("\nEGL_VERSION: ");
-  out->Append(
-      (const char*)mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_VERSION));
+  out->Append(mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_VERSION));
 
   out->AppendLiteral("\nEGL_EXTENSIONS: ");
-  out->Append((const char*)mEgl->mLib->fQueryString(mEgl->mDisplay,
-                                                    LOCAL_EGL_EXTENSIONS));
+  out->Append(mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_EXTENSIONS));
 
 #ifndef ANDROID  // This query will crash some old android.
   out->AppendLiteral("\nEGL_EXTENSIONS(nullptr): ");
-  out->Append(
-      (const char*)mEgl->mLib->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
+  out->Append(mEgl->mLib->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
 #endif
 }
 
@@ -881,7 +857,7 @@ bool CreateConfig(EglDisplay& aEgl, EGLConfig* aConfig, int32_t aDepth,
                   bool aEnableDepthBuffer, bool aUseGles, bool aAllowFallback) {
   EGLConfig configs[64];
   std::vector<EGLint> attribs;
-  EGLint ncfg = ArrayLength(configs);
+  EGLint ncfg = std::size(configs);
 
   switch (aDepth) {
     case 16:
@@ -1242,7 +1218,11 @@ void GLContextEGL::DestroySurface(EglDisplay& aEgl, const EGLSurface aSurface) {
 /*static*/
 already_AddRefed<GLContext> GLContextProviderEGL::CreateHeadless(
     const GLContextCreateDesc& desc, nsACString* const out_failureId) {
-  const auto display = DefaultEglDisplay(out_failureId);
+  bool useSoftwareDisplay =
+      static_cast<bool>(desc.flags & CreateContextFlags::FORBID_HARDWARE);
+  const auto display = useSoftwareDisplay
+                           ? CreateSoftwareEglDisplay(out_failureId)
+                           : DefaultEglDisplay(out_failureId);
   if (!display) {
     return nullptr;
   }

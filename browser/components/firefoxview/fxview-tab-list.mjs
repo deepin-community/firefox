@@ -12,6 +12,7 @@ import {
 } from "chrome://global/content/vendor/lit.all.mjs";
 import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
 import { escapeRegExp } from "./search-helpers.mjs";
+import { escapeHtmlEntities } from "./helpers.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://global/content/elements/moz-button.mjs";
 
@@ -24,11 +25,6 @@ if (!window.IS_STORYBOOK) {
   XPCOMUtils = ChromeUtils.importESModule(
     "resource://gre/modules/XPCOMUtils.sys.mjs"
   ).XPCOMUtils;
-  XPCOMUtils.defineLazyPreferenceGetter(
-    lazy,
-    "virtualListEnabledPref",
-    "browser.firefox-view.virtual-list.enabled"
-  );
   ChromeUtils.defineLazyGetter(lazy, "relativeTimeFormat", () => {
     return new Services.intl.RelativeTimeFormat(undefined, {
       style: "narrow",
@@ -80,6 +76,7 @@ export class FxviewTabListBase extends MozLitElement {
     searchQuery: { type: String },
     secondaryActionClass: { type: String },
     tertiaryActionClass: { type: String },
+    getItemHeight: { type: Function },
   };
 
   static queries = {
@@ -220,7 +217,7 @@ export class FxviewTabListBase extends MozLitElement {
 
   async focusIndex(index) {
     // Focus link or button of item
-    if (lazy.virtualListEnabledPref) {
+    if (index >= 0 && index < this.rowEls?.length) {
       let row = this.rootVirtualListEl.getItem(index);
       if (!row) {
         return;
@@ -234,16 +231,19 @@ export class FxviewTabListBase extends MozLitElement {
       // In Bug 1866845, these manual updates to the sublists should be removed
       // and scrollIntoView() should also be iterated on so that we aren't constantly
       // moving the focused item to the center of the viewport
-      for (const sublist of Array.from(this.rootVirtualListEl.children)) {
-        await sublist.requestUpdate();
-        await sublist.updateComplete;
-      }
+      await this.requestVirtualListUpdate();
       row.scrollIntoView({ block: "center" });
       row.focus();
-    } else if (index >= 0 && index < this.rowEls?.length) {
-      this.rowEls[index].focus();
-      this.activeIndex = index;
     }
+  }
+
+  async requestVirtualListUpdate() {
+    const updates = [];
+    for (const sublist of this.rootVirtualListEl.children) {
+      sublist.requestUpdate();
+      updates.push(sublist.updateComplete);
+    }
+    return Promise.allSettled(updates);
   }
 
   shouldUpdate(changes) {
@@ -275,23 +275,23 @@ export class FxviewTabListBase extends MozLitElement {
         .currentActiveElementId=${this.currentActiveElementId}
         .favicon=${tabItem.icon}
         .primaryL10nId=${tabItem.primaryL10nId}
-        .primaryL10nArgs=${ifDefined(tabItem.primaryL10nArgs)}
+        .primaryL10nArgs=${tabItem.primaryL10nArgs}
         .secondaryL10nId=${tabItem.secondaryL10nId}
-        .secondaryL10nArgs=${ifDefined(tabItem.secondaryL10nArgs)}
-        .tertiaryL10nId=${ifDefined(tabItem.tertiaryL10nId)}
-        .tertiaryL10nArgs=${ifDefined(tabItem.tertiaryL10nArgs)}
+        .secondaryL10nArgs=${tabItem.secondaryL10nArgs}
+        .tertiaryL10nId=${tabItem.tertiaryL10nId}
+        .tertiaryL10nArgs=${tabItem.tertiaryL10nArgs}
         .secondaryActionClass=${this.secondaryActionClass}
-        .tertiaryActionClass=${ifDefined(this.tertiaryActionClass)}
-        .sourceClosedId=${ifDefined(tabItem.sourceClosedId)}
-        .sourceWindowId=${ifDefined(tabItem.sourceWindowId)}
-        .closedId=${ifDefined(tabItem.closedId || tabItem.closedId)}
+        .tertiaryActionClass=${this.tertiaryActionClass}
+        .sourceClosedId=${tabItem.sourceClosedId}
+        .sourceWindowId=${tabItem.sourceWindowId}
+        .closedId=${tabItem.closedId || tabItem.closedId}
         role="listitem"
-        .tabElement=${ifDefined(tabItem.tabElement)}
-        .time=${ifDefined(time)}
+        .tabElement=${tabItem.tabElement}
+        .time=${time}
         .title=${tabItem.title}
         .url=${tabItem.url}
-        .searchQuery=${ifDefined(this.searchQuery)}
-        .timeMsPref=${ifDefined(this.timeMsPref)}
+        .searchQuery=${this.searchQuery}
+        .timeMsPref=${this.timeMsPref}
         .hasPopup=${this.hasPopup}
         .dateTimeFormat=${this.dateTimeFormat}
       ></fxview-tab-row>
@@ -314,24 +314,15 @@ export class FxviewTabListBase extends MozLitElement {
       <div
         id="fxview-tab-list"
         class="fxview-tab-list"
-        data-l10n-id="firefoxview-tabs"
         role="list"
         @keydown=${this.handleFocusElementInRow}
       >
-        ${when(
-          lazy.virtualListEnabledPref,
-          () => html`
-            <virtual-list
-              .activeIndex=${this.activeIndex}
-              .items=${this.tabItems}
-              .template=${this.itemTemplate}
-            ></virtual-list>
-          `,
-          () =>
-            html`${this.tabItems.map((tabItem, i) =>
-              this.itemTemplate(tabItem, i)
-            )}`
-        )}
+        <virtual-list
+          .activeIndex=${this.activeIndex}
+          .items=${this.tabItems}
+          .template=${this.itemTemplate}
+          .getItemHeight=${this.getItemHeight}
+        ></virtual-list>
       </div>
       <slot name="menu"></slot>
     `;
@@ -341,7 +332,7 @@ export class FxviewTabListBase extends MozLitElement {
     return html` <fxview-empty-state
       class="search-results"
       headerLabel="firefoxview-search-results-empty"
-      .headerArgs=${{ query: this.searchQuery }}
+      .headerArgs=${{ query: escapeHtmlEntities(this.searchQuery) }}
       isInnerCard
     >
     </fxview-empty-state>`;
@@ -400,6 +391,7 @@ export class FxviewTabRowBase extends MozLitElement {
     title: { type: String },
     timeMsPref: { type: Number },
     url: { type: String },
+    uri: { type: String },
     searchQuery: { type: String },
   };
 
@@ -421,6 +413,11 @@ export class FxviewTabRowBase extends MozLitElement {
       focusItem = this.renderRoot.getElementById("fxview-tab-row-main");
     }
     return focusItem;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.uri = this.url;
   }
 
   focus() {
@@ -507,7 +504,9 @@ export class FxviewTabRowBase extends MozLitElement {
 
   formatURIForDisplay(uriString) {
     return !window.IS_STORYBOOK
-      ? lazy.BrowserUtils.formatURIStringForDisplay(uriString)
+      ? lazy.BrowserUtils.formatURIStringForDisplay(uriString, {
+          showFilenameForLocalURIs: true,
+        })
       : uriString;
   }
 
@@ -581,6 +580,21 @@ export class FxviewTabRowBase extends MozLitElement {
           detail: { originalEvent: event, item: this },
         })
       );
+    }
+  }
+
+  auxActionHandler(event) {
+    if (event.type == "auxclick" && event.button == 1) {
+      event.preventDefault();
+      if (!window.IS_STORYBOOK) {
+        this.dispatchEvent(
+          new CustomEvent("fxview-tab-list-middleclick-action", {
+            bubbles: true,
+            composed: true,
+            detail: { originalEvent: event, item: this },
+          })
+        );
+      }
     }
   }
 
@@ -694,47 +708,70 @@ export class FxviewTabRowBase extends MozLitElement {
     </span>`;
   }
 
+  getIconSrc(actionClass) {
+    let iconSrc;
+    switch (actionClass) {
+      case "delete-button":
+        iconSrc = "chrome://global/skin/icons/delete.svg";
+        break;
+      case "dismiss-button":
+        iconSrc = "chrome://global/skin/icons/close.svg";
+        break;
+      case "options-button":
+        iconSrc = "chrome://global/skin/icons/more.svg";
+        break;
+      default:
+        iconSrc = null;
+        break;
+    }
+    return iconSrc;
+  }
+
   secondaryButtonTemplate() {
     return html`${when(
       this.secondaryL10nId && this.secondaryActionHandler,
-      () => html`<moz-button
-        type="icon ghost"
-        class=${classMap({
-          "fxview-tab-row-button": true,
-          [this.secondaryActionClass]: this.secondaryActionClass,
-        })}
-        id="fxview-tab-row-secondary-button"
-        data-l10n-id=${this.secondaryL10nId}
-        data-l10n-args=${ifDefined(this.secondaryL10nArgs)}
-        aria-haspopup=${ifDefined(this.hasPopup)}
-        @click=${this.secondaryActionHandler}
-        tabindex="${this.active &&
-        this.currentActiveElementId === "fxview-tab-row-secondary-button"
-          ? "0"
-          : "-1"}"
-      ></moz-button>`
+      () =>
+        html`<moz-button
+          type="icon ghost"
+          class=${classMap({
+            "fxview-tab-row-button": true,
+            [this.secondaryActionClass]: this.secondaryActionClass,
+          })}
+          id="fxview-tab-row-secondary-button"
+          data-l10n-id=${this.secondaryL10nId}
+          data-l10n-args=${ifDefined(this.secondaryL10nArgs)}
+          aria-haspopup=${ifDefined(this.hasPopup)}
+          @click=${this.secondaryActionHandler}
+          tabindex=${this.active &&
+          this.currentActiveElementId === "fxview-tab-row-secondary-button"
+            ? "0"
+            : "-1"}
+          iconSrc=${this.getIconSrc(this.secondaryActionClass)}
+        ></moz-button>`
     )}`;
   }
 
   tertiaryButtonTemplate() {
     return html`${when(
       this.tertiaryL10nId && this.tertiaryActionHandler,
-      () => html`<moz-button
-        type="icon ghost"
-        class=${classMap({
-          "fxview-tab-row-button": true,
-          [this.tertiaryActionClass]: this.tertiaryActionClass,
-        })}
-        id="fxview-tab-row-tertiary-button"
-        data-l10n-id=${this.tertiaryL10nId}
-        data-l10n-args=${ifDefined(this.tertiaryL10nArgs)}
-        aria-haspopup=${ifDefined(this.hasPopup)}
-        @click=${this.tertiaryActionHandler}
-        tabindex="${this.active &&
-        this.currentActiveElementId === "fxview-tab-row-tertiary-button"
-          ? "0"
-          : "-1"}"
-      ></moz-button>`
+      () =>
+        html`<moz-button
+          type="icon ghost"
+          class=${classMap({
+            "fxview-tab-row-button": true,
+            [this.tertiaryActionClass]: this.tertiaryActionClass,
+          })}
+          id="fxview-tab-row-tertiary-button"
+          data-l10n-id=${this.tertiaryL10nId}
+          data-l10n-args=${ifDefined(this.tertiaryL10nArgs)}
+          aria-haspopup=${ifDefined(this.hasPopup)}
+          @click=${this.tertiaryActionHandler}
+          tabindex=${this.active &&
+          this.currentActiveElementId === "fxview-tab-row-tertiary-button"
+            ? "0"
+            : "-1"}
+          iconSrc=${this.getIconSrc(this.tertiaryActionClass)}
+        ></moz-button>`
     )}`;
   }
 }
@@ -760,8 +797,9 @@ export class FxviewTabRow extends FxviewTabRowBase {
         ${this.faviconTemplate()} ${this.titleTemplate()}
         ${when(
           !this.compact,
-          () => html`${this.urlTemplate()} ${this.dateTemplate()}
-          ${this.timeTemplate()}`
+          () =>
+            html`${this.urlTemplate()} ${this.dateTemplate()}
+            ${this.timeTemplate()}`
         )}
       </a>
       ${this.secondaryButtonTemplate()} ${this.tertiaryButtonTemplate()}
@@ -783,6 +821,7 @@ export class VirtualList extends MozLitElement {
     isVisible: { type: Boolean, state: true },
     isSubList: { type: Boolean },
     pinnedTabsIndexOffset: { type: Number },
+    getItemHeight: { type: Function },
   };
 
   createRenderRoot() {
@@ -797,32 +836,68 @@ export class VirtualList extends MozLitElement {
     this.items = [];
     this.subListItems = [];
     this.itemHeightEstimate = FXVIEW_ROW_HEIGHT_PX;
-    this.maxRenderCountEstimate = Math.max(
-      40,
-      2 * Math.ceil(window.innerHeight / this.itemHeightEstimate)
-    );
+    this.maxRenderCountEstimate =
+      this.itemHeightEstimate > 0
+        ? Math.max(
+            40,
+            2 * Math.ceil(window.innerHeight / this.itemHeightEstimate)
+          )
+        : 0;
     this.isSubList = false;
     this.isVisible = false;
+    this.getItemHeight = null;
     this.intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        this.isVisible = entry.isIntersecting;
+        // Only set visible here; the scroll listener is responsible for setting
+        // invisible. IntersectionObserver callbacks can fire with batched,
+        // now-stale entries that would incorrectly blank a sublist the scroll
+        // listener just made visible.
+        if (entry.isIntersecting) {
+          this.isVisible = true;
+        }
       },
       { root: this.ownerDocument }
     );
     this.selfResizeObserver = new ResizeObserver(() => {
       // Trigger the intersection observer once the tab rows have rendered
       this.triggerIntersectionObserver();
-    });
-    this.childResizeObserver = new ResizeObserver(([entry]) => {
-      if (entry.contentRect?.height > 0) {
-        // Update properties on top-level virtual-list
-        this.parentElement.itemHeightEstimate = entry.contentRect.height;
-        this.parentElement.maxRenderCountEstimate = Math.max(
-          40,
-          2 * Math.ceil(window.innerHeight / this.itemHeightEstimate)
-        );
+      if (!this.isSubList) {
+        // A sublist changing height (placeholder ↔ rendered) shifts the layout
+        // without firing a scroll event. Re-sync after the browser has
+        // recalculated layout so the correct sublists become visible.
+        requestAnimationFrame(() => this.#syncSublistVisibility());
       }
     });
+    this.childResizeObserver = new ResizeObserver(([entry]) => {
+      const itemCount = this.children.length;
+      if (
+        entry.contentRect?.height > 0 &&
+        itemCount > 0 &&
+        !this.getItemHeight
+      ) {
+        // Divide total sub-list height by item count so the estimate includes
+        // the grid gap between items, not just the element height.
+        // Skip this when getItemHeight is set: variable-height items (e.g.
+        // expanded bookmark folders) would skew the average and inflate
+        // placeholder heights for off-screen sublists.
+        this.parentElement.itemHeightEstimate =
+          entry.contentRect.height / itemCount;
+      }
+    });
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (!this.isSubList) {
+      this._scrollHandler = () => this.#syncSublistVisibility();
+      // capture:true catches scroll events from any scrollable descendant or
+      // ancestor in the document — scroll events don't bubble, but they do
+      // propagate through the capture phase.
+      document.addEventListener("scroll", this._scrollHandler, {
+        capture: true,
+        passive: true,
+      });
+    }
   }
 
   disconnectedCallback() {
@@ -830,6 +905,28 @@ export class VirtualList extends MozLitElement {
     this.intersectionObserver.disconnect();
     this.childResizeObserver.disconnect();
     this.selfResizeObserver.disconnect();
+    if (this._scrollHandler) {
+      document.removeEventListener("scroll", this._scrollHandler, {
+        capture: true,
+      });
+      this._scrollHandler = null;
+    }
+  }
+
+  #syncSublistVisibility() {
+    const buffer = window.innerHeight;
+    for (const child of this.children) {
+      if (!child.isSubList || child.isAlwaysVisible) {
+        continue;
+      }
+      const { top: childTop, bottom: childBottom } =
+        child.getBoundingClientRect();
+      const inView =
+        childBottom > -buffer && childTop < window.innerHeight + buffer;
+      if (inView !== child.isVisible) {
+        child.isVisible = inView;
+      }
+    }
   }
 
   triggerIntersectionObserver() {
@@ -854,6 +951,25 @@ export class VirtualList extends MozLitElement {
   }
 
   willUpdate(changedProperties) {
+    if (
+      this.isSubList &&
+      changedProperties.has("isVisible") &&
+      changedProperties.get("isVisible") === true &&
+      !this.isVisible
+    ) {
+      // Capture actual rendered height before items are removed from the DOM
+      // so subsequent hide/show cycles can use it as an exact placeholder.
+      const h = this.scrollHeight;
+      if (h > 0) {
+        this._knownHeight = h;
+      }
+    }
+    if (
+      this.isSubList &&
+      (changedProperties.has("items") || changedProperties.has("getItemHeight"))
+    ) {
+      this._knownHeight = null;
+    }
     if (changedProperties.has("items") && !this.isSubList) {
       this.subListItems = [];
       for (let i = 0; i < this.items.length; i += this.maxRenderCountEstimate) {
@@ -865,17 +981,23 @@ export class VirtualList extends MozLitElement {
   }
 
   recalculateAfterWindowResize() {
-    this.maxRenderCountEstimate = Math.max(
-      40,
-      2 * Math.ceil(window.innerHeight / this.itemHeightEstimate)
-    );
+    this.maxRenderCountEstimate =
+      this.itemHeightEstimate > 0
+        ? Math.max(
+            40,
+            2 * Math.ceil(window.innerHeight / this.itemHeightEstimate)
+          )
+        : 0;
   }
 
   firstUpdated() {
     this.intersectionObserver.observe(this);
     this.selfResizeObserver.observe(this);
-    if (this.isSubList && this.children[0]) {
-      this.childResizeObserver.observe(this.children[0]);
+    if (this.isSubList) {
+      this.childResizeObserver.observe(this);
+    } else {
+      // Initial sync after first render, once layout is committed.
+      requestAnimationFrame(() => this.#syncSublistVisibility());
     }
   }
 
@@ -883,19 +1005,35 @@ export class VirtualList extends MozLitElement {
     this.updateListHeight(changedProperties);
     if (changedProperties.has("items") && !this.isSubList) {
       this.triggerIntersectionObserver();
+      // Re-sync after items change: placeholder heights may have shifted,
+      // putting new sublists into or out of view without a scroll event.
+      requestAnimationFrame(() => this.#syncSublistVisibility());
     }
   }
 
   updateListHeight(changedProperties) {
     if (
       changedProperties.has("isAlwaysVisible") ||
-      changedProperties.has("isVisible")
+      changedProperties.has("isVisible") ||
+      changedProperties.has("itemHeightEstimate") ||
+      changedProperties.has("getItemHeight") ||
+      changedProperties.has("items")
     ) {
       this.style.height =
         this.isAlwaysVisible || this.isVisible
           ? "auto"
-          : `${this.items.length * this.itemHeightEstimate}px`;
+          : `${this._knownHeight ?? this.#getPlaceholderHeight()}px`;
     }
+  }
+
+  #getPlaceholderHeight() {
+    if (this.getItemHeight) {
+      return this.items.reduce(
+        (sum, item) => sum + this.getItemHeight(item, this.itemHeightEstimate),
+        0
+      );
+    }
+    return this.items.length * this.itemHeightEstimate;
   }
 
   get renderItems() {
@@ -907,6 +1045,7 @@ export class VirtualList extends MozLitElement {
       .template=${this.template}
       .items=${data}
       .itemHeightEstimate=${this.itemHeightEstimate}
+      .getItemHeight=${this.getItemHeight}
       .itemOffset=${i * this.maxRenderCountEstimate +
       this.pinnedTabsIndexOffset}
       .isAlwaysVisible=${i ==

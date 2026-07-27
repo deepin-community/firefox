@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = Сепия
     .title = Сепия түстер схемасы
 about-reader-color-scheme-auto = Автоматты түрде
     .title = Түс схемасы "Авто"
-about-reader-color-theme-light = Ашық түсті
-    .title = Ашық түсті түстер схемасы
-about-reader-color-theme-dark = Күңгірт түсті
-    .title = Күңгірт түсті түстер схемасы
-about-reader-color-theme-sepia = Сепия
-    .title = Сепия түстер схемасы
-about-reader-color-theme-auto = Автоматты түрде
-    .title = Автоматты түрде түстер схемасы
-about-reader-color-theme-gray = Сұр түсті
-    .title = Сұр түсті түстер схемасы
-about-reader-color-theme-contrast = Контрастты
-    .title = Контрассты түстер схемасы
-about-reader-color-theme-custom = Таңдауыңызша түсті
-    .title = Таңдауыңызша түсті түстер схемасы
 about-reader-color-light-theme = Ашық түсті
     .title = Ашық түсті тема
 about-reader-color-dark-theme = Күңгірт түсті
@@ -49,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } минут
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Қаріп өлшемін кішірейту
@@ -74,7 +60,6 @@ about-reader-font-type-monospace = Ені біркелкі
 
 about-reader-toolbar-close = Оқу режимін жабу
 about-reader-toolbar-type-controls = Қаріптерді баптау
-about-reader-toolbar-color-controls = Түстер
 about-reader-toolbar-text-layout-controls = Мәтін және жайма
 about-reader-toolbar-theme-controls = Тема
 about-reader-toolbar-savetopocket = { -pocket-brand-name } ішіне сақтау
@@ -89,20 +74,24 @@ about-reader-customtheme-tab = Таңдауыңызша
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Мәтін
-    .title = Түсті түзету
-about-reader-custom-colors-background = Фон
-    .title = Түсті түзету
-about-reader-custom-colors-unvisited-links = Ашылмаған сілтемелер
-    .title = Түсті түзету
-about-reader-custom-colors-visited-links = Ашылған сілтемелер
-    .title = Түсті түзету
-about-reader-custom-colors-selection-highlight = Дауыстап оқуға арналған ерекшелегіш
-    .title = Түсті түзету
-about-reader-custom-colors-reset-button = Бастапқы түріне қайтару
 about-reader-reset-button = Бастапқы түріне қайтару
+about-reader-custom-colors-foreground2 =
+    .label = Мәтін
+    .title = Түсті түзету
+about-reader-custom-colors-background2 =
+    .label = Фон
+    .title = Түсті түзету
+about-reader-custom-colors-unvisited-links2 =
+    .label = Ашылмаған сілтемелер
+    .title = Түсті түзету
+about-reader-custom-colors-visited-links2 =
+    .label = Ашылған сілтемелер
+    .title = Түсті түзету
+about-reader-custom-colors-selection-highlight2 =
+    .label = Дауыстап оқуға арналған ерекшелегіш
+    .title = Түсті түзету
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Мәтін
 about-reader-text-size-label = Мәтін өлшемі
@@ -119,9 +108,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = Жол аралығы
 about-reader-advanced-layout-header = Кеңейтілген
-about-reader-slider-label-width-narrow = Тар
-about-reader-slider-label-width-wide = Кең
-about-reader-slider-label-spacing-narrow = Тар
 about-reader-character-spacing-label =
     .label = Таңбалар аралығы
 about-reader-word-spacing-label =
@@ -133,3 +119,5 @@ about-reader-text-alignment-center =
     .title = Мәтінді ортасымен туралау
 about-reader-text-alignment-right =
     .title = Мәтінді оңға туралау
+about-reader-text-alignment-justify =
+    .title = Мәтінді енімен туралау

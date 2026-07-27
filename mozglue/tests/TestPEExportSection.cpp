@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -350,8 +348,7 @@ class ChildProcess final {
   ChildProcess(const wchar_t* aExecutable, const wchar_t* aOption,
                const nsAutoHandle& aEvent, const nsAutoHandle& aJob) {
     const wchar_t* childArgv[] = {aExecutable, aOption};
-    auto cmdLine(
-        mozilla::MakeCommandLine(mozilla::ArrayLength(childArgv), childArgv));
+    auto cmdLine(mozilla::MakeCommandLine(std::size(childArgv), childArgv));
 
     STARTUPINFOW si = {sizeof(si)};
     PROCESS_INFORMATION pi;

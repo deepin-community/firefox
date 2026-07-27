@@ -11,14 +11,38 @@ use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::{Attribute, Error, Field, Fields, Ident, Index, Result, Token};
 
-// Check that there are repr attributes satisfying the given predicate
-pub fn has_valid_repr(attrs: &[Attribute], predicate: impl Fn(&Ident) -> bool + Copy) -> bool {
-    attrs.iter().filter(|a| a.path().is_ident("repr")).any(|a| {
-        a.parse_args::<IdentListAttribute>()
-            .ok()
-            .and_then(|s| s.idents.iter().find(|s| predicate(s)).map(|_| ()))
-            .is_some()
-    })
+#[derive(Default)]
+pub struct ReprInfo {
+    pub c: bool,
+    pub transparent: bool,
+    pub u8: bool,
+    pub packed: bool,
+}
+
+impl ReprInfo {
+    pub fn compute(attrs: &[Attribute]) -> Self {
+        let mut info = ReprInfo::default();
+        for attr in attrs.iter().filter(|a| a.path().is_ident("repr")) {
+            if let Ok(pieces) = attr.parse_args::<IdentListAttribute>() {
+                for piece in pieces.idents.iter() {
+                    if piece == "C" || piece == "c" {
+                        info.c = true;
+                    } else if piece == "transparent" {
+                        info.transparent = true;
+                    } else if piece == "packed" {
+                        info.packed = true;
+                    } else if piece == "u8" {
+                        info.u8 = true;
+                    }
+                }
+            }
+        }
+        info
+    }
+
+    pub fn cpacked_or_transparent(self) -> bool {
+        (self.c && self.packed) || self.transparent
+    }
 }
 
 // An attribute that is a list of idents
@@ -60,7 +84,7 @@ pub fn repr_for(f: &Fields) -> TokenStream2 {
     if f.len() == 1 {
         quote!(transparent)
     } else {
-        quote!(packed)
+        quote!(C, packed)
     }
 }
 
@@ -205,6 +229,48 @@ pub fn extract_parenthetical_zerovec_attrs(
     Ok(ret)
 }
 
+pub fn extract_single_tt_attr(
+    attrs: &mut Vec<Attribute>,
+    name: &str,
+) -> Result<Option<TokenStream2>> {
+    let mut ret = None;
+    let mut error = None;
+    attrs.retain(|a| {
+        // skip the "zerovec" part
+        let second_segment = a.path().segments.iter().nth(1);
+
+        if let Some(second) = second_segment {
+            if second.ident == name {
+                if ret.is_some() {
+                    error = Some(Error::new(
+                        a.span(),
+                        "Can only specify a single VarZeroVecFormat via #[zerovec::format(..)]",
+                    ));
+                    return false
+                }
+                ret = match a.parse_args::<TokenStream2>() {
+                    Ok(l) => Some(l),
+                    Err(_) => {
+                        error = Some(Error::new(
+                            a.span(),
+                            format!("#[zerovec::{name}(..)] takes in a comma separated list of identifiers"),
+                        ));
+                        return false;
+                    }
+                };
+                return false;
+            }
+        }
+
+        true
+    });
+
+    if let Some(error) = error {
+        return Err(error);
+    }
+    Ok(ret)
+}
+
 /// Removes all attributes with `zerovec` in the name and places them in a separate vector
 pub fn extract_zerovec_attributes(attrs: &mut Vec<Attribute>) -> Vec<Attribute> {
     let mut ret = vec![];
@@ -242,14 +308,17 @@ pub fn extract_field_attributes(attrs: &mut Vec<Attribute>) -> Result<Option<Ide
     Ok(varule.first().cloned())
 }
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Clone)]
 pub struct ZeroVecAttrs {
     pub skip_kv: bool,
     pub skip_ord: bool,
+    pub skip_toowned: bool,
+    pub skip_from: bool,
     pub serialize: bool,
     pub deserialize: bool,
     pub debug: bool,
     pub hash: bool,
+    pub vzv_format: Option<TokenStream2>,
 }
 
 /// Removes all known zerovec:: attributes from struct attrs and validates them
@@ -262,6 +331,7 @@ pub fn extract_attributes_common(
 
     let derive = extract_parenthetical_zerovec_attrs(&mut zerovec_attrs, "derive")?;
     let skip = extract_parenthetical_zerovec_attrs(&mut zerovec_attrs, "skip_derive")?;
+    let format = extract_single_tt_attr(&mut zerovec_attrs, "format")?;
 
     let name = if is_var { "make_varule" } else { "make_ule" };
 
@@ -298,6 +368,10 @@ pub fn extract_attributes_common(
             attrs.skip_kv = true;
         } else if ident == "Ord" {
             attrs.skip_ord = true;
+        } else if ident == "ToOwned" && is_var {
+            attrs.skip_toowned = true;
+        } else if ident == "From" && is_var {
+            attrs.skip_from = true;
         } else {
             return Err(Error::new(
                 ident.span(),
@@ -305,6 +379,18 @@ pub fn extract_attributes_common(
             ));
         }
     }
+
+    if let Some(ref format) = format {
+        if !is_var {
+            return Err(Error::new(
+                format.span(),
+                format!(
+                    "Found unknown derive attribute for #[{name}]: #[zerovec::format({format})]"
+                ),
+            ));
+        }
+    }
+    attrs.vzv_format = format;
 
     if (attrs.serialize || attrs.deserialize) && !is_var {
         return Err(Error::new(

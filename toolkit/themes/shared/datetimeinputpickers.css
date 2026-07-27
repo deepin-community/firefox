@@ -6,9 +6,9 @@
   --border-style: 0.1rem solid;
   --border-radius: 0.3rem;
   --border-color: ButtonBorder;
-  --button-color: ButtonText;
-  --button-color-hover: SelectedItemText;
-  --button-color-active: SelectedItem;
+  --button-text-color: ButtonText;
+  --button-text-color-hover: SelectedItemText;
+  --button-text-color-active: SelectedItem;
   --button-background: ButtonFace;
   --button-background-hover: SelectedItem;
   --button-background-active: SelectedItemText;
@@ -32,6 +32,7 @@
   --weekend-font-color: -moz-activehyperlinktext;
 
   --disabled-background-color: ButtonShadow;
+  --disabled-opacity: 0.5;
 
   /* TODO: these need to be in sync (ish) with DateTimePickerPanel.sys.mjs */
   font-size: 10px;
@@ -54,9 +55,9 @@
 @media not (prefers-contrast) {
   :root {
     --border-color: color-mix(in srgb, FieldText 65%, transparent);
-    --button-color: inherit;
-    --button-color-hover: inherit;
-    --button-color-active: inherit;
+    --button-text-color: inherit;
+    --button-text-color-hover: inherit;
+    --button-text-color-active: inherit;
     --button-background: color-mix(in srgb, FieldText 10%, transparent);
     --button-background-hover: color-mix(in srgb, FieldText 20%, transparent);
     --button-background-active: color-mix(in srgb, FieldText 30%, transparent);
@@ -76,6 +77,10 @@
   }
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font: message-box;
@@ -87,7 +92,7 @@ body {
 button {
   appearance: none;
   padding: 0;
-  color: var(--button-color);
+  color: var(--button-text-color);
   background: none;
   background-color: var(--button-background);
   background-repeat: no-repeat;
@@ -99,13 +104,13 @@ button {
 }
 
 button:where(:hover) {
-  color: var(--button-color-hover);
+  color: var(--button-text-color-hover);
   background-color: var(--button-background-hover);
   border-color: var(--button-border-hover);
 }
 
 button:where(:hover.active) {
-  color: var(--button-color-active);
+  color: var(--button-text-color-active);
   background-color: var(--button-background-active);
   border-color: var(--button-border-active);
 }
@@ -116,6 +121,7 @@ button:focus-visible {
 }
 
 #date-picker {
+  flex-grow: 1;
   /* Add some padding so outlines would not overflow our viewport. */
   padding: 0.4rem;
 }
@@ -181,7 +187,7 @@ button.month-year {
 
 @media not (prefers-contrast) {
   button.month-year {
-    fill-opacity: .5;
+    fill-opacity: 0.5;
   }
 }
 
@@ -190,13 +196,13 @@ button.month-year:dir(rtl) {
 }
 
 button.month-year:hover {
-  color: var(--button-color-hover);
+  color: var(--button-text-color-hover);
   background-color: var(--button-background-hover);
   border-color: var(--button-border-hover);
 }
 
 button.month-year.active {
-  color: var(--button-color-active);
+  color: var(--button-text-color-active);
   background-color: var(--button-background-active);
   border-color: var(--button-border-active);
   background-image: url("chrome://global/skin/icons/arrow-up.svg");
@@ -217,7 +223,7 @@ button.month-year.active {
   order: 2;
 }
 
-.calendar-container > table:not([hidden]) {
+.calendar-container > table {
   display: flex;
   flex-direction: column;
   border-spacing: inherit;
@@ -229,7 +235,7 @@ button.month-year.active {
 }
 
 .week-header > tr > th {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .days-view {
@@ -266,7 +272,7 @@ button.month-year.active {
   background-color: var(--today-background);
   color: var(--today-color);
   border-color: transparent;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .days-view > tr > td.today:hover {
@@ -281,7 +287,7 @@ button.month-year.active {
 }
 
 .days-view > tr > td.outside {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .days-view > tr > td.out-of-range,
@@ -302,7 +308,7 @@ button.month-year.active {
 }
 
 #time-picker,
-.month-year-view:not([hidden]) {
+.month-year-view {
   display: flex;
   justify-content: center;
 }
@@ -315,14 +321,14 @@ button.month-year.active {
 
 .spinner-container > button {
   height: var(--spinner-button-height);
-}
 
-.spinner-container > button.up {
-  background-image: url("chrome://global/skin/icons/arrow-up.svg");
-}
+  &.prev {
+    background-image: url("chrome://global/skin/icons/arrow-up.svg");
+  }
 
-.spinner-container > button.down {
-  background-image: url("chrome://global/skin/icons/arrow-down.svg");
+  &.next {
+    background-image: url("chrome://global/skin/icons/arrow-down.svg");
+  }
 }
 
 .spinner-container.hide-buttons > button {
@@ -363,7 +369,7 @@ button.month-year.active {
 }
 
 .spinner-container > .spinner > div.disabled {
-  visibility: hidden;
+  opacity: var(--disabled-opacity);
 }
 
 /* Used only in <input type="time"> */
@@ -379,4 +385,15 @@ button.month-year.active {
 
 .spacer {
   width: var(--day-period-spacing-width);
+}
+
+#datetime-picker {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
+#date-picker,
+#time-picker {
+  min-width: 0;
 }

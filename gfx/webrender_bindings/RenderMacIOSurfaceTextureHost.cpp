@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +11,10 @@
 #endif
 
 #include "mozilla/gfx/Logging.h"
+#include "mozilla/layers/GpuFence.h"
+#include "mozilla/ProfilerLabels.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/TimeStamp.h"
 #include "ScopedGLHelpers.h"
 
 namespace mozilla {
@@ -41,8 +43,8 @@ static bool CreateTextureForPlane(uint8_t aPlaneID, gl::GLContext* aGL,
 }
 
 RenderMacIOSurfaceTextureHost::RenderMacIOSurfaceTextureHost(
-    MacIOSurface* aSurface)
-    : mSurface(aSurface), mTextureHandles{0, 0, 0} {
+    MacIOSurface* aSurface, layers::GpuFence* aGpuFence)
+    : mSurface(aSurface), mGpuFence(aGpuFence), mTextureHandles{0, 0, 0} {
   MOZ_COUNT_CTOR_INHERITED(RenderMacIOSurfaceTextureHost, RenderTextureHost);
 }
 
@@ -105,10 +107,23 @@ wr::WrExternalImage RenderMacIOSurfaceTextureHost::Lock(uint8_t aChannelIndex,
     }
   }
 
-  const auto uvs = GetUvCoords(GetSize(aChannelIndex));
-  return NativeTextureToWrExternalImage(GetGLHandle(aChannelIndex), uvs.first.x,
-                                        uvs.first.y, uvs.second.x,
-                                        uvs.second.y);
+  if (mGpuFence) {
+    // This timeout matches the acquisition timeout for the keyed mutex
+    // in the D3D11 texture host.
+    auto timeout = TimeDuration::FromMilliseconds(10000);
+    auto start = TimeStamp::Now();
+    AUTO_PROFILER_MARKER("Lock MacIOSurfaceTexture", GRAPHICS);
+    while (!mGpuFence->HasCompleted() && (TimeStamp::Now() - start) < timeout) {
+      PR_Sleep(PR_MillisecondsToInterval(1));
+    }
+  } else {
+    PROFILER_MARKER_UNTYPED("No GpuFence", GRAPHICS);
+  }
+
+  const auto size = GetSize(aChannelIndex);
+  return NativeTextureToWrExternalImage(GetGLHandle(aChannelIndex), 0.0, 0.0,
+                                        static_cast<float>(size.width),
+                                        static_cast<float>(size.height));
 }
 
 void RenderMacIOSurfaceTextureHost::Unlock() {}
@@ -140,8 +155,14 @@ gfx::ColorDepth RenderMacIOSurfaceTextureHost::GetColorDepth() const {
 gfx::YUVRangedColorSpace RenderMacIOSurfaceTextureHost::GetYUVColorSpace()
     const {
   return ToYUVRangedColorSpace(mSurface->GetYUVColorSpace(),
-                               mSurface->GetColorRange());
+                               mSurface->GetColorRange(),
+                               mSurface->GetTransferFunction());
 }
+
+gfx::TransferFunction RenderMacIOSurfaceTextureHost::GetTransferFunction()
+    const {
+  return mSurface->GetTransferFunction();
+};
 
 bool RenderMacIOSurfaceTextureHost::MapPlane(RenderCompositor* aCompositor,
                                              uint8_t aChannelIndex,

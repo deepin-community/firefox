@@ -5,7 +5,7 @@
 //! [`Arena`]: super::Arena
 //! [`UniqueArena`]: super::UniqueArena
 
-use std::{cmp::Ordering, fmt, hash, marker::PhantomData};
+use core::{cmp::Ordering, fmt, hash, marker::PhantomData};
 
 /// An unique index in the arena array that a handle points to.
 /// The "non-max" part ensures that an `Option<Handle<T>>` has
@@ -22,7 +22,7 @@ pub struct BadHandle {
 impl BadHandle {
     pub fn new<T>(handle: Handle<T>) -> Self {
         Self {
-            kind: std::any::type_name::<T>(),
+            kind: core::any::type_name::<T>(),
             index: handle.index(),
         }
     }
@@ -107,11 +107,6 @@ impl<T> Handle<T> {
             .and_then(Index::new)
             .expect("Failed to insert into arena. Handle overflows");
         Handle::new(handle_index)
-    }
-
-    /// Convert a `usize` index into a `Handle<T>`, without range checks.
-    pub(super) const unsafe fn from_usize_unchecked(index: usize) -> Self {
-        Handle::new(Index::new_unchecked(index as u32))
     }
 
     /// Write this handle's index to `formatter`, preceded by `prefix`.

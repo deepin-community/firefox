@@ -6,7 +6,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - taskgraph.transforms.from_deps
-    - gecko_taskgraph.transforms.mac_notarization
+    - gecko_taskgraph.transforms.filter_notarization
     - gecko_taskgraph.transforms.name_sanity
     - gecko_taskgraph.transforms.shippable_l10n_signing
     - gecko_taskgraph.transforms.signing
@@ -18,11 +18,13 @@ kind-dependencies:
 only-for-attributes:
     - shippable
 
+task-defaults:
+    run-on-repo-type: [hg]
+
 tasks:
     shippable-l10n-mac-notarization:
         from-deps:
             group-by: chunk-locales
             copy-attributes: true
-        max-run-time: 1800
         treeherder:
             symbol: BMN

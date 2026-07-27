@@ -8,12 +8,7 @@ import logging
 import os
 import sys
 
-from six import iteritems
-
-from mach.decorators import (
-    Command,
-)
-
+from mach.decorators import Command, CommandArgument
 from mozbuild.base import (
     MachCommandConditions as conditions,
     BinaryNotFoundException,
@@ -31,7 +26,9 @@ def create_parser_tests():
     return parser
 
 
-def run_marionette(tests, binary=None, topsrcdir=None, **kwargs):
+def run_marionette(
+    tests, binary=None, topsrcdir=None, allow_nonlocal_connections=False, **kwargs
+):
     from mozlog.structured import commandline
 
     from marionette_harness.runtests import MarionetteTestRunner, MarionetteHarness
@@ -43,13 +40,14 @@ def run_marionette(tests, binary=None, topsrcdir=None, **kwargs):
     args.binary = binary
     args.logger = kwargs.pop("log", None)
 
-    for k, v in iteritems(kwargs):
+    for k, v in kwargs.items():
         setattr(args, k, v)
 
     parser.verify_usage(args)
 
     # Causes Firefox to crash when using non-local connections.
-    os.environ["MOZ_DISABLE_NONLOCAL_CONNECTIONS"] = "1"
+    if not allow_nonlocal_connections:
+        os.environ["MOZ_DISABLE_NONLOCAL_CONNECTIONS"] = "1"
 
     if not args.logger:
         args.logger = commandline.setup_logging(
@@ -69,11 +67,18 @@ def run_marionette(tests, binary=None, topsrcdir=None, **kwargs):
     conditions=[functools.partial(conditions.is_buildapp_in, apps=SUPPORTED_APPS)],
     parser=create_parser_tests,
 )
-def marionette_test(command_context, tests, **kwargs):
+@CommandArgument(
+    "--allow-nonlocal-connections",
+    dest="allow_nonlocal_connections",
+    action="store_true",
+    default=False,
+    help="Allow loading of websites from remote locations. Only use it for local testing!",
+)
+def marionette_test(command_context, tests, allow_nonlocal_connections=False, **kwargs):
     if "test_objects" in kwargs:
         tests = []
         for obj in kwargs["test_objects"]:
-            tests.append(obj["file_relpath"])
+            tests.append(obj["path"])
         del kwargs["test_objects"]
 
     if not tests:
@@ -110,4 +115,9 @@ def marionette_test(command_context, tests, **kwargs):
             )
             return 1
 
-    return run_marionette(tests, topsrcdir=command_context.topsrcdir, **kwargs)
+    return run_marionette(
+        tests,
+        topsrcdir=command_context.topsrcdir,
+        allow_nonlocal_connections=allow_nonlocal_connections,
+        **kwargs
+    )

@@ -1,4 +1,3 @@
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,8 +31,8 @@ add_task(async function runTest() {
       let ifr = content.document.createElement("iframe");
 
       let loading = ContentTaskUtils.waitForEvent(ifr, "load");
-      content.document.body.appendChild(ifr);
       ifr.src = page;
+      content.document.body.appendChild(ifr);
       await loading;
 
       return ifr.browsingContext;
@@ -48,8 +47,8 @@ add_task(async function runTest() {
       let ifr = content.document.createElement("iframe");
 
       let loading = ContentTaskUtils.waitForEvent(ifr, "load");
-      content.document.body.appendChild(ifr);
       ifr.src = page;
+      content.document.body.appendChild(ifr);
       await loading;
 
       return ifr.browsingContext;
@@ -58,7 +57,7 @@ add_task(async function runTest() {
 
   info("Write cookie to the ABA third-party iframe");
   await SpecialPowers.spawn(ifrABABC, [], async _ => {
-    content.document.cookie = "foo; SameSite=None; Secure; Partitioned";
+    content.document.cookie = "foo=bar; SameSite=None; Secure; Partitioned";
   });
 
   let cookie = await SpecialPowers.spawn(browser, [], async () => {
@@ -86,7 +85,7 @@ add_task(async function runTest() {
   );
   is(
     abaSubresourceBody,
-    "cookie:foo",
+    "cookie:foo=bar",
     "Partitioned cookie exists in A(B-fetch->A) request"
   );
 

@@ -1,6 +1,9 @@
 //! RenderDoc integration - <https://renderdoc.org/>
+#![cfg_attr(not(any(feature = "gles", feature = "vulkan")), allow(dead_code))]
 
-use std::{ffi, os, ptr};
+use alloc::format;
+use alloc::string::String;
+use core::{ffi, ptr};
 
 /// The dynamically loaded RenderDoc API function table
 #[repr(C)]
@@ -69,7 +72,7 @@ impl RenderDoc {
         };
 
         let get_api: libloading::Symbol<GetApiFn> =
-            match unsafe { renderdoc_lib.get(b"RENDERDOC_GetAPI\0") } {
+            match unsafe { renderdoc_lib.get(c"RENDERDOC_GetAPI".to_bytes()) } {
                 Ok(api) => api,
                 Err(e) => {
                     return RenderDoc::NotAvailable {
@@ -107,7 +110,7 @@ impl Default for RenderDoc {
     }
 }
 /// An implementation specific handle
-pub type Handle = *mut os::raw::c_void;
+pub type Handle = *mut ffi::c_void;
 
 impl RenderDoc {
     /// Start a RenderDoc frame capture
@@ -118,7 +121,7 @@ impl RenderDoc {
                 true
             }
             Self::NotAvailable { ref reason } => {
-                log::warn!("Could not start RenderDoc frame capture: {}", reason);
+                log::warn!("Could not start RenderDoc frame capture: {reason}");
                 false
             }
         }
@@ -131,7 +134,7 @@ impl RenderDoc {
                 unsafe { entry.api.EndFrameCapture.unwrap()(device_handle, window_handle) };
             }
             Self::NotAvailable { ref reason } => {
-                log::warn!("Could not end RenderDoc frame capture: {}", reason)
+                log::warn!("Could not end RenderDoc frame capture: {reason}")
             }
         };
     }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,8 @@
 #include "UrlClassifierFeatureBase.h"
 #include "Classifier.h"
 #include "mozilla/Preferences.h"
+#include "nsIUrlClassifierExceptionList.h"
+#include "nsIUrlClassifierExceptionListEntry.h"
 
 namespace mozilla {
 
@@ -16,13 +16,14 @@ namespace net {
 
 namespace {
 
-void OnPrefsChange(const char* aPrefName, void* aArray) {
-  auto* array = static_cast<nsTArray<nsCString>*>(aArray);
-  MOZ_ASSERT(array);
+void OnPrefsChange(const char* aPrefName, void* aData) {
+  auto* data = static_cast<UrlClassifierFeatureBase::PrefCallbackData*>(aData);
+  MOZ_ASSERT(data && data->mArray);
 
   nsAutoCString value;
   Preferences::GetCString(aPrefName, value);
-  Classifier::SplitTables(value, *array);
+  MutexAutoLock lock(*data->mMutex);
+  Classifier::SplitTables(value, *data->mArray);
 }
 
 }  // namespace
@@ -66,13 +67,15 @@ UrlClassifierFeatureBase::~UrlClassifierFeatureBase() = default;
 void UrlClassifierFeatureBase::InitializePreferences() {
   for (uint32_t i = 0; i < 2; ++i) {
     if (!mPrefTables[i].IsEmpty()) {
+      mTablesCbData[i] = {&mDataMutex, &mTables[i]};
       Preferences::RegisterCallbackAndCall(OnPrefsChange, mPrefTables[i],
-                                           &mTables[i]);
+                                           &mTablesCbData[i]);
     }
 
     if (!mPrefHosts[i].IsEmpty()) {
+      mHostsCbData[i] = {&mDataMutex, &mHosts[i]};
       Preferences::RegisterCallbackAndCall(OnPrefsChange, mPrefHosts[i],
-                                           &mHosts[i]);
+                                           &mHostsCbData[i]);
     }
   }
 
@@ -90,11 +93,12 @@ void UrlClassifierFeatureBase::ShutdownPreferences() {
   for (uint32_t i = 0; i < 2; ++i) {
     if (!mPrefTables[i].IsEmpty()) {
       Preferences::UnregisterCallback(OnPrefsChange, mPrefTables[i],
-                                      &mTables[i]);
+                                      &mTablesCbData[i]);
     }
 
     if (!mPrefHosts[i].IsEmpty()) {
-      Preferences::UnregisterCallback(OnPrefsChange, mPrefHosts[i], &mHosts[i]);
+      Preferences::UnregisterCallback(OnPrefsChange, mPrefHosts[i],
+                                      &mHostsCbData[i]);
     }
   }
 
@@ -106,8 +110,10 @@ void UrlClassifierFeatureBase::ShutdownPreferences() {
 }
 
 NS_IMETHODIMP
-UrlClassifierFeatureBase::OnExceptionListUpdate(const nsACString& aList) {
-  mExceptionHosts = aList;
+UrlClassifierFeatureBase::OnExceptionListUpdate(
+    nsIUrlClassifierExceptionList* aList) {
+  mExceptionList = aList;
+
   return NS_OK;
 }
 
@@ -125,6 +131,7 @@ UrlClassifierFeatureBase::GetTables(nsIUrlClassifierFeature::listType aListType,
     return NS_ERROR_INVALID_ARG;
   }
 
+  MutexAutoLock lock(mDataMutex);
   aTables = mTables[aListType].Clone();
   return NS_OK;
 }
@@ -140,6 +147,7 @@ UrlClassifierFeatureBase::HasTable(const nsACString& aTable,
     return NS_ERROR_INVALID_ARG;
   }
 
+  MutexAutoLock lock(mDataMutex);
   *aResult = mTables[aListType].Contains(aTable);
   return NS_OK;
 }
@@ -155,6 +163,7 @@ UrlClassifierFeatureBase::HasHostInPreferences(
     return NS_ERROR_INVALID_ARG;
   }
 
+  MutexAutoLock lock(mDataMutex);
   *aResult = mHosts[aListType].Contains(aHost);
   if (*aResult) {
     aPrefTableName = mPrefTableNames[aListType];
@@ -163,19 +172,25 @@ UrlClassifierFeatureBase::HasHostInPreferences(
 }
 
 NS_IMETHODIMP
-UrlClassifierFeatureBase::GetExceptionHostList(nsACString& aList) {
-  aList = mExceptionHosts;
+UrlClassifierFeatureBase::GetExceptionList(
+    nsIUrlClassifierExceptionList** aList) {
+  NS_ENSURE_ARG_POINTER(aList);
+
+  *aList = mExceptionList;
+  NS_IF_ADDREF(*aList);
+
   return NS_OK;
 }
 
 NS_IMETHODIMP
-UrlClassifierFeatureAntiTrackingBase::GetExceptionHostList(nsACString& aList) {
+UrlClassifierFeatureAntiTrackingBase::GetExceptionList(
+    nsIUrlClassifierExceptionList** aList) {
   if (!StaticPrefs::privacy_antitracking_enableWebcompat()) {
-    aList.Truncate();
+    *aList = nullptr;
     return NS_OK;
   }
 
-  return UrlClassifierFeatureBase::GetExceptionHostList(aList);
+  return UrlClassifierFeatureBase::GetExceptionList(aList);
 }
 
 }  // namespace net

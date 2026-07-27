@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const SCREENSHOT_FORMAT = { format: "jpeg", quality: 75 };
-
 function RunScriptInFrame(win, script) {
   const contentPrincipal = win.document.nodePrincipal;
   const sandbox = Cu.Sandbox([contentPrincipal], {
@@ -187,53 +185,53 @@ const FrameworkDetector = {
   },
 
   checkWindow(window) {
-    const script = `
-      (function() {
-        function ${FrameworkDetector.hasFastClickPageScript};
-        function ${FrameworkDetector.hasMobifyPageScript};
-        function ${FrameworkDetector.hasMarfeelPageScript};
-        const win = window.wrappedJSObject || window;
-        return {
-          fastclick: hasFastClickPageScript(win),
-          mobify: hasMobifyPageScript(win),
-          marfeel: hasMarfeelPageScript(win),
-        }
-      })();
-    `;
-    return RunScriptInFrame(window, script);
+    try {
+      const script = `
+        (function() {
+          function ${FrameworkDetector.hasFastClickPageScript};
+          function ${FrameworkDetector.hasMobifyPageScript};
+          function ${FrameworkDetector.hasMarfeelPageScript};
+          const win = window.wrappedJSObject || window;
+          return {
+            fastclick: hasFastClickPageScript(win),
+            mobify: hasMobifyPageScript(win),
+            marfeel: hasMarfeelPageScript(win),
+          }
+        })();
+      `;
+      return RunScriptInFrame(window, script);
+    } catch (e) {
+      console.error("GetWebcompatInfo: Error detecting JS frameworks", e);
+      return {
+        fastclick: false,
+        mobify: false,
+        marfeel: false,
+      };
+    }
   },
 };
 
 export class ReportBrokenSiteChild extends JSWindowActorChild {
-  #getWebCompatInfo(docShell) {
-    return Promise.all([
-      this.#getConsoleLogs(docShell),
-      this.sendQuery("GetWebcompatInfoFromParentProcess", SCREENSHOT_FORMAT),
-    ]).then(([consoleLog, infoFromParent]) => {
-      const { antitracking, browser, screenshot } = infoFromParent;
+  async #getWebCompatInfo(docShell) {
+    const win = docShell.domWindow;
 
-      const win = docShell.domWindow;
+    const frameworks = FrameworkDetector.checkWindow(win);
+    const { languages, userAgent } = win.navigator;
 
-      const devicePixelRatio = win.devicePixelRatio;
-      const frameworks = FrameworkDetector.checkWindow(win);
-      const { languages, userAgent } = win.navigator;
+    const info = {
+      frameworks,
+      languages,
+      url: win.location.href,
+      userAgent,
+    };
 
-      if (browser.platform.name !== "linux") {
-        delete browser.prefs["layers.acceleration.force-enabled"];
-      }
+    try {
+      info.consoleLog = await this.#getConsoleLogs(docShell);
+    } catch (e) {
+      console.error("GetWebcompatInfo: Error getting console log", e);
+    }
 
-      return {
-        antitracking,
-        browser,
-        consoleLog,
-        devicePixelRatio,
-        frameworks,
-        languages,
-        screenshot,
-        url: win.location.href,
-        userAgent,
-      };
-    });
+    return info;
   }
 
   async #getConsoleLogs() {
@@ -271,135 +269,90 @@ export class ReportBrokenSiteChild extends JSWindowActorChild {
     };
 
     if (webcompatInfo) {
-      const {
-        antitracking,
-        browser,
-        devicePixelRatio,
-        consoleLog,
-        frameworks,
-        languages,
-        screenshot,
-        url,
-        userAgent,
-      } = webcompatInfo;
-
-      const {
-        blockList,
-        isPrivateBrowsing,
-        hasMixedActiveContentBlocked,
-        hasMixedDisplayContentBlocked,
-        hasTrackingContentBlocked,
-      } = antitracking;
-
-      message.blockList = blockList;
-
-      const { app, graphics, locales, prefs, platform, security } = browser;
-
-      const {
-        applicationName,
-        buildId,
-        defaultUserAgent,
-        updateChannel,
-        version,
-      } = app;
-
-      const {
-        fissionEnabled,
-        memoryMB,
-        osArchitecture,
-        osName,
-        osVersion,
-        device,
-        isTablet,
-      } = platform;
-
-      const additionalData = {
-        applicationName,
-        blockList,
-        buildId,
-        devicePixelRatio,
-        finalUserAgent: userAgent,
-        fissionEnabled,
-        gfxData: graphics,
-        hasMixedActiveContentBlocked,
-        hasMixedDisplayContentBlocked,
-        hasTrackingContentBlocked,
-        isPB: isPrivateBrowsing,
-        languages,
-        locales,
-        memoryMB,
-        osArchitecture,
-        osName,
-        osVersion,
-        prefs,
-        version,
-      };
-      if (security !== undefined && Object.keys(security).length) {
-        additionalData.sec = security;
-      }
-      if (device !== undefined) {
-        additionalData.device = device;
-      }
-      if (isTablet !== undefined) {
-        additionalData.isTablet = isTablet;
-      }
-
-      const specialPrefs = {};
-      for (const pref of [
-        "layers.acceleration.force-enabled",
-        "gfx.webrender.software",
-      ]) {
-        specialPrefs[pref] = prefs[pref];
-      }
-
-      const details = Object.assign(message.details, specialPrefs, {
-        additionalData,
-        blockList,
-        channel: updateChannel,
-        defaultUserAgent,
-        hasTouchScreen: browser.graphics.hasTouchScreen,
-      });
-
-      // If the user enters a URL unrelated to the current tab,
-      // don't bother sending a screnshot or logs/etc
-      let sendRecordedPageSpecificDetails = false;
-      try {
-        const givenUri = new URL(reportUrl);
-        const recordedUri = new URL(url);
-        sendRecordedPageSpecificDetails =
-          givenUri.origin == recordedUri.origin &&
-          givenUri.pathname == recordedUri.pathname;
-      } catch (_) {}
-
-      if (sendRecordedPageSpecificDetails) {
-        payload.screenshot = screenshot;
-
-        details.consoleLog = consoleLog;
-        details.frameworks = frameworks;
-        details["mixed active content blocked"] =
-          antitracking.hasMixedActiveContentBlocked;
-        details["mixed passive content blocked"] =
-          antitracking.hasMixedDisplayContentBlocked;
-        details["tracking content blocked"] =
-          antitracking.hasTrackingContentBlocked
-            ? `true (${antitracking.blockList})`
-            : "false";
-
-        if (antitracking.hasTrackingContentBlocked) {
-          extra_labels.push(
-            `type-tracking-protection-${antitracking.blockList}`
-          );
-        }
-
-        for (const [framework, active] of Object.entries(frameworks)) {
-          if (!active) {
+      // Copy the full report data into additionalData, reformatting it nicely.
+      const additionalData = {};
+      for (const category of Object.values(webcompatInfo)) {
+        for (const [name, { do_not_preview, glean, value }] of Object.entries(
+          category
+        )) {
+          if (do_not_preview) {
             continue;
           }
-          details[framework] = true;
-          extra_labels.push(`type-${framework}`);
+          let target = additionalData;
+          for (const step of (glean ?? "browserInfo.app").split(".")) {
+            target[step] ??= {};
+            target = target[step];
+          }
+          target[name] = value;
+        }
+      }
+
+      const { browserInfo, tabInfo } = additionalData;
+      const { app, graphics } = browserInfo;
+      const blockList = tabInfo?.antitracking?.blockList;
+
+      message.blockList = blockList;
+      const details = Object.assign(message.details, {
+        additionalData,
+        blockList,
+        channel: app.updateChannel,
+        defaultUserAgent: app.defaultUseragentString,
+        "gfx.webrender.software": webcompatInfo.prefs.softwareWebrender.value,
+        hasTouchScreen: graphics.hasTouchScreen,
+      });
+
+      // We only care about this pref on Linux right now on webcompat.com.
+      if (webcompatInfo.app.platform.value === "linux") {
+        details["layers.acceleration.force-enabled"] =
+          webcompatInfo.prefs.forcedAcceleratedLayers.value;
+      } else {
+        delete details.additionalData.browserInfo.prefs.forcedAcceleratedLayers;
+      }
+
+      if (tabInfo) {
+        const { antitracking, frameworks } = tabInfo;
+        const { consoleLog, screenshot, url } = webcompatInfo.tabInfo;
+
+        // If the user enters a URL unrelated to the current tab,
+        // don't bother sending a screenshot or logs/etc
+        let sendRecordedPageSpecificDetails = false;
+        const givenUri = URL.parse(reportUrl);
+        const recordedUri = URL.parse(url.value);
+        if (givenUri && recordedUri) {
+          sendRecordedPageSpecificDetails =
+            givenUri.origin == recordedUri.origin &&
+            givenUri.pathname == recordedUri.pathname;
         }
 
-        extra_labels.sort();
+        if (sendRecordedPageSpecificDetails) {
+          payload.screenshot = screenshot.value;
+
+          details.consoleLog = consoleLog.value;
+          details.frameworks = frameworks;
+          details["mixed active content blocked"] =
+            antitracking.hasMixedActiveContentBlocked;
+          details["mixed passive content blocked"] =
+            antitracking.hasMixedDisplayContentBlocked;
+          details["tracking content blocked"] =
+            antitracking.hasTrackingContentBlocked
+              ? `true (${blockList})`
+              : "false";
+          details["btp has purged site"] = antitracking.btpHasPurgedSite;
+
+          if (antitracking.hasTrackingContentBlocked) {
+            extra_labels.push(`type-tracking-protection-${blockList}`);
+          }
+
+          for (const [framework, active] of Object.entries(frameworks)) {
+            if (!active) {
+              continue;
+            }
+            details[framework] = true;
+            extra_labels.push(`type-${framework}`);
+          }
+
+          extra_labels.sort();
+        }
       }
     }
 
@@ -447,9 +400,6 @@ export class ReportBrokenSiteChild extends JSWindowActorChild {
       }
       case "GetWebCompatInfo": {
         return this.#getWebCompatInfo(docShell);
-      }
-      case "GetConsoleLog": {
-        return this.#getLoggedMessages();
       }
     }
     return null;

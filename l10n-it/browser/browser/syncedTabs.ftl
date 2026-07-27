@@ -22,7 +22,6 @@ synced-tabs-sidebar-search =
 synced-tabs-context-open =
     .label = Apri
     .accesskey = A
-
 synced-tabs-context-open-in-tab =
     .label = Apri in nuova scheda
     .accesskey = h
@@ -38,6 +37,11 @@ synced-tabs-context-open-in-private-window =
 
 ##
 
+# Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+# and/or devices in the list. This string is for a menuitem equivalent to one in
+# the tab context menu (activated by right-clicking a tab in the tabstrip). That
+# string is located in tabContextMenu.ftl. So, this string should be translated
+# consistently with the "Bookmark Tab…" string there.
 synced-tabs-context-bookmark =
     .label = Aggiungi scheda ai segnalibri…
     .accesskey = s
@@ -50,12 +54,17 @@ synced-tabs-context-open-all-in-tabs =
 synced-tabs-context-manage-devices =
     .label = Gestione dispositivi…
     .accesskey = G
+synced-tabs-context-manage-this-device =
+    .label = Gestisci questo dispositivo
+    .accesskey = v
+synced-tabs-context-connect-another-device =
+    .label = Connetti un altro dispositivo
+    .accesskey = a
 synced-tabs-context-sync-now =
     .label = Sincronizza adesso
     .accesskey = z
 synced-tabs-fxa-sign-in = Accedi per sincronizzare
 synced-tabs-turn-on-sync = Attiva sincronizzazione
-
 # Context for hovering over the close tab button that will
 # send a push to the device to close said tab
 # Variables

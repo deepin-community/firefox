@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,22 +6,27 @@
 
 #include <utility>
 
+#include "RemoteWorkerServiceParent.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/SchedulerGroup.h"
-#include "mozilla/ScopeExit.h"
+#include "mozilla/StaticPrefs_extensions.h"
 #include "mozilla/dom/ContentChild.h"  // ContentChild::GetSingleton
+#include "mozilla/dom/PRemoteWorkerNonLifeCycleOpControllerChild.h"
+#include "mozilla/dom/PRemoteWorkerNonLifeCycleOpControllerParent.h"
 #include "mozilla/dom/ProcessIsolation.h"
 #include "mozilla/dom/RemoteWorkerController.h"
+#include "mozilla/dom/RemoteWorkerNonLifeCycleOpControllerParent.h"
 #include "mozilla/dom/RemoteWorkerParent.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/PBackgroundParent.h"
-#include "mozilla/StaticPrefs_extensions.h"
+#include "mozilla/net/CookieServiceParent.h"
+#include "mozilla/net/NeckoParent.h"
 #include "nsCOMPtr.h"
-#include "nsImportModule.h"
 #include "nsIXULRuntime.h"
+#include "nsImportModule.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
-#include "RemoteWorkerServiceParent.h"
 
 mozilla::LazyLogModule gRemoteWorkerManagerLog("RemoteWorkerManager");
 
@@ -36,6 +39,7 @@ mozilla::LazyLogModule gRemoteWorkerManagerLog("RemoteWorkerManager");
 namespace mozilla {
 
 using namespace ipc;
+using namespace net;
 
 namespace dom {
 
@@ -50,7 +54,7 @@ bool IsServiceWorker(const RemoteWorkerData& aData) {
          OptionalServiceWorkerData::TServiceWorkerData;
 }
 
-void TransmitPermissionsAndBlobURLsForPrincipalInfo(
+void TransmitPermissionsAndCookiesAndBlobURLsForPrincipalInfo(
     ContentParent* aContentParent, const PrincipalInfo& aPrincipalInfo) {
   AssertIsOnMainThread();
   MOZ_ASSERT(aContentParent);
@@ -67,6 +71,25 @@ void TransmitPermissionsAndBlobURLsForPrincipalInfo(
 
   MOZ_ALWAYS_SUCCEEDS(
       aContentParent->TransmitPermissionsForPrincipal(principal));
+
+  CookieServiceParent* cs = nullptr;
+
+  PNeckoParent* neckoParent =
+      LoneManagedOrNullAsserts(aContentParent->ManagedPNeckoParent());
+  if (neckoParent) {
+    PCookieServiceParent* csParent =
+        LoneManagedOrNullAsserts(neckoParent->ManagedPCookieServiceParent());
+    if (csParent) {
+      cs = static_cast<CookieServiceParent*>(csParent);
+    }
+  }
+
+  if (cs) {
+    nsCOMPtr<nsIURI> uri = principal->GetURI();
+    cs->UpdateCookieInContentList(uri, principal->OriginAttributesRef());
+  } else {
+    aContentParent->AddPrincipalToCookieInProcessCache(principal);
+  }
 }
 
 }  // namespace
@@ -97,7 +120,8 @@ bool RemoteWorkerManager::MatchRemoteType(const nsACString& processRemoteType,
 
 // static
 Result<nsCString, nsresult> RemoteWorkerManager::GetRemoteType(
-    const nsCOMPtr<nsIPrincipal>& aPrincipal, WorkerKind aWorkerKind) {
+    const nsCOMPtr<nsIPrincipal>& aPrincipal, WorkerKind aWorkerKind,
+    const nsACString& aCurrentRemoteType) {
   AssertIsOnMainThread();
 
   MOZ_ASSERT_IF(aWorkerKind == WorkerKind::WorkerKindService,
@@ -110,19 +134,8 @@ Result<nsCString, nsresult> RemoteWorkerManager::GetRemoteType(
     return NOT_REMOTE_TYPE;
   }
 
-  nsCString preferredRemoteType = DEFAULT_REMOTE_TYPE;
-  if (aWorkerKind == WorkerKind::WorkerKindShared) {
-    if (auto* contentChild = ContentChild::GetSingleton()) {
-      // For a shared worker set the preferred remote type to the content
-      // child process remote type.
-      preferredRemoteType = contentChild->GetRemoteType();
-    } else if (aPrincipal->IsSystemPrincipal()) {
-      preferredRemoteType = NOT_REMOTE_TYPE;
-    }
-  }
-
   auto result = IsolationOptionsForWorker(
-      aPrincipal, aWorkerKind, preferredRemoteType, FissionAutostart());
+      aPrincipal, aWorkerKind, aCurrentRemoteType, FissionAutostart());
   if (NS_WARN_IF(result.isErr())) {
     LOG(("GetRemoteType Abort: IsolationOptionsForWorker failed"));
     return Err(NS_ERROR_DOM_ABORT_ERR);
@@ -137,7 +150,7 @@ Result<nsCString, nsresult> RemoteWorkerManager::GetRemoteType(
         ("GetRemoteType workerType=%s, principal=%s, "
          "preferredRemoteType=%s, selectedRemoteType=%s",
          aWorkerKind == WorkerKind::WorkerKindService ? "service" : "shared",
-         principalOrigin.get(), preferredRemoteType.get(),
+         principalOrigin.get(), PromiseFlatCString(aCurrentRemoteType).get(),
          options.mRemoteType.get()));
   }
 
@@ -153,52 +166,6 @@ bool RemoteWorkerManager::HasExtensionPrincipal(const RemoteWorkerData& aData) {
          // associated and we have to resort to check the url scheme instead.
          StringBeginsWith(principalInfo.get_ContentPrincipalInfo().spec(),
                           "moz-extension://"_ns);
-}
-
-// static
-bool RemoteWorkerManager::IsRemoteTypeAllowed(const RemoteWorkerData& aData) {
-  AssertIsOnMainThread();
-
-  // If Gecko is running in single process mode, there is no child process
-  // to select and we have to just consider it valid (if it should haven't
-  // been launched it should have been already prevented before reaching
-  // a RemoteWorkerChild instance).
-  if (!BrowserTabsRemoteAutostart()) {
-    return true;
-  }
-
-  const auto& principalInfo = aData.principalInfo();
-
-  auto* contentChild = ContentChild::GetSingleton();
-  if (!contentChild) {
-    // If e10s isn't disabled, only workers related to the system principal
-    // should be allowed to run in the parent process, and extension principals
-    // if extensions.webextensions.remote is false.
-    return principalInfo.type() == PrincipalInfo::TSystemPrincipalInfo ||
-           (!StaticPrefs::extensions_webextensions_remote() &&
-            aData.remoteType().Equals(NOT_REMOTE_TYPE) &&
-            HasExtensionPrincipal(aData));
-  }
-
-  auto principalOrErr = PrincipalInfoToPrincipal(principalInfo);
-  if (NS_WARN_IF(principalOrErr.isErr())) {
-    return false;
-  }
-  nsCOMPtr<nsIPrincipal> principal = principalOrErr.unwrap();
-
-  // Recompute the remoteType based on the principal, to double-check that it
-  // has not been tempered to select a different child process than the one
-  // expected.
-  bool isServiceWorker = aData.serviceWorkerData().type() ==
-                         OptionalServiceWorkerData::TServiceWorkerData;
-  auto remoteType = GetRemoteType(
-      principal, isServiceWorker ? WorkerKindService : WorkerKindShared);
-  if (NS_WARN_IF(remoteType.isErr())) {
-    LOG(("IsRemoteTypeAllowed: Error to retrieve remote type"));
-    return false;
-  }
-
-  return MatchRemoteType(remoteType.unwrap(), contentChild->GetRemoteType());
 }
 
 /* static */
@@ -290,7 +257,7 @@ void RemoteWorkerManager::Launch(RemoteWorkerController* aController,
 void RemoteWorkerManager::LaunchInternal(
     RemoteWorkerController* aController,
     RemoteWorkerServiceParent* aTargetActor,
-    UniqueThreadsafeContentParentKeepAlive aKeepAlive,
+    UniqueThreadsafeContentParentKeepAlive&& aKeepAlive,
     const RemoteWorkerData& aData) {
   AssertIsInMainProcess();
   AssertIsOnBackgroundThread();
@@ -313,8 +280,8 @@ void RemoteWorkerManager::LaunchInternal(
           AssertIsOnMainThread();
           if (RefPtr<ContentParent> contentParent =
                   contentHandle->GetContentParent()) {
-            TransmitPermissionsAndBlobURLsForPrincipalInfo(contentParent,
-                                                           principalInfo);
+            TransmitPermissionsAndCookiesAndBlobURLsForPrincipalInfo(
+                contentParent, principalInfo);
           }
         });
 
@@ -323,7 +290,20 @@ void RemoteWorkerManager::LaunchInternal(
 
   RefPtr<RemoteWorkerParent> workerActor =
       MakeAndAddRef<RemoteWorkerParent>(std::move(aKeepAlive));
-  if (!aTargetActor->SendPRemoteWorkerConstructor(workerActor, aData)) {
+
+  mozilla::ipc::Endpoint<PRemoteWorkerNonLifeCycleOpControllerParent> parentEp;
+  mozilla::ipc::Endpoint<PRemoteWorkerNonLifeCycleOpControllerChild> childEp;
+  MOZ_ALWAYS_SUCCEEDS(PRemoteWorkerNonLifeCycleOpController::CreateEndpoints(
+      &parentEp, &childEp));
+
+  MOZ_ASSERT(!aController->mNonLifeCycleOpController);
+  aController->mNonLifeCycleOpController =
+      MakeAndAddRef<RemoteWorkerNonLifeCycleOpControllerParent>(aController);
+
+  parentEp.Bind(aController->mNonLifeCycleOpController);
+
+  if (!aTargetActor->SendPRemoteWorkerConstructor(workerActor, aData,
+                                                  std::move(childEp))) {
     AsyncCreationFailed(aController);
     return;
   }

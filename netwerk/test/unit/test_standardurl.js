@@ -1,5 +1,9 @@
 "use strict";
 
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
+);
+
 const gPrefs = Services.prefs;
 
 function symmetricEquality(expect, a, b) {
@@ -1110,12 +1114,32 @@ add_task(async function test_emptyHostWithURLType() {
     "Empty host is not allowed for URLTYPE_AUTHORITY"
   );
 
-  url = makeURL("http://foo.com/bar/", Ci.nsIStandardURL.URLTYPE_STANDARD);
+  url = makeURL("http://user@foo.com/bar/", Ci.nsIStandardURL.URLTYPE_STANDARD);
   Assert.throws(
     () => url.mutate().setHost("").finalize().spec,
-    /NS_ERROR_UNEXPECTED/,
-    "Empty host is not allowed for URLTYPE_STANDARD"
+    /NS_ERROR_MALFORMED_URI/,
+    "Setting an empty host should throw if there is a username present"
   );
+
+  url = makeURL(
+    "http://:password@foo.com/bar/",
+    Ci.nsIStandardURL.URLTYPE_STANDARD
+  );
+  Assert.throws(
+    () => url.mutate().setHost("").finalize().spec,
+    /NS_ERROR_MALFORMED_URI/,
+    "Setting an empty host should throw if there is a password present"
+  );
+
+  url = makeURL("http://foo.com:123/bar/", Ci.nsIStandardURL.URLTYPE_STANDARD);
+  Assert.throws(
+    () => url.mutate().setHost("").finalize().spec,
+    /NS_ERROR_MALFORMED_URI/,
+    "Setting an empty host should throw if there is a port present"
+  );
+
+  url = makeURL("http://foo.com/bar/", Ci.nsIStandardURL.URLTYPE_STANDARD);
+  Assert.equal(url.mutate().setHost("").finalize().spec, "http:///bar/");
 
   url = makeURL("http://foo.com/bar/", Ci.nsIStandardURL.URLTYPE_NO_AUTHORITY);
   equal(
@@ -1188,4 +1212,50 @@ add_task(async function test_bug1873976() {
 add_task(async function test_bug1890346() {
   let url = Services.io.newURI("file:..?/..");
   equal(url.spec, "file:///?/..");
+});
+
+add_task(async function test_bug1914141() {
+  equal(Services.io.isValidHostname("example.com"), true);
+  equal(Services.io.isValidHostname("example.0"), false);
+
+  equal(Services.io.isValidHostname("192.168.0.1"), true);
+  equal(Services.io.isValidHostname("192.168.0"), true);
+  equal(Services.io.isValidHostname("1.192.168.0.1"), false);
+  equal(Services.io.isValidHostname("invalid.192.168.0.1"), false);
+
+  equal(Services.io.isValidHostname("::1"), true);
+  equal(Services.io.isValidHostname("abcd::zz::00"), false);
+  equal(Services.io.isValidHostname("zzzz::1.2.3.4"), false);
+
+  equal(Services.io.isValidHostname("::1.2.3.4"), true);
+});
+
+add_task(async function test_bug1998992() {
+  const maxLength = Services.prefs.getIntPref(
+    "network.standard-url.max-length"
+  );
+
+  let uri = stringToURL("http://example.com/");
+
+  const baseLength = uri.spec.length;
+  const targetEncodedLength = maxLength - baseLength + 100;
+
+  const numSpaces = Math.ceil(targetEncodedLength / 3);
+  const longRef = " ".repeat(numSpaces);
+
+  Assert.throws(
+    () => {
+      uri.mutate().setRef(longRef).finalize();
+    },
+    /NS_ERROR_MALFORMED_URI/,
+    "SetRef should reject refs that exceed max length after encoding"
+  );
+
+  Assert.throws(
+    () => {
+      uri.mutate().setQuery(longRef).finalize();
+    },
+    /NS_ERROR_MALFORMED_URI/,
+    "SetQuery should reject queries that exceed max length after encoding"
+  );
 });

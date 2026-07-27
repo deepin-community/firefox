@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,12 +21,14 @@ class VRProcessParent;
 class VRChild;
 
 class VRChild final : public PVRChild,
-                      public ipc::CrashReporterHelper<GeckoProcessType_VR>,
+                      public ipc::CrashReporterHelper<VRChild>,
                       public gfxVarReceiver {
   typedef mozilla::dom::MemoryReportRequestHost MemoryReportRequestHost;
   friend class PVRChild;
 
  public:
+  static constexpr GeckoProcessType PROCESS_TYPE = GeckoProcessType_VR;
+
   NS_INLINE_DECL_REFCOUNTING(VRChild, final)
 
   explicit VRChild(VRProcessParent* aHost);
@@ -36,7 +36,7 @@ class VRChild final : public PVRChild,
   static void Destroy(RefPtr<VRChild>&& aChild);
   void Init();
   bool EnsureVRReady();
-  virtual void OnVarChanged(const GfxVarUpdate& aVar) override;
+  void OnVarChanged(const nsTArray<GfxVarUpdate>& aVar) override;
   bool SendRequestMemoryReport(const uint32_t& aGeneration,
                                const bool& aAnonymize,
                                const bool& aMinimizeMemoryUsage,

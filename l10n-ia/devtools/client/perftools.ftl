@@ -33,11 +33,33 @@ perftools-description-local-build =
     Si tu profila un version que tu mesme ha compilate, sur iste machina,
      adde le directorio 'objdir' de tu compilation al lista sequente a fin que
      illo pote esser usate pro cercar informationes sur le symbolos.
+perftools-pick-local-build-directory = Elige le plica de compilation
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Intervallo de monstra:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -68,6 +90,14 @@ perftools-button-restart = Reinitiar
 perftools-button-add-directory = Adder un directorio
 perftools-button-remove-directory = Remover le selection
 perftools-button-edit-settings = Modificar parametros...
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Altere actiones
+perftools-menu-more-actions-restart-with-profiling = Reinitiar { -brand-shorter-name } con le profilator de lanceamento initial activate
+perftools-menu-more-actions-copy-for-startup = Copiar variabiles de ambiente pro le profilage de initialisation
+perftools-menu-more-actions-copy-for-perf-tests = Copiar parametros pro tests de prestation
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,14 +171,17 @@ perftools-presets-graphics-label = Graphica
 perftools-presets-graphics-description = Pre-configuration pro investigar errores de graphica in { -brand-shorter-name }.
 perftools-presets-media-label = Multimedia
 perftools-presets-media-description2 = Pre-configuration pro investigar errores audio e video in { -brand-shorter-name }.
+perftools-presets-ml-label = Apprendimento automatic
+perftools-presets-ml-description2 = Predefinir pro investigar errores de apprendimento automatic in { -brand-shorter-name }.
 perftools-presets-networking-label = Rete
 perftools-presets-networking-description = Pre-configuration pro investigar errores de rete in { -brand-shorter-name }.
+perftools-presets-networking-with-logs-label = Rete con registros
+perftools-presets-networking-with-logs-description = Predefinite pro investigar errores de rete in { -brand-shorter-name }, includente registros de rete. Iste registros pote continer datos sensibile tal como le URLs que tu visita.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Energia
 perftools-presets-power-description = Pre-configuration pro investigar errores in le uso del energia in { -brand-shorter-name }, con basse supercarga.
 perftools-presets-debug-label = Depurar
 perftools-presets-debug-description = Predefinir pro depuration in { -brand-shorter-name }. Alte supercarga, non usar pro analyses del prestationes, ma usar solo pro comprender le comportamento del navigator.
+perftools-presets-web-compat-label = Compatibilitate web
+perftools-presets-web-compat-description = Pre-configuration recommendate pro depurar problemas de compatibilitate web in sitos web, plus tosto que traciar prestationes.
 perftools-presets-custom-label = Personalisate
-
-##
-

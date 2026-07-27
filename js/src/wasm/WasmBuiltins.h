@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2017 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +20,7 @@
 #include "intgemm/IntegerGemmIntrinsic.h"
 #include "jit/IonTypes.h"
 #include "wasm/WasmBuiltinModuleGenerated.h"
+#include "wasm/WasmConstants.h"
 
 namespace js {
 class JitFrameIter;
@@ -70,6 +69,10 @@ enum class SymbolicAddress {
   LogD,
   PowD,
   ATan2D,
+  AddSubI128,
+  MulI64Wide,
+  ArrayMemMove,
+  ArrayRefsMove,
   HandleDebugTrap,
   HandleRequestTierUp,
   HandleThrow,
@@ -129,9 +132,12 @@ enum class SymbolicAddress {
   TableSet,
   TableSize,
   RefFunc,
-  PostBarrier,
-  PostBarrierPrecise,
-  PostBarrierPreciseWithOffset,
+  PostBarrierEdge,
+  PostBarrierEdgePrecise,
+  PostBarrierWholeCell,
+#ifdef ENABLE_WASM_JSPI
+  ResumeBarrier,
+#endif
   ExceptionNew,
   ThrowException,
   StructNewIL_true,
@@ -146,18 +152,21 @@ enum class SymbolicAddress {
   ArrayInitElem,
   ArrayCopy,
   SlotsToAllocKindBytesTable,
+#ifdef ENABLE_WASM_JSPI
+  ContNew,
+  ContNewEmpty,
+  ContUnwind,
+#endif
 #define VISIT_BUILTIN_FUNC(op, export, sa_name, ...) sa_name,
   FOR_EACH_BUILTIN_MODULE_FUNC(VISIT_BUILTIN_FUNC)
 #undef VISIT_BUILTIN_FUNC
-#ifdef ENABLE_WASM_JSPI
-      UpdateSuspenderState,
-#endif
 #ifdef WASM_CODEGEN_DEBUG
-  PrintI32,
+      PrintI32,
   PrintPtr,
   PrintF32,
   PrintF64,
   PrintText,
+  Printf,
 #endif
   Limit
 };
@@ -172,7 +181,7 @@ enum class FailureMode : uint8_t {
   FailOnNegI32,
   FailOnMaxI32,
   FailOnNullPtr,
-  FailOnInvalidRef
+  FailOnInvalidRef,
 };
 
 // SymbolicAddressSignature carries type information for a function referred
@@ -192,6 +201,8 @@ struct SymbolicAddressSignature {
   const jit::MIRType retType;
   // The failure mode, which is checked by masm.wasmCallBuiltinInstanceMethod.
   const FailureMode failureMode;
+  // The trap to execute if the builtin fails.
+  const Trap failureTrap;
   // The number of arguments, 0 .. SymbolicAddressSignatureMaxArgs only.
   const uint8_t numArgs;
   // The argument types; SymbolicAddressSignatureMaxArgs + 1 guard, which
@@ -235,6 +246,10 @@ extern const SymbolicAddressSignature SASigExpD;
 extern const SymbolicAddressSignature SASigLogD;
 extern const SymbolicAddressSignature SASigPowD;
 extern const SymbolicAddressSignature SASigATan2D;
+extern const SymbolicAddressSignature SASigAddSubI128;
+extern const SymbolicAddressSignature SASigMulI64Wide;
+extern const SymbolicAddressSignature SASigArrayMemMove;
+extern const SymbolicAddressSignature SASigArrayRefsMove;
 extern const SymbolicAddressSignature SASigMemoryGrowM32;
 extern const SymbolicAddressSignature SASigMemoryGrowM64;
 extern const SymbolicAddressSignature SASigMemorySizeM32;
@@ -270,9 +285,9 @@ extern const SymbolicAddressSignature SASigTableInit;
 extern const SymbolicAddressSignature SASigTableSet;
 extern const SymbolicAddressSignature SASigTableSize;
 extern const SymbolicAddressSignature SASigRefFunc;
-extern const SymbolicAddressSignature SASigPostBarrier;
-extern const SymbolicAddressSignature SASigPostBarrierPrecise;
-extern const SymbolicAddressSignature SASigPostBarrierPreciseWithOffset;
+extern const SymbolicAddressSignature SASigPostBarrierEdge;
+extern const SymbolicAddressSignature SASigPostBarrierEdgePrecise;
+extern const SymbolicAddressSignature SASigPostBarrierWholeCell;
 extern const SymbolicAddressSignature SASigExceptionNew;
 extern const SymbolicAddressSignature SASigThrowException;
 extern const SymbolicAddressSignature SASigStructNewIL_true;
@@ -286,7 +301,11 @@ extern const SymbolicAddressSignature SASigArrayNewElem;
 extern const SymbolicAddressSignature SASigArrayInitData;
 extern const SymbolicAddressSignature SASigArrayInitElem;
 extern const SymbolicAddressSignature SASigArrayCopy;
-extern const SymbolicAddressSignature SASigUpdateSuspenderState;
+#ifdef ENABLE_WASM_JSPI
+extern const SymbolicAddressSignature SASigContNew;
+extern const SymbolicAddressSignature SASigContNewEmpty;
+extern const SymbolicAddressSignature SASigContUnwind;
+#endif
 #define VISIT_BUILTIN_FUNC(op, export, sa_name, ...) \
   extern const SymbolicAddressSignature SASig##sa_name;
 FOR_EACH_BUILTIN_MODULE_FUNC(VISIT_BUILTIN_FUNC)
@@ -300,6 +319,18 @@ bool IsRoundingFunction(SymbolicAddress callee, jit::RoundingMode* mode);
 // See "The Wasm-builtin ABIs in WasmFrame.h".
 
 bool NeedsBuiltinThunk(SymbolicAddress sym);
+
+// Returns the ABI that needs to be used to call a builtin.
+inline jit::ABIKind ABIForBuiltin(SymbolicAddress sym) {
+  // Builtin thunks use the WebAssembly ABI. See GenerateBuiltinThunk for more
+  // information.
+  if (NeedsBuiltinThunk(sym)) {
+    return jit::ABIKind::Wasm;
+  }
+
+  // Otherwise non-thunked builtins use the System ABI directly.
+  return jit::ABIKind::System;
+}
 
 // This function queries whether pc is in one of the process's builtin thunks
 // and, if so, returns the CodeRange and pointer to the code segment that the
@@ -325,7 +356,7 @@ void* SymbolicAddressTarget(SymbolicAddress sym);
 
 void* ProvisionalLazyJitEntryStub();
 
-void* MaybeGetBuiltinThunk(JSFunction* f, const FuncType& funcType);
+void* MaybeGetTypedNative(JSFunction* f, const FuncType& funcType);
 
 void ReleaseBuiltinThunks();
 
@@ -337,6 +368,7 @@ void PrintF32(float val);
 void PrintF64(double val);
 void PrintPtr(uint8_t* val);
 void PrintText(const char* out);
+void Printf(const char* out, uintptr_t value);
 #endif
 
 }  // namespace wasm

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -78,6 +78,8 @@ extern "C" {
  */
 #define AOM_CODEC_USE_PSNR 0x10000         /**< Calculate PSNR on each frame */
 #define AOM_CODEC_USE_HIGHBITDEPTH 0x40000 /**< Use high bitdepth */
+// 0x80000 was used for the experimental feature AOM_CODEC_USE_PRESET during
+// libaom v3.11.0 development but was removed before the release.
 
 /*!\brief Generic fixed size buffer structure
  *
@@ -375,6 +377,11 @@ typedef struct cfg_options {
 typedef long aom_enc_frame_flags_t;
 /*!\brief Force this frame to be a keyframe */
 #define AOM_EFLAG_FORCE_KF (1 << 0)
+/*!\brief Calculate PSNR for this frame, requires g_lag_in_frames to be 0 */
+#define AOM_EFLAG_CALCULATE_PSNR (1 << 1)
+/*!\brief Freeze internal state, do not update reference buffers, entropy
+ * tables, rate control state, etc. */
+#define AOM_EFLAG_FREEZE_INTERNAL_STATE (1 << 2)
 
 /*!\brief Encoder configuration structure
  *
@@ -802,6 +809,8 @@ typedef struct aom_codec_enc_cfg {
    *     S-Frame.
    *
    * Otherwise: the considered frame will be made into an S-Frame.
+   *
+   * \attention Not implemented.
    */
   unsigned int sframe_mode;
 
@@ -881,11 +890,14 @@ typedef struct aom_codec_enc_cfg {
    */
   int tile_heights[MAX_TILE_HEIGHTS];
 
-  /*!\brief Whether encoder should use fixed QP offsets.
+  /*!\brief Controls how the encoder applies fixed QP offsets
    *
+   * If a value of 0 is provided, encoder will adaptively choose QP offsets for
+   * frames at different levels of the pyramid.
    * If a value of 1 is provided, encoder will use fixed QP offsets for frames
    * at different levels of the pyramid.
-   * If a value of 0 is provided, encoder will NOT use fixed QP offsets.
+   * If a value of 2 is provided, encoder will use the same QP for all frames
+   * at different levels of the pyramid (i.e. no QP offsets are applied).
    * Note: This option is only relevant for --end-usage=q.
    */
   unsigned int use_fixed_qp_offsets;
@@ -913,8 +925,9 @@ typedef struct aom_codec_enc_cfg {
  * is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *
- * If aom_codec_enc_init_ver() fails, it is not necessary to call
- * aom_codec_destroy() on the encoder context.
+ * On success, aom_codec_destroy() must be used to free resources allocated for
+ * the encoder context. If aom_codec_enc_init_ver() fails, it is not necessary
+ * to call aom_codec_destroy() on the encoder context.
  *
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.

@@ -18,6 +18,16 @@ loader.lazyRequireGetter(
   true
 );
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(
+  lazy,
+  {
+    HTMLSourcesCache:
+      "resource://devtools/server/actors/utils/HTMLSourcesCache.sys.mjs",
+  },
+  { global: "contextual" }
+);
+
 /**
  * Matches strings of the form "foo.min.js" or "foo-min.js", etc. If the regular
  * expression matches, we can be fairly sure that the source is minified, and
@@ -39,16 +49,6 @@ class SourcesManager extends EventEmitter {
     // Debugger.Source -> SourceActor
     this._sourceActors = new Map();
 
-    // URL -> content
-    //
-    // Any possibly incomplete content that has been loaded for each URL.
-    this._urlContents = new Map();
-
-    // URL -> Promise[]
-    //
-    // Any promises waiting on a URL to be completely loaded.
-    this._urlWaiters = new Map();
-
     // Debugger.Source.id -> Debugger.Source
     //
     // The IDs associated with ScriptSources and available via DebuggerSource.id
@@ -57,25 +57,15 @@ class SourcesManager extends EventEmitter {
     // has not been GC'ed and the actor has been created. This is lazily populated
     // the first time it is needed.
     this._sourcesByInternalSourceId = null;
-
-    if (!isWorker) {
-      Services.obs.addObserver(this, "devtools-html-content");
-    }
   }
 
-  destroy() {
-    if (!isWorker) {
-      Services.obs.removeObserver(this, "devtools-html-content");
-    }
-  }
+  destroy() {}
 
   /**
    * Clear existing sources so they are recreated on the next access.
    */
   reset() {
     this._sourceActors = new Map();
-    this._urlContents = new Map();
-    this._urlWaiters = new Map();
     this._sourcesByInternalSourceId = null;
   }
 
@@ -205,17 +195,16 @@ class SourcesManager extends EventEmitter {
       return false;
     }
 
-    try {
-      const url = new URL(uri);
+    const url = URL.parse(uri);
+    if (url) {
       const pathname = url.pathname;
       return MINIFIED_SOURCE_REGEXP.test(
         pathname.slice(pathname.lastIndexOf("/") + 1)
       );
-    } catch (e) {
-      // Not a valid URL so don't try to parse out the filename, just test the
-      // whole thing with the minified source regexp.
-      return MINIFIED_SOURCE_REGEXP.test(uri);
     }
+    // Not a valid URL so don't try to parse out the filename, just test the
+    // whole thing with the minified source regexp.
+    return MINIFIED_SOURCE_REGEXP.test(uri);
   }
 
   /**
@@ -265,6 +254,9 @@ class SourcesManager extends EventEmitter {
    *        boxed or not.
    */
   isBlackBoxed(url, line, column) {
+    if (this.blackBoxedSources.size == 0) {
+      return false;
+    }
     if (!this.blackBoxedSources.has(url)) {
       return false;
     }
@@ -281,6 +273,9 @@ class SourcesManager extends EventEmitter {
   }
 
   isFrameBlackBoxed(frame) {
+    if (this.blackBoxedSources.size == 0) {
+      return false;
+    }
     const { url, line, column } = this.getFrameLocation(frame);
     return this.isBlackBoxed(url, line, column);
   }
@@ -353,80 +348,17 @@ class SourcesManager extends EventEmitter {
   }
 
   /**
-   * Listener for new HTML content.
-   */
-  observe(subject, topic, data) {
-    if (topic == "devtools-html-content") {
-      const { parserID, uri, contents, complete } = JSON.parse(data);
-      if (this._urlContents.has(uri)) {
-        // We received many devtools-html-content events, if we already received one,
-        // aggregate the data with the one we already received.
-        const existing = this._urlContents.get(uri);
-        if (existing.parserID == parserID) {
-          assert(!existing.complete);
-          existing.content = existing.content + contents;
-          existing.complete = complete;
-
-          // After the HTML has finished loading, resolve any promises
-          // waiting for the complete file contents. Waits will only
-          // occur when the URL was ever partially loaded.
-          if (complete) {
-            const waiters = this._urlWaiters.get(uri);
-            if (waiters) {
-              for (const waiter of waiters) {
-                waiter();
-              }
-              this._urlWaiters.delete(uri);
-            }
-          }
-        }
-      } else if (contents) {
-        // Ensure that `contents` is non-empty. We may miss all the devtools-html-content events except the last
-        // one which has a empty `contents` and complete set to true.
-        // This reproduces when opening a same-process iframe. In this particular scenario, we instantiate the target and thread actor
-        // on `DOMDocElementInserted` and the HTML document is already parsed, but we still receive this one very last notification.
-        this._urlContents.set(uri, {
-          content: contents,
-          complete,
-          contentType: "text/html",
-          parserID,
-        });
-      }
-    }
-  }
-
-  /**
    * Get the contents of a URL, fetching it if necessary. If partial is set and
    * any content for the URL has been received, that partial content is returned
    * synchronously.
    */
   urlContents(url, partial, canUseCache) {
-    if (this._urlContents.has(url)) {
-      const data = this._urlContents.get(url);
-      if (!partial && !data.complete) {
-        return new Promise(resolve => {
-          if (!this._urlWaiters.has(url)) {
-            this._urlWaiters.set(url, []);
-          }
-          this._urlWaiters.get(url).push(resolve);
-        }).then(() => {
-          assert(data.complete);
-          return {
-            content: data.content,
-            contentType: data.contentType,
-          };
-        });
-      }
-      return {
-        content: data.content,
-        contentType: data.contentType,
-      };
-    }
-    if (partial) {
-      return {
-        content: "",
-        contentType: "",
-      };
+    const { browsingContextID } = this._thread.targetActor;
+    const content = !isWorker
+      ? lazy.HTMLSourcesCache.get(browsingContextID, url, partial)
+      : null;
+    if (content) {
+      return content;
     }
     return this._fetchURLContents(url, partial, canUseCache);
   }
@@ -447,7 +379,7 @@ class SourcesManager extends EventEmitter {
     const win = this._thread.targetActor.window;
     let principal, cacheKey;
     // On xpcshell, we don't have a window but a Sandbox
-    if (!isWorker && win instanceof Ci.nsIDOMWindow) {
+    if (!isWorker && win instanceof Ci.nsIDOMWindow && win.docShell) {
       const docShell = win.docShell;
       const channel = docShell.currentDocumentChannel;
       principal = channel.loadInfo.loadingPrincipal;
@@ -495,8 +427,6 @@ class SourcesManager extends EventEmitter {
         result.content = actors[0].actualText();
       }
     }
-
-    this._urlContents.set(url, { ...result, complete: true });
 
     return result;
   }

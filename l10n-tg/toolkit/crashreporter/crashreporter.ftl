@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = «{ -brand-short-name }» мушкилӣ д�
 crashreporter-plea = Барои муайян кардани мушкилӣ ва ислоҳ кардани он, шумо метавонед дар бораи вайронии ҷорӣ гузоришеро ирсол намоед.
 crashreporter-information = Ин барнома пас аз вайроншавии ягон барнома иҷро мешавад ва гузоришро оид ба мушкилӣ ба «{ -vendor-short-name }» ирсол мекунад. Ин барнома бояд мустақилона иҷро карда нашавад.
 crashreporter-error = Барномаи «{ -brand-short-name }» бо мушкилие дучор шуд ва аз ин боис вайрон шуд. Мутаассифона, гузоришдиҳанда дар бораи ин вайронӣ гузоришеро пешниҳод карда наметавонад.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Тафсилот: { $details }
+crashreporter-error-details-header = Тафсилот:
 crashreporter-no-run-message = Ин барнома пас аз вайроншавии ягон барнома иҷро мешавад ва гузоришро оид ба мушкилӣ ба истеҳсолкунандаи он барнома ирсол мекунад.  Ин барнома бояд мустақилона иҷро карда нашавад.
 crashreporter-button-details = Тафсилот…
 crashreporter-loading-details = Бор шуда истодааст…
 crashreporter-view-report-title = Мундариҷаи гузориш
 crashreporter-comment-prompt = Шарҳеро илова кунед (шарҳҳо ба ҳама намоён мешаванд)
 crashreporter-report-info = Ин гузориш, инчунин, маълумоти техникиро дар бораи вазъияти барнома ҳангоми вайроншавӣ дар бар мегирад.
-crashreporter-send-report = Дар бораи ин садама ба мутахассисони «{ -vendor-short-name }» хабар расонед, то онҳо онро ислоҳ кунанд.
-crashreporter-include-url = Нишонии саҳифаеро, ки ман дар он будам, илова кунед.
+crashreporter-checkbox-test-hardware = Тафтиш кардани мушкилоти сахтафзор ва танзимот дар дастгоҳи ман.
+crashreporter-checkbox-send-report = Дар бораи ин садама ба мутахассисони «{ -vendor-short-name }» хабар расонед, то онҳо онро ислоҳ кунанд.
+crashreporter-checkbox-include-url = Нишонии саҳифаеро, ки ман дар он будам, илова кунед.
 crashreporter-submit-status = Пеш аз он ки шумо браузерро хомӯш ё аз нав оғоз мекунед, гузориши шумо дар бораи вайронӣ фиристода мешавад.
+crashreporter-submit-waiting-hardware-tests = Тафтиши мушкилоти сахтафзор ва танзимот…
 crashreporter-submit-in-progress = Гузориши шумо интиқол дода истодааст…
 crashreporter-submit-success = Гузориш бо муваффақият интиқол дода шуд!
 crashreporter-submit-failure = Ҳангоми интиқолдиҳии гузориши шумо хато ба миён омад.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Шумо метавонед тафсилоти и�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Абзори таҳлили вайроншавиҳои хурд иҷро нашуд
 # $path (String) - the file path
 crashreporter-error-opening-file = Файл кушода нашуд ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Феҳристи хонагӣ вуҷуд на�
 # $to (String) - the destination path
 crashreporter-error-moving-path = Интиқоли { $from } ба { $to } иҷро нашуд
 crashreporter-error-version-eol = Анҷоми муҳлати фаъолияти версия: гузоришҳо дар бораи вайронӣ дигар қабул карда намешаванд.
+crashreporter-error-failed-to-generate-minidump = Ин барнома маълумотеро дар бораи вайроншавӣ эҷод карда натавонист.

@@ -64,7 +64,7 @@ migration-selected-data-label = Ներմուծել ընտրված տվյալնե
 
 ##
 
-migration-select-all-option-label = Նշել բոլորը
+migration-select-all-option-label = Ընտրել բոլորը
 migration-bookmarks-option-label = Էջանիշեր
 # Favorites is used for Bookmarks when importing from Internet Explorer or
 # Edge, as this is the terminology for bookmarks on those browsers.
@@ -182,10 +182,16 @@ migration-wizard-progress-icon-completed =
     .aria-label = Ավարտված է
 migration-safari-password-import-header = Ներմուծեք գաղտնաբառեր Safari-ից
 migration-safari-password-import-steps-header = Safari-ի գաղտնաբառերը ներմուծելու համար՝
-migration-safari-password-import-step1 = Safari-ում բացեք «Safari» ցանկը և անցեք Նախապատվություններ > Գաղտնաբառեր
+migration-safari-password-import-step1 = Safari-ում՝ բացեք «Safari» ցանկը և գնացեք դեպի «Նախապատվություններ» > «Գաղտնաբառեր»
 migration-safari-password-import-step2 = Ընտրեք <img data-l10n-name="safari-icon-3dots"/> կոճակը և ընտրեք «Արտահանել բոլոր գաղտնաբառերը»
 migration-safari-password-import-step3 = Պահեք գաղտնաբառերի ֆայլը
 migration-safari-password-import-step4 = Օգտագործեք «Ընտրեք ֆայլը» ստորև՝ ձեր պահած գաղտնաբառերի ֆայլը ընտրելու համար
+migration-chrome-windows-password-import-steps-header = Chrome-ում.
+migration-chrome-windows-password-import-step2 = Ընտրեք «Կարգավորումներ» ցանկից։
+migration-chrome-windows-password-import-step3 = Ընտրեք «Ներբեռնել ֆայլը» և պահպանեք այն ձեր սարքում։
+migration-chrome-windows-password-import-step4 = Վերադարձեք այստեղ և սեղմեք «Ընտրեք ֆայլը»՝ ներմուծումն ավարտելու համար։
+migration-manual-password-import-skip-button = Բաց թողնել
+migration-manual-password-import-select-button = Ընտրեք Ֆայլ
 migration-safari-password-import-skip-button = Բաց թողնել
 migration-safari-password-import-select-button = Ընտրեք Ֆայլ
 # Shown in the migration wizard after importing bookmarks from another
@@ -232,9 +238,10 @@ migration-wizard-progress-success-extensions =
 #   $matched (Number): the number of matched imported extensions
 #   $quantity (Number): the number of total extensions found during import
 migration-wizard-progress-partial-success-extensions = { $matched }-ը { $quantity } ընդլայնումներից
+migration-wizard-progress-extensions-support-link = Իմացեք, թե ինչպես է { -brand-product-name }-ը համապատասխանում ընդլայնումներին
 # Shown in the migration wizard if there are no matched extensions
 # on import from supported browsers.
-migration-wizard-progress-no-matched-extensions = Համապատասխան ընդլայնումներ չկան
+migration-wizard-progress-no-matched-extensions = Համընկնող ընդլայնումներ չկան
 migration-wizard-progress-extensions-addons-link = Ընտրեք ընդլայնումներ { -brand-short-name }-ի համար
 
 ##
@@ -270,4 +277,6 @@ migration-wizard-progress-success-payment-methods =
         [one] { $quantity } վճարման եղանակ
        *[other] { $quantity } վճարման եղանակներ
     }
+migration-wizard-safari-permissions-sub-header = Safari-ի էջանիշներն ու զննարկման պատմությունը ներմուծելու համար՝
 migration-wizard-safari-instructions-continue = Ընտրեք «Շարունակել»
+migration-wizard-safari-instructions-folder = Ընտրեք Safari թղթապանակը ցանկից և ընտրեք «Բացել»

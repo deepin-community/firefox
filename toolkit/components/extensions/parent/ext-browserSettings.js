@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -334,6 +332,27 @@ ExtensionPreferencesManager.addSetting("zoomSiteSpecific", {
   },
 });
 
+ExtensionPreferencesManager.addSetting("verticalTabs", {
+  permission: "browserSettings",
+  prefNames: ["sidebar.verticalTabs"],
+
+  setCallback(value) {
+    return { [this.prefNames[0]]: value };
+  },
+
+  getCallback() {
+    return Services.prefs.getBoolPref("sidebar.verticalTabs", false);
+  },
+
+  validate() {
+    if (AppConstants.platform == "android") {
+      throw new ExtensionError(
+        `android is not a supported platform for verticalTabs.`
+      );
+    }
+  },
+});
+
 this.browserSettings = class extends ExtensionAPI {
   homePageOverrideListener(fire) {
     let listener = () => {
@@ -397,6 +416,9 @@ this.browserSettings = class extends ExtensionAPI {
         name,
       });
     }
+
+    const verticalTabsSettingsAPI = makeSettingsAPI("verticalTabs");
+    const verticalTabsSet = verticalTabsSettingsAPI.set;
 
     return {
       browserSettings: {
@@ -577,6 +599,16 @@ this.browserSettings = class extends ExtensionAPI {
               "zoomSiteSpecific",
               details.value
             );
+          },
+        }),
+        verticalTabs: Object.assign(verticalTabsSettingsAPI, {
+          set: details => {
+            if (typeof details.value !== "boolean") {
+              throw new ExtensionError(
+                `${details.value} is not a valid value for verticalTabs.`
+              );
+            }
+            return verticalTabsSet(details);
           },
         }),
         colorManagement: {

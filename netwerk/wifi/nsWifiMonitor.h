@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __nsWifiMonitor__
-#define __nsWifiMonitor__
+#ifndef _nsWifiMonitor_
+#define _nsWifiMonitor_
 
 #include "nsIWifiMonitor.h"
 #include "nsCOMPtr.h"
@@ -17,9 +17,9 @@
 #include "mozilla/Logging.h"
 #include "nsIObserver.h"
 #include "nsTArray.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Monitor.h"
 #include "WifiScanner.h"
+#include "nsTHashMap.h"
 
 namespace mozilla {
 class TestWifiMonitor;
@@ -38,14 +38,12 @@ class nsWifiAccessPoint;
 #  define kMacOSWifiMonitorStackSize (512 * 1024)
 #endif
 
-struct WifiListenerHolder {
-  RefPtr<nsIWifiListener> mListener;
+struct WifiListenerData {
   bool mShouldPoll;
   bool mHasSentData = false;
 
-  explicit WifiListenerHolder(nsIWifiListener* aListener,
-                              bool aShouldPoll = false)
-      : mListener(aListener), mShouldPoll(aShouldPoll) {}
+  explicit WifiListenerData(bool aShouldPoll = false)
+      : mShouldPoll(aShouldPoll) {}
 };
 
 class nsWifiMonitor final : public nsIWifiMonitor, public nsIObserver {
@@ -86,6 +84,9 @@ class nsWifiMonitor final : public nsIWifiMonitor, public nsIObserver {
            mNumPollingListeners > 0;
   };
 
+  template <typename CallbackFn>
+  nsresult NotifyListeners(CallbackFn&& aCallback);
+
 #ifdef ENABLE_TESTS
   // Test-only function that confirms we "should" be polling.  May be wrong
   // if somehow the polling tasks are not set to run on the background
@@ -97,7 +98,7 @@ class nsWifiMonitor final : public nsIWifiMonitor, public nsIObserver {
   nsCOMPtr<nsIThread> mThread;
 
   // Main thread only.
-  nsTArray<WifiListenerHolder> mListeners;
+  nsTHashMap<RefPtr<nsIWifiListener>, WifiListenerData> mListeners;
 
   // Background thread only.
   mozilla::UniquePtr<mozilla::WifiScanner> mWifiScanner;

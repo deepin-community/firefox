@@ -6,7 +6,7 @@
  */
 
 ChromeUtils.defineESModuleGetters(this, {
-  UrlbarUtils: "resource:///modules/UrlbarUtils.sys.mjs",
+  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(this, "UrlbarTestUtils", () => {
@@ -18,6 +18,9 @@ ChromeUtils.defineLazyGetter(this, "UrlbarTestUtils", () => {
 });
 
 add_task(async function test() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   // Open the urlbar view and enter search mode.
   await UrlbarTestUtils.promiseAutocompleteResultPopup({
     window,

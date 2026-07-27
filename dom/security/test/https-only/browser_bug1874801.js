@@ -9,7 +9,7 @@ const TAB_URL =
   "https://example.com/browser/dom/security/test/https-only/file_bug1874801.html";
 
 function assertImageLoaded(tab) {
-  return ContentTask.spawn(tab.linkedBrowser, {}, () => {
+  return SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     const img = content.document.getElementsByTagName("img")[0];
 
     ok(!!img, "Image tag should exist");
@@ -48,7 +48,7 @@ add_task(async function test_bug1874801() {
     TAB_URL,
     true
   );
-  undoCloseTab();
+  SessionWindowUI.undoCloseTab(window);
   const restoredTab = await restoredTabPromise;
 
   // Make sure the image was loaded via HTTPS

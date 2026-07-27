@@ -8,7 +8,7 @@ import {describe, it} from 'node:test';
 
 import expect from 'expect';
 
-import {interpolateFunction} from './Function.js';
+import {interpolateFunction, stringifyFunction} from './Function.js';
 
 describe('Function', function () {
   describe('interpolateFunction', function () {
@@ -18,7 +18,7 @@ describe('Function', function () {
           const test = PLACEHOLDER('test') as () => number;
           return test();
         },
-        {test: `() => 5`}
+        {test: `() => 5`},
       );
       expect(test()).toBe(5);
     });
@@ -28,9 +28,25 @@ describe('Function', function () {
           // Note the parenthesis will be removed by the typescript compiler.
           return (PLACEHOLDER('test') as () => number)();
         },
-        {test: `() => 5`}
+        {test: `() => 5`},
       );
       expect(test()).toBe(5);
+    });
+  });
+
+  describe('stringifyFunction', () => {
+    it('should work', async () => {
+      // @ts-expect-error no types
+      const {variations} = await import('../../../../function-fixture.mjs');
+      for (const v of variations) {
+        const fnStr = stringifyFunction(v);
+        try {
+          new Function(`(${fnStr})`);
+        } catch {
+          throw new Error(`Could not stringify:
+${v.toString()}`);
+        }
+      }
     });
   });
 });

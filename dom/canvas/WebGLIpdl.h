@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,19 +5,16 @@
 #ifndef WEBGLIPDL_H_
 #define WEBGLIPDL_H_
 
+#include "WebGLTypes.h"
 #include "gfxTypes.h"
 #include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtils.h"
 #include "mozilla/GfxMessageUtils.h"
+#include "mozilla/ParamTraits_STL.h"
+#include "mozilla/ParamTraits_TiedFields.h"
 #include "mozilla/dom/BindingIPCUtils.h"
-#include "mozilla/ipc/IPDLParamTraits.h"
 #include "mozilla/ipc/Shmem.h"
 #include "mozilla/layers/LayersSurfaces.h"
-#include "TiedFields.h"
-#include "TupleUtils.h"
-#include "WebGLTypes.h"
-
-#include <memory>
 
 namespace mozilla {
 namespace webgl {
@@ -119,53 +115,53 @@ class RaiiShmem final {
 using Int32Vector = std::vector<int32_t>;
 
 }  // namespace webgl
+}  // namespace mozilla
 
-namespace ipc {
+namespace IPC {
 
 template <>
-struct IPDLParamTraits<mozilla::webgl::FrontBufferSnapshotIpc> final {
+struct ParamTraits<mozilla::webgl::FrontBufferSnapshotIpc> final {
   using T = mozilla::webgl::FrontBufferSnapshotIpc;
 
-  static void Write(IPC::MessageWriter* const writer, IProtocol* actor, T& in) {
+  static void Write(IPC::MessageWriter* const writer, T& in) {
     WriteParam(writer, in.surfSize);
-    WriteIPDLParam(writer, actor, std::move(in.shmem));
+    WriteParam(writer, in.byteStride);
+    WriteParam(writer, std::move(in.shmem));
   }
 
-  static bool Read(IPC::MessageReader* const reader, IProtocol* actor,
-                   T* const out) {
+  static bool Read(IPC::MessageReader* const reader, T* const out) {
     return ReadParam(reader, &out->surfSize) &&
-           ReadIPDLParam(reader, actor, &out->shmem);
+           ReadParam(reader, &out->byteStride) &&
+           ReadParam(reader, &out->shmem);
   }
 };
 
 // -
 
 template <>
-struct IPDLParamTraits<mozilla::webgl::ReadPixelsResultIpc> final {
+struct ParamTraits<mozilla::webgl::ReadPixelsResultIpc> final {
   using T = mozilla::webgl::ReadPixelsResultIpc;
 
-  static void Write(IPC::MessageWriter* const writer, IProtocol* actor, T& in) {
+  static void Write(MessageWriter* const writer, T& in) {
     WriteParam(writer, in.subrect);
     WriteParam(writer, in.byteStride);
-    WriteIPDLParam(writer, actor, std::move(in.shmem));
+    WriteParam(writer, std::move(in.shmem));
   }
 
-  static bool Read(IPC::MessageReader* const reader, IProtocol* actor,
-                   T* const out) {
+  static bool Read(MessageReader* const reader, T* const out) {
     return ReadParam(reader, &out->subrect) &&
            ReadParam(reader, &out->byteStride) &&
-           ReadIPDLParam(reader, actor, &out->shmem);
+           ReadParam(reader, &out->shmem);
   }
 };
 
 // -
 
 template <>
-struct IPDLParamTraits<mozilla::webgl::TexUnpackBlobDesc> final {
+struct ParamTraits<mozilla::webgl::TexUnpackBlobDesc> final {
   using T = mozilla::webgl::TexUnpackBlobDesc;
 
-  static void Write(IPC::MessageWriter* const writer, IProtocol* actor,
-                    T&& in) {
+  static void Write(MessageWriter* const writer, T&& in) {
     WriteParam(writer, in.imageTarget);
     WriteParam(writer, in.size);
     WriteParam(writer, in.srcAlphaType);
@@ -173,32 +169,21 @@ struct IPDLParamTraits<mozilla::webgl::TexUnpackBlobDesc> final {
     MOZ_RELEASE_ASSERT(!in.pboOffset);
     WriteParam(writer, in.structuredSrcSize);
     MOZ_RELEASE_ASSERT(!in.image);
-    WriteIPDLParam(writer, actor, std::move(in.sd));
-    MOZ_RELEASE_ASSERT(!in.dataSurf);
+    WriteParam(writer, std::move(in.sd));
+    MOZ_RELEASE_ASSERT(!in.sourceSurf);
     WriteParam(writer, in.unpacking);
     WriteParam(writer, in.applyUnpackTransforms);
   }
 
-  static bool Read(IPC::MessageReader* const reader, IProtocol* actor,
-                   T* const out) {
+  static bool Read(MessageReader* const reader, T* const out) {
     return ReadParam(reader, &out->imageTarget) &&
            ReadParam(reader, &out->size) &&
            ReadParam(reader, &out->srcAlphaType) &&
            ReadParam(reader, &out->structuredSrcSize) &&
-           ReadIPDLParam(reader, actor, &out->sd) &&
-           ReadParam(reader, &out->unpacking) &&
+           ReadParam(reader, &out->sd) && ReadParam(reader, &out->unpacking) &&
            ReadParam(reader, &out->applyUnpackTransforms);
   }
 };
-
-}  // namespace ipc
-
-namespace webgl {
-using Int32Vector = std::vector<int32_t>;
-}  // namespace webgl
-}  // namespace mozilla
-
-namespace IPC {
 
 // -
 
@@ -246,78 +231,14 @@ struct ParamTraits<mozilla::dom::PredefinedColorSpace> final
     : public mozilla::dom::WebIDLEnumSerializer<
           mozilla::dom::PredefinedColorSpace> {};
 
-// -
-// ParamTraits_IsEnumCase
-
-/*
-`IsEnumCase(T) -> bool` guarantees that we never have false negatives or false
-positives due to adding or removing enum cases to enums, and forgetting to
-update their serializations. Also, it allows enums to be non-continguous, unlike
-ContiguousEnumSerializer.
-*/
-
-template <class T>
-struct ParamTraits_IsEnumCase {
-  static bool Write(MessageWriter* const writer, const T& in) {
-    MOZ_ASSERT(mozilla::IsEnumCase(in));
-    const auto shadow = static_cast<std::underlying_type_t<T>>(in);
-    WriteParam(writer, shadow);
-    return true;
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    auto shadow = std::underlying_type_t<T>{};
-    if (!ReadParam(reader, &shadow)) return false;
-    const auto e = mozilla::AsEnumCase<T>(shadow);
-    if (!e) return false;
-    *out = *e;
-    return true;
-  }
-};
-
-// -
-
-#define USE_IS_ENUM_CASE(T) \
-  template <>               \
-  struct ParamTraits<T> : public ParamTraits_IsEnumCase<T> {};
-
-USE_IS_ENUM_CASE(mozilla::webgl::OptionalRenderableFormatBits)
-
-#undef USE_IS_ENUM_CASE
+template <>
+struct ParamTraits<mozilla::webgl::OptionalRenderableFormatBits> final
+    : public BitFlagsEnumSerializer<
+          mozilla::webgl::OptionalRenderableFormatBits,
+          mozilla::webgl::kAllOptionalRenderableFormatBits> {};
 
 // -
 // ParamTraits_TiedFields
-
-template <class T>
-struct ParamTraits_TiedFields {
-  static_assert(mozilla::AssertTiedFieldsAreExhaustive<T>());
-
-  static void Write(MessageWriter* const writer, const T& in) {
-    const auto& fields = mozilla::TiedFields(in);
-    mozilla::MapTuple(fields, [&](const auto& field) {
-      WriteParam(writer, field);
-      return true;  // ignored
-    });
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    const auto& fields = mozilla::TiedFields(*out);
-    bool ok = true;
-    mozilla::MapTuple(fields, [&](auto& field) {
-      if (ok) {
-        ok &= ReadParam(reader, &field);
-      }
-      return true;  // ignored
-    });
-    return ok;
-  }
-};
-
-template <class U, size_t N>
-struct ParamTraits<mozilla::PaddingField<U, N>> final
-    : public ParamTraits_TiedFields<mozilla::PaddingField<U, N>> {};
-
-// -
 
 template <>
 struct ParamTraits<mozilla::webgl::InitContextDesc> final
@@ -331,6 +252,10 @@ template <>
 struct ParamTraits<mozilla::webgl::OpaqueFramebufferOptions> final
     : public ParamTraits_TiedFields<mozilla::webgl::OpaqueFramebufferOptions> {
 };
+
+template <>
+struct ParamTraits<mozilla::webgl::ShaderPrecisionFormat> final
+    : public ParamTraits_TiedFields<mozilla::webgl::ShaderPrecisionFormat> {};
 
 // -
 
@@ -548,64 +473,6 @@ struct ParamTraits<mozilla::webgl::ActiveUniformBlockInfo> final {
 // -
 
 template <>
-struct ParamTraits<mozilla::webgl::ShaderPrecisionFormat> final {
-  using T = mozilla::webgl::ShaderPrecisionFormat;
-
-  static void Write(MessageWriter* const writer, const T& in) {
-    WriteParam(writer, in.rangeMin);
-    WriteParam(writer, in.rangeMax);
-    WriteParam(writer, in.precision);
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    return ReadParam(reader, &out->rangeMin) &&
-           ReadParam(reader, &out->rangeMax) &&
-           ReadParam(reader, &out->precision);
-  }
-};
-
-// -
-
-template <typename U, size_t N>
-struct ParamTraits<std::array<U, N>> final {
-  using T = std::array<U, N>;
-
-  static void Write(MessageWriter* const writer, const T& in) {
-    for (const auto& v : in) {
-      WriteParam(writer, v);
-    }
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    for (auto& v : *out) {
-      if (!ReadParam(reader, &v)) return false;
-    }
-    return true;
-  }
-};
-
-template <typename U, size_t N>
-struct ParamTraits<U[N]> final {
-  using T = U[N];
-  static constexpr size_t kByteSize = sizeof(U) * N;
-
-  static_assert(std::is_trivial<U>::value);
-
-  static void Write(MessageWriter* const writer, const T& in) {
-    writer->WriteBytes(in, kByteSize);
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    if (!reader->HasBytesAvailable(kByteSize)) {
-      return false;
-    }
-    return reader->ReadBytesInto(*out, kByteSize);
-  }
-};
-
-// -
-
-template <>
 struct ParamTraits<mozilla::webgl::GetUniformData> final {
   using T = mozilla::webgl::GetUniformData;
 
@@ -651,32 +518,6 @@ struct ParamTraits<mozilla::avec3<U>> final {
   static bool Read(MessageReader* const reader, T* const out) {
     return ReadParam(reader, &out->x) && ReadParam(reader, &out->y) &&
            ReadParam(reader, &out->z);
-  }
-};
-
-// -
-
-template <class U>
-struct ParamTraits<std::optional<U>> final {
-  using T = std::optional<U>;
-
-  static void Write(MessageWriter* const writer, const T& in) {
-    WriteParam(writer, bool{in});
-    if (in) {
-      WriteParam(writer, *in);
-    }
-  }
-
-  static bool Read(MessageReader* const reader, T* const out) {
-    bool isSome;
-    if (!ReadParam(reader, &isSome)) return false;
-
-    if (!isSome) {
-      out->reset();
-      return true;
-    }
-    out->emplace();
-    return ReadParam(reader, &**out);
   }
 };
 

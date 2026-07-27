@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +12,7 @@
 using namespace js;
 using namespace js::jit;
 
-#if defined(ENABLE_WASM_TAIL_CALLS) && !defined(JS_CODEGEN_NONE)
+#ifndef JS_CODEGEN_NONE
 
 // Check if wasmMarkCallAsSlow produces the byte sequence that can
 // wasmCheckSlowCallsite detect.
@@ -94,4 +91,4 @@ BEGIN_TEST(testWasmCheckSlowCallMarkerMiss) {
 }
 END_TEST(testWasmCheckSlowCallMarkerMiss)
 
-#endif  // ENABLE_WASM_TAIL_CALLS
+#endif

@@ -4,10 +4,6 @@
 
 xpinstall-prompt = { -brand-short-name } menghalang laman ini daripada meminta anda memasang perisian dalam komputer.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = Pemasangan perisian sedang dinyahdayakan. Klik Dayakan dan 
 xpinstall-disabled-button =
     .label = Dayakan
     .accesskey = a
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } ditambah ke { -brand-short-name }
@@ -38,12 +33,10 @@ webext-perms-update-menu-item = { $addonName } perlukan keizinan baru
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = Buang { $name } daripada { -brand-shorter-name }?
 addon-removal-button = Buang
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying = Memuat turun dan mengesahkan { $addonCount } add-ons…
 addon-download-verifying = Mengesahkan
-
 addon-install-cancel-button =
     .label = Batal
     .accesskey = B

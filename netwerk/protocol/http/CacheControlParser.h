@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef CacheControlParser_h__
-#define CacheControlParser_h__
+#ifndef CacheControlParser_h_
+#define CacheControlParser_h_
 
 #include "mozilla/Tokenizer.h"
 
@@ -27,22 +25,7 @@ class CacheControlParser final : Tokenizer {
   bool Immutable();
 
  private:
-  enum CacheControlDirective : uint32_t {
-    NO_CACHE = 0,
-    NO_STORE,
-    MAX_AGE,
-    MAX_STALE,
-    MIN_FRESH,
-    STALE_WHILE_REVALIDATE,
-    PUBLIC,
-    PRIVATE,
-    IMMUTABLE,
-    DIRECTIVE_UNKNOWN
-  };
-  Token mDirectiveTokens[DIRECTIVE_UNKNOWN];
-
   void Directive();
-
   void IgnoreDirective();
   [[nodiscard]] bool SecondsValue(uint32_t* seconds, uint32_t defaultVal = 0);
 

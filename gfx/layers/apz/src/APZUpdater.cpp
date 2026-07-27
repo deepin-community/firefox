@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -231,16 +229,26 @@ void APZUpdater::UpdateScrollDataAndTreeState(
               self->mScrollData[id].SetWasUpdateSkipped(false);
             }
 
-            if (isFirstPaint && originatingLayersIdWasSkipped) {
-              // If the given |aOriginatingLayersId| data wasn't used for
-              // updating, it's likly that the parent process hasn't yet
-              // received the LayersId as "ReferentId", thus we need to process
-              // it in a subsequent update where we got the "ReferentId".
-              //
-              // NOTE: We restrict the above previous scroll data prepending to
-              // the first paint case, otherwise the cumulative scroll data may
-              // be exploded if we have never received the "ReferenceId".
-              self->mScrollData[aOriginatingLayersId].SetWasUpdateSkipped(true);
+            if (isFirstPaint) {
+              if (originatingLayersIdWasSkipped) {
+                // If the given |aOriginatingLayersId| data wasn't used for
+                // updating, it's likely that the parent process hasn't yet
+                // received the LayersId as "ReferentId", thus we need to
+                // process it in a subsequent update where we got the
+                // "ReferentId".
+                //
+                // NOTE: We restrict the above previous scroll data prepending
+                // to the first paint case, otherwise the cumulative scroll data
+                // may be exploded if we have never received the "ReferenceId".
+                self->mScrollData[aOriginatingLayersId].SetWasUpdateSkipped(
+                    true);
+              } else {
+                // Clobber the first-paint flag so that we will never run into
+                // the first-paint branch in
+                // AsyncPanZoomController::NotifyMainThreadTransaction even if
+                // the next transaction is a paint-skip transaction.
+                self->mScrollData[aOriginatingLayersId].SetIsFirstPaint(false);
+              }
             }
           }));
 }

@@ -149,6 +149,7 @@ PK11_IsUserCert(PK11SlotInfo *slot, CERTCertificate *cert,
     if (theClass == CKO_PUBLIC_KEY) {
         SECKEYPublicKey *pubKey = CERT_ExtractPublicKey(cert);
         CK_ATTRIBUTE theTemplate;
+        PRBool needUnsignedAdjust = PR_FALSE;
 
         if (pubKey == NULL) {
             return PR_FALSE;
@@ -161,14 +162,17 @@ PK11_IsUserCert(PK11SlotInfo *slot, CERTCertificate *cert,
             case rsaOaepKey:
                 PK11_SETATTRS(&theTemplate, CKA_MODULUS, pubKey->u.rsa.modulus.data,
                               pubKey->u.rsa.modulus.len);
+                needUnsignedAdjust = PR_TRUE;
                 break;
             case dsaKey:
                 PK11_SETATTRS(&theTemplate, CKA_VALUE, pubKey->u.dsa.publicValue.data,
                               pubKey->u.dsa.publicValue.len);
+                needUnsignedAdjust = PR_TRUE;
                 break;
             case dhKey:
                 PK11_SETATTRS(&theTemplate, CKA_VALUE, pubKey->u.dh.publicValue.data,
                               pubKey->u.dh.publicValue.len);
+                needUnsignedAdjust = PR_TRUE;
                 break;
             case ecKey:
             case edKey:
@@ -177,9 +181,18 @@ PK11_IsUserCert(PK11SlotInfo *slot, CERTCertificate *cert,
                               pubKey->u.ec.publicValue.data,
                               pubKey->u.ec.publicValue.len);
                 break;
+            case mldsaKey:
+                PK11_SETATTRS(&theTemplate, CKA_VALUE,
+                              pubKey->u.mldsa.publicValue.data,
+                              pubKey->u.mldsa.publicValue.len);
+                break;
+            case kyberKey:
+                PK11_SETATTRS(&theTemplate, CKA_VALUE,
+                              pubKey->u.kyber.publicValue.data,
+                              pubKey->u.kyber.publicValue.len);
+                break;
             case keaKey:
             case fortezzaKey:
-            case kyberKey:
             case nullKey:
                 /* fall through and return false */
                 break;
@@ -189,7 +202,7 @@ PK11_IsUserCert(PK11SlotInfo *slot, CERTCertificate *cert,
             SECKEY_DestroyPublicKey(pubKey);
             return PR_FALSE;
         }
-        if (pubKey->keyType != ecKey && pubKey->keyType != edKey && pubKey->keyType != ecMontKey) {
+        if (needUnsignedAdjust) {
             pk11_SignedToUnsigned(&theTemplate);
         }
         if (pk11_FindObjectByTemplate(slot, &theTemplate, 1) != CK_INVALID_HANDLE) {
@@ -637,7 +650,7 @@ transfer_uri_certs_to_collection(nssList *certList, PK11URI *uri,
          * CKA_ID from the URI
          */
         if (id && (id->len != certs[i]->id.size ||
-                   memcmp(id, certs[i]->id.data, certs[i]->id.size)))
+                   memcmp(id->data, certs[i]->id.data, certs[i]->id.size)))
             continue;
         tokens = nssPKIObject_GetTokens(&certs[i]->object, NULL);
         if (tokens) {
@@ -1104,25 +1117,11 @@ PK11_GetPubIndexKeyID(CERTCertificate *cert)
     if (pubk == NULL)
         return NULL;
 
-    switch (pubk->keyType) {
-        case rsaKey:
-            newItem = SECITEM_DupItem(&pubk->u.rsa.modulus);
-            break;
-        case dsaKey:
-            newItem = SECITEM_DupItem(&pubk->u.dsa.publicValue);
-            break;
-        case dhKey:
-            newItem = SECITEM_DupItem(&pubk->u.dh.publicValue);
-            break;
-        case ecKey:
-        case edKey:
-        case ecMontKey:
-            newItem = SECITEM_DupItem(&pubk->u.ec.publicValue);
-            break;
-        case fortezzaKey:
-        default:
-            newItem = NULL; /* Fortezza Fix later... */
+    const SECItem *oldItem = PK11_GetPublicValueFromPublicKey(pubk);
+    if (oldItem) {
+        newItem = SECITEM_DupItem(oldItem);
     }
+
     SECKEY_DestroyPublicKey(pubk);
     /* make hash of it */
     return newItem;
@@ -1327,7 +1326,8 @@ PK11_FindPrivateKeyFromCert(PK11SlotInfo *slot, CERTCertificate *cert,
     if (keyh == CK_INVALID_HANDLE) {
         return NULL;
     }
-    return PK11_MakePrivKey(slot, nullKey, PR_TRUE, keyh, wincx);
+
+    return pk11_MakePrivKey(slot, nullKey, PR_FALSE, keyh, wincx);
 }
 
 /*
@@ -2099,7 +2099,7 @@ PK11_FindKeyByAnyCert(CERTCertificate *cert, void *wincx)
         }
     }
     if (keyHandle != CK_INVALID_HANDLE) {
-        privKey = PK11_MakePrivKey(slot, nullKey, PR_TRUE, keyHandle, wincx);
+        privKey = pk11_MakePrivKey(slot, nullKey, PR_FALSE, keyHandle, wincx);
     }
     if (slot) {
         PK11_FreeSlot(slot);
@@ -2506,7 +2506,7 @@ PK11_FindKeyByDERCert(PK11SlotInfo *slot, CERTCertificate *cert,
         return NULL;
     }
 
-    return PK11_MakePrivKey(slot, nullKey, PR_TRUE, keyHandle, wincx);
+    return pk11_MakePrivKey(slot, nullKey, PR_FALSE, keyHandle, wincx);
 }
 
 SECStatus

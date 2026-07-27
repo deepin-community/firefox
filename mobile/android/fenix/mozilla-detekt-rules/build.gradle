@@ -1,14 +1,15 @@
 apply plugin: 'kotlin'
 
 dependencies {
-  compileOnly ComponentsDependencies.tools_detekt_api
-  implementation ComponentsDependencies.androidx_annotation
+  compileOnly libs.detekt.api
 
-  testImplementation ComponentsDependencies.tools_detekt_api
-  testImplementation ComponentsDependencies.tools_detekt_test
-  testImplementation FenixDependencies.junitApi
-  testImplementation FenixDependencies.junitParams
-  testRuntimeOnly FenixDependencies.junitEngine
+  implementation libs.androidx.annotation
+
+  testImplementation libs.detekt.api
+  testImplementation libs.detekt.test
+  testImplementation platform(libs.junit.bom)
+  testImplementation libs.junit.jupiter
+  testRuntimeOnly libs.junit.platform.launcher
 }
 
 test {

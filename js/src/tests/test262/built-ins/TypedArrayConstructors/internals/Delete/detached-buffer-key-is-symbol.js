@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -26,6 +25,6 @@ testWithTypedArrayConstructors(function(TA) {
 
   sample[s] = 1;
   assert.sameValue(delete sample[s], true, 'The value of `delete sample[s]` is true');
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

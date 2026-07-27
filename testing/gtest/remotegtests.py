@@ -7,8 +7,11 @@
 import argparse
 import datetime
 import glob
+import json
 import os
+import pathlib
 import posixpath
+import re
 import shutil
 import sys
 import tempfile
@@ -18,20 +21,22 @@ import traceback
 import mozcrash
 import mozdevice
 import mozinfo
-import mozlog
 import six
+from mozlog import commandline
 
 LOGGER_NAME = "gtest"
-log = mozlog.unstructured.getLogger(LOGGER_NAME)
+log = None
+PERFHERDER_MATCHER = re.compile(r"PERFHERDER_DATA:\s*(\{.*\})\s*$")
 
 
-class RemoteGTests(object):
+class RemoteGTests:
     """
     A test harness to run gtest on Android.
     """
 
     def __init__(self):
         self.device = None
+        self.perfherder_data = []
 
     def build_environment(self, shuffle, test_filter):
         """
@@ -43,8 +48,6 @@ class RemoteGTests(object):
         env["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
         env["MOZ_CRASHREPORTER"] = "1"
         env["MOZ_RUN_GTEST"] = "1"
-        # custom output parser is mandatory on Android
-        env["MOZ_TBPL_PARSER"] = "1"
         env["MOZ_GTEST_LOG_PATH"] = self.remote_log
         env["MOZ_GTEST_CWD"] = self.remote_profile
         env["MOZ_GTEST_MINIDUMPS_PATH"] = self.remote_minidumps
@@ -110,17 +113,17 @@ class RemoteGTests(object):
         self.device.push(libxul_path, self.remote_libdir)
 
         for buildid in ["correct", "broken", "missing"]:
-            libxul_buildid_name = "libxul_{}_buildid.so".format(buildid)
+            libxul_buildid_name = f"libxul_{buildid}_buildid.so"
             libxul_buildid_path = os.path.join(
                 os.path.dirname(libxul_path), libxul_buildid_name
             )
             if os.path.isfile(libxul_buildid_path):
                 self.device.push(libxul_buildid_path, self.remote_libdir)
 
-        # Push support files to device. Avoid sub-directories so that libxul.so
+        # Push support files to device. Avoid gtest_bin so that libxul.so
         # is not included.
-        for f in glob.glob(os.path.join(test_dir, "*")):
-            if not os.path.isdir(f):
+        for f in glob.glob(os.path.join(test_dir, "**"), recursive=True):
+            if not "gtest_bin" in os.path.abspath(f):
                 self.device.push(f, self.remote_profile)
 
         if test_filter is not None:
@@ -142,9 +145,24 @@ class RemoteGTests(object):
             )
         else:
             self.device.launch_fennec(self.package, moz_env=env, extra_args=args)
-        waiter = AppWaiter(self.device, self.remote_log)
+        waiter = AppWaiter(
+            self.device, self.remote_log, on_perfherder=self.perfherder_data.append
+        )
         timed_out = waiter.wait(self.package)
         self.shutdown(use_kill=True if timed_out else False)
+        if self.perfherder_data and "MOZ_AUTOMATION" in os.environ:
+            upload_dir = pathlib.Path(os.getenv("MOZ_UPLOAD_DIR"))
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            merged_perfherder_data = self.merge_perfherder_data(self.perfherder_data)
+            for framework_name, data in merged_perfherder_data.items():
+                file_name = (
+                    "perfherder-data-gtest.json"
+                    if len(merged_perfherder_data) == 1
+                    else f"perfherder-data-gtest-{framework_name}.json"
+                )
+                out_path = upload_dir / file_name
+                with out_path.open("w", encoding="utf-8") as f:
+                    json.dump(data, f)
         if self.check_for_crashes(symbols_path):
             return False
         return True
@@ -239,8 +257,30 @@ class RemoteGTests(object):
             self.device.rm(self.remote_minidumps, recursive=True, force=True)
             self.device.rm(self.remote_libdir, recursive=True, force=True)
 
+    def merge_perfherder_data(self, perfherder_data):
+        grouped = {}
 
-class AppWaiter(object):
+        for data in perfherder_data:
+            framework_name = data.get("framework", {}).get("name")
+            suites_by_name = grouped.setdefault(framework_name, {})
+            for suite in data.get("suites", []):
+                suite_name = suite.get("name")
+                suite_data = suites_by_name.setdefault(
+                    suite_name, {"name": suite_name, "subtests": []}
+                )
+                suite_data["subtests"].extend(suite.get("subtests", []))
+
+        results = {}
+        for framework_name, suites in grouped.items():
+            results[framework_name] = {
+                "framework": {"name": framework_name},
+                "suites": list(suites.values()),
+            }
+
+        return results
+
+
+class AppWaiter:
     def __init__(
         self,
         device,
@@ -249,6 +289,7 @@ class AppWaiter(object):
         test_proc_no_output_timeout=300,
         test_proc_start_timeout=60,
         output_poll_interval=10,
+        on_perfherder=None,
     ):
         self.device = device
         self.remote_log = remote_log
@@ -261,6 +302,7 @@ class AppWaiter(object):
         self.output_poll_interval = output_poll_interval
         self.last_output_time = datetime.datetime.now()
         self.remote_log_len = 0
+        self.on_perfherder = on_perfherder or (lambda _data: None)
 
     def start_timed_out(self):
         if datetime.datetime.now() - self.start_time > self.start_timeout_delta:
@@ -307,7 +349,7 @@ class AppWaiter(object):
         """
         top = self.wait_for_start(package)
         if top != package:
-            log.testFail("gtest | %s failed to start" % package)
+            log.error("gtest | %s failed to start" % package)
             return
         while not self.timed_out():
             if not self.update_log():
@@ -318,13 +360,11 @@ class AppWaiter(object):
             time.sleep(self.output_poll_interval)
         self.update_log()
         if self.timed_out():
-            log.testFail(
-                "gtest | timed out after %d seconds", self.timeout_delta.seconds
-            )
+            log.error("gtest | timed out after %d seconds" % self.timeout_delta.seconds)
         elif self.output_timed_out():
-            log.testFail(
-                "gtest | timed out after %d seconds without output",
-                self.output_timeout_delta.seconds,
+            log.error(
+                "gtest | timed out after %d seconds without output"
+                % self.output_timeout_delta.seconds
             )
         else:
             log.info("gtest | wait for %s complete; top activity=%s" % (package, top))
@@ -359,15 +399,18 @@ class AppWaiter(object):
         self.remote_log_len += len(new_content)
         for line in new_content.lstrip("\n").split("\n"):
             print(line)
+            match = PERFHERDER_MATCHER.search(line)
+            if match:
+                data = json.loads(match.group(1))
+                self.on_perfherder(data)
         self.last_output_time = datetime.datetime.now()
         return True
 
 
 class remoteGtestOptions(argparse.ArgumentParser):
     def __init__(self):
-        super(remoteGtestOptions, self).__init__(
-            usage="usage: %prog [options] test_filter"
-        )
+        super().__init__(usage="usage: %prog [options] test_filter")
+        commandline.add_logging_group(self)
         self.add_argument(
             "--package",
             dest="package",
@@ -443,8 +486,10 @@ def update_mozinfo():
 
 
 def main():
+    global log
     parser = remoteGtestOptions()
     options = parser.parse_args()
+    log = commandline.setup_logging("gtest", options, {"raw": sys.stdout})
     args = options.args
     if not options.libxul_path:
         parser.error("--libxul is required")

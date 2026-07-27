@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,10 +30,9 @@ struct UserInteractionKey {
 
 namespace {
 // Set to true once this global state has been initialized.
-bool gInitDone = false;
+bool gTelemetryUserInteractionInitDone = false;
 
-bool gCanRecordBase;
-bool gCanRecordExtended;
+bool gTelemetryUserInteractionCanRecord;
 }  // namespace
 
 namespace {
@@ -51,20 +48,18 @@ const char* UserInteractionInfo::name() const {
 //
 // EXTERNALLY VISIBLE FUNCTIONS in namespace TelemetryUserInteraction::
 
-void TelemetryUserInteraction::InitializeGlobalState(bool aCanRecordBase,
-                                                     bool aCanRecordExtended) {
+void TelemetryUserInteraction::InitializeGlobalState(bool aCanRecord) {
   if (!XRE_IsParentProcess()) {
     return;
   }
 
   MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(!gInitDone,
+  MOZ_ASSERT(!gTelemetryUserInteractionInitDone,
              "TelemetryUserInteraction::InitializeGlobalState "
              "may only be called once");
 
-  gCanRecordBase = aCanRecordBase;
-  gCanRecordExtended = aCanRecordExtended;
-  gInitDone = true;
+  gTelemetryUserInteractionCanRecord = aCanRecord;
+  gTelemetryUserInteractionInitDone = true;
 }
 
 void TelemetryUserInteraction::DeInitializeGlobalState() {
@@ -73,16 +68,16 @@ void TelemetryUserInteraction::DeInitializeGlobalState() {
   }
 
   MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(gInitDone);
-  if (!gInitDone) {
+  MOZ_ASSERT(gTelemetryUserInteractionInitDone);
+  if (!gTelemetryUserInteractionInitDone) {
     return;
   }
 
-  gInitDone = false;
+  gTelemetryUserInteractionInitDone = false;
 }
 
 bool TelemetryUserInteraction::CanRecord(const nsAString& aName) {
-  if (!gCanRecordBase) {
+  if (!gTelemetryUserInteractionCanRecord) {
     return false;
   }
 

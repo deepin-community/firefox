@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -162,7 +161,7 @@ void gfxDWriteFont::SystemTextQualityChanged() {
   // flush cached stuff that depended on the old setting, and force
   // reflow everywhere to ensure we are using correct glyph metrics.
   gfxPlatform::FlushFontAndWordCaches();
-  gfxPlatform::ForceGlobalReflow(gfxPlatform::NeedsReframe::No);
+  gfxPlatform::ForceGlobalReflow(gfxPlatform::GlobalReflowFlags::None);
 }
 
 mozilla::Atomic<bool> gfxDWriteFont::sForceGDIClassicEnabled{true};
@@ -685,7 +684,7 @@ int32_t gfxDWriteFont::GetGlyphWidth(uint16_t aGID) {
 }
 
 bool gfxDWriteFont::GetForceGDIClassic() const {
-  return sForceGDIClassicEnabled &&
+  return sForceGDIClassicEnabled && mStyle.allowForceGDIClassic &&
          static_cast<gfxDWriteFontEntry*>(mFontEntry.get())
              ->GetForceGDIClassic() &&
          GetAdjustedSize() <= gfxDWriteFontList::PlatformFontList()
@@ -741,7 +740,7 @@ gfxFloat gfxDWriteFont::MeasureGlyphWidth(uint16_t aGlyph) {
     // Mark the font as invalid, and wipe the fontEntry's charmap so that font
     // selection will skip it; we'll use a fallback font instead.
     mIsValid = false;
-    GetFontEntry()->mCharacterMap = new gfxCharacterMap();
+    GetFontEntry()->mCharacterMap = new gfxCharacterMap(0);
     GetFontEntry()->mShmemCharacterMap = nullptr;
     gfxCriticalError() << "Exception occurred measuring glyph width for "
                        << GetFontEntry()->Name().get();
@@ -775,7 +774,7 @@ bool gfxDWriteFont::GetGlyphBounds(uint16_t aGID, gfxRect* aBounds,
     // Mark the font as invalid, and wipe the fontEntry's charmap so that font
     // selection will skip it; we'll use a fallback font instead.
     mIsValid = false;
-    GetFontEntry()->mCharacterMap = new gfxCharacterMap();
+    GetFontEntry()->mCharacterMap = new gfxCharacterMap(0);
     GetFontEntry()->mShmemCharacterMap = nullptr;
     gfxCriticalError() << "Exception occurred measuring glyph bounds for "
                        << GetFontEntry()->Name().get();
@@ -832,13 +831,13 @@ already_AddRefed<ScaledFont> gfxDWriteFont::GetScaledFont(
 
   if (forceGDI) {
     if (mAzureScaledFontGDI.compareExchange(nullptr, newScaledFont.get())) {
-      Unused << newScaledFont.forget();
+      newScaledFont.forget().leak();
       mAzureScaledFontUsedClearType = useClearType;
     }
     scaledFont = mAzureScaledFontGDI;
   } else {
     if (mAzureScaledFont.compareExchange(nullptr, newScaledFont.get())) {
-      Unused << newScaledFont.forget();
+      newScaledFont.forget().leak();
       mAzureScaledFontUsedClearType = useClearType;
     }
     scaledFont = mAzureScaledFont;

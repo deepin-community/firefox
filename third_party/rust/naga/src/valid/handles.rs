@@ -1,16 +1,17 @@
 //! Implementation of `Validator::validate_module_handles`.
 
+use core::{convert::TryInto, hash::Hash};
+
+use super::{TypeError, ValidationError};
+use crate::non_max_u32::NonMaxU32;
 use crate::{
     arena::{BadHandle, BadRangeError},
-    Handle,
+    diagnostic_filter::DiagnosticFilterNode,
+    EntryPoint, Handle,
 };
-
-use crate::non_max_u32::NonMaxU32;
 use crate::{Arena, UniqueArena};
 
-use super::ValidationError;
-
-use std::{convert::TryInto, hash::Hash};
+use alloc::string::ToString;
 
 impl super::Validator {
     /// Validates that all handles within `module` are:
@@ -39,38 +40,94 @@ impl super::Validator {
             ref types,
             ref special_types,
             ref global_expressions,
+            ref diagnostic_filters,
+            ref diagnostic_filter_leaf,
+            ref doc_comments,
         } = module;
 
-        // NOTE: Types being first is important. All other forms of validation depend on this.
-        for (this_handle, ty) in types.iter() {
-            match ty.inner {
-                crate::TypeInner::Scalar { .. }
-                | crate::TypeInner::Vector { .. }
-                | crate::TypeInner::Matrix { .. }
-                | crate::TypeInner::ValuePointer { .. }
-                | crate::TypeInner::Atomic { .. }
-                | crate::TypeInner::Image { .. }
-                | crate::TypeInner::Sampler { .. }
-                | crate::TypeInner::AccelerationStructure
-                | crate::TypeInner::RayQuery => (),
-                crate::TypeInner::Pointer { base, space: _ } => {
-                    this_handle.check_dep(base)?;
-                }
-                crate::TypeInner::Array { base, .. }
-                | crate::TypeInner::BindingArray { base, .. } => {
-                    this_handle.check_dep(base)?;
-                }
-                crate::TypeInner::Struct {
-                    ref members,
-                    span: _,
-                } => {
-                    this_handle.check_dep_iter(members.iter().map(|m| m.ty))?;
+        // Because types can refer to global expressions and vice versa, to
+        // ensure the overall structure is free of cycles, we must traverse them
+        // both in tandem.
+        //
+        // Try to visit all types and global expressions in an order such that
+        // each item refers only to previously visited items. If we succeed,
+        // that shows that there cannot be any cycles, since walking any edge
+        // advances you towards the beginning of the visiting order.
+        //
+        // Validate all the handles in types and expressions as we traverse the
+        // arenas.
+        let mut global_exprs_iter = global_expressions.iter().peekable();
+        for (th, t) in types.iter() {
+            // Imagine the `for` loop and `global_exprs_iter` as two fingers
+            // walking the type and global expression arenas. They don't visit
+            // elements at the same rate: sometimes one processes a bunch of
+            // elements while the other one stays still. But at each point, they
+            // check that the two ranges of elements they've visited only refer
+            // to other elements in those ranges.
+            //
+            // For brevity, we'll say 'handles behind `global_exprs_iter`' to
+            // mean handles that have already been produced by
+            // `global_exprs_iter`. Once `global_exprs_iter` returns `None`, all
+            // global expression handles are 'behind' it.
+            //
+            // At this point:
+            //
+            // - All types visited by prior iterations (that is, before
+            //   `th`/`t`) refer only to expressions behind `global_exprs_iter`.
+            //
+            //   On the first iteration, this is obviously true: there are no
+            //   prior iterations, and `global_exprs_iter` hasn't produced
+            //   anything yet. At the bottom of the loop, we'll claim that it's
+            //   true for `th`/`t` as well, so the condition remains true when
+            //   we advance to the next type.
+            //
+            // - All expressions behind `global_exprs_iter` refer only to
+            //   previously visited types.
+            //
+            //   Again, trivially true at the start, and we'll show it's true
+            //   about each expression that `global_exprs_iter` produces.
+            //
+            // Once we also check that arena elements only refer to prior
+            // elements in that arena, we can see that `th`/`t` does not
+            // participate in a cycle: it only refers to previously visited
+            // types and expressions behind `global_exprs_iter`, and none of
+            // those refer to `th`/`t`, because they passed the same checks
+            // before we reached `th`/`t`.
+            if let Some(max_expr) = Self::validate_type_handles((th, t), overrides)? {
+                max_expr.check_valid_for(global_expressions)?;
+                // Since `t` refers to `max_expr`, if we want our invariants to
+                // remain true, we must advance `global_exprs_iter` beyond
+                // `max_expr`.
+                while let Some((eh, e)) = global_exprs_iter.next_if(|&(eh, _)| eh <= max_expr) {
+                    if let Some(max_type) =
+                        Self::validate_const_expression_handles((eh, e), constants, overrides)?
+                    {
+                        // Show that `eh` refers only to previously visited types.
+                        th.check_dep(max_type)?;
+                    }
+                    // We've advanced `global_exprs_iter` past `eh` already. But
+                    // since we now know that `eh` refers only to previously
+                    // visited types, it is again true that all expressions
+                    // behind `global_exprs_iter` refer only to previously
+                    // visited types. So we can continue to the next expression.
                 }
             }
+
+            // Here we know that if `th` refers to any expressions at all,
+            // `max_expr` is the latest one. And we know that `max_expr` is
+            // behind `global_exprs_iter`. So `th` refers only to expressions
+            // behind `global_exprs_iter`, and the invariants will still be
+            // true on the next iteration.
         }
 
-        for handle_and_expr in global_expressions.iter() {
-            Self::validate_const_expression_handles(handle_and_expr, constants, overrides, types)?;
+        // Since we also enforced the usual intra-arena rules that expressions
+        // refer only to prior expressions, expressions can only form cycles if
+        // they include types. But we've shown that all types are acyclic, so
+        // all expressions must be acyclic as well.
+        //
+        // Validate the remaining expressions normally.
+        for handle_and_expr in global_exprs_iter {
+            Self::validate_const_expression_handles(handle_and_expr, constants, overrides)?;
         }
 
         let validate_type = |handle| Self::validate_type_handle(handle, types);
@@ -83,13 +140,13 @@ impl super::Validator {
             validate_const_expr(init)?;
         }
 
-        for (_handle, override_) in overrides.iter() {
+        for (_handle, r#override) in overrides.iter() {
             let &crate::Override {
                 name: _,
                 id: _,
                 ty,
                 init,
-            } = override_;
+            } = r#override;
             validate_type(ty)?;
             if let Some(init_expr) = init {
                 validate_const_expr(init_expr)?;
@@ -103,6 +160,7 @@ impl super::Validator {
                 binding: _,
                 ty,
                 init,
+                memory_decorations: _,
             } = global_variable;
             validate_type(ty)?;
             if let Some(init_expr) = init {
@@ -119,6 +177,7 @@ impl super::Validator {
                 ref expressions,
                 ref named_expressions,
                 ref body,
+                ref diagnostic_filter_leaf,
             } = function;
 
             for arg in arguments.iter() {
@@ -151,7 +210,6 @@ impl super::Validator {
                     handle_and_expr,
                     constants,
                     overrides,
-                    global_expressions,
                     types,
                     local_variables,
                     global_variables,
@@ -162,11 +220,35 @@ impl super::Validator {
 
             Self::validate_block_handles(body, expressions, functions)?;
 
+            if let Some(handle) = *diagnostic_filter_leaf {
+                handle.check_valid_for(diagnostic_filters)?;
+            }
+
             Ok(())
         };
 
         for entry_point in entry_points.iter() {
             validate_function(None, &entry_point.function)?;
+            if let Some(sizes) = entry_point.workgroup_size_overrides {
+                for size in sizes.iter().filter_map(|x| *x) {
+                    validate_const_expr(size)?;
+                }
+            }
+            if let Some(task_payload) = entry_point.task_payload {
+                Self::validate_global_variable_handle(task_payload, global_variables)?;
+            }
+            if let Some(ref mesh_info) = entry_point.mesh_info {
+                Self::validate_global_variable_handle(mesh_info.output_variable, global_variables)?;
+                validate_type(mesh_info.vertex_output_type)?;
+                validate_type(mesh_info.primitive_output_type)?;
+                for ov in mesh_info
+                    .max_vertices_override
+                    .iter()
+                    .chain(mesh_info.max_primitives_override.iter())
+                {
+                    validate_const_expr(*ov)?;
+                }
+            }
         }
 
         for (function_handle, function) in functions.iter() {
@@ -178,6 +260,81 @@ impl super::Validator {
         }
         if let Some(ty) = special_types.ray_intersection {
             validate_type(ty)?;
+        }
+        if let Some(ty) = special_types.ray_vertex_return {
+            validate_type(ty)?;
+        }
+
+        for (handle, _node) in diagnostic_filters.iter() {
+            let DiagnosticFilterNode { inner: _, parent } = diagnostic_filters[handle];
+            handle.check_dep_opt(parent)?;
+        }
+        if let Some(handle) = *diagnostic_filter_leaf {
+            handle.check_valid_for(diagnostic_filters)?;
+        }
+
+        if let Some(doc_comments) = doc_comments.as_ref() {
+            let crate::DocComments {
+                module: _,
+                types: ref doc_comments_for_types,
+                struct_members: ref doc_comments_for_struct_members,
+                entry_points: ref doc_comments_for_entry_points,
+                functions: ref doc_comments_for_functions,
+                constants: ref doc_comments_for_constants,
+                global_variables: ref doc_comments_for_global_variables,
+            } = **doc_comments;
+
+            for (&ty, _) in doc_comments_for_types.iter() {
+                validate_type(ty)?;
+            }
+
+            for (&(ty, struct_member_index), _) in doc_comments_for_struct_members.iter() {
+                validate_type(ty)?;
+                let struct_type = types.get_handle(ty).unwrap();
+                match struct_type.inner {
+                    crate::TypeInner::Struct {
+                        ref members,
+                        span: ref _span,
+                    } => {
+                        (0..members.len())
+                            .contains(&struct_member_index)
+                            .then_some(())
+                            // TODO: what errors should this be?
+                            .ok_or_else(|| ValidationError::Type {
+                                handle: ty,
+                                name: struct_type.name.as_ref().map_or_else(
+                                    || "members length incorrect".to_string(),
+                                    |name| name.to_string(),
+                                ),
+                                source: TypeError::InvalidData(ty),
+                            })?;
+                    }
+                    _ => {
+                        // TODO: internal error ? We should never get here.
+                        // If entering there, it's probably that we forgot to adjust a handle in the compact phase.
+                        return Err(ValidationError::Type {
+                            handle: ty,
+                            name: struct_type
+                                .name
+                                .as_ref()
+                                .map_or_else(|| "Unknown".to_string(), |name| name.to_string()),
+                            source: TypeError::InvalidData(ty),
+                        });
+                    }
+                }
+                for (&function, _) in doc_comments_for_functions.iter() {
+                    Self::validate_function_handle(function, functions)?;
+                }
+                for (&entry_point_index, _) in doc_comments_for_entry_points.iter() {
+                    Self::validate_entry_point_index(entry_point_index, entry_points)?;
+                }
+                for (&constant, _) in doc_comments_for_constants.iter() {
+                    Self::validate_constant_handle(constant, constants)?;
+                }
+                for (&global_variable, _) in doc_comments_for_global_variables.iter() {
+                    Self::validate_global_variable_handle(global_variable, global_variables)?;
+                }
+            }
         }
 
         Ok(())
@@ -195,6 +352,13 @@ impl super::Validator {
         constants: &Arena<crate::Constant>,
     ) -> Result<(), InvalidHandleError> {
         handle.check_valid_for(constants).map(|_| ())
+    }
+
+    fn validate_global_variable_handle(
+        handle: Handle<crate::GlobalVariable>,
+        global_variables: &Arena<crate::GlobalVariable>,
+    ) -> Result<(), InvalidHandleError> {
+        handle.check_valid_for(global_variables).map(|_| ())
     }
 
     fn validate_override_handle(
@@ -218,38 +382,106 @@ impl super::Validator {
         handle.check_valid_for(functions).map(|_| ())
     }
 
+    /// Validate all handles that occur in `ty`, whose handle is `handle`.
+    ///
+    /// If `ty` refers to any expressions, return the highest-indexed expression
+    /// handle that it uses. This is used for detecting cycles between the
+    /// expression and type arenas.
+    fn validate_type_handles(
+        (handle, ty): (Handle<crate::Type>, &crate::Type),
+        overrides: &Arena<crate::Override>,
+    ) -> Result<Option<Handle<crate::Expression>>, InvalidHandleError> {
+        let max_expr = match ty.inner {
+            crate::TypeInner::Scalar { .. }
+            | crate::TypeInner::Vector { .. }
+            | crate::TypeInner::Matrix { .. }
+            | crate::TypeInner::CooperativeMatrix { .. }
+            | crate::TypeInner::ValuePointer { .. }
+            | crate::TypeInner::Atomic { .. }
+            | crate::TypeInner::Image { .. }
+            | crate::TypeInner::Sampler { .. }
+            | crate::TypeInner::AccelerationStructure { .. }
+            | crate::TypeInner::RayQuery { .. } => None,
+            crate::TypeInner::Pointer { base, space: _ } => {
+                handle.check_dep(base)?;
+                None
+            }
+            crate::TypeInner::Array { base, size, .. }
+            | crate::TypeInner::BindingArray { base, size, .. } => {
+                handle.check_dep(base)?;
+                match size {
+                    crate::ArraySize::Pending(h) => {
+                        Self::validate_override_handle(h, overrides)?;
+                        let r#override = &overrides[h];
+                        handle.check_dep(r#override.ty)?;
+                        r#override.init
+                    }
+                    crate::ArraySize::Constant(_) | crate::ArraySize::Dynamic => None,
+                }
+            }
+            crate::TypeInner::Struct {
+                ref members,
+                span: _,
+            } => {
+                handle.check_dep_iter(members.iter().map(|m| m.ty))?;
+                None
+            }
+        };
+
+        Ok(max_expr)
+    }
+
+    fn validate_entry_point_index(
+        entry_point_index: usize,
+        entry_points: &[EntryPoint],
+    ) -> Result<(), InvalidHandleError> {
+        (0..entry_points.len())
+            .contains(&entry_point_index)
+            .then_some(())
+            .ok_or_else(|| {
+                BadHandle {
+                    kind: "EntryPoint",
+                    index: entry_point_index,
+                }
+                .into()
+            })
+    }
+
+    /// Validate all handles that occur in `expression`, whose handle is `handle`.
+    ///
+    /// If `expression` refers to any `Type`s, return the highest-indexed type
+    /// handle that it uses. This is used for detecting cycles between the
+    /// expression and type arenas.
     fn validate_const_expression_handles(
         (handle, expression): (Handle<crate::Expression>, &crate::Expression),
         constants: &Arena<crate::Constant>,
         overrides: &Arena<crate::Override>,
-        types: &UniqueArena<crate::Type>,
-    ) -> Result<(), InvalidHandleError> {
+    ) -> Result<Option<Handle<crate::Type>>, InvalidHandleError> {
         let validate_constant = |handle| Self::validate_constant_handle(handle, constants);
         let validate_override = |handle| Self::validate_override_handle(handle, overrides);
-        let validate_type = |handle| Self::validate_type_handle(handle, types);
 
-        match *expression {
-            crate::Expression::Literal(_) => {}
+        let max_type = match *expression {
+            crate::Expression::Literal(_) => None,
             crate::Expression::Constant(constant) => {
                 validate_constant(constant)?;
                 handle.check_dep(constants[constant].init)?;
+                None
             }
-            crate::Expression::Override(override_) => {
-                validate_override(override_)?;
-                if let Some(init) = overrides[override_].init {
+            crate::Expression::Override(r#override) => {
+                validate_override(r#override)?;
+                if let Some(init) = overrides[r#override].init {
                     handle.check_dep(init)?;
                 }
+                None
             }
-            crate::Expression::ZeroValue(ty) => {
-                validate_type(ty)?;
-            }
+            crate::Expression::ZeroValue(ty) => Some(ty),
             crate::Expression::Compose { ty, ref components } => {
-                validate_type(ty)?;
                 handle.check_dep_iter(components.iter().copied())?;
+                Some(ty)
             }
-            _ => {}
-        }
-        Ok(())
+            _ => None,
+        };
+        Ok(max_type)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -257,7 +489,6 @@ impl super::Validator {
         (handle, expression): (Handle<crate::Expression>, &crate::Expression),
         constants: &Arena<crate::Constant>,
         overrides: &Arena<crate::Override>,
-        global_expressions: &Arena<crate::Expression>,
         types: &UniqueArena<crate::Type>,
         local_variables: &Arena<crate::LocalVariable>,
         global_variables: &Arena<crate::GlobalVariable>,
@@ -267,8 +498,6 @@ impl super::Validator {
     ) -> Result<(), InvalidHandleError> {
         let validate_constant = |handle| Self::validate_constant_handle(handle, constants);
         let validate_override = |handle| Self::validate_override_handle(handle, overrides);
-        let validate_const_expr =
-            |handle| Self::validate_expression_handle(handle, global_expressions);
         let validate_type = |handle| Self::validate_type_handle(handle, types);
 
         match *expression {
@@ -288,8 +517,8 @@ impl super::Validator {
             crate::Expression::Constant(constant) => {
                 validate_constant(constant)?;
             }
-            crate::Expression::Override(override_) => {
-                validate_override(override_)?;
+            crate::Expression::Override(r#override) => {
+                validate_override(r#override)?;
             }
             crate::Expression::ZeroValue(ty) => {
                 validate_type(ty)?;
@@ -317,16 +546,14 @@ impl super::Validator {
                 offset,
                 level,
                 depth_ref,
+                clamp_to_edge: _,
             } => {
-                if let Some(offset) = offset {
-                    validate_const_expr(offset)?;
-                }
-
                 handle
                     .check_dep(image)?
                     .check_dep(sampler)?
                     .check_dep(coordinate)?
-                    .check_dep_opt(array_index)?;
+                    .check_dep_opt(array_index)?
+                    .check_dep_opt(offset)?;
 
                 match level {
                     crate::SampleLevel::Auto | crate::SampleLevel::Zero => (),
@@ -430,8 +657,18 @@ impl super::Validator {
             crate::Expression::RayQueryGetIntersection {
                 query,
                 committed: _,
+            }
+            | crate::Expression::RayQueryVertexPositions {
+                query,
+                committed: _,
             } => {
                 handle.check_dep(query)?;
+            }
+            crate::Expression::CooperativeLoad { ref data, .. } => {
+                handle.check_dep(data.pointer)?.check_dep(data.stride)?;
+            }
+            crate::Expression::CooperativeMultiplyAdd { a, b, c } => {
+                handle.check_dep(a)?.check_dep(b)?.check_dep(c)?;
             }
         }
         Ok(())
@@ -536,6 +773,19 @@ impl super::Validator {
                 }
                 Ok(())
             }
+            crate::Statement::ImageAtomic {
+                image,
+                coordinate,
+                array_index,
+                fun: _,
+                value,
+            } => {
+                validate_expr(image)?;
+                validate_expr(coordinate)?;
+                validate_expr_opt(array_index)?;
+                validate_expr(value)?;
+                Ok(())
+            }
             crate::Statement::WorkGroupUniformLoad { pointer, result } => {
                 validate_expr(pointer)?;
                 validate_expr(result)?;
@@ -566,6 +816,10 @@ impl super::Validator {
                     crate::RayQueryFunction::Proceed { result } => {
                         validate_expr(result)?;
                     }
+                    crate::RayQueryFunction::GenerateIntersection { hit_t } => {
+                        validate_expr(hit_t)?;
+                    }
+                    crate::RayQueryFunction::ConfirmIntersection => {}
                     crate::RayQueryFunction::Terminate => {}
                 }
                 Ok(())
@@ -597,15 +851,36 @@ impl super::Validator {
                     | crate::GatherMode::Shuffle(index)
                     | crate::GatherMode::ShuffleDown(index)
                     | crate::GatherMode::ShuffleUp(index)
-                    | crate::GatherMode::ShuffleXor(index) => validate_expr(index)?,
+                    | crate::GatherMode::ShuffleXor(index)
+                    | crate::GatherMode::QuadBroadcast(index) => validate_expr(index)?,
+                    crate::GatherMode::QuadSwap(_) => {}
                 }
                 validate_expr(result)?;
                 Ok(())
             }
+            crate::Statement::CooperativeStore { target, ref data } => {
+                validate_expr(target)?;
+                validate_expr(data.pointer)?;
+                validate_expr(data.stride)?;
+                Ok(())
+            }
+            crate::Statement::RayPipelineFunction(fun) => match fun {
+                crate::RayPipelineFunction::TraceRay {
+                    acceleration_structure,
+                    descriptor,
+                    payload,
+                } => {
+                    validate_expr(acceleration_structure)?;
+                    validate_expr(descriptor)?;
+                    validate_expr(payload)?;
+                    Ok(())
+                }
+            },
             crate::Statement::Break
             | crate::Statement::Continue
             | crate::Statement::Kill
-            | crate::Statement::Barrier(_) => Ok(()),
+            | crate::Statement::ControlBarrier(_)
+            | crate::Statement::MemoryBarrier(_) => Ok(()),
         })
     }
 }
@@ -693,9 +968,9 @@ impl<T> Handle<T> {
             };
             Err(FwdDepError {
                 subject: erase_handle_type(self),
-                subject_kind: std::any::type_name::<T>(),
+                subject_kind: core::any::type_name::<T>(),
                 depends_on: erase_handle_type(depends_on),
-                depends_on_kind: std::any::type_name::<T>(),
+                depends_on_kind: core::any::type_name::<T>(),
             })
         }
     }
@@ -762,8 +1037,140 @@ fn constant_deps() {
             handle_and_expr,
             &constants,
             &overrides,
-            &types,
         )
         .is_err());
     }
+}
+
+#[test]
+fn array_size_deps() {
+    use super::Validator;
+    use crate::{ArraySize, Expression, Override, Scalar, Span, Type, TypeInner};
+
+    let nowhere = Span::default();
+
+    let mut m = crate::Module::default();
+
+    let ty_u32 = m.types.insert(
+        Type {
+            name: Some("u32".to_string()),
+            inner: TypeInner::Scalar(Scalar::U32),
+        },
+        nowhere,
+    );
+    let ex_zero = m
+        .global_expressions
+        .append(Expression::ZeroValue(ty_u32), nowhere);
+    let ty_handle = m.overrides.append(
+        Override {
+            name: None,
+            id: None,
+            ty: ty_u32,
+            init: Some(ex_zero),
+        },
+        nowhere,
+    );
+    let ty_arr = m.types.insert(
+        Type {
+            name: Some("bad_array".to_string()),
+            inner: TypeInner::Array {
+                base: ty_u32,
+                size: ArraySize::Pending(ty_handle),
+                stride: 4,
+            },
+        },
+        nowhere,
+    );
+
+    // Everything should be okay now.
+    assert!(Validator::validate_module_handles(&m).is_ok());
+
+    // Mutate `ex_zero`'s type to `ty_arr`, introducing a cycle.
+    // Validation should catch the cycle.
+    m.global_expressions[ex_zero] = Expression::ZeroValue(ty_arr);
+    assert!(Validator::validate_module_handles(&m).is_err());
+}
+
+#[test]
+fn array_size_override() {
+    use super::Validator;
+    use crate::{ArraySize, Override, Scalar, Span, Type, TypeInner};
+
+    let nowhere = Span::default();
+
+    let mut m = crate::Module::default();
+
+    let ty_u32 = m.types.insert(
+        Type {
+            name: Some("u32".to_string()),
+            inner: TypeInner::Scalar(Scalar::U32),
+        },
+        nowhere,
+    );
+
+    let bad_override: Handle<Override> = Handle::new(NonMaxU32::new(1000).unwrap());
+    let _ty_arr = m.types.insert(
+        Type {
+            name: Some("bad_array".to_string()),
+            inner: TypeInner::Array {
+                base: ty_u32,
+                size: ArraySize::Pending(bad_override),
+                stride: 4,
+            },
+        },
+        nowhere,
+    );
+
+    assert!(Validator::validate_module_handles(&m).is_err());
+}
+
+#[test]
+fn override_init_deps() {
+    use super::Validator;
+    use crate::{ArraySize, Expression, Override, Scalar, Span, Type, TypeInner};
+
+    let nowhere = Span::default();
+
+    let mut m = crate::Module::default();
+
+    let ty_u32 = m.types.insert(
+        Type {
+            name: Some("u32".to_string()),
+            inner: TypeInner::Scalar(Scalar::U32),
+        },
+        nowhere,
+    );
+    let ex_zero = m
+        .global_expressions
+        .append(Expression::ZeroValue(ty_u32), nowhere);
+    let r#override = m.overrides.append(
+        Override {
+            name: Some("bad_override".into()),
+            id: None,
+            ty: ty_u32,
+            init: Some(ex_zero),
+        },
+        nowhere,
+    );
+    let ty_arr = m.types.insert(
+        Type {
+            name: Some("bad_array".to_string()),
+            inner: TypeInner::Array {
+                base: ty_u32,
+                size: ArraySize::Pending(r#override),
+                stride: 4,
+            },
+        },
+        nowhere,
+    );
+    let ex_arr = m
+        .global_expressions
+        .append(Expression::ZeroValue(ty_arr), nowhere);
+
+    assert!(Validator::validate_module_handles(&m).is_ok());
+
+    // Mutate `r#override`'s initializer to `ex_arr`, introducing a cycle.
+    // Validation should catch the cycle.
+    m.overrides[r#override].init = Some(ex_arr);
+    assert!(Validator::validate_module_handles(&m).is_err());
 }

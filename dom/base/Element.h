@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,22 +8,23 @@
  * utility methods for subclasses, and so forth.
  */
 
-#ifndef mozilla_dom_Element_h__
-#define mozilla_dom_Element_h__
+#ifndef mozilla_dom_Element_h_
+#define mozilla_dom_Element_h_
 
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <utility>
+
 #include "AttrArray.h"
 #include "ErrorList.h"
 #include "Units.h"
-#include "js/RootingAPI.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/BasicEvents.h"
 #include "mozilla/CORSMode.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/FlushType.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/PseudoStyleType.h"
@@ -41,24 +40,19 @@
 #include "mozilla/dom/NameSpaceConstants.h"
 #include "mozilla/dom/NodeInfo.h"
 #include "mozilla/dom/RustTypes.h"
-#include "mozilla/dom/ShadowRootBinding.h"
+#include "mozilla/dom/ShadowRootBindingFwd.h"
 #include "nsAtom.h"
 #include "nsAttrValue.h"
 #include "nsAttrValueInlines.h"
 #include "nsCaseTreatment.h"
 #include "nsChangeHint.h"
-#include "nsTHashMap.h"
 #include "nsDebug.h"
 #include "nsError.h"
 #include "nsGkAtoms.h"
 #include "nsHashKeys.h"
-#include "nsIContent.h"
-#include "nsID.h"
-#include "nsINode.h"
 #include "nsLiteralString.h"
 #include "nsRect.h"
-#include "nsString.h"
-#include "nsStringFlags.h"
+#include "nsTHashMap.h"
 #include "nsTLiteralString.h"
 #include "nscore.h"
 
@@ -66,12 +60,12 @@ class JSObject;
 class mozAutoDocUpdate;
 class nsAttrName;
 class nsAttrValueOrString;
-class nsContentList;
 class nsDOMAttributeMap;
 class nsDOMCSSAttributeDeclaration;
 class nsDOMStringMap;
 class nsDOMTokenList;
 class nsFocusManager;
+class nsGenericHTMLElement;
 class nsGenericHTMLFormControlElementWithState;
 class nsGlobalWindowInner;
 class nsGlobalWindowOuter;
@@ -89,7 +83,6 @@ class nsIDOMXULRelatedElement;
 class nsIDOMXULSelectControlElement;
 class nsIDOMXULSelectControlItemElement;
 class nsIFrame;
-class nsIHTMLCollection;
 class nsIPrincipal;
 class nsIScreen;
 class nsIURI;
@@ -119,6 +112,7 @@ struct URLValue;
 namespace dom {
 struct CheckVisibilityOptions;
 struct CustomElementData;
+struct SetHTMLUnsafeOptions;
 struct SetHTMLOptions;
 struct GetHTMLOptions;
 struct GetAnimationsOptions;
@@ -127,8 +121,11 @@ struct ScrollToOptions;
 struct FocusOptions;
 struct ShadowRootInit;
 struct ScrollOptions;
+struct FullscreenOptions;
+struct PointerLockOptions;
 class Attr;
 class BooleanOrScrollIntoViewOptions;
+class ContentList;
 class Document;
 class HTMLFormElement;
 class DOMIntersectionObserver;
@@ -139,11 +136,16 @@ class PopoverData;
 class Promise;
 class Sanitizer;
 class ShadowRoot;
+class StylePropertyMapReadOnly;
+class TrustedHTMLOrString;
 class UnrestrictedDoubleOrKeyframeAnimationOptions;
 template <typename T>
 class Optional;
 enum class CallerType : uint32_t;
 enum class ReferrerPolicy : uint8_t;
+enum class FetchPriority : uint8_t;
+enum class PopoverAttributeState : uint8_t;
+enum class ShadowRootMode : uint8_t;
 }  // namespace dom
 }  // namespace mozilla
 
@@ -152,9 +154,8 @@ using nsMapRuleToAttributesFunc = void (*)(mozilla::MappedDeclarationsBuilder&);
 // Declared here because of include hell.
 extern "C" bool Servo_Element_IsDisplayContents(const mozilla::dom::Element*);
 
-already_AddRefed<nsContentList> NS_GetContentList(nsINode* aRootNode,
-                                                  int32_t aMatchNameSpaceId,
-                                                  const nsAString& aTagname);
+already_AddRefed<mozilla::dom::ContentList> NS_GetContentList(
+    nsINode* aRootNode, int32_t aMatchNameSpaceId, const nsAString& aTagname);
 
 #define ELEMENT_FLAG_BIT(n_) \
   NODE_FLAG_BIT(NODE_TYPE_SPECIFIC_BITS_OFFSET + (n_))
@@ -197,8 +198,18 @@ enum : uint32_t {
   // Document::mContentIdentifiersForLCP.
   ELEMENT_IN_CONTENT_IDENTIFIER_FOR_LCP = ELEMENT_FLAG_BIT(7),
 
+  // 2-bit field encoding the element's custom element registry state.
+  // See CustomElementRegistryState for the possible values.
+  ELEMENT_CUSTOM_ELEMENT_REGISTRY_LOW_BIT = ELEMENT_FLAG_BIT(8),
+  ELEMENT_CUSTOM_ELEMENT_REGISTRY_MASK =
+      ELEMENT_FLAG_BIT(8) | ELEMENT_FLAG_BIT(9),
+
+  // Whether this element has an associated EditContext
+  // https://w3c.github.io/edit-context
+  ELEMENT_HAS_EDIT_CONTEXT = ELEMENT_FLAG_BIT(10),
+
   // Remaining bits are for subclasses
-  ELEMENT_TYPE_SPECIFIC_BITS_OFFSET = NODE_TYPE_SPECIFIC_BITS_OFFSET + 8
+  ELEMENT_TYPE_SPECIFIC_BITS_OFFSET = NODE_TYPE_SPECIFIC_BITS_OFFSET + 11
 };
 
 #undef ELEMENT_FLAG_BIT
@@ -206,13 +217,32 @@ enum : uint32_t {
 // Make sure we have space for our bits
 ASSERT_NODE_FLAGS_SPACE(ELEMENT_TYPE_SPECIFIC_BITS_OFFSET);
 
+// Encodes the custom element registry state for an element or shadow root.
+//   Global:  uses the owner document's effective global registry (initial
+//   state).
+//   Null:    explicitly opted out of all registries.
+//   Scoped:  uses a scoped registry stored in gScopedRegistryMap.
+enum class CustomElementRegistryState : uint8_t {
+  Global = 0,
+  Null = 1,
+  Scoped = 2,
+};
+
 namespace mozilla {
 enum class PseudoStyleType : uint8_t;
+struct PseudoStyleRequest;
 class EventChainPostVisitor;
 class EventChainPreVisitor;
 class EventChainVisitor;
 class EventListenerManager;
 class EventStateManager;
+
+enum class ContentEditableState {
+  Inherit,
+  False,
+  True,
+  PlainTextOnly,
+};
 
 namespace dom {
 
@@ -224,14 +254,14 @@ class DOMRect;
 class DOMRectList;
 class Flex;
 class Grid;
+class OwningTrustedHTMLOrNullIsEmptyString;
+class TrustedHTML;
+class TrustedHTMLOrNullIsEmptyString;
+class TrustedHTMLOrTrustedScriptOrTrustedScriptURLOrString;
 
 // IID for the dom::Element interface
-#define NS_ELEMENT_IID                               \
-  {                                                  \
-    0xc67ed254, 0xfd3b, 0x4b10, {                    \
-      0x96, 0xa2, 0xc5, 0x8b, 0x7b, 0x64, 0x97, 0xd1 \
-    }                                                \
-  }
+#define NS_ELEMENT_IID \
+  {0xc67ed254, 0xfd3b, 0x4b10, {0x96, 0xa2, 0xc5, 0x8b, 0x7b, 0x64, 0x97, 0xd1}}
 
 #define REFLECT_NULLABLE_DOMSTRING_ATTR(method, attr)            \
   void Get##method(nsAString& aValue) const {                    \
@@ -246,29 +276,26 @@ class Grid;
     SetOrRemoveNullableStringAttr(nsGkAtoms::attr, aValue, aRv); \
   }
 
-#define REFLECT_NULLABLE_ELEMENT_ATTR(method, attr)      \
-  Element* Get##method() const {                         \
-    return GetAttrAssociatedElement(nsGkAtoms::attr);    \
-  }                                                      \
-                                                         \
-  void Set##method(Element* aElement) {                  \
-    ExplicitlySetAttrElement(nsGkAtoms::attr, aElement); \
+#define REFLECT_NULLABLE_ELEMENT_ATTR(method, attr)              \
+  Element* Get##method() const {                                 \
+    return GetAttrAssociatedElementForBindings(nsGkAtoms::attr); \
+  }                                                              \
+                                                                 \
+  void Set##method(Element* aElement) {                          \
+    ExplicitlySetAttrElement(nsGkAtoms::attr, aElement);         \
   }
 
-// TODO(keithamus): Reference the spec link once merged.
-// https://github.com/whatwg/html/pull/9841/files#diff-41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947dR86024
-enum class InvokeAction : uint8_t {
-  Invalid,
-  Custom,
-  Auto,
-  TogglePopover,
-  ShowPopover,
-  HidePopover,
-  ShowModal,
-  Toggle,
-  Close,
-  Open,
-};
+#define REFLECT_NULLABLE_ELEMENTS_ATTR(method, attr)                       \
+  void Get##method(bool* aUseCachedValue,                                  \
+                   Nullable<nsTArray<RefPtr<Element>>>& aElements) {       \
+    GetAttrAssociatedElementsForBindings(nsGkAtoms::attr, aUseCachedValue, \
+                                         aElements);                       \
+  }                                                                        \
+                                                                           \
+  void Set##method(                                                        \
+      const Nullable<Sequence<OwningNonNull<Element>>>& aElements) {       \
+    ExplicitlySetAttrElements(nsGkAtoms::attr, aElements);                 \
+  }
 
 class Element : public FragmentOrElement {
  public:
@@ -284,11 +311,12 @@ class Element : public FragmentOrElement {
 
   ~Element() {
     NS_ASSERTION(!HasServoData(), "expected ServoData to be cleared earlier");
+    UnlinkCustomElementRegistry(this);
   }
 
 #endif  // MOZILLA_INTERNAL_API
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ELEMENT_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_ELEMENT_IID)
 
   NS_DECL_ADDSIZEOFEXCLUDINGTHIS
 
@@ -311,6 +339,11 @@ class Element : public FragmentOrElement {
     return State().HasAtLeastOneOfStates(ElementState::DISABLED |
                                          ElementState::READONLY);
   }
+
+  /**
+   * Return true if this element has contenteditable="plaintext-only".
+   */
+  [[nodiscard]] inline bool IsContentEditablePlainTextOnly() const;
 
   virtual int32_t TabIndexDefault() { return -1; }
 
@@ -417,7 +450,7 @@ class Element : public FragmentOrElement {
   /**
    * Get the inline style declaration, if any, for this element.
    */
-  DeclarationBlock* GetInlineStyleDeclaration() const;
+  StyleLockedDeclarationBlock* GetInlineStyleDeclaration() const;
 
   /**
    * Get the mapped attributes, if any, for this element.
@@ -442,21 +475,21 @@ class Element : public FragmentOrElement {
   /**
    * Set the inline style declaration for this element.
    */
-  virtual nsresult SetInlineStyleDeclaration(DeclarationBlock& aDeclaration,
+  virtual nsresult SetInlineStyleDeclaration(StyleLockedDeclarationBlock&,
                                              MutationClosureData& aData);
 
   /**
    * Get the SMIL override style declaration for this element. If the
    * rule hasn't been created, this method simply returns null.
    */
-  DeclarationBlock* GetSMILOverrideStyleDeclaration();
+  StyleLockedDeclarationBlock* GetSMILOverrideStyleDeclaration();
 
   /**
    * Set the SMIL override style declaration for this element. This method will
    * notify the document's pres context, so that the style changes will be
    * noticed.
    */
-  void SetSMILOverrideStyleDeclaration(DeclarationBlock&);
+  void SetSMILOverrideStyleDeclaration(StyleLockedDeclarationBlock&);
 
   /**
    * Returns a new SMILAttr that allows the caller to animate the given
@@ -504,7 +537,7 @@ class Element : public FragmentOrElement {
    * mapped into style data via any type of style rule.
    */
   virtual nsChangeHint GetAttributeChangeHint(const nsAtom* aAttribute,
-                                              int32_t aModType) const;
+                                              AttrModType aModType) const;
 
   inline Directionality GetDirectionality() const {
     ElementState state = State();
@@ -596,13 +629,17 @@ class Element : public FragmentOrElement {
     return CreatePopoverData();
   }
 
-  bool IsAutoPopover() const;
+  bool IsPopoverOpenedInMode(PopoverAttributeState aMode) const;
   bool IsPopoverOpen() const;
+
+  void SetAssociatedPopover(nsGenericHTMLElement& aPopover);
+  nsGenericHTMLElement* GetAssociatedPopover() const;
 
   /**
    * https://html.spec.whatwg.org/multipage/popover.html#topmost-popover-ancestor
    */
-  Element* GetTopmostPopoverAncestor(const Element* aInvoker,
+  Element* GetTopmostPopoverAncestor(PopoverAttributeState aMode,
+                                     const Element* aInvoker,
                                      bool isPopover) const;
 
   ElementAnimationData* GetAnimationData() const {
@@ -650,6 +687,8 @@ class Element : public FragmentOrElement {
    */
   void SetCustomElementData(UniquePtr<CustomElementData> aData);
 
+  void ClearCustomElementData();
+
   nsTArray<RefPtr<nsAtom>>& EnsureCustomStates();
 
   /**
@@ -689,21 +728,28 @@ class Element : public FragmentOrElement {
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaColIndex, aria_colindex)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaColIndexText, aria_colindextext)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaColSpan, aria_colspan)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaControlsElements, aria_controls)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaCurrent, aria_current)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaDescribedByElements, aria_describedby)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaDescription, aria_description)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaDetailsElements, aria_details)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaDisabled, aria_disabled)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaErrorMessageElements, aria_errormessage)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaExpanded, aria_expanded)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaFlowToElements, aria_flowto)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaHasPopup, aria_haspopup)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaHidden, aria_hidden)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaInvalid, aria_invalid)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaKeyShortcuts, aria_keyshortcuts)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaLabel, aria_label)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaLabelledByElements, aria_labelledby)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaLevel, aria_level)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaLive, aria_live)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaModal, aria_modal)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaMultiLine, aria_multiline)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaMultiSelectable, aria_multiselectable)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaOrientation, aria_orientation)
+  REFLECT_NULLABLE_ELEMENTS_ATTR(AriaOwnsElements, aria_owns)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaPlaceholder, aria_placeholder)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaPosInSet, aria_posinset)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaPressed, aria_pressed)
@@ -822,31 +868,28 @@ class Element : public FragmentOrElement {
 
   /**
    * Helper for SetAttr/SetParsedAttr. This method will return true if aNotify
-   * is true or there are mutation listeners that must be triggered, the
-   * attribute is currently set, and the new value that is about to be set is
-   * different to the current value. As a perf optimization the new and old
-   * values will not actually be compared if we aren't notifying and we don't
-   * have mutation listeners (in which case it's cheap to just return false
-   * and let the caller go ahead and set the value).
+   * is true, this is a custom element, the attribute is currently set, and the
+   * new value that is about to be set is different to the current value. As a
+   * perf optimization the new and old values will not actually be compared if
+   * we aren't notifying (in which case it's cheap to just return false and let
+   * the caller go ahead and set the value).
    * @param aOldValue [out] Set to the old value of the attribute, but only if
    *   there are event listeners. If set, the type of aOldValue will be either
    *   nsAttrValue::eString or nsAttrValue::eAtom.
-   * @param aModType [out] Set to MutationEvent_Binding::MODIFICATION or to
-   *   MutationEvent_Binding::ADDITION, but only if this helper returns true
-   * @param aHasListeners [out] Set to true if there are mutation event
-   *   listeners listening for NS_EVENT_BITS_MUTATION_ATTRMODIFIED
+   * @param aModType [out] Set to AttrModType::Modification or to
+   *   AttrModType::Addition, but only if this helper returns true
    * @param aOldValueSet [out] Indicates whether an old attribute value has been
    *   stored in aOldValue. The bool will be set to true if a value was stored.
    */
   bool MaybeCheckSameAttrVal(int32_t aNamespaceID, const nsAtom* aName,
                              const nsAtom* aPrefix,
                              const nsAttrValueOrString& aValue, bool aNotify,
-                             nsAttrValue& aOldValue, uint8_t* aModType,
-                             bool* aHasListeners, bool* aOldValueSet);
+                             nsAttrValue& aOldValue, AttrModType* aModType,
+                             bool* aOldValueSet);
 
   /**
-   * Notifies mutation listeners if aNotify is true, there are mutation
-   * listeners, and the attribute value is changing.
+   * Notifies mutation observers if aNotify is true, there are mutation
+   * observers, and the attribute value is changing.
    *
    * @param aNamespaceID The namespace of the attribute
    * @param aName The local name of the attribute
@@ -857,18 +900,16 @@ class Element : public FragmentOrElement {
    * @param aOldValue [out] Set to the old value of the attribute, but only if
    *   there are event listeners. If set, the type of aOldValue will be either
    *   nsAttrValue::eString or nsAttrValue::eAtom.
-   * @param aModType [out] Set to MutationEvent_Binding::MODIFICATION or to
-   *   MutationEvent_Binding::ADDITION, but only if this helper returns true
-   * @param aHasListeners [out] Set to true if there are mutation event
-   *   listeners listening for NS_EVENT_BITS_MUTATION_ATTRMODIFIED
+   * @param aModType [out] Set to AttrModType::Modification or to
+   *   AttrModType::Addition, but only if this helper returns true
    * @param aOldValueSet [out] Indicates whether an old attribute value has been
    *   stored in aOldValue. The bool will be set to true if a value was stored.
    */
   bool OnlyNotifySameValueSet(int32_t aNamespaceID, nsAtom* aName,
                               nsAtom* aPrefix,
                               const nsAttrValueOrString& aValue, bool aNotify,
-                              nsAttrValue& aOldValue, uint8_t* aModType,
-                              bool* aHasListeners, bool* aOldValueSet);
+                              nsAttrValue& aOldValue, AttrModType* aModType,
+                              bool* aOldValueSet);
 
   /**
    * Sets the class attribute.
@@ -1025,6 +1066,10 @@ class Element : public FragmentOrElement {
                    const nsAString& aValue,
                    nsIPrincipal* aMaybeScriptedPrincipal, bool aNotify);
 
+  nsresult SetAttr(int32_t aNameSpaceID, nsAtom* aName, nsAtom* aPrefix,
+                   nsAtom* aValue, nsIPrincipal* aMaybeScriptedPrincipal,
+                   bool aNotify);
+
   /**
    * Remove an attribute so that it is no longer explicitly specified.
    *
@@ -1036,15 +1081,41 @@ class Element : public FragmentOrElement {
   nsresult UnsetAttr(int32_t aNameSpaceID, nsAtom* aName, bool aNotify);
 
   /**
+   * Swap an attribute value. This is a public wrapper that ensures bloom
+   * filter updates are performed correctly. For kNameSpaceID_None attributes,
+   * this will automatically update the bloom filter and propagate changes to
+   * parent elements.
+   *
+   * @param aLocalName the local name of the attribute
+   * @param aValue the value to swap (will contain old value on return)
+   * @param aHadValue set to true if attribute existed, false otherwise
+   */
+  nsresult SetAndSwapAttr(nsAtom* aLocalName, nsAttrValue& aValue,
+                          bool* aHadValue);
+
+  /**
+   * Swap an attribute value. This is a public wrapper that ensures bloom
+   * filter updates are performed correctly. For kNameSpaceID_None attributes,
+   * this will automatically update the bloom filter and propagate changes to
+   * parent elements.
+   *
+   * @param aName the node info of the attribute
+   * @param aValue the value to swap (will contain old value on return)
+   * @param aHadValue set to true if attribute existed, false otherwise
+   */
+  nsresult SetAndSwapAttr(mozilla::dom::NodeInfo* aName, nsAttrValue& aValue,
+                          bool* aHadValue);
+
+  /**
    * Get the namespace / name / prefix of a given attribute.
    *
    * @param   aIndex the index of the attribute name
-   * @returns The name at the given index, or null if the index is
-   *          out-of-bounds.
+   * @returns The name at the given index.
    * @note    The document returned by NodeInfo()->GetDocument() (if one is
    *          present) is *not* necessarily the owner document of the element.
    * @note    The pointer returned by this function is only valid until the
    *          next call of either GetAttrNameAt or SetAttr on the element.
+   * @note    This will crash if the index is invalid.
    */
   const nsAttrName* GetAttrNameAt(uint32_t aIndex) const {
     return mAttrs.GetSafeAttrNameAt(aIndex);
@@ -1055,6 +1126,14 @@ class Element : public FragmentOrElement {
    */
   const nsAttrName* GetUnsafeAttrNameAt(uint32_t aIndex) const {
     return mAttrs.AttrNameAt(aIndex);
+  }
+
+  /**
+   * A fallible overload of GetAttrNameAt.
+   */
+  [[nodiscard]] bool GetAttrNameAt(uint32_t aIndex,
+                                   const nsAttrName** aResult) const {
+    return mAttrs.GetSafeAttrNameAt(aIndex, aResult);
   }
 
   /**
@@ -1107,9 +1186,10 @@ class Element : public FragmentOrElement {
   /**
    * Append to aOutDescription a string describing the element and its
    * attributes.
-   * If aShort is true, only the id and class attributes will be listed.
    */
-  void Describe(nsAString& aOutDescription, bool aShort = false) const;
+  enum class DescriptionKind { IdOnly, IdAndClass, AllAttributes };
+  void Describe(nsAString& aOutDescription,
+                DescriptionKind aKind = DescriptionKind::AllAttributes) const;
 
   /*
    * Attribute Mapping Helpers
@@ -1130,21 +1210,33 @@ class Element : public FragmentOrElement {
     return FindAttributeDependence(aAttribute, aMaps, N);
   }
 
-  virtual bool IsValidInvokeAction(InvokeAction aAction) const {
-    return aAction == InvokeAction::Auto;
-  }
+  // https://html.spec.whatwg.org/#attr-button-command
+  enum class Command : uint8_t {
+    Invalid,
+    Custom,
+    TogglePopover,
+    ShowPopover,
+    HidePopover,
+    ShowModal,
+    RequestClose,
+    Toggle,
+    Close,
+    Open,
+  };
+
+  virtual bool IsValidCommandAction(Command aCommand) const { return false; }
 
   /**
    * Elements can provide their own default behaviours for "Invoke" (see
-   * invoketarget/invokeaction attributes).
+   * command/commandfor attributes).
    * If the action is not recognised, they can choose to ignore it and `return
    * false`. If an action is recognised then they should `return true` to
    * indicate to sub-classes that this has been handled and no further steps
    * should be run.
    */
-  MOZ_CAN_RUN_SCRIPT virtual bool HandleInvokeInternal(Element* invoker,
-                                                       InvokeAction aAction,
-                                                       ErrorResult& aRv) {
+  MOZ_CAN_RUN_SCRIPT virtual bool HandleCommandInternal(Element* aSource,
+                                                        Command aCommand,
+                                                        ErrorResult& aRv) {
     return false;
   }
 
@@ -1154,6 +1246,10 @@ class Element : public FragmentOrElement {
   static bool FindAttributeDependence(const nsAtom* aAttribute,
                                       const MappedAttributeEntry* const aMaps[],
                                       uint32_t aMapCount);
+
+  bool HasSharedRoot(const Element* aElement) const;
+
+  Element* GetElementByIdInDocOrSubtree(nsAtom* aID) const;
 
  protected:
   inline bool GetAttr(const nsAtom* aName, DOMString& aResult) const {
@@ -1191,6 +1287,9 @@ class Element : public FragmentOrElement {
     return false;
   }
 
+  // Note, this does not notify about the removal.
+  void ClearAttributes() { mAttrs.Clear(); }
+
   void GetTagName(nsAString& aTagName) const { aTagName = NodeName(); }
   void GetId(nsAString& aId) const { GetAttr(nsGkAtoms::id, aId); }
   void GetId(DOMString& aId) const { GetAttr(nsGkAtoms::id, aId); }
@@ -1217,7 +1316,7 @@ class Element : public FragmentOrElement {
   void GetAttribute(const nsAString& aName, nsAString& aReturn) {
     DOMString str;
     GetAttribute(aName, str);
-    str.ToString(aReturn);
+    aReturn.Assign(std::move(str));
   }
 
   void GetAttribute(const nsAString& aName, DOMString& aReturn);
@@ -1234,6 +1333,22 @@ class Element : public FragmentOrElement {
                     ErrorResult& aError) {
     SetAttribute(aName, aValue, nullptr, aError);
   }
+
+  MOZ_CAN_RUN_SCRIPT void SetAttribute(
+      const nsAString& aName,
+      const TrustedHTMLOrTrustedScriptOrTrustedScriptURLOrString& aValue,
+      nsIPrincipal* aTriggeringPrincipal, ErrorResult& aError);
+  MOZ_CAN_RUN_SCRIPT void SetAttributeNS(
+      const nsAString& aNamespaceURI, const nsAString& aLocalName,
+      const TrustedHTMLOrTrustedScriptOrTrustedScriptURLOrString& aValue,
+      nsIPrincipal* aTriggeringPrincipal, ErrorResult& aError);
+  MOZ_CAN_RUN_SCRIPT void SetAttribute(
+      const nsAString& aName,
+      const TrustedHTMLOrTrustedScriptOrTrustedScriptURLOrString& aValue,
+      ErrorResult& aError) {
+    SetAttribute(aName, aValue, nullptr, aError);
+  }
+
   /**
    * This method creates a principal that subsumes this element's NodePrincipal
    * and which has flags set for elevated permissions that devtools needs to
@@ -1259,27 +1374,91 @@ class Element : public FragmentOrElement {
   bool HasAttributes() const { return HasAttrs(); }
   Element* Closest(const nsACString& aSelector, ErrorResult& aResult);
   bool Matches(const nsACString& aSelector, ErrorResult& aError);
-  already_AddRefed<nsIHTMLCollection> GetElementsByTagName(
+  already_AddRefed<HTMLCollection> GetElementsByTagName(
       const nsAString& aQualifiedName);
-  already_AddRefed<nsIHTMLCollection> GetElementsByTagNameNS(
+  already_AddRefed<HTMLCollection> GetElementsByTagNameNS(
       const nsAString& aNamespaceURI, const nsAString& aLocalName,
       ErrorResult& aError);
-  already_AddRefed<nsIHTMLCollection> GetElementsByClassName(
+  already_AddRefed<HTMLCollection> GetElementsByClassName(
       const nsAString& aClassNames);
 
   /**
-   * Returns attribute associated element for the given attribute name, see
-   * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#attr-associated-element
+   * Returns attribute-associated element for the given attribute name. See
+   * https://whatpr.org/html/10995/common-microsyntaxes.html#get-the-attr-associated-element
    */
-  Element* GetAttrAssociatedElement(nsAtom* aAttr) const;
+  Element* GetAttrAssociatedElementInternal(nsAtom* aAttr,
+                                            bool aForBindings = false) const;
+  /**
+   * The getter for the IDL attribute which reflects the given attribute. See
+   * https://whatpr.org/html/10995/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:reflected-idl-attribute-31
+   */
+  Element* GetAttrAssociatedElementForBindings(nsAtom* aAttr) const;
 
+  /**
+   * Returns attribute associated elements for the given attribute name. See
+   * https://whatpr.org/html/10995/common-microsyntaxes.html#attr-associated-elements
+   */
+  Maybe<nsTArray<RefPtr<Element>>> GetAttrAssociatedElementsInternal(
+      nsAtom* aAttr, bool aForBindings = false);
+  /**
+   * The getter for the IDL attribute which reflects the given attribute. See
+   * https://whatpr.org/html/10995/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:reflected-idl-attribute-33
+   */
+  void GetAttrAssociatedElementsForBindings(
+      nsAtom* aAttr, bool* aUseCachedValue,
+      Nullable<nsTArray<RefPtr<Element>>>& aElements);
+
+  typedef bool (*AttrTargetObserver)(Element* aOldElement, Element* aNewElement,
+                                     Element* thisElement);
+  /**
+   * Add an attr-associated element observer for a given attribute. The observer
+   * will fire whenever the element associated with |aAttr| for this element
+   * changes. This can occur in multiple scenarios:
+   * - The attribute value or explicitly set attr-element changes;
+   * - An element with an ID matching the attribute value is added or removed
+   *   from the document or shadow root containing the element with the
+   *   attribute;
+   * - The explicitly set attr-element is added or removed from the document or
+   *   shadow root containing the element with the attribute;
+   * - The reference target of the element directly referred to by the attribute
+   *   changes.
+   * @return the current attr-associated element for |aAttr| for this element,
+   * if any.
+   */
+  Element* AddAttrAssociatedElementObserver(nsAtom* aAttr,
+                                            AttrTargetObserver aObserver);
+  void RemoveAttrAssociatedElementObserver(nsAtom* aAttr,
+                                           AttrTargetObserver aObserver);
+  bool AttrAssociatedElementUpdated(nsAtom* aAttr);
+
+ protected:
+  void IDREFAttributeValueChanged(nsAtom* aAttr, const nsAttrValue* aValue);
+
+ private:
+  FragmentOrElement::nsExtendedDOMSlots::AttrElementObserverData*
+  GetAttrElementObserverData(nsAtom* aAttr);
+  void DeleteAttrAssociatedElementObserverData(nsAtom* aAttr);
+  void AddDocOrShadowObserversForAttrAssociatedElement(
+      DocumentOrShadowRoot& aContainingDocOrShadow, nsAtom* aAttr);
+  void RemoveDocOrShadowObserversForAttrAssociatedElement(
+      DocumentOrShadowRoot& aContainingDocOrShadow, nsAtom* aAttr);
+  void BindAttrAssociatedElementObservers(
+      DocumentOrShadowRoot& aContainingDocOrShadow);
+  void UnbindAttrAssociatedElementObservers(
+      DocumentOrShadowRoot& aContainingDocOrShadow);
+
+ public:
   /**
    * Sets an attribute element for the given attribute.
    * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#explicitly-set-attr-element
    */
   void ExplicitlySetAttrElement(nsAtom* aAttr, Element* aElement);
+  void ExplicitlySetAttrElements(
+      nsAtom* aAttr,
+      const Nullable<Sequence<OwningNonNull<Element>>>& aElements);
 
   void ClearExplicitlySetAttrElement(nsAtom*);
+  void ClearExplicitlySetAttrElements(nsAtom*);
 
   /**
    * Gets the attribute element for the given attribute.
@@ -1290,6 +1469,55 @@ class Element : public FragmentOrElement {
    * attribute.
    */
   Element* GetExplicitlySetAttrElement(nsAtom* aAttr) const;
+
+  /**
+   * Gets the attribute elements for the given attribute. Unlike
+   * GetAttrAssociatedElements, this returns an uncached array of explicitly set
+   * elements without checking if they are a descendant of any of this element's
+   * shadow-including ancestors. It also does not attempt to retrieve elements
+   * using the ids set in the content attribute.
+   */
+  Maybe<nsTArray<RefPtr<dom::Element>>> GetExplicitlySetAttrElements(
+      nsAtom* aAttr) const;
+
+  /**
+   * Callback called when an element's resolved reference target changes.
+   * @param aData The callback data which was stored using
+   * AddReferenceTargetChangeObserver.
+   * @return true to keep the callback in the callback set, false to remove
+   * it.
+   */
+  typedef bool (*ReferenceTargetChangeObserver)(void* aData);
+
+  /**
+   * Listen for changes to the given element's resolved reference target. This
+   * could happen in a number of ways:
+   * - The given element's shadow root's referenceTarget property changes, or is
+   *   added or removed;
+   * - The element referred to by the referenceTarget property changes (e.g.
+   *   because an element with that ID is added to the shadow root);
+   * - Recursively: that is, when the resolved reference target of the element
+   *   referred to by the referenceTarget property changes for one of the above
+   *   two reasons (i.e. the referenceTarget property refers to an element foo,
+   *   which also has a shadow root, and foo's resolved reference target
+   *   changes).
+   * @param aElement an element on which to listen for resolved
+   * reference target changes. The element must have this document or shadow
+   * root as its root (i.e. aElement.GetUncomposedDocOrConnectedShadowRoot() ==
+   * this).
+   * @param aObserver The callback to fire when the resolved reference target
+   * changes.
+   * @param aData Data to pass to the callback.
+   */
+  void AddReferenceTargetChangeObserver(ReferenceTargetChangeObserver aObserver,
+                                        void* aData);
+  void RemoveReferenceTargetChangeObserver(
+      ReferenceTargetChangeObserver aObserver, void* aData);
+  /**
+   * Called when aElement's resolved reference target changes.
+   * @param aElement the element whose reference target has changed
+   */
+  void NotifyReferenceTargetChanged();
 
   PseudoStyleType GetPseudoElementType() const {
     nsresult rv = NS_OK;
@@ -1304,7 +1532,8 @@ class Element : public FragmentOrElement {
     static_assert(sizeof(PseudoStyleType) <= sizeof(uintptr_t),
                   "Need to be able to store this in a void*");
     MOZ_ASSERT(PseudoStyle::IsPseudoElement(aPseudo));
-    SetProperty(nsGkAtoms::pseudoProperty, reinterpret_cast<void*>(aPseudo));
+    SetProperty(nsGkAtoms::pseudoProperty, reinterpret_cast<void*>(aPseudo),
+                /* aDtor = */ nullptr, /* aTransfer = */ true);
   }
 
   /**
@@ -1322,13 +1551,13 @@ class Element : public FragmentOrElement {
 
   /**
    * Get an editor which handles user inputs when this element has focus.
-   * If this is a text control, return a TextEditor if it's already created.
-   * Otherwise, return nullptr.
-   * If this is not a text control but this is editable, return
-   * HTMLEditor which should've already been created.
+   * If this is a text control, return a TextEditor if it's already created and
+   * it's not in the design mode.
+   * If this is editable, return HTMLEditor which should've already been
+   * created.
    * Otherwise, return nullptr.
    */
-  EditorBase* GetEditorWithoutCreation() const;
+  EditorBase* GetExtantEditor() const;
 
  private:
   /**
@@ -1355,16 +1584,20 @@ class Element : public FragmentOrElement {
 
   void ReleaseCapture();
 
-  already_AddRefed<Promise> RequestFullscreen(CallerType, ErrorResult&);
-  void RequestPointerLock(CallerType aCallerType);
+  already_AddRefed<Promise> RequestFullscreen(const FullscreenOptions&,
+                                              CallerType, ErrorResult&);
+  already_AddRefed<Promise> RequestPointerLock(
+      const PointerLockOptions& aOptions, CallerType aCallerType,
+      ErrorResult& aRv);
   Attr* GetAttributeNode(const nsAString& aName);
-  already_AddRefed<Attr> SetAttributeNode(Attr& aNewAttr, ErrorResult& aError);
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Attr> SetAttributeNode(
+      Attr& aNewAttr, nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
   already_AddRefed<Attr> RemoveAttributeNode(Attr& aOldAttr,
                                              ErrorResult& aError);
   Attr* GetAttributeNodeNS(const nsAString& aNamespaceURI,
                            const nsAString& aLocalName);
-  already_AddRefed<Attr> SetAttributeNodeNS(Attr& aNewAttr,
-                                            ErrorResult& aError);
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Attr> SetAttributeNodeNS(
+      Attr& aNewAttr, nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<DOMRectList> GetClientRects();
   MOZ_CAN_RUN_SCRIPT already_AddRefed<DOMRect> GetBoundingClientRect();
@@ -1378,6 +1611,16 @@ class Element : public FragmentOrElement {
   void GetLoading(nsAString& aValue) const;
   bool ParseLoadingAttribute(const nsAString& aValue, nsAttrValue& aResult);
 
+ protected:
+  // Returns whether the element started lazy-loading.
+  // If this function returns true, it is the caller's responsibility to call
+  // LazyLoadingElementBindToTree/UnbindFromTree and/or StopLazyLoading().
+  [[nodiscard]] bool MaybeStartLazyLoading();
+  void StopLazyLoading();
+  void LazyLoadingElementBindToTree(BindContext&);
+  void LazyLoadingElementUnbindFromTree(UnbindContext&);
+
+ public:
   // https://html.spec.whatwg.org/#potentially-render-blocking
   virtual bool IsPotentiallyRenderBlocking() { return false; }
   bool BlockingContainsRender() const;
@@ -1385,55 +1628,93 @@ class Element : public FragmentOrElement {
   // Shadow DOM v1
   enum class ShadowRootDeclarative : bool { No, Yes };
 
+  // https://dom.spec.whatwg.org/#dom-element-attachshadow
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
-  already_AddRefed<ShadowRoot> AttachShadow(const ShadowRootInit& aInit,
-                                            ErrorResult& aError);
+  already_AddRefed<ShadowRoot> AttachShadow(const ShadowRootInit&,
+                                            ErrorResult&);
   bool CanAttachShadowDOM() const;
+  virtual void GetSlotNameFor(const ShadowRoot&, const nsIContent& aContent,
+                              nsAString& aName) const {
+    if (const Element* element = Element::FromNode(aContent)) {
+      element->GetAttr(nsGkAtoms::slot, aName);
+    }
+  }
+  virtual void OnChildBeforeSlotted(ShadowRoot&, nsIContent&) {}
+  virtual void OnChildUnslotted(ShadowRoot&, nsIContent&) {}
 
   enum class DelegatesFocus : bool { No, Yes };
   enum class ShadowRootClonable : bool { No, Yes };
   enum class ShadowRootSerializable : bool { No, Yes };
+  enum class CustomSlotDispatch : bool { No, Yes };
 
+  // https://dom.spec.whatwg.org/#concept-attach-a-shadow-root
   already_AddRefed<ShadowRoot> AttachShadowWithoutNameChecks(
-      ShadowRootMode aMode, DelegatesFocus = DelegatesFocus::No,
-      SlotAssignmentMode aSlotAssignmentMode = SlotAssignmentMode::Named,
-      ShadowRootClonable aClonable = ShadowRootClonable::No,
-      ShadowRootSerializable aSerializable = ShadowRootSerializable::No);
+      const ShadowRootInit&, bool aNotify = true,
+      CustomSlotDispatch = CustomSlotDispatch::No);
 
   // Attach UA Shadow Root if it is not attached.
-  enum class NotifyUAWidgetSetup : bool { No, Yes };
-  void AttachAndSetUAShadowRoot(NotifyUAWidgetSetup = NotifyUAWidgetSetup::Yes,
-                                DelegatesFocus = DelegatesFocus::No);
+  enum class NotifyUAWidget : bool { No, Yes };
+  void AttachAndSetUAShadowRoot(NotifyUAWidget = NotifyUAWidget::Yes,
+                                DelegatesFocus = DelegatesFocus::No,
+                                CustomSlotDispatch = CustomSlotDispatch::No,
+                                bool aNotify = true);
 
   // Dispatch an event to UAWidgetsChild, triggering construction
   // or onchange callback on the existing widget.
   void NotifyUAWidgetSetupOrChange();
 
-  enum class UnattachShadowRoot {
-    No,
-    Yes,
-  };
-
+  enum class UnattachShadowRoot : bool { No, Yes };
   // Dispatch an event to UAWidgetsChild, triggering UA Widget destruction.
   // and optionally remove the shadow root.
-  void NotifyUAWidgetTeardown(UnattachShadowRoot = UnattachShadowRoot::Yes);
+  void TeardownUAShadowRoot(NotifyUAWidget = NotifyUAWidget::Yes,
+                            UnattachShadowRoot = UnattachShadowRoot::Yes);
 
   void UnattachShadow();
 
-  ShadowRoot* GetShadowRootByMode() const;
   void SetSlot(const nsAString& aName, ErrorResult& aError);
   void GetSlot(nsAString& aName);
 
+  ShadowRoot* GetShadowRootForBindings() const;
+  ShadowRoot* GetOpenOrClosedShadowRoot(nsIPrincipal& aSubject) const;
   ShadowRoot* GetShadowRoot() const {
     const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mShadowRoot.get() : nullptr;
   }
 
-  const Maybe<float> GetLastRememberedBSize() const {
+  Element* ResolveReferenceTarget() const;
+  Element* RetargetReferenceTargetForBindings(Element* aElement) const;
+
+  CustomElementRegistryState GetCustomElementRegistryState() const {
+    return static_cast<CustomElementRegistryState>(
+        (GetFlags() & ELEMENT_CUSTOM_ELEMENT_REGISTRY_MASK) /
+        ELEMENT_CUSTOM_ELEMENT_REGISTRY_LOW_BIT);
+  }
+
+  void SetCustomElementRegistryState(CustomElementRegistryState aState) {
+    UnsetFlags(ELEMENT_CUSTOM_ELEMENT_REGISTRY_MASK);
+    SetFlags(static_cast<uint32_t>(aState) *
+             ELEMENT_CUSTOM_ELEMENT_REGISTRY_LOW_BIT);
+  }
+
+  // Returns true if the element has an explicit registry set.
+  // That registry might be null.
+  bool HasCustomElementRegistry() const {
+    return GetCustomElementRegistryState() !=
+           CustomElementRegistryState::Global;
+  }
+
+  // https://dom.spec.whatwg.org/#element-custom-element-registry
+  CustomElementRegistry* GetCustomElementRegistry();
+  void SetCustomElementRegistry(CustomElementRegistry* aCustomElementRegistry);
+  static void TraverseCustomElementRegistry(
+      Element* aElement, nsCycleCollectionTraversalCallback& aCb);
+  static void UnlinkCustomElementRegistry(Element* aElement);
+
+  Maybe<float> GetLastRememberedBSize() const {
     const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mLastRememberedBSize : Nothing();
   }
-  const Maybe<float> GetLastRememberedISize() const {
+  Maybe<float> GetLastRememberedISize() const {
     const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mLastRememberedISize : Nothing();
   }
@@ -1444,7 +1725,7 @@ class Element : public FragmentOrElement {
     return GetLastRememberedISize().isSome();
   }
 
-  const Maybe<ContentRelevancy> GetContentRelevancy() const {
+  Maybe<ContentRelevancy> GetContentRelevancy() const {
     const auto* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mContentRelevancy : Nothing();
   }
@@ -1452,7 +1733,7 @@ class Element : public FragmentOrElement {
     ExtendedDOMSlots()->mContentRelevancy = Some(relevancy);
   }
 
-  const Maybe<bool> GetVisibleForContentVisibility() const {
+  Maybe<bool> GetVisibleForContentVisibility() const {
     const auto* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mVisibleForContentVisibility : Nothing();
   }
@@ -1495,10 +1776,10 @@ class Element : public FragmentOrElement {
   MOZ_CAN_RUN_SCRIPT void ScrollTo(const ScrollToOptions& aOptions);
   MOZ_CAN_RUN_SCRIPT void ScrollBy(double aXScrollDif, double aYScrollDif);
   MOZ_CAN_RUN_SCRIPT void ScrollBy(const ScrollToOptions& aOptions);
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollTop();
-  MOZ_CAN_RUN_SCRIPT void SetScrollTop(int32_t aScrollTop);
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollLeft();
-  MOZ_CAN_RUN_SCRIPT void SetScrollLeft(int32_t aScrollLeft);
+  MOZ_CAN_RUN_SCRIPT double ScrollTop();
+  MOZ_CAN_RUN_SCRIPT void SetScrollTop(double aScrollTop);
+  MOZ_CAN_RUN_SCRIPT double ScrollLeft();
+  MOZ_CAN_RUN_SCRIPT void SetScrollLeft(double aScrollLeft);
   MOZ_CAN_RUN_SCRIPT int32_t ScrollWidth();
   MOZ_CAN_RUN_SCRIPT int32_t ScrollHeight();
   MOZ_CAN_RUN_SCRIPT void MozScrollSnap();
@@ -1519,10 +1800,10 @@ class Element : public FragmentOrElement {
   MOZ_CAN_RUN_SCRIPT int32_t ScreenY();
   MOZ_CAN_RUN_SCRIPT already_AddRefed<nsIScreen> GetScreen();
 
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollTopMin();
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollTopMax();
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollLeftMin();
-  MOZ_CAN_RUN_SCRIPT int32_t ScrollLeftMax();
+  MOZ_CAN_RUN_SCRIPT double ScrollTopMin();
+  MOZ_CAN_RUN_SCRIPT double ScrollTopMax();
+  MOZ_CAN_RUN_SCRIPT double ScrollLeftMin();
+  MOZ_CAN_RUN_SCRIPT double ScrollLeftMax();
 
   MOZ_CAN_RUN_SCRIPT double ClientHeightDouble() {
     return CSSPixel::FromAppUnits(GetClientAreaRect().Height());
@@ -1533,6 +1814,38 @@ class Element : public FragmentOrElement {
   }
 
   MOZ_CAN_RUN_SCRIPT double CurrentCSSZoom();
+
+  Element* GetOffsetParent() {
+    CSSIntRect rcFrame;
+    return GetOffsetRect(rcFrame);
+  }
+  int32_t OffsetTop() {
+    CSSIntRect rcFrame;
+    GetOffsetRect(rcFrame);
+    return rcFrame.y;
+  }
+  int32_t OffsetLeft() {
+    CSSIntRect rcFrame;
+    GetOffsetRect(rcFrame);
+    return rcFrame.x;
+  }
+  int32_t OffsetWidth() {
+    CSSIntRect rcFrame;
+    GetOffsetRect(rcFrame);
+    return rcFrame.Width();
+  }
+  int32_t OffsetHeight() {
+    CSSIntRect rcFrame;
+    GetOffsetRect(rcFrame);
+    return rcFrame.Height();
+  }
+  /**
+   * Get the frame's offset information for offsetTop/Left/Width/Height.
+   * Returns the parent the offset is relative to.
+   * @note This method flushes pending notifications (FlushType::Layout).
+   * @param aRect the offset information [OUT]
+   */
+  Element* GetOffsetRect(CSSIntRect& aRect);
 
   // This function will return the block size of first line box, no matter if
   // the box is 'block' or 'inline'. The return unit is pixel. If the element
@@ -1556,29 +1869,59 @@ class Element : public FragmentOrElement {
 
   MOZ_CAN_RUN_SCRIPT
   void GetAnimations(const GetAnimationsOptions& aOptions,
-                     nsTArray<RefPtr<Animation>>& aAnimations);
+                     nsTArray<RefPtr<Animation>>& aAnimations,
+                     ErrorResult& aError);
 
   void GetAnimationsWithoutFlush(const GetAnimationsOptions& aOptions,
-                                 nsTArray<RefPtr<Animation>>& aAnimations);
-
-  static void GetAnimationsUnsorted(Element* aElement,
-                                    PseudoStyleType aPseudoType,
-                                    nsTArray<RefPtr<Animation>>& aAnimations);
+                                 nsTArray<RefPtr<Animation>>& aAnimations,
+                                 ErrorResult& aError);
 
   void CloneAnimationsFrom(const Element& aOther);
 
   virtual void GetInnerHTML(nsAString& aInnerHTML, OOMReporter& aError);
-  virtual void SetInnerHTML(const nsAString& aInnerHTML,
-                            nsIPrincipal* aSubjectPrincipal,
-                            ErrorResult& aError);
-  void GetOuterHTML(nsAString& aOuterHTML);
-  void SetOuterHTML(const nsAString& aOuterHTML, ErrorResult& aError);
-  void InsertAdjacentHTML(const nsAString& aPosition, const nsAString& aText,
-                          ErrorResult& aError);
 
-  void SetHTML(const nsAString& aInnerHTML, const SetHTMLOptions& aOptions,
-               ErrorResult& aError);
+  // https://html.spec.whatwg.org/#dom-parsing-and-serialization:dom-element-innerhtml
+  // @param aInnerHTML will always be of type `NullIsEmptyString`.
+  void GetInnerHTML(OwningTrustedHTMLOrNullIsEmptyString& aInnerHTML,
+                    OOMReporter& aError);
+
+  // https://html.spec.whatwg.org/#dom-parsing-and-serialization:dom-element-innerhtml
+  //
+  // May only run script if aInnerHTML is a string. If this behavior changes,
+  // callees might need adjusting.
+  MOZ_CAN_RUN_SCRIPT void SetInnerHTML(
+      const TrustedHTMLOrNullIsEmptyString& aInnerHTML,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
+
+  // Call this method only with trusted, i.e. non-attacker-controlled, strings.
+  virtual void SetInnerHTMLTrusted(const nsAString& aInnerHTML,
+                                   nsIPrincipal* aSubjectPrincipal,
+                                   ErrorResult& aError);
+
+  // @param aOuterHTML will always be of type `NullIsEmptyString`.
+  void GetOuterHTML(OwningTrustedHTMLOrNullIsEmptyString& aOuterHTML);
+
+  MOZ_CAN_RUN_SCRIPT void SetOuterHTML(
+      const TrustedHTMLOrNullIsEmptyString& aOuterHTML,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
+
+  MOZ_CAN_RUN_SCRIPT void InsertAdjacentHTML(
+      const nsAString& aPosition,
+      const TrustedHTMLOrString& aTrustedHTMLOrString,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
+
+  virtual void SetHTML(const nsAString& aInnerHTML,
+                       const SetHTMLOptions& aOptions, ErrorResult& aError);
+
+  MOZ_CAN_RUN_SCRIPT
+  virtual void SetHTMLUnsafe(const TrustedHTMLOrString& aHTML,
+                             const SetHTMLUnsafeOptions& aOptions,
+                             nsIPrincipal* aSubjectPrincipal,
+                             ErrorResult& aError);
+
   void GetHTML(const GetHTMLOptions& aOptions, nsAString& aResult);
+
+  StylePropertyMapReadOnly* ComputedStyleMap();
 
   //----------------------------------------
 
@@ -1705,10 +2048,17 @@ class Element : public FragmentOrElement {
 
   nsINode* GetScopeChainParent() const override;
 
+  JSObject* WrapNode(JSContext*, JS::Handle<JSObject*> aGivenProto) override;
+
   /**
    * Locate a TextEditor rooted at this content node, if there is one.
    */
   MOZ_CAN_RUN_SCRIPT_BOUNDARY mozilla::TextEditor* GetTextEditorInternal();
+
+  /**
+   * Detach EditContext from this element.
+   */
+  void ClearEditContext();
 
   /**
    * Gets value of boolean attribute. Only works for attributes in null
@@ -1811,6 +2161,12 @@ class Element : public FragmentOrElement {
 
   void GetImplementedPseudoElement(nsAString&) const;
 
+  /**
+   * Get the pseudo element for this pseudo request (i.e. PseudoStyleType and
+   * its function parameter, if any).
+   */
+  Element* GetPseudoElement(const PseudoStyleRequest&) const;
+
   ReferrerPolicy GetReferrerPolicyAsEnum() const;
   ReferrerPolicy ReferrerPolicyFromAttr(const nsAttrValue* aValue) const;
 
@@ -1845,7 +2201,7 @@ class Element : public FragmentOrElement {
    * @return the presentation context
    */
   enum PresContextFor { eForComposedDoc, eForUncomposedDoc };
-  nsPresContext* GetPresContext(PresContextFor aFor);
+  nsPresContext* GetPresContext(PresContextFor aFor) const;
 
   /**
    * The method focuses (or activates) element that accesskey is bound to. It is
@@ -1873,8 +2229,6 @@ class Element : public FragmentOrElement {
    * Named-bools for use with SetAttrAndNotify to make call sites easier to
    * read.
    */
-  static const bool kFireMutationEvent = true;
-  static const bool kDontFireMutationEvent = false;
   static const bool kNotifyDocumentObservers = true;
   static const bool kDontNotifyDocumentObservers = false;
   static const bool kCallAfterSetAttr = true;
@@ -1886,11 +2240,20 @@ class Element : public FragmentOrElement {
   static const DOMTokenListSupportedToken sSupportedBlockingValues[];
 
   /**
-   * Set attribute and (if needed) notify documentobservers and fire off
-   * mutation events.  This will send the AttributeChanged notification.
-   * Callers of this method are responsible for calling AttributeWillChange,
-   * since that needs to happen before the new attr value has been set, and
-   * in particular before it has been parsed.
+   * Common implementation for SetAttr overloads. Takes a callback to perform
+   * the type-specific parsing and value setting.
+   */
+  template <typename ParseFunc>
+  nsresult SetAttrInternal(int32_t aNamespaceID, nsAtom* aName, nsAtom* aPrefix,
+                           const nsAttrValueOrString& aValueForComparison,
+                           nsIPrincipal* aSubjectPrincipal, bool aNotify,
+                           ParseFunc&& aParseFn);
+
+  /**
+   * Set attribute and (if needed) notify documentobservers.  This will send the
+   * AttributeChanged notification. Callers of this method are responsible for
+   * calling AttributeWillChange, since that needs to happen before the new attr
+   * value has been set, and in particular before it has been parsed.
    *
    * For the boolean parameters, consider using the named bools above to aid
    * code readability.
@@ -1918,9 +2281,7 @@ class Element : public FragmentOrElement {
    *                      non-null value does guarantee that a scripted caller
    *                      with the given principal is directly responsible for
    *                      the attribute change.
-   * @param aModType      MutationEvent_Binding::MODIFICATION or ADDITION.  Only
-   *                      needed if aFireMutation or aNotify is true.
-   * @param aFireMutation should mutation-events be fired?
+   * @param aModType      AttrModType::Modification or AttrModType::Addition.
    * @param aNotify       should we notify document-observers?
    * @param aCallAfterSetAttr should we call AfterSetAttr?
    * @param aComposedDocument The current composed document of the element.
@@ -1931,8 +2292,8 @@ class Element : public FragmentOrElement {
   nsresult SetAttrAndNotify(int32_t aNamespaceID, nsAtom* aName,
                             nsAtom* aPrefix, const nsAttrValue* aOldValue,
                             nsAttrValue& aParsedValue,
-                            nsIPrincipal* aSubjectPrincipal, uint8_t aModType,
-                            bool aFireMutation, bool aNotify,
+                            nsIPrincipal* aSubjectPrincipal,
+                            AttrModType aModType, bool aNotify,
                             bool aCallAfterSetAttr, Document* aComposedDocument,
                             const mozAutoDocUpdate& aGuard);
 
@@ -2111,6 +2472,10 @@ class Element : public FragmentOrElement {
   MOZ_CAN_RUN_SCRIPT
   nsresult PostHandleEventForLinks(EventChainPostVisitor& aVisitor);
 
+  mozilla::dom::FetchPriority GetFetchPriority() const;
+
+  static void ParseFetchPriority(const nsAString& aValue, nsAttrValue& aResult);
+
  public:
   /**
    * Check if this element is a link. This matches the CSS definition of the
@@ -2157,16 +2522,24 @@ class Element : public FragmentOrElement {
   virtual bool Translate() const;
 
   MOZ_CAN_RUN_SCRIPT
-  virtual void SetHTMLUnsafe(const nsAString& aHTML);
+  void FireBeforematchEvent(ErrorResult& aRv);
+
+  void PropagateBloomFilterToParents();
+  void UpdateSubtreeBloomFilterForClass(const nsAttrValue* aClassValue);
+  void UpdateSubtreeBloomFilterForAttribute(nsAtom* aAttribute);
+  uint64_t GetSubtreeBloomFilter() const {
+    return mAttrs.GetSubtreeBloomFilter();
+  }
+#ifdef DEBUG
+  void VerifySubtreeBloomFilter() const;
+#endif
 
  protected:
-  enum class ReparseAttributes { No, Yes };
   /**
    * Copy attributes and state to another element
    * @param aDest the object to copy to
    */
-  nsresult CopyInnerTo(Element* aDest,
-                       ReparseAttributes = ReparseAttributes::Yes);
+  nsresult CopyInnerTo(Element* aDest);
 
   /**
    * Some event handler content attributes have a different name (e.g. different
@@ -2180,6 +2553,10 @@ class Element : public FragmentOrElement {
    * Register/unregister this element to accesskey map if it supports accesskey.
    */
   virtual void RegUnRegAccessKey(bool aDoReg);
+
+  // Prevent people from doing pointless checks/casts on Element instances.
+  void IsElement() = delete;
+  void AsElement() = delete;
 
  private:
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
@@ -2213,10 +2590,6 @@ class Element : public FragmentOrElement {
   template <class T>
   void GetCustomInterface(nsGetterAddRefs<T> aResult);
 
-  // Prevent people from doing pointless checks/casts on Element instances.
-  void IsElement() = delete;
-  void AsElement() = delete;
-
   // Data members
   ElementState mState;
   // Per-node data managed by Servo.
@@ -2229,8 +2602,6 @@ class Element : public FragmentOrElement {
   // Array containing all attributes for this element
   AttrArray mAttrs;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(Element, NS_ELEMENT_IID)
 
 inline bool Element::HasNonEmptyAttr(int32_t aNameSpaceID,
                                      const nsAtom* aName) const {
@@ -2273,6 +2644,10 @@ inline mozilla::dom::Element* nsINode::GetParentElement() const {
 }
 
 inline mozilla::dom::Element* nsINode::GetPreviousElementSibling() const {
+  auto* parent = GetParentNode();
+  if (!parent || !parent->HasFlag(NODE_MAY_HAVE_ELEMENT_CHILDREN)) {
+    return nullptr;
+  }
   nsIContent* previousSibling = GetPreviousSibling();
   while (previousSibling) {
     if (previousSibling->IsElement()) {
@@ -2284,12 +2659,20 @@ inline mozilla::dom::Element* nsINode::GetPreviousElementSibling() const {
   return nullptr;
 }
 
+inline mozilla::dom::ShadowRoot* nsINode::GetShadowRoot() const {
+  return IsElement() ? AsElement()->GetShadowRoot() : nullptr;
+}
+
 inline mozilla::dom::Element* nsINode::GetAsElementOrParentElement() const {
   return IsElement() ? const_cast<mozilla::dom::Element*>(AsElement())
                      : GetParentElement();
 }
 
 inline mozilla::dom::Element* nsINode::GetNextElementSibling() const {
+  auto* parent = GetParentNode();
+  if (!parent || !parent->HasFlag(NODE_MAY_HAVE_ELEMENT_CHILDREN)) {
+    return nullptr;
+  }
   nsIContent* nextSibling = GetNextSibling();
   while (nextSibling) {
     if (nextSibling->IsElement()) {
@@ -2305,45 +2688,37 @@ inline mozilla::dom::Element* nsINode::GetNextElementSibling() const {
  * Macros to implement Clone(). _elementName is the class for which to implement
  * Clone.
  */
-#define NS_IMPL_ELEMENT_CLONE(_elementName)                         \
+#define NS_IMPL_ELEMENT_CLONE(_elementName, ...)                    \
   nsresult _elementName::Clone(mozilla::dom::NodeInfo* aNodeInfo,   \
                                nsINode** aResult) const {           \
     *aResult = nullptr;                                             \
-    RefPtr<mozilla::dom::NodeInfo> ni(aNodeInfo);                   \
-    auto* nim = ni->NodeInfoManager();                              \
-    RefPtr<_elementName> it = new (nim) _elementName(ni.forget());  \
+    RefPtr<_elementName> it = new (aNodeInfo->NodeInfoManager())    \
+        _elementName(do_AddRef(aNodeInfo), ##__VA_ARGS__);          \
     nsresult rv = const_cast<_elementName*>(this)->CopyInnerTo(it); \
     if (NS_SUCCEEDED(rv)) {                                         \
       it.forget(aResult);                                           \
     }                                                               \
-                                                                    \
     return rv;                                                      \
   }
 
-#define EXPAND(...) __VA_ARGS__
-#define NS_IMPL_ELEMENT_CLONE_WITH_INIT_HELPER(_elementName, extra_args_) \
-  nsresult _elementName::Clone(mozilla::dom::NodeInfo* aNodeInfo,         \
-                               nsINode** aResult) const {                 \
-    *aResult = nullptr;                                                   \
-    RefPtr<mozilla::dom::NodeInfo> ni(aNodeInfo);                         \
-    auto* nim = ni->NodeInfoManager();                                    \
-    RefPtr<_elementName> it =                                             \
-        new (nim) _elementName(ni.forget() EXPAND extra_args_);           \
-    nsresult rv = it->Init();                                             \
-    nsresult rv2 = const_cast<_elementName*>(this)->CopyInnerTo(it);      \
-    if (NS_FAILED(rv2)) {                                                 \
-      rv = rv2;                                                           \
-    }                                                                     \
-    if (NS_SUCCEEDED(rv)) {                                               \
-      it.forget(aResult);                                                 \
-    }                                                                     \
-                                                                          \
-    return rv;                                                            \
+#define NS_IMPL_ELEMENT_CLONE_WITH_INIT(_elementName, ...)           \
+  nsresult _elementName::Clone(mozilla::dom::NodeInfo* aNodeInfo,    \
+                               nsINode** aResult) const {            \
+    *aResult = nullptr;                                              \
+    RefPtr<_elementName> it = new (aNodeInfo->NodeInfoManager())     \
+        _elementName(do_AddRef(aNodeInfo), ##__VA_ARGS__);           \
+    nsresult rv = it->Init();                                        \
+    nsresult rv2 = const_cast<_elementName*>(this)->CopyInnerTo(it); \
+    if (NS_FAILED(rv2)) {                                            \
+      rv = rv2;                                                      \
+    }                                                                \
+    if (NS_SUCCEEDED(rv)) {                                          \
+      it.forget(aResult);                                            \
+    }                                                                \
+    return rv;                                                       \
   }
 
-#define NS_IMPL_ELEMENT_CLONE_WITH_INIT(_elementName) \
-  NS_IMPL_ELEMENT_CLONE_WITH_INIT_HELPER(_elementName, ())
 #define NS_IMPL_ELEMENT_CLONE_WITH_INIT_AND_PARSER(_elementName) \
-  NS_IMPL_ELEMENT_CLONE_WITH_INIT_HELPER(_elementName, (, NOT_FROM_PARSER))
+  NS_IMPL_ELEMENT_CLONE_WITH_INIT(_elementName, NOT_FROM_PARSER)
 
-#endif  // mozilla_dom_Element_h__
+#endif  // mozilla_dom_Element_h_

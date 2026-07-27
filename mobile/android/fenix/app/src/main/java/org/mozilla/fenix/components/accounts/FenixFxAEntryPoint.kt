@@ -44,11 +44,6 @@ enum class FenixFxAEntryPoint(override val entryName: String) : FxAEntryPoint, P
     BookmarkView("bookmark-view"),
 
     /**
-     * Authenticating from the homepage onboarding dialog
-     */
-    HomeOnboardingDialog("home-onboarding-dialog"),
-
-    /**
      * Authenticating from the settings menu
      */
     SettingsMenu("settings-menu"),
@@ -79,6 +74,26 @@ enum class FenixFxAEntryPoint(override val entryName: String) : FxAEntryPoint, P
      * Authenticating from the synced tabs menu to enable synced tabs
      */
     SyncedTabsMenu("synced-tabs-menu"),
+
+    /**
+     * Accessing the menu dialog from an external view (e.g. custom tab)
+     */
+    ExternalView("external-view"),
+
+    /**
+     * Authenticating with the user journey started at IP protection onboarding bottom sheet.
+     */
+    IPProtectionOnboarding("vpn_integration_android_onboarding"),
+
+    /**
+     * Authenticating with the user journey started from the IP protection main menu item.
+     */
+    IPProtectionMainMenu("vpn_integration_android_menu"),
+
+    /**
+     * Authenticating with the user journey started from the IP protection settings screen.
+     */
+    IPProtectionSettings("vpn_integration_android_settings"),
 
     /**
      * When serializing the value after navigating, the result is a nullable value. We have this

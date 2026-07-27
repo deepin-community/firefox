@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -38,11 +32,9 @@ menu-quit =
             [windows] j
            *[other] j
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Välju { -brand-shorter-name }ist
-
 menu-about =
     .label = { -brand-shorter-name }i teave
     .accesskey = e
@@ -222,6 +214,9 @@ menu-history-undo-menu =
     .label = Hiljuti suletud kaardid
 menu-history-undo-window-menu =
     .label = Hiljuti suletud aknad
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Otsi ajaloost
 
 ## Bookmarks Menu
 
@@ -230,6 +225,10 @@ menu-bookmarks-menu =
     .accesskey = J
 menu-bookmarks-manage =
     .label = Halda järjehoidjaid
+menu-bookmark-tab =
+    .label = Lisa praegune kaart järjehoidjasse…
+menu-edit-bookmark =
+    .label = Muuda seda järjehoidjat…
 menu-bookmarks-all-tabs =
     .label = Lisa kõik kaardid järjehoidjatesse...
 menu-bookmarks-toolbar =

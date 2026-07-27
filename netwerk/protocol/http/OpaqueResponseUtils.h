@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,8 +14,8 @@
 #include "nsMimeTypes.h"
 #include "nsIHttpChannel.h"
 
-#include "mozilla/Variant.h"
 #include "mozilla/Logging.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 
 #include "nsCOMPtr.h"
 #include "nsString.h"
@@ -48,19 +45,7 @@ enum class OpaqueResponseBlockedReason : uint32_t {
   BLOCKED_SHOULD_SNIFF
 };
 
-enum class OpaqueResponseBlockedTelemetryReason : uint32_t {
-  MIME_NEVER_SNIFFED,
-  RESP_206_BLCLISTED,
-  NOSNIFF_BLC_OR_TEXTP,
-  RESP_206_NO_FIRST,
-  AFTER_SNIFF_MEDIA,
-  AFTER_SNIFF_NOSNIFF,
-  AFTER_SNIFF_STA_CODE,
-  AFTER_SNIFF_CT_FAIL,
-  MEDIA_NOT_INITIAL,
-  MEDIA_INCORRECT_RESP,
-  JS_VALIDATION_FAILED
-};
+using OpaqueResponseBlockedTelemetryReason = glean::orb::BlockReasonLabel;
 
 enum class OpaqueResponse { Block, Allow, SniffCompressed, Sniff };
 

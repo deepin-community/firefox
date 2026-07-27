@@ -2,9 +2,7 @@ Utility Process
 ===============
 
 .. warning::
-  As of january 2022, this process is under heavy work, and many things can
-  evolve. Documentation might not always be as accurate as it should be.
-  Please reach to #ipc if you intent to add a new utility.
+  Please reach out to #ipc on https://chat.mozilla.org/ if you intent to add a new utility.
 
 The utility process is used to provide a simple way to implement IPC actor with
 some more specific sandboxing properties, in case where you don't need or want
@@ -30,17 +28,17 @@ implementing the trivial example visible in `EmptyUtil
     performing the heavy lifting of starting your process, you can take
     inspiration from ``StartEmptyUtil()`` in the sample.
 
-  - Ideally, this starting method should rely on `StartUtility() <https://searchfox.org/mozilla-central/rev/fb511723f821ceabeea23b123f1c50c9e93bde9d/ipc/glue/UtilityProcessManager.cpp#210-258,266>`_
+  - Ideally, this starting method should rely on :searchfox:`StartUtility() <mozilla-central/rev/f9f9b422f685244dcd3f6826b70d34a496ce5853:ipc/glue/UtilityProcessManager.cpp#238-318,347>`
 
   - To use ``StartUtility()`` mentioned above, please ensure that you provide
     a ``nsresult BindToUtilityProcess(RefPtr<UtilityProcessParent>
     aUtilityParent)``. Usually, it should be in charge of creating a set of
-    endpoints and performing ``Bind()`` to setup the IPC. You can see some example for `Utility AudioDecoder <https://searchfox.org/mozilla-central/rev/4b3039b48c3cb67774270ebcc2a7d8624d888092/ipc/glue/UtilityAudioDecoderChild.h#31-51>`_
+    endpoints and performing ``Bind()`` to setup the IPC. You can see some example for :searchfox:`UtilityMediaService <mozilla-central/rev/0fe32133f12ed0f20d5fde8fe970157f04817982:ipc/glue/UtilityMediaServiceChild.cpp#60-92>`
 
   - For proper user-facing exposition in ``about:processes`` you will have to also provide an actor
     name via a method ``UtilityActorName GetActorName() { return UtilityActorName::EmptyUtil; }``
 
-    + Add member within `enum WebIDLUtilityActorName in <https://searchfox.org/mozilla-central/rev/fb511723f821ceabeea23b123f1c50c9e93bde9d/dom/chrome-webidl/ChromeUtils.webidl#686-689>`_
+    + Add member within :searchfox:`enum WebIDLUtilityActorName in <mozilla-central/rev/f9f9b422f685244dcd3f6826b70d34a496ce5853:dom/chrome-webidl/ChromeUtils.webidl#852-866>`
 
   - Handle reception of ``StartEmptyUtilService`` on the child side of
     ``UtilityProcess`` within ``RecvStartEmptyUtilService()``
@@ -50,20 +48,20 @@ implementing the trivial example visible in `EmptyUtil
     will probably include a reference to the ``EmptyUtilChild``.
 
   - The specific sandboxing requirements can be implemented by tracking
-    ``SandboxingKind``, and it starts within `UtilityProcessSandboxing header
-    <https://searchfox.org/mozilla-central/source/ipc/glue/UtilityProcessSandboxing.h>`_
+    ``SandboxingKind``, and it starts within :searchfox:`UtilityProcessSandboxing header <ipc/glue/UtilityProcessSandboxing.h>`
 
   - Try and make sure you at least add some ``gtest`` coverage of your new
-    actor, for example like in `existing gtest
-    <https://searchfox.org/mozilla-central/source/ipc/glue/test/gtest/TestUtilityProcess.cpp>`_
+    actor, for example like in :searchfox:`existing gtest <ipc/glue/test/gtest/TestUtilityProcess.cpp>`
 
   - Also ensure actual sandbox testing within
 
     + ``SandboxTest`` to start your new process,
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTest.cpp>`_
+      :searchfox:`security/sandbox/common/test/SandboxTest.cpp`
 
     + ``SandboxTestingChildTests`` to define the test
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTestingChildTests.h>`_
+      :searchfox:`security/sandbox/common/test/SandboxTestingChildTests.h`
 
     + ``SandboxTestingChild`` to run your test
-      `<https://searchfox.org/mozilla-central/source/security/sandbox/common/test/SandboxTestingChild.cpp>`_
+      :searchfox:`security/sandbox/common/test/SandboxTestingChild.cpp`
+
+  - Please also consider having a look at :ref:`Process Bookkeeping <process-bookkeeping>` for anything you may want to ensure is supported by your new process, like e.g. profiler, crash reporting, etc.

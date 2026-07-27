@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } التصفح الخفي
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } التصفح الخاص
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } التصفح الخاص
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — التصفح الخاص
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — التصفح الخاص
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — التصفح الخاص
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — التصفح الخاص
+       *[other] { -brand-full-name } التصفح الخاص
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = التصفح الخاص
+popups-infobar-dont-show-message2 =
+    .label = لا تعرض هذه الرسالة عند حظر النوافذ المنبثقة أو عمليات إعادة التوجيه من جهات خارجية
+    .accesskey = ر
+edit-popup-settings2 =
+    .label = أدر إعدادات إعادة التوجيه المنبثقة والجهات الخارجية…
+    .accesskey = د
 
 ##
 
@@ -62,9 +137,11 @@ urlbar-identity-button =
 urlbar-services-notification-anchor =
     .tooltiptext = افتح لوحة رسائل التثبيت
 urlbar-web-notification-anchor =
-    .tooltiptext = غيّر ما إذا ما كنت تسمح باستلام تنبيهات من الموقع
+    .tooltiptext = غيّر ما إذا ما كنت تسمح باستلام إشعارات من الموقع
 urlbar-midi-notification-anchor =
     .tooltiptext = افتح لوحة MIDI
+urlbar-serial-notification-anchor =
+    .tooltiptext = افتح لوحة التسلسل
 urlbar-eme-notification-anchor =
     .tooltiptext = أدِر استخدام برمجيات إدارة الحقوق الرقمية
 urlbar-web-authn-anchor =
@@ -77,6 +154,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = افتح لوحة الرسائل
 urlbar-geolocation-notification-anchor =
     .tooltiptext = افتح لوحة طلب المكان
+urlbar-localhost-notification-anchor =
+    .tooltiptext = أدر وصول الجهاز المحلي لهذا الموقع
+urlbar-local-network-notification-anchor =
+    .tooltiptext = أدر مشاركة الوصول إلى الشبكة المحلية مع هذا الموقع
 urlbar-xr-notification-anchor =
     .tooltiptext = افتح لوحة تصاريح الواقع الافتراضي
 urlbar-storage-access-anchor =
@@ -113,7 +194,25 @@ urlbar-tip-icon-description =
 urlbar-result-menu-button =
     .title = افتح القائمة
 urlbar-result-menu-button-feedback = الانطباع
-    .title = فتح القائمة
+    .title = افتح القائمة
+urlbar-result-menu-learn-more2 = اطّلع على المزيد
+    .accesskey = ط
+urlbar-result-menu-remove-from-history2 = احذف من التأريخ
+    .accesskey = خ
+urlbar-result-menu-tip-get-help2 = احصل على مساعدة
+    .accesskey = ص
+urlbar-result-menu-dismiss-suggestion2 = أهمل هذا الاقتراح
+    .accesskey = م
+urlbar-result-menu-manage-firefox-suggest2 = أدر { -firefox-suggest-brand-name }
+    .accesskey = د
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = بلّغ عن موقع غير دقيق
+urlbar-result-menu-show-less-frequently2 = اعرض أقل تواترا
+urlbar-result-menu-dont-show-weather-suggestions2 = لا تعرض اقتراحات الطقس
 urlbar-result-menu-learn-more =
     .label = اطّلع على المزيد
     .accesskey = ز
@@ -123,6 +222,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = احصل على مساعدة
     .accesskey = ص
+urlbar-result-menu-dismiss-suggestion =
+    .label = أهمل هذا الاقتراح
+    .accesskey = م
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = تعرف على المزيد حول { -firefox-suggest-brand-name }
+    .accesskey = و
+urlbar-result-menu-manage-firefox-suggest =
+    .label = أدر { -firefox-suggest-brand-name }
+    .accesskey = د
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = بلّغ عن موقع غير دقيق
+urlbar-result-menu-show-less-frequently =
+    .label = اعرض أقل تواترا
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = لا تعرض اقتراحات الطقس
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = افتح القائمة
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = شكرًا على تعليقك
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = شكرًا على تعليقك. لن ترى اقتراحات الطقس بعد الآن.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,10 +276,14 @@ urlbar-search-mode-actions = الإجراءات
 
 urlbar-geolocation-blocked =
     .tooltiptext = لقد حجبت معلومات مكانك عن هذا الموقع.
+urlbar-localhost-blocked =
+    .tooltiptext = لقد حجبت اتصالات الجهاز المحلي لهذا الموقع.
+urlbar-local-network-blocked =
+    .tooltiptext = لقد حجبت اتصالات الشبكة المحلية لهذا الموقع.
 urlbar-xr-blocked =
     .tooltiptext = لقد حجبت الوصول إلى جهاز الواقع الافتراضي عن هذا الموقع.
 urlbar-web-notifications-blocked =
-    .tooltiptext = لقد حجبت التنبيهات عن هذا الموقع.
+    .tooltiptext = لقد حجبت الإشعارات عن هذا الموقع.
 urlbar-camera-blocked =
     .tooltiptext = لقد حجبت كمرتك عن هذا الموقع.
 urlbar-microphone-blocked =
@@ -160,6 +292,8 @@ urlbar-screen-blocked =
     .tooltiptext = لقد حجبت هذا الموقع من مشاركة شاشتك.
 urlbar-persistent-storage-blocked =
     .tooltiptext = لقد حجبت الحفظ الدائم للبيانات عن هذا الموقع.
+urlbar-popup-blocked2 =
+    .tooltiptext = لقد حظرت النوافذ المنبثقة وعمليات إعادة التوجيه من جهات خارجية لهذا الموقع الإلكتروني.
 urlbar-popup-blocked =
     .tooltiptext = لقد حجبت المنبثقات من هذا الموقع.
 urlbar-autoplay-media-blocked =
@@ -168,6 +302,8 @@ urlbar-canvas-blocked =
     .tooltiptext = لقد منعت استخراج بيانات رقعة الرسم في هذا الموقع.
 urlbar-midi-blocked =
     .tooltiptext = لقد حجبنا عن هذا الموقع الوصول إلى MIDI.
+urlbar-serial-blocked =
+    .tooltiptext = لقد حجبت الوصول إلى منفذ التسلسل لهذا الموقع.
 urlbar-install-blocked =
     .tooltiptext = حجبت تثبيت الإضافات في هذا الموقع.
 # Variables
@@ -178,6 +314,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = علّم هذه الصفحة ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = عرض منقسم
+    .aria-label = عرض منقسم
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = امسح تأريخ البحث
+    .accesskey = م
 
 ## Page Action Context Menu
 
@@ -201,7 +346,7 @@ full-screen-exit =
 
 # This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
-search-one-offs-with-title = الآن فقط ابحث باستعمال:
+search-one-offs-with-title = ابحث هذه المرة ب:
 search-one-offs-change-settings-compact-button =
     .tooltiptext = غيّر إعدادات البحث
 search-one-offs-context-open-new-tab =
@@ -250,14 +395,25 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = اعرض الإضافات
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = الإضافات, اﻹمتدادات, إمتداد, extensions, themes, addons, add-ons
+# Opens preferences page at AI controls
+quickactions-manageai = أدِر عناصر التحكم في الذكاء الاصطناعي
+quickactions-cmd-manageai = عطّل الذكاء الاصطناعي أو أوقِف تشغيل الذكاء الاصطناعي أو أدِر الذكاء الاصطناعي
 quickactions-cmd-addons2 = الإضافات
 # Opens the bookmarks library window
 quickactions-bookmarks2 = أدِر العلامات
 quickactions-cmd-bookmarks = العلامات
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = امسح التأريخ الحالي
+quickactions-cmd-clearrecenthistory2 = ملفات تعريف الارتباط، مسح ملفات تعريف الارتباط، ذاكرة التخزين المؤقت، مسح ذاكرة التخزين المؤقت، بيانات التصفح، مسح بيانات التصفح، تأريخ التصفح، مسح سجل التصفح الأخير
+quickactions-cmd-clearrecenthistory = امسح التأريخ الحالي, التأريخ, clear recent history, history
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = امسح التأريخ
 quickactions-cmd-clearhistory = امسح التأريخ
@@ -266,13 +422,36 @@ quickactions-downloads2 = اعرض التنزيلات
 quickactions-cmd-downloads = التنزيلات
 # Opens about:addons page in the extensions section
 quickactions-extensions = أدِر الامتدادات
+quickactions-cmd-extensions2 = امتدادات, ملحقات, إضافات
 quickactions-cmd-extensions = الامتدادات
+# Opens Firefox View
+quickactions-firefoxview = افتح { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = افتح { -firefoxview-brand-name }، { -firefoxview-brand-name }، افتح العرض، عرض
+# Opens SUMO home page
+quickactions-help = مساعدة { -brand-product-name }
+quickactions-cmd-help = المساعدة والدعم
 # Opens the devtools web inspector
 quickactions-inspector2 = افتح أدوات المطورين
+quickactions-cmd-inspector2 = المفتش, أدوات التطوير, أدوات التطوير, inspector, devtools, dev tools
+# Opens the devtools eyedropper to pick a color from the page
+quickactions-colorpicker = اختر لونًا
+quickactions-cmd-colorpicker = منتقي الألوان، قطارة الألوان، اختر لونًا
+# Opens Firefox Library
+quickactions-cmd-library = المكتبة
+quickactions-library = افتح المكتبة
 quickactions-cmd-inspector = الفاحص، أدوات تطوير
 # Opens about:logins
 quickactions-logins2 = أدِر كلمات السر
 quickactions-cmd-logins = جلسات الولوج، كلمات السر
+# Mutes all tabs playing audio
+quickactions-mute = اكتم صوت الألسنة التي تشغل الصوت
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = اكتم, كتم الصوت, ششش, سكوت
 # Opens about:addons page in the plugins section
 quickactions-plugins = أدِر الملحقات
 quickactions-cmd-plugins = المُلحقات
@@ -281,7 +460,10 @@ quickactions-print2 = اطبع الصفحة
 quickactions-cmd-print = اطبع
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = احفظ الصفحة بصيغة PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, احفظ الصفحة, save page
+# Opens about:pdf, the PDF editor landing page
+quickactions-editpdf = افتح محرِّر PDF
+quickactions-cmd-editpdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = افتح نافذة خاصة
 quickactions-cmd-private = التصفّح الخاص
@@ -293,22 +475,40 @@ quickactions-restart = أعِد تشغيل { -brand-short-name }
 quickactions-cmd-restart = أعِد التشغيل
 # Opens the screenshot tool
 quickactions-screenshot3 = خذ لقطة شاشة
+quickactions-cmd-screenshot2 = لقطة الشاشة, خذ لقطة شاشة, screenshot, take a screenshot
+# Opens about:translations
+quickactions-translate = ترجم
+quickactions-cmd-translate = ترجم
 quickactions-cmd-screenshot = لقطة شاشة
 # Opens about:preferences
 quickactions-settings2 = أدِر الإعدادات
-quickactions-cmd-settings = الإعدادات، التفضيلات، الخيارات
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = الإعدادات, التفضيلات, الخيارات, الإدارة, settings, preferences, options, manage
+quickactions-cmd-settings = الإعدادات, التفضيلات, الخيارات, settings, preferences, options
 # Opens about:addons page in the themes section
 quickactions-themes = أدِر السمات
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = سمات, ملحقات, إضافات
 quickactions-cmd-themes = السمات
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = حدِّث { -brand-short-name }
 quickactions-cmd-update = حدّث
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = اعرض مصدر هذه الصفحة
-quickactions-cmd-viewsource = اعرض المصدر، مصدر
+quickactions-cmd-viewsource2 = عرض المصدر, المصدر, مصدر الصفحة, view source, source, page source
+# Opens about:preferences:experimental (Firefox Labs)
+quickactions-labs = افتح { -firefoxlabs-brand-name }
+quickactions-cmd-labs = المختبرات، التجارب
+quickactions-cmd-viewsource = اعرض المصدر, مصدر, view source, source
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = تعرف على المزيد حول الإجراءات السريعة
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = اضغط على tab لتحديد:
 
 ## Bookmark Panel
 
@@ -358,7 +558,7 @@ identity-connection-file = هذه الصفحة مخزنة على حاسوبك.
 identity-connection-associated = حمِّلت هذه الصفحة من صفحة أخرى.
 identity-extension-page = حمِّلت هذه الصفحة من امتداد.
 identity-active-blocked = حجب { -brand-short-name } الأجزاء غير الآمنة في هذه الصفحة.
-identity-custom-root = تثبّت من هذا الاتصال مُصْدِر شهادات لا تعرفه Mozilla.
+identity-custom-root = تحققَ من هذا الاتصال مُصْدِر شهادات لا تعرفه Mozilla.
 identity-passive-loaded = بعض أجزاء هذه الصفحة غير آمنة (مثل الصور).
 identity-active-loaded = لقد أوقفت الحماية على هذه الصفحة.
 identity-weak-encryption = تستخدم هذه الصفحة تعمية ضعيفة.
@@ -383,10 +583,14 @@ identity-permissions-storage-access-learn-more = اطّلع على المزيد
 identity-permissions-reload-hint = قد تحتاج إعادة تحميل الصفحة لتطبيق التغييرات.
 identity-clear-site-data =
     .label = امسح الكعكات و بيانات المواقع…
-identity-connection-not-secure-security-view = لست متصلا مع هذا الموقع بأمان.
+identity-connection-not-secure-security-view = لست متصلاً مع هذا الموقع بأمان.
 identity-connection-verified = أنت متصل مع هذا الموقع بأمان.
 identity-ev-owner-label = أُصدرت الشّهادة إلى:
+identity-verifier-label = تحقق منها:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = مؤهل وفقًا لما هو محدد في اللائحة (الاتحاد الأوروبي) 2024/1183.
 identity-description-custom-root2 = لم تتعرّف Mozilla على مُصْدِر الشهادات هذا. لربّما أضافه نظام التشغيل أو أحد المدراء.
+identity-cert-exception-overridden = لقد أضفت استثناء آمن لهذا الموقع.
 identity-remove-cert-exception =
     .label = أزِل الاستثناء
     .accesskey = س
@@ -419,6 +623,9 @@ browser-window-restore-down-button =
     .tooltiptext = أنزِله
 browser-window-close-button =
     .tooltiptext = أغلِق
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = ارجع
 
 ## Tab actions
 
@@ -429,7 +636,7 @@ browser-tab-audio-muted2 = مكتوم
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-blocked = حُجب التشغيل التلقائي
 # This label should be written in all capital letters if your locale supports them.
-browser-tab-audio-pip = ڤديو معترِض
+browser-tab-audio-pip = فديو معترِض
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
@@ -501,6 +708,11 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = أوقِف حماية المشاركة لهذه الجلسة
 
+## WebSerial "select a port" popup
+
+webserial-select-port-label = حدّد منفذًا تسلسليًا:
+webserial-no-ports-available = لا توجد منافذ تسلسلية متاحة
+
 ## DevTools F12 popup
 
 enable-devtools-popup-description2 = لاستخدام اختصار F12، افتح أدوات التطوير (DevTools) أولاً عبر قائمة أدوات المتصفح.
@@ -514,6 +726,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = ابحث أو أدخل عنوانا
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = أدخل العنوان
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -549,7 +765,7 @@ urlbar-placeholder-search-mode-other-actions =
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
-    .placeholder = ‫ابحث مستعملًا { $name } أو أدخِل عنوانا
+    .placeholder = ‫ابحث ب { $name } أو أدخِل عنوانا
 # Variables
 #  $component (String): the name of the component which forces remote control.
 #    Example: "DevTools", "Marionette", "RemoteAgent".
@@ -562,35 +778,43 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = الامتداد:
+urlbar-go-button2 =
+    .title = انتقل للعنوان في شريط الموقع
 urlbar-go-button =
     .tooltiptext = انتقل للعنوان في شريط الموقع
 urlbar-page-action-button =
     .tooltiptext = إجراءات الصفحة
+urlbar-revert-button =
+    .tooltiptext = أظهِر العنوان في شريط الموقع
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-in-private-w-engine = ابحث مستعملًا { $engine } في نافذة خاصة
+urlbar-result-action-search-in-private-w-engine = ابحث ب { $engine } في نافذة خاصة
 # Used when the private browsing engine is the same as the default engine.
 urlbar-result-action-search-in-private = ابحث في نافذةٍ خاصة
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-w-engine = ابحث مستخدمًا { $engine }
+urlbar-result-action-search-w-engine = ابحث ب { $engine }
 urlbar-result-action-sponsored = نتيجة مموّلة
 urlbar-result-action-switch-tab = انتقل إلى اللسان
+urlbar-result-action-move-tab-to-split-view = انقل اللسان إلى عرض منقسم
 urlbar-result-action-visit = زُر
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = انتقل للسان · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = مجموعة غير مسمّاة
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = زر من الحافظة
 # Directs a user to press the Tab key to perform a search with the specified
@@ -598,7 +822,7 @@ urlbar-result-action-visit-from-clipboard = زر من الحافظة
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
-urlbar-result-action-before-tabtosearch-web = اضغط Tab للبحث باستعمال { $engine }
+urlbar-result-action-before-tabtosearch-web = اضغط Tab للبحث ب { $engine }
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -608,7 +832,7 @@ urlbar-result-action-before-tabtosearch-other = اضغط Tab للبحث عبر {
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
-urlbar-result-action-tabtosearch-web = ابحث مستعملًا { $engine } مباشرة من شريط العنوان
+urlbar-result-action-tabtosearch-web = ابحث ب { $engine } مباشرة من شريط العنوان
 # Variables
 #  $engine (String): the name of a search engine that searches a specific site
 #  (e.g. Amazon).
@@ -620,12 +844,258 @@ urlbar-result-action-copy-to-clipboard = انسخ
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = غير محدد
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = امتداد { -brand-product-name }
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = يُنصح به
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> في { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> في { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> في { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · مموّل
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = اسأل
+
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
+
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative = آخر زيارة لك { $date }
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute = آخر زيارة لك كانت { $date }
+# This explanation is used when the result is bookmarked. The date will be
+# formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-bookmarked = مُعلّمة { $date }
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative-2 = آخر زيارة { $date }
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = احصل على بيانات سوق الأسهم مباشرة في شريط البحث
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = اعرض آخر مستجدات السوق والمزيد من شركائنا عند مشاركة بيانات استعلام البحث مع { -vendor-short-name }. <a data-l10n-name="learn-more-link">اطّلع على المزيد</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = اعرض الاقتراحات
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = ليس الآن
+urlbar-result-realtime-opt-in-dismiss = أهمِل
+urlbar-result-realtime-opt-in-dismiss-all2 = لا تعرض هذه الاقتراحات
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = لا تعرض اقتراحات السوق
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = لا تعرض هذه الاقتراحات
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = لا تعرض اقتراحات السوق
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = شكرًا لملاحظاتك. لن ترى اقتراحات السوق بعد الآن.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = اقتراحات حول سوق الأسهم
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = شكرًا لملاحظاتك. لن ترى هذه الاقتراحات بعد الآن.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [zero] { $name } · خلال { $daysUntilStart } يوم
+        [one] { $name } · خلال يوم
+        [two] { $name } · خلال يومين
+        [few] { $name } · خلال { $daysUntilStart } أيام
+        [many] { $name } · خلال { $daysUntilStart } يومًا
+       *[other] { $name } · خلال { $daysUntilStart } يوم
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [zero] { $name } · يبدأ خلال { $daysUntilStart } يوم
+        [one] { $name } · يبدأ خلال يوم
+        [two] { $name } · يبدأ خلال يومين
+        [few] { $name } · يبدأ خلال { $daysUntilStart } أيام
+        [many] { $name } · يبدأ خلال { $daysUntilStart } يومًا
+       *[other] { $name } · يبدأ خلال { $daysUntilStart } يوم
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [zero] { $name } · ينتهي خلال { $daysUntilEnd } يوم
+        [one] { $name } · ينتهي خلال يوم
+        [two] { $name } · ينتهي خلال يومين
+        [few] { $name } · ينتهي خلال { $daysUntilEnd } أيام
+        [many] { $name } · ينتهي خلال { $daysUntilEnd } يومًا
+       *[other] { $name } · ينتهي خلال { $daysUntilEnd } يوم
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · اليوم
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · ينتهي اليوم
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
-urlbar-result-search-with = ابحث مستخدمًا { $engine }
+urlbar-result-search-with = ابحث ب { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - بحث { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - ابحث ب { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = اختر محرك بحث
+urlbar-searchmode-bookmarks =
+    .label = العلامات
+urlbar-searchmode-tabs =
+    .label = الألسنة
+urlbar-searchmode-history =
+    .label = التأريخ
+urlbar-searchmode-actions =
+    .label = الإجراءات
+urlbar-searchmode-exit-button =
+    .tooltiptext = أغلق
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ابحث هذه المرة ب:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = إعدادات البحث
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }، اختر محرك بحث
+    .tooltiptext = { $engine }، اختر محرك بحث
+urlbar-searchmode-button-no-engine =
+    .label = لم تحدد اختصار، اختر اختصارًا
+    .tooltiptext = لم تحدد اختصار، اختر اختصارًا
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }، اختر محرك بحث
+urlbar-searchmode-button-no-engine2 =
+    .title = لم تحدد اختصار، اختر اختصارًا
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = عُطّل البحث بالكلمات المفتاحية
+urlbar-searchmode-dropmarker2 =
+    .title = اختر محرك بحث
+urlbar-searchmode-bookmarks2 = العلامات
+urlbar-searchmode-tabs2 = الألسنة
+urlbar-searchmode-history2 = التأريخ
+urlbar-searchmode-actions2 = الإجراءات
+urlbar-searchmode-exit-button2 =
+    .title = أغلق
+urlbar-searchmode-default2 =
+    .title = محرّك البحث المبدئي
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = أضِف ”{ $engineName }“
+    .title = أضِف محرك البحث ”{ $engineName }“
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = ابحث هذه المرة ب:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = ابحث مستخدمًا:
+urlbar-searchmode-popup-search-settings-panelitem = إعدادات البحث
+urlbar-searchmode-popup-settings-panelitem = الإعدادات
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -635,6 +1105,27 @@ urlbar-result-action-search-bookmarks = ابحث في العلامات
 urlbar-result-action-search-history = ابحث في التأريخ
 urlbar-result-action-search-tabs = ابحث في الألسنة
 urlbar-result-action-search-actions = إجراءات البحث
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = تبديل إلى { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = افتح { $group }
+
+## Used in the context menu in urlbar view.
+
+urlbar-view-context-menu-open-in-tab =
+    .label = افتح في لسان جديد
+    .accesskey = ف
+urlbar-view-context-menu-open-in-container-tab =
+    .label = افتح في لسانٍ حاوٍ جديد
+    .accesskey = ف
+urlbar-view-context-menu-open-in-window =
+    .label = افتح في نافذة جديدة
+    .accesskey = ف
+urlbar-view-context-menu-open-in-private-window =
+    .label = افتح في نافذة خاصة جديدة
+    .accesskey = ف
 
 ## Labels shown above groups of urlbar results
 
@@ -656,6 +1147,27 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = عمليات البحث الأخيرة
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = مُتداول في { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = لا تعرض عمليات البحث المُتداولة
+    .accesskey = م
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = نتيجة مموّلة
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = لا تعرض عمليات البحث المُتداولة
+    .accesskey = م
+urlbar-result-menu-trending-why =
+    .label = لماذا أرى هذا؟
+    .accesskey = ل
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = شكرًا على تعليقك. لن ترى عمليات البحث المُتداولة بعد الآن.
 
 ## Reader View toolbar buttons
 
@@ -690,6 +1202,9 @@ fullscreen-warning-no-domain = يملأ هذا المستند الشاشة ال�
 fullscreen-exit-button = غادر ملء الشاشة (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = غادر ملء الشاشة (esc)
+fullscreen-keyboardlock-exit-button = اخرِج من وضع ملء الشاشة (اضغط مع الاستمرار على زر Esc)
+# "esc" is lowercase on mac keyboards, but uppercase elsewhere.
+fullscreen-keyboardlock-exit-mac-button = اخرِج من وضع ملء الشاشة (اضغط مع الاستمرار على زر esc)
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -785,7 +1300,7 @@ repair-text-encoding-button =
     .label = أصلِح ترميز النص
     .tooltiptext = خمّن ترميز النص الصحيح من محتوى الصفحة
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -805,6 +1320,29 @@ toolbar-button-email-link =
 toolbar-button-logins =
     .label = كلمات السر
     .tooltiptext = اعرض و أدِر كلماتي السرية المحفوظة
+qrcode-panel-error =
+    .message = فشل توليد رمز QR. يُرجى المحاولة مجددًا.
+qrcode-copy-button =
+    .label = انسخ
+qrcode-copy-success =
+    .message = نُسخ رمز QR إلى الحافظة.
+qrcode-copy-error =
+    .message = فشل نسخ رمز QR.
+qrcode-save-button =
+    .label = احفظ
+qrcode-save-success =
+    .message = حُفظ رمز QR.
+qrcode-save-error =
+    .message = فشل حفظ رمز QR.
+qrcode-save-title = احفظ رمز QR
+qrcode-save-filter-png = صورة PNG
+qrcode-save-filename = qrcode.png
+qrcode-window-title = رمز QR
+qrcode-dialog-title = رمز QR
+qrcode-image =
+    .aria-label = رمز QR
+qrcode-close-button =
+    .aria-label = أغلق
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -818,11 +1356,28 @@ toolbar-button-open-file =
 toolbar-button-synced-tabs =
     .label = الألسنة المُزامنة
     .tooltiptext = اعرض الألسنة من الأجهزة الأخرى
+toolbar-button-send-tab =
+    .label = أرسل لسان
+    .tooltiptext = أرسل اللسان الحالي إلى جهاز أخر
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
     .label = نافذة خاصة جديدة
     .tooltiptext = افتح نافذة تصفح خاصة جديدة ({ $shortcut })
+toolbar-button-share-tab =
+    .label = شارِك
+    .tooltiptext = شارك هذه الصفحة
+toolbar-button-tab-groups =
+    .label = مجموعات الألسنة
+    .tooltiptext = أظهر مجموعات ألسنتك
+
+## Default filenames used when saving a QR code. The file extension (.png)
+## is added automatically.
+
+qrcode-save-filename-base = qrcode
+# Variables:
+#  $domain (String): The current page's domain used in the suggested filename.
+qrcode-save-filename-with-domain-base = qrcode-{ $domain }
 
 ## EME notification panel
 
@@ -836,12 +1391,34 @@ eme-notifications-drm-content-playing-dismiss-accesskey = ه
 
 panel-save-update-username = اسم المستخدم
 panel-save-update-password = كلمة السر
+panel-save-update-username-2 =
+    .label = اسم المستخدم
+panel-save-update-password-2 =
+    .label = كلمة السر
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = أكثر…
+menu-share-windows =
+    .label = المزيد من الخيارات
+# Variables:
+#   $count (Number) - The number of links that will be copied.
+menu-share-copy-links =
+    .label =
+        { $count ->
+            [zero] لا رابط للنسخ
+            [one] انسخ رابط
+            [two] انسخ رابطين
+            [few] انسخ { $count } روابط
+            [many] انسخ { $count } رابطًا
+           *[other] انسخ { $count } رابط
+        }
+    .accesskey = ن
+menu-share-copy-link =
+    .label = انسخ الرابط
+    .accesskey = ط
 ui-tour-info-panel-close =
     .tooltiptext = أغلق
 
@@ -854,6 +1431,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = احجب النوافذ المنبثقة من { $uriHost }
     .accesskey = ن
+popups-infobar-allow2 =
+    .label = اسمح بالنوافذ المنبثقة وإعادة التوجيه إلى جهات خارجية لـ { $uriHost }
+    .accesskey = م
 
 ##
 
@@ -864,17 +1444,17 @@ edit-popup-settings =
     .label = أدِر إعدادات المنبثقات…
     .accesskey = د
 picture-in-picture-hide-toggle =
-    .label = أخفِ زر تفعيل/تعطيل الڤديوهات المعترِضة
+    .label = أخفِ زر تفعيل/تعطيل الفديوهات المعترِضة
     .accesskey = خ
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
 picture-in-picture-move-toggle-right =
-    .label = انقل زر تبديل وضع ”الڤِديوهات المعترِضة“ إلى اليمين
+    .label = انقل زر تبديل وضع ”الفديوهات المعترِضة“ إلى اليمين
     .accesskey = ن
 picture-in-picture-move-toggle-left =
-    .label = انقل زر تبديل وضع ”الڤِديوهات المعترِضة“ إلى اليسار
+    .label = انقل زر تبديل وضع ”الفديوهات المعترِضة“ إلى اليسار
     .accesskey = س
 
 ##
@@ -889,6 +1469,8 @@ navbar-accessible =
     .aria-label = التنقل
 navbar-downloads =
     .label = التنزيلات
+navbar-overflow-2 =
+    .tooltiptext = المزيد من الأدوات
 navbar-overflow =
     .tooltiptext = المزيد من الأدوات…
 # Variables:
@@ -915,6 +1497,10 @@ tabs-toolbar-list-all-tabs =
     .label = اسرد كل الألسنة
     .tooltiptext = اسرد كل الألسنة
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = أسقِط اللسان هنا لتثبيته
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -923,7 +1509,7 @@ restore-session-startup-suggestion-button = ما الطريقة؟
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
-filepicker-blocked-infobar = حجبت مؤسستك الوصول إلى الملفات المحلية الموجودة على هذا الكمبيوتر
+filepicker-blocked-infobar = حجبت منظّمتك الوصول إلى الملفات المحلية الموجودة على هذا الحاسوب
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -933,6 +1519,18 @@ data-reporting-notification-button =
     .accesskey = خ
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = التصفح الخاص
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = التصفح الخاص
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = منع فقدان البيانات (DLP) بواسطة { $agentName }. انقر للحصول على مزيد من المعلومات.
+content-analysis-panel-title = حماية البيانات
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = تستخدم منظّمتك <b>{ $agentName }</b> لحماية من فقدان البيانات. <a data-l10n-name="info"> اطّلع على المزيد</a>
 
 ## Unified extensions (toolbar) button
 
@@ -958,11 +1556,22 @@ unified-extensions-button-quarantined =
         الامتدادات
         بعض الامتدادات غير مسموح بها
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = الامتدادات
+    .tooltiptext =
+        الامتدادات
+        بعض الامتدادات مُعطَّلة
+
 ## Private browsing reset button
 
 reset-pbm-toolbar-button =
     .label = إنهِ الجلسة الخاصة
     .tooltiptext = إنهِ الجلسة الخاصة
+reset-pbm-panel-heading2 = امحُ البيانات وبدء جلسة خاصة جديدة؟
+reset-pbm-panel-description2 = يؤدي هذا إلى حذف التأريخ وملفات تعريف الارتباط وجميع بيانات الموقع الأخرى دون إغلاق نافذتك الخاصة.
 reset-pbm-panel-heading = إنهِ جلستك الخاصة؟
 reset-pbm-panel-description = أغلق كل الألسنة الخاصة واحذف التأريخ والكعكات وكل بيانات المواقع الأخرى.
 reset-pbm-panel-always-ask-checkbox =
@@ -971,10 +1580,16 @@ reset-pbm-panel-always-ask-checkbox =
 reset-pbm-panel-cancel-button =
     .label = ألغِ
     .accesskey = غ
+reset-pbm-panel-confirm-button2 =
+    .label = امحُ الجلسة الخاصة
+    .accesskey = م
 reset-pbm-panel-confirm-button =
     .label = احذف بيانات الجلسة
     .accesskey = ت
 reset-pbm-panel-complete = حُذفت بيانات الجلسة الخاصة
+reset-pbm-toolbar-button2 =
+    .label = امحُ الجلسة الخاصة
+    .tooltiptext = امحُ الجلسة الخاصة
 
 ## Autorefresh blocker
 
@@ -991,16 +1606,23 @@ firefox-relay-offer-why-to-use-relay = تحمي أقنعتنا الآمنة وس
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = ستمرر كل رسائل البريد الإلكتروني المرسلة إلى أقنعة بريدك إلى <strong>{ $useremail }</strong> (ما لم تقرر حجبها).
 firefox-relay-offer-legal-notice = بالنقر على"أستخدم قناع البريد"، أنت توافق على شروط <label data-l10n-name="tos-url"> للخدمة </label> و <label data-l10n-name="privacy-url">تنويه الخصوصية </label>.
+firefox-relay-offer-legal-notice-1 = من خلال التسجيل وإنشاء قناع بريد إلكتروني، فإنك توافق على <label data-l10n-name="tos-url">شروط الخدمة</label> و <label data-l10n-name="privacy-url">تنويه الخصوصية</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (لم يُتحقق منها)
 popup-notification-xpinstall-prompt-learn-more = اطّلع على المزيد حول طريقة تثبيت الإضافات بأمان تام
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = تشغيله في النوافذ الخاصة
-    .accesskey = ف
+popup-notification-xpinstall-prompt-block-url = اعرض التفاصيل
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = اسمح لامتداد بأن يعمل في النوافذ الخاصة
+    .accesskey = م
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = شارك البيانات التقنية والتفاعلية مع مطوِّر الامتدادة
+    .accesskey = ر
 
 ## Pop-up warning
 
@@ -1039,9 +1661,21 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = أظهر ”{ $popupURI }“
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = أظهر "{ $redirectURI }"
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
+file-picker-failed-open = لم يتمكن من فتح مربع حوار الملفات في ويندوز. لم يتمكن من تحديد أي ملف أو مجلد.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = لم يتمكن من فتح مربع حوار ملف ويندوز. سيتم حفظ الملف في { $path }.
+file-picker-failed-save-nowhere = لم يتمكن من فتح مربع حوار ملف ويندوز. لم يُعثر على المجلد المبدئي؛ ولن يُحفظ الملف.
+file-picker-crashed-open = انهار مربع حوار ملف ويندوز. لم يتم تحديد أي ملف أو مجلد.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = انهار مربع حوار ملف ويندوز. سيتم حفظ الملف في { $path }.
+file-picker-crashed-save-nowhere = انهار مربع حوار ملف ويندوز. لم يتم العثور على المجلد المبدئي؛ ولن يُحفظ الملف.
 
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.
@@ -1049,3 +1683,153 @@ popup-show-popup-menuitem =
 # The wording here should be consistent with the Windows variant of
 # `downloads-cmd-show-menuitem-2` and similar messages.
 
+file-picker-crashed-show-in-folder =
+    .label = اعرض في المجلد
+    .accessKey = م
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = أنهِ الإعداد
+onboarding-aw-finish-setup-button =
+    .label = أنهِ الإعداد
+    .tooltiptext = أنهِ إعداد { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = الحماية الموسّعة من التعقب مفعّلة
+trustpanel-etp-label-disabled = الحماية الموسّعة من التعقب معطّلة
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = الحماية الموسّعة من التعقب مفعّلة ل { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = الحماية الموسّعة من التعقب معطّلة ل { $host }
+trustpanel-etp-description-enabled = إذا كان هناك شيء يبدو معطوبًا في هذا الموقع، فحاول إيقاف تشغيل الحماية.
+trustpanel-etp-description-disabled = ترى { -brand-product-name } أن على الشركات تقليل تتبعها لك. نقوم بحظر أكبر عدد ممكن من أدوات التتبع عند تفعيلك لخيارات الحماية.
+trustpanel-connection-label-secure = الاتصال آمن
+trustpanel-connection-label-insecure = الاتصال غير آمن
+trustpanel-header-enabled = { -brand-product-name } على الحراسة
+trustpanel-description-enabled2 = أنت محمي. إذا لاحظنا أي شيء، سنُعلمك.
+trustpanel-header-enabled-insecure = كن حذرًا على هذا الموقع
+trustpanel-description-enabled-insecure = { -brand-product-name } لاحظ شيئًا مريبًا.
+trustpanel-header-disabled = لقد أوقفت الحماية
+trustpanel-description-disabled = { -brand-product-name } خارج الخدمة. نقترح إعادة تفعيل الحماية.
+trustpanel-clear-cookies-button = امسح الكعكات و بيانات المواقع
+trustpanel-privacy-link = إعدادات الخصوصية
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = امحُ ملفات تعريف الارتباط وبيانات الموقع لـ { $host }
+trustpanel-clear-cookies-description = قد يؤدي إزالة ملفات تعريف الارتباط وبيانات المواقع إلى تسجيل خروجك من مواقع الوِب ومحُ عربات التسوق.
+trustpanel-clear-cookies-subview-button-clear = امسح
+trustpanel-clear-cookies-subview-button-cancel = ألغِ
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = حماية الاتصال لـ { $host }
+trustpanel-siteinformation-morelink = مزيد من المعلومات حول الموقع
+trustpanel-blocker-see-all = اعرض الكل
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = حماية التتبع لـ { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = غير آمن
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } يرى أن على الشركات تقليل متابعتك. لذلك نحظر أكبر عدد ممكن منها.
+trustpanel-blocked-header = قام { -brand-product-name } بحظر هذه الأشياء من أجلك:
+trustpanel-tracking-header = سمح { -brand-product-name } بهذه الأشياء حتى لا تتعطل المواقع:
+trustpanel-tracking-description = دون المتعقّبات، قد لا تعمل بعض الأزرار والنماذج وحقول الولوج.
+trustpanel-insecure-section-header = اتّصالك غير آمن
+trustpanel-insecure-description = البيانات التي ترسلها إلى هذا الموقع غير مُعمّاة، مما قد يعرضها للعرض أو السرقة أو التعديل.
+trustpanel-list-label-tracking-content = المحتوى الذي يتعقّبك
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [zero] { $count } متتبع وسائل التواصل الاجتماعي
+        [one] { $count } متتبع وسائل التواصل الاجتماعي
+        [two] { $count } متتبعي وسائل التواصل الاجتماعي
+        [few] { $count } متتبعات وسائل التواصل الاجتماعي
+        [many] { $count } متتبعًا وسائل التواصل الاجتماعي
+       *[other] { $count } متتبع وسائل التواصل الاجتماعي
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [zero] { -brand-product-name } حظر { $count } متعقِّب وسائط
+        [one] { -brand-product-name } حظر { $count } متعقِّب وسائط
+        [two] { -brand-product-name } حظر { $count } متعقِّب وسائط
+        [few] { -brand-product-name } حظر { $count } متعقِّب وسائط
+        [many] { -brand-product-name } حظر { $count } متعقِّب وسائط
+       *[other] { -brand-product-name } حظر { $count } متعقِّب وسائط
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [zero] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+        [one] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+        [two] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+        [few] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+        [many] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+       *[other] { -brand-product-name } سمح ب{ $count } متعقِّب وسائط
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [zero] { -brand-product-name } سمح { $count } متعقِّب
+        [one] { -brand-product-name } سمح { $count } متعقِّب
+        [two] { -brand-product-name } سمح { $count } متعقِّب
+        [few] { -brand-product-name } سمح { $count } متعقِّب
+        [many] { -brand-product-name } سمح { $count } متعقِّب
+       *[other] { -brand-product-name } سمح { $count } متعقِّب
+    }
+trustpanel-tracking-content-tab-list-header = تحاول هذه المواقع تتبعك:
+trustpanel-fingerprinter-list-header = تحاول هذه المواقع تبصيمك:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [zero] { -brand-product-name } حظر { $count } مُعدِّن عملة رقمية
+        [one] { -brand-product-name } حظر { $count } مُعدِّن عملة رقمية
+        [two] { -brand-product-name } حظر { $count } مُعدِّن عملة رقمية
+        [few] { -brand-product-name } حظر { $count } مُعدِّن عملة رقمية
+        [many] { -brand-product-name } منع { $count } مُعدِّن عملة رقمية
+       *[other] { -brand-product-name } حظر { $count } مُعدِّن عملة رقمية
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [zero] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+        [one] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+        [two] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+        [few] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+        [many] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+       *[other] { -brand-product-name } سمح ب{ $count } مُعدِّن عملة رقمية
+    }
+trustpanel-cryptominer-tab-list-header = تحاول هذه المواقع تعدين العُملات الرقمية:
+# "account on this site" refers to the (breached) site the user is currently visiting, not a Mozilla Monitor account.
+trustpanel-breachalerts-anonymous-breached-header = ألديك حساب على هذا الموقع؟
+trustpanel-breachalerts-anonymous-breached-description = لقد وجد { -brand-product-name } أن هذا الموقع تعرض لاختراق بيانات خلال الـ 12 شهرًا الماضية. اكتشف ما إذا كنت قد تأثرت بذلك.
+trustpanel-breachalerts-anonymous-breached-button-dismiss = أهمِل
+trustpanel-breachalerts-anonymous-breached-button-check-monitor = ابدأ الفحص المجاني
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [zero] حُظر <span data-l10n-name="count">{ $count }</span> متعقِّبات على هذا الموقع
+        [one] حُظر <span data-l10n-name="count">{ $count }</span> متعقِّب على هذا الموقع
+        [two] حُظر <span data-l10n-name="count">{ $count }</span> متعقّبان على هذا الموقع
+        [few] حُظر <span data-l10n-name="count">{ $count }</span> متعقِّبات على هذا الموقع
+        [many] حُظر <span data-l10n-name="count">{ $count }</span> متعقِّبات على هذا الموقع
+       *[other] حُظر <span data-l10n-name="count">{ $count }</span> متعقِّبات على هذا الموقع
+    }
+
+## Reduced Protection Infobar ("ReducedProtectionNotification.sys.mjs")
+
+# "temporarily lower your tracking protection" refers to temporarily decreasing the amount of tracking protection.
+reduced-protection-infobar-message = <strong>يبدو الموقع معطوبًا؟</strong> أعِد تحميل الصفحة لتقليل مستوى حماية التتبع مؤقتًا.
+reduced-protection-infobar-reload-button = أعد التحميل
+    .accesskey = ع
+reduced-protection-infobar-never-show-button = لا تُظهر مجددًا
+    .accesskey = ظ

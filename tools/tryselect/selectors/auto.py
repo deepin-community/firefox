@@ -10,9 +10,9 @@ from ..push import push_to_try
 from ..util.dicttools import merge
 
 TRY_AUTO_PARAMETERS = {
+    "filters": ["try_auto"],
     "optimize_strategies": "gecko_taskgraph.optimize:tryselect.bugbug_reduced_manifests_config_selection_medium",  # noqa
     "optimize_target_tasks": True,
-    "target_tasks_method": "try_auto",
     "test_manifest_loader": "bugbug",
     "try_mode": "try_auto",
     "try_task_config": {},
@@ -64,20 +64,19 @@ class AutoParser(BaseTryParser):
 
         if args.strategy:
             if ":" not in args.strategy:
-                args.strategy = "gecko_taskgraph.optimize:tryselect.{}".format(
-                    args.strategy
-                )
+                args.strategy = f"gecko_taskgraph.optimize:tryselect.{args.strategy}"
 
             try:
                 obj = find_object(args.strategy)
             except (ImportError, AttributeError):
-                self.error("invalid module path '{}'".format(args.strategy))
+                self.error(f"invalid module path '{args.strategy}'")
 
             if not isinstance(obj, dict):
-                self.error("object at '{}' must be a dict".format(args.strategy))
+                self.error(f"object at '{args.strategy}' must be a dict")
 
 
 def run(
+    metrics,
     message="{msg}",
     stage_changes=False,
     dry_run=False,
@@ -86,9 +85,10 @@ def run(
     tasks_regex=None,
     tasks_regex_exclude=None,
     try_config_params=None,
-    push_to_lando=False,
-    **ignored
+    push_to_vcs=False,
+    **ignored,
 ):
+    metrics.mach_try.task_config_generation_duration.start()
     msg = message.format(msg="Tasks automatically selected.")
 
     params = TRY_AUTO_PARAMETERS.copy()
@@ -107,12 +107,14 @@ def run(
         "version": 2,
         "parameters": params,
     }
+    metrics.mach_try.task_config_generation_duration.stop()
     return push_to_try(
         "auto",
         msg,
+        metrics,
         try_task_config=task_config,
         stage_changes=stage_changes,
         dry_run=dry_run,
         closed_tree=closed_tree,
-        push_to_lando=push_to_lando,
+        push_to_vcs=push_to_vcs,
     )

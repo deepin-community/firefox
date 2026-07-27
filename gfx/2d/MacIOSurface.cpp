@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,10 +24,12 @@
 using namespace mozilla;
 
 MacIOSurface::MacIOSurface(CFTypeRefPtr<IOSurfaceRef> aIOSurfaceRef,
-                           bool aHasAlpha, gfx::YUVColorSpace aColorSpace)
+                           bool aHasAlpha, gfx::YUVColorSpace aColorSpace,
+                           gfx::TransferFunction aTransferFunction)
     : mIOSurfaceRef(std::move(aIOSurfaceRef)),
       mHasAlpha(aHasAlpha),
-      mColorSpace(aColorSpace) {
+      mColorSpace(aColorSpace),
+      mTransferFunction(aTransferFunction) {
   IncrementUseCount();
 }
 
@@ -95,8 +95,9 @@ already_AddRefed<MacIOSurface> MacIOSurface::CreateIOSurface(int aWidth,
     return nullptr;
   }
 
-  RefPtr<MacIOSurface> ioSurface =
-      new MacIOSurface(std::move(surfaceRef), aHasAlpha);
+  RefPtr<MacIOSurface> ioSurface = new MacIOSurface(
+      std::move(surfaceRef), aHasAlpha, gfx::YUVColorSpace::Identity,
+      gfx::TransferFunction::SRGB);
 
   return ioSurface.forget();
 }
@@ -269,7 +270,8 @@ already_AddRefed<MacIOSurface> MacIOSurface::CreateBiPlanarSurface(
   SetIOSurfaceCommonProperties(surfaceRef, aColorSpace, aTransferFunction);
 
   RefPtr<MacIOSurface> ioSurface =
-      new MacIOSurface(std::move(surfaceRef), false, aColorSpace);
+      new MacIOSurface(std::move(surfaceRef), /* hasAlpha */ false, aColorSpace,
+                       aTransferFunction);
 
   return ioSurface.forget();
 }
@@ -313,23 +315,50 @@ already_AddRefed<MacIOSurface> MacIOSurface::CreateSinglePlanarSurface(
   SetIOSurfaceCommonProperties(surfaceRef, aColorSpace, aTransferFunction);
 
   RefPtr<MacIOSurface> ioSurface =
-      new MacIOSurface(std::move(surfaceRef), false, aColorSpace);
+      new MacIOSurface(std::move(surfaceRef), /* hasAlpha */ false, aColorSpace,
+                       aTransferFunction);
 
   return ioSurface.forget();
 }
 
 /* static */
 already_AddRefed<MacIOSurface> MacIOSurface::LookupSurface(
-    IOSurfaceID aIOSurfaceID, bool aHasAlpha, gfx::YUVColorSpace aColorSpace) {
+    IOSurfaceID aIOSurfaceID, bool aHasAlpha, gfx::YUVColorSpace aColorSpace,
+    gfx::TransferFunction aTransferFunction) {
   CFTypeRefPtr<IOSurfaceRef> surfaceRef =
       CFTypeRefPtr<IOSurfaceRef>::WrapUnderCreateRule(
           ::IOSurfaceLookup(aIOSurfaceID));
   if (!surfaceRef) return nullptr;
 
-  RefPtr<MacIOSurface> ioSurface =
-      new MacIOSurface(std::move(surfaceRef), aHasAlpha, aColorSpace);
+  RefPtr<MacIOSurface> ioSurface = new MacIOSurface(
+      std::move(surfaceRef), aHasAlpha, aColorSpace, aTransferFunction);
 
   return ioSurface.forget();
+}
+
+/* static */
+mozilla::gfx::SurfaceFormat MacIOSurface::SurfaceFormatForPixelFormat(
+    OSType aPixelFormat, bool aHasAlpha) {
+  switch (aPixelFormat) {
+    case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
+    case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange:
+      return mozilla::gfx::SurfaceFormat::NV12;
+    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
+    case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
+      return mozilla::gfx::SurfaceFormat::P010;
+    case kCVPixelFormatType_422YpCbCr8_yuvs:
+    case kCVPixelFormatType_422YpCbCr8FullRange:
+      return mozilla::gfx::SurfaceFormat::YUY2;
+    case kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange:
+    case kCVPixelFormatType_422YpCbCr10BiPlanarFullRange:
+      return mozilla::gfx::SurfaceFormat::NV16;
+    case kCVPixelFormatType_32BGRA:
+      return aHasAlpha ? mozilla::gfx::SurfaceFormat::B8G8R8A8
+                       : mozilla::gfx::SurfaceFormat::B8G8R8X8;
+    default:
+      MOZ_ASSERT_UNREACHABLE("Unknown format");
+      return mozilla::gfx::SurfaceFormat::B8G8R8A8;
+  }
 }
 
 IOSurfaceID MacIOSurface::GetIOSurfaceID() const {
@@ -474,25 +503,7 @@ already_AddRefed<mozilla::gfx::DrawTarget> MacIOSurface::GetAsDrawTargetLocked(
 }
 
 SurfaceFormat MacIOSurface::GetFormat() const {
-  switch (GetPixelFormat()) {
-    case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange:
-      return SurfaceFormat::NV12;
-    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
-      return SurfaceFormat::P010;
-    case kCVPixelFormatType_422YpCbCr8_yuvs:
-    case kCVPixelFormatType_422YpCbCr8FullRange:
-      return SurfaceFormat::YUY2;
-    case kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange:
-    case kCVPixelFormatType_422YpCbCr10BiPlanarFullRange:
-      return SurfaceFormat::NV16;
-    case kCVPixelFormatType_32BGRA:
-      return HasAlpha() ? SurfaceFormat::B8G8R8A8 : SurfaceFormat::B8G8R8X8;
-    default:
-      MOZ_ASSERT_UNREACHABLE("Unknown format");
-      return SurfaceFormat::B8G8R8A8;
-  }
+  return SurfaceFormatForPixelFormat(GetPixelFormat(), HasAlpha());
 }
 
 SurfaceFormat MacIOSurface::GetReadFormat() const {
@@ -515,6 +526,7 @@ ColorDepth MacIOSurface::GetColorDepth() const {
   }
 }
 
+#ifdef DEBUG
 /* static */ Maybe<OSType> MacIOSurface::ChoosePixelFormat(
     ChromaSubsampling aChromaSubsampling, ColorRange aColorRange,
     ColorDepth aColorDepth) {
@@ -576,6 +588,7 @@ ColorDepth MacIOSurface::GetColorDepth() const {
   }
   return Nothing();
 }
+#endif
 
 bool MacIOSurface::BindTexImage(mozilla::gl::GLContext* aGL, size_t aPlane,
                                 mozilla::gfx::SurfaceFormat* aOutReadFormat) {

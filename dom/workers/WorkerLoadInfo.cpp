@@ -1,30 +1,29 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WorkerLoadInfo.h"
-#include "WorkerPrivate.h"
 
+#include "WorkerPrivate.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/dom/nsCSPUtils.h"
-#include "mozilla/dom/BrowserChild.h"
-#include "mozilla/dom/ReferrerInfo.h"
-#include "mozilla/ipc/BackgroundUtils.h"
-#include "mozilla/ipc/PBackgroundSharedTypes.h"
 #include "mozilla/LoadContext.h"
 #include "mozilla/StorageAccess.h"
 #include "mozilla/StoragePrincipalHelper.h"
+#include "mozilla/dom/BrowserChild.h"
+#include "mozilla/dom/PolicyContainer.h"
+#include "mozilla/dom/ReferrerInfo.h"
+#include "mozilla/dom/nsCSPUtils.h"
+#include "mozilla/ipc/BackgroundUtils.h"
+#include "mozilla/ipc/PBackgroundSharedTypes.h"
 #include "nsContentUtils.h"
+#include "nsIBrowserChild.h"
 #include "nsIContentSecurityPolicy.h"
 #include "nsICookieJarSettings.h"
 #include "nsINetworkInterceptController.h"
 #include "nsIProtocolHandler.h"
 #include "nsIReferrerInfo.h"
-#include "nsIBrowserChild.h"
-#include "nsScriptSecurityManager.h"
 #include "nsNetUtil.h"
+#include "nsScriptSecurityManager.h"
 
 namespace mozilla {
 
@@ -90,15 +89,12 @@ WorkerLoadInfoData::WorkerLoadInfoData()
       mAssociatedBrowsingContextID(0),
       mReferrerInfo(new ReferrerInfo(nullptr)),
       mFromWindow(false),
-      mEvalAllowed(false),
-      mReportEvalCSPViolations(false),
-      mWasmEvalAllowed(false),
-      mReportWasmEvalCSPViolations(false),
       mXHRParamsAllowed(false),
       mWatchedByDevTools(false),
       mStorageAccess(StorageAccess::eDeny),
       mUseRegularPrincipal(false),
       mUsingStorageAccess(false),
+      mSerialAllowed(true),
       mServiceWorkersTestingInWindow(false),
       mShouldResistFingerprinting(false),
       mIsThirdPartyContext(true),
@@ -116,18 +112,12 @@ nsresult WorkerLoadInfo::SetPrincipalsAndCSPOnMainThread(
   mCSP = aCsp;
 
   if (mCSP) {
-    mCSP->GetAllowsEval(&mReportEvalCSPViolations, &mEvalAllowed);
-    mCSP->GetAllowsWasmEval(&mReportWasmEvalCSPViolations, &mWasmEvalAllowed);
-    mCSPInfo = MakeUnique<CSPInfo>();
-    nsresult rv = CSPToCSPInfo(aCsp, mCSPInfo.get());
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      return rv;
+    Result<UniquePtr<OffThreadCSPContext>, nsresult> ctx =
+        OffThreadCSPContext::CreateFromCSP(aCsp);
+    if (NS_WARN_IF(ctx.isErr())) {
+      return ctx.unwrapErr();
     }
-  } else {
-    mEvalAllowed = true;
-    mReportEvalCSPViolations = false;
-    mWasmEvalAllowed = true;
-    mReportWasmEvalCSPViolations = false;
+    mCSPContext = ctx.unwrap();
   }
 
   mLoadGroup = aLoadGroup;
@@ -251,7 +241,9 @@ nsresult WorkerLoadInfo::SetPrincipalsAndCSPFromChannel(nsIChannel* aChannel) {
   nsCOMPtr<nsIContentSecurityPolicy> csp;
   if (CSP_ShouldResponseInheritCSP(aChannel)) {
     nsCOMPtr<nsILoadInfo> loadinfo = aChannel->LoadInfo();
-    csp = loadinfo->GetCsp();
+    nsCOMPtr<nsIPolicyContainer> policyContainer =
+        loadinfo->GetPolicyContainer();
+    csp = PolicyContainer::GetCSP(policyContainer);
   }
   return SetPrincipalsAndCSPOnMainThread(principal, partitionedPrincipal,
                                          loadGroup, csp);
@@ -385,7 +377,7 @@ WorkerLoadInfo::InterfaceRequestor::InterfaceRequestor(
       callbacks->GetInterface(NS_GET_IID(nsILoadContext),
                               getter_AddRefs(baseContext));
     }
-    mOuterRequestor = callbacks;
+    mOuterRequestor = std::move(callbacks);
   }
 
   mLoadContext = new LoadContext(aPrincipal, baseContext);

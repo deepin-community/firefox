@@ -20,12 +20,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
-const TARGETING_EVENT_CATEGORY = "messaging_experiments";
-const TARGETING_EVENT_METHOD = "targeting";
 const DEFAULT_TIMEOUT = 5000;
 const ERROR_TYPES = {
-  ATTRIBUTE_ERROR: "attribute_error",
-  TIMEOUT: "attribute_timeout",
+  ATTRIBUTE_ERROR: "AttributeError",
+  TIMEOUT: "AttributeTimeout",
 };
 
 const TargetingEnvironment = {
@@ -82,9 +80,6 @@ export class TargetingContext {
 
     // Used in telemetry to report where the targeting expression is coming from
     this.#telemetrySource = options.source;
-
-    // Enable event recording
-    Services.telemetry.setEventRecordingEnabled(TARGETING_EVENT_CATEGORY, true);
   }
 
   setTelemetrySource(source) {
@@ -93,30 +88,20 @@ export class TargetingContext {
     }
   }
 
-  _sendUndesiredEvent(eventData) {
+  _sendUndesiredEvent({ event, value }) {
+    let extra = { value };
     if (this.#telemetrySource) {
-      Services.telemetry.recordEvent(
-        TARGETING_EVENT_CATEGORY,
-        TARGETING_EVENT_METHOD,
-        eventData.event,
-        eventData.value,
-        { source: this.#telemetrySource }
-      );
-    } else {
-      Services.telemetry.recordEvent(
-        TARGETING_EVENT_CATEGORY,
-        TARGETING_EVENT_METHOD,
-        eventData.event,
-        eventData.value
-      );
+      extra.source = this.#telemetrySource;
     }
+
+    Glean.messagingExperiments["targeting" + event].record(extra);
   }
 
   /**
    * Wrap each property of context[key] with a Proxy that captures errors and
    * timeouts
    *
-   * @param {Object.<string, TargetingGetters> | TargetingGetters} context
+   * @param {{[key: string]: TargetingGetters} | TargetingGetters} context
    * @param {string} key Namespace value found in `context` param
    * @returns {TargetingGetters} Wrapped context where getter report errors and timeouts
    */
@@ -161,8 +146,8 @@ export class TargetingContext {
   /**
    * Merge all evaluation contexts and wrap the getters with timeouts
    *
-   * @param {Object.<string, TargetingGetters>[]} contexts
-   * @returns {Object.<string, TargetingGetters>} Object that follows the pattern of `namespace: getters`
+   * @param {{[key: string]: TargetingGetters}[]} contexts
+   * @returns {{[key: string]: TargetingGetters}} Object that follows the pattern of `namespace: getters`
    */
   mergeEvaluationContexts(contexts) {
     let context = {};
@@ -210,7 +195,7 @@ export class TargetingContext {
    * ); // true
    *
    * @param {string} expression JEXL expression
-   * @param {Object.<string, TargetingGetters>[]} ...contexts Additional custom context
+   * @param {{[key: string]: TargetingGetters}[]} ...contexts Additional custom context
    *        objects where the keys act as namespaces for the different getters
    *
    * @returns {promise} Evaluation result

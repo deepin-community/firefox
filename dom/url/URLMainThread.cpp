@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,16 +7,18 @@
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/Blob.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
-#include "mozilla/Unused.h"
+#include "mozilla/dom/DocGroup.h"
+#include "mozilla/dom/Document.h"
 #include "nsContentUtils.h"
+#include "nsGlobalWindowInner.h"
 #include "nsNetUtil.h"
 #include "nsThreadUtils.h"
-#include "mozilla/dom/Document.h"
 
 namespace mozilla::dom {
 
 /* static */
-void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
+void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal,
+                                    const BlobOrMediaSource& aObj,
                                     nsACString& aResult, ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
 
@@ -28,8 +28,27 @@ void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
     return;
   }
 
+  // MediaSource URLs cannot be used across Agent boundaries, as they require
+  // direct scriptable object sharing between registration and use.
+  // A MediaSource URL also cannot be used for generic subresource fetches.
+  // Because of this, they are registered on the DocGroup instead of globally.
+  if (aObj.IsMediaSource()) {
+    nsCOMPtr<nsPIDOMWindowInner> owner = do_QueryInterface(global);
+    RefPtr<DocGroup> docGroup = owner ? owner->GetDocGroup() : nullptr;
+    if (!docGroup) {
+      aRv.ThrowSecurityError("MediaSource URL must be registered in a Window");
+      return;
+    }
+
+    aRv = docGroup->RegisterMediaSourceURL(nsGlobalWindowInner::Cast(owner),
+                                           &aObj.GetAsMediaSource(), aResult);
+    return;
+  }
+
+  MOZ_RELEASE_ASSERT(aObj.IsBlob(), "MediaSource handled above");
+
   nsAutoString partKey;
-  if (nsCOMPtr<nsPIDOMWindowInner> owner = do_QueryInterface(global)) {
+  if (nsPIDOMWindowInner* owner = global->GetAsInnerWindow()) {
     if (Document* doc = owner->GetExtantDoc()) {
       nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
           doc->CookieJarSettings();
@@ -41,52 +60,15 @@ void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
   nsCOMPtr<nsIPrincipal> principal =
       nsContentUtils::ObjectPrincipal(aGlobal.Get());
 
-  aRv = BlobURLProtocolHandler::AddDataEntry(
-      aBlob.Impl(), principal, NS_ConvertUTF16toUTF8(partKey), aResult);
+  aRv = BlobURLProtocolHandler::AddDataEntry(aObj.GetAsBlob().Impl(), principal,
+                                             NS_ConvertUTF16toUTF8(partKey),
+                                             aResult);
+
   if (NS_WARN_IF(aRv.Failed())) {
     return;
   }
 
   global->RegisterHostObjectURI(aResult);
-}
-
-/* static */
-void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal,
-                                    MediaSource& aSource, nsACString& aResult,
-                                    ErrorResult& aRv) {
-  MOZ_ASSERT(NS_IsMainThread());
-
-  nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
-  if (NS_WARN_IF(!global)) {
-    aRv.Throw(NS_ERROR_FAILURE);
-    return;
-  }
-
-  nsAutoString partKey;
-  if (nsCOMPtr<nsPIDOMWindowInner> owner = do_QueryInterface(global)) {
-    if (Document* doc = owner->GetExtantDoc()) {
-      nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
-          doc->CookieJarSettings();
-
-      cookieJarSettings->GetPartitionKey(partKey);
-    }
-  }
-
-  nsCOMPtr<nsIPrincipal> principal =
-      nsContentUtils::ObjectPrincipal(aGlobal.Get());
-
-  aRv = BlobURLProtocolHandler::AddDataEntry(
-      &aSource, principal, NS_ConvertUTF16toUTF8(partKey), aResult);
-  if (NS_WARN_IF(aRv.Failed())) {
-    return;
-  }
-
-  nsCOMPtr<nsIRunnable> revocation = NS_NewRunnableFunction(
-      "dom::URLMainThread::CreateObjectURL", [result = nsCString(aResult)] {
-        BlobURLProtocolHandler::RemoveDataEntry(result);
-      });
-
-  nsContentUtils::RunInStableState(revocation.forget());
 }
 
 /* static */
@@ -100,7 +82,13 @@ void URLMainThread::RevokeObjectURL(const GlobalObject& aGlobal,
   }
 
   nsAutoString partKey;
-  if (nsCOMPtr<nsPIDOMWindowInner> owner = do_QueryInterface(global)) {
+  if (nsPIDOMWindowInner* owner = global->GetAsInnerWindow()) {
+    // If this is a Media Source URL, we can skip checking the global store.
+    RefPtr<DocGroup> docGroup = owner->GetDocGroup();
+    if (docGroup && docGroup->UnregisterMediaSourceURL(aURL)) {
+      return;
+    }
+
     if (Document* doc = owner->GetExtantDoc()) {
       nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
           doc->CookieJarSettings();
@@ -116,11 +104,11 @@ void URLMainThread::RevokeObjectURL(const GlobalObject& aGlobal,
   }
 }
 
-/* static */
-bool URLMainThread::IsValidObjectURL(const GlobalObject& aGlobal,
-                                     const nsACString& aURL, ErrorResult& aRv) {
+// static
+bool URLMainThread::IsBoundToBlob(const GlobalObject& aGlobal,
+                                  const nsACString& aURL, ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
-  return BlobURLProtocolHandler::HasDataEntry(aURL);
+  return BlobURLProtocolHandler::HasDataEntryTypeBlob(aURL);
 }
 
 }  // namespace mozilla::dom

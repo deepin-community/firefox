@@ -3,18 +3,21 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use std::collections::HashMap;
+use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::common_metric_data::CommonMetricDataInternal;
+use malloc_size_of_derive::MallocSizeOf;
+
+use crate::common_metric_data::{CommonMetricDataInternal, DynamicLabelType};
 use crate::error_recording::{record_error, test_get_num_recorded_errors, ErrorType};
 use crate::histogram::{Functional, Histogram};
 use crate::metrics::time_unit::TimeUnit;
 use crate::metrics::{DistributionData, Metric, MetricType};
 use crate::storage::StorageManager;
-use crate::CommonMetricData;
 use crate::Glean;
+use crate::{CommonMetricData, TestGetValue};
 
 // The base of the logarithm used to determine bucketing
 const LOG_BASE: f64 = 2.0;
@@ -35,7 +38,7 @@ const MAX_SAMPLE_TIME: u64 = 1000 * 1000 * 1000 * 60 * 10;
 ///
 /// Its internals are considered private,
 /// but due to UniFFI's behavior we expose its field for now.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, MallocSizeOf)]
 pub struct TimerId {
     /// This timer's id.
     pub id: u64,
@@ -64,6 +67,17 @@ pub struct TimingDistributionMetric {
     start_times: Arc<Mutex<HashMap<TimerId, u64>>>,
 }
 
+impl ::malloc_size_of::MallocSizeOf for TimingDistributionMetric {
+    fn size_of(&self, ops: &mut malloc_size_of::MallocSizeOfOps) -> usize {
+        // Note: This is behind an `Arc`.
+        // `size_of` should only be called on the main thread to avoid double-counting.
+        self.meta.size_of(ops)
+            + self.time_unit.size_of(ops)
+            + self.next_id.size_of(ops)
+            + self.start_times.lock().unwrap().size_of(ops)
+    }
+}
+
 /// Create a snapshot of the histogram with a time unit.
 ///
 /// The snapshot can be serialized into the payload format.
@@ -73,8 +87,8 @@ pub(crate) fn snapshot(hist: &Histogram<Functional>) -> DistributionData {
         // specialized snapshot function.
         values: hist
             .snapshot()
-            .into_iter()
-            .map(|(k, v)| (k as i64, v as i64))
+            .iter()
+            .map(|(&k, &v)| (k as i64, v as i64))
             .collect(),
         sum: hist.sum() as i64,
         count: hist.count() as i64,
@@ -97,7 +111,7 @@ impl MetricType for TimingDistributionMetric {
         }
     }
 
-    fn with_dynamic_label(&self, label: String) -> Self {
+    fn with_dynamic_label(&self, label: DynamicLabelType) -> Self {
         let mut meta = (*self.meta).clone();
         meta.inner.dynamic_label = Some(label);
         Self {
@@ -139,7 +153,7 @@ impl TimingDistributionMetric {
     ///
     /// A unique [`TimerId`] for the new timer.
     pub fn start(&self) -> TimerId {
-        let start_time = time::precise_time_ns();
+        let start_time = zeitstempel::now_awake();
         let id = self.next_id.fetch_add(1, Ordering::SeqCst).into();
         let metric = self.clone();
         crate::launch_with_glean(move |_glean| metric.set_start(id, start_time));
@@ -147,7 +161,7 @@ impl TimingDistributionMetric {
     }
 
     pub(crate) fn start_sync(&self) -> TimerId {
-        let start_time = time::precise_time_ns();
+        let start_time = zeitstempel::now_awake();
         let id = self.next_id.fetch_add(1, Ordering::SeqCst).into();
         let metric = self.clone();
         metric.set_start(id, start_time);
@@ -178,7 +192,7 @@ impl TimingDistributionMetric {
     ///   same timespan metric.
     /// * `stop_time` - Timestamp in nanoseconds.
     pub fn stop_and_accumulate(&self, id: TimerId) {
-        let stop_time = time::precise_time_ns();
+        let stop_time = zeitstempel::now_awake();
         let metric = self.clone();
         crate::launch_with_glean(move |glean| metric.set_stop_and_accumulate(glean, id, stop_time));
     }
@@ -528,7 +542,7 @@ impl TimingDistributionMetric {
             .into()
             .unwrap_or_else(|| &self.meta().inner.send_in_pings[0]);
 
-        match StorageManager.snapshot_metric_for_test(
+        match StorageManager.snapshot_metric(
             glean.storage(),
             queried_ping_name,
             &self.meta.identifier(glean),
@@ -537,25 +551,6 @@ impl TimingDistributionMetric {
             Some(Metric::TimingDistribution(hist)) => Some(snapshot(&hist)),
             _ => None,
         }
-    }
-
-    /// **Test-only API (exported for FFI purposes).**
-    ///
-    /// Gets the currently stored value as an integer.
-    ///
-    /// This doesn't clear the stored value.
-    ///
-    /// # Arguments
-    ///
-    /// * `ping_name` - the optional name of the ping to retrieve the metric
-    ///                 for. Defaults to the first value in `send_in_pings`.
-    ///
-    /// # Returns
-    ///
-    /// The stored value or `None` if nothing stored.
-    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
-        crate::block_on_dispatcher();
-        crate::core::with_glean(|glean| self.get_value(glean, ping_name.as_deref()))
     }
 
     /// **Exported for test purposes.**
@@ -575,6 +570,134 @@ impl TimingDistributionMetric {
         crate::core::with_glean(|glean| {
             test_get_num_recorded_errors(glean, self.meta(), error).unwrap_or(0)
         })
+    }
+
+    /// **Experimental:** Start a new histogram buffer associated with this timing distribution metric.
+    ///
+    /// A histogram buffer accumulates in-memory.
+    /// Data is recorded into the metric on drop.
+    pub fn start_buffer(&self) -> LocalTimingDistribution<'_> {
+        LocalTimingDistribution::new(self)
+    }
+
+    fn commit_histogram(&self, histogram: Histogram<Functional>, errors: usize) {
+        let metric = self.clone();
+        crate::launch_with_glean(move |glean| {
+            if errors > 0 {
+                let max_sample_time = metric.time_unit.as_nanos(MAX_SAMPLE_TIME);
+                let msg = format!(
+                    "{} samples are longer than the maximum of {}",
+                    errors, max_sample_time
+                );
+                record_error(
+                    glean,
+                    &metric.meta,
+                    ErrorType::InvalidValue,
+                    msg,
+                    Some(errors as i32),
+                );
+            }
+
+            glean
+                .storage()
+                .record_with(glean, &metric.meta, move |old_value| {
+                    let mut hist = match old_value {
+                        Some(Metric::TimingDistribution(hist)) => hist,
+                        _ => Histogram::functional(LOG_BASE, BUCKETS_PER_MAGNITUDE),
+                    };
+
+                    hist.merge(&histogram);
+                    Metric::TimingDistribution(hist)
+                });
+        });
+    }
+}
+
+impl TestGetValue for TimingDistributionMetric {
+    type Output = DistributionData;
+
+    /// **Test-only API (exported for FFI purposes).**
+    ///
+    /// Gets the currently stored value as an integer.
+    ///
+    /// This doesn't clear the stored value.
+    ///
+    /// # Arguments
+    ///
+    /// * `ping_name` - the optional name of the ping to retrieve the metric
+    ///                 for. Defaults to the first value in `send_in_pings`.
+    ///
+    /// # Returns
+    ///
+    /// The stored value or `None` if nothing stored.
+    fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
+        crate::block_on_dispatcher();
+        crate::core::with_glean(|glean| self.get_value(glean, ping_name.as_deref()))
+    }
+}
+
+/// **Experimental:** A histogram buffer associated with a specific instance of a [`TimingDistributionMetric`].
+///
+/// Accumulation happens in-memory.
+/// Data is merged into the metric on [`Drop::drop`].
+#[derive(Debug)]
+pub struct LocalTimingDistribution<'a> {
+    histogram: Histogram<Functional>,
+    metric: &'a TimingDistributionMetric,
+    errors: usize,
+}
+
+impl<'a> LocalTimingDistribution<'a> {
+    /// Create a new histogram buffer referencing the timing distribution it will record into.
+    fn new(metric: &'a TimingDistributionMetric) -> Self {
+        let histogram = Histogram::functional(LOG_BASE, BUCKETS_PER_MAGNITUDE);
+        Self {
+            histogram,
+            metric,
+            errors: 0,
+        }
+    }
+
+    /// Accumulates one sample into the histogram.
+    ///
+    /// The provided sample must be in the "unit" declared by the instance of the metric type
+    /// (e.g. if the instance this method was called on is using [`crate::TimeUnit::Second`], then
+    /// `sample` is assumed to be in seconds).
+    ///
+    /// Accumulation happens in-memory only.
+    pub fn accumulate(&mut self, sample: u64) {
+        // Check the range prior to converting the incoming unit to
+        // nanoseconds, so we can compare against the constant
+        // MAX_SAMPLE_TIME.
+        let sample = if sample == 0 {
+            1
+        } else if sample > MAX_SAMPLE_TIME {
+            self.errors += 1;
+            MAX_SAMPLE_TIME
+        } else {
+            sample
+        };
+
+        let sample = self.metric.time_unit.as_nanos(sample);
+        self.histogram.accumulate(sample)
+    }
+
+    /// Abandon this histogram buffer and don't commit accumulated data.
+    pub fn abandon(mut self) {
+        self.histogram.clear();
+    }
+}
+
+impl Drop for LocalTimingDistribution<'_> {
+    fn drop(&mut self) {
+        if self.histogram.is_empty() {
+            return;
+        }
+
+        // We want to move that value.
+        // A `0/0` histogram doesn't allocate.
+        let buffer = mem::replace(&mut self.histogram, Histogram::functional(0.0, 0.0));
+        self.metric.commit_histogram(buffer, self.errors);
     }
 }
 
@@ -607,7 +730,6 @@ mod test {
                 "8": 1,
                 "9": 1,
                 "10": 1,
-                "11": 0,
             },
         });
 
@@ -632,10 +754,7 @@ mod test {
             "values": {
                 "1024": 2,
                 "1116": 1,
-                "1217": 0,
-                "1327": 0,
                 "1448": 1,
-                "1579": 0,
             },
         });
 

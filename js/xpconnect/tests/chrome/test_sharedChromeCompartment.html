@@ -12,7 +12,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1517694
   <script type="application/javascript">
 "use strict";
 
-/** Test for Bug 1517694 **/
+/** Test for Bug 1517694 */
 const { XPCOMUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
@@ -47,7 +47,7 @@ function go() {
        "System sandbox created in different compartment is in system compartment");
 
     ok(isSameCompartment(window, XPCOMUtils),
-       "Object defined in JSM is in same compartment");
+       "Object defined in system module is in same compartment");
 
     SimpleTest.finish();
 }

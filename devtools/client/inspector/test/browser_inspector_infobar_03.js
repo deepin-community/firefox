@@ -9,9 +9,8 @@
 const TEST_URI = URL_ROOT + "doc_inspector_infobar_03.html";
 
 add_task(async function () {
-  const { inspector, highlighterTestFront } = await openInspectorForURL(
-    TEST_URI
-  );
+  const { inspector, highlighterTestFront } =
+    await openInspectorForURL(TEST_URI);
 
   const testData = {
     selector: "body",
@@ -39,7 +38,7 @@ async function testPositionAndStyle(test, inspector, highlighterTestFront) {
   );
 
   info("Scroll down");
-  SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
     return new Promise(resolve => {
       content.addEventListener("scroll", () => resolve(), { once: true });
       content.scrollTo({ top: 500 });

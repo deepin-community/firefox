@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,8 +12,6 @@
 
 #include "gtest/gtest.h"
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/Char16.h"
 #include "mozilla/gtest/MozAssertions.h"
 #include "mozilla/Services.h"
 #include "mozilla/WinDllServices.h"
@@ -217,6 +213,17 @@ TEST(TestDllBlocklist, GMPluginProcessOnly_AllowInMainProcess)
   EXPECT_TRUE(!!::GetModuleHandleW(kLeafName.get()));
 }
 
+TEST(TestDllBlocklist, RDDProcessOnly_AllowInMainProcess)
+{
+  constexpr auto kLeafName = u"TestDllBlocklist_RDDProcessOnly.dll"_ns;
+  nsString dllPath = GetFullPath(kLeafName);
+
+  nsModuleHandle hDll(::LoadLibraryW(dllPath.get()));
+
+  EXPECT_TRUE(!!hDll);
+  EXPECT_TRUE(!!::GetModuleHandleW(kLeafName.get()));
+}
+
 // This DLL has two entries; it's blocked for unversioned (i.e. DLLs that
 // have no version information) everywhere and blocked for versions 5.5.5.5 and
 // earlier only in the GPU process. Since the version we're trying to load
@@ -329,7 +336,7 @@ TEST(TestDllBlocklist, BlocklistIntegrity)
 
   EXPECT_FALSE(pLast->mName || pLast->mMaxVersion || pLast->mFlags);
 
-  for (size_t i = 0; i < mozilla::ArrayLength(gWindowsDllBlocklist) - 1; ++i) {
+  for (size_t i = 0; i < std::size(gWindowsDllBlocklist) - 1; ++i) {
     auto pEntry = pFirst + i;
 
     // Validate name

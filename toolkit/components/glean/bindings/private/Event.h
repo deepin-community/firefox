@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define mozilla_glean_GleanEvent_h
 
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/Nullable.h"
 #include "mozilla/dom/Record.h"
 #include "mozilla/glean/bindings/EventGIFFTMap.h"
 #include "mozilla/glean/bindings/GleanMetric.h"
@@ -21,6 +20,19 @@ namespace mozilla::dom {
 // forward declaration
 struct GleanEventRecord;
 }  // namespace mozilla::dom
+
+namespace mozilla::Telemetry {
+// forward declaration
+struct EventExtraEntry;
+}  // namespace mozilla::Telemetry
+using mozilla::Telemetry::EventExtraEntry;
+
+namespace TelemetryEvent {
+// forward declaration
+void RecordEventNative(
+    mozilla::Telemetry::EventID aId, const mozilla::Maybe<nsCString>& aValue,
+    const mozilla::Maybe<CopyableTArray<EventExtraEntry>>& aExtra);
+}  // namespace TelemetryEvent
 
 namespace mozilla::glean {
 
@@ -62,10 +74,10 @@ class EventMetric {
       // NB. In case `aExtras` is filled we call `ToFfiExtra`, causing
       // twice the required allocation. We could be smarter and reuse the data.
       // But this is GIFFT-only allocation, so wait to be told it's a problem.
-      Maybe<CopyableTArray<Telemetry::EventExtraEntry>> telExtras;
+      Maybe<CopyableTArray<EventExtraEntry>> telExtras;
       Maybe<nsCString> telValue;
       if (aExtras) {
-        CopyableTArray<Telemetry::EventExtraEntry> extras;
+        CopyableTArray<EventExtraEntry> extras;
         auto serializedExtras = aExtras->ToFfiExtra();
         auto keys = std::move(std::get<0>(serializedExtras));
         auto values = std::move(std::get<1>(serializedExtras));
@@ -74,11 +86,11 @@ class EventMetric {
             telValue = Some(values[i]);
             continue;
           }
-          extras.EmplaceBack(Telemetry::EventExtraEntry{keys[i], values[i]});
+          extras.EmplaceBack(EventExtraEntry{keys[i], values[i]});
         }
         telExtras = Some(extras);
       }
-      Telemetry::RecordEvent(id.extract(), telValue, telExtras);
+      TelemetryEvent::RecordEventNative(id.extract(), telValue, telExtras);
     }
     if (aExtras) {
       auto extra = aExtras->ToFfiExtra();
@@ -165,7 +177,9 @@ class GleanEvent final : public GleanMetric {
   virtual JSObject* WrapObject(
       JSContext* aCx, JS::Handle<JSObject*> aGivenProto) override final;
 
-  void Record(const dom::Optional<dom::Record<nsCString, nsCString>>& aExtra);
+  void Record(
+      const dom::Optional<dom::Nullable<dom::Record<nsCString, nsCString>>>&
+          aExtra);
 
   void TestGetValue(const nsACString& aPingName,
                     dom::Nullable<nsTArray<dom::GleanEventRecord>>& aResult,

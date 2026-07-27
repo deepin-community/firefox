@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,10 +15,8 @@ interface MediaQueryList : EventTarget {
   readonly attribute UTF8String media;
   readonly attribute boolean matches;
 
-  [Throws]
   undefined addListener(EventListener? listener);
 
-  [Throws]
   undefined removeListener(EventListener? listener);
 
            attribute EventHandler onchange;

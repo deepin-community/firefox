@@ -12,14 +12,25 @@
 
 permission-dialog-description = ნებას რთავთ ამ საიტს, გახსნას { $scheme }-ბმული?
 permission-dialog-description-file = ნებას რთავთ ამ ფაილს, გახსნას { $scheme }-ბმული?
-permission-dialog-description-host = ნებას რთავთ ამ { $host }-ს, გახსნას { $scheme }-ბმული?
-permission-dialog-description-extension = ნებას რთავთ გაფართოებას { $extension }, გახსნას { $scheme }-ბმული?
-permission-dialog-description-app = ნებას რთავთ ამ საიტს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-host-app = ნებას რთავთ ამ { $host }-ს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-file-app = ნებას რთავთ ამ ფაილს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-extension-app = ნებას რთავთ გაფართოებას { $extension }, გახსნას { $scheme }-ბმული { $appName }-პროგრამით?
+permission-dialog-description-host = ნებას რთავთ, რომ{ $host } შეძლებს გახსნას { $scheme }-ბმული?
+permission-dialog-description-extension = ნებას რთავთ, რომ { $extension } შეძლებს გახსნას { $scheme }-ბმული?
+permission-dialog-description-app = ნებას რთავთ ამ საიტს, { $appName } გამოიყენოს { $scheme }-ბმულისთვის?
+permission-dialog-description-host-app = ნებას რთავთ, რომ { $host } შეძლებს { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
+permission-dialog-description-file-app = ნებას რთავთ ამ ფაილს, { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
+permission-dialog-description-extension-app = ნებას რთავთ, რომ { $extension } შეძლებს { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
 permission-dialog-description-system-app = გაიხსნას { $scheme }-ბმული პროგრამით { $appName }?
 permission-dialog-description-system-noapp = გაიხსნას { $scheme }-ბმული?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = ნებას რთავთ ამ საიტს, გახსნას თქვენი ციფრული საფულე?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = <strong>{ $scheme }</strong>-ბმულის გახსნით <strong>{ $host }</strong> შეძლებს გაეცნოს თქვენი ნამდვილი ვინაობის მონაცემებს, რომელსაც მიაწვდის <strong>{ $appName }</strong>. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = <strong>{ $scheme }</strong>-ბმულის გახსნით ეს საიტი შეძლებს გაეცნოს თქვენი ნამდვილი ვინაობის მონაცემებს, რომელსაც მიაწვდის <strong>{ $appName }</strong>. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = <strong>{ $scheme }</strong>-ბმულის გახსნით <strong>{ $host }</strong> შეძლებს გაეცნოს თქვენი ნამდვილი ვინაობის მონაცემებს ციფრული საფულიდან. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = <strong>{ $scheme }</strong>-ბმულის გახსნით ეს საიტი შეძლებს გაეცნოს თქვენი ნამდვილი ვინაობის მონაცემებს ციფრული საფულიდან. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start

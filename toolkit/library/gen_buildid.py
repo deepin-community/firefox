@@ -1,10 +1,4 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
-
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
-# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distibuted with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
@@ -38,7 +32,7 @@ def write_file(output, maybe_buildid):
     attribute_used = "__attribute__((used))" if maybe_buildid is not None else ""
 
     output.write(
-        """
+        f"""
 #include "buildid_section.h"
 
 #if defined(XP_DARWIN) || defined(XP_WIN)
@@ -47,12 +41,8 @@ def write_file(output, maybe_buildid):
 #define SECTION_NAME_ATTRIBUTE
 #endif
 
-{extern} const char gToolkitBuildID[] SECTION_NAME_ATTRIBUTE {used} = "{buildid}";
-""".format(
-            extern=keyword_extern,
-            used=attribute_used,
-            buildid=buildid,
-        )
+{keyword_extern} const char gToolkitBuildID[] SECTION_NAME_ATTRIBUTE {attribute_used} = "{buildid}";
+"""
     )
 
     if buildconfig.substs.get("TARGET_KERNEL") not in (

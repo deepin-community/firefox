@@ -45,8 +45,8 @@ async function openPageAndRunCode(
           ok(false, "Unknown message");
         });
 
-        content.document.body.appendChild(ifr);
         ifr.src = obj.page;
+        content.document.body.appendChild(ifr);
       });
     }
   );
@@ -152,22 +152,18 @@ function expectNoPopup() {
 }
 
 async function requestStorageAccessAndExpectSuccess() {
-  const aps = SpecialPowers.Services.prefs.getBoolPref(
-    "privacy.partition.always_partition_third_party_non_cookie_storage"
-  );
-
-  // When always partitioning storage, we do not clear non-cookie storage
-  // after a requestStorageAccess is accepted by the user. So here we test
-  // that indexedDB is cleared when the pref is off, but not when it is on.
+  // We do not clear non-cookie storage after a requestStorageAccess
+  // is accepted by the user because we don't unpartition Storage.
+  // So here we test that indexedDB is not cleared.
   await new Promise((resolve, reject) => {
     const db = window.indexedDB.open("rSATest", 1);
     db.onupgradeneeded = resolve;
-    db.success = resolve;
+    db.onsuccess = () => {
+      db.result.close();
+      resolve();
+    };
     db.onerror = reject;
   });
-
-  const hadAccessAlready = await document.hasStorageAccess();
-  const shouldClearIDB = !aps && !hadAccessAlready;
 
   SpecialPowers.wrap(document).notifyUserGestureActivation();
   let p = document.requestStorageAccess();
@@ -182,12 +178,13 @@ async function requestStorageAccessAndExpectSuccess() {
     const req = window.indexedDB.open("rSATest", 1);
     req.onerror = reject;
     req.onupgradeneeded = () => {
-      ok(shouldClearIDB, "iDB was cleared");
+      ok(false, "iDB was cleared");
       req.onsuccess = undefined;
       resolve();
     };
     req.onsuccess = () => {
-      ok(!shouldClearIDB, "iDB was not cleared");
+      ok(true, "iDB was not cleared");
+      req.result.close();
       resolve();
     };
   });
@@ -202,13 +199,16 @@ async function requestStorageAccessAndExpectSuccess() {
 }
 
 async function requestStorageAccessAndExpectFailure() {
-  // When always partitioning storage, we do not clear non-cookie storage
-  // after a requestStorageAccess is accepted by the user. So here we test
-  // that indexedDB is cleared when the pref is off, but not when it is on.
+  // We do not clear non-cookie storage after a requestStorageAccess
+  // is accepted by the user because we don't unpartition Storage.
+  // So here we test that indexedDB is not cleared.
   await new Promise((resolve, reject) => {
     const db = window.indexedDB.open("rSATest", 1);
     db.onupgradeneeded = resolve;
-    db.success = resolve;
+    db.onsuccess = () => {
+      db.result.close();
+      resolve();
+    };
     db.onerror = reject;
   });
 
@@ -231,6 +231,7 @@ async function requestStorageAccessAndExpectFailure() {
     };
     req.onsuccess = () => {
       ok(true, "iDB was not cleared");
+      req.result.close();
       resolve();
     };
   });
@@ -253,7 +254,7 @@ async function cleanUpData() {
   ok(true, "Deleted all data.");
 }
 
-async function setPreferences(alwaysPartitionStorage = true) {
+async function setPreferences() {
   await SpecialPowers.pushPrefEnv({
     set: [
       ["dom.storage_access.auto_grants", true],
@@ -268,10 +269,6 @@ async function setPreferences(alwaysPartitionStorage = true) {
       [
         "network.cookie.cookieBehavior.pbmode",
         Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN,
-      ],
-      [
-        "privacy.partition.always_partition_third_party_non_cookie_storage",
-        alwaysPartitionStorage,
       ],
       ["privacy.trackingprotection.enabled", false],
       ["privacy.trackingprotection.pbmode.enabled", false],

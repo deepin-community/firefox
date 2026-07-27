@@ -11,8 +11,11 @@
 #ifndef API_VIDEO_CODECS_SIMULCAST_STREAM_H_
 #define API_VIDEO_CODECS_SIMULCAST_STREAM_H_
 
-#include "absl/types/optional.h"
+#include <optional>
+
 #include "api/video_codecs/scalability_mode.h"
+#include "api/video_codecs/sdp_video_format.h"
+#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -22,7 +25,7 @@ struct RTC_EXPORT SimulcastStream {
   // Temporary utility methods for transition from numberOfTemporalLayers
   // setting to ScalabilityMode.
   unsigned char GetNumberOfTemporalLayers() const;
-  absl::optional<ScalabilityMode> GetScalabilityMode() const;
+  std::optional<ScalabilityMode> GetScalabilityMode() const;
   void SetNumberOfTemporalLayers(unsigned char n);
 
   bool operator==(const SimulcastStream& other) const;
@@ -39,6 +42,10 @@ struct RTC_EXPORT SimulcastStream {
   unsigned int minBitrate = 0;     // kilobits/sec.
   unsigned int qpMax = 0;          // minimum quality
   bool active = false;             // encoded and sent.
+  // The video format for this stream.
+  // This should be set for mixed-codec simulcast, while for other cases,
+  // it is optional and can be unset.
+  std::optional<SdpVideoFormat> format;
 };
 
 }  // namespace webrtc

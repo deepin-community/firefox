@@ -4,6 +4,7 @@
 
 about-networking-title = Acerca del tráfico de red
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Borrar caché de HTTP
 about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Limpiar caché de DNS
@@ -11,6 +12,13 @@ about-networking-dns-trr-url = URL de DoH
 about-networking-dns-trr-mode = Modo DoH
 about-networking-dns-suffix = Sufijo DNS
 about-networking-websockets = WebSockets
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Origen
+about-networking-alt-svc-alternate = Alternar
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Validación correcta
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Clave de aislamiento
 about-networking-refresh = Refrescar
 about-networking-auto-refresh = Refrescar automáticamente cada 3 segundos
 about-networking-hostname = Nombre del servidor
@@ -38,6 +46,7 @@ about-networking-dns-lookup = Búsqueda de DNS
 about-networking-dns-lookup-button = Resolver
 about-networking-dns-domain = Dominio:
 about-networking-dns-lookup-table-column = IPs
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = Estadísticas RCWN
 about-networking-rcwn-status = Estatus RCWN
@@ -53,7 +62,7 @@ about-networking-rcwn-avg-short = Promedio corto
 about-networking-rcwn-avg-long = Promedio largo
 about-networking-rcwn-std-dev-long = Desviación estándar larga
 about-networking-rcwn-cache-slow = Cuenta lenta de caché
-about-networking-rcwn-cache-not-slow = Cuenta de caché no lenta
+about-networking-rcwn-cache-not-slow = Cuenta lenta de caché
 about-networking-networkid = ID de red
 about-networking-networkid-id = ID de red
 # Note: do not translate about:logging, as it is a URL.
@@ -63,6 +72,3 @@ about-networking-moved-about-logging = Esta página se ha movido a <a data-l10n-
 
 about-networking-networkid-is-up = La conexión está activa
 about-networking-networkid-status-known = Se conoce el estado del enlace
-
-##
-

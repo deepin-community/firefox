@@ -5,8 +5,8 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  FilterAdult: "resource://activity-stream/lib/FilterAdult.sys.mjs",
-  UrlbarUtils: "resource:///modules/UrlbarUtils.sys.mjs",
+  FilterAdult: "resource:///modules/FilterAdult.sys.mjs",
+  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "logConsole", function () {
@@ -179,15 +179,10 @@ class _InteractionsBlocklist {
 
     // First, find the URL's base host: the hostname without any subdomains or a
     // public suffix.
-    let url;
-    try {
-      url = new URL(urlToCheck);
-      if (!url) {
-        throw new Error();
-      }
-    } catch (ex) {
+    let url = URL.parse(urlToCheck);
+    if (!url) {
       lazy.logConsole.warn(
-        `Invalid URL passed to InteractionsBlocklist.isUrlBlocklisted: ${url}`
+        `Invalid URL passed to InteractionsBlocklist.isUrlBlocklisted: ${urlToCheck}`
       );
       return false;
     }
@@ -234,7 +229,7 @@ class _InteractionsBlocklist {
     try {
       regex = new RegExp(regexToAdd, "i");
     } catch (ex) {
-      this.logConsole.warn("Invalid regex passed to addRegexToBlocklist.");
+      lazy.logConsole.warn("Invalid regex passed to addRegexToBlocklist.");
       return;
     }
 
@@ -261,7 +256,7 @@ class _InteractionsBlocklist {
     try {
       regex = new RegExp(regexToRemove, "i");
     } catch (ex) {
-      this.logConsole.warn("Invalid regex passed to addRegexToBlocklist.");
+      lazy.logConsole.warn("Invalid regex passed to addRegexToBlocklist.");
       return;
     }
 

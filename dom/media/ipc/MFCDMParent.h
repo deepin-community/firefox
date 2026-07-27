@@ -7,12 +7,15 @@
 
 #include <wrl.h>
 
-#include "mozilla/Assertions.h"
-#include "mozilla/PMFCDMParent.h"
 #include "MFCDMExtra.h"
 #include "MFCDMSession.h"
 #include "MFPMPHostWrapper.h"
-#include "RemoteDecoderManagerParent.h"
+#include "RemoteMediaManagerParent.h"
+#include "mozilla/Assertions.h"
+#include "mozilla/EventTargetAndLockCapability.h"
+#include "mozilla/MozPromise.h"
+#include "mozilla/PMFCDMParent.h"
+#include "mozilla/RefPtr.h"
 
 namespace mozilla {
 
@@ -31,7 +34,7 @@ class MFCDMParent final : public PMFCDMParent {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MFCDMParent);
 
-  MFCDMParent(const nsAString& aKeySystem, RemoteDecoderManagerParent* aManager,
+  MFCDMParent(const nsAString& aKeySystem, RemoteMediaManagerParent* aManager,
               nsISerialEventTarget* aManagerThread);
 
   static void SetWidevineL1Path(const char* aPath);
@@ -50,6 +53,7 @@ class MFCDMParent final : public PMFCDMParent {
     return sRegisteredCDMs.Get(aId);
   }
   uint64_t Id() const { return mId; }
+  const nsString& GetKeySystem() const { return mKeySystem; }
 
   mozilla::ipc::IPCResult RecvGetCapabilities(
       const MFCDMCapabilitiesRequest& aRequest,
@@ -84,14 +88,21 @@ class MFCDMParent final : public PMFCDMParent {
       const dom::HDCPVersion& aMinHdcpVersion,
       GetStatusForPolicyResolver&& aResolver);
 
-  nsISerialEventTarget* ManagerThread() { return mManagerThread; }
-  void AssertOnManagerThread() const {
-    MOZ_ASSERT(mManagerThread->IsOnCurrentThread());
-  }
+  // Checks whether the HDCP 2.2 link has settled after a hardware reset.
+  // The result is used as a timing signal only; playback proceeds regardless
+  // of whether the check succeeds or fails.
+  RefPtr<GenericPromise> WaitForHDCPSettleAfterReset();
 
-  already_AddRefed<MFCDMProxy> GetMFCDMProxy();
+  // A thread-safe method to access the CDM proxy. Returns nullptr if the CDM
+  // has been shut down.
+  MFCDMProxy* GetMFCDMProxy();
 
   void ShutdownCDM();
+
+  // Called when a hardware context reset (e.g. GPU/DRM device lost) invalidates
+  // all active CDM sessions. Closes every open session and resets the trusted
+  // input so the content process can re-establish keys.
+  void OnHardwareContextReset();
 
   void Destroy();
 
@@ -100,7 +111,6 @@ class MFCDMParent final : public PMFCDMParent {
 
   enum class CapabilitesFlag {
     HarewareDecryption,
-    NeedHDCPCheck,
     NeedClearLeadCheck,
     IsPrivateBrowsing,
   };
@@ -128,21 +138,34 @@ class MFCDMParent final : public PMFCDMParent {
 
   MFCDMSession* GetSession(const nsString& aSessionId);
 
+  // Called after a GPU/DRM hardware context reset to discard the invalid CDM
+  // and create a fresh one so new sessions can be established.
+  HRESULT RecreateCDM();
+  // Sets up the PMPHostApp on the CDM. Only required by PlayReady.
+  HRESULT SetupPMPHostApp() MOZ_REQUIRES(mCDMAccessLock);
+
+  mozilla::Mutex& Mutex() MOZ_RETURN_CAPABILITY(mCDMAccessLock.Lock()) {
+    return mCDMAccessLock.Lock();
+  }
+
   nsString mKeySystem;
 
-  const RefPtr<RemoteDecoderManagerParent> mManager;
+  const RefPtr<RemoteMediaManagerParent> mManager;
   const RefPtr<nsISerialEventTarget> mManagerThread;
 
-  static inline nsTHashMap<nsUint64HashKey, MFCDMParent*> sRegisteredCDMs;
+  Maybe<MFCDMInitParamsIPDL> mInitParams;
+
+  constinit static inline nsTHashMap<nsUint64HashKey, MFCDMParent*>
+      sRegisteredCDMs;
 
   static inline uint64_t sNextId = 1;
   const uint64_t mId;
+  bool mIsInited = false;
 
   static inline BSTR sWidevineL1Path;
 
   RefPtr<MFCDMParent> mIPDLSelfRef;
   Microsoft::WRL::ComPtr<IMFContentDecryptionModuleFactory> mFactory;
-  Microsoft::WRL::ComPtr<IMFContentDecryptionModule> mCDM;
   Microsoft::WRL::ComPtr<MFPMPHostWrapper> mPMPHostWrapper;
 
   std::map<nsString, UniquePtr<MFCDMSession>> mSessions;
@@ -150,10 +173,21 @@ class MFCDMParent final : public PMFCDMParent {
   MediaEventForwarder<MFCDMKeyMessage> mKeyMessageEvents;
   MediaEventForwarder<MFCDMKeyStatusChange> mKeyChangeEvents;
   MediaEventForwarder<MFCDMKeyExpiration> mExpirationEvents;
+  MediaEventForwarder<MFCDMSessionClosedResult> mClosedEvents;
 
   MediaEventListener mKeyMessageListener;
   MediaEventListener mKeyChangeListener;
   MediaEventListener mExpirationListener;
+  MediaEventListener mClosedListener;
+
+  // The mCDM and mCDMProxy members are exclusively modified on the manager
+  // thread, while being read-only on other threads. To ensure thread-safe
+  // access, we employ the EventTargetAndLockCapability mechanism.
+  mozilla::EventTargetAndLockCapability<nsISerialEventTarget, mozilla::Mutex>
+      mCDMAccessLock;
+  Microsoft::WRL::ComPtr<IMFContentDecryptionModule> mCDM
+      MOZ_GUARDED_BY(mCDMAccessLock);
+  RefPtr<MFCDMProxy> mCDMProxy MOZ_GUARDED_BY(mCDMAccessLock);
 };
 
 // A helper class only used in the chrome process to handle CDM related tasks.

@@ -4,13 +4,14 @@
 
 "use strict";
 
-const lazy = {};
-
 const { Preferences } = ChromeUtils.importESModule(
   "resource://gre/modules/Preferences.sys.mjs"
 );
+const { SearchService } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/components/search/SearchService.sys.mjs"
+);
 const { SearchSettings } = ChromeUtils.importESModule(
-  "resource://gre/modules/SearchSettings.sys.mjs"
+  "moz-src:///toolkit/components/search/SearchSettings.sys.mjs"
 );
 const { updateAppInfo, getAppInfo } = ChromeUtils.importESModule(
   "resource://testing-common/AppInfo.sys.mjs"
@@ -21,11 +22,14 @@ const { FileTestUtils } = ChromeUtils.importESModule(
 const { PermissionTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/PermissionTestUtils.sys.mjs"
 );
-ChromeUtils.defineESModuleGetters(lazy, {
-  SearchTestUtils: "resource://testing-common/SearchTestUtils.sys.mjs",
-});
 const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
   "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
+);
+const { setupPolicyEngineWithJson, setupPolicyEngineWithJsonForSearch } =
+  EnterprisePolicyTesting;
+EnterprisePolicyTesting.pathResolver = path => do_get_file(path).path;
+const { ExtensionTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/ExtensionXPCShellUtils.sys.mjs"
 );
 
 updateAppInfo({
@@ -42,45 +46,6 @@ let policies = Cc["@mozilla.org/enterprisepolicies;1"].getService(
 policies.observe(null, "policies-startup", null);
 
 SearchSettings.SETTINGS_INVALIDATION_DELAY = 100;
-
-async function setupPolicyEngineWithJson(json, customSchema) {
-  if (typeof json != "object") {
-    let filePath = do_get_file(json ? json : "non-existing-file.json").path;
-    return EnterprisePolicyTesting.setupPolicyEngineWithJson(
-      filePath,
-      customSchema
-    );
-  }
-  return EnterprisePolicyTesting.setupPolicyEngineWithJson(json, customSchema);
-}
-
-/**
- * Loads a new enterprise policy, and re-initialise the search service
- * with the new policy. Also waits for the search service to write the settings
- * file to disk.
- *
- * @param {object} json
- *   The enterprise policy to use.
- * @param {object} customSchema
- *   A custom schema to use to validate the enterprise policy.
- */
-async function setupPolicyEngineWithJsonWithSearch(json, customSchema) {
-  Services.search.wrappedJSObject.reset();
-  if (typeof json != "object") {
-    let filePath = do_get_file(json ? json : "non-existing-file.json").path;
-    await EnterprisePolicyTesting.setupPolicyEngineWithJson(
-      filePath,
-      customSchema
-    );
-  } else {
-    await EnterprisePolicyTesting.setupPolicyEngineWithJson(json, customSchema);
-  }
-  let settingsWritten = lazy.SearchTestUtils.promiseSearchNotification(
-    "write-settings-to-disk-complete"
-  );
-  await Services.search.init();
-  await settingsWritten;
-}
 
 function checkLockedPref(prefName, prefValue) {
   equal(
@@ -146,5 +111,33 @@ function checkUnsetPref(prefName) {
     prefType,
     Services.prefs.PREF_INVALID,
     `Pref ${prefName} is not set on the default branch`
+  );
+}
+
+async function assertManagementAPIInstallType(addonId, expectedInstallType) {
+  const addon = await AddonManager.getAddonByID(addonId);
+  const expectInstalledByPolicy = expectedInstallType === "admin";
+  equal(
+    Services.policies.isAddonRequiredByPolicy(addon.id),
+    expectInstalledByPolicy,
+    `Addon should ${
+      expectInstalledByPolicy ? "be" : "NOT be"
+    } marked as installed by enterprise policy`
+  );
+  const policy = WebExtensionPolicy.getByID(addonId);
+  const pageURL = policy.extension.baseURI.resolve(
+    "_generated_background_page.html"
+  );
+  const page = await ExtensionTestUtils.loadContentPage(pageURL);
+  const { id, installType } = await page.spawn([], async () => {
+    const res = await this.content.wrappedJSObject.browser.management.getSelf();
+    return { id: res.id, installType: res.installType };
+  });
+  await page.close();
+  Assert.equal(id, addonId, "Got results for the expected addon id");
+  Assert.equal(
+    installType,
+    expectedInstallType,
+    "Got the expected installType on policy installed extension"
   );
 }

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +10,7 @@
 
 using namespace mozilla::widget;
 
-GfxDeviceFamily*
+constinit RefPtr<GfxDeviceFamily>
     GfxDriverInfo::sDeviceFamilies[static_cast<size_t>(DeviceFamily::Max)];
 nsString*
     GfxDriverInfo::sWindowProtocol[static_cast<size_t>(WindowProtocol::Max)];
@@ -19,83 +18,57 @@ nsString* GfxDriverInfo::sDeviceVendors[static_cast<size_t>(DeviceVendor::Max)];
 nsString* GfxDriverInfo::sDriverVendors[static_cast<size_t>(DriverVendor::Max)];
 
 GfxDriverInfo::GfxDriverInfo()
-    : mOperatingSystem(OperatingSystem::Unknown),
-      mOperatingSystemVersion(0),
-      mScreen(ScreenSizeStatus::All),
-      mBattery(BatteryStatus::All),
-      mWindowProtocol(GfxDriverInfo::GetWindowProtocol(WindowProtocol::All)),
+    : mWindowProtocol(GfxDriverInfo::GetWindowProtocol(WindowProtocol::All)),
       mAdapterVendor(GfxDriverInfo::GetDeviceVendor(DeviceFamily::All)),
       mDriverVendor(GfxDriverInfo::GetDriverVendor(DriverVendor::All)),
       mDevices(GfxDriverInfo::GetDeviceFamily(DeviceFamily::All)),
-      mDeleteDevices(false),
-      mFeature(optionalFeatures),
-      mFeatureStatus(nsIGfxInfo::FEATURE_STATUS_OK),
-      mComparisonOp(DRIVER_COMPARISON_IGNORED),
-      mDriverVersion(0),
-      mDriverVersionMax(0),
-      mSuggestedVersion(nullptr),
-      mRuleId(nullptr),
-      mGpu2(false) {}
+      mFeatureStatus(nsIGfxInfo::FEATURE_STATUS_OK) {}
 
 GfxDriverInfo::GfxDriverInfo(
     OperatingSystem os, ScreenSizeStatus screen, BatteryStatus battery,
     const nsAString& windowProtocol, const nsAString& vendor,
-    const nsAString& driverVendor, GfxDeviceFamily* devices, int32_t feature,
+    const nsAString& driverVendor,
+    already_AddRefed<const GfxDeviceFamily> devices, int32_t feature,
     int32_t featureStatus, VersionComparisonOp op, uint64_t driverVersion,
     const char* ruleId, const char* suggestedVersion /* = nullptr */,
     bool ownDevices /* = false */, bool gpu2 /* = false */)
     : mOperatingSystem(os),
-      mOperatingSystemVersion(0),
       mScreen(screen),
       mBattery(battery),
       mWindowProtocol(windowProtocol),
       mAdapterVendor(vendor),
       mDriverVendor(driverVendor),
       mDevices(devices),
-      mDeleteDevices(ownDevices),
       mFeature(feature),
       mFeatureStatus(featureStatus),
       mComparisonOp(op),
       mDriverVersion(driverVersion),
-      mDriverVersionMax(0),
       mSuggestedVersion(suggestedVersion),
       mRuleId(ruleId),
       mGpu2(gpu2) {}
 
-GfxDriverInfo::GfxDriverInfo(const GfxDriverInfo& aOrig)
-    : mOperatingSystem(aOrig.mOperatingSystem),
-      mOperatingSystemVersion(aOrig.mOperatingSystemVersion),
-      mScreen(aOrig.mScreen),
-      mBattery(aOrig.mBattery),
-      mWindowProtocol(aOrig.mWindowProtocol),
-      mAdapterVendor(aOrig.mAdapterVendor),
-      mDriverVendor(aOrig.mDriverVendor),
-      mFeature(aOrig.mFeature),
-      mFeatureStatus(aOrig.mFeatureStatus),
-      mComparisonOp(aOrig.mComparisonOp),
-      mDriverVersion(aOrig.mDriverVersion),
-      mDriverVersionMax(aOrig.mDriverVersionMax),
-      mSuggestedVersion(aOrig.mSuggestedVersion),
-      mRuleId(aOrig.mRuleId),
-      mGpu2(aOrig.mGpu2) {
-  // If we're managing the lifetime of the device family, we have to make a
-  // copy of the original's device family.
-  if (aOrig.mDeleteDevices && aOrig.mDevices) {
-    GfxDeviceFamily* devices = new GfxDeviceFamily;
-    *devices = *aOrig.mDevices;
-    mDevices = devices;
-  } else {
-    mDevices = aOrig.mDevices;
-  }
-
-  mDeleteDevices = aOrig.mDeleteDevices;
-}
-
-GfxDriverInfo::~GfxDriverInfo() {
-  if (mDeleteDevices) {
-    delete mDevices;
-  }
-}
+GfxDriverInfo::GfxDriverInfo(
+    OperatingSystem os, const nsAString& vendor,
+    already_AddRefed<const GfxDeviceFamily> devices, int32_t feature,
+    int32_t featureStatus, RefreshRateStatus refreshRateStatus,
+    VersionComparisonOp minRefreshRateOp, uint32_t minRefreshRate,
+    uint32_t minRefreshRateMax, VersionComparisonOp maxRefreshRateOp,
+    uint32_t maxRefreshRate, uint32_t maxRefreshRateMax, const char* ruleId,
+    const char* suggestedVersion /* = nullptr */)
+    : mOperatingSystem(os),
+      mMinRefreshRate(minRefreshRate),
+      mMinRefreshRateMax(minRefreshRateMax),
+      mMinRefreshRateComparisonOp(minRefreshRateOp),
+      mMaxRefreshRate(maxRefreshRate),
+      mMaxRefreshRateMax(maxRefreshRateMax),
+      mMaxRefreshRateComparisonOp(maxRefreshRateOp),
+      mRefreshRateStatus(refreshRateStatus),
+      mAdapterVendor(vendor),
+      mDevices(devices),
+      mFeature(feature),
+      mFeatureStatus(featureStatus),
+      mSuggestedVersion(suggestedVersion),
+      mRuleId(ruleId) {}
 
 void GfxDeviceFamily::Append(const nsAString& aDeviceId) {
   mIds.AppendElement(aDeviceId);
@@ -139,7 +112,8 @@ nsresult GfxDeviceFamily::Contains(nsAString& aDeviceId) const {
   deviceFamily->Append(NS_LITERAL_STRING_FROM_CSTRING(device))
 #define APPEND_RANGE(start, end) deviceFamily->AppendRange(start, end)
 
-const GfxDeviceFamily* GfxDriverInfo::GetDeviceFamily(DeviceFamily id) {
+already_AddRefed<const GfxDeviceFamily> GfxDriverInfo::GetDeviceFamily(
+    DeviceFamily id) {
   if (id >= DeviceFamily::Max) {
     MOZ_ASSERT_UNREACHABLE("DeviceFamily id is out of range");
     return nullptr;
@@ -164,11 +138,11 @@ const GfxDeviceFamily* GfxDriverInfo::GetDeviceFamily(DeviceFamily id) {
   // If it already exists, we must have processed it once, so return it now.
   auto idx = static_cast<size_t>(id);
   if (sDeviceFamilies[idx]) {
-    return sDeviceFamilies[idx];
+    return do_AddRef(sDeviceFamilies[idx]);
   }
 
-  sDeviceFamilies[idx] = new GfxDeviceFamily;
-  GfxDeviceFamily* deviceFamily = sDeviceFamilies[idx];
+  sDeviceFamilies[idx] = MakeRefPtr<GfxDeviceFamily>();
+  RefPtr<GfxDeviceFamily> deviceFamily = sDeviceFamilies[idx];
 
   switch (id) {
     case DeviceFamily::IntelGMA500:
@@ -358,6 +332,19 @@ const GfxDeviceFamily* GfxDriverInfo::GetDeviceFamily(DeviceFamily id) {
     case DeviceFamily::IntelMobileHDGraphics:
       APPEND_DEVICE(0x0046); /* IntelMobileHDGraphics */
       break;
+    case DeviceFamily::IntelMeteorLake:
+      APPEND_DEVICE(0x7d40);
+      APPEND_DEVICE(0x7d45);
+      APPEND_DEVICE(0x7d55);
+      APPEND_DEVICE(0x7d60);
+      APPEND_DEVICE(0x7dd5);
+      break;
+    case DeviceFamily::IntelArrowlake:
+      APPEND_DEVICE(0x7D41);
+      APPEND_DEVICE(0x7D51);
+      APPEND_DEVICE(0x7D67);
+      APPEND_DEVICE(0x7DD1);
+      break;
     case DeviceFamily::IntelGen12:
       // Rocket Lake
       APPEND_DEVICE(0x4C8C);  // rkl_gt05
@@ -491,6 +478,39 @@ const GfxDeviceFamily* GfxDriverInfo::GetDeviceFamily(DeviceFamily id) {
       break;
     case DeviceFamily::Nvidia8800GTS:
       APPEND_DEVICE(0x0193);
+      break;
+    case DeviceFamily::NvidiaPascal:
+      APPEND_DEVICE(0x1d01);
+      APPEND_DEVICE(0x1d10);
+      APPEND_DEVICE(0x1d12);
+      APPEND_DEVICE(0x1c81);
+      APPEND_DEVICE(0x1c82);
+      APPEND_DEVICE(0x1c83);
+      APPEND_DEVICE(0x1c8c);
+      APPEND_DEVICE(0x1c8d);
+      APPEND_DEVICE(0x1c8f);
+      APPEND_DEVICE(0x1c92);
+      APPEND_DEVICE(0x1c02);
+      APPEND_DEVICE(0x1c03);
+      APPEND_DEVICE(0x1c20);
+      APPEND_DEVICE(0x1c23);
+      APPEND_DEVICE(0x1c60);
+      APPEND_DEVICE(0x1c61);
+      APPEND_DEVICE(0x1c62);
+      APPEND_DEVICE(0x1b81);
+      APPEND_DEVICE(0x1b82);
+      APPEND_DEVICE(0x1b83);
+      APPEND_DEVICE(0x1b84);
+      APPEND_DEVICE(0x1ba0);
+      APPEND_DEVICE(0x1ba1);
+      APPEND_DEVICE(0x1ba2);
+      APPEND_DEVICE(0x1be0);
+      APPEND_DEVICE(0x1be1);
+      APPEND_DEVICE(0x1b06);
+      APPEND_DEVICE(0x1b00);
+      APPEND_DEVICE(0x1b02);
+      APPEND_DEVICE(0x17e4);
+      APPEND_DEVICE(0x174d);
       break;
     case DeviceFamily::Bug1137716:
       APPEND_DEVICE(0x0a29);
@@ -656,14 +676,8 @@ const GfxDeviceFamily* GfxDriverInfo::GetDeviceFamily(DeviceFamily id) {
       break;
   }
 
-  return deviceFamily;
+  return deviceFamily.forget();
 }
-
-// Macro for assigning a window protocol id to a string.
-#define DECLARE_WINDOW_PROTOCOL_ID(name, windowProtocolId) \
-  case WindowProtocol::name:                               \
-    sWindowProtocol[idx]->AssignLiteral(windowProtocolId); \
-    break;
 
 const nsAString& GfxDriverInfo::GetWindowProtocol(WindowProtocol id) {
   if (id >= WindowProtocol::Max) {
@@ -679,24 +693,17 @@ const nsAString& GfxDriverInfo::GetWindowProtocol(WindowProtocol id) {
   sWindowProtocol[idx] = new nsString();
 
   switch (id) {
-    DECLARE_WINDOW_PROTOCOL_ID(X11, "x11");
-    DECLARE_WINDOW_PROTOCOL_ID(XWayland, "xwayland");
-    DECLARE_WINDOW_PROTOCOL_ID(Wayland, "wayland");
-    DECLARE_WINDOW_PROTOCOL_ID(WaylandDRM, "wayland/drm");
-    DECLARE_WINDOW_PROTOCOL_ID(WaylandAll, "wayland/all");
-    DECLARE_WINDOW_PROTOCOL_ID(X11All, "x11/all");
     case WindowProtocol::Max:  // Suppress a warning.
-      DECLARE_WINDOW_PROTOCOL_ID(All, "");
+#define GFXINFO_WINDOW_PROTOCOL(id, name)       \
+  case WindowProtocol::id:                      \
+    sWindowProtocol[idx]->Assign(u##name##_ns); \
+    break;
+#include "mozilla/widget/GfxInfoWindowProtocolDefs.inc"
+#undef GFXINFO_WINDOW_PROTOCOL
   }
 
   return *sWindowProtocol[idx];
 }
-
-// Macro for assigning a device vendor id to a string.
-#define DECLARE_VENDOR_ID(name, deviceId)         \
-  case DeviceVendor::name:                        \
-    sDeviceVendors[idx]->AssignLiteral(deviceId); \
-    break;
 
 const nsAString& GfxDriverInfo::GetDeviceVendor(DeviceFamily id) {
   if (id >= DeviceFamily::Max) {
@@ -722,6 +729,8 @@ const nsAString& GfxDriverInfo::GetDeviceVendor(DeviceFamily id) {
     case DeviceFamily::IntelKabyLake:
     case DeviceFamily::IntelHD520:
     case DeviceFamily::IntelMobileHDGraphics:
+    case DeviceFamily::IntelMeteorLake:
+    case DeviceFamily::IntelArrowlake:
     case DeviceFamily::IntelGen12:
     case DeviceFamily::IntelWebRenderBlocked:
     case DeviceFamily::Bug1116812:
@@ -735,6 +744,7 @@ const nsAString& GfxDriverInfo::GetDeviceVendor(DeviceFamily id) {
     case DeviceFamily::Geforce7300GT:
     case DeviceFamily::Nvidia310M:
     case DeviceFamily::Nvidia8800GTS:
+    case DeviceFamily::NvidiaPascal:
     case DeviceFamily::Bug1137716:
       vendor = DeviceVendor::NVIDIA;
       break;
@@ -785,33 +795,17 @@ const nsAString& GfxDriverInfo::GetDeviceVendor(DeviceVendor id) {
   sDeviceVendors[idx] = new nsString();
 
   switch (id) {
-    DECLARE_VENDOR_ID(Intel, "0x8086");
-    DECLARE_VENDOR_ID(NVIDIA, "0x10de");
-    DECLARE_VENDOR_ID(ATI, "0x1002");
-    // AMD has 0x1022 but continues to release GPU hardware under ATI.
-    DECLARE_VENDOR_ID(Microsoft, "0x1414");
-    DECLARE_VENDOR_ID(MicrosoftBasic, "0x00ba");
-    DECLARE_VENDOR_ID(MicrosoftHyperV, "0x000b");
-    DECLARE_VENDOR_ID(Parallels, "0x1ab8");
-    DECLARE_VENDOR_ID(VMWare, "0x15ad");
-    DECLARE_VENDOR_ID(VirtualBox, "0x80ee");
-    DECLARE_VENDOR_ID(Apple, "0x106b");
-    DECLARE_VENDOR_ID(Amazon, "0x1d0f");
-    // Choose an arbitrary Qualcomm PCI VENdor ID for now.
-    // TODO: This should be "QCOM" when Windows device ID parsing is reworked.
-    DECLARE_VENDOR_ID(Qualcomm, "0x5143");
     case DeviceVendor::Max:  // Suppress a warning.
-      DECLARE_VENDOR_ID(All, "");
+#define GFXINFO_DEVICE_VENDOR(id, name)        \
+  case DeviceVendor::id:                       \
+    sDeviceVendors[idx]->Assign(u##name##_ns); \
+    break;
+#include "mozilla/widget/GfxInfoDeviceVendorDefs.inc"
+#undef GFXINFO_DEVICE_VENDOR
   }
 
   return *sDeviceVendors[idx];
 }
-
-// Macro for assigning a driver vendor id to a string.
-#define DECLARE_DRIVER_VENDOR_ID(name, driverVendorId)  \
-  case DriverVendor::name:                              \
-    sDriverVendors[idx]->AssignLiteral(driverVendorId); \
-    break;
 
 const nsAString& GfxDriverInfo::GetDriverVendor(DriverVendor id) {
   if (id >= DriverVendor::Max) {
@@ -827,22 +821,13 @@ const nsAString& GfxDriverInfo::GetDriverVendor(DriverVendor id) {
   sDriverVendors[idx] = new nsString();
 
   switch (id) {
-    DECLARE_DRIVER_VENDOR_ID(MesaAll, "mesa/all");
-    DECLARE_DRIVER_VENDOR_ID(MesaLLVMPipe, "mesa/llvmpipe");
-    DECLARE_DRIVER_VENDOR_ID(MesaSoftPipe, "mesa/softpipe");
-    DECLARE_DRIVER_VENDOR_ID(MesaSWRast, "mesa/swrast");
-    DECLARE_DRIVER_VENDOR_ID(MesaSWUnknown, "mesa/software-unknown");
-    DECLARE_DRIVER_VENDOR_ID(MesaUnknown, "mesa/unknown");
-    DECLARE_DRIVER_VENDOR_ID(MesaR600, "mesa/r600");
-    DECLARE_DRIVER_VENDOR_ID(MesaNouveau, "mesa/nouveau");
-    DECLARE_DRIVER_VENDOR_ID(NonMesaAll, "non-mesa/all");
-    DECLARE_DRIVER_VENDOR_ID(HardwareMesaAll, "mesa/hw-all");
-    DECLARE_DRIVER_VENDOR_ID(SoftwareMesaAll, "mesa/sw-all");
-    DECLARE_DRIVER_VENDOR_ID(MesaNonIntelNvidiaAtiAll,
-                             "mesa/non-intel-nvidia-ati-all");
-    DECLARE_DRIVER_VENDOR_ID(MesaVM, "mesa/vmwgfx");
     case DriverVendor::Max:  // Suppress a warning.
-      DECLARE_DRIVER_VENDOR_ID(All, "");
+#define GFXINFO_DRIVER_VENDOR(id, name)        \
+  case DriverVendor::id:                       \
+    sDriverVendors[idx]->Assign(u##name##_ns); \
+    break;
+#include "mozilla/widget/GfxInfoDriverVendorDefs.inc"
+#undef GFXINFO_DRIVER_VENDOR
   }
 
   return *sDriverVendors[idx];

@@ -14,12 +14,11 @@ const OTHER_SCOPE_URL = URL_ROOT + "resources/service-workers/scope-page.html";
 add_task(async function () {
   await enableApplicationPanel();
 
-  const { panel, commands, tab } = await openNewTabAndApplicationPanel(
-    SIMPLE_URL
-  );
+  const { panel, commands, tab } =
+    await openNewTabAndApplicationPanel(SIMPLE_URL);
   const doc = panel.panelWin.document;
 
-  selectPage(panel, "service-workers");
+  await selectPage(panel, "service-workers");
 
   info("Wait until the service worker appears in the application panel");
   await waitUntil(() => getWorkerContainers(doc).length === 1);

@@ -30,6 +30,19 @@
 -focus-brand-name = Firefox Focus
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
+-fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-thunderbird-brand-name = Mozilla Thunderbird
+-thunderbird-brand-short-name = Thunderbird
+-mdn-brand-name = Documentos web de MDN
+-yelp-brand-name = Yelp
+
+##
+
+# Note the name of the website is capitalized.
+-fakespot-website-name = Fakespot.com
+# The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
+-fakespot-brand-full-name = Fakespot de Mozilla
 # “Suggest” can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefox-suggest-brand-name = Firefox Suggest
@@ -44,3 +57,10 @@
 # The "Labs" portion can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxlabs-brand-name = Firefox Labs
+-smart-window-brand-name =
+    { $form ->
+        [upper-plural] Ventanas inteligentes
+        [lower-singular] ventana inteligente
+        [lower-plural] ventanas inteligentes
+       *[upper-singular] Ventana inteligente
+    }

@@ -9,6 +9,37 @@ newtab-page-title = Ново јазиче
 newtab-settings-button =
     .title = Прилагодете ја страницата на вашето Ново јазиче
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Нови јазичиња
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } ред
+           *[other] { $num } редови
+        }
+home-mode-choice-blank-srd =
+    .label = Празна страница
+home-prefs-shortcuts-header-srd =
+    .label = Кратенки
+home-prefs-shortcuts-select =
+    .aria-label = Кратенки
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Спонзорирани приказни
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Посетени страници
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Обележувачи
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Последно преземање
+
 ## Search box component.
 
 # "Search" is a verb/action
@@ -16,19 +47,17 @@ newtab-search-box-search-button =
     .title = Барај
     .aria-label = Барај
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Додај сервис за пребарување
 newtab-topsites-edit-topsites-header = Уреди врвно мрежно место
 newtab-topsites-title-label = Наслов
 newtab-topsites-title-input =
     .placeholder = Внесете наслов
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Внесете или вметнете URL
 newtab-topsites-url-validation = Потребен е валиден URL
-
 newtab-topsites-use-image-link = Користи сопствена слика…
 
 ## Top Sites - General form dialog buttons. These are verbs/actions.
@@ -43,10 +72,7 @@ newtab-topsites-add-button = Додај
 
 newtab-confirm-delete-history-p1 = Дали сте сигурни дека сакате да ја избришете оваа страница отсекаде во вашата историја на прелистување?
 # "This action" refers to deleting a page from history.
-newtab-confirm-delete-history-p2 = Ова дејство не може да се одврати.
-
-## Top Sites - Sponsored label
-
+newtab-confirm-delete-history-p2 = Ова е неповратна акција.
 
 ## Context Menu - Action Tooltips.
 
@@ -54,10 +80,9 @@ newtab-confirm-delete-history-p2 = Ова дејство не може да се
 newtab-menu-section-tooltip =
     .title = Отвори мени
     .aria-label = Отвори мени
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Отвори мени
     .aria-label = Отвори мени за констект за { $title }
@@ -129,23 +154,19 @@ newtab-section-menu-move-up = Помести нагоре
 newtab-section-menu-move-down = Помести надолу
 newtab-section-menu-privacy-notice = Белешка за приватност
 
-## Section aria-labels
-
-
 ## Section Headers.
 
 newtab-section-header-topsites = Популарни мрежни места
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Препорачано од { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = Започнете со прелистување и ние овде ќе ви прикажеме некои од одличните написи, видеа и други страници што неодамна сте ги поселите или обележале.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Имате видено сѐ! Навратете се подоцна за нови содржини од { $provider }. Не можете да чекате? Изберете популарна тема и откријте уште одлични содржини ширум Интернет.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -163,17 +184,8 @@ newtab-pocket-read-more = Популарни теми:
 newtab-pocket-more-recommendations = Повеќе препораки
 newtab-pocket-cta-button = Превземете го { -pocket-brand-name }
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
 newtab-error-fallback-info = Упс, нешто отиде погрешно со прикажување на оваа содржина
 newtab-error-fallback-refresh-link = Освежете ја страницата за да се обидете повторно.
-
-## Customization Menu
-

@@ -10,7 +10,7 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AMBrowserExtensionsImport: "resource://gre/modules/AddonManager.sys.mjs",
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
-  PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
+  PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   Sqlite: "resource://gre/modules/Sqlite.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
@@ -43,6 +43,11 @@ function getL10n() {
   return gL10n;
 }
 
+const FIREFOX_REFRESH_MIGRATOR_KEYS = new Set([
+  "firefox",
+  "firefox-selectable-profile",
+]);
+
 const MIGRATOR_MODULES = Object.freeze({
   EdgeProfileMigrator: {
     moduleURI: "resource:///modules/EdgeProfileMigrator.sys.mjs",
@@ -52,9 +57,9 @@ const MIGRATOR_MODULES = Object.freeze({
     moduleURI: "resource:///modules/FirefoxProfileMigrator.sys.mjs",
     platforms: ["linux", "macosx", "win"],
   },
-  IEProfileMigrator: {
-    moduleURI: "resource:///modules/IEProfileMigrator.sys.mjs",
-    platforms: ["win"],
+  FirefoxSelectableProfileMigrator: {
+    moduleURI: "resource:///modules/FirefoxSelectableProfileMigrator.sys.mjs",
+    platforms: ["linux", "macosx", "win"],
   },
   SafariProfileMigrator: {
     moduleURI: "resource:///modules/SafariProfileMigrator.sys.mjs",
@@ -152,7 +157,7 @@ class MigrationUtils {
           "MigrationWizard:RequestState": { wantUntrusted: true },
           "MigrationWizard:BeginMigration": { wantUntrusted: true },
           "MigrationWizard:RequestSafariPermissions": { wantUntrusted: true },
-          "MigrationWizard:SelectSafariPasswordFile": { wantUntrusted: true },
+          "MigrationWizard:SelectManualPasswordFile": { wantUntrusted: true },
           "MigrationWizard:OpenAboutAddons": { wantUntrusted: true },
           "MigrationWizard:PermissionsNeeded": { wantUntrusted: true },
           "MigrationWizard:GetPermissions": { wantUntrusted: true },
@@ -171,6 +176,7 @@ class MigrationUtils {
         "chrome://browser/content/spotlight.html",
         "about:firefoxview",
       ],
+      remoteTypes: ["parent", "privilegedabout"],
     });
 
     ChromeUtils.defineLazyGetter(this, "IS_LINUX_SNAP_PACKAGE", () => {
@@ -608,9 +614,7 @@ class MigrationUtils {
     );
 
     let entrypoint = aOptions.entrypoint || this.MIGRATION_ENTRYPOINTS.UNKNOWN;
-    Services.telemetry
-      .getHistogramById("FX_MIGRATION_ENTRY_POINT_CATEGORICAL")
-      .add(entrypoint);
+    Glean.browserMigration.entryPointCategorical[entrypoint].add(1);
 
     let openStandaloneWindow = blocking => {
       let features = "dialog,centerscreen,resizable=no";
@@ -635,10 +639,7 @@ class MigrationUtils {
       // Record that the uninstaller requested a profile refresh
       if (Services.env.get("MOZ_UNINSTALLER_PROFILE_REFRESH")) {
         Services.env.set("MOZ_UNINSTALLER_PROFILE_REFRESH", "");
-        Services.telemetry.scalarSet(
-          "migration.uninstaller_profile_refresh",
-          true
-        );
+        Glean.migration.uninstallerProfileRefresh.set(true);
       }
 
       openStandaloneWindow(true /* blocking */);
@@ -750,7 +751,7 @@ class MigrationUtils {
     let isRefresh =
       migrator &&
       skipSourceSelection &&
-      migratorKey == AppConstants.MOZ_APP_NAME;
+      FIREFOX_REFRESH_MIGRATOR_KEYS.has(migratorKey);
 
     let entrypoint = this.MIGRATION_ENTRYPOINTS.FIRSTRUN;
     if (isRefresh) {
@@ -868,6 +869,18 @@ class MigrationUtils {
   }
 
   /**
+   * Called by MigrationWizardParent during a migration to indicate that a
+   * manual migration of logins occurred via import from a CSV / TSV file, and
+   * should be counted towards the total number of imported logins.
+   *
+   * @param {number} totalLogins
+   *   The number of logins imported manually from a CSV / TSV file.
+   */
+  notifyLoginsManuallyImported(totalLogins) {
+    this._importQuantities.logins += totalLogins;
+  }
+
+  /**
    * Iterates through the favicons, sniffs for a mime type,
    * and uses the mime type to properly import the favicon.
    *
@@ -886,8 +899,6 @@ class MigrationUtils {
     );
 
     for (let faviconDataItem of favicons) {
-      let dataURL;
-
       try {
         // getMIMETypeFromContent throws error if could not get the mime type
         // from the data.
@@ -897,7 +908,7 @@ class MigrationUtils {
           faviconDataItem.faviconData.length
         );
 
-        dataURL = await new Promise((resolve, reject) => {
+        let dataURL = await new Promise((resolve, reject) => {
           let buffer = new Uint8ClampedArray(faviconDataItem.faviconData);
           let blob = new Blob([buffer], { type: mimeType });
           let reader = new FileReader();
@@ -909,15 +920,16 @@ class MigrationUtils {
         let fakeFaviconURI = Services.io.newURI(
           "fake-favicon-uri:" + faviconDataItem.uri.spec
         );
-        lazy.PlacesUtils.favicons.setFaviconForPage(
-          faviconDataItem.uri,
-          fakeFaviconURI,
-          Services.io.newURI(dataURL)
-        );
+        lazy.PlacesUtils.favicons
+          .setFaviconForPage(
+            faviconDataItem.uri,
+            fakeFaviconURI,
+            Services.io.newURI(dataURL)
+          )
+          .catch(console.warn);
       } catch (e) {
         // Even if error happens for favicon, continue the process.
         console.warn(e);
-        continue;
       }
     }
   }
@@ -1048,13 +1060,9 @@ class MigrationUtils {
       let url = pageInfo.url;
       if (url instanceof Ci.nsIURI) {
         url = pageInfo.url.spec;
-      } else if (typeof url != "string") {
-        pageInfo.url.href;
       }
 
-      try {
-        new URL(url);
-      } catch (ex) {
+      if (!URL.canParse(url)) {
         // This won't save and we won't need to 'undo' it, so ignore this URL.
         continue;
       }

@@ -54,11 +54,11 @@ add_task(async function () {
   info(
     "Check tooltip visibility after clicking on an element in the root document"
   );
-  const rootDocument = devtoolsWindow.windowRoot.ownerGlobal.document;
+  const rootDocument = devtoolsWindow.windowRoot.window.document;
   await checkTooltipVisibility(
     inspector,
     eventBadge,
-    rootDocument.querySelector("#titlebar")
+    rootDocument.querySelector("#TabsToolbar")
   );
 
   await closeAboutDevtoolsToolbox(document, devtoolsTab, window);
@@ -86,7 +86,7 @@ async function checkTooltipVisibility(
     1,
     1,
     {},
-    elementForHiding.ownerGlobal
+    elementForHiding.documentGlobal
   );
   await tooltip.once("hidden");
   is(

@@ -2,7 +2,11 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
+use crate::{
+    bindings::{swift::generate, BindgenLoader, GenerateOptions, RunScriptOptions, TargetLanguage},
+    BindgenPaths,
+};
+
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
@@ -12,13 +16,11 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
 
-use crate::bindings::TargetLanguage;
-
 /// Run Swift tests for a UniFFI test fixture
-pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
+pub fn run_test(tmp_dir: &str, package_name: &str, script_file: &str) -> Result<()> {
     run_script(
         tmp_dir,
-        fixture_name,
+        package_name,
         script_file,
         vec![],
         &RunScriptOptions::default(),
@@ -30,16 +32,20 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
 /// This function will set things up so that the script can import the UniFFI bindings for a crate
 pub fn run_script(
     tmp_dir: &str,
-    crate_name: &str,
+    package_name: &str,
     script_file: &str,
     args: Vec<String>,
     options: &RunScriptOptions,
 ) -> Result<()> {
     let script_path = Utf8Path::new(script_file).canonicalize_utf8()?;
-    let test_helper = UniFFITestHelper::new(crate_name)?;
+    let test_helper = UniFFITestHelper::new(package_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    let generated_sources = GeneratedSources::new(crate_name, &cdylib_path, &out_dir)?;
+    let generated_sources =
+        GeneratedSources::new(test_helper.crate_name(), &cdylib_path, &out_dir)?;
+
+    // We need something better than this env var, but it's a reasonable start.
+    let swift_version = std::env::var("UNIFFI_TEST_SWIFT_VERSION").unwrap_or("5".to_string());
 
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
@@ -47,6 +53,7 @@ pub fn run_script(
         &generated_sources.main_module,
         &generated_sources.generated_swift_files,
         &generated_sources.module_map,
+        &swift_version,
         options,
     )?;
 
@@ -59,6 +66,8 @@ pub fn run_script(
         .arg("-L")
         .arg(&out_dir)
         .args(calc_library_args(&out_dir)?)
+        .arg("-swift-version")
+        .arg(swift_version)
         .arg("-Xcc")
         .arg(format!(
             "-fmodule-map-file={}",
@@ -82,6 +91,7 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     module_name: &str,
     sources: impl IntoIterator<Item = T>,
     module_map: &Utf8Path,
+    swift_version: &str,
     options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
@@ -89,11 +99,15 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     command
         .current_dir(out_dir)
         .arg("-emit-module")
+        // TODO(2279): Fix concurrency issues and uncomment this
+        //.arg("-strict-concurrency=complete")
         .arg("-module-name")
         .arg(module_name)
         .arg("-o")
         .arg(output_filename)
         .arg("-emit-library")
+        .arg("-swift-version")
+        .arg(swift_version)
         .arg("-Xcc")
         .arg(format!("-fmodule-map-file={module_map}"))
         .arg("-I")
@@ -125,22 +139,24 @@ struct GeneratedSources {
 
 impl GeneratedSources {
     fn new(crate_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
-        let sources = generate_bindings(
-            cdylib_path,
-            None,
-            &BindingGeneratorDefault {
-                target_languages: vec![TargetLanguage::Swift],
-                try_format_code: false,
+        let mut paths = BindgenPaths::default();
+        paths.add_cargo_metadata_layer(false)?;
+        let loader = BindgenLoader::new(paths);
+        let sources = generate(
+            &loader,
+            GenerateOptions {
+                languages: vec![TargetLanguage::Swift],
+                source: cdylib_path.to_path_buf(),
+                out_dir: out_dir.to_path_buf(),
+                ..GenerateOptions::default()
             },
-            None,
-            out_dir,
-            false,
         )?;
+
         let main_source = sources
             .iter()
-            .find(|s| s.package.name == crate_name)
+            .find(|s| s.ci.crate_name() == crate_name)
             .unwrap();
-        let main_module = main_source.config.bindings.swift.module_name();
+        let main_module = main_source.config.module_name();
         let modulemap_glob = glob(&out_dir.join("*.modulemap"))?;
         let module_map = match modulemap_glob.len() {
             0 => bail!("No modulemap files found in {out_dir}"),

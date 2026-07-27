@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,17 +6,16 @@
 
 #include "mozilla/SMILValue.h"
 #include "nsDebug.h"
-#include <math.h>
 
 namespace mozilla {
 
-void SMILBoolType::Init(SMILValue& aValue) const {
+void SMILBoolType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
   aValue.mU.mBool = false;
   aValue.mType = this;
 }
 
-void SMILBoolType::Destroy(SMILValue& aValue) const {
+void SMILBoolType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value");
   aValue.mU.mBool = false;
   aValue.mType = SMILNullType::Singleton();

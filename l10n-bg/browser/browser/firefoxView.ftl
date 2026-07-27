@@ -10,7 +10,7 @@ toolbar-button-firefox-view-2 =
     .tooltiptext = Преглед на последно разглежданото в други прозорци и устройства
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
-    .accesskey = ф
+    .accesskey = f
 firefoxview-page-title = { -firefoxview-brand-name }
 firefoxview-page-heading =
     .heading = { -firefoxview-brand-name }
@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Затваряне
     .aria-label = Затваряне
-firefoxview-empty-state-icon =
-    .alt = Внимание:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Току-що
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,42 +30,55 @@ firefoxview-tabpickup-progress-label = { $percentValue }% завършено
 firefoxview-tabpickup-step-signin-header = Превключвайте безпроблемно между устройствата
 firefoxview-tabpickup-step-signin-description = За да вземете разделите от телефона си, първо влезте или създайте профил.
 firefoxview-tabpickup-step-signin-primarybutton = Напред
-firefoxview-syncedtabs-signin-header = Вземете раздели отвсякъде
-firefoxview-syncedtabs-signin-description = За да видите разделите от другите места, на които използвате { -brand-product-name } влезте във вашия профил. Ако нямате профил, ние ще ви преведем през стъпките за регистриране.
-firefoxview-syncedtabs-signin-primarybutton = Вписване или регистриране
+firefoxview-syncedtabs-signin-header-2 = Вашия { -brand-product-name } на всички ваши устройства
+firefoxview-syncedtabs-signin-description-2 = За да видите отворените раздели на вашия телефон и други устройства, влезте или регистрирайте профил. С профил можете също да синхронизирате своите пароли, история и други.
+firefoxview-syncedtabs-signin-primarybutton-2 = Вписване
 firefoxview-tabpickup-adddevice-header = Синхронизирайте { -brand-product-name } на вашия телефон или таблет
 firefoxview-tabpickup-adddevice-description = Изтеглете { -brand-product-name } за мобилно устройство и влезте там.
 firefoxview-tabpickup-adddevice-learn-how = Научете как
 firefoxview-tabpickup-adddevice-primarybutton = Изтеглете { -brand-product-name } за телефон
-firefoxview-syncedtabs-adddevice-header = Влезте в/ъв { -brand-product-name } на другите си устройства
-firefoxview-syncedtabs-adddevice-description = За да видите разделите от другите места, на които използвате { -brand-product-name } влезте във всичките си устройства. Научете как <a data-l10n-name="url">да свържете допълнителни устройства</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Вземете раздели отвсякъде
+firefoxview-syncedtabs-adddevice-description-2 = Влезте в { -brand-product-name } на телефона си или друг компютър, за да видите разделите тук. Научете как да <a data-l10n-name="url">свържете допълнителни устройства</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Опитайте { -brand-product-name } за телефон
 firefoxview-tabpickup-synctabs-header = Включване синхронизирането на раздели
 firefoxview-tabpickup-synctabs-description = Разрешава на { -brand-short-name } да споделя раздели между устройствата.
 firefoxview-tabpickup-synctabs-learn-how = Научете как
 firefoxview-tabpickup-synctabs-primarybutton = Синхронизиране на отворените раздели
 firefoxview-syncedtabs-synctabs-header = Актуализирайте настройките си за синхронизиране
-firefoxview-syncedtabs-synctabs-checkbox = Разрешаване на синхронизиране на отворените раздели
+firefoxview-syncedtabs-synctabs-description = За да видите раздели от други устройства, трябва да синхронизирате отворените си раздели.
 firefoxview-syncedtabs-loading-header = Извършва се синхронизиране
+firefoxview-syncedtabs-loading-description = Когато стане готово, ще видите всички раздели, които сте отворили на други устройства. Проверете отново скоро.
 firefoxview-tabpickup-fxa-admin-disabled-header = Вашата организация е забранила синхронизирането
+firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } не може да синхронизира раздели между устройства, защото администратор е изключил синхронизирането.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } не може да синхронизира раздели между устройства, защото синхронизирането е изключено от организацията ви.
 firefoxview-tabpickup-network-offline-header = Проверете връзката с интернет
+firefoxview-tabpickup-network-offline-description = Ако използвате защитна стена или прокси, проверете дали { -brand-short-name } има права за достъп до мрежата.
 firefoxview-tabpickup-network-offline-primarybutton = Нов опит
 firefoxview-tabpickup-sync-error-header = Срещаме проблем със синхронизирането
+firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } в момента няма достъп до услугата за синхронизиране. Опитайте отново след малко.
 firefoxview-tabpickup-sync-error-primarybutton = Нов опит
 firefoxview-tabpickup-sync-disconnected-header = Включете синхронизирането, за да продължите
+firefoxview-tabpickup-sync-disconnected-description = За да вземете разделите, ще трябва да разрешите синхронизиране във { -brand-short-name }.
 firefoxview-tabpickup-sync-disconnected-primarybutton = Включете синхронизирането в настройките
 firefoxview-tabpickup-password-locked-header = Въведете вашата главна парола, за да видите разделите
+firefoxview-tabpickup-password-locked-description = За да вземете разделите, ще трябва да въведете основната парола за { -brand-short-name }.
 firefoxview-tabpickup-password-locked-link = Научете повече
 firefoxview-tabpickup-password-locked-primarybutton = Въведете главната парола
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Научете повече</a>
 firefoxview-tabpickup-signed-out-header = Впишете се, за да се свържете отново
+firefoxview-tabpickup-signed-out-description = За да се свържете наново и да вземете разделите, влезте в своя { -fxaccount-brand-name }.
 firefoxview-tabpickup-signed-out-description2 = За да се свържете отново и да отворите вашите раздели, първо влезте в профила си.
 firefoxview-tabpickup-signed-out-primarybutton = Вписване
+firefoxview-tabpickup-syncing = Почакайте малко, докато разделите ви се синхронизират. Става бързо.
 firefoxview-mobile-promo-header = Вземете разделите от вашия телефон или таблет
+firefoxview-mobile-promo-description = За да видите последните си мобилни раздели, влезте във { -brand-product-name } на iOS или Android.
 firefoxview-mobile-promo-primarybutton = Изтеглете { -brand-product-name } за мобилни устройства
 firefoxview-mobile-confirmation-header = 🎉 Готово!
+firefoxview-mobile-confirmation-description = Вече можете да взимате разделите си в { -brand-product-name } от таблета или телефона си.
 firefoxview-closed-tabs-title = Наскоро затворени
+firefoxview-closed-tabs-description2 = Възстановяване на затворените страници в този прозорец.
 firefoxview-closed-tabs-placeholder-header = Няма наскоро затворени раздели
+firefoxview-closed-tabs-placeholder-body = Когато затворите раздел в този прозорец, можете да го изтеглите оттук.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -133,8 +144,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Прозорец { $winID } (текущ)
-firefoxview-opentabs-focus-tab =
-    .title = Превключване към този раздел
 firefoxview-show-more = Повече
 firefoxview-show-less = По-малко
 firefoxview-show-all = Всички
@@ -150,8 +159,8 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Търсене на наскоро затворени раздели
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Търсене в синхронизираните раздели
+firefoxview-search-text-box-tabs =
+    .placeholder = Търсене в разделите
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Търсене в отворените раздели
@@ -173,11 +182,7 @@ firefoxview-search-results-empty = Няма резултати за „{ $query 
 firefoxview-sort-history-by-date-label = Сортиране по дата
 firefoxview-sort-history-by-site-label = Сортиране по страница
 firefoxview-sort-open-tabs-by-recency-label = Сортиране по последна активност
-firefoxview-sort-open-tabs-by-order-label = Сортиране по ред на раздели
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Превключване към { $url }
+firefoxview-sort-open-tabs-by-order-label = Подреждане по реда им в прозореца
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -194,12 +199,12 @@ firefoxview-history-site-localhost = (местни файлове)
 ##
 
 firefoxview-show-all-history = Цялата история
-firefoxview-view-more-browsing-history = Вижте още история на сърфирането
 
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Върнете се там, където сте били
-firefoxview-history-empty-description = Докато сърфирате, страниците, които посещавате ще бъдат показвани тук.
+firefoxview-history-empty-description = Докато разглеждате, страниците, които посещавате ще бъдат показвани тук.
+firefoxview-history-empty-description-two = Защитата на поверителността е в основата на това, което правим. Ето защо можете да управлявате действията, които { -brand-short-name } помни в <a data-l10n-name="history-settings-url">настройките на историята</a>.
 
 ##
 
@@ -209,7 +214,8 @@ firefoxview-choose-browser-button = Изберете мрежов четец
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Няма нищо за показване
+firefoxview-dont-remember-history-empty-header-2 = Вие определяте какво помни { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = В момента { -brand-short-name } не помни активността ви при сърфиране. За да промените това, <a data-l10n-name="history-settings-url-two">обновете вашите настройки относно историята</a>.
 
 ##
 
@@ -221,10 +227,13 @@ firefoxview-import-history-close-button =
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
 firefoxview-import-history-header = Внасяне на история от друг браузър
+firefoxview-import-history-description = Направете { -brand-short-name } свой любим мрежов четец. Внасяне на история на разглеждане, отметки и други.
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
-firefoxview-recentlyclosed-empty-header = Рано затворихте раздела?
+firefoxview-recentlyclosed-empty-header = Затворихте раздел твърде рано?
+firefoxview-recentlyclosed-empty-description = Тук ще намерите скоро затворените раздели, за да можете бързо да отворите всеки от тях.
+firefoxview-recentlyclosed-empty-description-two = За да намерите раздели от преди повече време, вижте <a data-l10n-name="history-url">историята на разглеждане</a>.
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
@@ -249,3 +258,6 @@ firefoxview-opentabs-bookmarked-pinned-tab =
 ## Variables:
 ##   $url (string) - URL of tab that will be opened when selected
 
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Отметнато) { $url }

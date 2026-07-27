@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 3; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -121,8 +120,7 @@ nsMIMEInfoWin::LaunchWithFile(nsIFile* aFile) {
           appArg.Append(path);
           const wchar_t* argv[] = {appArg.get(), path.get()};
 
-          return ShellExecuteWithIFile(defaultApp, mozilla::ArrayLength(argv),
-                                       argv);
+          return ShellExecuteWithIFile(defaultApp, std::size(argv), argv);
         }
       }
     }
@@ -207,7 +205,7 @@ nsMIMEInfoWin::LaunchWithFile(nsIFile* aFile) {
     nsAutoString path;
     aFile->GetPath(path);
     const wchar_t* argv[] = {path.get()};
-    return ShellExecuteWithIFile(executable, mozilla::ArrayLength(argv), argv);
+    return ShellExecuteWithIFile(executable, std::size(argv), argv);
   }
 
   return NS_ERROR_INVALID_ARG;
@@ -230,6 +228,12 @@ NS_IMETHODIMP nsMIMEInfoWin::GetDefaultExecutable(nsIFile** aExecutable) {
   }
 
   return NS_ERROR_FAILURE;
+}
+
+NS_IMETHODIMP nsMIMEInfoWin::GetDefaultDescription(nsAString& aDescription) {
+  UpdateDefaultInfoIfStale();
+  aDescription = mDefaultAppDescription;
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -372,7 +376,7 @@ void nsMIMEInfoWin::UpdateDefaultInfoIfStale() {
 bool nsMIMEInfoWin::GetLocalHandlerApp(const nsAString& aCommandHandler,
                                        nsCOMPtr<nsILocalHandlerApp>& aApp) {
   nsCOMPtr<nsIFile> locfile;
-  nsresult rv = NS_NewLocalFile(aCommandHandler, true, getter_AddRefs(locfile));
+  nsresult rv = NS_NewLocalFile(aCommandHandler, getter_AddRefs(locfile));
   if (NS_FAILED(rv)) return false;
 
   aApp = do_CreateInstance("@mozilla.org/uriloader/local-handler-app;1");

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -88,6 +86,7 @@ static AppShutdownMode sShutdownMode = AppShutdownMode::Normal;
 static Atomic<ShutdownPhase> sCurrentShutdownPhase(
     ShutdownPhase::NotInShutdown);
 static int sExitCode = 0;
+static Atomic<bool> sShutdownImpending(false);
 
 // These environment variable strings are all deliberately copied and leaked
 // due to requirements of PR_SetEnv and similar.
@@ -99,6 +98,10 @@ static wchar_t* sSavedProfLDEnvVar = nullptr;
 static char* sSavedProfDEnvVar = nullptr;
 static char* sSavedProfLDEnvVar = nullptr;
 #endif
+
+bool AppShutdown::IsShutdownImpending() { return sShutdownImpending; }
+
+void AppShutdown::SetImpendingShutdown() { sShutdownImpending = true; }
 
 ShutdownPhase GetShutdownPhaseFromPrefValue(int32_t aPrefValue) {
   switch (aPrefValue) {
@@ -163,7 +166,7 @@ void AppShutdown::MaybeDoRestart() {
     if (sSavedProfLDEnvVar && !EnvHasValue("XRE_PROFILE_LOCAL_PATH")) {
       SetEnvironmentVariableW(L"XRE_PROFILE_LOCAL_PATH", sSavedProfLDEnvVar);
     }
-    Unused << NotePreXULSkeletonUIRestarting();
+    (void)NotePreXULSkeletonUIRestarting();
 #else
     if (sSavedProfDEnvVar && !EnvHasValue("XRE_PROFILE_PATH")) {
       PR_SetEnv(sSavedProfDEnvVar);
@@ -200,6 +203,7 @@ void AppShutdown::Init(AppShutdownMode aMode, int aExitCode,
     sShutdownMode = aMode;
   }
   AppShutdown::AnnotateShutdownReason(aReason);
+  AppShutdown::SetImpendingShutdown();
 
   sExitCode = aExitCode;
 
@@ -221,7 +225,7 @@ void AppShutdown::Init(AppShutdownMode aMode, int aExitCode,
   // Very early shutdowns can happen before the startup cache is even
   // initialized; don't bother initializing it during shutdown.
   if (auto* cache = scache::StartupCache::GetSingletonNoInit()) {
-    cache->MaybeInitShutdownWrite();
+    cache->MaybeKickOffShutdownWrite();
   }
 }
 
@@ -326,9 +330,6 @@ void AppShutdown::AnnotateShutdownReason(AppShutdownReason aReason) {
     case AppShutdownReason::OSShutdown:
       reasonStr = "OSShutdown";
       break;
-    case AppShutdownReason::WinUnexpectedMozQuit:
-      reasonStr = "WinUnexpectedMozQuit";
-      break;
     default:
       MOZ_ASSERT_UNREACHABLE("We should know the given reason for shutdown.");
       reasonStr = "Unknown";
@@ -371,6 +372,12 @@ void AppShutdown::AdvanceShutdownPhaseInternal(
   if (sCurrentShutdownPhase >= aPhase) {
     return;
   }
+
+  // In case we missed the earlier Init (in the parent) or notification (in
+  // content processes), we ensure the flag is set from now.
+  // This should only ever be needed in some test environments, but it's cheap
+  // enough to just do it always.
+  SetImpendingShutdown();
 
   nsCOMPtr<nsIThread> thread = do_GetCurrentThread();
 
@@ -458,7 +465,7 @@ void AppShutdown::AdvanceShutdownPhase(
 }
 
 ShutdownPhase AppShutdown::GetShutdownPhaseFromTopic(const char* aTopic) {
-  for (size_t i = 0; i < ArrayLength(sPhaseObserverKeys); ++i) {
+  for (size_t i = 0; i < std::size(sPhaseObserverKeys); ++i) {
     if (sPhaseObserverKeys[i] && !strcmp(sPhaseObserverKeys[i], aTopic)) {
       return static_cast<ShutdownPhase>(i);
     }

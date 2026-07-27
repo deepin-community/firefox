@@ -10,28 +10,100 @@
 use std::{io, ops::Bound, sync::Arc};
 
 use atomic_refcell::AtomicRefCell;
+use crossbeam_utils::atomic::AtomicCell;
 use nserror::{nsresult, NS_OK};
 use nsstring::{nsACString, nsAString, nsCString, nsString};
-use storage_variant::{HashPropertyBag, VariantType};
+use rkv::{
+    backend::{SafeMode as RkvSafeMode, SafeModeEnvironment as RkvSafeModeEnvironment},
+    Rkv,
+};
+use storage_variant::{DataType, HashPropertyBag, NsIVariantExt, VariantType};
 use thin_vec::ThinVec;
 use xpcom::{
     getter_addrefs,
     interfaces::{
         nsIAsyncShutdownClient, nsIAsyncShutdownService, nsIKeyValueDatabaseCallback,
-        nsIKeyValueEnumeratorCallback, nsIKeyValuePair, nsIKeyValueVariantCallback,
-        nsIKeyValueVoidCallback, nsIPropertyBag, nsIVariant,
+        nsIKeyValueDatabaseImportOptions, nsIKeyValueEnumeratorCallback,
+        nsIKeyValueImportSourceSpec, nsIKeyValueImporter, nsIKeyValuePair,
+        nsIKeyValueVariantCallback, nsIKeyValueVoidCallback, nsIPropertyBag, nsIVariant,
     },
     xpcom, xpcom_method, RefPtr,
 };
 
-use crate::skv::{
-    abort::AbortError,
-    coordinator::{Coordinator, CoordinatorClient, CoordinatorError},
-    database::{Database, DatabaseError, GetOptions},
-    key::{Key, KeyError},
-    store::{Store, StoreError, StorePath},
-    value::{Value, ValueError},
+use crate::{
+    fs::WidePathBuf,
+    skv::{
+        abort::AbortError,
+        coordinator::{Coordinator, CoordinatorClient, CoordinatorError},
+        database::{Database, DatabaseError, GetOptions},
+        importer::{
+            CleanupPolicy, ConflictPolicy, ImporterError, NamedSourceDatabase, RkvImporter,
+            SourceDatabases,
+        },
+        key::Key,
+        store::{Store, StoreError, StorePath},
+        value::{Value, ValueError},
+    },
 };
+
+fn value_from_variant(variant: &nsIVariant) -> Result<Option<Value>, InterfaceError> {
+    let raw_type = variant.get_data_type();
+    let result = || -> Result<Option<Value>, nsresult> {
+        Ok(Some(Value::from(match raw_type.try_into()? {
+            DataType::Bool => serde_json::Value::from(bool::from_variant(variant)?),
+            DataType::Int32 => serde_json::Value::from(i32::from_variant(variant)?),
+            DataType::Int64 => serde_json::Value::from(i64::from_variant(variant)?),
+            DataType::Double => serde_json::Value::from(f64::from_variant(variant)?),
+            DataType::AString | DataType::WCharStr | DataType::WStringSizeIs => {
+                serde_json::Value::from(nsString::from_variant(variant)?.to_string())
+            }
+            DataType::CString
+            | DataType::CharStr
+            | DataType::StringSizeIs
+            | DataType::Utf8String => {
+                serde_json::Value::from(nsCString::from_variant(variant)?.to_utf8().into_owned())
+            }
+            DataType::Void | DataType::EmptyArray | DataType::Empty => return Ok(None),
+        })))
+    }();
+    result.map_err(|code| InterfaceError::FromVariant(raw_type, code))
+}
+
+fn value_to_variant(value: &Value) -> Result<RefPtr<nsIVariant>, ValueError> {
+    Ok(match value.inner() {
+        serde_json::Value::Null => ().into_variant(),
+        serde_json::Value::Bool(v) => v.into_variant(),
+        serde_json::Value::Number(n) if n.is_i64() => n
+            .as_i64()
+            .map(i64::into_variant)
+            .ok_or(ValueError::ToVariant)?,
+        serde_json::Value::Number(n) if n.is_f64() => n
+            .as_f64()
+            .map(f64::into_variant)
+            .ok_or(ValueError::ToVariant)?,
+        serde_json::Value::String(s) => nsCString::from(s).into_variant(),
+        serde_json::Value::Number(_)
+        | serde_json::Value::Array(_)
+        | serde_json::Value::Object(_) => Err(ValueError::ToVariant)?,
+    })
+}
+
+fn store_path_from_wide(path: WidePathBuf) -> Result<StorePath, StoreError> {
+    if path == StorePath::IN_MEMORY_DATABASE_NAME {
+        Ok(StorePath::for_in_memory())
+    } else {
+        let dir = path.canonicalize().map_err(StoreError::StorageDir)?;
+        Ok(StorePath::for_storage_dir(dir))
+    }
+}
+
+fn key_from_nscstring(s: &nsACString) -> Key {
+    Key::from(&*s.to_utf8())
+}
+
+fn key_to_nscstring(key: Key) -> nsCString {
+    nsCString::from(key.into_string())
+}
 
 #[xpcom(implement(nsIKeyValueService), atomic)]
 pub struct KeyValueService {
@@ -59,21 +131,13 @@ impl KeyValueService {
         name: &nsACString,
     ) -> Result<(), Infallible> {
         let client = self.client.clone();
-        let dir = nsString::from(dir);
+        let dir = WidePathBuf::new(dir);
         let request =
             moz_task::spawn_blocking("skv:KeyValueService:GetOrCreate:Request", async move {
-                let path = if dir == StorePath::IN_MEMORY_DATABASE_NAME {
-                    StorePath::for_in_memory()
-                } else {
-                    // Concurrently accessing the same physical SQLite database
-                    // through different links can corrupt its WAL file,
-                    // especially when done from multiple processes.
-                    // Mitigate that by canonicalizing the path.
-                    StorePath::for_storage_dir(
-                        crate::fs::canonicalize(&*dir).map_err(InterfaceError::StorageDir)?,
-                    )
-                };
-                Ok((client.child_with_name("skv:KeyValueDatabase")?, path))
+                Ok((
+                    client.child_with_name("skv:KeyValueDatabase")?,
+                    store_path_from_wide(dir)?,
+                ))
             });
 
         let name = nsCString::from(name);
@@ -110,6 +174,30 @@ impl KeyValueService {
         _strategy: u8,
     ) -> Result<(), nsresult> {
         Err(nserror::NS_ERROR_NOT_IMPLEMENTED)
+    }
+
+    xpcom_method!(
+        create_importer => CreateImporter(
+            type_: *const nsACString,
+            dir: *const nsAString
+        ) -> *const nsIKeyValueImporter
+    );
+    fn create_importer(
+        &self,
+        type_: &nsACString,
+        dir: &nsAString,
+    ) -> Result<RefPtr<nsIKeyValueImporter>, nsresult> {
+        match &*type_.to_utf8() {
+            RkvSafeModeKeyValueImporter::TYPE => {
+                let client = self
+                    .client
+                    .child_with_name("skv:RkvSafeModeKeyValueImporter")
+                    .map_err(|_| nserror::NS_ERROR_FAILURE)?;
+                let importer = RkvSafeModeKeyValueImporter::new(client, WidePathBuf::new(dir));
+                Ok(RefPtr::new(importer.coerce()))
+            }
+            _ => Err(nserror::NS_ERROR_INVALID_ARG),
+        }
     }
 }
 
@@ -235,8 +323,8 @@ impl KeyValueDatabase {
     ) -> Result<(), Infallible> {
         let inputs = || -> Result<_, InterfaceError> {
             let store = self.store()?;
-            let key = Key::try_from(key)?;
-            let value = Value::from_variant(value)?;
+            let key = key_from_nscstring(key);
+            let value = value_from_variant(value)?;
             Ok((store, key, value))
         }();
 
@@ -283,7 +371,7 @@ impl KeyValueDatabase {
                     let mut key = nsCString::new();
                     unsafe { pair.GetKey(&mut *key) }.to_result()?;
                     let value = getter_addrefs(|p| unsafe { pair.GetValue(p) })?;
-                    Ok((Key::try_from(&*key)?, Value::from_variant(value.coerce())?))
+                    Ok((key_from_nscstring(&key), value_from_variant(value.coerce())?))
                 })
                 .collect::<Result<Vec<_>, InterfaceError>>()?;
             Ok((store, pairs))
@@ -328,7 +416,7 @@ impl KeyValueDatabase {
     ) -> Result<(), Infallible> {
         let inputs = || -> Result<_, InterfaceError> {
             let store = self.store()?;
-            let key = Key::try_from(key)?;
+            let key = key_from_nscstring(key);
             Ok((store, key))
         }();
 
@@ -345,7 +433,7 @@ impl KeyValueDatabase {
         moz_task::spawn_local("skv:KeyValueDatabase:Get:Response", async move {
             let result = signal.aborting(request).await.and_then(|value| {
                 Ok(match value {
-                    Some(value) => value.to_variant()?,
+                    Some(value) => value_to_variant(&value)?,
                     None => default_value,
                 })
             });
@@ -372,7 +460,7 @@ impl KeyValueDatabase {
     ) -> Result<(), Infallible> {
         let inputs = || -> Result<_, InterfaceError> {
             let store = self.store()?;
-            let key = Key::try_from(key)?;
+            let key = key_from_nscstring(key);
             Ok((store, key))
         }();
 
@@ -409,7 +497,7 @@ impl KeyValueDatabase {
     ) -> Result<(), Infallible> {
         let inputs = || -> Result<_, InterfaceError> {
             let store = self.store()?;
-            let key = Key::try_from(key)?;
+            let key = key_from_nscstring(key);
             Ok((store, key))
         }();
 
@@ -427,6 +515,56 @@ impl KeyValueDatabase {
                 Ok(()) => unsafe { callback.Resolve() },
                 Err(InterfaceError::Abort(_)) => unsafe {
                     callback.Reject(&*nsCString::from("delete: aborted"))
+                },
+                Err(err) => unsafe { callback.Reject(&*nsCString::from(err.to_string())) },
+            }
+        })
+        .detach();
+
+        Ok(())
+    }
+
+    xpcom_method!(
+        delete_range => DeleteRange(
+            callback: *const nsIKeyValueVoidCallback,
+            from_key: *const nsACString,
+            to_key: *const nsACString
+        )
+    );
+    fn delete_range(
+        &self,
+        callback: &nsIKeyValueVoidCallback,
+        from_key: &nsACString,
+        to_key: &nsACString,
+    ) -> Result<(), Infallible> {
+        let inputs = || -> Result<_, InterfaceError> {
+            let store = self.store()?;
+            let from_key = match from_key.is_empty() {
+                true => Bound::Unbounded,
+                false => Bound::Included(key_from_nscstring(from_key)),
+            };
+            let to_key = match to_key.is_empty() {
+                true => Bound::Unbounded,
+                false => Bound::Excluded(key_from_nscstring(to_key)),
+            };
+            Ok((store, from_key, to_key))
+        }();
+
+        let name = self.name.clone();
+        let request =
+            moz_task::spawn_blocking("skv:KeyValueDatabase:DeleteRange:Request", async move {
+                let (store, from_key, to_key) = inputs?;
+                let db = Database::new(&store, &name);
+                Ok(db.delete_range((from_key, to_key))?)
+            });
+
+        let signal = self.client.signal();
+        let callback = RefPtr::new(callback);
+        moz_task::spawn_local("skv:KeyValueDatabase:DeleteRange:Response", async move {
+            match signal.aborting(request).await {
+                Ok(()) => unsafe { callback.Resolve() },
+                Err(InterfaceError::Abort(_)) => unsafe {
+                    callback.Reject(&*nsCString::from("deleteRange: aborted"))
                 },
                 Err(err) => unsafe { callback.Reject(&*nsCString::from(err.to_string())) },
             }
@@ -481,11 +619,11 @@ impl KeyValueDatabase {
             let store = self.store()?;
             let from_key = match from_key.is_empty() {
                 true => Bound::Unbounded,
-                false => Bound::Included(Key::try_from(from_key)?),
+                false => Bound::Included(key_from_nscstring(from_key)),
             };
             let to_key = match to_key.is_empty() {
                 true => Bound::Unbounded,
-                false => Bound::Excluded(Key::try_from(to_key)?),
+                false => Bound::Excluded(key_from_nscstring(to_key)),
             };
             Ok((store, from_key, to_key))
         }();
@@ -578,14 +716,12 @@ impl KeyValuePair {
 
     xpcom_method!(get_key => GetKey() -> nsACString);
     fn get_key(&self) -> Result<nsCString, Infallible> {
-        Ok(self.key.clone().into())
+        Ok(key_to_nscstring(self.key.clone()))
     }
 
     xpcom_method!(get_value => GetValue() -> *const nsIVariant);
     fn get_value(&self) -> Result<RefPtr<nsIVariant>, nsresult> {
-        self.value
-            .to_variant()
-            .map_err(|_| nserror::NS_ERROR_FAILURE)
+        value_to_variant(&self.value).map_err(|_| nserror::NS_ERROR_FAILURE)
     }
 }
 
@@ -678,6 +814,252 @@ impl KeyValueServiceShutdownBlocker {
     }
 }
 
+#[xpcom(implement(nsIKeyValueImporter), atomic)]
+pub struct RkvSafeModeKeyValueImporter {
+    client: CoordinatorClient<'static>,
+    specs: AtomicRefCell<Vec<RefPtr<KeyValueImportSourceSpec>>>,
+}
+
+impl RkvSafeModeKeyValueImporter {
+    const TYPE: &'static str = "rkv-safe-mode";
+
+    pub fn new(client: CoordinatorClient<'static>, dir: WidePathBuf) -> RefPtr<Self> {
+        RkvSafeModeKeyValueImporter::allocate(InitRkvSafeModeKeyValueImporter {
+            client,
+            // The first spec is always the destination storage directory.
+            specs: vec![KeyValueImportSourceSpec::new(dir)].into(),
+        })
+    }
+
+    xpcom_method!(get_type => GetType() -> nsACString);
+    fn get_type(&self) -> Result<nsCString, Infallible> {
+        Ok(Self::TYPE.into())
+    }
+
+    xpcom_method!(get_path => GetPath() -> nsAString);
+    fn get_path(&self) -> Result<nsString, Infallible> {
+        self.specs.borrow()[0].get_path()
+    }
+
+    xpcom_method!(add_path => AddPath(dir: *const nsAString) -> *const nsIKeyValueImportSourceSpec);
+    fn add_path(&self, dir: &nsAString) -> Result<RefPtr<nsIKeyValueImportSourceSpec>, Infallible> {
+        let spec = KeyValueImportSourceSpec::new(WidePathBuf::new(dir));
+        self.specs.borrow_mut().push(spec.clone());
+        Ok(RefPtr::new(spec.coerce()))
+    }
+
+    xpcom_method!(
+        add_database => AddDatabase(
+            name: *const nsACString
+        ) -> *const nsIKeyValueDatabaseImportOptions
+    );
+    fn add_database(
+        &self,
+        name: &nsACString,
+    ) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        self.specs.borrow()[0].add_database(name)
+    }
+
+    xpcom_method!(add_all_databases => AddAllDatabases() -> *const nsIKeyValueDatabaseImportOptions);
+    fn add_all_databases(&self) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        self.specs.borrow()[0].add_all_databases()
+    }
+
+    xpcom_method!(
+        import => Import(
+            callback: *const nsIKeyValueVoidCallback
+        )
+    );
+    fn import(&self, callback: &nsIKeyValueVoidCallback) -> Result<(), Infallible> {
+        let client = self.client.clone();
+        let specs = self.specs.borrow().clone();
+        let request = moz_task::spawn_blocking(
+            "skv:RkvSafeModeKeyValueImporter:Import:Request",
+            async move {
+                let mut manager = rkv::Manager::<RkvSafeModeEnvironment>::singleton()
+                    .write()
+                    .unwrap();
+                let store =
+                    client.store_for_path(store_path_from_wide(specs[0].dir.clone())?)?;
+
+                // An Rkv environment is unique to a storage directory;
+                // if we're importing from multiple directories, we need to
+                // open an environment for each directory.
+                let rkvs = {
+                    let mut rkvs = Vec::with_capacity(specs.len());
+                    for spec in specs {
+                        let Some(dbs) = spec.to_source_databases() else {
+                            continue;
+                        };
+                        let dir = spec.dir.canonicalize()?;
+                        let builder = Rkv::environment_builder::<RkvSafeMode>();
+                        let rkv = manager.get_or_create_from_builder(
+                            dir.as_path(),
+                            builder,
+                            Rkv::from_builder::<RkvSafeMode>,
+                        )?;
+                        rkvs.push((rkv, dbs));
+                    }
+                    rkvs
+                };
+
+                // Import all databases from each directory, in order.
+                for (rkv, dbs) in rkvs {
+                    let env = rkv.read().unwrap();
+                    let importer = RkvImporter::new(&*env, &store, dbs)?;
+                    importer.import()?;
+                    importer.cleanup();
+                }
+
+                Ok(())
+            },
+        );
+
+        let signal = self.client.signal();
+        let callback = RefPtr::new(callback);
+        moz_task::spawn_local(
+            "skv:RkvSafeModeKeyValueImporter:Import:Response",
+            async move {
+                match signal.aborting(request).await {
+                    Ok(()) => unsafe { callback.Resolve() },
+                    Err(InterfaceError::Abort(_)) => unsafe {
+                        callback.Reject(&*nsCString::from("import: aborted"))
+                    },
+                    Err(err) => unsafe { callback.Reject(&*nsCString::from(err.to_string())) },
+                }
+            },
+        )
+        .detach();
+
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
+enum KeyValueImportSource {
+    Databases(Vec<(String, RefPtr<KeyValueDatabaseImportOptions>)>),
+    AllDatabases(RefPtr<KeyValueDatabaseImportOptions>),
+}
+
+#[xpcom(implement(nsIKeyValueImportSourceSpec), atomic)]
+pub struct KeyValueImportSourceSpec {
+    dir: WidePathBuf,
+    source: AtomicRefCell<Option<KeyValueImportSource>>,
+}
+
+impl KeyValueImportSourceSpec {
+    fn new(dir: WidePathBuf) -> RefPtr<Self> {
+        KeyValueImportSourceSpec::allocate(InitKeyValueImportSourceSpec {
+            dir,
+            source: AtomicRefCell::default(),
+        })
+    }
+
+    fn to_source_databases(&self) -> Option<SourceDatabases> {
+        self.source.borrow().as_ref().map(|source| match source {
+            KeyValueImportSource::Databases(dbs) => SourceDatabases::Named(
+                dbs.iter()
+                    .map(|(name, options)| NamedSourceDatabase {
+                        name: name.clone().into(),
+                        conflict_policy: options.conflict_policy.load(),
+                        cleanup_policy: options.cleanup_policy.load(),
+                    })
+                    .collect(),
+            ),
+            KeyValueImportSource::AllDatabases(options) => SourceDatabases::All {
+                conflict_policy: options.conflict_policy.load(),
+                cleanup_policy: options.cleanup_policy.load(),
+            },
+        })
+    }
+
+    xpcom_method!(get_path => GetPath() -> nsAString);
+    fn get_path(&self) -> Result<nsString, Infallible> {
+        Ok(self.dir.as_wide().into())
+    }
+
+    xpcom_method!(
+        add_database => AddDatabase(
+            dir: *const nsACString
+        ) -> *const nsIKeyValueDatabaseImportOptions
+    );
+    fn add_database(
+        &self,
+        name: &nsACString,
+    ) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        let mut guard = self.source.borrow_mut();
+        let source = guard.get_or_insert_with(|| KeyValueImportSource::Databases(Vec::new()));
+        let options = match source {
+            KeyValueImportSource::Databases(dbs) => {
+                let options = KeyValueDatabaseImportOptions::new();
+                dbs.push((name.to_utf8().into_owned(), options.clone()));
+                options
+            }
+            KeyValueImportSource::AllDatabases(_) => {
+                return Err(nserror::NS_ERROR_ALREADY_INITIALIZED)
+            }
+        };
+        Ok(RefPtr::new(options.coerce()))
+    }
+
+    xpcom_method!(add_all_databases => AddAllDatabases() -> *const nsIKeyValueDatabaseImportOptions);
+    fn add_all_databases(&self) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        let mut guard = self.source.borrow_mut();
+        let options = match &mut *guard {
+            Some(_) => return Err(nserror::NS_ERROR_ALREADY_INITIALIZED),
+            None => {
+                let options = KeyValueDatabaseImportOptions::new();
+                *guard = Some(KeyValueImportSource::AllDatabases(options.clone()));
+                options
+            }
+        };
+        Ok(RefPtr::new(options.coerce()))
+    }
+}
+
+#[xpcom(implement(nsIKeyValueDatabaseImportOptions), atomic)]
+pub struct KeyValueDatabaseImportOptions {
+    conflict_policy: AtomicCell<ConflictPolicy>,
+    cleanup_policy: AtomicCell<CleanupPolicy>,
+}
+
+impl KeyValueDatabaseImportOptions {
+    fn new() -> RefPtr<Self> {
+        KeyValueDatabaseImportOptions::allocate(InitKeyValueDatabaseImportOptions {
+            conflict_policy: AtomicCell::new(ConflictPolicy::Error),
+            cleanup_policy: AtomicCell::new(CleanupPolicy::Keep),
+        })
+    }
+
+    xpcom_method!(
+        set_conflict_policy => SetConflictPolicy(
+            policy: u8
+        ) -> *const nsIKeyValueDatabaseImportOptions
+    );
+    fn set_conflict_policy(
+        &self,
+        policy: u8,
+    ) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        let policy = ConflictPolicy::try_from(policy).map_err(|_| nserror::NS_ERROR_INVALID_ARG)?;
+        self.conflict_policy.store(policy);
+        Ok(RefPtr::new(self.coerce()))
+    }
+
+    xpcom_method!(
+        set_cleanup_policy => SetCleanupPolicy(
+            policy: u8
+        ) -> *const nsIKeyValueDatabaseImportOptions
+    );
+    fn set_cleanup_policy(
+        &self,
+        policy: u8,
+    ) -> Result<RefPtr<nsIKeyValueDatabaseImportOptions>, nsresult> {
+        let policy = CleanupPolicy::try_from(policy).map_err(|_| nserror::NS_ERROR_INVALID_ARG)?;
+        self.cleanup_policy.store(policy);
+        Ok(RefPtr::new(self.coerce()))
+    }
+}
+
 /// The error type for interface methods that never return an error.
 ///
 /// This is equivalent to [`std::convert::Infallible`], but implements
@@ -697,16 +1079,20 @@ pub enum InterfaceError {
     Coordinator(#[from] CoordinatorError),
     #[error(transparent)]
     Abort(#[from] AbortError),
-    #[error("storage dir: {0}")]
-    StorageDir(io::Error),
     #[error("database: {0}")]
     Database(#[from] DatabaseError),
     #[error("store: {0}")]
     Store(#[from] StoreError),
-    #[error("key: {0}")]
-    Key(#[from] KeyError),
     #[error("value: {0}")]
     Value(#[from] ValueError),
+    #[error("from variant of type {0}: {1}")]
+    FromVariant(u16, nsresult),
+    #[error("rkv store: {0}")]
+    RkvStore(#[from] rkv::StoreError),
+    #[error("importer: {0}")]
+    Importer(#[from] ImporterError),
+    #[error("I/O: {0}")]
+    Io(#[from] io::Error),
     #[error("error code: {0}")]
     Nsresult(#[from] nsresult),
 }

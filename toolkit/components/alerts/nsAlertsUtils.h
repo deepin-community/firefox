@@ -9,10 +9,8 @@
 #include "nsString.h"
 
 class nsAlertsUtils final {
- private:
-  nsAlertsUtils() = delete;
-
  public:
+  nsAlertsUtils() = delete;
   /**
    * Indicates whether an alert from |aPrincipal| should include the source
    * string and action buttons. Returns false if |aPrincipal| is |nullptr|, or
@@ -25,5 +23,11 @@ class nsAlertsUtils final {
    * empty string if |aPrincipal| is not actionable.
    */
   static void GetSourceHostPort(nsIPrincipal* aPrincipal, nsAString& aHostPort);
+
+  /**
+   * Sets |aOrigin| to the origin from |aPrincipal|, or an error if |aPrincipal|
+   * is not actionable.
+   */
+  static nsresult GetOrigin(nsIPrincipal* aPrincipal, nsACString& aOrigin);
 };
 #endif /* nsAlertsUtils_h */

@@ -11,7 +11,7 @@ styleeditor-import-button =
 styleeditor-filter-input =
     .placeholder = Hidlo dalennau arddull
 styleeditor-visibility-toggle =
-    .tooltiptext = Toglo gwelwdedd tudalen arddull
+    .tooltiptext = Toglo gwelededd tudalen arddull
     .accesskey = C
 styleeditor-visibility-toggle-system =
     .tooltiptext = Nid oes modd analluogi dalennau arddull system
@@ -58,3 +58,7 @@ styleeditor-pretty-print-button =
 # Title for the pretty print button in the editor footer, when it's disabled
 styleeditor-pretty-print-button-disabled =
     .title = Dim ond yn gallu argraffu pretty print ffeiliau CSS
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = Methu ag argraffu dalen (prettyprint) arddull darllen yn unig

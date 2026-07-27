@@ -163,9 +163,12 @@ var TEST_CASES = [
 
 async function runTest(enabled) {
   // Enable/Disable CanvasRandomization by the RFP target overrides.
-  let RFPOverrides = enabled ? "+CanvasRandomization" : "-CanvasRandomization";
+  let RFPOverrides = enabled
+    ? "+CanvasRandomization,-EfficientCanvasRandomization"
+    : "-CanvasRandomization,-EfficientCanvasRandomization";
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["privacy.baselineFingerprintingProtection", false],
       ["privacy.fingerprintingProtection", true],
       ["privacy.fingerprintingProtection.pbmode", true],
       ["privacy.fingerprintingProtection.overrides", RFPOverrides],
@@ -192,7 +195,7 @@ async function runTest(enabled) {
     // Clear telemetry before starting test.
     Services.fog.testResetFOG();
 
-    let data = await await runFunctionInWorker(
+    let data = await runFunctionInWorker(
       tab.linkedBrowser,
       test.extractCanvasData
     );
@@ -211,7 +214,7 @@ async function runTest(enabled) {
       `The data for '${test.name}' of first and second access should be the same.`
     );
 
-    let privateData = await await runFunctionInWorker(
+    let privateData = await runFunctionInWorker(
       privateTab.linkedBrowser,
       test.extractCanvasData
     );
@@ -255,7 +258,7 @@ async function runTest(enabled) {
     await Services.fog.testFlushAllChildren();
 
     Assert.greater(
-      Glean.fingerprintingProtection.canvasNoiseCalculateTime.testGetValue()
+      Glean.fingerprintingProtection.canvasNoiseCalculateTime2.testGetValue()
         .sum,
       0,
       "The telemetry of canvas randomization is recorded."
@@ -271,6 +274,8 @@ add_setup(async function () {
   // Disable the fingerprinting randomization.
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["privacy.baselineFingerprintingProtection", false],
       ["privacy.fingerprintingProtection", false],
       ["privacy.fingerprintingProtection.pbmode", false],
       ["privacy.resistFingerprinting", false],

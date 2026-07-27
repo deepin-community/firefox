@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -23,8 +22,8 @@ var desc = {
 
 Object.defineProperty(TypedArray.prototype, "length", desc);
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([42, 42, 42]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([42, 42, 42]));
   getCalls = 0;
 
   Object.defineProperty(TA.prototype, "length", desc);
@@ -37,6 +36,6 @@ testWithTypedArrayConstructors(function(TA) {
     compareArray(result, sample),
     "result is not affected by custom length"
   );
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

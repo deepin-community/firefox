@@ -1,25 +1,22 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/AudioEncoder.h"
-#include "EncoderTraits.h"
-#include "mozilla/dom/AudioEncoderBinding.h"
 
 #include "EncoderConfig.h"
+#include "EncoderTraits.h"
 #include "EncoderTypes.h"
 #include "MediaData.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/dom/AudioDataBinding.h"
+#include "mozilla/dom/AudioEncoderBinding.h"
 #include "mozilla/dom/EncodedAudioChunk.h"
 #include "mozilla/dom/EncodedAudioChunkBinding.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/WebCodecsUtils.h"
-#include "EncoderConfig.h"
 
 extern mozilla::LazyLogModule gWebCodecsLog;
 
@@ -99,7 +96,7 @@ AudioEncoderConfigInternal::AudioEncoderConfigInternal(
     specific.mPacketLossPerc = aConfig.mOpus.Value().mPacketlossperc;
     specific.mUseDTX = aConfig.mOpus.Value().mUsedtx;
     specific.mUseInBandFEC = aConfig.mOpus.Value().mUseinbandfec;
-    mSpecific.emplace(specific);
+    mSpecific = AsVariant(specific);
   }
   MOZ_ASSERT(AudioEncoderTraits::Validate(aConfig, errorMessage));
 }
@@ -112,7 +109,7 @@ AudioEncoderConfigInternal::AudioEncoderConfigInternal(
 
 void AudioEncoderConfigInternal::SetSpecific(
     const EncoderConfig::CodecSpecific& aSpecific) {
-  mSpecific.emplace(aSpecific);
+  mSpecific = aSpecific;
 }
 
 /*
@@ -155,13 +152,16 @@ static bool IsAudioEncodeSupported(const nsAString& aCodec) {
 
 static bool CanEncode(const RefPtr<AudioEncoderConfigInternal>& aConfig,
                       nsCString& aErrorMessage) {
-  auto parsedCodecString =
-      ParseCodecString(aConfig->mCodec).valueOr(EmptyString());
   // TODO: Enable WebCodecs on Android (Bug 1840508)
   if (IsOnAndroid()) {
     return false;
   }
-  if (!IsAudioEncodeSupported(parsedCodecString)) {
+  if (!IsAudioEncodeSupported(aConfig->mCodec)) {
+    return false;
+  }
+  if (!IsSupportedAudioCodec(aConfig->mCodec)) {
+    aErrorMessage.AppendPrintf("%s is not supported",
+                               NS_ConvertUTF16toUTF8(aConfig->mCodec).get());
     return false;
   }
 
@@ -212,10 +212,10 @@ EncoderConfig AudioEncoderConfigInternal::ToEncoderConfig() const {
           : mozilla::BitrateMode::Variable;
 
   CodecType type = CodecType::Opus;
-  Maybe<EncoderConfig::CodecSpecific> specific;
+  EncoderConfig::CodecSpecific specific{void_t{}};
   if (mCodec.EqualsLiteral("opus")) {
     type = CodecType::Opus;
-    MOZ_ASSERT(mSpecific.isNothing() || mSpecific->is<OpusSpecific>());
+    MOZ_ASSERT(mSpecific.is<void_t>() || mSpecific.is<OpusSpecific>());
     specific = mSpecific;
   } else if (mCodec.EqualsLiteral("vorbis")) {
     type = CodecType::Vorbis;
@@ -381,7 +381,7 @@ AudioEncoder::AudioEncoder(
 
 AudioEncoder::~AudioEncoder() {
   LOG("AudioEncoder %p dtor", this);
-  Unused << ResetInternal(NS_ERROR_DOM_ABORT_ERR);
+  (void)ResetInternal(NS_ERROR_DOM_ABORT_ERR);
 }
 
 JSObject* AudioEncoder::WrapObject(JSContext* aCx,
@@ -438,7 +438,6 @@ already_AddRefed<Promise> AudioEncoder::IsConfigSupported(
   RootedDictionary<AudioEncoderConfig> config(aGlobal.Context());
   CloneConfiguration(config, aGlobal.Context(), aConfig);
 
-  bool supportedAudioCodec = IsSupportedAudioCodec(aConfig.mCodec);
   auto configInternal = MakeRefPtr<AudioEncoderConfigInternal>(aConfig);
   bool canEncode = CanEncode(configInternal, errorMessage);
   if (!canEncode) {
@@ -446,7 +445,7 @@ already_AddRefed<Promise> AudioEncoder::IsConfigSupported(
   }
   RootedDictionary<AudioEncoderSupport> s(aGlobal.Context());
   s.mConfig.Construct(std::move(config));
-  s.mSupported.Construct(supportedAudioCodec && canEncode);
+  s.mSupported.Construct(canEncode);
 
   p->MaybeResolve(s);
   return p.forget();

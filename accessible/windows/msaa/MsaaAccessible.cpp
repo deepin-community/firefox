@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,20 +12,16 @@
 #include "mozilla/a11y/AccessibleWrap.h"
 #include "mozilla/a11y/Compatibility.h"
 #include "mozilla/a11y/DocAccessibleParent.h"
-#include "mozilla/StaticPrefs_accessibility.h"
 #include "MsaaAccessible.h"
 #include "MsaaDocAccessible.h"
 #include "MsaaRootAccessible.h"
 #include "MsaaXULMenuAccessible.h"
 #include "nsEventMap.h"
-#include "nsViewManager.h"
 #include "nsWinUtils.h"
 #include "Relation.h"
 #include "sdnAccessible.h"
-#include "sdnTextAccessible.h"
 #include "HyperTextAccessible-inl.h"
 #include "ServiceProvider.h"
-#include "Statistics.h"
 #include "ARIAMap.h"
 #include "mozilla/PresShell.h"
 
@@ -45,7 +39,7 @@ static const GUID IID_MsaaAccessible = {
     0x4afc,
     {0xa3, 0x2c, 0xd6, 0xb5, 0xc0, 0x10, 0x04, 0x6b}};
 
-MsaaIdGenerator MsaaAccessible::sIDGen;
+constinit MsaaIdGenerator MsaaAccessible::sIDGen;
 ITypeInfo* MsaaAccessible::gTypeInfo = nullptr;
 
 /* static */
@@ -137,16 +131,6 @@ int32_t MsaaAccessible::GetChildIDFor(Accessible* aAccessible) {
   return *id;
 }
 
-/* static */
-void MsaaAccessible::AssignChildIDTo(NotNull<sdnAccessible*> aSdnAcc) {
-  aSdnAcc->SetUniqueID(sIDGen.GetID());
-}
-
-/* static */
-void MsaaAccessible::ReleaseChildID(NotNull<sdnAccessible*> aSdnAcc) {
-  sIDGen.ReleaseID(aSdnAcc);
-}
-
 HWND MsaaAccessible::GetHWNDFor(Accessible* aAccessible) {
   if (!aAccessible) {
     return nullptr;
@@ -192,17 +176,16 @@ HWND MsaaAccessible::GetHWNDFor(Accessible* aAccessible) {
   // Popup lives in own windows, use its HWND until the popup window is
   // hidden to make old JAWS versions work with collapsed comboboxes (see
   // discussion in bug 379678).
-  nsIFrame* frame = localAcc->GetFrame();
-  if (frame) {
+  if (nsIFrame* frame = localAcc->GetFrame()) {
     nsIWidget* widget = frame->GetNearestWidget();
     if (widget && widget->IsVisible()) {
-      if (nsViewManager* vm = document->PresShellPtr()->GetViewManager()) {
-        nsCOMPtr<nsIWidget> rootWidget = vm->GetRootWidget();
-        // Make sure the accessible belongs to popup. If not then use
-        // document HWND (which might be different from root widget in the
-        // case of window emulation).
-        if (rootWidget != widget)
-          return static_cast<HWND>(widget->GetNativeData(NS_NATIVE_WINDOW));
+      nsCOMPtr<nsIWidget> rootWidget =
+          document->PresShellPtr()->GetRootWidget();
+      // Make sure the accessible belongs to popup. If not then use
+      // document HWND (which might be different from root widget in the
+      // case of window emulation).
+      if (rootWidget != widget) {
+        return static_cast<HWND>(widget->GetNativeData(NS_NATIVE_WINDOW));
       }
     }
   }
@@ -216,7 +199,7 @@ void MsaaAccessible::FireWinEvent(Accessible* aTarget, uint32_t aEventType) {
                     nsIAccessibleEvent::EVENT_LAST_ENTRY,
                 "MSAA event map skewed");
 
-  if (aEventType == 0 || aEventType >= ArrayLength(gWinEventMap)) {
+  if (aEventType == 0 || aEventType >= std::size(gWinEventMap)) {
     MOZ_ASSERT_UNREACHABLE("invalid event type");
     return;
   }
@@ -530,7 +513,7 @@ MsaaAccessible::QueryInterface(REFIID iid, void** ppv) {
     if (SUCCEEDED(hr)) {
       return hr;
     }
-    if (StaticPrefs::accessibility_uia_enable()) {
+    if (Compatibility::IsUiaEnabled()) {
       hr = uiaRawElmProvider::QueryInterface(iid, ppv);
       if (SUCCEEDED(hr)) {
         return hr;
@@ -545,9 +528,8 @@ MsaaAccessible::QueryInterface(REFIID iid, void** ppv) {
   // For interfaces below this point, we have to query the Accessible to
   // determine if they are available.
   if (!mAcc) {
-    // mscom::Interceptor (and maybe other callers) expects either S_OK or
-    // E_NOINTERFACE, so don't return CO_E_OBJNOTCONNECTED like we normally
-    // would for a dead object.
+    // Some callers expect either S_OK or E_NOINTERFACE, so don't return
+    // CO_E_OBJNOTCONNECTED like we normally would for a dead object.
     return E_NOINTERFACE;
   }
   AccessibleWrap* localAcc = LocalAcc();
@@ -563,11 +545,6 @@ MsaaAccessible::QueryInterface(REFIID iid, void** ppv) {
     }
 
     *ppv = static_cast<ISimpleDOMNode*>(new sdnAccessible(WrapNotNull(this)));
-  } else if (iid == IID_ISimpleDOMText && localAcc && localAcc->IsTextLeaf()) {
-    statistics::ISimpleDOMUsed();
-    *ppv = static_cast<ISimpleDOMText*>(new sdnTextAccessible(this));
-    static_cast<IUnknown*>(*ppv)->AddRef();
-    return S_OK;
   }
 
   if (!*ppv && localAcc) {
@@ -620,12 +597,12 @@ MsaaAccessible::get_accChildCount(long __RPC_FAR* pcountChildren) {
 
   if ((Compatibility::A11ySuppressionReasons() &
        SuppressionReasons::Clipboard) &&
-      mAcc->IsRoot()) {
+      mAcc->IsDoc()) {
     // Bug 1798098: Windows Suggested Actions (introduced in Windows 11 22H2)
-    // might walk the entire a11y tree using UIA whenever anything is copied
-    // to the clipboard. This causes an unacceptable hang, particularly when
-    // the cache is disabled. We prevent this tree walk by returning a 0 child
-    // count for the root window, from which Windows might walk.
+    // might walk the entire a11y tree using UIA whenever anything is copied to
+    // the clipboard. This causes an unacceptable hang. We prevent this tree
+    // walk by returning a 0 child count for documents, from which Windows might
+    // walk.
     return S_OK;
   }
 
@@ -786,7 +763,7 @@ MsaaAccessible::get_accRole(
     break;
 
   switch (geckoRole) {
-#include "RoleMap.h"
+#include "RoleMap.inc"
     default:
       MOZ_CRASH("Unknown role.");
   }
@@ -883,15 +860,18 @@ MsaaAccessible::get_accKeyboardShortcut(
                                                pszKeyboardShortcut);
   }
 
-  KeyBinding keyBinding = mAcc->AccessKey();
-  if (keyBinding.IsEmpty()) {
-    if (LocalAccessible* localAcc = mAcc->AsLocal()) {
-      keyBinding = localAcc->KeyboardShortcut();
-    }
-  }
-
   nsAutoString shortcut;
-  keyBinding.ToString(shortcut);
+
+  if (!mAcc->GetStringARIAAttr(nsGkAtoms::aria_keyshortcuts, shortcut)) {
+    KeyBinding keyBinding = mAcc->AccessKey();
+    if (keyBinding.IsEmpty()) {
+      if (LocalAccessible* localAcc = mAcc->AsLocal()) {
+        keyBinding = localAcc->KeyboardShortcut();
+      }
+    }
+
+    keyBinding.ToString(shortcut);
+  }
 
   *pszKeyboardShortcut = ::SysAllocStringLen(shortcut.get(), shortcut.Length());
   return *pszKeyboardShortcut ? S_OK : E_OUTOFMEMORY;
@@ -937,7 +917,13 @@ MsaaAccessible::get_accFocus(
 class AccessibleEnumerator final : public IEnumVARIANT {
  public:
   explicit AccessibleEnumerator(const nsTArray<Accessible*>& aArray)
-      : mArray(aArray.Clone()), mCurIndex(0) {}
+      : mCurIndex(0) {
+    mArray.SetCapacity(aArray.Length());
+    for (Accessible* acc : aArray) {
+      mArray.AppendElement(MsaaAccessible::GetFrom(acc));
+    }
+  }
+
   AccessibleEnumerator(const AccessibleEnumerator& toCopy)
       : mArray(toCopy.mArray.Clone()), mCurIndex(toCopy.mCurIndex) {}
   ~AccessibleEnumerator() {}
@@ -956,7 +942,7 @@ class AccessibleEnumerator final : public IEnumVARIANT {
   STDMETHODIMP Clone(IEnumVARIANT FAR* FAR* ppenum);
 
  private:
-  nsTArray<Accessible*> mArray;
+  nsTArray<RefPtr<MsaaAccessible>> mArray;
   uint32_t mCurIndex;
 };
 
@@ -991,8 +977,9 @@ AccessibleEnumerator::Next(unsigned long celt, VARIANT FAR* rgvar,
 
   // Copy the elements of the array into rgvar.
   for (uint32_t i = 0; i < celt; ++i, ++mCurIndex) {
+    RefPtr<IDispatch> disp = mArray[mCurIndex];
     rgvar[i].vt = VT_DISPATCH;
-    rgvar[i].pdispVal = MsaaAccessible::NativeAccessible(mArray[mCurIndex]);
+    disp.forget(&rgvar[i].pdispVal);
   }
 
   if (pceltFetched) *pceltFetched = celt;
@@ -1002,8 +989,8 @@ AccessibleEnumerator::Next(unsigned long celt, VARIANT FAR* rgvar,
 
 STDMETHODIMP
 AccessibleEnumerator::Clone(IEnumVARIANT FAR* FAR* ppenum) {
-  *ppenum = new AccessibleEnumerator(*this);
-  NS_ADDREF(*ppenum);
+  auto newEnum = MakeRefPtr<AccessibleEnumerator>(*this);
+  newEnum.forget(ppenum);
   return S_OK;
 }
 
@@ -1059,8 +1046,7 @@ MsaaAccessible::get_accSelection(VARIANT __RPC_FAR* pvarChildren) {
     pvarChildren->vt = VT_DISPATCH;
     pvarChildren->pdispVal = NativeAccessible(selectedItems[0]);
   } else if (count > 1) {
-    RefPtr<AccessibleEnumerator> pEnum =
-        new AccessibleEnumerator(selectedItems);
+    auto pEnum = MakeRefPtr<AccessibleEnumerator>(selectedItems);
     pvarChildren->vt =
         VT_UNKNOWN;  // this must be VT_UNKNOWN for an IEnumVARIANT
     NS_ADDREF(pvarChildren->punkVal = pEnum);
@@ -1217,7 +1203,7 @@ MsaaAccessible::accNavigate(
       return E_NOTIMPL;
 
       // MSAA relationship extensions to accNavigate
-#include "RelationTypeMap.h"
+#include "RelationTypeMap.inc"
 
     default:
       return E_INVALIDARG;
@@ -1262,19 +1248,6 @@ MsaaAccessible::accHitTest(
 
   // if we got a child
   if (accessible) {
-    if (accessible != mAcc && accessible->IsTextLeaf()) {
-      Accessible* parent = accessible->Parent();
-      if (parent != mAcc && parent->Role() == roles::LINK) {
-        // Bug 1843832: The UI Automation -> IAccessible2 proxy barfs if we
-        // return the text leaf child of a link when hit testing an ancestor of
-        // the link. Therefore, we return the link instead. MSAA clients which
-        // call AccessibleObjectFromPoint will still get to the text leaf, since
-        // AccessibleObjectFromPoint keeps calling accHitTest until it can't
-        // descend any further. We should remove this tragic hack once we have
-        // a native UIA implementation.
-        accessible = parent;
-      }
-    }
     if (accessible == mAcc) {
       pvarChild->vt = VT_I4;
       pvarChild->lVal = CHILDID_SELF;

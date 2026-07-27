@@ -8,7 +8,11 @@ const ROW_DATE_ID = "fxview-tab-row-date";
 let gInitialTab;
 let gInitialTabURL;
 
-add_setup(function () {
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+
   // This test opens a lot of windows and tabs and might run long on slower configurations
   requestLongerTimeout(3);
   gInitialTab = gBrowser.selectedTab;
@@ -145,7 +149,7 @@ add_task(async function open_tab_same_window() {
     );
 
     info("Bring the new tab to the front.");
-    gBrowser.moveTabTo(newTab, 0);
+    gBrowser.moveTabToStart(newTab);
 
     info("Waiting for tabChangeRaised to resolve from the tab move");
     await tabChangeRaised;
@@ -224,9 +228,9 @@ add_task(async function open_tab_new_window() {
     ]);
     ok(row.tabElement, "The row has a tabElement property");
     is(
-      row.tabElement.ownerGlobal,
+      row.tabElement.documentGlobal,
       window,
-      "The tabElement's ownerGlobal is our original window"
+      "The tabElement's documentGlobal is our original window"
     );
     info(`Clicking on row with URL: ${row.url}`);
     row.mainEl.click();
@@ -312,7 +316,7 @@ add_task(async function open_tab_new_window_sort_by_recency() {
       const [, secondCard] = getOpenTabsCards(openTabs);
       const tabItems = await getTabRowsForCard(secondCard);
       return tabItems[0].url === gInitialTabURL;
-    });
+    }, "the first tab item in the second card to have the initial tab URL");
     await checkTabLists(linkedBrowser, [
       [gInitialTabURL],
       [gInitialTabURL, URLs[0], URLs[1]],

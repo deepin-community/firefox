@@ -20,9 +20,14 @@ protections-popup-footer-protection-label-standard = Estándar
 
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
-    .aria-label = Más información sobre la protección contra rastreo aumentada
+    .aria-label = Más información sobre la protección de rastreo aumentada
 protections-panel-etp-on-header = La protección contra rastreo aumentada ahora está habilitada para este sitio
 protections-panel-etp-off-header = La protección contra rastreo aumentada ahora está deshabilitada para este sitio
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = ¿El sitio no funciona?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = ¿El sitio no funciona?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Protección de rastreo aumentada
     .description = Deshabilitada para este sitio
     .aria-label = Protección de rastreo aumentada: Deshabilitada para { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = ¿El sitio no funciona?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = ¿El sitio no funciona?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,24 @@ protections-panel-content-blocking-fingerprinters-label = Detectores de huellas 
 protections-panel-blocking-label = Bloqueado
 protections-panel-not-blocking-label = Permitido
 protections-panel-not-found-label = Ninguno detectado
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } bloquea el contenido de rastreo mientras se navegue Este sitio a menos que se lo permita.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Permitir { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Rastreadores y contenido de { $trackername } bloqueados
+smartblock-placeholder-desc = La configuración de { -brand-short-name } bloqueó que esté contenido lo rastree entre sitios o sea usado para publicidades.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Permitir en { $websitehost }
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = Contenido de embed bloqueado
 
 ##
 
@@ -108,7 +126,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informar un sitio roto
 protections-panel-content-blocking-breakage-report-view-description = El bloqueo de ciertos rastreadores puede causar problemas con algunos sitios web. Informar sobre estos problemas ayuda a que { -brand-short-name } sea mejor para todos. Al enviar este informe, se enviará a Mozilla una URL e información sobre la configuración de su navegador. <label data-l10n-name="learn-more">Aprender más</label>
-protections-panel-content-blocking-breakage-report-view-description2 = El bloqueo de ciertos rastreadores puede causar problemas con algunos sitios web. Informar sobre estos problemas ayuda a que { -brand-short-name } sea mejor para todos. Al enviar este informe, se enviará a { -vendor-short-name } una URL e información sobre la configuración de su navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

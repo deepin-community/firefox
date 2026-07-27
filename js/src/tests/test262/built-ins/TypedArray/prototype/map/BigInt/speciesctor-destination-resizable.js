@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-arraybuffer-resizable) skip-if(!ArrayBuffer.prototype.resize||!xulRuntime.shell) -- resizable-arraybuffer is not enabled unconditionally, requires shell-options
 // Copyright (C) 2023 Igalia, S.L. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -24,7 +23,7 @@ info: |
     a. If the value of newTypedArray's [[ArrayLength]] internal slot <
     argumentList[0], throw a TypeError exception.
   ...
-includes: [testBigIntTypedArray.js]
+includes: [testTypedArray.js]
 features: [BigInt, Symbol.species, TypedArray, resizable-arraybuffer]
 ---*/
 
@@ -38,6 +37,6 @@ testWithBigIntTypedArrayConstructors(function(TA) {
   assert.throws(TypeError, function() {
     ta.map(() => {});
   });
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

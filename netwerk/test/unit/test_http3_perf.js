@@ -133,7 +133,7 @@ Http3CheckListener.prototype = {
     try {
       httpVersion = request.protocolVersion;
     } catch (e) {}
-    Assert.equal(httpVersion, "h3-29");
+    Assert.equal(httpVersion, "h3");
     Assert.equal(this.onDataAvailableFired, true);
   },
 };
@@ -163,13 +163,16 @@ WaitForHttp3Listener.prototype.onStopRequest = function testOnStopRequest(
     try {
       httpVersion = request.protocolVersion;
     } catch (e) {}
-    Assert.equal(httpVersion, "h3-29");
+    Assert.equal(httpVersion, "h3");
     run_next_test();
   } else {
     dump("poll later for alt svc mapping\n");
     do_test_pending();
-    do_timeout(500, () => {
-      doTest(this.uri, this.expectedRoute, this.h3AltSvc);
+    do_timeout(1000, () => {
+      Services.obs.notifyObservers(null, "net:cancel-all-connections");
+      do_timeout(500, () => {
+        doTest(this.uri, this.expectedRoute, this.h3AltSvc);
+      });
     });
   }
 
@@ -187,7 +190,7 @@ function doTest(uri, expectedRoute, altSvc) {
 }
 
 // Test Alt-Svc for http3.
-// H2 server returns alt-svc=h3-29=:h3port
+// H2 server returns alt-svc=h3=:h3port
 function test_https_alt_svc() {
   dump("test_https_alt_svc()\n");
 

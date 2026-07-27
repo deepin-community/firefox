@@ -9,15 +9,12 @@ import "chrome://browser/content/firefoxview/card-container.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://browser/content/firefoxview/fxview-empty-state.mjs";
 // eslint-disable-next-line import/no-unassigned-import
-import "chrome://browser/content/firefoxview/fxview-search-textbox.mjs";
-// eslint-disable-next-line import/no-unassigned-import
 import "chrome://browser/content/firefoxview/fxview-tab-list.mjs";
-
-import { placeLinkOnClipboard } from "./helpers.mjs";
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
 });
 
@@ -76,7 +73,7 @@ export class ViewPageContent extends MozLitElement {
   }
 
   copyLink(e) {
-    placeLinkOnClipboard(this.triggerNode.title, this.triggerNode.url);
+    lazy.BrowserUtils.copyLink(this.triggerNode.url, this.triggerNode.title);
     this.recordContextMenuTelemetry("copy-link", e);
   }
 
@@ -94,17 +91,11 @@ export class ViewPageContent extends MozLitElement {
     this.recordContextMenuTelemetry("open-in-private-window", e);
   }
 
-  recordContextMenuTelemetry(menuAction, event) {
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "context_menu",
-      "tabs",
-      null,
-      {
-        menu_action: menuAction,
-        data_type: event.target.panel.dataset.tabType,
-      }
-    );
+  recordContextMenuTelemetry(menuAction, event, tabType) {
+    Glean.firefoxviewNext.contextMenuTabs.record({
+      menu_action: menuAction,
+      data_type: tabType ?? event.target.panel.dataset.tabType,
+    });
   }
 
   shouldUpdate(changedProperties) {
@@ -149,7 +140,7 @@ export class ViewPage extends ViewPageContent {
   }
 
   onTabSelect({ target }) {
-    const win = target.ownerGlobal;
+    const win = target.documentGlobal;
 
     let selfBrowser = window.docShell?.chromeEventHandler;
     const { gBrowser } = this.getWindow();
@@ -207,7 +198,9 @@ export class ViewPage extends ViewPageContent {
     let tabLists = [];
     if (!isOpenTabs) {
       cards = this.shadowRoot.querySelectorAll("card-container");
-      tabLists = this.shadowRoot.querySelectorAll("fxview-tab-list");
+      tabLists = this.shadowRoot.querySelectorAll(
+        "fxview-tab-list, syncedtabs-tab-list"
+      );
     } else {
       this.viewCards.forEach(viewCard => {
         if (viewCard.cardEl) {

@@ -47,6 +47,11 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
     parentFront.manage(this);
   }
 
+  form(data) {
+    this.actorID = data.actor;
+    this._grip = data;
+  }
+
   skipDestroy() {
     // Object fronts are simple fronts, they don't need to be cleaned up on
     // toolbox destroy. `conn` is a DebuggerClient instance, check the
@@ -252,6 +257,20 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
 
     return result;
   }
+  /**
+   * Request the global of the object.
+   */
+  async getGlobal() {
+    const result = await super.global();
+
+    if (!result.global) {
+      return result;
+    }
+
+    result.global = getAdHocFrontOrPrimitiveGrip(result.global, this);
+
+    return result;
+  }
 
   /**
    * Request the state of a promise.
@@ -334,10 +353,10 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
  * In the case an ObjectFront is created, we also check if the object has properties
  * that should be turned into fronts as well.
  *
- * @param {String|Number|Object} options: The packet returned by the server.
+ * @param {string | number | object} options: The packet returned by the server.
  * @param {Front} parentFront
  *
- * @returns {Number|String|Object|LongStringFront|ObjectFront}
+ * @returns {number | string | object | LongStringFront | ObjectFront}
  */
 function getAdHocFrontOrPrimitiveGrip(packet, parentFront) {
   // We only want to try to create a front when it makes sense, i.e when it has an
@@ -369,6 +388,16 @@ function getAdHocFrontOrPrimitiveGrip(packet, parentFront) {
   // thread actor) cache the object actors they create.
   const existingFront = conn.getFrontByID(packet.actor);
   if (existingFront) {
+    // This methods replicates Protocol.js logic when we receive an actor "form" (here `packet`):
+    // https://searchfox.org/mozilla-central/rev/aecbd5cdd28a09e11872bc829d9e6e4b943e6e49/devtools/shared/protocol/types.js#346
+    // We notify the Object Front about the new "form" so that it can update itself
+    // with latest data provided by the server.
+    // This will help ensure that the object previews get updated.
+    existingFront.form(packet);
+
+    // The `packet` may contain nested actor forms which should be converted into Fronts.
+    createChildFronts(existingFront, packet);
+
     return existingFront;
   }
 
@@ -410,7 +439,7 @@ function getAdHocFrontOrPrimitiveGrip(packet, parentFront) {
  * values, …).
  *
  * @param {ObjectFront} objectFront
- * @param {String|Number|Object} packet: The packet returned by the server
+ * @param {string | number | object} packet: The packet returned by the server
  */
 function createChildFronts(objectFront, packet) {
   if (packet.preview) {

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,13 +16,11 @@ struct APZTestDataToJSConverter {
                          dom::Sequence<KeyValuePair>& aOutTo,
                          void (*aElementConverter)(const Key&, const Value&,
                                                    KeyValuePair&)) {
+    if (!aOutTo.SetCapacity(aOutTo.Length() + aFrom.size(), fallible)) {
+      mozalloc_handle_oom(0);
+    }
     for (auto it = aFrom.begin(); it != aFrom.end(); ++it) {
-      if (!aOutTo.AppendElement(fallible)) {
-        // XXX(Bug 1632090) Instead of extending the array 1-by-1 (which might
-        // involve multiple reallocations) and potentially crashing here,
-        // SetCapacity could be called outside the loop once.
-        mozalloc_handle_oom(0);
-      }
+      (void)aOutTo.AppendElement(fallible);  // already checked OOM above
       aElementConverter(it->first, it->second, aOutTo.LastElement());
     }
   }
@@ -33,13 +29,11 @@ struct APZTestDataToJSConverter {
   static void ConvertList(const nsTArray<Src>& aFrom,
                           dom::Sequence<Target>& aOutTo,
                           void (*aElementConverter)(const Src&, Target&)) {
+    if (!aOutTo.SetCapacity(aOutTo.Length() + aFrom.Length(), fallible)) {
+      mozalloc_handle_oom(0);
+    }
     for (auto it = aFrom.begin(); it != aFrom.end(); ++it) {
-      if (!aOutTo.AppendElement(fallible)) {
-        // XXX(Bug 1632090) Instead of extending the array 1-by-1 (which might
-        // involve multiple reallocations) and potentially crashing here,
-        // SetCapacity could be called outside the loop once.
-        mozalloc_handle_oom(0);
-      }
+      (void)aOutTo.AppendElement(fallible);  // already checked OOM above
       aElementConverter(*it, aOutTo.LastElement());
     }
   }

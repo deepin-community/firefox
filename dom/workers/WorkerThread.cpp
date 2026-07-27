@@ -1,20 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WorkerThread.h"
 
-#include <utility>
 #include "WorkerPrivate.h"
 #include "WorkerRunnable.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/EventQueue.h"
 #include "mozilla/Logging.h"
-#include "mozilla/MacroForEach.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/ThreadEventQueue.h"
 #include "mozilla/UniquePtr.h"
@@ -40,19 +35,6 @@ namespace mozilla {
 using namespace ipc;
 
 namespace dom {
-
-namespace {
-
-// The C stack size. We use the same stack size on all platforms for
-// consistency.
-//
-// Note: Our typical equation of 256 machine words works out to 2MB on 64-bit
-// platforms. Since that works out to the size of a VM huge page, that can
-// sometimes lead to an OS allocating an entire huge page for the stack at once.
-// To avoid this, we subtract the size of 2 pages, to be safe.
-const uint32_t kWorkerStackSize = 256 * sizeof(size_t) * 1024 - 8192;
-
-}  // namespace
 
 WorkerThreadFriendKey::WorkerThreadFriendKey() {
   MOZ_COUNT_CTOR(WorkerThreadFriendKey);
@@ -83,7 +65,8 @@ class WorkerThread::Observer final : public nsIThreadObserver {
 WorkerThread::WorkerThread(ConstructorKey)
     : nsThread(
           MakeNotNull<ThreadEventQueue*>(MakeUnique<mozilla::EventQueue>()),
-          nsThread::NOT_MAIN_THREAD, {.stackSize = kWorkerStackSize}),
+          nsThread::NOT_MAIN_THREAD,
+          {.stackSize = nsIThreadManager::LargeStackSize()}),
       mLock("WorkerThread::mLock"),
       mWorkerPrivateCondVar(mLock, "WorkerThread::mWorkerPrivateCondVar"),
       mWorkerPrivate(nullptr),
@@ -184,7 +167,7 @@ nsresult WorkerThread::DispatchPrimaryRunnable(
   }
 #endif
 
-  nsresult rv = nsThread::Dispatch(runnable.forget(), NS_DISPATCH_NORMAL);
+  nsresult rv = nsThread::Dispatch(runnable.forget(), NS_DISPATCH_FALLIBLE);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -214,7 +197,7 @@ nsresult WorkerThread::DispatchAnyThread(
 #endif
 
   nsresult rv =
-      nsThread::Dispatch(aWorkerRunnable.forget(), NS_DISPATCH_NORMAL);
+      nsThread::Dispatch(aWorkerRunnable.forget(), NS_DISPATCH_FALLIBLE);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -227,23 +210,21 @@ nsresult WorkerThread::DispatchAnyThread(
 }
 
 NS_IMETHODIMP
-WorkerThread::DispatchFromScript(nsIRunnable* aRunnable, uint32_t aFlags) {
-  nsCOMPtr<nsIRunnable> runnable(aRunnable);
-  return Dispatch(runnable.forget(), aFlags);
+WorkerThread::DispatchFromScript(nsIRunnable* aRunnable, DispatchFlags aFlags) {
+  return Dispatch(do_AddRef(aRunnable), aFlags);
 }
 
 NS_IMETHODIMP
 WorkerThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
-                       uint32_t aFlags) {
+                       DispatchFlags aFlags) {
   // May be called on any thread!
-  nsCOMPtr<nsIRunnable> runnable(aRunnable);  // in case we exit early
+
+  // NOTE: To maintain historical behaviour we don't leak on error cases within
+  // WorkerThread::Dispatch even if `NS_DISPATCH_FALLIBLE` is not specified. We
+  // may want to change this for consistency in the future.
+  nsCOMPtr<nsIRunnable> runnable(aRunnable);
 
   LOGV(("WorkerThread::Dispatch [%p] runnable: %p", this, runnable.get()));
-
-  // Workers only support asynchronous dispatch.
-  if (NS_WARN_IF(aFlags != NS_DISPATCH_NORMAL)) {
-    return NS_ERROR_UNEXPECTED;
-  }
 
   const bool onWorkerThread = PR_GetCurrentThread() == mThread;
 
@@ -274,7 +255,7 @@ WorkerThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
   }
 
   nsresult rv;
-  rv = nsThread::Dispatch(runnable.forget(), NS_DISPATCH_NORMAL);
+  rv = nsThread::Dispatch(runnable.forget(), aFlags);
 
   if (!onWorkerThread && workerPrivate) {
     // We need to wake the worker thread if we're not already on the right

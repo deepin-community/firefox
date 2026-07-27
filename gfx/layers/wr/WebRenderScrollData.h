@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef GFX_WEBRENDERSCROLLDATA_H
 #define GFX_WEBRENDERSCROLLDATA_H
 
-#include <map>
 #include <iosfwd>
 
 #include "chrome/common/ipc_message_utils.h"
@@ -18,7 +15,6 @@
 #include "mozilla/GfxMessageUtils.h"
 #include "mozilla/layers/FocusTarget.h"
 #include "mozilla/layers/ScrollbarData.h"
-#include "mozilla/layers/WebRenderMessageUtils.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "mozilla/HashTable.h"
 #include "mozilla/Maybe.h"
@@ -269,7 +265,7 @@ class WebRenderScrollData {
   Maybe<size_t> HasMetadataFor(
       const ScrollableLayerGuid::ViewID& aScrollId) const;
 
-  void SetIsFirstPaint();
+  void SetIsFirstPaint(bool aValue);
   bool IsFirstPaint() const;
   void SetPaintSequenceNumber(uint32_t aPaintSequenceNumber);
   uint32_t GetPaintSequenceNumber() const;

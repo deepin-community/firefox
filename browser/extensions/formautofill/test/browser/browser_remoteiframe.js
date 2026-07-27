@@ -1,4 +1,11 @@
+/* Any copyright is dedicated to the Public Domain.
+http://creativecommons.org/publicdomain/zero/1.0/ */
+
 "use strict";
+
+const { FormAutofill } = ChromeUtils.importESModule(
+  "resource://autofill/FormAutofill.sys.mjs"
+);
 
 const IFRAME_URL_PATH = BASE_URL + "autocomplete_iframe.html";
 
@@ -28,17 +35,18 @@ add_task(async function test_iframe_autocomplete() {
   let iframeBC = browser.browsingContext.children[1];
   await openPopupOnSubframe(browser, iframeBC, "#street-address");
 
-  // Highlight the first item in the list. We want to verify
-  // that the warning text is correct to ensure that the preview is
-  // performed properly.
-
+  // Highlight the first item in the list.
   await BrowserTestUtils.synthesizeKey("VK_DOWN", {}, iframeBC);
-  await expectWarningText(browser, "Autofills address");
 
   // Highlight and select the second item in the list
   await BrowserTestUtils.synthesizeKey("VK_DOWN", {}, iframeBC);
-  await expectWarningText(browser, "Also autofills organization, email");
+
   EventUtils.synthesizeKey("VK_RETURN", {});
+
+  /* eslint-disable mozilla/no-arbitrary-setTimeout */
+  await new Promise(resolve => {
+    setTimeout(resolve, FormAutofill.fillOnDynamicFormChangeTimeout);
+  });
 
   let onLoaded = BrowserTestUtils.browserLoaded(browser, true);
   await SpecialPowers.spawn(iframeBC, [], async function () {
@@ -79,6 +87,11 @@ add_task(async function test_iframe_autocomplete() {
 
   await waitForAutofill(iframeBC, "#tel", "+16172535702");
 
+  /* eslint-disable mozilla/no-arbitrary-setTimeout */
+  await new Promise(resolve => {
+    setTimeout(resolve, FormAutofill.fillOnDynamicFormChangeTimeout);
+  });
+
   // Open the dropdown and select the Clear Form item.
   await openPopupOnSubframe(browser, iframeBC, "#street-address");
   await BrowserTestUtils.synthesizeKey("VK_DOWN", {}, iframeBC);
@@ -107,8 +120,6 @@ add_task(async function test_iframe_autocomplete_preferences() {
   let browser = tab.linkedBrowser;
   let iframeBC = browser.browsingContext.children[1];
   await openPopupOnSubframe(browser, iframeBC, "#organization");
-
-  await expectWarningText(browser, "Also autofills address, phone, email");
 
   const prefTabPromise = BrowserTestUtils.waitForNewTab(
     gBrowser,

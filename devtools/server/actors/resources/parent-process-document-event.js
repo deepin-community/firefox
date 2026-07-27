@@ -4,10 +4,6 @@
 
 "use strict";
 
-const isEveryFrameTargetEnabled = Services.prefs.getBoolPref(
-  "devtools.every-frame-target.enabled",
-  false
-);
 const {
   WILL_NAVIGATE_TIME_SHIFT,
 } = require("resource://devtools/server/actors/webconsole/listeners/document-events.js");
@@ -84,7 +80,7 @@ class ParentProcessDocumentEventWatcher {
     // Only delay the target-destroyed event if the target is for BrowsingContext for which we will emit will-navigate
     const isTracked = this.webProgresses.find(
       webProgress =>
-        webProgress.browsingContext.currentWindowGlobal.innerWindowId ==
+        webProgress.browsingContext.currentWindowGlobal?.innerWindowId ==
         innerWindowId
     );
     if (isTracked) {
@@ -100,30 +96,30 @@ class ParentProcessDocumentEventWatcher {
     const isDocument = flag & Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
     if (isDocument && isStart) {
       const { browsingContext } = progress;
-      // Ignore navigation for same-process iframes when EFT is disabled
-      if (
-        !browsingContext.currentWindowGlobal.isProcessRoot &&
-        !isEveryFrameTargetEnabled
-      ) {
-        return;
-      }
       // Ignore if we are still on the initial document,
       // as that's the navigation from it (about:blank) to the actual first location.
       // The target isn't created yet.
-      if (browsingContext.currentWindowGlobal.isInitialDocument) {
+      if (browsingContext.currentWindowGlobal.isUncommittedInitialDocument) {
         return;
       }
 
-      // Only emit will-navigate for top-level targets.
+      // Never emit will-navigate for content browsing contexts in the Browser Toolbox.
+      // They might verify `browsingContext.top == browsingContext` because of the chrome/content
+      // boundary, but they do not represent a top-level target for this DevTools session.
       if (
         this.watcherActor.sessionContext.type == "all" &&
         browsingContext.isContent
       ) {
-        // Never emit will-navigate for content browsing contexts in the Browser Toolbox.
-        // They might verify `browsingContext.top == browsingContext` because of the chrome/content
-        // boundary, but they do not represent a top-level target for this DevTools session.
         return;
       }
+      // Also ignore will-navigate for Web Extensions as we shouldn't clear things up when
+      // any of its WindowGlobal starts navigating away. Instead things should be cleared when
+      // we destroy the targets.
+      if (this.watcherActor.sessionContext.type == "webextension") {
+        return;
+      }
+
+      // Only emit will-navigate for top-level targets.
       const isTopLevel = browsingContext.top == browsingContext;
       if (!isTopLevel) {
         return;
@@ -145,6 +141,11 @@ class ParentProcessDocumentEventWatcher {
       if (callback) {
         this._onceWillNavigate.delete(innerWindowId);
         callback();
+      }
+
+      // Also emit the event on the watcher actor for other actors to catch this event
+      if (browsingContext == this.watcherActor.browserElement.browsingContext) {
+        this.watcherActor.emit("top-browsing-context-will-navigate");
       }
     }
   }

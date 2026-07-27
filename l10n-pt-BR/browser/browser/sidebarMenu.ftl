@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Favoritos
+sidebar-menu-bookmarks-2 = Favoritos
 sidebar-menu-history =
     .label = Histórico
 sidebar-menu-synced-tabs =
     .label = Abas sincronizadas
-sidebar-menu-megalist =
-    .label = Senhas
 sidebar-menu-close =
     .label = Fechar painel lateral
 sidebar-close-button =

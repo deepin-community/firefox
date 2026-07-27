@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -68,6 +67,8 @@ interface nsIWebBrowserPersist : nsICancelable
    * This can only be used when persisting to a local file.
    */
   const unsigned long PERSIST_FLAGS_APPEND_TO_FILE = 32768;
+  /** Unconditionally disable HTTPS-Only and HTTPS-First upgrades */
+  const unsigned long PERSIST_FLAGS_DISABLE_HTTPS_ONLY = 65536;
 
   /**
    * Flags governing how data is fetched and saved from the network.
@@ -206,6 +207,8 @@ interface nsIWebBrowserPersist : nsICancelable
    * with older products that don't support &alpha; and friends.
    */
   const unsigned long ENCODE_FLAGS_ENCODE_BASIC_ENTITIES = 8192;
+  /** Disable wrapping of long lines in output. */
+  const unsigned long ENCODE_FLAGS_DISALLOW_LINE_BREAKING = 16384;
 
   /**
    * Save the specified DOM document to file and optionally all linked files

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,10 +6,11 @@
 #define mozilla_ipc_BigBuffer_h
 
 #include <stdlib.h>
-#include <inttypes.h>
+#include "nsDebug.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
 #include "mozilla/Variant.h"
-#include "mozilla/ipc/SharedMemory.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
 
 namespace mozilla::ipc {
 
@@ -62,8 +61,8 @@ class BigBuffer {
 
   // Create a new BigBuffer from an existing shared memory region, taking
   // ownership of that shared memory region. The shared memory region must be
-  // non-null, mapped, and large enough to fit aSize bytes.
-  BigBuffer(Adopt, SharedMemory* aSharedMemory, size_t aSize);
+  // valid and large enough to fit aSize bytes.
+  BigBuffer(Adopt, SharedMemoryMappingWithHandle&& aSharedMemory, size_t aSize);
 
   // Create a new BigBuffer from an existing memory buffer, taking ownership of
   // that memory region. The region will be freed using `free()` when it is no
@@ -87,14 +86,16 @@ class BigBuffer {
 
   // If the BigBuffer is backed by shared memory, returns a pointer to the
   // backing SharedMemory region.
-  SharedMemory* GetSharedMemory() const {
-    return mData.is<1>() ? mData.as<1>().get() : nullptr;
+  // This is only meant to be used in tests.
+  const SharedMemoryMappingWithHandle* GetSharedMemory() const {
+    return mData.is<1>() ? &mData.as<1>() : nullptr;
   }
 
  private:
   friend struct IPC::ParamTraits<mozilla::ipc::BigBuffer>;
 
-  using Storage = Variant<UniqueFreePtr<uint8_t[]>, RefPtr<SharedMemory>>;
+  using Storage =
+      Variant<UniqueFreePtr<uint8_t[]>, SharedMemoryMappingWithHandle>;
 
   // Empty storage which holds no data.
   static Storage NoData() { return AsVariant(UniqueFreePtr<uint8_t[]>{}); }

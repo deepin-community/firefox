@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,6 @@
 #include "nsXULAppAPI.h"
 
 #include "mozilla/Mutex.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Services.h"
 
 #if defined(MOZ_MEMORY)
@@ -33,21 +30,6 @@ Atomic<uint32_t, MemoryOrdering::Relaxed> sNumLowPhysicalMemEvents;
 namespace {
 
 #if defined(XP_WIN)
-
-#  if defined(__MINGW32__)
-// Definitions for heap optimization that require the Windows SDK to target the
-// Windows 8.1 Update
-static const HEAP_INFORMATION_CLASS HeapOptimizeResources =
-    static_cast<HEAP_INFORMATION_CLASS>(3);
-
-static const DWORD HEAP_OPTIMIZE_RESOURCES_CURRENT_VERSION = 1;
-
-typedef struct _HEAP_OPTIMIZE_RESOURCES_INFORMATION {
-  DWORD Version;
-  DWORD Flags;
-} HEAP_OPTIMIZE_RESOURCES_INFORMATION, *PHEAP_OPTIMIZE_RESOURCES_INFORMATION;
-#  endif
-
 static int64_t LowMemoryEventsPhysicalDistinguishedAmount() {
   return sNumLowPhysicalMemEvents;
 }

@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,7 +31,7 @@ class nsPNGDecoder : public Decoder {
   LexerResult DoDecode(SourceBufferIterator& aIterator,
                        IResumable* aOnResume) override;
 
-  Maybe<Telemetry::HistogramID> SpeedHistogram() const override;
+  Maybe<glean::impl::MemoryDistributionMetric> SpeedMetric() const override;
 
  private:
   friend class DecoderFactory;
@@ -42,7 +41,7 @@ class nsPNGDecoder : public Decoder {
 
   /// The information necessary to create a frame.
   struct FrameInfo {
-    OrientedIntRect mFrameRect;
+    UnorientedIntRect mFrameRect;
     bool mIsInterlaced;
   };
 
@@ -56,7 +55,7 @@ class nsPNGDecoder : public Decoder {
 
   enum class TransparencyType { eNone, eAlpha, eFrameRect };
 
-  TransparencyType GetTransparencyType(const OrientedIntRect& aFrameRect);
+  TransparencyType GetTransparencyType(const UnorientedIntRect& aFrameRect);
   void PostHasTransparencyIfNeeded(TransparencyType aTransparencyType);
 
   void PostInvalidationIfNeeded();
@@ -92,7 +91,7 @@ class nsPNGDecoder : public Decoder {
  public:
   png_structp mPNG;
   png_infop mInfo;
-  OrientedIntRect mFrameRect;
+  UnorientedIntRect mFrameRect;
   uint8_t* mCMSLine;
   uint8_t* interlacebuf;
   gfx::SurfaceFormat mFormat;

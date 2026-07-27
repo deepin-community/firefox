@@ -52,6 +52,15 @@ migration-imported-edge-reading-list = Листа за читање (из Edge)
 ## In practice, this tends to only occur on Linux when Firefox
 ## is installed as a Snap.
 
+migration-no-permissions-message = { -brand-short-name } нема приступ профилима у другим прегледачима инсталираним на овом уређају.
+migration-no-permissions-instructions = Да наставите увоз података из другог прегледача, одобрите { -brand-short-name }-у приступ његовој фасцикли профила.
+migration-no-permissions-instructions-step1 = Изаберите „Настави”
+# The second step in getting permissions to read data for the selected
+# browser type.
+#
+# Variables:
+#  $permissionsPath (String): the file system path that the user will need to grant read permission to.
+migration-no-permissions-instructions-step2 = У бирачу датотека, идите на <code>{ $permissionsPath }</code> и изаберите „Изабери”
 
 ## These strings will be displayed based on how many resources are selected to import
 
@@ -67,12 +76,13 @@ migration-bookmarks-option-label = Обележивачи
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = Омиљено
 migration-logins-and-passwords-option-label = Сачуване пријаве и лозинке
+migration-passwords-option-label = Сачуване лозинке
 migration-history-option-label = Историја прегледања
 migration-extensions-option-label = Додаци
 migration-form-autofill-option-label = Подаци о аутоматском попуњавању образаца
 migration-payment-methods-option-label = Начини плаћања
 migration-cookies-option-label = Колачићи
-migration-session-option-label = Прозори и картице
+migration-session-option-label = Прозори и језичци
 migration-otherdata-option-label = Остали подаци
 migration-passwords-from-file-progress-header = Увези датотеку са лозинкама
 migration-passwords-from-file-success-header = Лозинке су успешно увезене
@@ -163,7 +173,14 @@ migration-list-payment-methods-label = начини плаћања
 ##
 
 migration-wizard-progress-header = Увоз података
+# This header appears in the final page of the migration wizard only if
+# all resources were imported successfully.
 migration-wizard-progress-done-header = Подаци су успешно увезени
+# This header appears in the final page of the migration wizard if only
+# some of the resources were imported successfully. This is meant to be
+# distinct from migration-wizard-progress-done-header, which is only shown
+# if all resources were imported successfully.
+migration-wizard-progress-done-with-warnings-header = Увоз података је завршен.
 migration-wizard-progress-icon-in-progress =
     .aria-label = Увоз…
 migration-wizard-progress-icon-completed =
@@ -174,6 +191,14 @@ migration-safari-password-import-step1 = У Safari-ју, отворите „Saf
 migration-safari-password-import-step2 = Изаберите <img data-l10n-name="safari-icon-3dots"/> тастер, а онда „Извези све лозинке” опцију
 migration-safari-password-import-step3 = Сачувајте датотеку са лозинкама
 migration-safari-password-import-step4 = Користите „Изабери датотеку“ испод да изаберете сачувану датотеку са лозинкама
+migration-chrome-windows-password-import-header = Како увести лозинке из Chrome-а
+migration-chrome-windows-password-import-steps-header = У Chrome-у:
+migration-chrome-windows-password-import-step1 = Отворите главни мени <img data-l10n-name="chrome-icon-3dots"/> и идите на Лозинке и аутоматско попуњавање > Google менаџер лозинки.
+migration-chrome-windows-password-import-step2 = Изаберите „Подешавања” из менија.
+migration-chrome-windows-password-import-step3 = Изаберите „Преузми датотеку” и сачувајте је на свој уређај.
+migration-chrome-windows-password-import-step4 = Вратите се овде и „Изаберите датотеку” да бисте завршили увоз.
+migration-manual-password-import-skip-button = Прескочи
+migration-manual-password-import-select-button = Изабери датотеку
 migration-safari-password-import-skip-button = Прескочи
 migration-safari-password-import-select-button = Изабери датотеку
 # Shown in the migration wizard after importing bookmarks from another

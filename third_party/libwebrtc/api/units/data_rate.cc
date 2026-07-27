@@ -10,14 +10,15 @@
 
 #include "api/units/data_rate.h"
 
-#include "api/array_view.h"
+#include <string>
+
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
 
 std::string ToString(DataRate value) {
   char buf[64];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   if (value.IsPlusInfinity()) {
     sb << "+inf bps";
   } else if (value.IsMinusInfinity()) {

@@ -100,7 +100,7 @@ main-context-menu-bookmark-page =
 # Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
 main-context-menu-bookmark-page-mac =
-    .label = Bokmärk sida……
+    .label = Bokmärk sida…
     .accesskey = m
 # This menuitem is only visible on macOS
 # Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Öppna länk i ny flik
     .accesskey = f
+main-context-menu-open-link-split-view =
+    .label = Öppna länk i delad vy
+    .accesskey = d
 main-context-menu-open-link-container-tab =
     .label = Öppna länk i ny innehållsflik
     .accesskey = h
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Spara länk till { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiera e-postadress
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiera länk
     .accesskey = K
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopiera länk utan webbplatsspårning
-    .accesskey = w
+main-context-menu-preview-link =
+    .label = Förhandsgranskningslänk
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiera ren länk
+    .accesskey = K
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Dölj kontroller
     .accesskey = k
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Helskärm
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Visa beskrivning
     .accesskey = g
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Sök bild med { $engine }
+    .accesskey = S
 main-context-menu-video-save-as =
     .label = Spara video som…
     .accesskey = o
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = E-posta ljud…
     .accesskey = E
+main-context-menu-send-to-device-2 =
+    .label = Skicka till enhet
+    .accesskey = S
+main-context-menu-send-to-mobile-2 =
+    .label = Skicka till mobil
+    .accesskey = S
+main-context-menu-send-to-mobile-sign-in = Logga in för att skicka flikar
+main-context-menu-send-to-mobile-enable-sync2 = Aktivera synkronisering för att skicka en flik
+main-context-menu-send-to-mobile-connect-phone2 = Anslut din telefon
+main-context-menu-send-to-mobile-device-missing2 = Hittar du inte din enhet?
+main-context-menu-send-to-mobile-sign-in-from-link = Logga in för att skicka en länk
+main-context-menu-send-to-mobile-sign-in-from-page = Logga in för att skicka en sida
+main-context-menu-send-to-mobile-enable-sync3 = Aktivera synkronisering för att skicka flikar
+main-context-menu-send-to-mobile-enable-sync-from-link = Aktivera synkronisering för att skicka en länk
+main-context-menu-send-to-mobile-enable-sync-from-page = Aktivera synkronisering för att skicka en sida
+main-context-menu-send-to-mobile-connect-phone3 = Anslut en enhet för att skicka flikar
+main-context-menu-send-to-mobile-connect-phone-from-link = Anslut en enhet för att skicka en länk
+main-context-menu-send-to-mobile-connect-phone-from-page = Anslut en enhet för att skicka en sida
 main-context-menu-save-to-pocket =
     .label = Spara sida till { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Skicka sida till enhet
     .accesskey = e
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Använd sparad inloggning
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Lägg till ett nyckelord för denna sökning…
     .accesskey = e
+main-context-menu-add-engine =
+    .label = Lägg till sökmotor
+    .accesskey = L
 main-context-menu-link-send-to-device =
     .label = Skicka länk till enhet
     .accesskey = e
+main-context-menu-link-send-to-mobile =
+    .label = Skicka länk till mobil
+    .accesskey = S
 main-context-menu-frame =
     .label = Denna ram
     .accesskey = r
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Avslöja lösenord
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Ny
+main-context-menu-pdfjs-copy-page =
+    .label = Kopiera sida
+main-context-menu-pdfjs-cut-page =
+    .label = Klipp ut sida
+main-context-menu-pdfjs-delete-page =
+    .label = Ta bort sida
+main-context-menu-pdfjs-save-page =
+    .label = Spara markering som…

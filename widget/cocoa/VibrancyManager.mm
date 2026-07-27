@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,7 @@
 
 #import <objc/message.h>
 
-#include "nsChildView.h"
+#include "nsCocoaWindow.h"
 #include "mozilla/StaticPrefs_widget.h"
 
 using namespace mozilla;
@@ -21,6 +19,7 @@ using namespace mozilla;
 }
 - (instancetype)initWithFrame:(NSRect)aRect
                  vibrancyType:(VibrancyType)aVibrancyType;
+- (void)prefChanged;
 @end
 
 static NSVisualEffectState VisualEffectStateForVibrancyType(
@@ -74,14 +73,46 @@ static NSVisualEffectBlendingMode VisualEffectBlendingModeForVibrancyType(
   // This view must be transparent to mouse events.
   return nil;
 }
+
+- (void)prefChanged {
+  self.blendingMode = VisualEffectBlendingModeForVibrancyType(mType);
+}
 @end
 
-VibrancyManager::VibrancyManager(const nsChildView& aCoordinateConverter,
+static void PrefChanged(const char* aPref, void* aClosure) {
+  static_cast<VibrancyManager*>(aClosure)->PrefChanged();
+}
+
+static constexpr nsLiteralCString kObservedPrefs[] = {
+    "widget.macos.sidebar-blend-mode.behind-window"_ns,
+    "widget.macos.titlebar-blend-mode.behind-window"_ns,
+};
+
+VibrancyManager::VibrancyManager(const nsCocoaWindow& aCoordinateConverter,
                                  NSView* aContainerView)
     : mCoordinateConverter(aCoordinateConverter),
-      mContainerView(aContainerView) {}
+      mContainerView(aContainerView) {
+  for (const auto& pref : kObservedPrefs) {
+    Preferences::RegisterCallback(::PrefChanged, pref, this);
+  }
+}
 
-VibrancyManager::~VibrancyManager() = default;
+VibrancyManager::~VibrancyManager() {
+  for (const auto& pref : kObservedPrefs) {
+    Preferences::UnregisterCallback(::PrefChanged, pref, this);
+  }
+}
+
+void VibrancyManager::PrefChanged() {
+  for (auto& region : mVibrantRegions) {
+    if (!region) {
+      continue;
+    }
+    for (NSView* view : region->Views()) {
+      [static_cast<MOZVibrantView*>(view) prefChanged];
+    }
+  }
+}
 
 bool VibrancyManager::UpdateVibrantRegion(
     VibrancyType aType, const LayoutDeviceIntRegion& aRegion) {

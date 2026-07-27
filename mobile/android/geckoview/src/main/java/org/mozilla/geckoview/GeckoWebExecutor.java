@@ -1,6 +1,4 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 20; indent-tabs-mode: nil; -*-
- * vim: ts=4 sw=4 expandtab:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -53,6 +51,7 @@ public class GeckoWebExecutor {
     return ByteBuffer.allocateDirect(capacity);
   }
 
+  /** Fetch flag definitions for network request options. */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
     FETCH_FLAGS_NONE,
@@ -60,6 +59,7 @@ public class GeckoWebExecutor {
     FETCH_FLAGS_NO_REDIRECTS,
     FETCH_FLAGS_PRIVATE,
     FETCH_FLAGS_STREAM_FAILURE_TEST,
+    FETCH_FLAGS_OHTTP,
   })
   public @interface FetchFlags {}
 
@@ -80,6 +80,9 @@ public class GeckoWebExecutor {
 
   /** This flag causes a read error in the {@link WebResponse} body. Useful for testing. */
   @WrapForJNI public static final int FETCH_FLAGS_STREAM_FAILURE_TEST = 1 << 10;
+
+  /** Use the OHTTP relay for this request. */
+  @WrapForJNI public static final int FETCH_FLAGS_OHTTP = 1 << 11;
 
   /**
    * Create a new GeckoWebExecutor instance.

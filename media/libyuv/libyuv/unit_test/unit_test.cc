@@ -67,23 +67,33 @@ static LIBYUV_BOOL TestEnv(const char*) {
 }
 #endif
 
-int TestCpuEnv(int cpu_info) {
+static int TestCpuEnv(int cpu_info) {
 #if defined(__arm__) || defined(__aarch64__)
   if (TestEnv("LIBYUV_DISABLE_NEON")) {
     cpu_info &= ~libyuv::kCpuHasNEON;
   }
 #endif
-#if defined(__mips__) && defined(__linux__)
-  if (TestEnv("LIBYUV_DISABLE_MSA")) {
-    cpu_info &= ~libyuv::kCpuHasMSA;
+#if defined(__aarch64__)
+  if (TestEnv("LIBYUV_DISABLE_NEON_DOTPROD")) {
+    cpu_info &= ~libyuv::kCpuHasNeonDotProd;
+  }
+  if (TestEnv("LIBYUV_DISABLE_NEON_I8MM")) {
+    cpu_info &= ~libyuv::kCpuHasNeonI8MM;
+  }
+  if (TestEnv("LIBYUV_DISABLE_SVE")) {
+    cpu_info &= ~libyuv::kCpuHasSVE;
+  }
+  if (TestEnv("LIBYUV_DISABLE_SVE2")) {
+    cpu_info &= ~libyuv::kCpuHasSVE2;
+  }
+  if (TestEnv("LIBYUV_DISABLE_SME")) {
+    cpu_info &= ~libyuv::kCpuHasSME;
   }
 #endif
 #if defined(__longarch__) && defined(__linux__)
   if (TestEnv("LIBYUV_DISABLE_LSX")) {
     cpu_info &= ~libyuv::kCpuHasLSX;
   }
-#endif
-#if defined(__longarch__) && defined(__linux__)
   if (TestEnv("LIBYUV_DISABLE_LASX")) {
     cpu_info &= ~libyuv::kCpuHasLASX;
   }
@@ -146,6 +156,9 @@ int TestCpuEnv(int cpu_info) {
   }
   if (TestEnv("LIBYUV_DISABLE_AVX10")) {
     cpu_info &= ~libyuv::kCpuHasAVX10;
+  }
+  if (TestEnv("LIBYUV_DISABLE_AVX10_2")) {
+    cpu_info &= ~libyuv::kCpuHasAVX10_2;
   }
   if (TestEnv("LIBYUV_DISABLE_AVXVNNI")) {
     cpu_info &= ~libyuv::kCpuHasAVXVNNI;

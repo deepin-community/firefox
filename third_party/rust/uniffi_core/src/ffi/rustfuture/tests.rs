@@ -1,6 +1,7 @@
 use once_cell::sync::OnceCell;
 use std::{
     future::Future,
+    mem::ManuallyDrop,
     panic,
     pin::Pin,
     sync::{Arc, Mutex},
@@ -12,7 +13,7 @@ use crate::{test_util::TestError, Lift, RustBuffer, RustCallStatusCode};
 
 // Sender/Receiver pair that we use for testing
 struct Channel {
-    result: Option<Result<String, TestError>>,
+    result: Option<Result<Result<String, TestError>, LiftArgsError>>,
     waker: Option<Waker>,
 }
 
@@ -28,7 +29,21 @@ impl Sender {
 
     fn send(&self, value: Result<String, TestError>) {
         let mut inner = self.0.lock().unwrap();
-        if inner.result.replace(value).is_some() {
+        if inner.result.replace(Ok(value)).is_some() {
+            panic!("value already sent");
+        }
+        if let Some(waker) = &inner.waker {
+            waker.wake_by_ref();
+        }
+    }
+
+    fn send_lift_args_error(&self, arg_name: &'static str, error: anyhow::Error) {
+        let mut inner = self.0.lock().unwrap();
+        if inner
+            .result
+            .replace(Err(LiftArgsError { arg_name, error }))
+            .is_some()
+        {
             panic!("value already sent");
         }
         if let Some(waker) = &inner.waker {
@@ -40,12 +55,15 @@ impl Sender {
 struct Receiver(Arc<Mutex<Channel>>);
 
 impl Future for Receiver {
-    type Output = Result<String, TestError>;
+    type Output = Result<Result<String, TestError>, LiftArgsError>;
 
-    fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Result<String, TestError>> {
+    fn poll(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+    ) -> Poll<Result<Result<String, TestError>, LiftArgsError>> {
         let mut inner = self.0.lock().unwrap();
-        match &inner.result {
-            Some(v) => Poll::Ready(v.clone()),
+        match inner.result.take() {
+            Some(v) => Poll::Ready(v),
             None => {
                 inner.waker = Some(context.waker().clone());
                 Poll::Pending
@@ -55,20 +73,20 @@ impl Future for Receiver {
 }
 
 // Create a sender and rust future that we can use for testing
-fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
+fn channel() -> (Sender, Arc<RustFuture<RustBuffer>>) {
     let channel = Arc::new(Mutex::new(Channel {
         result: None,
         waker: None,
     }));
-    let rust_future = RustFuture::new(Receiver(channel.clone()), crate::UniFfiTag);
-    (Sender(channel), rust_future)
+    let rust_future = RustFuture::new(Box::pin(Receiver(channel.clone())), crate::UniFfiTag);
+    (Sender(channel), Arc::new(rust_future))
 }
 
 /// Poll a Rust future and get an OnceCell that's set when the continuation is called
-fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
+fn poll(rust_future: &Arc<RustFuture<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
     let cell = Arc::new(OnceCell::new());
     let handle = Arc::into_raw(cell.clone()) as u64;
-    rust_future.clone().ffi_poll(poll_continuation, handle);
+    rust_future.clone().poll(poll_continuation, handle);
     cell
 }
 
@@ -77,9 +95,9 @@ extern "C" fn poll_continuation(data: u64, code: RustFuturePoll) {
     cell.set(code).expect("Error setting OnceCell");
 }
 
-fn complete(rust_future: Arc<dyn RustFutureFfi<RustBuffer>>) -> (RustBuffer, RustCallStatus) {
+fn complete(rust_future: Arc<RustFuture<RustBuffer>>) -> (RustBuffer, RustCallStatus) {
     let mut out_status_code = RustCallStatus::default();
-    let return_value = rust_future.ffi_complete(&mut out_status_code);
+    let return_value = rust_future.complete(&mut out_status_code);
     (return_value, out_status_code)
 }
 
@@ -91,13 +109,13 @@ fn test_success() {
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.wake();
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     // Test polling the rust future when it's ready
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.send(Ok("All done".into()));
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     // Future polls should immediately return ready
     let continuation_result = poll(&rust_future);
@@ -119,22 +137,43 @@ fn test_error() {
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.send(Err("Something went wrong".into()));
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
 
     let (_, call_status) = complete(rust_future);
     assert_eq!(call_status.code, RustCallStatusCode::Error);
-    unsafe {
-        assert_eq!(
-            <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(
-                call_status.error_buf.assume_init()
-            )
-            .unwrap(),
-            TestError::from("Something went wrong"),
-        )
-    }
+    assert_eq!(
+        <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(ManuallyDrop::into_inner(
+            call_status.error_buf
+        ))
+        .unwrap(),
+        TestError::from("Something went wrong"),
+    )
+}
+
+#[test]
+fn test_lift_args_error() {
+    let (sender, rust_future) = channel();
+
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), None);
+    sender.send_lift_args_error("arg0", anyhow::anyhow!("Invalid handle"));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
+
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+
+    let (_, call_status) = complete(rust_future);
+    assert_eq!(call_status.code, RustCallStatusCode::UnexpectedError);
+    assert_eq!(
+        <String as Lift<crate::UniFfiTag>>::try_lift(ManuallyDrop::into_inner(
+            call_status.error_buf
+        ))
+        .unwrap(),
+        "Failed to convert arg 'arg0':\nInvalid handle",
+    )
 }
 
 // Once `complete` is called, the inner future should be released, even if wakers still hold a
@@ -145,7 +184,7 @@ fn test_cancel() {
 
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
-    rust_future.ffi_cancel();
+    rust_future.cancel();
     // Cancellation should immediately invoke the callback with RustFuturePoll::Ready
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
 
@@ -171,7 +210,7 @@ fn test_release_future() {
     let rust_future2 = rust_future.clone();
 
     // Complete the rust future
-    rust_future.ffi_free();
+    rust_future.free();
     // Even though rust_future is still alive, the channel shouldn't be
     assert!(Arc::strong_count(&rust_future2) > 0);
     assert_eq!(channel_weak.strong_count(), 0);
@@ -186,7 +225,7 @@ fn test_complete_with_stored_continuation() {
     let (_sender, rust_future) = channel();
 
     let continuation_result = poll(&rust_future);
-    rust_future.ffi_free();
+    rust_future.free();
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
 }
 
@@ -200,17 +239,18 @@ fn test_wake_during_poll() {
         if first_time {
             first_time = false;
             // Wake the future while we are in the middle of polling it
-            ctx.waker().clone().wake();
+            ctx.waker().wake_by_ref();
             Poll::Pending
         } else {
             // The second time we're polled, we're ready
-            Poll::Ready("All done".to_owned())
+            Poll::Ready(Ok("All done".to_owned()))
         }
     });
-    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> = RustFuture::new(future, crate::UniFfiTag);
+    let rust_future: Arc<RustFuture<RustBuffer>> =
+        Arc::new(RustFuture::new(Box::pin(future), crate::UniFfiTag));
     let continuation_result = poll(&rust_future);
     // The continuation function should called immediately
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
     // A second poll should finish the future
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));

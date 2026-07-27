@@ -1,12 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/BinarySearch.h"
 #include "mozilla/NativeNt.h"
 #include "mozilla/Types.h"
 #include "mozilla/WindowsDllBlocklist.h"
@@ -117,10 +113,10 @@ void NativeNtBlockSet::Write(WritableBuffer& aBuffer) {
         parts[1] = (entry->mVersion >> 32) & 0xFFFF;
         parts[2] = (entry->mVersion >> 16) & 0xFFFF;
         parts[3] = entry->mVersion & 0xFFFF;
-        for (size_t p = 0; p < mozilla::ArrayLength(parts); ++p) {
+        for (size_t p = 0; p < std::size(parts); ++p) {
           _ltoa_s(parts[p], buf, sizeof(buf), 10);
           aBuffer.Write(buf, strlen(buf));
-          if (p != mozilla::ArrayLength(parts) - 1) {
+          if (p != std::size(parts) - 1) {
             aBuffer.Write(".", 1);
           }
         }
@@ -192,6 +188,11 @@ static BlockAction CheckBlockInfo(const DllBlockInfo* aInfo,
 
   if ((aInfo->mFlags & DllBlockInfoFlags::GMPLUGIN_PROCESSES_ONLY) &&
       !(gBlocklistInitFlags & eDllBlocklistInitFlagIsGMPluginProcess)) {
+    return BlockAction::Allow;
+  }
+
+  if ((aInfo->mFlags & DllBlockInfoFlags::RDD_PROCESSES_ONLY) &&
+      !(gBlocklistInitFlags & eDllBlocklistInitFlagIsRDDProcess)) {
     return BlockAction::Allow;
   }
 
@@ -457,7 +458,7 @@ MOZ_NEVER_INLINE NTSTATUS AfterMapViewOfExecutableSection(
       // use it to bypass CIG.  In a sandbox process, this addition fails
       // because we cannot map the section to a writable region, but it's
       // ignorable because the paths have been added by the browser process.
-      Unused << SharedSection::AddDependentModule(sectionFileName);
+      (void)SharedSection::AddDependentModule(sectionFileName);
 
       bool attemptToBlockViaRedirect;
 #if defined(NIGHTLY_BUILD)

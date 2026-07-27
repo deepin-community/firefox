@@ -35,7 +35,7 @@ const MOCHITESTS_DIR =
  * A base URL for test files used in content.
  */
 // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-const CURRENT_CONTENT_DIR = `http://example.com${CURRENT_FILE_DIR}`;
+const CURRENT_CONTENT_DIR = `https://example.com${CURRENT_FILE_DIR}`;
 
 const LOADED_CONTENT_SCRIPTS = new Map();
 
@@ -82,7 +82,7 @@ function currentContentDoc() {
  * @param   {nsIAccessibleEvent}  event
  *        Accessible event to be tested for a match.
  *
- * @return  {Boolean}
+ * @return  {boolean}
  *          True if accessible event's accessible object ID matches current
  *          document accessible ID.
  */
@@ -143,15 +143,16 @@ let Logger = {
 /**
  * Asynchronously set or remove content element's attribute (in content process
  * if e10s is enabled).
- * @param  {Object}  browser  current "tabbrowser" element
- * @param  {String}  id       content element id
- * @param  {String}  attr     attribute name
- * @param  {String?} value    optional attribute value, if not present, remove
+ *
+ * @param  {object}  browser  current "tabbrowser" element
+ * @param  {string}  id       content element id
+ * @param  {string}  attr     attribute name
+ * @param  {string?} value    optional attribute value, if not present, remove
  *                            attribute
  * @return {Promise}          promise indicating that attribute is set/removed
  */
-function invokeSetAttribute(browser, id, attr, value) {
-  if (value) {
+function invokeSetAttribute(browser, id, attr, value = null) {
+  if (value !== null) {
     Logger.log(`Setting ${attr} attribute to ${value} for node with id: ${id}`);
   } else {
     Logger.log(`Removing ${attr} attribute from node with id: ${id}`);
@@ -162,7 +163,7 @@ function invokeSetAttribute(browser, id, attr, value) {
     [id, attr, value],
     (contentId, contentAttr, contentValue) => {
       let elm = content.document.getElementById(contentId);
-      if (contentValue) {
+      if (contentValue !== null) {
         elm.setAttribute(contentAttr, contentValue);
       } else {
         elm.removeAttribute(contentAttr);
@@ -175,10 +176,11 @@ function invokeSetAttribute(browser, id, attr, value) {
  * Asynchronously set or remove content element's style (in content process if
  * e10s is enabled, or in fission process if fission is enabled and a fission
  * frame is present).
- * @param  {Object}  browser  current "tabbrowser" element
- * @param  {String}  id       content element id
- * @param  {String}  aStyle   style property name
- * @param  {String?} aValue   optional style property value, if not present,
+ *
+ * @param  {object}  browser  current "tabbrowser" element
+ * @param  {string}  id       content element id
+ * @param  {string}  aStyle   style property name
+ * @param  {string?} aValue   optional style property value, if not present,
  *                            remove style
  * @return {Promise}          promise indicating that style is set/removed
  */
@@ -207,8 +209,9 @@ function invokeSetStyle(browser, id, style, value) {
  * Asynchronously set focus on a content element (in content process if e10s is
  * enabled, or in fission process if fission is enabled and a fission frame is
  * present).
- * @param  {Object}  browser  current "tabbrowser" element
- * @param  {String}  id       content element id
+ *
+ * @param  {object}  browser  current "tabbrowser" element
+ * @param  {string}  id       content element id
  * @return {Promise} promise  indicating that focus is set
  */
 function invokeFocus(browser, id) {
@@ -226,13 +229,13 @@ function invokeFocus(browser, id) {
 
 /**
  * Get DPR for a specific content window.
+ *
  * @param  browser
  *         Browser for which we want its content window's DPR reported.
  *
  * @return {Promise}
  *         Promise with the value that resolves to the devicePixelRatio of the
  *         content window of a given browser.
- *
  */
 function getContentDPR(browser) {
   return invokeContentTask(browser, [], () => content.window.devicePixelRatio);
@@ -242,7 +245,8 @@ function getContentDPR(browser) {
  * Asynchronously perform a task in content (in content process if e10s is
  * enabled, or in fission process if fission is enabled and a fission frame is
  * present).
- * @param  {Object}    browser  current "tabbrowser" element
+ *
+ * @param  {object}    browser  current "tabbrowser" element
  * @param  {Array}     args     arguments for the content task
  * @param  {Function}  task     content task function
  *
@@ -270,9 +274,10 @@ function invokeContentTask(browser, args, task) {
 /**
  * Compare process ID's between the top level content process and possible
  * remote/local iframe proccess.
- * @param {Object}  browser
+ *
+ * @param {object}  browser
  *        Top level browser object for a tab.
- * @param {Boolean} isRemote
+ * @param {boolean} isRemote
  *        Indicates if we expect the iframe content process to be remote or not.
  */
 async function comparePIDs(browser, isRemote) {
@@ -293,6 +298,7 @@ async function comparePIDs(browser, isRemote) {
 
 /**
  * Load a list of scripts into the test
+ *
  * @param {Array} scripts  a list of scripts to load
  */
 function loadScripts(...scripts) {
@@ -307,7 +313,8 @@ function loadScripts(...scripts) {
 
 /**
  * Load a list of scripts into target's content.
- * @param {Object} target
+ *
+ * @param {object} target
  *        target for loading scripts into
  * @param {Array}  scripts
  *        a list of scripts to load into content
@@ -348,6 +355,14 @@ function wrapWithIFrame(doc, options = {}) {
     id: DEFAULT_IFRAME_DOC_BODY_ID,
     ...iframeDocBodyAttrs,
   };
+  if (options.contentSetup) {
+    // Hide the body initially so we can ensure that any changes made by
+    // contentSetup are included when the body's content is initially added to
+    // the accessibility tree. Use `hidden` instead of `aria-hidden` because the
+    // latter is ignored when applied to top level docs/<body> elements and we
+    // want to remain consistent with our handling for non-iframe docs.
+    iframeDocBodyAttrs.hidden = true;
+  }
   if (options.remoteIframe) {
     // eslint-disable-next-line @microsoft/sdl/no-insecure-url
     const srcURL = new URL(`http://example.net/document-builder.sjs`);
@@ -402,13 +417,14 @@ function wrapWithIFrame(doc, options = {}) {
 /**
  * Takes an HTML snippet or HTML doc url and returns an encoded URI for a full
  * document with the snippet or the URL as a source for the IFRAME.
- * @param {String} doc
- *        a markup snippet or url.
- * @param {Object} options (see options in addAccessibleTask).
  *
- * @return {String}
+ * @param {string} doc
+ *        a markup snippet or url.
+ * @param {object} options (see options in addAccessibleTask).
+ *
+ * @return {string}
  *        a base64 encoded data url of the document container the snippet.
- **/
+ */
 function snippetToURL(doc, options = {}) {
   const { contentDocBodyAttrs = {} } = options;
   const attrs = {
@@ -418,6 +434,12 @@ function snippetToURL(doc, options = {}) {
 
   if (gIsIframe) {
     doc = wrapWithIFrame(doc, options);
+  } else if (options.contentSetup) {
+    // Hide the body initially so we can ensure that any changes made by
+    // contentSetup are included when the body's content is initially added to
+    // the accessibility tree. Use `hidden` instead of `aria-hidden` because the
+    // latter is ignored when applied to top level docs/<body> elements.
+    attrs.hidden = true;
   }
 
   const encodedDoc = encodeURIComponent(
@@ -438,8 +460,45 @@ function snippetToURL(doc, options = {}) {
   return url;
 }
 
+const CacheDomain = {
+  None: 0,
+  NameAndDescription: 0x1 << 0,
+  Value: 0x1 << 1,
+  Bounds: 0x1 << 2,
+  Resolution: 0x1 << 3,
+  Text: 0x1 << 4,
+  DOMNodeIDAndClass: 0x1 << 5,
+  State: 0x1 << 6,
+  GroupInfo: 0x1 << 7,
+  Actions: 0x1 << 8,
+  Style: 0x1 << 9,
+  TransformMatrix: 0x1 << 10,
+  ScrollPosition: 0x1 << 11,
+  Table: 0x1 << 12,
+  TextOffsetAttributes: 0x1 << 13,
+  Viewport: 0x1 << 14,
+  ARIA: 0x1 << 15,
+  Relations: 0x1 << 16,
+  InnerHTML: 0x1 << 17,
+  TextBounds: 0x1 << 18,
+  All: ~0x0,
+};
+
 function accessibleTask(doc, task, options = {}) {
-  return async function () {
+  const wrapped = async function () {
+    let cacheDomains;
+    if (!("cacheDomains" in options)) {
+      cacheDomains = CacheDomain.All;
+    } else {
+      // The DOMNodeIDAndClass domain is required for the tests to initialize.
+      cacheDomains = options.cacheDomains | CacheDomain.DOMNodeIDAndClass;
+    }
+
+    // Set the required cache domains for the test. Note that this also
+    // instantiates the accessibility service if it hasn't been already, since
+    // gAccService is defined lazily.
+    gAccService.setCacheDomains(cacheDomains);
+
     gIsRemoteIframe = options.remoteIframe;
     gIsIframe = options.iframe || gIsRemoteIframe;
     const urlSuffix = options.urlSuffix || "";
@@ -452,6 +511,16 @@ function accessibleTask(doc, task, options = {}) {
       url = `${CURRENT_CONTENT_DIR}${doc}${urlSuffix}`;
     } else {
       url = snippetToURL(doc, options);
+    }
+
+    if (doc.endsWith("xhtml")) {
+      await SpecialPowers.pushPermissions([
+        {
+          type: "allowXULXBL",
+          allow: true,
+          context: CURRENT_CONTENT_DIR,
+        },
+      ]);
     }
 
     registerCleanupFunction(() => {
@@ -496,6 +565,7 @@ function accessibleTask(doc, task, options = {}) {
                 gBrowser,
                 "about:blank",
                 {
+                  allowInheritPrincipal: true,
                   forceNotRemote: true,
                 }
               );
@@ -546,6 +616,9 @@ function accessibleTask(doc, task, options = {}) {
         } else {
           ({ accessible: docAccessible } = await onContentDocLoad);
         }
+        // The test may want to access document methods/attributes such as URL
+        // and browsingContext.
+        docAccessible.QueryInterface(nsIAccessibleDocument);
         let iframeDocAccessible;
         if (gIsIframe) {
           if (!options.skipFissionDocLoad) {
@@ -554,9 +627,25 @@ function accessibleTask(doc, task, options = {}) {
               ? (await onIframeDocLoad).accessible
               : findAccessibleChildByID(docAccessible, DEFAULT_IFRAME_ID)
                   .firstChild;
+            iframeDocAccessible.QueryInterface(nsIAccessibleDocument);
           }
         }
 
+        if (options.contentSetup) {
+          info("Executing contentSetup");
+          const ready = waitForEvent(EVENT_REORDER, currentContentDoc());
+          await invokeContentTask(browser, [], options.contentSetup);
+          // snippetToURL set hidden on the body. We now Remove hidden
+          // and wait for a reorder on the body. This guarantees that any
+          // changes made by contentSetup are included when the body's content
+          // is initially added to the accessibility tree and that the
+          // accessibility tree is up to date.
+          await invokeContentTask(browser, [], () => {
+            content.document.body.removeAttribute("hidden");
+          });
+          await ready;
+          info("contentSetup done");
+        }
         await loadContentScripts(browser, {
           script: "Common.sys.mjs",
           symbol: "CommonUtils",
@@ -578,17 +667,40 @@ function accessibleTask(doc, task, options = {}) {
       await runPython(`__reset__`);
     }
   };
+  // Propagate the name of the task function to our wrapper function so it shows
+  // up in test run output. Suffix with the test type. For example:
+  // 0:39.16 INFO Entering test bound testProtected_remoteIframe
+  // Even if the name is empty, we still propagate it here to override the
+  // implicit "wrapped" name derived from the assignment at the top of this
+  // function.
+  let name = task.name;
+  if (name) {
+    if (options.chrome) {
+      name += "_chrome";
+    } else if (options.iframe) {
+      name += "_iframe";
+    } else if (options.remoteIframe) {
+      name += "_remoteIframe";
+    } else {
+      name += "_topLevel";
+    }
+  }
+  // The "name" property of functions is not writable, but we can override that
+  // using Object.defineProperty.
+  Object.defineProperty(wrapped, "name", { value: name });
+  return wrapped;
 }
 
 /**
  * A wrapper around browser test add_task that triggers an accessible test task
  * as a new browser test task with given document, data URL or markup snippet.
- * @param  {String} doc
+ *
+ * @param  {string} doc
  *         URL (relative to current directory) or data URL or markup snippet
  *         that is used to test content with
  * @param  {Function|AsyncFunction} task
  *         a generator or a function with tests to run
- * @param  {null|Object} options
+ * @param  {null | object} options
  *         Options for running accessibility test tasks:
  *         - {Boolean} topLevel
  *           Flag to run the test with content in the top level content process.
@@ -619,6 +731,25 @@ function accessibleTask(doc, task, options = {}) {
  *         - {String} urlSuffix
  *           String to append to the document URL. For example, this could be
  *           "#test" to scroll to the "test" id in the document.
+ *         - {CacheDomain} cacheDomains
+ *           The set of cache domains that should be present at the start of the
+ *           test. If not set, all cache domains will be present.
+ *         - {Function|AsyncFunction} contentSetup
+ *           An optional task to run to set up the content document before the
+ *           test starts. If this test is to be run as a chrome document in the
+ *           parent process (chrome: true), This should be used instead of an
+ *           inline <script> element in the test snippet, since inline script is
+ *           not allowed in such documents. This task is ultimately executed
+ *           using SpecialPowers.spawn. Any updates to the content within the
+ *           body will be included when the content is initially added to the
+ *           accessibility tree. The accessibility tree is guaranteed to be up
+ *           to date when the test starts. This will not work correctly for
+ *           changes to the html or body elements themselves. Note that you will
+ *           need to define this exactly as follows:
+ *           contentSetup: async function contentSetup() { ... }
+ *           async contentSetup() will fail when the task is serialized.
+ *           contentSetup: async function() will be changed to
+ *           async contentSetup() by the linter and likewise fail.
  */
 function addAccessibleTask(doc, task, options = {}) {
   const {
@@ -674,8 +805,9 @@ function addAccessibleTask(doc, task, options = {}) {
 
 /**
  * Check if an accessible object has a defunct test.
+ *
  * @param  {nsIAccessible}  accessible object to test defunct state for
- * @return {Boolean}        flag indicating defunct state
+ * @return {boolean}        flag indicating defunct state
  */
 function isDefunct(accessible) {
   let defunct = false;
@@ -695,8 +827,9 @@ function isDefunct(accessible) {
 
 /**
  * Get the DOM tag name for a given accessible.
+ *
  * @param  {nsIAccessible}  accessible accessible
- * @return {String?}                   tag name of associated DOM node, or null.
+ * @return {string?}                   tag name of associated DOM node, or null.
  */
 function getAccessibleTagName(acc) {
   try {
@@ -709,8 +842,9 @@ function getAccessibleTagName(acc) {
 /**
  * Traverses the accessible tree starting from a given accessible as a root and
  * looks for an accessible that matches based on its DOMNode id.
+ *
  * @param  {nsIAccessible}  accessible root accessible
- * @param  {String}         id         id to look up accessible for
+ * @param  {string}         id         id to look up accessible for
  * @param  {Array?}         interfaces the interface or an array interfaces
  *                                     to query it/them from obtained accessible
  * @return {nsIAccessible?}            found accessible if any
@@ -841,7 +975,7 @@ async function getContentBoundsForDOMElm(browser, id) {
   });
 }
 
-const CACHE_WAIT_TIMEOUT_MS = 5000;
+const CACHE_WAIT_TIMEOUT_MS = 20000;
 
 /**
  * Wait for a predicate to be true after cache ticks.

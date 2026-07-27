@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef HttpTransactionParent_h__
-#define HttpTransactionParent_h__
+#ifndef HttpTransactionParent_h_
+#define HttpTransactionParent_h_
 
 #include "mozilla/Atomics.h"
 #include "mozilla/Mutex.h"
@@ -23,12 +22,8 @@ namespace mozilla::net {
 class ChannelEventQueue;
 class nsHttpConnectionInfo;
 
-#define HTTP_TRANSACTION_PARENT_IID                  \
-  {                                                  \
-    0xb83695cb, 0xc24b, 0x4c53, {                    \
-      0x85, 0x9b, 0x77, 0x77, 0x3e, 0xc5, 0x44, 0xe5 \
-    }                                                \
-  }
+#define HTTP_TRANSACTION_PARENT_IID \
+  {0xb83695cb, 0xc24b, 0x4c53, {0x85, 0x9b, 0x77, 0x77, 0x3e, 0xc5, 0x44, 0xe5}}
 
 // HttpTransactionParent plays the role of nsHttpTransaction and delegates the
 // work to the nsHttpTransaction in socket process.
@@ -41,14 +36,14 @@ class HttpTransactionParent final : public PHttpTransactionParent,
   NS_DECL_HTTPTRANSACTIONSHELL
   NS_DECL_NSIREQUEST
   NS_DECL_NSITHREADRETARGETABLEREQUEST
-  NS_DECLARE_STATIC_IID_ACCESSOR(HTTP_TRANSACTION_PARENT_IID)
+  NS_INLINE_DECL_STATIC_IID(HTTP_TRANSACTION_PARENT_IID)
 
   explicit HttpTransactionParent(bool aIsDocumentLoad);
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
   mozilla::ipc::IPCResult RecvOnStartRequest(
-      const nsresult& aStatus, const Maybe<nsHttpResponseHead>& aResponseHead,
+      const nsresult& aStatus, Maybe<nsHttpResponseHead>&& aResponseHead,
       nsITransportSecurityInfo* aSecurityInfo, const bool& aProxyConnectFailed,
       const TimingStructArgs& aTimings,
       const int32_t& aProxyConnectResponseCode,
@@ -56,13 +51,15 @@ class HttpTransactionParent final : public PHttpTransactionParent,
       const bool& aDataToChildProcess, const bool& aRestarted,
       const uint32_t& aHTTPSSVCReceivedStage, const bool& aSupportsHttp3,
       const nsIRequest::TRRMode& aMode, const TRRSkippedReason& aSkipReason,
-      const uint32_t& aCaps, const TimeStamp& aOnStartRequestStartTime);
+      const uint32_t& aCaps, const TimeStamp& aOnStartRequestStartTime,
+      const HttpConnectionInfoCloneArgs& aArgs,
+      const nsILoadInfo::IPAddressSpace& aTargetIPAddressSpace);
   mozilla::ipc::IPCResult RecvOnTransportStatus(
       const nsresult& aStatus, const int64_t& aProgress,
       const int64_t& aProgressMax,
       Maybe<NetworkAddressArg>&& aNetworkAddressArg);
   mozilla::ipc::IPCResult RecvOnDataAvailable(
-      const nsCString& aData, const uint64_t& aOffset, const uint32_t& aCount,
+      const nsCString& aData, const uint64_t& aOffset,
       const TimeStamp& aOnDataAvailableStartTime);
   mozilla::ipc::IPCResult RecvOnStopRequest(
       const nsresult& aStatus, const bool& aResponseIsComplete,
@@ -70,13 +67,8 @@ class HttpTransactionParent final : public PHttpTransactionParent,
       const Maybe<nsHttpHeaderArray>& responseTrailers,
       Maybe<TransactionObserverResult>&& aTransactionObserverResult,
       const TimeStamp& aLastActiveTabOptHit,
-      const HttpConnectionInfoCloneArgs& aArgs,
       const TimeStamp& aOnStopRequestStartTime);
   mozilla::ipc::IPCResult RecvOnInitFailed(const nsresult& aStatus);
-
-  mozilla::ipc::IPCResult RecvOnH2PushStream(const uint32_t& aPushedStreamId,
-                                             const nsCString& aResourceUrl,
-                                             const nsCString& aRequestString);
   mozilla::ipc::IPCResult RecvEarlyHint(const nsCString& aValue,
                                         const nsACString& aReferrerPolicy,
                                         const nsACString& aCSPHeader);
@@ -110,7 +102,7 @@ class HttpTransactionParent final : public PHttpTransactionParent,
   void GetStructFromInfo(nsHttpConnectionInfo* aInfo,
                          HttpConnectionInfoCloneArgs& aArgs);
   void DoOnStartRequest(
-      const nsresult& aStatus, const Maybe<nsHttpResponseHead>& aResponseHead,
+      const nsresult& aStatus, Maybe<nsHttpResponseHead>&& aResponseHead,
       nsITransportSecurityInfo* aSecurityInfo, const bool& aProxyConnectFailed,
       const TimingStructArgs& aTimings,
       const int32_t& aProxyConnectResponseCode,
@@ -118,16 +110,16 @@ class HttpTransactionParent final : public PHttpTransactionParent,
       const bool& aDataToChildProcess, const bool& aRestarted,
       const uint32_t& aHTTPSSVCReceivedStage, const bool& aSupportsHttp3,
       const nsIRequest::TRRMode& aMode, const TRRSkippedReason& aSkipReason,
-      const uint32_t& aCaps, const TimeStamp& aOnStartRequestStartTime);
+      const uint32_t& aCaps, const TimeStamp& aOnStartRequestStartTime,
+      nsHttpConnectionInfo* aConnInfo,
+      const nsILoadInfo::IPAddressSpace& aTargetIPAddressSpace);
   void DoOnDataAvailable(const nsCString& aData, const uint64_t& aOffset,
-                         const uint32_t& aCount,
                          const TimeStamp& aOnDataAvailableStartTime);
   void DoOnStopRequest(
       const nsresult& aStatus, const bool& aResponseIsComplete,
       const int64_t& aTransferSize, const TimingStructArgs& aTimings,
       const Maybe<nsHttpHeaderArray>& responseTrailers,
       Maybe<TransactionObserverResult>&& aTransactionObserverResult,
-      nsHttpConnectionInfo* aConnInfo,
       const TimeStamp& aOnStopRequestStartTime);
   void DoNotifyListener();
   void ContinueDoNotifyListener();
@@ -138,10 +130,10 @@ class HttpTransactionParent final : public PHttpTransactionParent,
 
   nsCOMPtr<nsITransportEventSink> mEventsink;
   nsCOMPtr<nsIStreamListener> mChannel;
-  nsCOMPtr<nsISerialEventTarget> mTargetThread;
-  nsCOMPtr<nsISerialEventTarget> mODATarget;
-  Mutex mEventTargetMutex MOZ_UNANNOTATED{
-      "HttpTransactionParent::EventTargetMutex"};
+  nsCOMPtr<nsISerialEventTarget> mTargetThread
+      MOZ_GUARDED_BY(mEventTargetMutex);
+  nsCOMPtr<nsISerialEventTarget> mODATarget MOZ_GUARDED_BY(mEventTargetMutex);
+  Mutex mEventTargetMutex{"HttpTransactionParent::EventTargetMutex"};
   nsCOMPtr<nsITransportSecurityInfo> mSecurityInfo;
   UniquePtr<nsHttpResponseHead> mResponseHead;
   UniquePtr<nsHttpHeaderArray> mResponseTrailers;
@@ -174,6 +166,8 @@ class HttpTransactionParent final : public PHttpTransactionParent,
 
   NetAddr mSelfAddr;
   NetAddr mPeerAddr;
+  nsILoadInfo::IPAddressSpace mTargetIPAddressSpace{
+      nsILoadInfo::IPAddressSpace::Unknown};
   TimingStruct mTimings;
   TimeStamp mDomainLookupStart;
   TimeStamp mDomainLookupEnd;
@@ -181,7 +175,6 @@ class HttpTransactionParent final : public PHttpTransactionParent,
   TimeStamp mOnDataAvailableStartTime;
   TimeStamp mOnStopRequestStartTime;
   TransactionObserverFunc mTransactionObserver;
-  OnPushCallback mOnPushCallback;
   nsTArray<uint8_t> mDataForSniffer;
   std::function<void()> mCallOnResume;
   uint32_t mHTTPSSVCReceivedStage{};
@@ -189,9 +182,6 @@ class HttpTransactionParent final : public PHttpTransactionParent,
   bool mSupportsHTTP3 = false;
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(HttpTransactionParent,
-                              HTTP_TRANSACTION_PARENT_IID)
-
 }  // namespace mozilla::net
 
-#endif  // nsHttpTransactionParent_h__
+#endif  // nsHttpTransactionParent_h_

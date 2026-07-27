@@ -1,6 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim:set ts=2 sw=2 sts=2 et:
- */
 "use strict";
 
 const { Weave } = ChromeUtils.importESModule(
@@ -131,7 +128,7 @@ add_task(async function test_maximal() {
         uri: "http://example.com/",
         device: "My Phone",
         title: "An Example",
-        iconUri: "cached-favicon:http://favicon/",
+        iconUri: "page-icon:http://example.com/",
       }),
     ],
   });
@@ -171,35 +168,6 @@ add_task(async function test_noShowIcons() {
     ],
   });
   Services.prefs.clearUserPref("services.sync.syncedTabs.showRemoteIcons");
-});
-
-add_task(async function test_dontMatchSyncedTabs() {
-  Services.prefs.setBoolPref("services.sync.syncedTabs.showRemoteTabs", false);
-  configureEngine([
-    {
-      id: "mobile",
-      tabs: [
-        {
-          urlHistory: ["http://example.com/"],
-          title: "An Example",
-          icon: "http://favicon",
-        },
-      ],
-    },
-  ]);
-
-  let context = createContext("ex", { isPrivate: false });
-  await check_results({
-    context,
-    matches: [
-      makeSearchResult(context, {
-        engineName: SUGGESTIONS_ENGINE_NAME,
-        heuristic: true,
-      }),
-    ],
-  });
-
-  Services.prefs.clearUserPref("services.sync.syncedTabs.showRemoteTabs");
 });
 
 add_task(async function test_tabsDisabledInUrlbar() {

@@ -18,6 +18,10 @@ support-addons-type = Vrsta
 support-addons-enabled = Omogočen
 support-addons-version = Različica
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Mesto shranjevanja
 legacy-user-stylesheets-title = Stare uporabniške slogovne predloge
 legacy-user-stylesheets-enabled = Dejavna
 legacy-user-stylesheets-stylesheet-types = Slogovne predloge
@@ -132,6 +136,7 @@ place-database-stats-efficiency-perc = Učinkovitost (%)
 place-database-stats-sequentiality-perc = Zaporednost (%)
 place-database-integrity = Celovitost
 place-database-verify-integrity = Preveri celovitost
+place-database-last-idle-maintenance-data = Datum zadnjega vzdrževalnega posega med nedejavnostjo
 a11y-title = Dostopnost
 a11y-activated = Vključeno
 a11y-force-disabled = Prepreči dostopnost
@@ -184,6 +189,8 @@ media-capabilities-enumerate = Oštevilči bazo podatkov
 
 media-codec-support-sw-decoding = Programsko dekodiranje
 media-codec-support-hw-decoding = Strojno dekodiranje
+media-codec-support-sw-encoding = Kodiranje programske opreme
+media-codec-support-hw-encoding = Kodiranje strojne opreme
 media-codec-support-codec-name = Ime kodeka
 media-codec-support-supported = Podprt
 media-codec-support-unsupported = Nepodprt

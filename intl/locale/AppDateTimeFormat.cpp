@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -73,7 +72,6 @@ nsresult AppDateTimeFormat::Format(const DateTimeFormat::ComponentsBag& aBag,
 
   aStringOut.Truncate();
 
-  nsAutoCString str;
   nsAutoString timeZoneID;
   BuildTimeZoneString(aExplodedTime->tm_params, timeZoneID);
 
@@ -82,12 +80,13 @@ nsresult AppDateTimeFormat::Format(const DateTimeFormat::ComponentsBag& aBag,
   auto dateTimePatternGenerator = genResult.unwrap();
 
   auto result = DateTimeFormat::TryCreateFromComponents(
-      *sLocale, aBag, dateTimePatternGenerator.get(), Some(timeZoneID));
+      *sLocale, aBag, dateTimePatternGenerator.get(),
+      Some(Span<const char16_t>(timeZoneID.Data(), timeZoneID.Length())));
   NS_ENSURE_TRUE(result.isOk(), NS_ERROR_FAILURE);
   auto dateTimeFormat = result.unwrap();
 
   double unixEpoch =
-      static_cast<float>((PR_ImplodeTime(aExplodedTime) / PR_USEC_PER_MSEC));
+      static_cast<double>(PR_ImplodeTime(aExplodedTime) / PR_USEC_PER_MSEC);
 
   aStringOut.SetLength(DATETIME_FORMAT_INITIAL_LEN);
   nsTStringToBufferAdapter buffer(aStringOut);

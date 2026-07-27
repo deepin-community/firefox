@@ -17,8 +17,6 @@ abuse-report-addon-authored-by = <a data-l10n-name="author-name">{ $author-name 
 abuse-report-learnmore =
     Վստահ չե՞ք որ խնդիրը ընտրեք։
     <a data-l10n-name="learnmore-link">Իմանալ ավելին ընդլայնումները և հիմնապատկերները մասին զեկուցելիս</a>
-abuse-report-learnmore-intro = Վստահ չե՞ք որ խնդիրը ընտրեք։
-abuse-report-learnmore-link = Իմանալ ավելին ընդլայնումները և հիմնապատկերները մասին զեկուցելիս
 abuse-report-submit-description = Նկարագրեք խնդիրը (ըստ ցանկության)
 abuse-report-textarea =
     .placeholder = Եթե մենք ունենք առանձնահատկություններ մեզ համար ավելի հեշտ է խնդիրը լուծել։ Նկարագրեք ինչ եք փորձում։ Շնորհակալություն վեբը աշխտունակ պահելուն օգնելու համար։
@@ -46,22 +44,6 @@ abuse-report-messagebar-removed-extension = Շնորհակալություն զ�
 abuse-report-messagebar-removed-theme = Շնորհակալություն զեկույցն ուղարկելու համար։ Դուք հեռացրել եք <span data-l10n-name="addon-name">{ $addon-name }</span>-ի հիմնապատկերը։
 abuse-report-messagebar-error = <span data-l10n-name="addon-name">{ $addon-name }</span>-ի համար զեկույց ուղարկելիս սխալ տեղի ունեցավ։
 abuse-report-messagebar-error-recent-submit = <span data-l10n-name="addon-name">{ $addon-name }</span>-ի համար զեկույցը չի ուղարկվել, որովհետև վերջերս այլ զեկույց է հաստատվել։
-abuse-report-messagebar-aborted2 =
-    .message = { $addon-name }-ի մասին զեկույցը չեղարկվել է։
-abuse-report-messagebar-submitting2 =
-    .message = Ուղարկվում է զեկույց { $addon-name }-ի համար։
-abuse-report-messagebar-submitted2 =
-    .message = Շնորհակալություն զեկույցը ուղակելու համար։ Ցանկանու՞մ եք հեռացնել { $addon-name }-ը։
-abuse-report-messagebar-submitted-noremove2 =
-    .message = Շնորհակալություն զեկույցը ուղակելու համար։
-abuse-report-messagebar-removed-extension2 =
-    .message = Շնորհակալություն զեկույցը ուղակելու համար։ Դուք հեռացրել եք { $addon-name }-ի ընդլայնումը։
-abuse-report-messagebar-removed-theme2 =
-    .message = Շնորհակալություն զեկույցն ուղարկելու համար։ Դուք հեռացրել եք { $addon-name }-ի հիմնապատկերը։
-abuse-report-messagebar-error2 =
-    .message = { $addon-name }-ի համար զեկույց ուղարկելիս սխալ տեղի ունեցավ։
-abuse-report-messagebar-error-recent-submit2 =
-    .message = { $addon-name }-ի համար զեկույցը չի ուղարկվել, որովհետև վերջերս այլ զեկույց է հաստատվել։
 
 ## Message bars actions.
 
@@ -80,7 +62,7 @@ abuse-report-spam-reason-v2 = Այն պարունակում է աղբ կամ ն�
 abuse-report-spam-example = Օրինակ՝ կայքերում ներածել գովազդներ
 abuse-report-settings-reason-v2 = Այն փոխեց իմ որոնման միջոցը, տնէջը կամ նոր ներդիրը առանց ինձ տեղեկացնելու կամ հարցնելու
 abuse-report-settings-suggestions = Նախքան ընդլայնման մասին զեկույց ուղարկելը, կարող եք փորձել փոխել Ձեր կարգավորումները․
-abuse-report-settings-suggestions-search = Փոխել Ձեր լռելյայն որոնման կարգավորումները
+abuse-report-settings-suggestions-search = Փոխել Ձեր սկզբնադիր որոնման կարգավորումները
 abuse-report-settings-suggestions-homepage = Փոխել Ձեր տնային էջը և նոր ներդիրը
 abuse-report-deceptive-reason-v2 = Այն պնդում է, որ դա ինչ-որ բան չէ
 abuse-report-deceptive-example = Օրինակ՝ ապակողմնորոշիչ նկարագրություն և պատկեր

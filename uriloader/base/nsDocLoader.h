@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsDocLoader_h__
-#define nsDocLoader_h__
+#ifndef nsDocLoader_h_
+#define nsDocLoader_h_
 
 #include "nsIDocumentLoader.h"
 #include "nsIWebProgress.h"
@@ -27,6 +26,7 @@
 
 #include "mozilla/LinkedList.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/intl/Localization.h"
 
 namespace mozilla {
 namespace dom {
@@ -38,12 +38,12 @@ class BrowsingContext;
  * nsDocLoader implementation...
  ****************************************************************************/
 
-#define NS_THIS_DOCLOADER_IMPL_CID                   \
-  { /* b4ec8387-98aa-4c08-93b6-6d23069c06f2 */       \
-    0xb4ec8387, 0x98aa, 0x4c08, {                    \
-      0x93, 0xb6, 0x6d, 0x23, 0x06, 0x9c, 0x06, 0xf2 \
-    }                                                \
-  }
+#define NS_THIS_DOCLOADER_IMPL_CID            \
+  {/* b4ec8387-98aa-4c08-93b6-6d23069c06f2 */ \
+   0xb4ec8387,                                \
+   0x98aa,                                    \
+   0x4c08,                                    \
+   {0x93, 0xb6, 0x6d, 0x23, 0x06, 0x9c, 0x06, 0xf2}}
 
 class nsDocLoader : public nsIDocumentLoader,
                     public nsIRequestObserver,
@@ -54,7 +54,7 @@ class nsDocLoader : public nsIDocumentLoader,
                     public nsIChannelEventSink,
                     public nsISupportsPriority {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_THIS_DOCLOADER_IMPL_CID)
+  NS_INLINE_DECL_STATIC_IID(NS_THIS_DOCLOADER_IMPL_CID)
 
   nsDocLoader() : nsDocLoader(false) {}
 
@@ -128,6 +128,16 @@ class nsDocLoader : public nsIDocumentLoader,
     DocLoaderIsEmpty(true);
   }
 
+  // Formats aStatus using aHost and returns the result in aRetVal.
+  // aL10n will be initialized if initially null.
+  // See "netwerk/necko.ftl" for the localized strings.
+  static nsresult FormatStatusMessage(
+      nsresult aStatus, const nsAString& aHost, nsAString& aRetVal,
+      mozilla::StaticRefPtr<mozilla::intl::Localization>& aL10n);
+
+  void FireOnLocationChange(nsIWebProgress* aWebProgress, nsIRequest* aRequest,
+                            nsIURI* aUri, uint32_t aFlags);
+
  protected:
   explicit nsDocLoader(bool aNotifyAboutBackgroundRequests);
   virtual ~nsDocLoader();
@@ -172,9 +182,6 @@ class nsDocLoader : public nsIDocumentLoader,
 
   void FireOnStatusChange(nsIWebProgress* aWebProgress, nsIRequest* aRequest,
                           nsresult aStatus, const char16_t* aMessage);
-
-  void FireOnLocationChange(nsIWebProgress* aWebProgress, nsIRequest* aRequest,
-                            nsIURI* aUri, uint32_t aFlags);
 
   [[nodiscard]] bool RefreshAttempted(nsIWebProgress* aWebProgress,
                                       nsIURI* aURI, uint32_t aDelay,
@@ -241,33 +248,19 @@ class nsDocLoader : public nsIDocumentLoader,
     MOZ_COUNTED_DTOR(nsStatusInfo)
   };
 
-  struct nsRequestInfo : public PLDHashEntryHdr {
-    explicit nsRequestInfo(const void* key)
-        : mKey(key),
-          mCurrentProgress(0),
+  struct nsRequestInfo {
+    explicit nsRequestInfo()
+        : mCurrentProgress(0),
           mMaxProgress(0),
           mUploading(false),
-          mLastStatus(nullptr) {
-      MOZ_COUNT_CTOR(nsRequestInfo);
-    }
+          mLastStatus(nullptr) {}
 
-    MOZ_COUNTED_DTOR(nsRequestInfo)
-
-    nsIRequest* Request() {
-      return static_cast<nsIRequest*>(const_cast<void*>(mKey));
-    }
-
-    const void* mKey;  // Must be first for the PLDHashTable stubs to work
     int64_t mCurrentProgress;
     int64_t mMaxProgress;
     bool mUploading;
 
     mozilla::UniquePtr<nsStatusInfo> mLastStatus;
   };
-
-  static void RequestInfoHashInitEntry(PLDHashEntryHdr* entry, const void* key);
-  static void RequestInfoHashClearEntry(PLDHashTable* table,
-                                        PLDHashEntryHdr* entry);
 
   // IMPORTANT: The ownership implicit in the following member
   // variables has been explicitly checked and set using nsCOMPtr
@@ -296,7 +289,7 @@ class nsDocLoader : public nsIDocumentLoader,
   int64_t mCurrentTotalProgress;
   int64_t mMaxTotalProgress;
 
-  PLDHashTable mRequestInfoHash;
+  nsTHashMap<nsIRequest*, nsRequestInfo> mRequestInfoHash;
   int64_t mCompletedTotalProgress;
 
   mozilla::LinkedList<nsStatusInfo> mStatusInfoList;
@@ -331,9 +324,14 @@ class nsDocLoader : public nsIDocumentLoader,
    */
   bool mDocumentOpenedButNotLoaded;
 
-  bool mNotifyAboutBackgroundRequests;
+  /**
+   * This flag indicates that the loader is loading javascipt URI and might need
+   * to fire a load event for the step 7.1 of
+   * https://html.spec.whatwg.org/#navigate-to-a-javascript:-url
+   */
+  bool mIsLoadingJavascriptURI = false;
 
-  static const PLDHashTableOps sRequestInfoHashOps;
+  bool mNotifyAboutBackgroundRequests;
 
   // A list of kids that are in the middle of their onload calls and will let
   // us know once they're done.  We don't want to fire onload for "normal"
@@ -360,14 +358,15 @@ class nsDocLoader : public nsIDocumentLoader,
    * load event yet.
    */
   bool IsBlockingLoadEvent() const {
-    return mIsLoadingDocument || mDocumentOpenedButNotLoaded;
+    return mIsLoadingDocument || mDocumentOpenedButNotLoaded ||
+           mIsLoadingJavascriptURI;
   }
-};
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsDocLoader, NS_THIS_DOCLOADER_IMPL_CID)
+  static mozilla::Maybe<nsLiteralCString> StatusCodeToL10nId(nsresult aStatus);
+};
 
 static inline nsISupports* ToSupports(nsDocLoader* aDocLoader) {
   return static_cast<nsIDocumentLoader*>(aDocLoader);
 }
 
-#endif /* nsDocLoader_h__ */
+#endif /* nsDocLoader_h_ */

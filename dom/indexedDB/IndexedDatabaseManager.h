@@ -1,21 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_indexeddatabasemanager_h__
-#define mozilla_dom_indexeddatabasemanager_h__
+#ifndef mozilla_dom_indexeddatabasemanager_h_
+#define mozilla_dom_indexeddatabasemanager_h_
 
+#include "MainThreadUtils.h"
+#include "SafeRefPtr.h"
 #include "js/TypeDecls.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Mutex.h"
+#include "mozilla/dom/quota/PersistenceType.h"
 #include "nsClassHashtable.h"
 #include "nsHashKeys.h"
 #include "nsIIndexedDatabaseManager.h"
-#include "SafeRefPtr.h"
 
 namespace mozilla {
 
@@ -92,6 +91,8 @@ class IndexedDatabaseManager final : public nsIIndexedDatabaseManager {
 
   static uint32_t DataThreshold();
 
+  static uint32_t MaxStructuredCloneSize();
+
   static uint32_t MaxSerializedMsgSize();
 
   // The maximum number of extra entries to preload in an Cursor::OpenOp or
@@ -166,6 +167,7 @@ class IndexedDatabaseManager final : public nsIIndexedDatabaseManager {
       mPendingDeleteInfos;
 
   nsCString mLocale;
+  bool mLocaleInitialized MOZ_GUARDED_BY(sMainThreadCapability);
 
   indexedDB::BackgroundUtilsChild* mBackgroundActor;
 
@@ -178,4 +180,4 @@ class IndexedDatabaseManager final : public nsIIndexedDatabaseManager {
 }  // namespace dom
 }  // namespace mozilla
 
-#endif  // mozilla_dom_indexeddatabasemanager_h__
+#endif  // mozilla_dom_indexeddatabasemanager_h_

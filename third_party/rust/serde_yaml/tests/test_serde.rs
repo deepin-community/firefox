@@ -6,11 +6,12 @@
 )]
 
 use indoc::indoc;
+use serde::ser::SerializeMap;
 use serde_derive::{Deserialize, Serialize};
-use serde_yaml::Value;
+use serde_yaml::{Mapping, Number, Value};
 use std::collections::BTreeMap;
-use std::f64;
 use std::fmt::Debug;
+use std::iter;
 
 fn test_serde<T>(thing: &T, yaml: &str)
 where
@@ -19,7 +20,7 @@ where
     let serialized = serde_yaml::to_string(&thing).unwrap();
     assert_eq!(yaml, serialized);
 
-    let value = serde_yaml::to_value(&thing).unwrap();
+    let value = serde_yaml::to_value(thing).unwrap();
     let serialized = serde_yaml::to_string(&value).unwrap();
     assert_eq!(yaml, serialized);
 
@@ -27,6 +28,9 @@ where
     assert_eq!(*thing, deserialized);
 
     let value: Value = serde_yaml::from_str(yaml).unwrap();
+    let deserialized = T::deserialize(&value).unwrap();
+    assert_eq!(*thing, deserialized);
+
     let deserialized: T = serde_yaml::from_value(value).unwrap();
     assert_eq!(*thing, deserialized);
 
@@ -42,7 +46,6 @@ fn test_default() {
 fn test_int() {
     let thing = 256;
     let yaml = indoc! {"
-        ---
         256
     "};
     test_serde(&thing, yaml);
@@ -50,9 +53,8 @@ fn test_int() {
 
 #[test]
 fn test_int_max_u64() {
-    let thing = ::std::u64::MAX;
+    let thing = u64::MAX;
     let yaml = indoc! {"
-        ---
         18446744073709551615
     "};
     test_serde(&thing, yaml);
@@ -60,9 +62,8 @@ fn test_int_max_u64() {
 
 #[test]
 fn test_int_min_i64() {
-    let thing = ::std::i64::MIN;
+    let thing = i64::MIN;
     let yaml = indoc! {"
-        ---
         -9223372036854775808
     "};
     test_serde(&thing, yaml);
@@ -70,9 +71,8 @@ fn test_int_min_i64() {
 
 #[test]
 fn test_int_max_i64() {
-    let thing = ::std::i64::MAX;
+    let thing = i64::MAX;
     let yaml = indoc! {"
-        ---
         9223372036854775807
     "};
     test_serde(&thing, yaml);
@@ -82,7 +82,6 @@ fn test_int_max_i64() {
 fn test_i128_small() {
     let thing: i128 = -256;
     let yaml = indoc! {"
-        ---
         -256
     "};
     test_serde(&thing, yaml);
@@ -92,7 +91,6 @@ fn test_i128_small() {
 fn test_u128_small() {
     let thing: u128 = 256;
     let yaml = indoc! {"
-        ---
         256
     "};
     test_serde(&thing, yaml);
@@ -102,34 +100,29 @@ fn test_u128_small() {
 fn test_float() {
     let thing = 25.6;
     let yaml = indoc! {"
-        ---
         25.6
     "};
     test_serde(&thing, yaml);
 
     let thing = 25.;
     let yaml = indoc! {"
-        ---
         25.0
     "};
     test_serde(&thing, yaml);
 
     let thing = f64::INFINITY;
     let yaml = indoc! {"
-        ---
         .inf
     "};
     test_serde(&thing, yaml);
 
     let thing = f64::NEG_INFINITY;
     let yaml = indoc! {"
-        ---
         -.inf
     "};
     test_serde(&thing, yaml);
 
     let float: f64 = serde_yaml::from_str(indoc! {"
-        ---
         .nan
     "})
     .unwrap();
@@ -138,29 +131,25 @@ fn test_float() {
 
 #[test]
 fn test_float32() {
-    let thing: f32 = 25.6;
+    let thing: f32 = 25.5;
     let yaml = indoc! {"
-        ---
-        25.6
+        25.5
     "};
     test_serde(&thing, yaml);
 
     let thing = f32::INFINITY;
     let yaml = indoc! {"
-        ---
         .inf
     "};
     test_serde(&thing, yaml);
 
     let thing = f32::NEG_INFINITY;
     let yaml = indoc! {"
-        ---
         -.inf
     "};
     test_serde(&thing, yaml);
 
     let single_float: f32 = serde_yaml::from_str(indoc! {"
-        ---
         .nan
     "})
     .unwrap();
@@ -168,10 +157,30 @@ fn test_float32() {
 }
 
 #[test]
+fn test_char() {
+    let ch = '.';
+    let yaml = indoc! {"
+        '.'
+    "};
+    assert_eq!(yaml, serde_yaml::to_string(&ch).unwrap());
+
+    let ch = '#';
+    let yaml = indoc! {"
+        '#'
+    "};
+    assert_eq!(yaml, serde_yaml::to_string(&ch).unwrap());
+
+    let ch = '-';
+    let yaml = indoc! {"
+        '-'
+    "};
+    assert_eq!(yaml, serde_yaml::to_string(&ch).unwrap());
+}
+
+#[test]
 fn test_vec() {
     let thing = vec![1, 2, 3];
     let yaml = indoc! {"
-        ---
         - 1
         - 2
         - 3
@@ -182,14 +191,36 @@ fn test_vec() {
 #[test]
 fn test_map() {
     let mut thing = BTreeMap::new();
-    thing.insert(String::from("x"), 1);
-    thing.insert(String::from("y"), 2);
+    thing.insert("x".to_owned(), 1);
+    thing.insert("y".to_owned(), 2);
     let yaml = indoc! {"
-        ---
         x: 1
         y: 2
     "};
     test_serde(&thing, yaml);
+}
+
+#[test]
+fn test_map_key_value() {
+    struct Map;
+
+    impl serde::Serialize for Map {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            // Test maps which do not serialize using serialize_entry.
+            let mut map = serializer.serialize_map(Some(1))?;
+            map.serialize_key("k")?;
+            map.serialize_value("v")?;
+            map.end()
+        }
+    }
+
+    let yaml = indoc! {"
+        k: v
+    "};
+    assert_eq!(yaml, serde_yaml::to_string(&Map).unwrap());
 }
 
 #[test]
@@ -202,11 +233,10 @@ fn test_basic_struct() {
     }
     let thing = Basic {
         x: -4,
-        y: String::from("hi\tquoted"),
+        y: "hi\tquoted".to_owned(),
         z: true,
     };
     let yaml = indoc! {r#"
-        ---
         x: -4
         y: "hi\tquoted"
         z: true
@@ -215,10 +245,81 @@ fn test_basic_struct() {
 }
 
 #[test]
+fn test_string_escapes() {
+    let yaml = indoc! {"
+        ascii
+    "};
+    test_serde(&"ascii".to_owned(), yaml);
+
+    let yaml = indoc! {r#"
+        "\0\a\b\t\n\v\f\r\e\"\\\N\L\P"
+    "#};
+    test_serde(
+        &"\0\u{7}\u{8}\t\n\u{b}\u{c}\r\u{1b}\"\\\u{85}\u{2028}\u{2029}".to_owned(),
+        yaml,
+    );
+
+    let yaml = indoc! {r#"
+        "\x1F\uFEFF"
+    "#};
+    test_serde(&"\u{1f}\u{feff}".to_owned(), yaml);
+
+    let yaml = indoc! {"
+        🎉
+    "};
+    test_serde(&"\u{1f389}".to_owned(), yaml);
+}
+
+#[test]
+fn test_multiline_string() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct Struct {
+        trailing_newline: String,
+        no_trailing_newline: String,
+    }
+    let thing = Struct {
+        trailing_newline: "aaa\nbbb\n".to_owned(),
+        no_trailing_newline: "aaa\nbbb".to_owned(),
+    };
+    let yaml = indoc! {"
+        trailing_newline: |
+          aaa
+          bbb
+        no_trailing_newline: |-
+          aaa
+          bbb
+    "};
+    test_serde(&thing, yaml);
+}
+
+#[test]
+fn test_strings_needing_quote() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct Struct {
+        boolean: String,
+        integer: String,
+        void: String,
+        leading_zeros: String,
+    }
+    let thing = Struct {
+        boolean: "true".to_owned(),
+        integer: "1".to_owned(),
+        void: "null".to_owned(),
+        leading_zeros: "007".to_owned(),
+    };
+    let yaml = indoc! {"
+        boolean: 'true'
+        integer: '1'
+        void: 'null'
+        leading_zeros: '007'
+    "};
+    test_serde(&thing, yaml);
+}
+
+#[test]
 fn test_nested_vec() {
     let thing = vec![vec![1, 2, 3], vec![4, 5, 6]];
     let yaml = indoc! {"
-        ---
         - - 1
           - 2
           - 3
@@ -243,9 +344,25 @@ fn test_nested_struct() {
         inner: Inner { v: 512 },
     };
     let yaml = indoc! {"
-        ---
         inner:
           v: 512
+    "};
+    test_serde(&thing, yaml);
+}
+
+#[test]
+fn test_nested_enum() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    enum Outer {
+        Inner(Inner),
+    }
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    enum Inner {
+        Unit,
+    }
+    let thing = Outer::Inner(Inner::Unit);
+    let yaml = indoc! {"
+        !Inner Unit
     "};
     test_serde(&thing, yaml);
 }
@@ -254,9 +371,8 @@ fn test_nested_struct() {
 fn test_option() {
     let thing = vec![Some(1), None, Some(3)];
     let yaml = indoc! {"
-        ---
         - 1
-        - ~
+        - null
         - 3
     "};
     test_serde(&thing, yaml);
@@ -266,9 +382,8 @@ fn test_option() {
 fn test_unit() {
     let thing = vec![(), ()];
     let yaml = indoc! {"
-        ---
-        - ~
-        - ~
+        - null
+        - null
     "};
     test_serde(&thing, yaml);
 }
@@ -279,8 +394,7 @@ fn test_unit_struct() {
     struct Foo;
     let thing = Foo;
     let yaml = indoc! {"
-        ---
-        ~
+        null
     "};
     test_serde(&thing, yaml);
 }
@@ -294,7 +408,6 @@ fn test_unit_variant() {
     }
     let thing = Variant::First;
     let yaml = indoc! {"
-        ---
         First
     "};
     test_serde(&thing, yaml);
@@ -310,7 +423,6 @@ fn test_newtype_struct() {
     struct NewType(OriginalType);
     let thing = NewType(OriginalType { v: 1 });
     let yaml = indoc! {"
-        ---
         v: 1
     "};
     test_serde(&thing, yaml);
@@ -324,8 +436,7 @@ fn test_newtype_variant() {
     }
     let thing = Variant::Size(127);
     let yaml = indoc! {"
-        ---
-        Size: 127
+        !Size 127
     "};
     test_serde(&thing, yaml);
 }
@@ -338,11 +449,10 @@ fn test_tuple_variant() {
     }
     let thing = Variant::Rgb(32, 64, 96);
     let yaml = indoc! {"
-        ---
-        Rgb:
-          - 32
-          - 64
-          - 96
+        !Rgb
+        - 32
+        - 64
+        - 96
     "};
     test_serde(&thing, yaml);
 }
@@ -359,19 +469,38 @@ fn test_struct_variant() {
         b: 96,
     };
     let yaml = indoc! {"
-        ---
-        Color:
-          r: 32
-          g: 64
-          b: 96
+        !Color
+        r: 32
+        g: 64
+        b: 96
+    "};
+    test_serde(&thing, yaml);
+}
+
+#[test]
+fn test_tagged_map_value() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct Bindings {
+        profile: Profile,
+    }
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    enum Profile {
+        ClassValidator { class_name: String },
+    }
+    let thing = Bindings {
+        profile: Profile::ClassValidator {
+            class_name: "ApplicationConfig".to_owned(),
+        },
+    };
+    let yaml = indoc! {"
+        profile: !ClassValidator
+          class_name: ApplicationConfig
     "};
     test_serde(&thing, yaml);
 }
 
 #[test]
 fn test_value() {
-    use serde_yaml::{Mapping, Number};
-
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     pub struct GenericInstructions {
         #[serde(rename = "type")]
@@ -390,22 +519,20 @@ fn test_value() {
         ]),
     };
     let yaml = indoc! {"
-        ---
         type: primary
         config:
-          - ~
-          - true
-          - 65535
-          - 0.54321
-          - s
-          - {}
+        - null
+        - true
+        - 65535
+        - 0.54321
+        - s
+        - {}
     "};
     test_serde(&thing, yaml);
 }
 
 #[test]
 fn test_mapping() {
-    use serde_yaml::Mapping;
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     struct Data {
         pub substructure: Mapping,
@@ -424,10 +551,27 @@ fn test_mapping() {
     );
 
     let yaml = indoc! {"
-        ---
         substructure:
           a: foo
           b: bar
+    "};
+
+    test_serde(&thing, yaml);
+}
+
+#[test]
+fn test_long_string() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct Data {
+        pub string: String,
+    }
+
+    let thing = Data {
+        string: iter::repeat(["word", " "]).flatten().take(69).collect(),
+    };
+
+    let yaml = indoc! {"
+        string: word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word
     "};
 
     test_serde(&thing, yaml);

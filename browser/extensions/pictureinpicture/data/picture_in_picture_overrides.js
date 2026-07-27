@@ -61,9 +61,15 @@ let AVAILABLE_PIP_OVERRIDES;
       },
     },
 
+    apple: {
+      "https://www.apple.com/*": {
+        videoWrapperScriptPath: "video-wrappers/apple.js",
+      },
+    },
+
     arte: {
       "https://*.arte.tv/*": {
-        videoWrapperScriptPath: "video-wrappers/arte.js",
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
       },
     },
 
@@ -212,6 +218,64 @@ let AVAILABLE_PIP_OVERRIDES;
       },
     },
 
+    invidious: {
+      "https://*.nadeko.net/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+      "http://*.nadekonw7plitnjuawu6ytjsl7jlglk2t6pyq6eftptmiv3dvqndwvyd.onion/watch?*":
+        {
+          videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+        },
+      "http://nadekoohummkxncchcsylr3eku36ze4waq4kdrhcqupckc3pe5qq.b32.i2p/watch?*":
+        {
+          videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+        },
+      "https://invidious.nerdvpn.de/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+      "http://nerdvpneaggggfdiurknszkbmhvjndks5z5k3g5yp4nhphflh3n3boad.onion/watch?*":
+        {
+          videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+        },
+      "http://invidious-nerdvpn.i2p/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+      "https://yewtu.be/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+      "https://inv.thepixora.com/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+      "https://yt.chocolatemoo53.com/watch?*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
+      },
+    },
+
+    iq: {
+      "https://*.iq.com/play/*": {
+        videoWrapperScriptPath: "video-wrappers/iq.js",
+      },
+    },
+
+    kick: {
+      "https://*.kick.com/*": {
+        visibilityThreshold: 0.7,
+        videoWrapperScriptPath: "video-wrappers/kick.js",
+      },
+    },
+
+    joyn: {
+      "https://www.joyn.de/play/*": {
+        videoWrapperScriptPath: "video-wrappers/joyn.js",
+      },
+      "https://www.joyn.at/play/*": {
+        videoWrapperScriptPath: "video-wrappers/joyn.js",
+      },
+      "https://www.joyn.ch/play/*": {
+        videoWrapperScriptPath: "video-wrappers/joyn.js",
+      },
+    },
+
     laracasts: {
       "https://*.laracasts.com/*": { policy: TOGGLE_POLICIES.ONE_QUARTER },
     },
@@ -264,9 +328,27 @@ let AVAILABLE_PIP_OVERRIDES;
       "https://*.netflix.com/search*": { policy: TOGGLE_POLICIES.HIDDEN },
     },
 
+    nowtv: {
+      "https://*.nowtv.it/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
+      },
+      "https://*.nowtv.com/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
+      },
+      "https://*.nowtv.de/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
+      },
+    },
+
     nytimes: {
       "https://*.nytimes.com/*": {
         videoWrapperScriptPath: "video-wrappers/nytimes.js",
+      },
+    },
+
+    peacock: {
+      "https://*.peacocktv.com/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
       },
     },
 
@@ -312,6 +394,24 @@ let AVAILABLE_PIP_OVERRIDES;
     reuters: {
       "https://*.reuters.com/*": {
         videoWrapperScriptPath: "video-wrappers/jwplayerWrapper.js",
+      },
+    },
+
+    rte: {
+      "https://www.rte.ie/player/*": {
+        videoWrapperScriptPath: "video-wrappers/hotstar.js",
+      },
+    },
+
+    showmax: {
+      "https://*.showmax.com/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
+      },
+    },
+
+    skyshowtime: {
+      "https://*.skyshowtime.com/*": {
+        videoWrapperScriptPath: "video-wrappers/peacocktv.js",
       },
     },
 
@@ -402,6 +502,12 @@ let AVAILABLE_PIP_OVERRIDES;
       "https://*.vimeo.com/*": {
         showHiddenTextTracks: true,
       },
+      "https://embed.vhx.tv/*": {
+        showHiddenTextTracks: true,
+      },
+      "https://embed.criterionchannel.com/*": {
+        showHiddenTextTracks: true,
+      },
     },
 
     voot: {
@@ -424,23 +530,38 @@ let AVAILABLE_PIP_OVERRIDES;
 
     youtube: {
       /**
-       * The threshold of 0.7 is so that users can click on the "Skip Ads"
+       * The threshold of 0.6 is so that users can click on the "Skip Ads"
        * button on the YouTube site player without accidentally triggering
-       * PiP.
+       * PiP, and so that the video player's semi-transparent gear menu can be
+       * used without accidentally triggering PiP.
        */
       "https://*.youtube.com/*": {
-        visibilityThreshold: 0.7,
+        visibilityThreshold: 0.6,
         videoWrapperScriptPath: "video-wrappers/youtube.js",
+        hasUrlbarEligibilityOverride: true,
       },
       "https://*.youtube-nocookie.com/*": {
         visibilityThreshold: 0.9,
         videoWrapperScriptPath: "video-wrappers/youtube.js",
+        hasUrlbarEligibilityOverride: true,
       },
     },
 
     washingtonpost: {
       "https://*.washingtonpost.com/*": {
         videoWrapperScriptPath: "video-wrappers/washingtonpost.js",
+      },
+    },
+
+    zdf: {
+      "https://*.zdf.de/*": {
+        videoWrapperScriptPath: "video-wrappers/zdf.js",
+      },
+      "https://*.3sat.de/*": {
+        videoWrapperScriptPath: "video-wrappers/zdf.js",
+      },
+      "https://*.phoenix.de/*": {
+        videoWrapperScriptPath: "video-wrappers/zdf.js",
       },
     },
   };

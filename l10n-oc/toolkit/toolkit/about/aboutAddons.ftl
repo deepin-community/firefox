@@ -380,6 +380,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Autorizat en navegacion privada
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Autorizat en navegacion privada
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -417,6 +421,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Aquesta extension foguèt repassada per complir los estandards de seguretat e performança.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Extension oficiala creada per Mozilla. Seguís los estandards de seguretat e de performança.
 
 ##
 
@@ -473,14 +481,21 @@ details-notification-unsigned-and-disabled-link = Mai d'informacions
 details-notification-unsigned = { $name } a pas pogut èsser verificat per son utilizacion dins { -brand-short-name }. Fasètz atencion.
 details-notification-unsigned2 =
     .message = { $name } a pas pogut èsser verificat per son utilizacion dins { -brand-short-name }. Fasètz atencion.
+details-notification-hard-blocked-extension =
+    .message = Aquesta extension es blocada, per enfranh las politicas de Mozilla e foguèt desactivada.
+details-notification-hard-blocked-other =
+    .message = Aqueste modul es blocat, per enfranh las politicas de Mozilla e foguèt desactivat.
 details-notification-unsigned-link = Mai d'informacions
 details-notification-blocked = { $name } es estat desactivat en seguida de problèmas de seguretat o d'estabilitat.
-details-notification-blocked2 =
-    .message = { $name } es estat desactivat en seguida de problèmas de seguretat o d'estabilitat.
+details-notification-blocked-link2 = Afichar los detalhs
+details-notification-soft-blocked-extension-disabled =
+    .message = Aquesta extension es restrencha a causa de violacion de las politicas de Mozilla e foguèt desactivada. La podètz activar, mas pòt èsser perilhós.
+details-notification-soft-blocked-extension-enabled =
+    .message = Aquesta extension viola las politicas de Mozilla. Son usatge es perilhós.
+details-notification-soft-blocked-other-disabled =
+    .message = Aqueste modul complementari es restrench a causa de violacion de las politicas de Mozilla e foguèt desactivat. Lo podètz activar, mas pòt èsser perilhós.
 details-notification-blocked-link = Mai d'informacions
 details-notification-softblocked = { $name } es conegut per provocar de problèmas de seguretat o d'estabilitat.
-details-notification-softblocked2 =
-    .message = { $name } es conegut per provocar de problèmas de seguretat o d'estabilitat.
 details-notification-softblocked-link = Mai d'informacions
 details-notification-gmp-pending = { $name } serà installat lèu.
 details-notification-gmp-pending2 =
@@ -494,3 +509,11 @@ plugins-openh264-name = Codèc vidèo OpenH264 provesit per Cisco Systems, Inc.
 plugins-openh264-description = Aqueste plugin es automaticament installat per Mozilla per complir las especificacions WebRTC e permetre las cridas WebRTC amb los periferics que lor cal lo codec vidèo H.264. Anatz sus http://www.openh264.org/ per consultar lo còde font del codec e ne saber mai sus son implementacion.
 plugins-widevine-name = Modul de deschiframent de contengut Widevine provesit per Google Inc.
 plugins-widevine-description = Aqueste plugin permet la lectura de supòrts chifrats segon l'especificacion de las extensions de supòrts chifrats. Los mèdias chifrats son mai sovent utilizats pels sites per se protegir contra la còpia de contengut multimèdia de qualitat superiora. Visitatz https://www.w3.org/TR/encrypted-media/ per mai d'informacions sus las extensions multimèdias chifradas.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Collècta de donadas necessària :
+addon-permissions-optional-data-collection = Collècta de donadas opcionala :
+addon-permissions-data-collection-heading = Culhida de donadas
+addon-permissions-data-collection-empty = Lo desvolopaire d’aquesta extension a pas besonh de reculhir de donadas.

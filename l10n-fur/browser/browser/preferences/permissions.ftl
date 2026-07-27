@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Permet
     .accesskey = P
+permissions-add =
+    .label = Zonte
+    .accesskey = Z
 permissions-button-off =
     .label = Disative
     .accesskey = D
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Gjave ducj i sîts web
     .accesskey = e
+permissions-save-changes-2 =
+    .buttonlabelaccept = Salve modifichis
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = Salve modifichis
     .buttonaccesskeyaccept = S
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Tu puedis specificâ cuai sîts web a puedin doprâ simpri, o mai, i cookies e i dâts di sîts.  Scrîf la direzion esate dal sît che tu desideris gjestî e dopo fâs clic su Bloche, Permet par cheste session opûr Permet.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Ecezions - Sierant nete la cronologjie
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Tu puedis specificâ i sîts web che a puedin tignî i lôr dâts cuant che, sierantsi, { -brand-short-name } al nete la cronologjie. Scrîf la direzion esate dal  sît che tu desideris zontâ e fâs clic su Permet.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Tu puedis disativâ la modalitât Dome-HTTPS par specifics sîts web. { -brand-short-name } nol cirarà di puartâ la conession par chei sîts su HTTPS sigûr. Lis ecezions no vegnin aplicadis ai barcons privâts.
 permissions-exceptions-https-only-desc2 = Tu puedis disativâ la modalitât dome HTTPS par specifics sîts web. { -brand-short-name } nol cirarà di inzornâ la conession ae version sigure HTTPS par chei sîts.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Sîts web cun permès - Barcons a comparse e indreçaments di tiercis bandis
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Tu puedis specificâ i sîts web che a puedin vierzi barcons a comparse e che a puedin jessi indreçâts di ricuadris di tiercis bandis.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = Chescj sîts web a àn domandât di doprâ la tô
 permissions-site-camera-disable-label =
     .label = Bloche lis gnovis richiestis che a domandin di acedi ae tô fotocjamare
 permissions-site-camera-disable-desc = Chest al impedirà a ducj i sîts web che no son listâts achì parsore di domandâ il permès par doprâ la tô fotocjamare. Blocant l'acès ae tô fotocjamare cualchi sît web al podarès vê malfunzionaments.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Impostazions - Aplicazions e servizis dal dispositîf
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Chescj sîts web a àn domandât l’acès a aplicazions e servizis su chest dispositîfs. Tu puedis sielzi di permeti o impedî ai sîts di fâ cheste operazion.
+permissions-site-localhost-disable-label =
+    .label = Bloche gnovis domandis di acès a aplicazions e servizis su chest dispositîf
+permissions-site-localhost-disable-desc = Cussì tu impedirâs a ducj i sîts web che no son te liste chi parsore di domandâ il permès par acedi a aplicazions e servizis su chest dispositîf. Chest al podarès puartâ a vê malfunzionaments di cualchi sît web.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Impostazions - Dispositîfs di rêt locâl
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Chescj sîts web a àn domandât l’acès a aplicazions e servizis su dispositîfs colegâts ae tô rêt Wi-Fi o locâl. Tu puedis sielzi di permeti o impedî ai sîts di fâ cheste operazion.
+permissions-site-local-network-disable-label =
+    .label = Bloche gnovis domandis di acès a aplicazions e servizis su dispositîfs colegâts ae tô rêt Wi-Fi o locâl.
+permissions-site-local-network-disable-desc = Cussì tu impedirâs a ducj i sîts web che no son te liste chi parsore di domandâ il permès par acedi a aplicazions e servizis su dispositîfs colegâts al to Wi-Fi o ai dispositîfs di rêt locâl. Chest al podarès puartâ a vê malfunzionaments di cualchi sît web.
 
 ## Site Permissions - Microphone
 

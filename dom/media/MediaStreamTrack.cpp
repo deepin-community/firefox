@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-*/
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,11 +17,7 @@
 #include "nsServiceManagerUtils.h"
 #include "systemservices/MediaUtils.h"
 
-#ifdef LOG
-#  undef LOG
-#endif
-
-static mozilla::LazyLogModule gMediaStreamTrackLog("MediaStreamTrack");
+mozilla::LazyLogModule gMediaStreamTrackLog("MediaStreamTrack");
 #define LOG(type, msg) MOZ_LOG(gMediaStreamTrackLog, type, msg)
 
 using namespace mozilla::media;
@@ -46,9 +41,11 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(MediaStreamTrackSource)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPrincipal)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
+auto MediaStreamTrackSource::Clone() -> CloneResult { return {}; }
+
 auto MediaStreamTrackSource::ApplyConstraints(
-    const dom::MediaTrackConstraints& aConstraints,
-    CallerType aCallerType) -> RefPtr<ApplyConstraintsPromise> {
+    const dom::MediaTrackConstraints& aConstraints, CallerType aCallerType)
+    -> RefPtr<ApplyConstraintsPromise> {
   return ApplyConstraintsPromise::CreateAndReject(
       MakeRefPtr<MediaMgrError>(MediaMgrError::Name::OverconstrainedError, ""),
       __func__);
@@ -164,6 +161,12 @@ class MediaStreamTrack::TrackSink : public MediaStreamTrackSource::Sink {
   void MutedChanged(bool aNewState) override {
     if (mTrack) {
       mTrack->MutedChanged(aNewState);
+    }
+  }
+
+  void ConstraintsChanged(const MediaTrackConstraints& aConstraints) override {
+    if (mTrack) {
+      mTrack->ConstraintsChanged(aConstraints);
     }
   }
 
@@ -308,6 +311,11 @@ void MediaStreamTrack::Stop() {
   NotifyEnded();
 }
 
+void MediaStreamTrack::GetCapabilities(MediaTrackCapabilities& aResult,
+                                       CallerType aCallerType) {
+  GetSource().GetCapabilities(aResult);
+}
+
 void MediaStreamTrack::GetConstraints(dom::MediaTrackConstraints& aResult) {
   aResult = mConstraints;
 }
@@ -363,7 +371,6 @@ already_AddRefed<Promise> MediaStreamTrack::ApplyConstraints(
             if (!mWindow || !mWindow->IsCurrentInnerWindow()) {
               return;  // Leave Promise pending after navigation by design.
             }
-            mConstraints = aConstraints;
             promise->MaybeResolve(false);
           },
           [this, self, promise](const RefPtr<MediaMgrError>& aError) {
@@ -465,6 +472,12 @@ void MediaStreamTrack::MutedChanged(bool aNewState) {
   DispatchTrustedEvent(eventName);
 }
 
+void MediaStreamTrack::ConstraintsChanged(
+    const MediaTrackConstraints& aConstraints) {
+  MOZ_ASSERT(NS_IsMainThread());
+  mConstraints = aConstraints;
+}
+
 void MediaStreamTrack::NotifyEnded() {
   MOZ_ASSERT(mReadyState == MediaStreamTrackState::Ended);
 
@@ -521,13 +534,6 @@ void MediaStreamTrack::RemoveConsumer(MediaStreamTrackConsumer* aConsumer) {
   while (mConsumers.RemoveElement(nullptr)) {
     MOZ_ASSERT_UNREACHABLE("A consumer was not explicitly removed");
   }
-}
-
-already_AddRefed<MediaStreamTrack> MediaStreamTrack::Clone() {
-  RefPtr<MediaStreamTrack> newTrack = CloneInternal();
-  newTrack->SetEnabled(Enabled());
-  newTrack->SetMuted(Muted());
-  return newTrack.forget();
 }
 
 void MediaStreamTrack::SetReadyState(MediaStreamTrackState aState) {
@@ -633,3 +639,5 @@ already_AddRefed<MediaInputPort> MediaStreamTrack::ForwardTrackContentsTo(
 }
 
 }  // namespace mozilla::dom
+
+#undef LOG

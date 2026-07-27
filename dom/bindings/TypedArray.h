@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,23 +5,21 @@
 #ifndef mozilla_dom_TypedArray_h
 #define mozilla_dom_TypedArray_h
 
-#include <string>
 #include <type_traits>
 #include <utility>
 
 #include "js/ArrayBuffer.h"
 #include "js/ArrayBufferMaybeShared.h"
 #include "js/Context.h"
-#include "js/experimental/TypedData.h"  // js::Unwrap(Ui|I)nt(8|16|32)Array, js::Get(Ui|I)nt(8|16|32)ArrayLengthAndData, js::UnwrapUint8ClampedArray, js::GetUint8ClampedArrayLengthAndData, js::UnwrapFloat(32|64)Array, js::GetFloat(32|64)ArrayLengthAndData, JS_GetArrayBufferViewType
-#include "js/GCAPI.h"                   // JS::AutoCheckCannotGC
-#include "js/RootingAPI.h"              // JS::Rooted
-#include "js/ScalarType.h"              // JS::Scalar::Type
+#include "js/GCAPI.h"       // JS::AutoCheckCannotGC
+#include "js/RootingAPI.h"  // JS::Rooted
+#include "js/ScalarType.h"  // JS::Scalar::Type
 #include "js/SharedArrayBuffer.h"
+#include "js/experimental/TypedData.h"  // js::Unwrap(Ui|I)nt(8|16|32)Array, js::Get(Ui|I)nt(8|16|32)ArrayLengthAndData, js::UnwrapUint8ClampedArray, js::GetUint8ClampedArrayLengthAndData, js::UnwrapFloat(32|64)Array, js::GetFloat(32|64)ArrayLengthAndData, JS_GetArrayBufferViewType
 #include "js/friend/ErrorMessages.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Buffer.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/Result.h"
 #include "mozilla/Vector.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/ScriptSettings.h"
@@ -163,12 +159,12 @@ namespace mozilla::dom {
  *       … // Getting offset value from somewhere.
  *       uint32_t data[3];
  *       if (!aUint32Array.CopyDataTo(data, [&](const size_t& aLength) {
- *         if (aLength - offset != ArrayLength(data)) {
+ *         if (aLength - offset != std::size(data)) {
  *           aError.ThrowTypeError("Typed array doesn't contain the right"
  *                                 " amount of data");
  *           return Maybe<std::pair<size_t, size_t>>();
  *         }
- *         return Some(std::make_pair(offset, ArrayLength(data)));
+ *         return Some(std::make_pair(offset, std::size(data)));
  *       }) {
  *         return;
  *       }
@@ -213,12 +209,12 @@ namespace mozilla::dom {
  *       Maybe<Buffer<uint8_t>> buffer =
  *         aUint8Array.CreateFromData<Buffer<uint8_t>>([&](
  *             const size_t& aLength) {
- *         if (aLength - offset != ArrayLength(data)) {
+ *         if (aLength - offset != std::size(data)) {
  *           aError.ThrowTypeError(
  *               "Typed array doesn't contain the right amount" of data");
  *           return Maybe<std::pair<size_t, size_t>>();
  *         }
- *         return Some(std::make_pair(offset, ArrayLength(data)));
+ *         return Some(std::make_pair(offset, std::size(data)));
  *       });
  *       if (buffer.isNothing()) {
  *         return;
@@ -657,7 +653,7 @@ struct TypedArray_base : public SpiderMonkeyInterfaceObjectStorage,
         std::forward<Processor>(aProcessor));
   }
 
-  template <typename Processor>
+  template <bool AllowLargeTypedArrays = false, typename Processor>
   [[nodiscard]] ProcessReturnType<Processor> ProcessFixedData(
       Processor&& aProcessor) const {
     mozilla::dom::AutoJSAPI jsapi;
@@ -701,7 +697,8 @@ struct TypedArray_base : public SpiderMonkeyInterfaceObjectStorage,
     }
     LengthPinner pinner(this);
 
-    return CallProcessor(GetCurrentData(), std::forward<Processor>(aProcessor));
+    return CallProcessor(GetCurrentData<AllowLargeTypedArrays>(),
+                         std::forward<Processor>(aProcessor));
   }
 
  private:
@@ -711,6 +708,9 @@ struct TypedArray_base : public SpiderMonkeyInterfaceObjectStorage,
     MOZ_RELEASE_ASSERT(
         !ArrayT::fromObject(mImplObj).isResizable(),
         "Bindings must have checked ArrayBuffer{View} is non-resizable");
+    MOZ_RELEASE_ASSERT(
+        !ArrayT::fromObject(mImplObj).isImmutable(),
+        "Bindings must have checked ArrayBuffer{View} is mutable");
 
     // Intentionally return a pointer and length that escape from a nogc region.
     // Private so it can only be used in very limited situations.
@@ -871,6 +871,8 @@ using Int32Array = TypedArray<JS::Int32Array>;
 using Uint32Array = TypedArray<JS::Uint32Array>;
 using Float32Array = TypedArray<JS::Float32Array>;
 using Float64Array = TypedArray<JS::Float64Array>;
+using BigInt64Array = TypedArray<JS::BigInt64Array>;
+using BigUint64Array = TypedArray<JS::BigUint64Array>;
 using ArrayBufferView = ArrayBufferView_base<JS_GetArrayBufferViewType>;
 using ArrayBuffer = TypedArray<JS::ArrayBuffer>;
 
@@ -906,46 +908,46 @@ namespace binding_detail {
 template <typename Union, typename UnionMemberType, typename = int>
 struct ApplyToTypedArray;
 
-#define APPLY_IMPL(type)                                                        \
-  template <typename Union>                                                     \
-  struct ApplyToTypedArray<Union, type, decltype((void)&Union::Is##type, 0)> {  \
-    /* Return type of calling the lambda with a TypedArray 'type'.         */   \
-    template <typename F>                                                       \
-    using FunReturnType = decltype(std::declval<F>()(std::declval<type>()));    \
-                                                                                \
-    /* Whether the return type of calling the lambda with a TypedArray     */   \
-    /* 'type' is void. */                                                       \
-    template <typename F>                                                       \
-    static constexpr bool FunReturnsVoid =                                      \
-        std::is_same_v<FunReturnType<F>, void>;                                 \
-                                                                                \
-    /* The return type of calling Apply with a union that has 'type' as    */   \
-    /* one of its union member types depends on the return type of         */   \
-    /* calling the lambda. This return type will be bool if the lambda     */   \
-    /* returns void, or it will be a Maybe<…> with the inner type being    */ \
-    /* the actual return type of calling the lambda. If the union          */   \
-    /* contains a value of the right type, then calling Apply will return  */   \
-    /* either 'true', or 'Some(…)' containing the return value of calling  */ \
-    /* the lambda. If the union does not contain a value of the right      */   \
-    /* type, then calling Apply will return either 'false', or             */   \
-    /* 'Nothing()'.                                                        */   \
-    template <typename F>                                                       \
-    using ApplyReturnType =                                                     \
-        std::conditional_t<FunReturnsVoid<F>, bool, Maybe<FunReturnType<F>>>;   \
-                                                                                \
-   public:                                                                      \
-    template <typename F>                                                       \
-    static ApplyReturnType<F> Apply(const Union& aUnion, F&& aFun) {            \
-      if (!aUnion.Is##type()) {                                                 \
-        return ApplyReturnType<F>(); /* false or Nothing() */                   \
-      }                                                                         \
-      if constexpr (FunReturnsVoid<F>) {                                        \
-        std::forward<F>(aFun)(aUnion.GetAs##type());                            \
-        return true;                                                            \
-      } else {                                                                  \
-        return Some(std::forward<F>(aFun)(aUnion.GetAs##type()));               \
-      }                                                                         \
-    }                                                                           \
+#define APPLY_IMPL(type)                                                       \
+  template <typename Union>                                                    \
+  struct ApplyToTypedArray<Union, type, decltype((void)&Union::Is##type, 0)> { \
+    /* Return type of calling the lambda with a TypedArray 'type'.         */  \
+    template <typename F>                                                      \
+    using FunReturnType = decltype(std::declval<F>()(std::declval<type>()));   \
+                                                                               \
+    /* Whether the return type of calling the lambda with a TypedArray     */  \
+    /* 'type' is void. */                                                      \
+    template <typename F>                                                      \
+    static constexpr bool FunReturnsVoid =                                     \
+        std::is_same_v<FunReturnType<F>, void>;                                \
+                                                                               \
+    /* The return type of calling Apply with a union that has 'type' as    */  \
+    /* one of its union member types depends on the return type of         */  \
+    /* calling the lambda. This return type will be bool if the lambda     */  \
+    /* returns void, or it will be a Maybe<…> with the inner type being    */  \
+    /* the actual return type of calling the lambda. If the union          */  \
+    /* contains a value of the right type, then calling Apply will return  */  \
+    /* either 'true', or 'Some(…)' containing the return value of calling  */  \
+    /* the lambda. If the union does not contain a value of the right      */  \
+    /* type, then calling Apply will return either 'false', or             */  \
+    /* 'Nothing()'.                                                        */  \
+    template <typename F>                                                      \
+    using ApplyReturnType =                                                    \
+        std::conditional_t<FunReturnsVoid<F>, bool, Maybe<FunReturnType<F>>>;  \
+                                                                               \
+   public:                                                                     \
+    template <typename F>                                                      \
+    static ApplyReturnType<F> Apply(const Union& aUnion, F&& aFun) {           \
+      if (!aUnion.Is##type()) {                                                \
+        return ApplyReturnType<F>(); /* false or Nothing() */                  \
+      }                                                                        \
+      if constexpr (FunReturnsVoid<F>) {                                       \
+        std::forward<F>(aFun)(aUnion.GetAs##type());                           \
+        return true;                                                           \
+      } else {                                                                 \
+        return Some(std::forward<F>(aFun)(aUnion.GetAs##type()));              \
+      }                                                                        \
+    }                                                                          \
   };
 
 APPLY_IMPL(Int8Array)
@@ -957,6 +959,8 @@ APPLY_IMPL(Int32Array)
 APPLY_IMPL(Uint32Array)
 APPLY_IMPL(Float32Array)
 APPLY_IMPL(Float64Array)
+APPLY_IMPL(BigInt64Array)
+APPLY_IMPL(BigUint64Array)
 APPLY_IMPL(ArrayBufferView)
 APPLY_IMPL(ArrayBuffer)
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef DOM_SVG_SVGANIMATIONELEMENT_H_
 #define DOM_SVG_SVGANIMATIONELEMENT_H_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/SMILTimedElement.h"
 #include "mozilla/dom/IDTracker.h"
 #include "mozilla/dom/SVGElement.h"
@@ -70,11 +67,11 @@ class SVGAnimationElement : public SVGAnimationElementBase, public SVGTests {
   SVGElement* GetTargetElement();
   float GetStartTime(ErrorResult& rv);
   float GetCurrentTimeAsFloat();
-  float GetSimpleDuration(ErrorResult& rv);
-  void BeginElement(ErrorResult& rv) { BeginElementAt(0.f, rv); }
-  void BeginElementAt(float offset, ErrorResult& rv);
-  void EndElement(ErrorResult& rv) { EndElementAt(0.f, rv); }
-  void EndElementAt(float offset, ErrorResult& rv);
+  float GetSimpleDuration(ErrorResult& aRv);
+  void BeginElement(ErrorResult& aRv) { BeginElementAt(0.f, aRv); }
+  void BeginElementAt(float offset, ErrorResult& aRv);
+  void EndElement(ErrorResult& aRv) { EndElementAt(0.f, aRv); }
+  void EndElementAt(float offset, ErrorResult& aRv);
 
   // Manually implement onbegin/onrepeat/onend IDL property getters/setters.
   // We don't autogenerate these methods because the property name differs

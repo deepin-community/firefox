@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +14,8 @@ class nsPresContext;
 
 namespace mozilla {
 class ComputedStyle;
-}
+class SVGImageContext;
+}  // namespace mozilla
 
 @interface MOZIconHelper : NSObject
 
@@ -25,9 +25,8 @@ class ComputedStyle;
 // Returns an autoreleased NSImage.
 + (NSImage*)iconImageFromImageContainer:(imgIContainer*)aImage
                                withSize:(NSSize)aSize
-                            presContext:(const nsPresContext*)aPresContext
-                          computedStyle:
-                              (const mozilla::ComputedStyle*)aComputedStyle
+                             svgContext:
+                                 (const mozilla::SVGImageContext*)aSVGContext
                             scaleFactor:(CGFloat)aScaleFactor;
 
 @end

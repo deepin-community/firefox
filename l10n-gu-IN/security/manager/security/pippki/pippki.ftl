@@ -35,9 +35,6 @@ download-cert-view-cert =
     .label = જુઓ
 download-cert-view-text = CA પ્રમાણપત્ર ચકાસો
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -67,8 +64,6 @@ client-auth-cert-details-issued-by = આના દ્વારા રજૂ ક�
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = આના પર સંગ્રહિત: { $storedOn }
-client-auth-cert-remember-box =
-    .label = આ નિર્ણયને યાદ રાખો
 
 ## Set password (p12) dialog
 
@@ -82,6 +77,3 @@ set-password-repeat-backup-pw =
 set-password-reminder =
     મહત્વનુઃ  જો તમે પ્રમાણપત્ર બેકઅપ પાસવર્ડ ભૂલી જશો તો ફરી બેકઅપ ફાઇલોને ખોલી શકશો નહિ.
     તેમને સુરક્ષિત જગ્યાએ નોંધી રાખો.
-
-## Protected authentication alert
-

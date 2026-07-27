@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,6 +18,7 @@ class nsIGlobalObject;
 
 namespace mozilla::dom {
 
+class CookieStoreManager;
 class NavigationPreloadManager;
 class Promise;
 class PushManager;
@@ -27,16 +26,12 @@ class WorkerPrivate;
 class ServiceWorker;
 class ServiceWorkerRegistrationChild;
 
-#define NS_DOM_SERVICEWORKERREGISTRATION_IID         \
-  {                                                  \
-    0x4578a90e, 0xa427, 0x4237, {                    \
-      0x98, 0x4a, 0xbd, 0x98, 0xe4, 0xcd, 0x5f, 0x3a \
-    }                                                \
-  }
+#define NS_DOM_SERVICEWORKERREGISTRATION_IID \
+  {0x4578a90e, 0xa427, 0x4237, {0x98, 0x4a, 0xbd, 0x98, 0xe4, 0xcd, 0x5f, 0x3a}}
 
 class ServiceWorkerRegistration final : public DOMEventTargetHelper {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_DOM_SERVICEWORKERREGISTRATION_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_DOM_SERVICEWORKERREGISTRATION_IID)
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(ServiceWorkerRegistration,
                                            DOMEventTargetHelper)
@@ -105,11 +100,11 @@ class ServiceWorkerRegistration final : public DOMEventTargetHelper {
   void WhenVersionReached(uint64_t aVersion,
                           ServiceWorkerBoolCallback&& aCallback);
 
-  void MaybeDispatchUpdateFoundRunnable();
-
   void RevokeActor(ServiceWorkerRegistrationChild* aActor);
 
-  void FireUpdateFound();
+  void FireUpdateFound() { MaybeDispatchUpdateFound(); }
+
+  CookieStoreManager* GetCookies(ErrorResult& aRv);
 
  private:
   ServiceWorkerRegistration(
@@ -138,6 +133,7 @@ class ServiceWorkerRegistration final : public DOMEventTargetHelper {
   RefPtr<ServiceWorker> mActiveWorker;
   RefPtr<NavigationPreloadManager> mNavigationPreloadManager;
   RefPtr<PushManager> mPushManager;
+  RefPtr<CookieStoreManager> mCookieStoreManager;
 
   struct VersionCallback {
     uint64_t mVersion;
@@ -153,9 +149,6 @@ class ServiceWorkerRegistration final : public DOMEventTargetHelper {
   uint64_t mScheduledUpdateFoundId;
   uint64_t mDispatchedUpdateFoundId;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(ServiceWorkerRegistration,
-                              NS_DOM_SERVICEWORKERREGISTRATION_IID)
 
 }  // namespace mozilla::dom
 

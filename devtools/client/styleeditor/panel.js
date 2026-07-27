@@ -13,32 +13,28 @@ var { getString } = ChromeUtils.importESModule(
   "resource://devtools/client/styleeditor/StyleEditorUtil.sys.mjs"
 );
 
-var StyleEditorPanel = function StyleEditorPanel(panelWin, toolbox, commands) {
-  EventEmitter.decorate(this);
+class StyleEditorPanel extends EventEmitter {
+  constructor(panelWin, toolbox, commands) {
+    super();
 
-  this._toolbox = toolbox;
-  this._commands = commands;
-  this._panelWin = panelWin;
-  this._panelDoc = panelWin.document;
+    this._toolbox = toolbox;
+    this._commands = commands;
+    this._panelWin = panelWin;
+    this._panelDoc = panelWin.document;
 
-  this._showError = this._showError.bind(this);
-};
-
-exports.StyleEditorPanel = StyleEditorPanel;
-
-StyleEditorPanel.prototype = {
+    this._showError = this._showError.bind(this);
+  }
   get panelWindow() {
     return this._panelWin;
-  },
+  }
 
   /**
    * open is effectively an asynchronous constructor
    */
   async open(options) {
     // Initialize the CSS properties database.
-    const { cssProperties } = await this._toolbox.target.getFront(
-      "cssProperties"
-    );
+    const { cssProperties } =
+      await this._toolbox.target.getFront("cssProperties");
 
     // Initialize the UI
     this.UI = new StyleEditorUI(
@@ -52,7 +48,7 @@ StyleEditorPanel.prototype = {
     await this.UI.initialize(options);
 
     return this;
-  },
+  }
 
   /**
    * Show an error message from the style editor in the toolbox
@@ -91,7 +87,7 @@ StyleEditorPanel.prototype = {
         level
       );
     }
-  },
+  }
 
   /**
    * Select a stylesheet.
@@ -112,7 +108,7 @@ StyleEditorPanel.prototype = {
     }
 
     return this.UI.selectStyleSheet(stylesheet, line - 1, col ? col - 1 : 0);
-  },
+  }
 
   /**
    * Given a location in an original file, open that file in the editor.
@@ -134,7 +130,7 @@ StyleEditorPanel.prototype = {
 
     const originalSheet = this.UI.getOriginalSourceSheet(originalId);
     return this.UI.selectStyleSheet(originalSheet, line - 1, col ? col - 1 : 0);
-  },
+  }
 
   getStylesheetResourceForGeneratedURL(url) {
     if (!this.UI) {
@@ -142,7 +138,7 @@ StyleEditorPanel.prototype = {
     }
 
     return this.UI.getStylesheetResourceForGeneratedURL(url);
-  },
+  }
 
   /**
    * Destroy the style editor.
@@ -159,15 +155,7 @@ StyleEditorPanel.prototype = {
 
     this.UI.destroy();
     this.UI = null;
-  },
-};
-
-ChromeUtils.defineLazyGetter(
-  StyleEditorPanel.prototype,
-  "strings",
-  function () {
-    return Services.strings.createBundle(
-      "chrome://devtools/locale/styleeditor.properties"
-    );
   }
-);
+}
+
+exports.StyleEditorPanel = StyleEditorPanel;

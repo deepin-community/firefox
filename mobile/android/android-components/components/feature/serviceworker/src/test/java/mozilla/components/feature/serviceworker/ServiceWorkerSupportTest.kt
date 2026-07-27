@@ -15,11 +15,11 @@ import mozilla.components.support.test.any
 import mozilla.components.support.test.eq
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.mozilla.geckoview.GeckoRuntime
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class ServiceWorkerSupportTest {
@@ -41,6 +41,7 @@ class ServiceWorkerSupportTest {
             parentId = eq(null), // default
             flags = eq(LoadUrlFlags.external()),
             contextId = eq(null), // default
+            title = eq(""), // default
             engineSession = any<EngineSession>(),
             source = eq(SessionState.Source.Internal.None),
             searchTerms = eq(""), // default
@@ -49,6 +50,8 @@ class ServiceWorkerSupportTest {
             isSearch = eq(false), // default
             searchEngineName = eq(null), // default
             additionalHeaders = eq(null), // default
+            originalInput = eq(null), // default
+            textDirectiveUserActivation = eq(false), // default
         )
     }
 }

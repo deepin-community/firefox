@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,9 +10,10 @@
 #include "nsHttpTransaction.h"
 #include "nsIClassOfService.h"
 #include "nsISocketTransport.h"
+#include "nsISupportsPriority.h"
 #include "nsSocketTransportService2.h"
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "nsIOService.h"
 #include "nsHttpHandler.h"
 
@@ -24,7 +23,7 @@ namespace mozilla {
 namespace net {
 
 Http3StreamBase::Http3StreamBase(nsAHttpTransaction* trans,
-                                 Http3Session* session)
+                                 Http3SessionBase* session)
     : mTransaction(trans), mSession(session) {}
 
 Http3StreamBase::~Http3StreamBase() = default;
@@ -38,11 +37,13 @@ Http3Stream::Http3Stream(nsAHttpTransaction* httpTransaction,
   LOG3(("Http3Stream::Http3Stream [this=%p]", this));
 
   nsHttpTransaction* trans = mTransaction->QueryHttpTransaction();
+  int32_t priority = nsISupportsPriority::PRIORITY_NORMAL;
   if (trans) {
     mTransactionBrowserId = trans->BrowserId();
+    priority = trans->Priority();
   }
 
-  mPriorityUrgency = nsHttpHandler::UrgencyFromCoSFlags(cos.Flags());
+  mPriorityUrgency = nsHttpHandler::UrgencyFromCoSFlags(cos.Flags(), priority);
   SetIncremental(cos.Incremental());
 }
 
@@ -51,6 +52,7 @@ void Http3Stream::Close(nsresult aResult) {
   mTransaction->Close(aResult);
   // Clear the mSession to break the cycle.
   mSession = nullptr;
+  mClosed = true;
 }
 
 bool Http3Stream::GetHeadersString(const char* buf, uint32_t avail,
@@ -118,7 +120,7 @@ nsresult Http3Stream::TryActivating() {
 }
 
 void Http3Stream::CurrentBrowserIdChanged(uint64_t id) {
-  MOZ_ASSERT(gHttpHandler->ActiveTabPriority());
+  MOZ_ASSERT(StaticPrefs::network_http_active_tab_priority());
 
   bool previouslyFocused = (mCurrentBrowserId == mTransactionBrowserId);
   mCurrentBrowserId = id;
@@ -182,6 +184,7 @@ nsresult Http3Stream::OnReadSegment(const char* buf, uint32_t count,
       rv = mSession->SendRequestBody(mStreamId, buf, count, countRead);
       if (rv == NS_BASE_STREAM_WOULD_BLOCK) {
         mSendingBlockedByFlowControlCount++;
+        mBlockedByFlowControl = true;
       }
 
       if (NS_FAILED(rv)) {
@@ -388,9 +391,8 @@ nsresult Http3Stream::ReadSegments() {
       mTransaction->OnTransportStatus(nullptr, NS_NET_STATUS_WAITING_FOR, 0);
       mSession->CloseSendingSide(mStreamId);
       mSendState = SEND_DONE;
-      Telemetry::Accumulate(
-          Telemetry::HTTP3_SENDING_BLOCKED_BY_FLOW_CONTROL_PER_TRANS,
-          mSendingBlockedByFlowControlCount);
+      glean::http3::sending_blocked_by_flow_control_per_trans
+          .AccumulateSingleSample(mSendingBlockedByFlowControlCount);
 
 #ifdef DEBUG
       MOZ_ASSERT(mRequestBodyLenSent == mRequestBodyLenExpected);
@@ -470,7 +472,7 @@ nsresult Http3Stream::Finish0RTT(bool aRestart) {
     mQueued = false;
     mDataReceived = false;
     mResetRecv = false;
-    mFlatResponseHeaders.TruncateLength(0);
+    mFlatResponseHeaders.ClearAndRetainStorage();
     mTotalSent = 0;
     mTotalRead = 0;
     mFin = false;

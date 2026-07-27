@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utents
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizie i tiei segnelibris dapardut.
 cfr-doorhanger-bookmark-fxa-body = Biele pensade! Cumò no sta restâ cence chest segnelibri sui tiei dispositîfs mobii. Scomence cuntun { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Sincronize i segnelibris cumò…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Boton par sierâ
     .title = Siere
+fxa-adoption-addresses-backup-title = Fâs il backup des direzions salvadis
+fxa-adoption-addresses-backup-subtitle = Protêç lis direzions che tu âs salvât, sincronizantlis cui tiei dispositîfs doprant la criptografie.
+fxa-adoption-credit-cards-backup-title = Fâs il backup dai tiei metodis di paiament
+fxa-adoption-credit-cards-backup-subtitle = Protêç i tiei metodis di paiament sincronizantju cui tiei dispositîfs doprant la criptografie.
+fxa-adoption-bookmarks-treatment-backup-title = Fasìn un backup dai tiei segnelibris
+fxa-adoption-bookmarks-treatment-backup-subtitle = Par proteziju, sincronize i tiei segnelibris cui tiei dispositîfs doprant la cifradure.
+fxa-adoption-primary-button-label = Regjistriti
 
 ## Protections panel
 
@@ -226,6 +233,20 @@ fox-doodle-pin-secondary = No cumò
 set-default-pdf-handler-headline = <strong>Cumò i tiei PDFs si vierzin in { -brand-short-name }.</strong> Modifiche o firme i formularis dret dal to navigadôr. Par cambiâ, cîr “PDF” tes impostazions.
 set-default-pdf-handler-primary = Capît
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Firme sore de linie tratinade, o là che ti va miôr!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Dissegne, scrîf o cjame la tô firme, dopo placile propite là che tu le vuelis. Salve lis tôs firmis preferidis par tornâ a doprâlis plui indevant.
+annotations-make-default-pdf-handler-title = Meti { -brand-short-name } come editôr PDF predefinît?
+annotations-make-default-pdf-handler-subtitle = Tu varâs acès ai nestris imprescj ogni volte che tu vierzis un PDF.
+annotations-make-default-pdf-primary-cta-label = Met come predefinît
+annotations-make-default-pdf-next-label = Sucessîf
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Gnûf dispositîf tal to futûr?
@@ -246,6 +267,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Cree un account
 device-migration-fxa-spotlight-getting-new-device-header-2 = Gnûf dispositîf tal to futûr?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Sta daûr di cualchi sempliç passaç par puartâ cun te segnelibris, cronologjie e passwords cuant che tu tachis a doprâ un gnûf dispositîf.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Cemût salvâ i miei dâts
+device-migration-fxa-spotlight-sync-header = Navighe cence pierdi un colp
+device-migration-fxa-spotlight-sync-body = Sincronize dutis lis tôs informazions plui impuartantis, come segnelibris e passwords, e protezilis cu la criptografie. Tu podarâs recuperâlis dapardut là che tu dopris { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Scomence
 
 ## Set as Default PDF Reader Infobar
 
@@ -272,6 +296,20 @@ launch-on-login-infobar-final-message = <strong>Vierzi { -brand-short-name } ogn
 launch-on-login-infobar-final-reject-button = No graciis
     .accesskey = N
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Vierzi { -brand-short-name } la prossime volte che il computer si invie?
+launch-on-login-spotlight-startup-checkbox = Fâs partî { -brand-short-name } al inviament
+launch-on-login-spotlight-pin-taskbar-checkbox = Fisse te sbare des aplicazions
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Vierç schedis e barcons che a jerin vierzûts la volte prime
+launch-on-login-spotlight-primary-button = Salve e siere { -brand-short-name }
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -282,3 +320,166 @@ tail-fox-spotlight-title = Liberiti des fastidiosis spiis che ti stan daûr
 tail-fox-spotlight-subtitle = Salude par simpri lis publicitâts fastidiosis che ti stan daûr dapardut là che tu vâs e sint internet come un puest plui sigûr e svelt.
 tail-fox-spotlight-primary-button = Vierç i miei colegaments cun { -brand-short-name }
 tail-fox-spotlight-secondary-button = No cumò
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Torne ae riservatece integrade
+welcome-back-spotlight-subtitle = Bentornât tal unic tra i principâls navigadôrs che al è supuartât di une organizazion cence fins di vuadagn. O metìn in pîts misuris in plui buinis par difindi i tiei dâts, dapardut là che tu navighis.
+welcome-back-embedded-import-title = Impuarte i tiei dâts e sintiti come a cjase cun { -brand-short-name }
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Al è pussibil che lis versions plui vecjis di { -brand-short-name } a vedin problemis tacant cui 14 di Zenâr dal 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Inzorne par continuâ a doprâ { -brand-short-name } dopo dai 14 di Març dal 2025.</strong>
+root-certificate-succession-infobar-link = Parcè scugnio inzornâ?
+root-certificate-succession-infobar-primary-button =
+    .label = Inzorne daurman
+    .accesskey = I
+root-certificate-succession-infobar-secondary-button =
+    .label = Plui indevant
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Tu ti sês pierdût un impuartant inzornament di { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Se no tu inzornis, cualchi part dal navigadôr nol funzionarà plui ca di pôc. Cumò al è il moment just par otignî lis nestris plui resintis protezions e funzionalitâts.
+root-certificate-windows-background-notification-learn-more-button = Plui informazions
+root-certificate-windows-background-notification-update-button = Inzorne { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Siere
+    .aria-label = Siere
+fxa-menu-message-sign-up-button = Regjistriti
+fxa-menu-message-sign-in-button = Jentre
+fxa-menu-message-sync-button = Scomence la sincronizazion
+fxa-menu-message-sync-devices-primary-text = Sincronize ducj i tiei dispositîfs
+fxa-menu-message-sync-devices-secondary-text = Oten intun lamp lis tôs informazions — come segnelibris e passwords — dapardut là che tu dopris { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Rive intun lamp ai tiei segnelibris, aes tôs passwors e a tant altri — dapardut là che tu dopris l'acès a { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronize ducj i tiei dispositîfs
+fxa-menu-message-backup-data-primary-text = Fâs il backup dai dâts dal navigadôr
+fxa-menu-message-backup-data-secondary-text = Protêç in automatic segnelibris, passwords e altris informazions su ducj i tiei dispositîfs.
+fxa-menu-message-backup-data-collapsed-text = Fâs il backup dai dâts dal navigadôr
+fxa-menu-message-backup-sync-primary-text = Manten al sigûr e sincronizâts i tiei dâts
+fxa-menu-message-backup-sync-secondary-text = La sincronizazion e fâs il backup de plui part dai tiei dâts, cussì tu puedis doprâju dapardut là che tu dopris { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronize e fâs il backup dai tiei dâts
+fxa-menu-message-mobile-primary-text = Mande schedis al to telefon
+fxa-menu-message-mobile-secondary-text = Ripie intun lamp di dulà che tu jeris restât sincronizant lis schedis cuntun dispositîf mobil.
+fxa-menu-message-mobile-collapsed-text = Sincronize cul to telefon
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bentornâts
+multi-cta-fox-doodle-set-default-checkbox = Met { -brand-short-name } come predefinît
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fisse { -brand-short-name } tal menù Start
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Ten { -brand-short-name } tal Dock
+       *[other] Fisse { -brand-short-name } te sbare des ativitâts
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Scomence a navigâ
+multi-cta-fox-doodle-main-browser-primary-button-label = Rint { -brand-short-name } il gno navigadôr principâl
+multi-cta-fox-doodle-quick-reminder-subtitle = Un pro memoria a sec: tu puedis vê il to navigadôr preferît incentrât su la riservatece simpri a puartade di clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Manten il to navigadôr preferît incentrât su la riservatece simpri a puartade di clic. Met { -brand-short-name } tant che navigadôr predefinît par vierzi colegaments, zontilu al Dock.
+       *[other] Manten il to navigadôr preferît incentrât su la riservatece simpri a puartade di clic. Met { -brand-short-name } tant che navigadôr predefinît par vierzi colegaments, zontilu ae sbare des ativitâts.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Manten il to navigadôr preferît incentrât su la riservatece simpri a puartade di clic. Met { -brand-short-name } tant che navigadôr predefinît par vierzi colegaments e fissilu te sbare des ativitâts e tal menù Start.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Pensistu di fâ l'inzornament di Windows 10 ca di pôc?
+windows-10-eos-sync-spotlight-subtitle = Fâs il backup di passwords e segnelibris par prontâti a passâ suntun altri dispositîf.
+windows-10-eos-sync-spotlight-primary-label = Fâs il backup dal to { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Desideristu passâ a Windows 11? No sta pierdi segnelibris e passwords.
+windows-10-eos-sync-toast-subtitle = Fâs il backup dai tiei dâts in mût che { -brand-short-name } al sedi pront pal ûs in ogni moment, su chest computer o sul prossim.
+windows-10-eos-sync-toast-primary-label = Scomence
+windows-10-eos-sync-toast-secondary-label = Visimi plui indevant
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } nol è preinstalât tant che i navigadôrs des grandis compagniis di tecnologjichis. Chest al è il pont.
+windows-10-eos-challenger-sync-callout-subtitle = Fasint il backup di segnelibris e passwords di { -brand-product-name }, tu podarâs trasferî in mût plui sempliç il to navigadôr preferît sul to prossim dispositîf.
+windows-10-eos-challenger-pin-callout-subtitle = Fisse { -brand-shorter-name } te tô sbare des aplicazions cussì di tignî simpri disponibil cuant che ti covente il to navigadôr preferît.
+windows-10-eos-challenger-sync-primary-button = Fâs il backup di { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Fisse { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } al bloche i minadôrs di criptomonede, lis spiis dai social media e i rilevadôrs di stamp numeric.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Lis spiis no rivaran a identificâ il to dispositîf o stâti daûr pal web — parcè che nô ur al impedìn.
+windows-10-eos-sync-callout-privacy-screen-2-title = Protêç passwords e segnelibris pal to prossim dispositîf.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Fasint il backup di { -brand-shorter-name } tu puedis puartâti daûr i tiei dâts e lis tôs impostazions pe riservatece.
+windows-10-eos-sync-callout-privacy-info-button = Viôt ce che al ven blocât
+windows-10-eos-callout-addons-title = Prove i components adizionâi: piçui inzornaments, grancj risultâts
+windows-10-eos-callout-addons-subtitle = Chestis estensions a son stadis sieltis par judâti a restâ produtîf, protet e libar des distrazions.
+windows-10-eos-callout-addons-primary-button = Viôt lis nestris sieltis
+windows-10-eos-sync-callout-addons-title = No sta pierdi i tiei components adizionâi cuant che tu inzornis di Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Sincronize daurman in mût che i tiei components adizionâi par { -brand-product-name } a sedin simpri disponibii, ancje dopo che tu âs cambiât dispositîf.
+windows-10-eos-sync-callout-next-button = Sucessîf
+windows-10-eos-sync-callout-get-started-button = Scomence
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Schedis verticâls e grups di schedis: velis achì!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Daûr fuarte domande, { -brand-product-name } al à dât fûr gnovis funzions par mantignî la tô navigazion ordenade e cence distrazions.
+windows-10-eos-feature-toast-whats-new-button = Scuvierç lis novitâts
+windows-10-eos-feature-toast-dismiss-button = Siere
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft al à finît di supuartâ Windows 10.</strong> Fâs il backup dai tiei dâts par preparâ { -brand-product-name } a Windows 11.
+windows-10-eos-global-infobar-primary-button = Ative backup
+    .accesskey = t
+windows-10-eos-global-infobar-learn-more-link = Plui informazions
+    .accessKey = l
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Une protezion da lis spiis restritive e pues causâ il malfunzionament di cualchi sît.</strong> Risolf i problemis plui comuns lant a sblocâ i elements essenziâls che a podaressin contignî lis spiis.
+etp-strict-exceptions-infobar-learn-more = Plui informazions
+etp-strict-exceptions-infobar-button = Apliche corezions
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = No cumò
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } nol è il to navigadôr predefinît
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } nol è il to navigadôr principâl
+set-default-menu-message-row-layout-title = Met { -brand-short-name } come navigadôr principâl
+set-default-menu-message-row-layout-title-variant = Met { -brand-short-name } come navigadôr predefinît
+set-default-menu-message-row-layout-subtitle = Oten velocitât, sigurece e riservatece ogni volte che tu navighis.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Ten { -brand-short-name } simpri sot man: metilu come predefinît e tegnilu tal Dock.
+       *[other] Ten { -brand-short-name } simpri sot man: metilu come predefinît e tegnilu te sbare des aplicazions.
+    }
+set-default-menu-message-primary-button = Met come predefinît
+set-default-menu-message-primary-button-variant = Met come navigadôr principâl
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 mascaris di e-mail, ufiertis di noaltris
+relay-50-masks-announcement-subtitle = Cumò tu âs a disposizion 50 mascaris gratuitis invezit di 5. Dopre une par ogni account in mût di protezi la tô vere direzion e-mail.
+relay-50-masks-announcement-primary-button = Va su { -relay-brand-name }
+    .accesskey = V
+relay-50-masks-announcement-secondary-button = Siere
+    .accesskey = S
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>Al sta par rivâ un gnûf aspiet par { -brand-product-name }.</strong> Chê che tu viodis e je une anteprime di une version che e je ancjemò in evoluzion e che e vignarà fûr plui indevant chest an.
+nova-early-access-share-feedback-link = Condivît opinion
+    .accesskey = o
+nova-early-access-infobar-primary-button = Capît
+    .accesskey = C

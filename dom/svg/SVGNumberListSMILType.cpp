@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGNumberListSMILType.h"
 
-#include "mozilla/FloatingPoint.h"
+#include <math.h>
+
+#include "SVGNumberList.h"
 #include "mozilla/SMILValue.h"
 #include "nsMathUtils.h"
-#include "SVGNumberList.h"
-#include <math.h>
 
 /* The "identity" number list for a given number list attribute (the effective
  * number list that is used if an attribute value is not specified) varies
@@ -39,14 +37,14 @@ SVGNumberListSMILType SVGNumberListSMILType::sSingleton;
 //----------------------------------------------------------------------
 // nsISMILType implementation
 
-void SVGNumberListSMILType::Init(SMILValue& aValue) const {
+void SVGNumberListSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
 
   aValue.mU.mPtr = new SVGNumberListAndInfo();
   aValue.mType = this;
 }
 
-void SVGNumberListSMILType::Destroy(SMILValue& aValue) const {
+void SVGNumberListSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value type");
   delete static_cast<SVGNumberListAndInfo*>(aValue.mU.mPtr);
   aValue.mU.mPtr = nullptr;

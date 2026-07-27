@@ -23,7 +23,6 @@ about-processes-column-cpu-total = CPU
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
 about-processes-vr-process = VR ({ $pid })
-
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -37,22 +36,9 @@ about-processes-unknown-process = Друго: { $type } ({ $pid })
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
 
-## Details within processes
-
 ## Utility process actor names
 
-# Utility process actor names
 about-processes-utility-actor-unknown = Непознат актер
-
-## Displaying CPU (percentage and total)
-## Variables:
-##    $percent (Number) The percentage of CPU used by the process or thread.
-##                      Always > 0, generally <= 200.
-##    $total (Number) The amount of time used by the process or thread since
-##                    its start.
-##    $unit (String) The unit in which to display $total. See the definitions
-##                   of `duration-unit-*`.
-
 
 ## Displaying Memory (total and delta)
 ## Variables:
@@ -71,6 +57,3 @@ about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDi
 ## Duration units
 
 duration-unit-ms = ms
-
-## Memory units
-

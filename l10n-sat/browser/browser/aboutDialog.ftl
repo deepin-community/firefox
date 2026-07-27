@@ -12,23 +12,37 @@ update-updateButton =
     .label = ᱟᱹᱯᱰᱮᱴ ᱞᱟᱹᱜᱤᱫ ᱫᱩᱦᱲᱟᱹ ᱮᱦᱚᱵᱽ ᱢᱮ { -brand-shorter-name }
     .accesskey = ᱟ
 update-checkingForUpdates = ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱧᱮᱞᱮᱫ ᱟ …
+settings-update-checking-for-updates =
+    .label = ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱧᱮᱞᱮᱫ ᱟ …
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>ᱦᱟᱹᱞᱤᱭᱟᱜ ᱰᱟᱣᱱᱞᱚᱰᱜᱭᱮᱫᱼᱟ — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = ᱟᱹᱯᱰᱥᱮᱴ ᱰᱟᱣᱱᱞᱚᱰᱚᱜ ᱠᱟᱱᱟ — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = ᱦᱟᱹᱞᱤᱭᱟᱜ ᱰᱟᱣᱱᱞᱚᱰᱜᱭᱮᱫᱼᱟ — { $transfer }
 
 ##
 
 update-applying = ᱦᱟᱹᱞᱤ ᱵᱚᱦᱟᱞᱮᱫ ᱟ  …
+settings-update-applying =
+    .label = ᱦᱟᱹᱞᱤ ᱵᱚᱦᱟᱞᱮᱫ ᱟ  …
 update-failed = ᱦᱟᱹᱞᱤ ᱰᱤᱜᱟᱹᱣᱮᱱᱟ ᱾ <label data-l10n-name="failed-link">ᱱᱟᱶᱟᱱᱟᱜ ᱵᱷᱟᱹᱨᱥᱚᱱ ᱰᱟᱣᱱᱞᱚᱰᱭ ᱢᱮ</label>
 update-failed-main = ᱦᱟᱹᱞᱤ ᱰᱤᱜᱟᱹᱣᱮᱱᱟ <a data-l10n-name="failed-link-main">ᱱᱟᱶᱟᱱᱟᱜ ᱵᱷᱟᱹᱨᱥᱚᱱ ᱰᱟᱣᱱᱞᱚᱰᱭ ᱢᱮ</a>
 update-adminDisabled = ᱟᱢᱟᱜ ᱥᱭᱥᱴᱮᱢ ᱥᱟᱥᱚᱱᱤᱡ ᱫᱟᱥᱟᱸᱭ ᱛᱮ ᱵᱟᱝ ᱦᱟᱞᱤ ᱦᱚᱪᱚ ᱦᱩᱭ ᱟᱠᱟᱱᱟ ᱾
 update-policy-disabled = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱦᱚᱛᱮᱛᱮ ᱚᱯᱰᱮᱴ ᱠᱚ ᱵᱚᱫᱚᱞ ᱟᱠᱟᱱᱟ
+settings-update-policy-disabled =
+    .label = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱦᱚᱛᱮᱛᱮ ᱚᱯᱰᱮᱴ ᱠᱚ ᱵᱚᱫᱚᱞ ᱟᱠᱟᱱᱟ
 update-noUpdatesFound = { -brand-short-name } ᱫᱚ ᱟᱹᱯ ᱴᱩ ᱰᱮᱴ ᱟᱠᱟᱱᱟ
+settings-update-no-updates-found =
+    .label = { -brand-short-name } ᱫᱚ ᱟᱹᱯ ᱴᱩ ᱰᱮᱴ ᱟᱠᱟᱱᱟ
 aboutdialog-update-checking-failed = ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱧᱮᱞ ᱨᱮ ᱦᱩᱰᱟᱹᱜ ᱾
+settings-update-checking-failed =
+    .label = ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱧᱮᱞ ᱨᱮ ᱦᱩᱰᱟᱹᱜ ᱾
 update-otherInstanceHandlingUpdates = { -brand-short-name } ᱮᱴᱟᱜᱤᱡ ᱡᱮᱞᱠᱟ ᱫᱟᱨᱟᱭ ᱛᱮ ᱦᱟᱹᱞᱤ ᱟᱠᱟᱱᱟ
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } ᱮᱴᱟᱜᱤᱡ ᱡᱮᱞᱠᱟ ᱫᱟᱨᱟᱭ ᱛᱮ ᱦᱟᱹᱞᱤ ᱟᱠᱟᱱᱟ
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } ᱮᱴᱟᱜᱤᱡ �
 aboutdialog-update-manual-with-link = ᱨᱮ ᱦᱟᱹᱞᱤ ᱠᱚ ᱧᱟᱢᱚᱜᱼᱟ <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = ᱨᱮ ᱦᱟᱹᱞᱤ ᱠᱚ ᱧᱟᱢᱚᱜᱼᱟ <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = ᱟᱢ ᱱᱚᱶᱟ ᱥᱭᱥᱴᱮᱢ ᱨᱮ ᱢᱟᱲᱟᱝ ᱥᱮᱫ ᱦᱟᱹᱞᱤ ᱵᱟᱢ ᱦᱩᱭ ᱦᱚᱪᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾<label data-l10n-name="unsupported-link">ᱵᱟᱹᱲᱛᱤ ᱪᱚᱫ ᱢᱮ</label>
+settings-update-unsupported = ᱟᱢ ᱱᱚᱶᱟ ᱥᱭᱥᱴᱮᱢ ᱨᱮ ᱢᱟᱲᱟᱝ ᱥᱮᱫ ᱦᱟᱹᱞᱤ ᱵᱟᱢ ᱦᱩᱭ ᱦᱚᱪᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾<a data-l10n-name="unsupported-link">ᱵᱟᱹᱲᱛᱤ ᱪᱚᱫ ᱢᱮ</a>
 update-restarting = ᱫᱩᱦᱲᱟᱹ ᱮᱦᱚᱵᱚᱜᱼᱟ…
+settings-update-restarting =
+    .label = ᱫᱩᱦᱲᱟᱹ ᱮᱦᱚᱵᱚᱜᱼᱟ…
 update-internal-error2 = ᱵᱷᱤᱛᱤᱨ ᱵᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱧᱮᱱ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱾ <label data-l10n-name="manual-link">{ $displayUrl }</label> ᱨᱮ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮᱱᱟᱜᱼᱟ
+settings-update-internal-error = ᱵᱷᱤᱛᱤᱨ ᱵᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱧᱮᱱ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱾ <a data-l10n-name="manual-link">{ $displayUrl }</a> ᱨᱮ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮᱱᱟᱜᱼᱟ
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } ᱫᱚ ᱥᱟᱡᱟᱣᱠᱟᱱᱟ ᱫᱟᱨᱟᱭᱛᱮ <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, ᱢᱤᱫ <label data-l10n-name="community-creditsLink"> ᱢᱤᱫ ᱫᱷᱟᱹᱨᱛᱤ ᱨᱤᱱ ᱦᱚᱲ ᱠᱚᱣᱟᱜ </label>ᱢᱤᱫ ᱫᱷᱟᱣ ᱛᱮ ᱠᱟᱹᱢᱤ ᱞᱟᱹᱜᱤᱫ ᱣᱮᱵᱽ ᱡᱷᱤᱡᱽ ᱦᱚᱲ ᱠᱚ ᱟᱨ ᱡᱷᱚᱛᱚ ᱦᱚᱲ ᱞᱟᱹᱜᱤᱫ ᱟᱹᱛᱩᱨ ᱫᱟᱲᱮ ᱦᱚᱪᱚ ᱾
 helpus = ᱜᱚᱲᱚ ᱮᱢ ᱥᱟᱱᱟᱢ ᱠᱟᱱᱟ? <label data-l10n-name="helpus-donateLink">ᱫᱟᱱ ᱢᱮ</label> ᱟᱨ ᱵᱟᱝ <label data-l10n-name="helpus-getInvolvedLink">ᱪᱷᱩᱴᱟᱣᱜ ᱢᱮ!</label>
 bottomLinks-license = ᱞᱟᱭᱥᱮᱱᱥ ᱮᱢ ᱞᱟᱹᱭ ᱥᱚᱫᱚᱨ
+bottom-links-terms = ᱵᱮᱵᱷᱟᱨ ᱨᱮᱭᱟᱜ ᱥᱚᱨᱛᱚ
+bottom-links-privacy = ᱫᱟᱱᱟᱝ ᱠᱷᱚᱵᱚᱨ
 bottomLinks-rights = ᱵᱮᱵᱷᱨᱤᱡ ᱦᱚᱠ ᱠᱚ ᱢᱩᱪᱟᱹᱫ
 bottomLinks-privacy = ᱩᱠᱩᱣᱟᱜ ᱱᱤᱛᱤ
 # Example of resulting string: 66.0.1 (64-bit)
@@ -64,3 +84,14 @@ aboutDialog-version = { $version } ({ $bits }-bit)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-bit)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

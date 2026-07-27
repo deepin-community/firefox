@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 40; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,6 +31,7 @@ class ThemeAccentColor {
   explicit ThemeAccentColor(const ComputedStyle&, ColorScheme);
   virtual ~ThemeAccentColor() = default;
 
+  bool IsCustom() const { return mAccentColor.isSome(); }
   sRGBColor Get() const;
   sRGBColor GetForeground() const;
   sRGBColor GetLight() const;
@@ -61,7 +61,7 @@ class ThemeColors {
  public:
   explicit ThemeColors(const nsIFrame* aFrame, StyleAppearance aAppearance)
       : mDoc(*aFrame->PresContext()->Document()),
-        mHighContrastInfo(ShouldBeHighContrast(*aFrame->PresContext())),
+        mHighContrastInfo(ShouldBeHighContrast(aFrame)),
         mColorScheme(
             ColorSchemeForWidget(aFrame, aAppearance, mHighContrastInfo)),
         mAccentColor(*aFrame->Style(), mColorScheme) {}
@@ -100,7 +100,8 @@ class ThemeColors {
   }
 
   // Whether we should use system colors (for high contrast mode).
-  static HighContrastInfo ShouldBeHighContrast(const nsPresContext&);
+  static HighContrastInfo ShouldBeHighContrast(const nsIFrame*);
+
   static ColorScheme ColorSchemeForWidget(const nsIFrame*, StyleAppearance,
                                           const HighContrastInfo&);
 

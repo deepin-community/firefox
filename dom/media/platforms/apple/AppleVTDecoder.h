@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,6 +14,7 @@
 #include "PlatformDecoderModule.h"
 #include "ReorderQueue.h"
 #include "TimeUnits.h"
+#include "apple/AppleUtils.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/DefineEnum.h"
 #include "mozilla/ProfilerUtils.h"
@@ -71,7 +70,25 @@ class AppleVTDecoder final : public MediaDataDecoder,
   nsCString GetCodecName() const override;
 
   ConversionRequired NeedsConversion() const override {
-    return ConversionRequired::kNeedAVCC;
+    if (mStreamType == StreamType::H264) {
+      return ConversionRequired::kNeedAVCC;
+    }
+    if (mStreamType == StreamType::HEVC) {
+      return ConversionRequired::kNeedHVCC;
+    }
+    return ConversionRequired::kNeedNone;
+  }
+
+  Maybe<PropertyValue> GetDecodeProperty(PropertyName aName) const override {
+    // Some Intel GPU has long decoding time and needs more frames queued to
+    // play smoothly. See bug 1230641.
+    static constexpr uint32_t kMinNumOutputBuffers = 10;
+    switch (aName) {
+      case PropertyName::MinNumVideoBuffers:
+        return Some(PropertyValue(kMinNumOutputBuffers));
+      default:
+        return MediaDataDecoder::GetDecodeProperty(aName);
+    }
   }
 
   // Access from the taskqueue and the decoder's thread.
@@ -105,6 +122,7 @@ class AppleVTDecoder final : public MediaDataDecoder,
   const gfx::TransferFunction mTransferFunction;
   const gfx::ColorRange mColorRange;
   const gfx::ColorDepth mColorDepth;
+  const Maybe<gfx::HDRMetadata> mHDRMetadata;
 
   // Method to set up the decompression session.
   MediaResult InitializeSession();
@@ -113,7 +131,12 @@ class AppleVTDecoder final : public MediaDataDecoder,
   CFDictionaryRef CreateDecoderExtensions();
 
   MOZ_DEFINE_ENUM_CLASS_WITH_TOSTRING_AT_CLASS_SCOPE(StreamType,
-                                                     (Unknown, H264, VP9, AV1));
+                                                     (Unknown, H264, VP9, AV1,
+                                                      HEVC));
+
+  StreamType GetStreamType(const nsCString& aMimeType) const;
+  uint32_t GetMaxRefFrames(bool aIsLowLatency) const;
+
   const StreamType mStreamType;
   const RefPtr<TaskQueue> mTaskQueue;
   const uint32_t mMaxRefFrames;
@@ -136,8 +159,8 @@ class AppleVTDecoder final : public MediaDataDecoder,
   // safe to access it in OutputFrame without protecting.
   Maybe<media::TimeUnit> mSeekTargetThreshold;
 
-  CMVideoFormatDescriptionRef mFormat;
-  VTDecompressionSessionRef mSession;
+  AutoCFTypeRef<CMVideoFormatDescriptionRef> mFormat;
+  AutoCFTypeRef<VTDecompressionSessionRef> mSession;
   Atomic<bool> mIsHardwareAccelerated;
   PerformanceRecorderMulti<DecodeStage> mPerformanceRecorder;
 };

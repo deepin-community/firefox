@@ -30,7 +30,7 @@ about-telemetry-keyed-histogram-section = भडक रंग असलेला
 about-telemetry-events-section = घटना
 about-telemetry-simple-measurements-section = सोपे मापन
 about-telemetry-slow-sql-section = हळू SQL विधाने
-about-telemetry-addon-details-section =   ॲड-ऑन तपशील
+about-telemetry-addon-details-section = ॲड-ऑन तपशील
 about-telemetry-late-writes-section = विलंबीत लिखाणे
 about-telemetry-raw-payload-section = रॉ पेलोड
 about-telemetry-raw = मूळ JSON
@@ -39,7 +39,7 @@ about-telemetry-fetch-stack-symbols = स्टॅक्सकरिता फ�
 about-telemetry-hide-stack-symbols = स्टॅक मधील कच्ची माहिती दाखवा
 # Selects the correct release version
 # Variables:
-#   $channel (String): represents the corresponding release data string
+#   $channel (string) - Represents the corresponding release data string
 about-telemetry-data-type =
     { $channel ->
         [release] प्रकाशन मजकूर
@@ -47,43 +47,43 @@ about-telemetry-data-type =
     }
 # Selects the correct upload string
 # Variables:
-#   $uploadcase (String): represents a corresponding upload string
+#   $uploadcase (string) - Represents a corresponding upload string
 about-telemetry-upload-type =
     { $uploadcase ->
         [enabled] सक्षम केलेले
        *[disabled] असमर्थ केलेले
     }
 # Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
+#   $telemetryServerOwner (string) - the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
 about-telemetry-page-subtitle = हे पृष्ठ Telemetry द्वारा एकत्रीत केलेली कामगिरी, हार्डवेअर, वापर, आणि स्वपसंतीकरणाबद्दल माहिती पुरवते. { $telemetryServerOwner } कडे ही माहिती सुपूर्द केली जाते, { -brand-full-name } ला सुधारण्यासाठी.
 about-telemetry-settings-explanation = Telemetry { about-telemetry-data-type } गोळा करत आहे आणि अपलोड <a data-l10n-name="upload-link">{ about-telemetry-upload-type }</a> आहे.
 # Variables:
-#   $name (String): ping name, e.g. “saved-session”
-#   $timeStamp (String): ping localized timestamp, e.g. “2017/07/08 10:40:46”
+#   $name (string) - Ping name, e.g. “saved-session”
+#   $timestamp (string) - Ping localized timestamp, e.g. “2017/07/08 10:40:46”
 about-telemetry-ping-details = माहितीचा प्रत्येक भाग “<a data-l10n-name="ping-link">पिंग</a>” मध्ये गुंडाळुन पाठवला जातो. आपण { $name }, { $timestamp } कडे बघत आहात.
 # string used as a placeholder for the search field
 # More info about it can be found here:
 # https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/telemetry/data/main-ping.html
 # Variables:
-#   $selectedTitle (String): the section name from the structure of the ping.
+#   $selectedTitle (string) - The section name from the structure of the ping.
 about-telemetry-filter-placeholder =
     .placeholder = { $selectedTitle } मध्ये शोधा
 about-telemetry-filter-all-placeholder =
     .placeholder = सर्व विभागांमध्ये शोधा
 # Variables:
-#   $searchTerms (String): the searched terms
+#   $searchTerms (string) - The searched terms
 about-telemetry-results-for-search = “{ $searchTerms }” करिता परिणाम
 # More info about it can be found here: https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/telemetry/data/main-ping.html
 # Variables:
-#   $sectionName (String): the section name from the structure of the ping.
-#   $currentSearchText (String): the current text in the search input
+#   $sectionName (string) - The section name from the structure of the ping.
+#   $currentSearchText (string) - The current text in the search input
 about-telemetry-no-search-results = क्षमस्व! “{ $currentSearchText }” साठी { $sectionName } मध्ये कोणतेही परिणाम नाहीत
 # Variables:
-#   $searchTerms (String): the searched terms
+#   $searchTerms (string) - The searched terms
 about-telemetry-no-search-results-all = माफ करा! “{ $searchTerms }” साठी कोणत्याही विभागात परिणाम नाहीत
 # This message is displayed when a section is empty.
 # Variables:
-#   $sectionName (String): is replaced by the section name.
+#   $sectionName (string) - Is replaced by the section name.
 about-telemetry-no-data-to-display = क्षमस्व! सध्या “{ $sectionName }” मध्ये कोणताही डेटा उपलब्ध नाही
 # used in the “Ping Type” select
 about-telemetry-telemetry-ping-type-all = सर्व
@@ -99,13 +99,13 @@ about-telemetry-slow-sql-statement = विधान
 about-telemetry-addon-table-id = ॲड-ऑन ID
 about-telemetry-addon-table-details = तपशील
 # Variables:
-#   $addonProvider (String): the name of an Add-on Provider (e.g. “XPI”, “Plugin”)
+#   $addonProvider (string) - The name of an Add-on Provider (e.g. “XPI”, “Plugin”)
 about-telemetry-addon-provider = { $addonProvider } प्रोव्हाइडर
 about-telemetry-keys-header = गुणधर्म
 about-telemetry-names-header = नाव
 about-telemetry-values-header = मूल्य
 # Variables:
-#   $lateWriteCount (Integer): the number of the late writes
+#   $lateWriteCount (number) - The number of the late writes
 about-telemetry-late-writes-title = विलंबीत लिखाण #{ $lateWriteCount }
 about-telemetry-stack-title = स्टॅक:
 about-telemetry-memory-map-title = मेमरि नकाशा:

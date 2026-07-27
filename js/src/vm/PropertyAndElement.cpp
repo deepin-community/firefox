@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -304,7 +302,7 @@ JS_PUBLIC_API bool JS_DefineProperty(JSContext* cx, JS::Handle<JSObject*> obj,
       cx, obj, name, JS::Handle<JS::Value>::fromMarkedLocation(&value), attrs);
 }
 
-#define AUTO_NAMELEN(s, n) (((n) == (size_t) - 1) ? js_strlen(s) : (n))
+#define AUTO_NAMELEN(s, n) (((n) == (size_t)-1) ? js_strlen(s) : (n))
 
 JS_PUBLIC_API bool JS_DefineUCProperty(JSContext* cx, JS::Handle<JSObject*> obj,
                                        const char16_t* name, size_t namelen,

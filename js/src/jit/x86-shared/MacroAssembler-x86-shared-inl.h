@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -9,7 +7,9 @@
 
 #include "jit/x86-shared/MacroAssembler-x86-shared.h"
 
-#include "mozilla/MathAlgorithms.h"
+#include "mozilla/Casting.h"
+
+#include <bit>
 
 namespace js {
 namespace jit {
@@ -69,6 +69,13 @@ void MacroAssembler::and32(Register src, Register dest) { andl(src, dest); }
 
 void MacroAssembler::and32(Imm32 imm, Register dest) { andl(imm, dest); }
 
+void MacroAssembler::and32(Imm32 imm, Register src, Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  andl(imm, dest);
+}
+
 void MacroAssembler::and32(Imm32 imm, const Address& dest) {
   andl(imm, Operand(dest));
 }
@@ -81,6 +88,13 @@ void MacroAssembler::or32(Register src, Register dest) { orl(src, dest); }
 
 void MacroAssembler::or32(Imm32 imm, Register dest) { orl(imm, dest); }
 
+void MacroAssembler::or32(Imm32 imm, Register src, Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  orl(imm, dest);
+}
+
 void MacroAssembler::or32(Imm32 imm, const Address& dest) {
   orl(imm, Operand(dest));
 }
@@ -88,6 +102,13 @@ void MacroAssembler::or32(Imm32 imm, const Address& dest) {
 void MacroAssembler::xor32(Register src, Register dest) { xorl(src, dest); }
 
 void MacroAssembler::xor32(Imm32 imm, Register dest) { xorl(imm, dest); }
+
+void MacroAssembler::xor32(Imm32 imm, Register src, Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  xorl(imm, dest);
+}
 
 void MacroAssembler::xor32(Imm32 imm, const Address& dest) {
   xorl(imm, Operand(dest));
@@ -137,7 +158,7 @@ void MacroAssembler::popcnt32(Register input, Register output, Register tmp) {
 
   MOZ_ASSERT(tmp != InvalidReg);
 
-  // Equivalent to mozilla::CountPopulation32()
+  // Equivalent to std::popcount()
 
   movl(input, tmp);
   if (input != output) {
@@ -176,6 +197,10 @@ void MacroAssembler::byteSwap32(Register reg) { bswapl(reg); }
 
 // ===============================================================
 // Arithmetic instructions
+
+void MacroAssembler::add32(const Address& src, Register dest) {
+  addl(Operand(src), dest);
+}
 
 void MacroAssembler::add32(Register src, Register dest) { addl(src, dest); }
 
@@ -231,9 +256,9 @@ void MacroAssembler::mulDouble(FloatRegister src, FloatRegister dest) {
   vmulsd(src, dest, dest);
 }
 
-void MacroAssembler::quotient32(Register rhs, Register srcDest,
+void MacroAssembler::quotient32(Register lhs, Register rhs, Register dest,
                                 Register tempEdx, bool isUnsigned) {
-  MOZ_ASSERT(srcDest == eax && tempEdx == edx);
+  MOZ_ASSERT(lhs == eax && dest == eax && tempEdx == edx);
 
   // Sign extend eax into edx to make (edx:eax): idiv/udiv are 64-bit.
   if (isUnsigned) {
@@ -245,9 +270,9 @@ void MacroAssembler::quotient32(Register rhs, Register srcDest,
   }
 }
 
-void MacroAssembler::remainder32(Register rhs, Register srcDest,
+void MacroAssembler::remainder32(Register lhs, Register rhs, Register dest,
                                  Register tempEdx, bool isUnsigned) {
-  MOZ_ASSERT(srcDest == eax && tempEdx == edx);
+  MOZ_ASSERT(lhs == eax && dest == eax && tempEdx == edx);
 
   // Sign extend eax into edx to make (edx:eax): idiv/udiv are 64-bit.
   if (isUnsigned) {
@@ -271,22 +296,13 @@ void MacroAssembler::divDouble(FloatRegister src, FloatRegister dest) {
 void MacroAssembler::neg32(Register reg) { negl(reg); }
 
 void MacroAssembler::negateFloat(FloatRegister reg) {
-  ScratchFloat32Scope scratch(*this);
-  vpcmpeqw(Operand(scratch), scratch, scratch);
-  vpsllq(Imm32(31), scratch, scratch);
-
   // XOR the float in a float register with -0.0.
-  vxorps(scratch, reg, reg);  // s ^ 0x80000000
+  vxorpsSimd128(SimdConstant::SplatX4(-0.0f), reg, reg);
 }
 
 void MacroAssembler::negateDouble(FloatRegister reg) {
-  // From MacroAssemblerX86Shared::maybeInlineDouble
-  ScratchDoubleScope scratch(*this);
-  vpcmpeqw(Operand(scratch), scratch, scratch);
-  vpsllq(Imm32(63), scratch, scratch);
-
   // XOR the float in a float register with -0.0.
-  vxorpd(scratch, reg, reg);  // s ^ 0x80000000000000
+  vxorpdSimd128(SimdConstant::SplatX2(-0.0), reg, reg);
 }
 
 void MacroAssembler::abs32(Register src, Register dest) {
@@ -300,19 +316,25 @@ void MacroAssembler::abs32(Register src, Register dest) {
 }
 
 void MacroAssembler::absFloat32(FloatRegister src, FloatRegister dest) {
-  ScratchFloat32Scope scratch(*this);
-  loadConstantFloat32(mozilla::SpecificNaN<float>(
-                          0, mozilla::FloatingPoint<float>::kSignificandBits),
-                      scratch);
-  vandps(scratch, src, dest);
+  if (src != dest) {
+    if (!HasAVX()) {
+      moveFloat32(src, dest);
+      src = dest;
+    }
+  }
+  float clearSignMask = mozilla::BitwiseCast<float>(INT32_MAX);
+  vandpsSimd128(SimdConstant::SplatX4(clearSignMask), src, dest);
 }
 
 void MacroAssembler::absDouble(FloatRegister src, FloatRegister dest) {
-  ScratchDoubleScope scratch(*this);
-  loadConstantDouble(mozilla::SpecificNaN<double>(
-                         0, mozilla::FloatingPoint<double>::kSignificandBits),
-                     scratch);
-  vandpd(scratch, src, dest);
+  if (src != dest) {
+    if (!HasAVX()) {
+      moveDouble(src, dest);
+      src = dest;
+    }
+  }
+  double clearSignMask = mozilla::BitwiseCast<double>(INT64_MAX);
+  vandpdSimd128(SimdConstant::SplatX2(clearSignMask), src, dest);
 }
 
 void MacroAssembler::sqrtFloat32(FloatRegister src, FloatRegister dest) {
@@ -454,12 +476,34 @@ void MacroAssembler::lshift32(Imm32 shift, Register srcDest) {
   shll(shift, srcDest);
 }
 
+void MacroAssembler::lshift32(Imm32 shift, Register src, Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  shll(shift, dest);
+}
+
 void MacroAssembler::rshift32(Imm32 shift, Register srcDest) {
   shrl(shift, srcDest);
 }
 
+void MacroAssembler::rshift32(Imm32 shift, Register src, Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  shrl(shift, dest);
+}
+
 void MacroAssembler::rshift32Arithmetic(Imm32 shift, Register srcDest) {
   sarl(shift, srcDest);
+}
+
+void MacroAssembler::rshift32Arithmetic(Imm32 shift, Register src,
+                                        Register dest) {
+  if (src != dest) {
+    movl(src, dest);
+  }
+  sarl(shift, dest);
 }
 
 // ===============================================================
@@ -467,20 +511,23 @@ void MacroAssembler::rshift32Arithmetic(Imm32 shift, Register srcDest) {
 
 void MacroAssembler::cmp8Set(Condition cond, Address lhs, Imm32 rhs,
                              Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(lhs, rhs, dest);
   cmp8(lhs, rhs);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 void MacroAssembler::cmp16Set(Condition cond, Address lhs, Imm32 rhs,
                               Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(lhs, rhs, dest);
   cmp16(lhs, rhs);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 template <typename T1, typename T2>
 void MacroAssembler::cmp32Set(Condition cond, T1 lhs, T2 rhs, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(lhs, rhs, dest);
   cmp32(lhs, rhs);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 // ===============================================================
@@ -608,9 +655,9 @@ void MacroAssembler::branchPtr(Condition cond, const BaseIndex& lhs,
   branchPtrImpl(cond, lhs, rhs, label);
 }
 
-template <typename T, typename S, typename L>
+template <typename T, typename S>
 void MacroAssembler::branchPtrImpl(Condition cond, const T& lhs, const S& rhs,
-                                   L label) {
+                                   Label* label) {
   cmpPtr(Operand(lhs), rhs);
   j(cond, label);
 }
@@ -710,6 +757,12 @@ void MacroAssembler::branchSubPtr(Condition cond, T src, Register dest,
 void MacroAssembler::branchMulPtr(Condition cond, Register src, Register dest,
                                   Label* label) {
   mulPtr(src, dest);
+  j(cond, label);
+}
+
+void MacroAssembler::branchNegPtr(Condition cond, Register reg, Label* label) {
+  MOZ_ASSERT(cond == Overflow);
+  negPtr(reg);
   j(cond, label);
 }
 
@@ -1112,8 +1165,9 @@ void MacroAssembler::branchTestMagic(Condition cond, const ValueOperand& value,
   branchTestMagicImpl(cond, value, label);
 }
 
-template <typename T, class L>
-void MacroAssembler::branchTestMagicImpl(Condition cond, const T& t, L label) {
+template <typename T>
+void MacroAssembler::branchTestMagicImpl(Condition cond, const T& t,
+                                         Label* label) {
   cond = testMagic(cond, t);
   j(cond, label);
 }
@@ -1121,36 +1175,41 @@ void MacroAssembler::branchTestMagicImpl(Condition cond, const T& t, L label) {
 template <typename T>
 void MacroAssembler::testNumberSet(Condition cond, const T& src,
                                    Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(src, dest);
   cond = testNumber(cond, src);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 template <typename T>
 void MacroAssembler::testBooleanSet(Condition cond, const T& src,
                                     Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(src, dest);
   cond = testBoolean(cond, src);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 template <typename T>
 void MacroAssembler::testStringSet(Condition cond, const T& src,
                                    Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(src, dest);
   cond = testString(cond, src);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 template <typename T>
 void MacroAssembler::testSymbolSet(Condition cond, const T& src,
                                    Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(src, dest);
   cond = testSymbol(cond, src);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 template <typename T>
 void MacroAssembler::testBigIntSet(Condition cond, const T& src,
                                    Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(src, dest);
   cond = testBigInt(cond, src);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 void MacroAssembler::cmp32Move32(Condition cond, Register lhs, Imm32 rhs,
@@ -1200,70 +1259,66 @@ void MacroAssembler::spectreZeroRegister(Condition cond, Register scratch,
 
 // ========================================================================
 // Memory access primitives.
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedDouble(
-    FloatRegister src, const Address& dest) {
+FaultingCodeOffset MacroAssembler::storeDouble(FloatRegister src,
+                                               const Address& dest) {
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
   vmovsd(src, dest);
   return fco;
 }
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedDouble(
-    FloatRegister src, const BaseIndex& dest) {
+FaultingCodeOffset MacroAssembler::storeDouble(FloatRegister src,
+                                               const BaseIndex& dest) {
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
   vmovsd(src, dest);
   return fco;
 }
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedDouble(
-    FloatRegister src, const Operand& dest) {
+FaultingCodeOffset MacroAssembler::storeDouble(FloatRegister src,
+                                               const Operand& dest) {
   switch (dest.kind()) {
     case Operand::MEM_REG_DISP:
-      return storeUncanonicalizedDouble(src, dest.toAddress());
+      return storeDouble(src, dest.toAddress());
     case Operand::MEM_SCALE:
-      return storeUncanonicalizedDouble(src, dest.toBaseIndex());
+      return storeDouble(src, dest.toBaseIndex());
     default:
       MOZ_CRASH("unexpected operand kind");
   }
 }
 
-template FaultingCodeOffset MacroAssembler::storeDouble(FloatRegister src,
-                                                        const Operand& dest);
-
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat32(
-    FloatRegister src, const Address& dest) {
+FaultingCodeOffset MacroAssembler::storeFloat32(FloatRegister src,
+                                                const Address& dest) {
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
   vmovss(src, dest);
   return fco;
 }
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat32(
-    FloatRegister src, const BaseIndex& dest) {
+FaultingCodeOffset MacroAssembler::storeFloat32(FloatRegister src,
+                                                const BaseIndex& dest) {
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
   vmovss(src, dest);
   return fco;
 }
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat32(
-    FloatRegister src, const Operand& dest) {
+FaultingCodeOffset MacroAssembler::storeFloat32(FloatRegister src,
+                                                const Operand& dest) {
   switch (dest.kind()) {
     case Operand::MEM_REG_DISP:
-      return storeUncanonicalizedFloat32(src, dest.toAddress());
+      return storeFloat32(src, dest.toAddress());
     case Operand::MEM_SCALE:
-      return storeUncanonicalizedFloat32(src, dest.toBaseIndex());
+      return storeFloat32(src, dest.toBaseIndex());
     default:
       MOZ_CRASH("unexpected operand kind");
   }
 }
 
-template FaultingCodeOffset MacroAssembler::storeFloat32(FloatRegister src,
-                                                         const Operand& dest);
-
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat16(
-    FloatRegister src, const Address& dest, Register scratch) {
+FaultingCodeOffset MacroAssembler::storeFloat16(FloatRegister src,
+                                                const Address& dest,
+                                                Register scratch) {
   vmovd(src, scratch);
 
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
   movw(scratch, Operand(dest));
   return fco;
 }
-FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat16(
-    FloatRegister src, const BaseIndex& dest, Register scratch) {
+FaultingCodeOffset MacroAssembler::storeFloat16(FloatRegister src,
+                                                const BaseIndex& dest,
+                                                Register scratch) {
   vmovd(src, scratch);
 
   FaultingCodeOffset fco = FaultingCodeOffset(currentOffset());
@@ -1271,8 +1326,8 @@ FaultingCodeOffset MacroAssembler::storeUncanonicalizedFloat16(
   return fco;
 }
 
-void MacroAssembler::memoryBarrier(MemoryBarrierBits barrier) {
-  if (barrier & MembarStoreLoad) {
+void MacroAssembler::memoryBarrier(MemoryBarrier barrier) {
+  if (barrier.hasStoreLoad()) {
     // This implementation follows Linux.
     masm.mfence();
   }
@@ -1609,13 +1664,17 @@ void MacroAssembler::reverseInt64x2(FloatRegister src, FloatRegister dest) {
 // Any lane true, ie any bit set
 
 void MacroAssembler::anyTrueSimd128(FloatRegister src, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(dest);
+
   vptest(src, src);
-  emitSetRegisterIf(Condition::NonZero, dest);
+  emitSet(Condition::NonZero, dest, destIsZero);
 }
 
 // All lanes true
 
 void MacroAssembler::allTrueInt8x16(FloatRegister src, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(dest);
+
   ScratchSimd128Scope xtmp(*this);
   // xtmp is all-00h
   vpxor(xtmp, xtmp, xtmp);
@@ -1624,10 +1683,12 @@ void MacroAssembler::allTrueInt8x16(FloatRegister src, Register dest) {
   vpcmpeqb(Operand(src), xtmp, xtmp);
   // Check if xtmp is 0.
   vptest(xtmp, xtmp);
-  emitSetRegisterIf(Condition::Zero, dest);
+  emitSet(Condition::Zero, dest, destIsZero);
 }
 
 void MacroAssembler::allTrueInt16x8(FloatRegister src, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(dest);
+
   ScratchSimd128Scope xtmp(*this);
   // xtmp is all-00h
   vpxor(xtmp, xtmp, xtmp);
@@ -1636,10 +1697,12 @@ void MacroAssembler::allTrueInt16x8(FloatRegister src, Register dest) {
   vpcmpeqw(Operand(src), xtmp, xtmp);
   // Check if xtmp is 0.
   vptest(xtmp, xtmp);
-  emitSetRegisterIf(Condition::Zero, dest);
+  emitSet(Condition::Zero, dest, destIsZero);
 }
 
 void MacroAssembler::allTrueInt32x4(FloatRegister src, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(dest);
+
   ScratchSimd128Scope xtmp(*this);
   // xtmp is all-00h
   vpxor(xtmp, xtmp, xtmp);
@@ -1648,10 +1711,12 @@ void MacroAssembler::allTrueInt32x4(FloatRegister src, Register dest) {
   vpcmpeqd(Operand(src), xtmp, xtmp);
   // Check if xtmp is 0.
   vptest(xtmp, xtmp);
-  emitSetRegisterIf(Condition::Zero, dest);
+  emitSet(Condition::Zero, dest, destIsZero);
 }
 
 void MacroAssembler::allTrueInt64x2(FloatRegister src, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(dest);
+
   ScratchSimd128Scope xtmp(*this);
   // xtmp is all-00h
   vpxor(xtmp, xtmp, xtmp);
@@ -1660,7 +1725,7 @@ void MacroAssembler::allTrueInt64x2(FloatRegister src, Register dest) {
   vpcmpeqq(Operand(src), xtmp, xtmp);
   // Check if xtmp is 0.
   vptest(xtmp, xtmp);
-  emitSetRegisterIf(Condition::Zero, dest);
+  emitSet(Condition::Zero, dest, destIsZero);
 }
 
 // Bitmask
@@ -1850,9 +1915,9 @@ void MacroAssembler::mulInt64x2(FloatRegister lhs, const SimdConstant& rhs,
   // Check if we can specialize that to less than eight instructions
   // (in comparison with the above mulInt64x2 version).
   const int64_t* c = static_cast<const int64_t*>(rhs.bytes());
-  const int64_t val = c[0];
-  if (val == c[1]) {
-    switch (mozilla::CountPopulation64(val)) {
+  if (c[0] == c[1]) {
+    const uint64_t val = static_cast<uint64_t>(c[0]);
+    switch (std::popcount(val)) {
       case 0:  // val == 0
         vpxor(Operand(dest), dest, dest);
         return;
@@ -1864,13 +1929,13 @@ void MacroAssembler::mulInt64x2(FloatRegister lhs, const SimdConstant& rhs,
           moveSimd128Int(lhs, dest);
         } else {
           lhs = moveSimd128IntIfNotAVX(lhs, dest);
-          vpsllq(Imm32(mozilla::CountTrailingZeroes64(val)), lhs, dest);
+          vpsllq(Imm32(std::countr_zero(val)), lhs, dest);
         }
         return;
       case 2: {
         // Constants with 2 bits set, such as 3, 5, 10, etc.
-        int i0 = mozilla::CountTrailingZeroes64(val);
-        int i1 = mozilla::CountTrailingZeroes64(val & (val - 1));
+        int i0 = std::countr_zero(val);
+        int i1 = std::countr_zero(val & (val - 1));
         FloatRegister lhsForTemp = moveSimd128IntIfNotAVX(lhs, temp);
         vpsllq(Imm32(i1), lhsForTemp, temp);
         lhs = moveSimd128IntIfNotAVX(lhs, dest);
@@ -1884,7 +1949,7 @@ void MacroAssembler::mulInt64x2(FloatRegister lhs, const SimdConstant& rhs,
       case 63: {
         // Some constants with 1 bit unset, such as -2, -3, -5, etc.
         FloatRegister lhsForTemp = moveSimd128IntIfNotAVX(lhs, temp);
-        vpsllq(Imm32(mozilla::CountTrailingZeroes64(~val)), lhsForTemp, temp);
+        vpsllq(Imm32(std::countr_one(val)), lhsForTemp, temp);
         negInt64x2(lhs, dest);
         vpsubq(Operand(temp), dest, dest);
         return;

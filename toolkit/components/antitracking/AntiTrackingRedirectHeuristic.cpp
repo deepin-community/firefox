@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +13,7 @@
 #include "mozilla/net/CookieJarSettings.h"
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AntitrackingMetrics.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsIClassifiedChannel.h"
@@ -373,13 +371,13 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
   newLoadInfo->SetAllowListFutureDocumentsCreatedFromThisRedirectChain(true);
 
   uint64_t innerWindowID;
-  Unused << newChannel->GetTopLevelContentWindowId(&innerWindowID);
+  (void)newChannel->GetTopLevelContentWindowId(&innerWindowID);
 
   nsAutoString errorText;
   AutoTArray<nsString, 2> params = {NS_ConvertUTF8toUTF16(newOrigin),
                                     NS_ConvertUTF8toUTF16(oldOrigin)};
   rv = nsContentUtils::FormatLocalizedString(
-      nsContentUtils::eNECKO_PROPERTIES, "CookieAllowedForOriginByHeuristic",
+      PropertiesFile::NECKO_PROPERTIES, "CookieAllowedForOriginByHeuristic",
       params, errorText);
   if (NS_SUCCEEDED(rv)) {
     nsContentUtils::ReportToConsoleByWindowID(
@@ -387,10 +385,24 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
         innerWindowID);
   }
 
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::StorageGranted);
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::Redirect);
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegranted)
+      .Add();
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eRedirecttracker)
+      .Add();
+
+  // We don't need to test if it is a tracker, since we already know it is one!
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegrantedCt)
+      .Add();
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eRedirecttrackerCt)
+      .Add();
 
   // We don't care about this promise because the operation is actually sync.
   RefPtr<StorageAccessAPIHelper::ParentAccessGrantPromise> promise =
@@ -398,7 +410,7 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
           newPrincipal, oldPrincipal,
           StorageAccessAPIHelper::StorageAccessPromptChoices::eAllow, false,
           StaticPrefs::privacy_restrict3rdpartystorage_expiration_redirect());
-  Unused << promise;
+  (void)promise;
 }
 
 }  // namespace mozilla

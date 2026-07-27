@@ -8,13 +8,12 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
 import android.util.TypedValue
 import android.view.Window
+import androidx.annotation.AnyRes
 import androidx.annotation.StyleRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import mozilla.components.support.ktx.android.content.getColorFromAttr
@@ -26,11 +25,9 @@ import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
-import org.mozilla.fenix.ext.settings
+import com.google.android.material.R as materialR
 
-abstract class ThemeManager(
-    private val privacyStyleRes: Int,
-) {
+abstract class ThemeManager {
 
     abstract var currentTheme: BrowsingMode
 
@@ -40,30 +37,41 @@ abstract class ThemeManager(
     @get:StyleRes
     val currentThemeResource get() = when (currentTheme) {
         BrowsingMode.Normal -> R.style.NormalTheme
-        BrowsingMode.Private -> privacyStyleRes
+        BrowsingMode.Private -> R.style.PrivateTheme
     }
 
     /**
      * Handles status bar theme change since the window does not dynamically recreate
+     *
+     * @param activity The activity to apply the status bar theme to.
+     * @param overrideThemeStatusBarColor Whether to override the theme's status bar color.
      */
-    fun applyStatusBarTheme(activity: Activity) = applyStatusBarTheme(activity.window, activity)
-    fun applyStatusBarTheme(window: Window, context: Context) {
+    fun applyStatusBarTheme(activity: Activity, overrideThemeStatusBarColor: Boolean = false) =
+        applyStatusBarTheme(activity.window, activity, overrideThemeStatusBarColor)
+
+    private fun applyStatusBarTheme(
+        window: Window,
+        context: Context,
+        overrideThemeStatusBarColor: Boolean,
+    ) {
         when (currentTheme) {
             BrowsingMode.Normal -> {
                 when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
                     Configuration.UI_MODE_NIGHT_UNDEFINED, // We assume light here per Android doc's recommendation
                     Configuration.UI_MODE_NIGHT_NO,
                     -> {
-                        updateLightSystemBars(window, context)
+                        updateLightSystemBars(window, context, overrideThemeStatusBarColor)
                     }
                     Configuration.UI_MODE_NIGHT_YES -> {
                         clearLightSystemBars(window)
+                        setStatusBarColor(window, context, overrideThemeStatusBarColor)
                         updateNavigationBar(window, context)
                     }
                 }
             }
             BrowsingMode.Private -> {
                 clearLightSystemBars(window)
+                setStatusBarColor(window, context, overrideThemeStatusBarColor)
                 updateNavigationBar(window, context)
             }
         }
@@ -74,6 +82,14 @@ abstract class ThemeManager(
     }
 
     companion object {
+        /**
+         * Resolves the attribute to a resource ID.
+         *
+         * @param attribute The attribute to resolve.
+         * @param context Any context.
+         * @return The resource ID of the resolved attribute.
+         */
+        @AnyRes
         fun resolveAttribute(attribute: Int, context: Context): Int {
             val typedValue = TypedValue()
             val theme = context.theme
@@ -82,41 +98,49 @@ abstract class ThemeManager(
             return typedValue.resourceId
         }
 
+        /**
+         * Resolves the attribute to a color.
+         *
+         * @param attribute The attribute to resolve.
+         * @return The [Color] of the resolved attribute.
+         */
         @Composable
-        fun resolveAttributeColor(attribute: Int): androidx.compose.ui.graphics.Color {
+        fun resolveAttributeColor(attribute: Int): Color {
             val resourceId = resolveAttribute(attribute, LocalContext.current)
             return colorResource(resourceId)
         }
 
-        private fun updateLightSystemBars(window: Window, context: Context) {
-            if (SDK_INT >= Build.VERSION_CODES.M) {
-                context.getStatusBarColor()?.let { window.setStatusBarColorCompat(it) }
-                window.createWindowInsetsController().isAppearanceLightStatusBars = true
-            } else {
-                window.setStatusBarColorCompat(Color.BLACK)
-            }
+        private fun updateLightSystemBars(window: Window, context: Context, overrideThemeStatusBarColor: Boolean) {
+            setStatusBarColor(window, context, overrideThemeStatusBarColor)
+            window.createWindowInsetsController().isAppearanceLightStatusBars = true
 
-            if (SDK_INT >= Build.VERSION_CODES.O) {
-                // API level can display handle light navigation bar color
-                window.createWindowInsetsController().isAppearanceLightNavigationBars = true
+            // display handle light navigation bar color
+            window.createWindowInsetsController().isAppearanceLightNavigationBars = true
 
-                updateNavigationBar(window, context)
-            }
+            updateNavigationBar(window, context)
         }
 
         private fun clearLightSystemBars(window: Window) {
-            if (SDK_INT >= Build.VERSION_CODES.M) {
-                window.createWindowInsetsController().isAppearanceLightStatusBars = false
-            }
+            window.createWindowInsetsController().isAppearanceLightStatusBars = false
 
-            if (SDK_INT >= Build.VERSION_CODES.O) {
-                // API level can display handle light navigation bar color
-                window.createWindowInsetsController().isAppearanceLightNavigationBars = false
-            }
+            // display handle light navigation bar color
+            window.createWindowInsetsController().isAppearanceLightNavigationBars = false
         }
 
         private fun updateNavigationBar(window: Window, context: Context) {
-            window.setNavigationBarColorCompat(context.getColorFromAttr(R.attr.layer1))
+            window.setNavigationBarColorCompat(context.getColorFromAttr(materialR.attr.colorSurface))
+        }
+
+        private fun setStatusBarColor(
+            window: Window,
+            context: Context,
+            overrideThemeStatusBarColor: Boolean,
+        ) {
+            if (overrideThemeStatusBarColor) {
+                window.setStatusBarColorCompat(context.getColorFromAttr(R.attr.layer3))
+            } else {
+                context.getStatusBarColor()?.let { window.setStatusBarColorCompat(it) }
+            }
         }
     }
 }
@@ -124,7 +148,7 @@ abstract class ThemeManager(
 class DefaultThemeManager(
     currentTheme: BrowsingMode,
     private val activity: Activity,
-) : ThemeManager(privacyStyleRes = activity.getStyleRes()) {
+) : ThemeManager() {
     override var currentTheme: BrowsingMode = currentTheme
         set(value) {
             if (currentTheme != value) {
@@ -141,10 +165,4 @@ class DefaultThemeManager(
                 activity.recreate()
             }
         }
-}
-
-private fun Activity.getStyleRes(): Int = if (settings().feltPrivateBrowsingEnabled) {
-    R.style.FeltPrivateTheme
-} else {
-    R.style.PrivateTheme
 }

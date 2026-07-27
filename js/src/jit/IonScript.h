@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -70,7 +68,7 @@ class alignas(8) IonScript final : public TrailingArray<IonScript> {
   Offset allocBytes_ = 0;
 
   // Code pointer containing the actual method.
-  HeapPtr<JitCode*> method_ = nullptr;
+  HeapPtr<JitCode*> method_{nullptr};
 
   // Entrypoint for OSR, or nullptr.
   jsbytecode* osrPc_ = nullptr;
@@ -161,14 +159,12 @@ class alignas(8) IonScript final : public TrailingArray<IonScript> {
   //
   // Table of constants referenced in snapshots. (JS::Value alignment)
   //
-  PreBarriered<Value>* constants() {
-    // Nursery constants are manually barriered in CodeGenerator::link() so a
-    // post barrier is not required..
-    return offsetToPointer<PreBarriered<Value>>(constantTableOffset());
+  HeapPtr<Value>* constants() {
+    return offsetToPointer<HeapPtr<Value>>(constantTableOffset());
   }
   size_t numConstants() const {
-    return numElements<PreBarriered<Value>>(constantTableOffset(),
-                                            runtimeDataOffset());
+    return numElements<HeapPtr<Value>>(constantTableOffset(),
+                                       runtimeDataOffset());
   }
 
   //
@@ -366,7 +362,7 @@ class alignas(8) IonScript final : public TrailingArray<IonScript> {
   size_t sizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const {
     return mallocSizeOf(this);
   }
-  PreBarriered<Value>& getConstant(size_t index) {
+  HeapPtr<Value>& getConstant(size_t index) {
     MOZ_ASSERT(index < numConstants());
     return constants()[index];
   }
@@ -576,7 +572,7 @@ struct IonScriptCounts {
   size_t sizeOfOneIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const {
     size_t size = mallocSizeOf(this) + mallocSizeOf(blocks_);
     for (size_t i = 0; i < numBlocks_; i++) {
-      blocks_[i].sizeOfExcludingThis(mallocSizeOf);
+      size += blocks_[i].sizeOfExcludingThis(mallocSizeOf);
     }
     return size;
   }

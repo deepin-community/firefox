@@ -2,24 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
     .aria-label = Gini'in doj dàj hua rayi'î sa narán rayi'ît nga aché nunt
 protections-panel-etp-on-header = Nga 'iaj sun sa narán rayi'ît nga aché nunt riña sitiô nan
 protections-panel-etp-off-header = Nitāj si 'iaj sun sa narán rayi'ît nga aché nunt riña sitiô nan
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Nitāj si 'iaj sun sîtio a'?
 # The heading/title of the sub-panel view
@@ -85,7 +72,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Natà' sna'ānj dàj hua 'ngō sitiô gire'e
 protections-panel-content-blocking-breakage-report-view-description = Ga'ue ga'uì' yi'ì da'āj nej sa naga'nāj naránt riña da'āj nej sîtio. Sisī natà' sna'ānjt nej sa huā nan nī rugûñu'ūnjt riña { -brand-short-name } da' gā hue'ej riña darûn'. Na'nïnj nuguan' ga'nïnt naj 'ngō URL nī 'ngō nuguan' dàj nadunā sa huā riña aché nunt si'iaj Mozilla. <label data-l10n-name="learn-more">Gahuin chrūn doj</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Ga'ue ga'uì' yi'ì da'āj nej sa naga'nāj naránt riña da'āj nej sîtio. Sisī natà' sna'ānjt nej sa huā nan nī rugûñu'ūnjt riña { -brand-short-name } da' gā hue'ej riña darûn'. Na'nïnj nuguan' ga'nïnt naj 'ngō URL nī 'ngō nuguan' dàj nadunā sa huā riña aché nunt si'iaj { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

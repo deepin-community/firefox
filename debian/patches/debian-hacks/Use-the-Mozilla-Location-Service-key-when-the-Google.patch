@@ -3,24 +3,23 @@ Date: Sun, 2 Apr 2017 06:33:19 +0900
 Subject: Use the Mozilla Location Service key when the Google Key is not there
 
 ---
- modules/libpref/init/all.js | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ modules/libpref/init/all.js | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
-index 700effe..25b4241 100644
+index d186a3c70..a0eba09 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
-@@ -3191,7 +3191,12 @@ pref("network.psl.onUpdate_notify", false);
- 
+@@ -3073,7 +3073,12 @@ pref("network.tcp.keepalive.idle_time", 600); // seconds; 10 mins
  // All the Geolocation preferences are here.
  //
--pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
+ #if !defined(ANDROID) && !defined(XP_WIN)
 +#if defined(GOOGLE_LOCATION_SERVICE_API_KEY)
-+  pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
+   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%&solution_channel=%OS%");
 +#else
 +  // Use MLS on Nightly and early Beta.
 +  pref("geo.provider.network.url", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%");
 +#endif
  
- // Timeout to wait before sending the location request.
- pref("geo.provider.network.timeToWaitBeforeSending", 5000);
+   // Timeout to wait before sending the location request.
+   pref("geo.provider.network.timeToWaitBeforeSending", 5000);

@@ -4,9 +4,9 @@
 
 //! Query features.
 
+use crate::derives::*;
 use crate::parser::ParserContext;
 use crate::values::computed::{self, CSSPixelLength, Ratio, Resolution};
-use crate::values::AtomString;
 use crate::Atom;
 use cssparser::Parser;
 use selectors::kleene_value::KleeneValue;
@@ -45,7 +45,6 @@ pub enum Evaluator {
     OptionalNumberRatio(QueryFeatureGetter<Option<Ratio>>),
     /// A resolution.
     Resolution(QueryFeatureGetter<Resolution>),
-    String(fn(&computed::Context, Option<&AtomString>) -> KleeneValue),
     /// A keyword value.
     Enumerated {
         /// The parser to get a discriminant given a string.
@@ -123,6 +122,8 @@ bitflags! {
         const CONTAINER_REQUIRES_HEIGHT_AXIS = 1 << 5;
         /// The feature evaluation depends on the viewport size.
         const VIEWPORT_DEPENDENT = 1 << 6;
+        /// The feature evaluation depends on style queries.
+        const STYLE = 1 << 7;
     }
 }
 
@@ -134,10 +135,10 @@ impl FeatureFlags {
 
     /// Returns all the container axis flags.
     pub fn all_container_axes() -> Self {
-        Self::CONTAINER_REQUIRES_INLINE_AXIS |
-            Self::CONTAINER_REQUIRES_BLOCK_AXIS |
-            Self::CONTAINER_REQUIRES_WIDTH_AXIS |
-            Self::CONTAINER_REQUIRES_HEIGHT_AXIS
+        Self::CONTAINER_REQUIRES_INLINE_AXIS
+            | Self::CONTAINER_REQUIRES_BLOCK_AXIS
+            | Self::CONTAINER_REQUIRES_WIDTH_AXIS
+            | Self::CONTAINER_REQUIRES_HEIGHT_AXIS
     }
 
     /// Returns our subset of container axis flags.

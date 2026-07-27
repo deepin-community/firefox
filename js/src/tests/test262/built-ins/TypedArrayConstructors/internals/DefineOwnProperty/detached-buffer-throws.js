@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Alexey Shvayka. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -46,6 +45,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.throws(TypeError, function() {
     Object.defineProperty(sample, "-0", desc);
   });
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

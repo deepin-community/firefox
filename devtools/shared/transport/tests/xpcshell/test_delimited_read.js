@@ -7,7 +7,7 @@ const StreamUtils = require("resource://devtools/shared/transport/stream-utils.j
 const StringInputStream = Components.Constructor(
   "@mozilla.org/io/string-input-stream;1",
   "nsIStringInputStream",
-  "setData"
+  "setByteStringData"
 );
 
 function run_test() {
@@ -21,10 +21,10 @@ function run_test() {
   run_next_test();
 }
 
-/** * Tests ***/
+/*** Tests ***/
 
 function test_delimited_read(input, expected) {
-  input = new StringInputStream(input, input.length);
+  input = new StringInputStream(input);
   const result = StreamUtils.delimitedRead(input, ":", 10);
   Assert.equal(result, expected);
 }

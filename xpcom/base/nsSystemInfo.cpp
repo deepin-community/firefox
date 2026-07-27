@@ -1,10 +1,6 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-#include "mozilla/ArrayUtils.h"
 
 #include "nsAppRunner.h"
 #include "nsSystemInfo.h"
@@ -12,6 +8,8 @@
 #include "prio.h"
 #include "mozilla/SSE.h"
 #include "mozilla/arm.h"
+#include "mozilla/dom/DOMMozPromiseRequestHolder.h"
+#include "mozilla/Hal.h"
 #include "mozilla/LazyIdleThread.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/Sprintf.h"
@@ -20,6 +18,7 @@
 #include "jsapi.h"
 #include "js/PropertyAndElement.h"  // JS_SetProperty
 #include "mozilla/dom/Promise.h"
+#include "mozilla/glean/XpcomMetrics.h"
 
 #ifdef XP_WIN
 #  include <comutil.h>
@@ -40,6 +39,7 @@
 #  include "nsDirectoryServiceDefs.h"
 #  include "nsDirectoryServiceUtils.h"
 #  include "nsWindowsHelpers.h"
+#  include "nsIWindowsRegKey.h"
 #  include "WinUtils.h"
 #  include "mozilla/NotNull.h"
 
@@ -55,9 +55,12 @@
 #  include "mozilla/WidgetUtilsGtk.h"
 #endif
 
-#if defined(XP_LINUX) && !defined(ANDROID)
+#if defined(XP_LINUX)
 #  include <unistd.h>
 #  include <fstream>
+#  ifndef ANDROID
+#    include <link.h>
+#  endif
 #  include "mozilla/Tokenizer.h"
 #  include "mozilla/widget/LSBUtils.h"
 #  include "nsCharSeparatedTokenizer.h"
@@ -99,11 +102,14 @@ using namespace ABI::Windows::Foundation;
 #  endif  // __MINGW32__
 #endif
 
-#if defined(XP_LINUX) && !defined(ANDROID)
+#if defined(XP_LINUX)
 static void SimpleParseKeyValuePairs(
     const std::string& aFilename,
     std::map<nsCString, nsCString>& aKeyValuePairs) {
   std::ifstream input(aFilename.c_str());
+  if (!input.is_open()) {
+    return;
+  }
   for (std::string line; std::getline(input, line);) {
     nsAutoCString key, value;
 
@@ -116,7 +122,7 @@ static void SimpleParseKeyValuePairs(
       // We want the value even if there was just one token, to cover the
       // case where we had the key, and the value was blank (seems to be
       // a valid scenario some files.)
-      aKeyValuePairs[key] = value;
+      aKeyValuePairs[key] = std::move(value);
     }
   }
 }
@@ -185,9 +191,8 @@ static nsresult GetFolderDiskInfo(nsIFile* file, FolderDiskInfo& info) {
   NS_ENSURE_SUCCESS(rv, rv);
   wchar_t volumeMountPoint[MAX_PATH] = {L'\\', L'\\', L'.', L'\\'};
   const size_t PREFIX_LEN = 4;
-  if (!::GetVolumePathNameW(
-          filePath.get(), volumeMountPoint + PREFIX_LEN,
-          mozilla::ArrayLength(volumeMountPoint) - PREFIX_LEN)) {
+  if (!::GetVolumePathNameW(filePath.get(), volumeMountPoint + PREFIX_LEN,
+                            std::size(volumeMountPoint) - PREFIX_LEN)) {
     return NS_ERROR_UNEXPECTED;
   }
   size_t volumeMountPointLen = wcslen(volumeMountPoint);
@@ -498,12 +503,10 @@ static nsresult GetWindowsSecurityCenterInfo(nsAString& aAVInfo,
   // Each output must match the corresponding entry in providerTypes.
   nsAString* outputs[] = {&aAVInfo, &aAntiSpyInfo, &aFirewallInfo};
 
-  static_assert(
-      mozilla::ArrayLength(providerTypes) == mozilla::ArrayLength(outputs),
-      "Length of providerTypes and outputs arrays must match");
+  static_assert(std::size(providerTypes) == std::size(outputs),
+                "Length of providerTypes and outputs arrays must match");
 
-  for (uint32_t index = 0; index < mozilla::ArrayLength(providerTypes);
-       ++index) {
+  for (uint32_t index = 0; index < std::size(providerTypes); ++index) {
     RefPtr<IWSCProductList> prodList;
     HRESULT hr = ::CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, iid,
                                     getter_AddRefs(prodList));
@@ -564,6 +567,49 @@ static nsresult ProcessIsRosettaTranslated(bool& isRosetta) {
     isRosetta = (ret == 1);
   }
 #  endif
+  return NS_OK;
+}
+#endif
+
+#ifdef XP_WIN
+static nsresult GetWinModelId(nsAutoString& aModelId) {
+  nsCOMPtr<nsIWindowsRegKey> regKey =
+      do_GetService("@mozilla.org/windows-registry-key;1");
+  NS_ENSURE_TRUE(regKey, NS_ERROR_FAILURE);
+  const nsString regPath(
+      u"SYSTEM\\CurrentControlSet\\Control\\SystemInformation");
+  nsresult rv = regKey->Open(nsIWindowsRegKey::ROOT_KEY_LOCAL_MACHINE, regPath,
+                             nsIWindowsRegKey::ACCESS_READ);
+  NS_ENSURE_SUCCESS(rv, rv);
+  auto defer = mozilla::MakeScopeExit([&] { regKey->Close(); });
+  return regKey->ReadStringValue(u"SystemProductName"_ns, aModelId);
+}
+#endif
+
+#if defined(XP_LINUX)
+static nsresult GetLinuxProductName(nsAutoCString& aProductName) {
+  std::ifstream input("/sys/devices/virtual/dmi/id/product_name");
+  if (!input.is_open()) {
+    return NS_ERROR_FAILURE;
+  }
+  std::string line;
+  if (!std::getline(input, line)) {
+    return NS_ERROR_FAILURE;
+  }
+  aProductName = line.c_str();
+  return NS_OK;
+}
+
+static nsresult GetLinuxProductSku(nsAutoCString& aProductSku) {
+  std::ifstream input("/sys/devices/virtual/dmi/id/product_sku");
+  if (!input.is_open()) {
+    return NS_ERROR_FAILURE;
+  }
+  std::string line;
+  if (!std::getline(input, line)) {
+    return NS_ERROR_FAILURE;
+  }
+  aProductSku = line.c_str();
   return NS_OK;
 }
 #endif
@@ -793,7 +839,7 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
   }
   MOZ_ASSERT(sizeof(sysctlValue32) == len);
 
-#elif defined(XP_LINUX) && !defined(ANDROID)
+#elif defined(XP_LINUX)
   // Get vendor, family, model, stepping, physical cores
   // from /proc/cpuinfo file
   {
@@ -1117,20 +1163,20 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
 
     for (auto& hw_impl : hw_implementer) {
       if (hw_impl.id == (int)cpuFamily) {
-        info.cpuVendor.Assign(hw_impl.name);
+        cpuVendor.Assign(hw_impl.name);
         for (auto* p = &hw_impl.parts[0]; p->id != -1; ++p) {
           if (p->id == (int)cpuModel) {
-            info.cpuName.Assign(p->name);
+            cpuName.Assign(p->name);
           }
         }
       }
     }
 #  else
     // cpuVendor from "vendor_id"
-    info.cpuVendor.Assign(keyValuePairs["vendor_id"_ns]);
+    cpuVendor.Assign(keyValuePairs["vendor_id"_ns]);
 
     // cpuName from "model name"
-    info.cpuName.Assign(keyValuePairs["model name"_ns]);
+    cpuName.Assign(keyValuePairs["model name"_ns]);
 
     // cpuFamily from "cpu family"
     (void)Tokenizer(keyValuePairs["cpu family"_ns]).ReadInteger(&cpuFamily);
@@ -1173,6 +1219,9 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
   }
 
   info.cpuCount = PR_GetNumberOfProcessors();
+  if (XRE_IsParentProcess()) {
+    glean::system_cpu::logical_cores.Set(info.cpuCount);
+  }
   int max_cpu_bits = [&] {
     // PR_GetNumberOfProcessors gets the value from
     // /sys/devices/system/cpu/present, but the number of bits in the CPU masks
@@ -1228,7 +1277,7 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
     for (int32_t cpu = 0; cpu < info.cpuCount; ++cpu) {
       nsPrintfCString core_cpus(
           "/sys/devices/system/cpu/cpu%d/topology/core_cpus", cpu);
-      std::ifstream input(core_cpus.Data());
+      std::ifstream input(core_cpus.get());
       // Kernel versions before 5.3 didn't have core_cpus, they had
       // thread_siblings instead, with the same content. As of writing, kernel
       // version 6.9 still has both, but thread_siblings has been deprecated
@@ -1236,7 +1285,7 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
       if (input.fail()) {
         core_cpus.Truncate(core_cpus.Length() - sizeof("core_cpus") + 1);
         core_cpus.AppendLiteral("thread_siblings");
-        input.open(core_cpus.Data());
+        input.open(core_cpus.get());
       }
       std::string line;
       if (!getline(input, line)) {
@@ -1275,41 +1324,92 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
 
 #else
   info.cpuCount = PR_GetNumberOfProcessors();
+  if (XRE_IsParentProcess()) {
+    glean::system_cpu::logical_cores.Set(info.cpuCount);
+  }
 #endif
+  if (Maybe<hal::HeterogeneousCpuInfo> hetCpuInfo =
+          hal::GetHeterogeneousCpuInfo()) {
+    info.cpuPCount = int32_t(hetCpuInfo->mBigCpus.Count());
+    info.cpuMCount = int32_t(hetCpuInfo->mMediumCpus.Count());
+    info.cpuECount = int32_t(hetCpuInfo->mLittleCpus.Count());
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::big_cores.Set(info.cpuPCount);
+      glean::system_cpu::medium_cores.Set(info.cpuMCount);
+      glean::system_cpu::little_cores.Set(info.cpuECount);
+    }
+  } else {
+    info.cpuPCount = physicalCPUs;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::big_cores.Set(physicalCPUs);
+    }
+    info.cpuMCount = 0;
+    info.cpuECount = 0;
+  }
 
   if (cpuSpeed >= 0) {
     info.cpuSpeed = cpuSpeed;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::speed.Set(cpuSpeed);
+    }
   } else {
     info.cpuSpeed = 0;
   }
   if (!cpuVendor.IsEmpty()) {
     info.cpuVendor = cpuVendor;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::vendor.Set(cpuVendor);
+    }
   }
   if (!cpuName.IsEmpty()) {
     info.cpuName = cpuName;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::name.Set(cpuName);
+    }
   }
   if (cpuFamily >= 0) {
     info.cpuFamily = cpuFamily;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::family.Set(cpuFamily);
+    }
   }
   if (cpuModel >= 0) {
     info.cpuModel = cpuModel;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::model.Set(cpuModel);
+    }
   }
   if (cpuStepping >= 0) {
     info.cpuStepping = cpuStepping;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::stepping.Set(cpuStepping);
+    }
   }
 
   if (logicalCPUs >= 0) {
     info.cpuCount = logicalCPUs;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::logical_cores.Set(logicalCPUs);
+    }
   }
   if (physicalCPUs >= 0) {
     info.cpuCores = physicalCPUs;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::physical_cores.Set(physicalCPUs);
+    }
   }
 
   if (cacheSizeL2 >= 0) {
     info.l2cacheKB = cacheSizeL2;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::l2_cache.Set(cacheSizeL2);
+    }
   }
   if (cacheSizeL3 >= 0) {
     info.l3cacheKB = cacheSizeL3;
+    if (XRE_IsParentProcess()) {
+      glean::system_cpu::l3_cache.Set(cacheSizeL3);
+    }
   }
 
   return NS_OK;
@@ -1320,6 +1420,106 @@ WINBASEAPI
 BOOL WINAPI IsUserCetAvailableInEnvironment(_In_ DWORD UserCetEnvironment);
 
 #  define USER_CET_ENVIRONMENT_WIN32_PROCESS 0x00000000
+#endif
+
+#if defined(XP_LINUX) && !defined(ANDROID)
+static constexpr char kGlibcxxPrefix[] = "GLIBCXX_";
+static constexpr size_t kGlibcxxPrefixLen = sizeof(kGlibcxxPrefix) - 1;
+
+static int CompareGlibcxxVersions(const char* a, const char* b) {
+  int aMajor = 0, aMinor = 0, aPatch = 0;
+  int bMajor = 0, bMinor = 0, bPatch = 0;
+
+  sscanf(a, "%d.%d.%d", &aMajor, &aMinor, &aPatch);
+  sscanf(b, "%d.%d.%d", &bMajor, &bMinor, &bPatch);
+
+  if (aMajor != bMajor) return aMajor - bMajor;
+  if (aMinor != bMinor) return aMinor - bMinor;
+  return aPatch - bPatch;
+}
+
+static int LibStdCxxVersionCallback(struct dl_phdr_info* aInfo, size_t aSize,
+                                    void* aData) {
+  auto* version = static_cast<nsCString*>(aData);
+
+  if (aSize < sizeof(*aInfo) || !aInfo->dlpi_name ||
+      !strstr(aInfo->dlpi_name, "libstdc++")) {
+    return 0;
+  }
+
+  for (size_t i = 0; i < aInfo->dlpi_phnum; ++i) {
+    if (aInfo->dlpi_phdr[i].p_type == PT_DYNAMIC) {
+      const auto* dyn = reinterpret_cast<const ElfW(Dyn)*>(
+          aInfo->dlpi_addr + aInfo->dlpi_phdr[i].p_vaddr);
+
+      ElfW(Addr) verdef_ptr = 0;
+      size_t verdefnum = 0;
+      ElfW(Addr) strtab_ptr = 0;
+
+      for (; dyn->d_tag != DT_NULL; ++dyn) {
+        switch (dyn->d_tag) {
+          case DT_VERDEF:
+            verdef_ptr = dyn->d_un.d_ptr;
+            break;
+          case DT_VERDEFNUM:
+            verdefnum = dyn->d_un.d_val;
+            break;
+          case DT_STRTAB:
+            strtab_ptr = dyn->d_un.d_ptr;
+            break;
+        }
+      }
+
+      if (!verdef_ptr || !verdefnum || !strtab_ptr) {
+        return 0;
+      }
+
+      const ElfW(Verdef)* verdef = reinterpret_cast<const ElfW(Verdef)*>(
+          verdef_ptr < aInfo->dlpi_addr ? aInfo->dlpi_addr + verdef_ptr
+                                        : verdef_ptr);
+      const char* strtab = reinterpret_cast<const char*>(
+          strtab_ptr < aInfo->dlpi_addr ? aInfo->dlpi_addr + strtab_ptr
+                                        : strtab_ptr);
+
+      const char* highestVersion = nullptr;
+      for (size_t j = 0; j < verdefnum; ++j) {
+        if (verdef->vd_cnt > 0) {
+          const auto* verdaux = reinterpret_cast<const ElfW(Verdaux)*>(
+              reinterpret_cast<const char*>(verdef) + verdef->vd_aux);
+          const char* verName = strtab + verdaux->vda_name;
+
+          if (strncmp(verName, kGlibcxxPrefix, kGlibcxxPrefixLen) == 0) {
+            if (!highestVersion ||
+                CompareGlibcxxVersions(verName + kGlibcxxPrefixLen,
+                                       highestVersion + kGlibcxxPrefixLen) >
+                    0) {
+              highestVersion = verName;
+            }
+          }
+        }
+
+        if (verdef->vd_next == 0) {
+          break;
+        }
+        verdef = reinterpret_cast<const ElfW(Verdef)*>(
+            reinterpret_cast<const char*>(verdef) + verdef->vd_next);
+      }
+
+      if (highestVersion) {
+        version->Assign(highestVersion + kGlibcxxPrefixLen);
+      }
+
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+static bool GetLibStdCxxVersion(nsCString& aVersion) {
+  dl_iterate_phdr(LibStdCxxVersionCallback, &aVersion);
+  return !aVersion.IsEmpty();
+}
 #endif
 
 nsresult nsSystemInfo::Init() {
@@ -1336,10 +1536,10 @@ nsresult nsSystemInfo::Init() {
                {PR_SI_RELEASE, "version"},
                {PR_SI_RELEASE_BUILD, "build"}};
 
-  for (uint32_t i = 0; i < (sizeof(items) / sizeof(items[0])); i++) {
+  for (auto item : items) {
     char buf[SYS_INFO_BUFFER_LENGTH];
-    if (PR_GetSystemInfo(items[i].cmd, buf, sizeof(buf)) == PR_SUCCESS) {
-      rv = SetPropertyAsACString(NS_ConvertASCIItoUTF16(items[i].name),
+    if (PR_GetSystemInfo(item.cmd, buf, sizeof(buf)) == PR_SUCCESS) {
+      rv = SetPropertyAsACString(NS_ConvertASCIItoUTF16(item.name),
                                  nsDependentCString(buf));
       if (NS_WARN_IF(NS_FAILED(rv))) {
         return rv;
@@ -1376,9 +1576,9 @@ nsresult nsSystemInfo::Init() {
 #endif
   if (virtualMem) SetUint64Property(u"virtualmemsize"_ns, virtualMem);
 
-  for (uint32_t i = 0; i < ArrayLength(cpuPropItems); i++) {
-    rv = SetPropertyAsBool(NS_ConvertASCIItoUTF16(cpuPropItems[i].name),
-                           cpuPropItems[i].propfun());
+  for (auto cpuPropItem : cpuPropItems) {
+    rv = SetPropertyAsBool(NS_ConvertASCIItoUTF16(cpuPropItem.name),
+                           cpuPropItem.propfun());
     if (NS_WARN_IF(NS_FAILED(rv))) {
       return rv;
     }
@@ -1452,15 +1652,20 @@ nsresult nsSystemInfo::Init() {
     return rv;
   }
 
-  if (XRE_IsParentProcess()) {
-    nsString pointerExplanation;
-    widget::WinUtils::GetPointerExplanation(&pointerExplanation);
-    rv = SetPropertyAsAString(u"pointingDevices"_ns, pointerExplanation);
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      return rv;
-    }
-  }
+#endif
 
+#if defined(XP_WIN) || defined(ANDROID)
+  // TODO(krosylight): Enable this on other platforms too when implemented
+  if (XRE_IsParentProcess()) {
+    auto kinds = static_cast<LookAndFeel::PointingDeviceKinds>(
+        LookAndFeel::GetInt(LookAndFeel::IntID::PointingDeviceKinds, 0));
+    MOZ_TRY(SetPropertyAsBool(
+        u"hasMouse"_ns, !!(kinds & LookAndFeel::PointingDeviceKinds::Mouse)));
+    MOZ_TRY(SetPropertyAsBool(
+        u"hasTouch"_ns, !!(kinds & LookAndFeel::PointingDeviceKinds::Touch)));
+    MOZ_TRY(SetPropertyAsBool(
+        u"hasPen"_ns, !!(kinds & LookAndFeel::PointingDeviceKinds::Pen)));
+  }
 #endif
 
 #if defined(XP_MACOSX)
@@ -1472,6 +1677,28 @@ nsresult nsSystemInfo::Init() {
   bool isRosetta;
   if (NS_SUCCEEDED(ProcessIsRosettaTranslated(isRosetta))) {
     rv = SetPropertyAsBool(u"rosettaStatus"_ns, isRosetta);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+#endif
+
+#if defined(XP_WIN)
+  nsAutoString modelId;
+  if (NS_SUCCEEDED(GetWinModelId(modelId))) {
+    rv = SetPropertyAsAString(u"winModelId"_ns, modelId);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+#endif
+
+#if defined(XP_LINUX)
+  nsAutoCString productName;
+  if (NS_SUCCEEDED(GetLinuxProductName(productName))) {
+    rv = SetPropertyAsACString(u"linuxProductName"_ns, productName);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  nsAutoCString productSku;
+  if (NS_SUCCEEDED(GetLinuxProductSku(productSku))) {
+    rv = SetPropertyAsACString(u"linuxProductSku"_ns, productSku);
     NS_ENSURE_SUCCESS(rv, rv);
   }
 #endif
@@ -1544,6 +1771,13 @@ nsresult nsSystemInfo::Init() {
   if (widget::lsb::GetLSBRelease(dist, desc, release, codename)) {
     SetPropertyAsACString(u"distro"_ns, dist);
     SetPropertyAsACString(u"distroVersion"_ns, release);
+  }
+
+  if (XRE_IsParentProcess()) {
+    nsCString libstdcxxVersion;
+    glean::system_os::libstdcxx_version.Set(
+        GetLibStdCxxVersion(libstdcxxVersion) ? libstdcxxVersion
+                                              : nsDependentCString("unknown"));
   }
 #endif
 
@@ -1763,6 +1997,18 @@ JSObject* GetJSObjForProcessInfo(JSContext* aCx, const ProcessInfo& info) {
       aCx, info.cpuCores ? JS::Int32Value(info.cpuCores) : JS::NullValue());
   JS_SetProperty(aCx, jsInfo, "cores", valCoreInfo);
 
+  JS::Rooted<JS::Value> valPCountInfo(
+      aCx, info.cpuCores ? JS::Int32Value(info.cpuPCount) : JS::NullValue());
+  JS_SetProperty(aCx, jsInfo, "pcount", valPCountInfo);
+
+  JS::Rooted<JS::Value> valMCountInfo(
+      aCx, info.cpuCores ? JS::Int32Value(info.cpuMCount) : JS::NullValue());
+  JS_SetProperty(aCx, jsInfo, "mcount", valMCountInfo);
+
+  JS::Rooted<JS::Value> valECountInfo(
+      aCx, info.cpuCores ? JS::Int32Value(info.cpuECount) : JS::NullValue());
+  JS_SetProperty(aCx, jsInfo, "ecount", valECountInfo);
+
   JSString* strVendor =
       JS_NewStringCopyN(aCx, info.cpuVendor.get(), info.cpuVendor.Length());
   JS::Rooted<JS::Value> valVendor(aCx, JS::StringValue(strVendor));
@@ -1834,25 +2080,33 @@ nsSystemInfo::GetOsInfo(JSContext* aCx, Promise** aResult) {
     });
   };
 
+  auto requestHolder =
+      MakeRefPtr<dom::DOMMozPromiseRequestHolder<OSInfoPromise>>(global);
+
   // Chain the new promise to the extant mozpromise
   RefPtr<Promise> capturedPromise = promise;
-  mOSInfoPromise->Then(
-      GetMainThreadSerialEventTarget(), __func__,
-      [capturedPromise](const OSInfo& info) {
-        AutoJSAPI jsapi;
-        if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
-          capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
-          return;
-        }
-        JSContext* cx = jsapi.cx();
-        JS::Rooted<JS::Value> val(
-            cx, JS::ObjectValue(*GetJSObjForOSInfo(cx, info)));
-        capturedPromise->MaybeResolve(val);
-      },
-      [capturedPromise](const nsresult rv) {
-        // Resolve with null when installYear is not available from the system
-        capturedPromise->MaybeResolve(JS::NullHandleValue);
-      });
+  mOSInfoPromise
+      ->Then(
+          GetMainThreadSerialEventTarget(), __func__,
+          [requestHolder, capturedPromise](const OSInfo& info) {
+            requestHolder->Complete();
+            AutoJSAPI jsapi;
+            if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
+              capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
+              return;
+            }
+            JSContext* cx = jsapi.cx();
+            JS::Rooted<JS::Value> val(
+                cx, JS::ObjectValue(*GetJSObjForOSInfo(cx, info)));
+            capturedPromise->MaybeResolve(val);
+          },
+          [requestHolder, capturedPromise](const nsresult rv) {
+            requestHolder->Complete();
+            // Resolve with null when installYear is not available from the
+            // system
+            capturedPromise->MaybeResolve(JS::NullHandleValue);
+          })
+      ->Track(*requestHolder);
 
   promise.forget(aResult);
 #endif
@@ -1907,36 +2161,49 @@ nsSystemInfo::GetDiskInfo(JSContext* aCx, Promise** aResult) {
         });
   }
 
+  auto requestHolder =
+      MakeRefPtr<dom::DOMMozPromiseRequestHolder<DiskInfoPromise>>(global);
+
   // Chain the new promise to the extant mozpromise.
   RefPtr<Promise> capturedPromise = promise;
-  mDiskInfoPromise->Then(
-      GetMainThreadSerialEventTarget(), __func__,
-      [capturedPromise](const DiskInfo& info) {
-        AutoJSAPI jsapi;
-        if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
-          capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
-          return;
-        }
-        JSContext* cx = jsapi.cx();
-        JS::Rooted<JSObject*> jsInfo(cx, JS_NewPlainObject(cx));
-        // Store data in the rv:
-        bool succeededSettingAllObjects =
-            jsInfo && GetJSObjForDiskInfo(cx, jsInfo, info.binary, "binary") &&
-            GetJSObjForDiskInfo(cx, jsInfo, info.profile, "profile") &&
-            GetJSObjForDiskInfo(cx, jsInfo, info.system, "system");
-        // The above can fail due to OOM
-        if (!succeededSettingAllObjects) {
-          JS_ClearPendingException(cx);
-          capturedPromise->MaybeReject(NS_ERROR_FAILURE);
-          return;
-        }
+  mDiskInfoPromise
+      ->Then(
+          GetMainThreadSerialEventTarget(), __func__,
+          [requestHolder, capturedPromise,
+           self = RefPtr{this}](const DiskInfo& info) {
+            requestHolder->Complete();
+            AutoJSAPI jsapi;
+            if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
+              capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
+              return;
+            }
+            JSContext* cx = jsapi.cx();
+            JS::Rooted<JSObject*> jsInfo(cx, JS_NewPlainObject(cx));
+            // Store data in the rv:
+            bool succeededSettingAllObjects =
+                jsInfo &&
+                GetJSObjForDiskInfo(cx, jsInfo, info.binary, "binary") &&
+                GetJSObjForDiskInfo(cx, jsInfo, info.profile, "profile") &&
+                GetJSObjForDiskInfo(cx, jsInfo, info.system, "system");
+            // The above can fail due to OOM
+            if (!succeededSettingAllObjects) {
+              JS_ClearPendingException(cx);
+              capturedPromise->MaybeReject(NS_ERROR_FAILURE);
+              return;
+            }
 
-        JS::Rooted<JS::Value> val(cx, JS::ObjectValue(*jsInfo));
-        capturedPromise->MaybeResolve(val);
-      },
-      [capturedPromise](const nsresult rv) {
-        capturedPromise->MaybeReject(rv);
-      });
+            bool hasSSD =
+                info.binary.isSSD || info.system.isSSD || info.profile.isSSD;
+            self->SetPropertyAsBool(u"hasSSD"_ns, hasSSD);
+
+            JS::Rooted<JS::Value> val(cx, JS::ObjectValue(*jsInfo));
+            capturedPromise->MaybeResolve(val);
+          },
+          [requestHolder, capturedPromise](const nsresult rv) {
+            requestHolder->Complete();
+            capturedPromise->MaybeReject(rv);
+          })
+      ->Track(*requestHolder);
 
   promise.forget(aResult);
 #endif
@@ -1984,26 +2251,34 @@ nsSystemInfo::GetCountryCode(JSContext* aCx, Promise** aResult) {
     });
   }
 
-  RefPtr<Promise> capturedPromise = promise;
-  mCountryCodePromise->Then(
-      GetMainThreadSerialEventTarget(), __func__,
-      [capturedPromise](const nsString& countryCode) {
-        AutoJSAPI jsapi;
-        if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
-          capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
-          return;
-        }
-        JSContext* cx = jsapi.cx();
-        JS::Rooted<JSString*> jsCountryCode(
-            cx, JS_NewUCStringCopyZ(cx, countryCode.get()));
+  auto requestHolder =
+      MakeRefPtr<dom::DOMMozPromiseRequestHolder<CountryCodePromise>>(global);
 
-        JS::Rooted<JS::Value> val(cx, JS::StringValue(jsCountryCode));
-        capturedPromise->MaybeResolve(val);
-      },
-      [capturedPromise](const nsresult rv) {
-        // Resolve with null when countryCode is not available from the system
-        capturedPromise->MaybeResolve(JS::NullHandleValue);
-      });
+  RefPtr<Promise> capturedPromise = promise;
+  mCountryCodePromise
+      ->Then(
+          GetMainThreadSerialEventTarget(), __func__,
+          [requestHolder, capturedPromise](const nsString& countryCode) {
+            requestHolder->Complete();
+            AutoJSAPI jsapi;
+            if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
+              capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
+              return;
+            }
+            JSContext* cx = jsapi.cx();
+            JS::Rooted<JSString*> jsCountryCode(
+                cx, JS_NewUCStringCopyZ(cx, countryCode.get()));
+
+            JS::Rooted<JS::Value> val(cx, JS::StringValue(jsCountryCode));
+            capturedPromise->MaybeResolve(val);
+          },
+          [requestHolder, capturedPromise](const nsresult rv) {
+            requestHolder->Complete();
+            // Resolve with null when countryCode is not available from the
+            // system
+            capturedPromise->MaybeResolve(JS::NullHandleValue);
+          })
+      ->Track(*requestHolder);
 
   promise.forget(aResult);
 #endif
@@ -2043,25 +2318,33 @@ nsSystemInfo::GetProcessInfo(JSContext* aCx, Promise** aResult) {
     });
   };
 
+  auto requestHolder =
+      MakeRefPtr<dom::DOMMozPromiseRequestHolder<ProcessInfoPromise>>(global);
+
   // Chain the new promise to the extant mozpromise
   RefPtr<Promise> capturedPromise = promise;
-  mProcessInfoPromise->Then(
-      GetMainThreadSerialEventTarget(), __func__,
-      [capturedPromise](const ProcessInfo& info) {
-        AutoJSAPI jsapi;
-        if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
-          capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
-          return;
-        }
-        JSContext* cx = jsapi.cx();
-        JS::Rooted<JS::Value> val(
-            cx, JS::ObjectValue(*GetJSObjForProcessInfo(cx, info)));
-        capturedPromise->MaybeResolve(val);
-      },
-      [capturedPromise](const nsresult rv) {
-        // Resolve with null when installYear is not available from the system
-        capturedPromise->MaybeResolve(JS::NullHandleValue);
-      });
+  mProcessInfoPromise
+      ->Then(
+          GetMainThreadSerialEventTarget(), __func__,
+          [requestHolder, capturedPromise](const ProcessInfo& info) {
+            requestHolder->Complete();
+            AutoJSAPI jsapi;
+            if (NS_WARN_IF(!jsapi.Init(capturedPromise->GetGlobalObject()))) {
+              capturedPromise->MaybeReject(NS_ERROR_UNEXPECTED);
+              return;
+            }
+            JSContext* cx = jsapi.cx();
+            JS::Rooted<JS::Value> val(
+                cx, JS::ObjectValue(*GetJSObjForProcessInfo(cx, info)));
+            capturedPromise->MaybeResolve(val);
+          },
+          [requestHolder, capturedPromise](const nsresult rv) {
+            requestHolder->Complete();
+            // Resolve with null when installYear is not available from the
+            // system
+            capturedPromise->MaybeResolve(JS::NullHandleValue);
+          })
+      ->Track(*requestHolder);
 
   promise.forget(aResult);
 

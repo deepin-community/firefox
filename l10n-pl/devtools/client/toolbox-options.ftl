@@ -30,10 +30,18 @@ options-context-inspector = Inspektor
 options-show-user-agent-styles-label = Wyświetlanie stylów przeglądarki
 options-show-user-agent-styles-tooltip =
     .title = Włączenie tej opcji spowoduje wyświetlanie domyślnych stylów wczytywanych przez przeglądarkę
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Wyświetlanie Shadow DOM przeglądarki
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Włączenie tej opcji spowoduje wyświetlanie elementów Shadow DOM obsługiwanych przez przeglądarkę
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Skracanie atrybutów DOM
 options-collapse-attrs-tooltip =
     .title = Skraca długie nazwy atrybutów DOM w inspektorze
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Wyświetlanie komentarzy
+options-show-comments-tooltip =
+    .title = Wyświetla węzły komentarzy w inspektorze
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Kliknięcie i przeciągnięcie, aby zmienić rozmiar
 options-inspector-draggable-properties-tooltip =
@@ -116,6 +124,8 @@ options-disable-http-cache-label = Wyłącz pamięć podręczną HTTP (gdy otwor
 options-disable-http-cache-tooltip =
     .title = Wyłącza pamięć podręczną dla żądań HTTP we wszystkich kartach, dla których narzędzia są otwarte. To ustawienie nie ma wpływu na wątki usługowe.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Wyłącz JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Wyłącz JavaScript *
 options-disable-javascript-tooltip =
     .title = Wyłącza JavaScript w bieżącej karcie. Jeśli karta lub narzędzia zostaną zamknięte, ustawienie zostanie zapomniane.
@@ -126,7 +136,7 @@ options-enable-chrome-tooltip =
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Debugowanie zdalne
 options-enable-remote-tooltip2 =
-    .title = Włączenie tej opcji umożliwi zdalne debugowanie tej instancji przeglądarki
+    .title = Włączenie tej opcji umożliwi zdalne debugowanie tego wystąpienia przeglądarki
 # The label for checkbox that enables F12 as a shortcut to open DevTools
 options-enable-f12-label = Otwieranie i zamykanie narzędzi dla programistów klawiszem F12
 options-enable-f12-tooltip =
@@ -143,5 +153,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Mapy źródeł
 options-source-maps-tooltip =
     .title = Po włączeniu tej funkcji, źródła będą mapowane w narzędziach
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (tylko bieżąca sesja, przeładowuje stronę)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Tylko bieżąca sesja, przeładowuje stronę
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (przeładowuje stronę)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Automatyczny
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Przestarzałe. Więcej informacji…

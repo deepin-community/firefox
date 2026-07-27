@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -53,9 +51,18 @@ class FileSystemParams;
  * |                                 |   |   |          ---------> [IOWork]  | |
  * |                                 |  IPC  |                 |     |       | |
  * |                                 |   |   |                 |     | (5)   | |
- * |                                 |   |   |          --------------       | |
- * |                                 |   |   |          |      |_____________| |
- * |                                 |   |   |          |                      |
+ * |                                 |   |   |          -------------*       | |
+ * |                                 |   |   |          |      |_____|_______| |
+ * |                                 |   |   |          |  __________|_______  |
+ * |                                 |   |   |          | |          |       | |
+ * |                                 |   |   |          | | Main     |       | |
+ * |                                 |   |   |          | | Thread   |       | |
+ * |                                 |   |   |          | |          V       | |
+ * |                                 |   |   |          | | [MainThreadWork] | |
+ * |                                 |  IPC  |          | |   (5.1)  |       | |
+ * |                                 |   |   |          | |          |       | |
+ * |                                 |   |   |          |<------------       | |
+ * |                                 |   |   |          | |__________________| |
  * |                                 |   |   |          V                      |
  * |                                 |   |   |     [HandleResult]              |
  * |                                 |   |   |          |                      |
@@ -87,6 +94,7 @@ class FileSystemParams;
  *   during the operation, call [SetError] to record the error and then abort.
  *   (5) After finishing the task operation, call [HandleResult] to send the
  *   result back to the child process though the IPC.
+ *   (5.1) Optional, we need to run some code in the main-thread.
  *   (6) Call [GetRequestResult] request result to prepare the parameters of the
  *   IPC. Because the formats of the error result for different task are the
  *   same, FileSystemTaskChildBase can handle the error message without
@@ -198,6 +206,16 @@ class FileSystemTaskParentBase : public Runnable {
    * Overrides this function to define the task operation for individual task.
    */
   virtual nsresult IOWork() = 0;
+
+  // In case `MainThreadNeeded()` returns true, the following method is called.
+  virtual nsresult MainThreadWork() {
+    MOZ_CRASH("This method should be implemented");
+    return NS_OK;
+  }
+
+  // If this returns true, after I/O work, we schedule a runnable to the
+  // main-thread before resolving the task on the PBackground one.
+  virtual bool MainThreadNeeded() const { return false; };
 
   /*
    * Wrap the task success result to FileSystemResponseValue for sending it

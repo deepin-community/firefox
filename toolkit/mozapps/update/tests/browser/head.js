@@ -102,7 +102,7 @@ add_setup(async function setupTestCommon() {
   ds.unregisterProvider(dirProvider);
 
   setUpdateTimerPrefs();
-  reloadUpdateManagerData(true);
+  await reloadUpdateManagerData(true);
   removeUpdateFiles(true);
   UpdateListener.reset();
   AppMenuNotifications.removeNotification(/.*/);
@@ -121,7 +121,7 @@ registerCleanupFunction(async () => {
   Services.env.set("MOZ_TEST_STAGING_ERROR", "");
   UpdateListener.reset();
   AppMenuNotifications.removeNotification(/.*/);
-  reloadUpdateManagerData(true);
+  await reloadUpdateManagerData(true);
   // Pass false when the log files are needed for troubleshooting the tests.
   removeUpdateFiles(true);
   // Always try to restore the original updater files. If none of the updater
@@ -197,20 +197,25 @@ function lockWriteTestFile() {
 }
 
 /**
- * Closes the update mutex handle in nsUpdateService.js if it exists and then
- * creates a new update mutex handle so the update code thinks there is another
- * instance of the application handling updates.
+ * Releases the update mutex if acquired by UpdateService.sys.mjs, and then
+ * acquires it through a fresh nsIUpdateMutex object, so the update code thinks
+ * there is another instance handling updates.
  *
- * @throws If the function is called on a platform other than Windows.
+ * @throws If acquiring the update mutex fails.
  */
 function setOtherInstanceHandlingUpdates() {
-  if (AppConstants.platform != "win") {
-    throw new Error("Windows only test function called");
+  gAUS.observe(null, "test-unlock-update-mutex", "");
+
+  let updateMutex = Cc["@mozilla.org/updates/update-mutex;1"].createInstance(
+    Ci.nsIUpdateMutex
+  );
+  if (!updateMutex.tryLock()) {
+    throw new Error(
+      "Failed to simulate another instance acquiring the update mutex"
+    );
   }
-  gAUS.observe(null, "test-close-handle-update-mutex", "");
-  let handle = createMutex(getPerInstallationMutexName());
   registerCleanupFunction(() => {
-    closeHandle(handle);
+    updateMutex.unlock();
   });
 }
 
@@ -241,7 +246,7 @@ function setUpdateTimerPrefs() {
   Services.prefs.setIntPref(PREF_APP_UPDATE_INTERVAL, 43200);
 }
 
-/*
+/**
  * Sets the value of the App Auto Update setting and sets it back to the
  * original value at the start of the test when the test finishes.
  *
@@ -315,10 +320,13 @@ function moveRealUpdater() {
   return (async function () {
     try {
       // Move away the real updater
-      let greBinDir = getGREBinDir();
-      let updater = greBinDir.clone();
+      let updaterBackup = getGREBinDir();
+      let updater = getGREBinDir();
       updater.append(FILE_UPDATER_BIN);
-      updater.moveTo(greBinDir, FILE_UPDATER_BIN_BAK);
+      if (AppConstants.platform == "macosx") {
+        updaterBackup = updaterBackup.parent.parent.parent;
+      }
+      updater.moveTo(updaterBackup, FILE_UPDATER_BIN_BAK);
 
       let greDir = getGREDir();
       let updateSettingsIni = greDir.clone();
@@ -406,6 +414,9 @@ function restoreUpdaterBackup() {
   let greBinDir = getGREBinDir();
   let updater = greBinDir.clone();
   let updaterBackup = greBinDir.clone();
+  if (AppConstants.platform == "macosx") {
+    updaterBackup = updaterBackup.parent.parent.parent;
+  }
   updater.append(FILE_UPDATER_BIN);
   updaterBackup.append(FILE_UPDATER_BIN_BAK);
   if (updaterBackup.exists()) {
@@ -658,7 +669,7 @@ function runDoorhangerUpdateTest(params, steps) {
       // Perform a startup processing doorhanger test.
       writeStatusFile(STATE_FAILED_CRC_ERROR);
       writeUpdatesToXMLFile(getLocalUpdatesXMLString(params.updates), true);
-      reloadUpdateManagerData();
+      await reloadUpdateManagerData();
       await testPostUpdateProcessing();
     }
 
@@ -949,7 +960,7 @@ function runAboutDialogUpdateTest(params, steps) {
         });
         // Display the UI after the update state equals the expected value.
         is(
-          update.state,
+          update?.state,
           params.waitForUpdateState,
           "The update state value should equal " + params.waitForUpdateState
         );
@@ -1002,7 +1013,8 @@ function runAboutPrefsUpdateTest(params, steps) {
         [{ panelId }],
         async ({ panelId }) => {
           await ContentTaskUtils.waitForCondition(
-            () => content.gAppUpdater.selectedPanel?.id == panelId,
+            () =>
+              content.Preferences.getSetting("updateState").value == panelId,
             "Waiting for the expected panel ID: " + panelId,
             undefined,
             200
@@ -1013,8 +1025,11 @@ function runAboutPrefsUpdateTest(params, steps) {
             // content task.
             info(e);
           });
+          let updateStateControl =
+            content.document.querySelector("update-state");
+          await updateStateControl.updateComplete;
           is(
-            content.gAppUpdater.selectedPanel.id,
+            updateStateControl.value,
             panelId,
             "The panel ID should equal " + panelId
           );
@@ -1037,8 +1052,10 @@ function runAboutPrefsUpdateTest(params, steps) {
           tab.linkedBrowser,
           [{ panelId }],
           ({ panelId }) => {
+            let updateStateControl =
+              content.document.querySelector("update-state");
             is(
-              content.gAppUpdater.selectedPanel.id,
+              updateStateControl.value,
               panelId,
               "The panel ID should equal " + panelId
             );
@@ -1092,6 +1109,22 @@ function runAboutPrefsUpdateTest(params, steps) {
         }
         for (let i = 0; i < downloadInfo.length; ++i) {
           let data = downloadInfo[i];
+          // Capture the current transfer text and register a listener for
+          // future updates. The initial value covers bad-size patches whose
+          // initial "0 of X" notification fires before we can listen; the
+          // listener covers successful downloads whose final "X of X" fires
+          // after continueFileHandler starts the download.
+          await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
+            let updateStateControl =
+              content.document.querySelector("update-state");
+            content._updateTransferText = updateStateControl.transfer;
+            updateStateControl.addEventListener(
+              "update-state:downloading",
+              () => {
+                content._updateTransferText = updateStateControl.transfer;
+              }
+            );
+          });
           // The About Dialog tests always specify a continue file.
           await continueFileHandler(continueFile);
           let patch = getPatchOfType(
@@ -1128,20 +1161,14 @@ function runAboutPrefsUpdateTest(params, steps) {
             );
 
             // Check the download status text.  It should be something like,
-            // "Downloading update — 1.4 of 1.4 KB".  We check only the second
-            // part to make sure that the downloaded size is updated correctly.
-            let actualText = await SpecialPowers.spawn(
+            // "Downloading update — 1.4 of 1.4 KB".  We verify only the second
+            // part, which the update state component derives from its transfer
+            // property, to ensure the downloaded size is updated correctly.
+            let actualTransferText = await SpecialPowers.spawn(
               tab.linkedBrowser,
               [],
-              async () => {
-                const { document } = content;
-                if (document.hasPendingL10nMutations) {
-                  await ContentTaskUtils.waitForEvent(
-                    document,
-                    "L10nMutationsFinished"
-                  );
-                }
-                return document.getElementById("downloading").textContent;
+              () => {
+                return content._updateTransferText;
               }
             );
             let expectedSuffix = DownloadUtils.getTransferTotal(
@@ -1152,10 +1179,11 @@ function runAboutPrefsUpdateTest(params, steps) {
               expectedSuffix,
               "Sanity check: Expected download status text should be non-empty"
             );
-            Assert.ok(
-              actualText.endsWith(expectedSuffix),
+            Assert.equal(
+              actualTransferText,
+              expectedSuffix,
               "Download status text should end as expected: " +
-                JSON.stringify({ actualText, expectedSuffix })
+                JSON.stringify({ actualTransferText, expectedSuffix })
             );
           }
         }
@@ -1173,30 +1201,21 @@ function runAboutPrefsUpdateTest(params, steps) {
             "unsupportedSystem",
             "internalError",
           ];
+          const { document } = content;
           if (linkPanels.includes(panelId)) {
-            let { selectedPanel } = content.gAppUpdater;
+            let updateStateControl = document.querySelector("update-state");
             // The unsupportedSystem panel uses the update's detailsURL and the
             // downloadFailed and manualUpdate panels use the app.update.url.manual
             // preference.
-            let selector = "label.text-link";
-            // The downloadFailed panel in about:preferences uses an anchor
-            // instead of a label for the link.
-            if (selectedPanel.id == "downloadFailed") {
-              selector = "a.text-link";
-            }
-            // The manualUpdate panel in about:preferences uses
-            // the moz-support-link element which doesn't have
-            // the .text-link class.
-            if (selectedPanel.id == "manualUpdate") {
-              selector = "a.manualLink";
-            }
-            if (selectedPanel.ownerDocument.hasPendingL10nMutations) {
+            if (updateStateControl.ownerDocument.hasPendingL10nMutations) {
               await ContentTaskUtils.waitForEvent(
-                selectedPanel.ownerDocument,
+                updateStateControl.ownerDocument,
                 "L10nMutationsFinished"
               );
             }
-            let link = selectedPanel.querySelector(selector);
+            let link = updateStateControl.shadowRoot
+              .querySelector("moz-box-item")
+              .querySelector("a");
             is(
               link.href,
               gDetailsURL,
@@ -1210,24 +1229,28 @@ function runAboutPrefsUpdateTest(params, steps) {
               link,
               `The panel's link should have non-empty textContent`
             );
-            let linkWrapperClone = link.parentNode.cloneNode(true);
-            linkWrapperClone.querySelector(selector).remove();
+            let label = updateStateControl.shadowRoot
+              .querySelector("moz-box-item")
+              .querySelector("#label");
+            let linkWrapperClone = label.cloneNode(true);
+            linkWrapperClone.querySelector("a").remove();
             assertNonEmptyText(
               linkWrapperClone,
-              `The panel's link should have text around the link`
+              `The panel's label should have non-empty textContent`
             );
           }
 
           let buttonPanels = ["downloadAndInstall", "apply"];
           if (buttonPanels.includes(panelId)) {
-            let { selectedPanel } = content.gAppUpdater;
-            let buttonEl = selectedPanel.querySelector("button");
+            let updateStateControl = document.querySelector("update-state");
+            let buttonEl =
+              updateStateControl.shadowRoot.querySelector("moz-box-button");
             // Note: The about:preferences doesn't focus the button like the
             // About Dialog does.
             ok(!buttonEl.disabled, "The button should be enabled");
             // Don't click the button on the apply panel since this will restart
             // the application.
-            if (selectedPanel.id != "apply" || forceApply) {
+            if (updateStateControl.value != "apply" || forceApply) {
               buttonEl.click();
             }
           }
@@ -1279,14 +1302,14 @@ function runAboutPrefsUpdateTest(params, steps) {
           },
           "Waiting for update state: " + params.waitForUpdateState,
           undefined,
-          200
+          400
         ).catch(e => {
           // Instead of throwing let the check below fail the test so the panel
           // ID and the expected panel ID is printed in the log.
           logTestInfo(e);
         });
         is(
-          update.state,
+          update?.state,
           params.waitForUpdateState,
           "The update state value should equal " + params.waitForUpdateState
         );
@@ -1296,17 +1319,23 @@ function runAboutPrefsUpdateTest(params, steps) {
       setUpdateURL(updateURL);
     }
 
-    tab = await BrowserTestUtils.openNewForegroundTab(
-      gBrowser,
-      "about:preferences"
+    let settingsRedesignEnabled = Services.prefs.getBoolPref(
+      "browser.settings-redesign.enabled",
+      false
     );
+    let prefUrl = settingsRedesignEnabled
+      ? "about:preferences#about"
+      : "about:preferences";
+    tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, prefUrl);
     registerCleanupFunction(async () => {
       await BrowserTestUtils.removeTab(tab);
     });
 
     // Scroll the UI into view so it is easier to troubleshoot tests.
     await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
-      content.document.getElementById("updatesCategory").scrollIntoView();
+      content.document
+        .querySelector('setting-group[groupid="updates"]')
+        .scrollIntoView();
     });
 
     for (let step of steps) {

@@ -36,6 +36,7 @@ const TEST_PATH_HTTP = getRootDirectory(gTestPath).replace(
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["test.wait300msAfterTabSwitch", true],
       ["dom.security.https_first", true],
       ["dom.require_user_interaction_for_beforeunload", true],
     ],
@@ -123,7 +124,7 @@ async function openPage() {
         browser,
         [""],
         function () {
-          return content.document.userHasInteracted;
+          return content.document.hasBeenUserGestureActivated;
         }
       );
 
@@ -158,11 +159,11 @@ async function loadPageAndReload(testCase) {
         browser,
         [""],
         function () {
-          return content.document.userHasInteracted;
+          return content.document.hasBeenUserGestureActivated;
         }
       );
       is(true, hasInteractedWith, "Simulated successfully user interaction");
-      BrowserCommands.reloadWithFlags(testCase.reloadFlag);
+      gBrowser.reloadWithFlags(testCase.reloadFlag);
       await BrowserTestUtils.browserLoaded(browser);
       is(true, true, `reload with flag ${testCase.name} was successful`);
     }
@@ -193,7 +194,7 @@ async function loadPagesAndUseBackButton() {
         browser,
         [""],
         function () {
-          return content.document.userHasInteracted;
+          return content.document.hasBeenUserGestureActivated;
         }
       );
       is(true, hasInteractedWith, "Simulated successfully user interaction");

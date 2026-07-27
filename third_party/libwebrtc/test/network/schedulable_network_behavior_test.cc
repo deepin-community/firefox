@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "api/test/create_network_emulation_manager.h"
+#include "api/test/network_emulation/leaky_bucket_network_queue.h"
+#include "api/test/network_emulation/network_config_schedule.pb.h"
 #include "api/test/network_emulation_manager.h"
 #include "api/test/simulated_network.h"
 #include "api/units/time_delta.h"
@@ -27,7 +29,11 @@ namespace {
 
 using ::testing::Mock;
 using ::testing::MockFunction;
+using ::testing::Return;
+using ::testing::Sequence;
 using ::testing::SizeIs;
+
+constexpr uint64_t kRandomSeed = 1;
 
 class SchedulableNetworkBehaviorTestFixture {
  public:
@@ -59,7 +65,10 @@ TEST(SchedulableNetworkBehaviorTest, NoSchedule) {
   SchedulableNetworkBehaviorTestFixture fixture;
 
   network_behaviour::NetworkConfigSchedule schedule;
-  SchedulableNetworkBehavior network_behaviour(schedule, fixture.clock());
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(),
+      [](webrtc::Timestamp) { return true; },
+      std::make_unique<LeakyBucketNetworkQueue>());
   webrtc::Timestamp send_time = fixture.TimeNow();
   EXPECT_TRUE(network_behaviour.EnqueuePacket({/*size=*/1000 / 8,
                                                /*send_time_us=*/send_time.us(),
@@ -79,7 +88,10 @@ TEST(SchedulableNetworkBehaviorTest, ScheduleWithoutUpdates) {
   initial_config->set_link_capacity_kbps(10);
   initial_config->set_queue_delay_ms(70);
 
-  SchedulableNetworkBehavior network_behaviour(schedule, fixture.clock());
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(),
+      [](webrtc::Timestamp) { return true; },
+      std::make_unique<LeakyBucketNetworkQueue>());
   webrtc::Timestamp send_time = fixture.TimeNow();
   EXPECT_TRUE(network_behaviour.EnqueuePacket({/*size=*/1000 / 8,
                                                /*send_time_us=*/send_time.us(),
@@ -117,7 +129,10 @@ TEST(SchedulableNetworkBehaviorTest,
   // 55ms.
   updated_capacity->set_link_capacity_kbps(100);
 
-  SchedulableNetworkBehavior network_behaviour(schedule, fixture.clock());
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(),
+      [](webrtc::Timestamp) { return true; },
+      std::make_unique<LeakyBucketNetworkQueue>());
   MockFunction<void()> delivery_time_changed_callback;
   network_behaviour.RegisterDeliveryTimeChangedCallback(
       delivery_time_changed_callback.AsStdFunction());
@@ -147,6 +162,51 @@ TEST(SchedulableNetworkBehaviorTest,
                 .us());
 }
 
+TEST(SchedulableNetworkBehaviorTest, ScheduleStartedWhenStartConditionTrue) {
+  SchedulableNetworkBehaviorTestFixture fixture;
+  network_behaviour::NetworkConfigSchedule schedule;
+  auto initial_config = schedule.add_item();
+  initial_config->set_link_capacity_kbps(0);
+  auto item = schedule.add_item();
+  item->set_time_since_first_sent_packet_ms(1);
+  item->set_link_capacity_kbps(1000000);
+
+  MockFunction<bool(Timestamp)> start_condition;
+  webrtc::Timestamp first_packet_send_time = fixture.TimeNow();
+  webrtc::Timestamp second_packet_send_time =
+      fixture.TimeNow() + TimeDelta::Millis(100);
+  Sequence s;
+  EXPECT_CALL(start_condition, Call(first_packet_send_time))
+      .InSequence(s)
+      .WillOnce(Return(false));
+  // Expect schedule to start when the second packet is sent.
+  EXPECT_CALL(start_condition, Call(second_packet_send_time))
+      .InSequence(s)
+      .WillOnce(Return(true));
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(), start_condition.AsStdFunction(),
+      std::make_unique<LeakyBucketNetworkQueue>());
+
+  EXPECT_TRUE(network_behaviour.EnqueuePacket(
+      {/*size=*/1000 / 8,
+       /*send_time_us=*/first_packet_send_time.us(),
+       /*packet_id=*/1}));
+  EXPECT_FALSE(network_behaviour.NextDeliveryTimeUs().has_value());
+  // Move passed the normal schedule change time. Still dont expect a delivery
+  // time.
+  fixture.AdvanceTime(TimeDelta::Millis(100));
+  EXPECT_FALSE(network_behaviour.NextDeliveryTimeUs().has_value());
+
+  EXPECT_TRUE(network_behaviour.EnqueuePacket(
+      {/*size=*/1000 / 8,
+       /*send_time_us=*/second_packet_send_time.us(),
+       /*packet_id=*/2}));
+
+  EXPECT_FALSE(network_behaviour.NextDeliveryTimeUs().has_value());
+  fixture.AdvanceTime(TimeDelta::Millis(1));
+  EXPECT_TRUE(network_behaviour.NextDeliveryTimeUs().has_value());
+}
+
 TEST(SchedulableNetworkBehaviorTest, ScheduleWithRepeat) {
   SchedulableNetworkBehaviorTestFixture fixture;
   network_behaviour::NetworkConfigSchedule schedule;
@@ -161,7 +221,10 @@ TEST(SchedulableNetworkBehaviorTest, ScheduleWithRepeat) {
   // config should again take 100ms to send.
   schedule.set_repeat_schedule_after_last_ms(200);
 
-  SchedulableNetworkBehavior network_behaviour(schedule, fixture.clock());
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(),
+      [](webrtc::Timestamp) { return true; },
+      std::make_unique<LeakyBucketNetworkQueue>());
 
   webrtc::Timestamp first_packet_send_time = fixture.TimeNow();
   EXPECT_TRUE(network_behaviour.EnqueuePacket(
@@ -201,7 +264,10 @@ TEST(SchedulableNetworkBehaviorTest, ScheduleWithoutRepeat) {
   // A packet of size 1000 bits should take 10ms to send.
   updated_capacity->set_link_capacity_kbps(100);
 
-  SchedulableNetworkBehavior network_behaviour(schedule, fixture.clock());
+  SchedulableNetworkBehavior network_behaviour(
+      schedule, kRandomSeed, fixture.clock(),
+      [](webrtc::Timestamp) { return true; },
+      std::make_unique<LeakyBucketNetworkQueue>());
 
   webrtc::Timestamp first_packet_send_time = fixture.TimeNow();
   EXPECT_TRUE(network_behaviour.EnqueuePacket(

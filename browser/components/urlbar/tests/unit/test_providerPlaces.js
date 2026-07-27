@@ -9,22 +9,29 @@
 
 const SUGGEST_PREF = "browser.urlbar.suggest.searches";
 const SUGGEST_ENABLED_PREF = "browser.search.suggest.enabled";
+const QUICKACTIONS_PREF = "browser.urlbar.suggest.quickactions";
 
 add_task(async function test_places() {
   Services.prefs.setBoolPref(SUGGEST_PREF, true);
   Services.prefs.setBoolPref(SUGGEST_ENABLED_PREF, true);
+  Services.prefs.setBoolPref(QUICKACTIONS_PREF, false);
   let engine = await addTestSuggestionsEngine();
-  Services.search.defaultEngine = engine;
-  let oldCurrentEngine = Services.search.defaultEngine;
-  registerCleanupFunction(() => {
+  await SearchService.setDefault(engine, SearchService.CHANGE_REASON.UNKNOWN);
+  let oldCurrentEngine = SearchService.defaultEngine;
+  registerCleanupFunction(async () => {
     Services.prefs.clearUserPref(SUGGEST_PREF);
     Services.prefs.clearUserPref(SUGGEST_ENABLED_PREF);
-    Services.search.defaultEngine = oldCurrentEngine;
+    Services.prefs.clearUserPref(QUICKACTIONS_PREF);
+    await SearchService.setDefault(
+      oldCurrentEngine,
+      SearchService.CHANGE_REASON.UNKNOWN
+    );
   });
 
   let controller = UrlbarTestUtils.newMockController();
   // Also check case insensitivity.
   let searchString = "MoZ oRg";
+  let tabGroupId = "1234567890-1";
   let context = createContext(searchString, { isPrivate: false });
 
   // Add entries from multiple sources.
@@ -40,19 +47,28 @@ add_task(async function test_places() {
   await PlacesTestUtils.addVisits([
     { uri: "https://history.mozilla.org/", title: "Test history" },
     { uri: "https://tab.mozilla.org/", title: "Test tab" },
+    { uri: "https://tabingroup.mozilla.org/", title: "Test tab in group" },
   ]);
-  UrlbarProviderOpenTabs.registerOpenTab("https://tab.mozilla.org/", 0, false);
+  UrlbarProviderOpenTabs.registerOpenTab(
+    "https://tab.mozilla.org/",
+    0,
+    null,
+    false
+  );
+  UrlbarProviderOpenTabs.registerOpenTab(
+    "https://tabingroup.mozilla.org/",
+    0,
+    tabGroupId,
+    false
+  );
   await PlacesFrecencyRecalculator.recalculateAnyOutdatedFrecencies();
 
   await controller.startQuery(context);
 
-  info(
-    "Results:\n" +
-      context.results.map(m => `${m.title} - ${m.payload.url}`).join("\n")
-  );
+  info("Results:\n" + context.results.map(m => m.payload.url).join("\n"));
   Assert.equal(
     context.results.length,
-    6,
+    7,
     "Found the expected number of matches"
   );
 
@@ -62,6 +78,7 @@ add_task(async function test_places() {
       UrlbarUtils.RESULT_TYPE.SEARCH,
       UrlbarUtils.RESULT_TYPE.SEARCH,
       UrlbarUtils.RESULT_TYPE.URL,
+      UrlbarUtils.RESULT_TYPE.TAB_SWITCH,
       UrlbarUtils.RESULT_TYPE.TAB_SWITCH,
       UrlbarUtils.RESULT_TYPE.URL,
     ],
@@ -75,10 +92,11 @@ add_task(async function test_places() {
       searchString + " foo",
       searchString + " bar",
       "Test bookmark",
+      "Test tab in group",
       "Test tab",
       "Test history",
     ],
-    context.results.map(m => m.title),
+    context.results.map(m => m.getDisplayableValueAndHighlights("title").value),
     "Check match titles"
   );
 
@@ -88,11 +106,30 @@ add_task(async function test_places() {
     "Check tags"
   );
 
+  Assert.equal(
+    context.results[4].payload.tabGroup,
+    tabGroupId,
+    "Check tab group result for tab in group"
+  );
+
+  Assert.equal(
+    context.results[5].payload.tabGroup,
+    null,
+    "Check tab group result for tab not in group"
+  );
+
   await PlacesUtils.history.clear();
   await PlacesUtils.bookmarks.eraseEverything();
   UrlbarProviderOpenTabs.unregisterOpenTab(
     "https://tab.mozilla.org/",
     0,
+    null,
+    false
+  );
+  UrlbarProviderOpenTabs.unregisterOpenTab(
+    "https://tabingroup.mozilla.org/",
+    0,
+    tabGroupId,
     false
   );
 });
@@ -124,10 +161,7 @@ add_task(async function test_bookmarkBehaviorDisabled_tagged() {
 
   await controller.startQuery(context);
 
-  info(
-    "Results:\n" +
-      context.results.map(m => `${m.title} - ${m.payload.url}`).join("\n")
-  );
+  info("Results:\n" + context.results.map(m => m.payload.url).join("\n"));
   Assert.equal(
     context.results.length,
     2,
@@ -142,7 +176,7 @@ add_task(async function test_bookmarkBehaviorDisabled_tagged() {
 
   Assert.deepEqual(
     [searchString, "Test bookmark"],
-    context.results.map(m => m.title),
+    context.results.map(m => m.getDisplayableValueAndHighlights("title").value),
     "Check match titles"
   );
 
@@ -175,10 +209,7 @@ add_task(async function test_bookmarkBehaviorDisabled_untagged() {
 
   await controller.startQuery(context);
 
-  info(
-    "Results:\n" +
-      context.results.map(m => `${m.title} - ${m.payload.url}`).join("\n")
-  );
+  info("Results:\n" + context.results.map(m => m.payload.url).join("\n"));
   Assert.equal(
     context.results.length,
     2,
@@ -193,7 +224,7 @@ add_task(async function test_bookmarkBehaviorDisabled_untagged() {
 
   Assert.deepEqual(
     [searchString, "Test bookmark"],
-    context.results.map(m => m.title),
+    context.results.map(m => m.getDisplayableValueAndHighlights("title").value),
     "Check match titles"
   );
 
@@ -223,10 +254,7 @@ add_task(async function test_diacritics() {
 
   await controller.startQuery(context);
 
-  info(
-    "Results:\n" +
-      context.results.map(m => `${m.title} - ${m.payload.url}`).join("\n")
-  );
+  info("Results:\n" + context.results.map(m => m.payload.url).join("\n"));
   Assert.equal(
     context.results.length,
     2,
@@ -241,7 +269,7 @@ add_task(async function test_diacritics() {
 
   Assert.deepEqual(
     [searchString, "Test bookmark with accents in path"],
-    context.results.map(m => m.title),
+    context.results.map(m => m.getDisplayableValueAndHighlights("title").value),
     "Check match titles"
   );
 

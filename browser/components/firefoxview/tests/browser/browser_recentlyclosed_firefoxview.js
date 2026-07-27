@@ -1,7 +1,7 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-requestLongerTimeout(2);
+requestLongerTimeout(3);
 
 ChromeUtils.defineESModuleGetters(globalThis, {
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
@@ -136,48 +136,6 @@ async function prepareClosedTabs() {
   };
 }
 
-async function recentlyClosedTelemetry() {
-  await TestUtils.waitForCondition(
-    () => {
-      let events = Services.telemetry.snapshotEvents(
-        Ci.nsITelemetry.DATASET_PRERELEASE_CHANNELS,
-        false
-      ).parent;
-      return events && events.length >= 1;
-    },
-    "Waiting for recently_closed firefoxview telemetry event.",
-    200,
-    100
-  );
-
-  TelemetryTestUtils.assertEvents(
-    RECENTLY_CLOSED_EVENT,
-    { category: "firefoxview_next" },
-    { clear: true, process: "parent" }
-  );
-}
-
-async function recentlyClosedDismissTelemetry() {
-  await TestUtils.waitForCondition(
-    () => {
-      let events = Services.telemetry.snapshotEvents(
-        Ci.nsITelemetry.DATASET_PRERELEASE_CHANNELS,
-        false
-      ).parent;
-      return events && events.length >= 1;
-    },
-    "Waiting for dismiss_closed_tab firefoxview telemetry event.",
-    200,
-    100
-  );
-
-  TelemetryTestUtils.assertEvents(
-    DISMISS_CLOSED_TAB_EVENT,
-    { category: "firefoxview_next" },
-    { clear: true, process: "parent" }
-  );
-}
-
 add_setup(async () => {
   registerCleanupFunction(async () => {
     await SpecialPowers.popPrefEnv();
@@ -215,11 +173,9 @@ add_task(async function test_list_ordering() {
   let { cleanup, expectedURLs } = await prepareClosedTabs();
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await clearAllParentTelemetryEvents();
     await navigateToViewAndWait(document, "recentlyclosed");
-    let [cardMainSlotNode, listItems] = await waitForRecentlyClosedTabsList(
-      document
-    );
+    let [cardMainSlotNode, listItems] =
+      await waitForRecentlyClosedTabsList(document);
 
     is(
       cardMainSlotNode.tagName.toLowerCase(),
@@ -313,6 +269,7 @@ add_task(async function test_list_updates() {
  * restored by clicking on the list item
  */
 add_task(async function test_restore_tab() {
+  Services.fog.testResetFOG();
   let { cleanup, expectedURLs } = await prepareClosedTabs();
 
   await withFirefoxView({}, async browser => {
@@ -329,18 +286,25 @@ add_task(async function test_restore_tab() {
     info(
       `Restoring the first closed tab ${closeTabItem.url}, closedId: ${closeTabItem.closedId}, sourceClosedId: ${closeTabItem.sourceClosedId}  and waiting for sessionstore-closed-objects-changed`
     );
-    await clearAllParentTelemetryEvents();
     await restore_tab(closeTabItem, browser, closeTabItem.url);
-    await recentlyClosedTelemetry();
+    Assert.equal(
+      1,
+      Glean.firefoxviewNext.recentlyClosedTabs.testGetValue().length,
+      "Expect one recently-closed event."
+    );
     await clickFirefoxViewButton(window);
 
     listItems = listElem.rowEls;
     is(listItems.length, 3, "Three tabs are shown in the list.");
 
     closeTabItem = listItems[listItems.length - 1];
-    await clearAllParentTelemetryEvents();
+    Services.fog.testResetFOG();
     await restore_tab(closeTabItem, browser, closeTabItem.url);
-    await recentlyClosedTelemetry();
+    Assert.equal(
+      1,
+      Glean.firefoxviewNext.recentlyClosedTabs.testGetValue().length,
+      "Expect one recently-closed event."
+    );
     await clickFirefoxViewButton(window);
 
     listItems = listElem.rowEls;
@@ -352,11 +316,45 @@ add_task(async function test_restore_tab() {
   await cleanup();
 });
 
+add_task(async function test_restore_tab_from_deleted_group() {
+  Services.fog.testResetFOG();
+  let tab = await add_new_tab("about:mozilla");
+  let group = gBrowser.addTabGroup([tab]);
+  Assert.equal(gBrowser.visibleTabs.length, 2, "2 tabs are open");
+  Assert.ok(tab.group, "New tab is grouped");
+  await gBrowser.removeTabGroup(group);
+  Assert.equal(
+    gBrowser.visibleTabs.length,
+    1,
+    "1 tab is open after group deletion"
+  );
+
+  await withFirefoxView({}, async browser => {
+    const { document } = browser.contentWindow;
+    await navigateToViewAndWait(document, "recentlyclosed");
+
+    let [, listItems] = await waitForRecentlyClosedTabsList(document);
+
+    let closedTabItem = listItems[0];
+    info("Restoring the closed tab");
+    Services.fog.testResetFOG();
+    await restore_tab(closedTabItem, browser, closedTabItem.url);
+    Assert.equal(
+      1,
+      Glean.firefoxviewNext.recentlyClosedTabs.testGetValue().length,
+      "Expect one recently-closed event."
+    );
+    Assert.equal(gBrowser.visibleTabs.length, 2, "Tab was restored");
+  });
+  BrowserTestUtils.removeTab(gBrowser.tabs[1]);
+});
+
 /**
  * Asserts that tabs that have been recently closed can be
  * dismissed by clicking on their respective dismiss buttons.
  */
 add_task(async function test_dismiss_tab() {
+  Services.fog.testResetFOG();
   let { cleanup, expectedURLs } = await prepareClosedTabs();
 
   await withFirefoxView({}, async browser => {
@@ -364,7 +362,7 @@ add_task(async function test_dismiss_tab() {
     await navigateToViewAndWait(document, "recentlyclosed");
 
     let [listElem, listItems] = await waitForRecentlyClosedTabsList(document);
-    await clearAllParentTelemetryEvents();
+    Services.fog.testResetFOG();
 
     info("calling dismiss_tab on the top, most-recently closed tab");
     let closedTabItem = listItems[0];
@@ -380,7 +378,11 @@ add_task(async function test_dismiss_tab() {
     await listElem.getUpdateComplete;
 
     info("check telemetry results");
-    await recentlyClosedDismissTelemetry();
+    Assert.equal(
+      1,
+      Glean.firefoxviewNext.dismissClosedTabTabs.testGetValue().length,
+      "Expect one dismiss event."
+    );
 
     listItems = listElem.rowEls;
     expectedURLs.shift(); // we expect to have removed the first URL from the list
@@ -442,7 +444,10 @@ add_task(async function test_empty_states() {
       "view-recentlyclosed:not([slot=recentlyclosed])"
     );
 
-    await TestUtils.waitForCondition(() => recentlyClosedComponent.emptyState);
+    await TestUtils.waitForCondition(
+      () => recentlyClosedComponent.emptyState,
+      "Waiting for the recently closed component to be in the empty state"
+    );
     let emptyStateCard = recentlyClosedComponent.emptyState;
     ok(
       emptyStateCard.headerEl.textContent.includes("Closed a tab too soon"),
@@ -461,16 +466,17 @@ add_task(async function test_empty_states() {
     // in about:preferences will require a browser reload
     recentlyClosedComponent.requestUpdate();
     await TestUtils.waitForCondition(
-      () => recentlyClosedComponent.fullyUpdated
+      () => recentlyClosedComponent.fullyUpdated,
+      "The recently closed component to be fully updated"
     );
     emptyStateCard = recentlyClosedComponent.emptyState;
     ok(
-      emptyStateCard.headerEl.textContent.includes("Nothing to show"),
+      emptyStateCard.headerEl.textContent.includes("You’re in control"),
       "Empty state with never remember history header has the expected text."
     );
     ok(
-      emptyStateCard.descriptionEls[1].textContent.includes(
-        "remember your activity as you browse. To change that"
+      emptyStateCard.descriptionEls[0].textContent.includes(
+        "does not remember your browsing activity"
       ),
       "Empty state with never remember history description has the expected text."
     );
@@ -502,7 +508,7 @@ add_task(async function test_observers_removed_when_view_is_hidden() {
       "The list does not update when Firefox View is hidden."
     );
 
-    await switchToFxViewTab(browser.ownerGlobal);
+    await switchToFxViewTab(browser.documentGlobal);
     info("The list should update when Firefox View is visible.");
     await BrowserTestUtils.waitForMutationCondition(
       listElem,
@@ -534,7 +540,8 @@ add_task(async function test_search() {
     );
 
     info("Clear the search query.");
-    EventUtils.synthesizeMouseAtCenter(searchTextbox.clearButton, {}, content);
+    let clearButton = SpecialPowers.getInputButton(searchTextbox.inputEl);
+    EventUtils.synthesizeMouseAtCenter(clearButton, {}, content);
     await TestUtils.waitForCondition(
       () => listElem.rowEls.length === expectedURLs.length,
       "The original list is restored."
@@ -549,16 +556,9 @@ add_task(async function test_search() {
       "There are no matching search results."
     );
 
-    info("Clear the search query with keyboard.");
-    EventUtils.synthesizeMouseAtCenter(searchTextbox.clearButton, {}, content);
-
-    is(
-      recentlyClosedComponent.shadowRoot.activeElement,
-      searchTextbox,
-      "Search input is focused"
-    );
-    EventUtils.synthesizeKey("KEY_Tab", {}, content);
-    EventUtils.synthesizeKey("KEY_Enter", {}, content);
+    info("Clear the search query.");
+    clearButton = SpecialPowers.getInputButton(searchTextbox.inputEl);
+    EventUtils.synthesizeMouseAtCenter(clearButton, {}, content);
     await TestUtils.waitForCondition(
       () => listElem.rowEls.length === expectedURLs.length,
       "The original list is restored."

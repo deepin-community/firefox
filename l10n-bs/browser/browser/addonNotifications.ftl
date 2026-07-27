@@ -81,6 +81,8 @@ addon-removal-title = Ukloniti { $name }?
 addon-removal-message = Ukloniti { $name } iz { -brand-shorter-name }?
 addon-removal-button = Ukloni
 addon-removal-abuse-report-checkbox = Prijavite ovu ekstenziju { -vendor-short-name }u
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Ako koristite funkcije ili ekstenzije koje koriste ovaj model, on će biti ponovo dodan.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -126,12 +128,18 @@ addon-install-error-corrupt-file = Add-on preuzet sa ove stranice nije instalira
 addon-install-error-file-access = { $addonName } nije instaliran jer { -brand-short-name } nije mogao modificirati potrebni fajl.
 addon-install-error-not-signed = { -brand-short-name } je spriječio ovu stranicu da instalira neprovjereni add-on.
 addon-install-error-invalid-domain = Dodatak { $addonName } se ne može instalirati sa ove lokacije.
+addon-install-error-no-addon-name-file-access = Dodatak nije mogao biti instaliran jer { -brand-short-name } ne može izmijeniti potrebnu datoteku.
 addon-local-install-error-network-failure = Ovaj add-on nije instaliran zbog greške u fajl sistemu.
 addon-local-install-error-incorrect-hash = Add-on nije instaliran je ne odgovara očekivanom { -brand-short-name } add-onu.
 addon-local-install-error-corrupt-file = Ovaj add-on nije instaliran jer se čini da je oštećen.
 addon-local-install-error-file-access = { $addonName } nije instaliran jer { -brand-short-name } nije mogao modificirati potrebni fajl.
 addon-local-install-error-not-signed = Ovaj add-on nije instaliran jer nije mogao biti verificiran.
+addon-local-install-no-addon-name-error-file-access = Dodatak nije mogao biti instaliran jer { -brand-short-name } ne može izmijeniti potrebnu datoteku.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } nije instaliran jer nije kompatibilan sa { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } krši Mozilla pravila i ne može se instalirati na { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } nije instaliran zbog visokog rizika izazivanja problema sa stabilnošću ili sigurnošću.
+addon-install-error-soft-blocked = { $addonName } krši Mozilla pravila i ne može se instalirati na { -brand-short-name }.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Ne možete instalirati { $addonName } kao krajnji korisnik, može ga instalirati samo organizacija koristeći pravila preduzeća.

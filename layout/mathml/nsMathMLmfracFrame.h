@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMathMLmfracFrame_h___
-#define nsMathMLmfracFrame_h___
+#ifndef nsMathMLmfracFrame_h_
+#define nsMathMLmfracFrame_h_
 
-#include "mozilla/Attributes.h"
 #include "nsMathMLContainerFrame.h"
 
 namespace mozilla {
@@ -61,30 +58,25 @@ class nsMathMLmfracFrame final : public nsMathMLContainerFrame {
   friend nsIFrame* NS_NewMathMLmfracFrame(mozilla::PresShell* aPresShell,
                                           ComputedStyle* aStyle);
 
-  virtual eMathMLFrameType GetMathMLFrameType() override;
+  MathMLFrameType GetMathMLFrameType() override;
 
-  virtual nsresult MeasureForWidth(DrawTarget* aDrawTarget,
-                                   ReflowOutput& aDesiredSize) override;
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) override;
 
-  nsresult Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                 ReflowOutput& aDesiredSize) override;
+  void BuildDisplayList(nsDisplayListBuilder* aBuilder,
+                        const nsDisplayListSet& aLists) override;
 
-  virtual void BuildDisplayList(nsDisplayListBuilder* aBuilder,
-                                const nsDisplayListSet& aLists) override;
-
-  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                    int32_t aModType) override;
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) override;
 
   NS_IMETHOD
   TransmitAutomaticData() override;
 
   // override the base method so that we can deal with the fraction line
-  virtual nscoord FixInterFrameSpacing(ReflowOutput& aDesiredSize) override;
+  nscoord FixInterFrameSpacing(ReflowOutput& aDesiredSize) override;
 
   // helper to translate the thickness attribute into a usable form
-  nscoord CalcLineThickness(nsPresContext* aPresContext,
-                            ComputedStyle* aComputedStyle,
-                            nsString& aThicknessAttribute, nscoord onePixel,
+  nscoord CalcLineThickness(nsString& aThicknessAttribute, nscoord onePixel,
                             nscoord aDefaultRuleThickness,
                             float aFontSizeInflation);
 
@@ -98,8 +90,7 @@ class nsMathMLmfracFrame final : public nsMathMLContainerFrame {
         mLineThickness(0) {}
   virtual ~nsMathMLmfracFrame();
 
-  nsresult PlaceInternal(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                         ReflowOutput& aDesiredSize);
+  bool IsMathContentBoxHorizontallyCentered() const final { return true; }
 
   // Display a slash
   void DisplaySlash(nsDisplayListBuilder* aBuilder, const nsRect& aRect,
@@ -110,4 +101,4 @@ class nsMathMLmfracFrame final : public nsMathMLContainerFrame {
   nscoord mLineThickness;
 };
 
-#endif /* nsMathMLmfracFrame_h___ */
+#endif /* nsMathMLmfracFrame_h_ */

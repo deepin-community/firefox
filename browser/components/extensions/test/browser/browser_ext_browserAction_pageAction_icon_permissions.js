@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 PromiseTestUtils.allowMatchingRejectionsGlobally(/packaging errors/);
@@ -123,8 +121,9 @@ add_task(async function testDefaultDetails() {
 
     await promiseAnimationFrame();
 
-    let browserActionButton =
-      document.getElementById(browserActionId).firstElementChild;
+    let browserActionButton = document
+      .getElementById(browserActionId)
+      .querySelector(".unified-extensions-item-action-button");
     let image = getListStyleImage(browserActionButton);
 
     ok(

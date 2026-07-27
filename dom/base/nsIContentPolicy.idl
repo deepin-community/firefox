@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ft=cpp tw=78 sw=2 et ts=8 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -82,11 +80,11 @@ interface nsIContentPolicy : nsISupports
     TYPE_SUBDOCUMENT = 7,
 
     /*
-     * XXX: nsContentPolicyType = 8 used to inicate a timed refresh request.
+     * XXX: nsContentPolicyType = 8 used to indicate a timed refresh request.
      */
 
     /*
-     * XXX: nsContentPolicyType = 9 used to inicate an XBL binding request.
+     * XXX: nsContentPolicyType = 9 used to indicate an XBL binding request.
      */
 
     /**
@@ -99,10 +97,9 @@ interface nsIContentPolicy : nsISupports
      */
     TYPE_XMLHTTPREQUEST = 11,
 
-    /**
-     * Indicates a request by a plugin.
+    /*
+     * XXX: nsContentPolicyType = 12 used to indicate plugin/object sub-requests.
      */
-    TYPE_OBJECT_SUBREQUEST = 12,
 
     /**
      * Indicates a DTD loaded by an XML document.
@@ -442,20 +439,54 @@ interface nsIContentPolicy : nsISupports
     TYPE_INTERNAL_XMLHTTPREQUEST_SYNC = 60,
 
     /**
-     * Used to indicate the end of this list, not a content policy. If you want
-     * to add a new content policy type, place it before this sentinel value
-     * TYPE_END, have it use TYPE_END's current value, and increment TYPE_END by
-     * one. (TYPE_END should always have the highest numerical value.)
+     * This is a request triggered by Document::RequestExternalResource.
+     * It is presumably something like an SVG <use> or CSS filter:.
+     * For simplicity treat this like TYPE_OTHER outside CSP.
      */
-    TYPE_END = 61,
+    TYPE_INTERNAL_EXTERNAL_RESOURCE = 61,
 
+    /**
+     * Indicates a JSON module loaded through an import statement.
+     */
+    TYPE_JSON = 62,
+
+    /**
+     * Same as TYPE_JSON but indicates an internal constant for a preloaded
+     * JSON module loaded through an import statement.
+     *
+     * This will be mapped to TYPE_JSON before being passed to content policy
+     * implementations.
+     */
+    TYPE_INTERNAL_JSON_PRELOAD = 63,
+
+    /**
+     * Indicates an internal constant for Notification image icons.
+     *
+     * This will be mapped to TYPE_IMAGE before being passed
+     * to content policy implementations.
+     */
+    TYPE_INTERNAL_IMAGE_NOTIFICATION = 64,
+
+    /**
+     * Indicates a text module loaded through an import statement.
+     */
+    TYPE_TEXT = 65,
+
+    /**
+     * Same as TYPE_TEXT but indicates an internal constant for a preloaded
+     * text module loaded through an import statement.
+     *
+     * This will be mapped to TYPE_TEXT before being passed to content policy
+     * implementations.
+     */
+    TYPE_INTERNAL_TEXT_PRELOAD = 66,
 
     /* When adding new content types, please update
-     * NS_CP_ContentTypeName, nsCSPContext, CSP_ContentTypeToDirective,
+     * nsCSPContext, CSP_ContentTypeToDirective,
      * DoContentSecurityChecks, all nsIContentPolicy implementations, the
      * static_assert in dom/cache/DBSchema.cpp, ChannelWrapper.webidl,
      * ChannelWrapper.cpp, PermissionManager.cpp,
-     * IPCMessageUtilsSpecializations.h, and other things that are not
+     * nsContentPolicyType.h, and other things that are not
      * listed here that are related to nsIContentPolicy. */
   };
 
@@ -580,7 +611,6 @@ enum class ExtContentPolicyType : uint8_t {
   TYPE_SUBDOCUMENT = nsIContentPolicy::TYPE_SUBDOCUMENT,
   TYPE_PING = nsIContentPolicy::TYPE_PING,
   TYPE_XMLHTTPREQUEST = nsIContentPolicy::TYPE_XMLHTTPREQUEST,
-  TYPE_OBJECT_SUBREQUEST = nsIContentPolicy::TYPE_OBJECT_SUBREQUEST,
   TYPE_DTD = nsIContentPolicy::TYPE_DTD,
   TYPE_FONT = nsIContentPolicy::TYPE_FONT,
   TYPE_MEDIA = nsIContentPolicy::TYPE_MEDIA,
@@ -597,6 +627,8 @@ enum class ExtContentPolicyType : uint8_t {
   TYPE_PROXIED_WEBRTC_MEDIA = nsIContentPolicy::TYPE_PROXIED_WEBRTC_MEDIA,
   TYPE_WEB_IDENTITY = nsIContentPolicy::TYPE_WEB_IDENTITY,
   TYPE_WEB_TRANSPORT = nsIContentPolicy::TYPE_WEB_TRANSPORT,
+  TYPE_JSON = nsIContentPolicy::TYPE_JSON,
+  TYPE_TEXT = nsIContentPolicy::TYPE_TEXT,
 };
 
 typedef ExtContentPolicyType ExtContentPolicy;

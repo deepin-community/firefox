@@ -1,22 +1,20 @@
-/* vim:t ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHttpConnectionMgr_h__
-#define nsHttpConnectionMgr_h__
+#ifndef nsHttpConnectionMgr_h_
+#define nsHttpConnectionMgr_h_
 
 #include "DnsAndConnectSocket.h"
-#include "HttpConnectionBase.h"
 #include "HttpConnectionMgrShell.h"
 #include "nsHttpConnection.h"
 #include "nsHttpTransaction.h"
 #include "nsTArray.h"
+#include "nsTHashSet.h"
 #include "nsThreadUtils.h"
 #include "nsClassHashtable.h"
-#include "mozilla/ReentrantMonitor.h"
+#include "mozilla/DataMutex.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/Attributes.h"
 #include "ARefBase.h"
 #include "nsWeakReference.h"
 #include "ConnectionEntry.h"
@@ -29,8 +27,10 @@ class nsIHttpUpgradeListener;
 
 namespace mozilla::net {
 class EventTokenBucket;
+class HttpConnectionBase;
 class NullHttpTransaction;
 struct HttpRetParams;
+struct Http3ConnectionStatsParams;
 
 //-----------------------------------------------------------------------------
 
@@ -91,7 +91,9 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   [[nodiscard]] nsresult RemoveIdleConnection(nsHttpConnection*);
 
   // Close a single connection and prevent it from being reused.
-  [[nodiscard]] nsresult DoSingleConnectionCleanup(nsHttpConnectionInfo*);
+  [[nodiscard]] nsresult DoSingleConnectionCleanup(
+      nsHttpConnectionInfo*,
+      uint32_t aPriority = nsIRunnablePriority::PRIORITY_NORMAL);
 
   // The connection manager needs to know when a normal HTTP connection has been
   // upgraded to SPDY because the dispatch and idle semantics are a little
@@ -99,9 +101,11 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   void ReportSpdyConnection(nsHttpConnection*, bool usingSpdy,
                             bool disallowHttp3);
 
-  void ReportHttp3Connection(HttpConnectionBase*);
+  void ReportHttp3Connection(HttpConnectionBase* conn,
+                             ConnectionEntry* entry = nullptr);
 
   bool GetConnectionData(nsTArray<HttpRetParams>*);
+  bool GetHttp3ConnectionStatsData(nsTArray<Http3ConnectionStatsParams>*);
 
   void ResetIPFamilyPreference(nsHttpConnectionInfo*);
 
@@ -152,8 +156,6 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   const nsTArray<RefPtr<nsIWebTransportHash>>* GetServerCertHashes(
       nsHttpConnectionInfo* aConnInfo);
 
-  uint64_t GenerateNewWebTransportId() { return mMaxWebTransportId++; }
-
  private:
   virtual ~nsHttpConnectionMgr();
 
@@ -181,6 +183,7 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   //-------------------------------------------------------------------------
 
   [[nodiscard]] bool ProcessPendingQForEntry(nsHttpConnectionInfo*);
+  void ProcessPendingQForEntry(ConnectionEntry*);
 
   // public, so that the SPDY/http2 seesions can activate
   void ActivateTimeoutTick();
@@ -194,6 +197,8 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
 
   already_AddRefed<ConnectionEntry> FindConnectionEntry(
       const nsHttpConnectionInfo* ci);
+
+  void MaybeRemoveEntryFromPendingSet(ConnectionEntry* ent);
 
  public:
   void RegisterOriginCoalescingKey(HttpConnectionBase*, const nsACString& host,
@@ -213,18 +218,21 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   void DecrementActiveConnCount(HttpConnectionBase*);
 
  private:
+  friend class ConnectionAttemptPool;
   friend class DnsAndConnectSocket;
+  friend class HappyEyeballsConnectionAttempt;
   friend class PendingTransactionInfo;
+  friend class ConnectionEstablisher;
+  friend class TCPConnectionEstablisher;
 
   //-------------------------------------------------------------------------
-  // NOTE: these members may be accessed from any thread (use mReentrantMonitor)
+  // NOTE: these members may be accessed from any thread
   //-------------------------------------------------------------------------
 
-  ReentrantMonitor mReentrantMonitor{"nsHttpConnectionMgr.mReentrantMonitor"};
-  // This is used as a flag that we're shut down, and no new events should be
-  // dispatched.
-  nsCOMPtr<nsIEventTarget> mSocketThreadTarget
-      MOZ_GUARDED_BY(mReentrantMonitor);
+  // Null after Shutdown(); used as a flag that we're shut down and no new
+  // events should be dispatched.
+  DataMutex<nsCOMPtr<nsIEventTarget>> mSocketThreadTarget{
+      "nsHttpConnectionMgr.mSocketThreadTarget"};
 
   Atomic<bool, mozilla::Relaxed> mIsShuttingDown{false};
 
@@ -238,11 +246,8 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   uint16_t mMaxPersistConnsPerProxy{0};
   uint16_t mMaxRequestDelay{0};  // in seconds
   bool mThrottleEnabled{false};
-  uint32_t mThrottleVersion{2};
   uint32_t mThrottleSuspendFor{0};
   uint32_t mThrottleResumeFor{0};
-  uint32_t mThrottleReadLimit{0};
-  uint32_t mThrottleReadInterval{0};
   uint32_t mThrottleHoldTime{0};
   TimeDuration mThrottleMaxTime;
   bool mBeConservativeForProxy{true};
@@ -254,8 +259,8 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
 
   // This function selects transactions from mPendingTransactionTable to
   // dispatch according to the following conditions:
-  // 1. When ActiveTabPriority() is false, only get transactions from the
-  //    queue whose window id is 0.
+  // 1. When network.http.active_tab_priority is false, only get transactions
+  //    from the queue whose window id is 0.
   // 2. If |considerAll| is false, either get transactions from the focused
   //    window queue or non-focused ones.
   // 3. If |considerAll| is true, fill the |pendingQ| with the transactions from
@@ -268,7 +273,8 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   // depending whether the proxy is used.
   uint32_t MaxPersistConnections(ConnectionEntry* ent) const;
 
-  bool AtActiveConnectionLimit(ConnectionEntry*, uint32_t caps);
+  bool AtActiveConnectionLimit(ConnectionEntry*, uint32_t caps,
+                               bool forInnerConn = false);
   [[nodiscard]] nsresult TryDispatchTransaction(
       ConnectionEntry* ent, bool onlyReusedConnection,
       PendingTransactionInfo* pendingTransInfo);
@@ -284,7 +290,9 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
                                                      HttpConnectionBase*,
                                                      int32_t);
   [[nodiscard]] nsresult EnsureSocketThreadTarget();
-  void ReportProxyTelemetry(ConnectionEntry* ent);
+  [[nodiscard]] nsresult TryDispatchExtendedCONNECTransaction(
+      ConnectionEntry* aEnt, nsHttpTransaction* aTrans,
+      nsHttpConnection* aConn);
   void StartedConnect();
   void RecvdConnect();
 
@@ -298,13 +306,13 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
 
   // Manage h2/3 connection coalescing
   // The hashtable contains arrays of weak pointers to HttpConnectionBases
-  nsClassHashtable<nsCStringHashKey, nsTArray<nsWeakPtr>> mCoalescingHash;
+  nsClassHashtable<nsUint32HashKey, nsTArray<nsWeakPtr>> mCoalescingHash;
 
   HttpConnectionBase* FindCoalescableConnection(ConnectionEntry* ent,
                                                 bool justKidding, bool aNoHttp2,
                                                 bool aNoHttp3);
   HttpConnectionBase* FindCoalescableConnectionByHashKey(ConnectionEntry* ent,
-                                                         const nsCString& key,
+                                                         HashNumber key,
                                                          bool justKidding,
                                                          bool aNoHttp2,
                                                          bool aNoHttp3);
@@ -316,9 +324,10 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
                             ConnectionEntry* ent, HttpConnectionBase* connH2,
                             HttpConnectionBase* connH3);
   // used to marshall events to the socket transport thread.
-  [[nodiscard]] nsresult PostEvent(nsConnEventHandler handler,
-                                   int32_t iparam = 0,
-                                   ARefBase* vparam = nullptr);
+  [[nodiscard]] nsresult PostEvent(
+      nsConnEventHandler handler, int32_t iparam = 0,
+      ARefBase* vparam = nullptr,
+      uint32_t priority = nsIRunnablePriority::PRIORITY_NORMAL);
 
   void OnMsgReclaimConnection(HttpConnectionBase*);
 
@@ -384,6 +393,10 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   //
   nsRefPtrHashtable<nsCStringHashKey, ConnectionEntry> mCT;
 
+  // Subset of mCT entries that currently have non-empty pending transaction
+  // queues. Only iterated in OnMsgProcessAllSpdyPendingQ.
+  nsTHashSet<ConnectionEntry*> mPendingQEntries;
+
   // Read Timeout Tick handlers
   void TimeoutTick();
 
@@ -402,7 +415,7 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   // these methods track this time.
   bool InThrottlingTimeWindow();
 
-  // Two hashtalbes keeping track of active transactions regarding window id and
+  // Two hashtables keeping track of active transactions regarding window id and
   // throttling. Used by the throttling algorithm to obtain number of
   // transactions for the active tab and for inactive tabs according their
   // throttle status. mActiveTransactions[0] are all unthrottled transactions,
@@ -474,12 +487,8 @@ class nsHttpConnectionMgr final : public HttpConnectionMgrShell,
   void NotifyConnectionOfBrowserIdChange(uint64_t previousId);
 
   void CheckTransInPendingQueue(nsHttpTransaction* aTrans);
-
-  // Used for generating unique IDSs for dedicated connections, currently used
-  // by WebTransport
-  Atomic<uint64_t> mMaxWebTransportId{1};
 };
 
 }  // namespace mozilla::net
 
-#endif  // !nsHttpConnectionMgr_h__
+#endif  // !nsHttpConnectionMgr_h_

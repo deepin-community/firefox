@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef __ClearKeyStorage_h__
-#define __ClearKeyStorage_h__
+#ifndef ClearKeyStorage_h_
+#define ClearKeyStorage_h_
 
 #include <stdint.h>
 
@@ -29,14 +29,14 @@
 #define IO_FAILED(x) ((x) != cdm::FileIOClient::Status::kSuccess)
 
 // Writes data to a file and fires the appropriate callback when complete.
-void WriteData(cdm::Host_10* aHost, std::string& aRecordName,
+void WriteData(cdm::Host_11* aHost, std::string& aRecordName,
                const std::vector<uint8_t>& aData,
                std::function<void()>&& aOnSuccess,
                std::function<void()>&& aOnFailure);
 
 // Reads data from a file and fires the appropriate callback when complete.
-void ReadData(cdm::Host_10* aHost, std::string& aRecordName,
+void ReadData(cdm::Host_11* aHost, std::string& aRecordName,
               std::function<void(const uint8_t*, uint32_t)>&& aOnSuccess,
               std::function<void()>&& aOnFailure);
 
-#endif  // __ClearKeyStorage_h__
+#endif  // ClearKeyStorage_h_

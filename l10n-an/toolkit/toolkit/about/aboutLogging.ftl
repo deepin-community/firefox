@@ -8,10 +8,3 @@ about-logging-set-log-file = Determinar fichero de rechistro
 about-logging-set-log-modules = Determinar modulos de rechistro
 about-logging-start-logging = Empecipiar a rechistrar
 about-logging-stop-logging = Deixar de rechistrar
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -126,26 +124,10 @@ dictionary WindowActorOptions {
 
 dictionary WindowActorSidedOptions {
   /**
-   * The JSM path which should be loaded for the actor on this side.
-   *
-   * Mutually exclusive with `esModuleURI`.
-   *
-   * If neither this nor `esModuleURI` is passed, the specified side cannot receive
-   * messages, but may send them using `sendAsyncMessage` or `sendQuery`.
-   *
-   * TODO: Remove this once m-c, c-c, and out-of-tree code migrations finish
-   *       (bug 1866732).
-   */
-  ByteString moduleURI;
-
-  /**
    * The ESM path which should be loaded for the actor on this side.
    *
-   * Mutually exclusive with `moduleURI`.
-   *
-   * If neither this nor `moduleURI` is passed, the specified side cannot
-   * receive messages, but may send them using `sendAsyncMessage` or
-   * `sendQuery`.
+   * If this is not is passed, the specified side cannot receive messages, but
+   * may send them using `sendAsyncMessage` or `sendQuery`.
    */
   ByteString esModuleURI;
 };

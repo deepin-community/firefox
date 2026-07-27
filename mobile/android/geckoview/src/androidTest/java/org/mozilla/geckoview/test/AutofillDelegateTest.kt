@@ -1,5 +1,4 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: nil; -*-
- * Any copyright is dedicated to the Public Domain.
+/* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 package org.mozilla.geckoview.test
@@ -9,16 +8,23 @@ import android.util.SparseArray
 import android.view.KeyEvent
 import android.view.View
 import androidx.test.filters.MediumTest
-import org.hamcrest.Matchers.* // ktlint-disable no-wildcard-imports
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.isEmptyOrNullString
+import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.notNullValue
 import org.junit.Assume.assumeThat
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.mozilla.geckoview.Autofill
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.TextInputDelegate
-import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.* // ktlint-disable no-wildcard-imports
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.AssertCalled
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.ShouldContinue
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.WithDisplay
 
 @RunWith(Parameterized::class)
 @MediumTest
@@ -197,6 +203,7 @@ class AutofillDelegateTest : BaseSessionTest() {
         })
     }
 
+    @Ignore("https://bugzilla.mozilla.org/show_bug.cgi?id=1988041")
     @Test fun autofill() {
         // Test parts of the Oreo auto-fill API; there is another autofill test in
         // SessionAccessibility for a11y auto-fill support.
@@ -347,10 +354,10 @@ class AutofillDelegateTest : BaseSessionTest() {
 
     @WithDisplay(width = 100, height = 100)
     @Test
+    @Ignore("disable test for frequently failing Bug 1933403 and 1934456")
     fun autofillNavigation() {
         // Wait for the accessibility nodes to populate.
         mainSession.loadUri(pageUrl)
-
         sessionRule.waitUntilCalled(object :
             Autofill.Delegate,
             ShouldContinue,

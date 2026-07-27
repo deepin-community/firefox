@@ -29,10 +29,11 @@ add_setup(async function () {
       // when landing on the page.
       ["browser.contentblocking.report.monitor.enabled", false],
       ["browser.contentblocking.report.lockwise.enabled", false],
-      ["browser.contentblocking.report.proxy.enabled", false],
       ["privacy.trackingprotection.enabled", true],
+      ["browser.urlbar.scotchBonnet.enableOverride", true],
     ],
   });
+
   let oldCanRecord = Services.telemetry.canRecordExtended;
   Services.telemetry.canRecordExtended = true;
   Services.telemetry.clearEvents();
@@ -41,6 +42,8 @@ add_setup(async function () {
     Services.telemetry.canRecordExtended = oldCanRecord;
     Services.telemetry.clearEvents();
   });
+
+  Services.fog.testResetFOG();
 });
 
 async function clickToggle(toggle) {
@@ -61,16 +64,9 @@ add_task(async function testToggleSwitch() {
     return gProtectionsHandler._protectionsPopup.hasAttribute("blocking");
   });
 
-  let events = Services.telemetry.snapshotEvents(
-    Ci.nsITelemetry.DATASET_PRERELEASE_CHANNELS
-  ).parent;
-  let buttonEvents = events.filter(
-    e =>
-      e[1] == "security.ui.protectionspopup" &&
-      e[2] == "open" &&
-      e[3] == "protections_popup"
-  );
-  console.log(buttonEvents);
+  let buttonEvents =
+    Glean.securityUiProtectionspopup.openProtectionsPopup.testGetValue();
+
   is(buttonEvents.length, 1, "recorded telemetry for opening the popup");
 
   let browserLoadedPromise = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
@@ -314,10 +310,10 @@ add_task(async function testMiniPanelClick() {
   );
 
   // Simulate clicking on the mini panel text
-  let headerEl = document.getElementById(
-    "protections-popup-mainView-panel-header-section"
+  let buttonEl = document.getElementById(
+    "protections-popup-toast-panel-tp-on-desc"
   );
-  await EventUtils.synthesizeMouseAtCenter(headerEl, {});
+  await EventUtils.synthesizeMouseAtCenter(buttonEl, {});
 
   info("Waiting for mini panel to close");
   await popuphiddenPromise;
@@ -388,14 +384,12 @@ add_task(async function testToggleSwitchFlow() {
     gProtectionsHandler._protectionsPopup,
     "popuphidden"
   );
-  // We intentionally turn off a11y_checks, because the following click
-  // is targeting static toast message that's not meant to be interactive and
-  // is not expected to be accessible:
-  AccessibilityUtils.setEnv({
-    mustHaveAccessibleRule: false,
-  });
-  document.getElementById("protections-popup-mainView-panel-header").click();
-  AccessibilityUtils.resetEnv();
+
+  // Simulate clicking on the mini panel text
+  let buttonEl = document.getElementById(
+    "protections-popup-toast-panel-tp-off-desc"
+  );
+  await EventUtils.synthesizeMouseAtCenter(buttonEl, {});
   await popuphiddenPromise;
   await popupShownPromise;
 
@@ -458,7 +452,7 @@ add_task(async function testTrackingProtectionIcon() {
   let TPIcon = document.getElementById("tracking-protection-icon");
   // Check the icon url. It will show a shield icon if TP is enabled.
   is(
-    gBrowser.ownerGlobal
+    gBrowser.documentGlobal
       .getComputedStyle(TPIcon)
       .getPropertyValue("list-style-image"),
     `url("chrome://browser/skin/tracking-protection.svg")`,
@@ -477,7 +471,7 @@ add_task(async function testTrackingProtectionIcon() {
   // Check that the tracking protection icon should show a strike-through shield
   // icon after page is reloaded.
   is(
-    gBrowser.ownerGlobal
+    gBrowser.documentGlobal
       .getComputedStyle(TPIcon)
       .getPropertyValue("list-style-image"),
     `url("chrome://browser/skin/tracking-protection-disabled.svg")`,

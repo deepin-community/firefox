@@ -33,7 +33,7 @@ function test() {
   let CustomizableUIInternal = CustomizableUI.getTestOnlyInternalProp(
     "CustomizableUIInternal"
   );
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
   is(gFuturePlacements.size, 0, "No change to future placements initially.");
 
   let currentVersion = CustomizableUI.getTestOnlyInternalProp("kVersion");
@@ -87,7 +87,7 @@ function test() {
   }
 
   // Then call the re-init routine so we re-add the builtin widgets
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
   is(gFuturePlacements.size, 1, "Should have 1 more future placement");
   let haveNavbarPlacements = gFuturePlacements.has(CustomizableUI.AREA_NAVBAR);
   ok(haveNavbarPlacements, "Should have placements for nav-bar");
@@ -135,8 +135,8 @@ function test() {
     },
   });
   Services.prefs.setIntPref("browser.proton.toolbar.version", 0);
-  CustomizableUIInternal._updateForNewVersion();
-  CustomizableUIInternal._updateForNewProtonVersion();
+  CustomizableUIInternal.updateForNewVersion();
+  CustomizableUIInternal.updateForNewProtonVersion();
   {
     let navbarPlacements = getSavedStatePlacements("nav-bar");
     let springs = navbarPlacements.filter(id => id.includes("spring"));
@@ -148,6 +148,7 @@ function test() {
         "back-button",
         "forward-button",
         "stop-reload-button",
+        "vertical-spacer",
         "urlbar-container",
         "downloads-button",
         "fxa-toolbar-menu-button",
@@ -163,6 +164,7 @@ function test() {
 
   // Finally, test the downloads and fxa avatar button migrations work.
   let oldNavbarPlacements = [
+    "vertical-spacer",
     "urlbar-container",
     "customizableui-special-spring3",
     "search-container",
@@ -174,7 +176,7 @@ function test() {
       "widget-overflow-fixed-list": ["downloads-button"],
     },
   });
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
   Assert.deepEqual(
     getSavedStatePlacements("nav-bar"),
     oldNavbarPlacements.concat([
@@ -196,7 +198,7 @@ function test() {
       "nav-bar": ["downloads-button"].concat(oldNavbarPlacements),
     },
   });
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
   Assert.deepEqual(
     getSavedStatePlacements("nav-bar"),
     oldNavbarPlacements.concat([
@@ -208,6 +210,7 @@ function test() {
   );
 
   oldNavbarPlacements = [
+    "vertical-spacer",
     "urlbar-container",
     "customizableui-special-spring3",
     "search-container",
@@ -219,8 +222,9 @@ function test() {
       "nav-bar": Array.from(oldNavbarPlacements),
     },
   });
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
   let expectedNavbarPlacements = [
+    "vertical-spacer",
     "urlbar-container",
     "customizableui-special-spring3",
     "search-container",
@@ -233,6 +237,74 @@ function test() {
     getSavedStatePlacements("nav-bar"),
     expectedNavbarPlacements,
     "Downloads button inserted in navbar before other widgets"
+  );
+
+  // Test re-running the reset PBM button migration (version 24).
+  // Users who were on versions 20-23 may not have gotten the button because
+  // the feature was previously limited to certain channels. The migration was
+  // re-run at version 24 to ensure all users get it.
+
+  // Case 1: User at version 23 without the button - it should be added.
+  CustomizableUI.setTestOnlyInternalProp("gSavedState", {
+    currentVersion: 23,
+    placements: {
+      "nav-bar": [
+        "back-button",
+        "forward-button",
+        "stop-reload-button",
+        "vertical-spacer",
+        "urlbar-container",
+        "downloads-button",
+        "fxa-toolbar-menu-button",
+      ],
+    },
+  });
+  CustomizableUIInternal.updateForNewVersion();
+  Assert.deepEqual(
+    getSavedStatePlacements("nav-bar"),
+    [
+      "back-button",
+      "forward-button",
+      "stop-reload-button",
+      "vertical-spacer",
+      "urlbar-container",
+      "downloads-button",
+      "fxa-toolbar-menu-button",
+      "reset-pbm-toolbar-button",
+    ],
+    "Reset PBM button should be added for users upgrading from version 23"
+  );
+
+  // Case 2: User at version 23 who already has the button - no duplicate.
+  CustomizableUI.setTestOnlyInternalProp("gSavedState", {
+    currentVersion: 23,
+    placements: {
+      "nav-bar": [
+        "back-button",
+        "forward-button",
+        "stop-reload-button",
+        "vertical-spacer",
+        "urlbar-container",
+        "downloads-button",
+        "fxa-toolbar-menu-button",
+        "reset-pbm-toolbar-button",
+      ],
+    },
+  });
+  CustomizableUIInternal.updateForNewVersion();
+  Assert.deepEqual(
+    getSavedStatePlacements("nav-bar"),
+    [
+      "back-button",
+      "forward-button",
+      "stop-reload-button",
+      "vertical-spacer",
+      "urlbar-container",
+      "downloads-button",
+      "fxa-toolbar-menu-button",
+      "reset-pbm-toolbar-button",
+    ],
+    "Reset PBM button should not be duplicated for users who already have it"
   );
 
   gFuturePlacements.delete(CustomizableUI.AREA_NAVBAR);

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -77,7 +75,7 @@ LCovSource::LCovSource(LifoAlloc* alloc, UniqueChars name)
 
 void LCovSource::exportInto(GenericPrinter& out) {
   if (hadOutOfMemory()) {
-    out.reportOutOfMemory();
+    out.setPendingOutOfMemory();
   } else {
     out.printf("SF:%s\n", name_.get());
 
@@ -408,19 +406,16 @@ LCovSource* LCovRealm::lookupOrAdd(const char* name) {
 
   UniqueChars source_name = DuplicateString(name);
   if (!source_name) {
-    outTN_.reportOutOfMemory();
     return nullptr;
   }
 
   // Allocate a new LCovSource for the current top-level.
   LCovSource* source = alloc_.new_<LCovSource>(&alloc_, std::move(source_name));
   if (!source) {
-    outTN_.reportOutOfMemory();
     return nullptr;
   }
 
   if (!sources_.emplaceBack(source)) {
-    outTN_.reportOutOfMemory();
     return nullptr;
   }
 
@@ -529,7 +524,7 @@ bool LCovRuntime::fillWithFilename(char* name, size_t length) {
     return false;
   }
 
-  int64_t timestamp = static_cast<double>(PRMJ_Now()) / PRMJ_USEC_PER_SEC;
+  int64_t timestamp = PRMJ_Now() / PRMJ_USEC_PER_SEC;
   static mozilla::Atomic<size_t> globalRuntimeId(0);
   size_t rid = globalRuntimeId++;
 

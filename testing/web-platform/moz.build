@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -48,6 +46,9 @@ with Files("mozilla/README"):
 with Files("mozilla/meta/**"):
     BUG_COMPONENT = ("Testing", "web-platform-tests")
 
+with Files("mozilla/tests/cookie-store/**"):
+    BUG_COMPONENT = ("Core", "DOM: Networking")
+
 with Files("mozilla/tests/dom/**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
 
@@ -77,9 +78,6 @@ with Files("mozilla/tests/webdriver/**"):
 
 with Files("mozilla/tests/webdriver/bidi/**"):
     BUG_COMPONENT = ("Remote Protocol", "WebDriver BiDi")
-
-with Files("mozilla/tests/webdriver/cdp/**"):
-    BUG_COMPONENT = ("Remote Protocol", "CDP")
 
 with Files("update/**"):
     BUG_COMPONENT = ("Testing", "web-platform-tests")
@@ -204,9 +202,6 @@ with Files("tests/content-security-policy/**"):
 with Files("tests/cookies/**"):
     BUG_COMPONENT = ("Core", "Networking: Cookies")
 
-with Files("tests/cookie-store/**"):
-    BUG_COMPONENT = ("Core", "DOM: Core & HTML")
-
 with Files("tests/core-aam/**"):
     BUG_COMPONENT = ("Core", "Disability Access APIs")
 
@@ -272,9 +267,6 @@ with Files("tests/css/css-env/**"):
 
 with Files("tests/css/css-exclusions/**"):
     BUG_COMPONENT = ("Core", "Layout")
-
-with Files("tests/css/css-fill-stroke/**"):
-    BUG_COMPONENT = ("Core", "SVG")
 
 with Files("tests/css/css-flexbox/**"):
     BUG_COMPONENT = ("Core", "Layout: Flexbox")
@@ -348,9 +340,6 @@ with Files("tests/css/css-round-display/**"):
 with Files("tests/css/css-ruby/**"):
     BUG_COMPONENT = ("Core", "Layout: Ruby")
 
-with Files("tests/css/css-scoping/**"):
-    BUG_COMPONENT = ("Core", "CSS Parsing and Computation")
-
 with Files("tests/css/css-scroll-anchoring/**"):
     BUG_COMPONENT = ("Core", "Layout: Scrolling and Overflow")
 
@@ -359,9 +348,6 @@ with Files("tests/css/css-scroll-snap/**"):
 
 with Files("tests/css/css-scrollbars/**"):
     BUG_COMPONENT = ("Core", "Layout: Scrolling and Overflow")
-
-with Files("tests/css/css-shadow-parts/**"):
-    BUG_COMPONENT = ("Core", "CSS Parsing and Computation")
 
 with Files("tests/css/css-shapes/**"):
     BUG_COMPONENT = ("Core", "Layout: Floats")
@@ -475,7 +461,7 @@ with Files("tests/editing/**"):
     BUG_COMPONENT = ("Core", "DOM: Editor")
 
 with Files("tests/element-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 # as per Bug 746911
 with Files("tests/encoding/**"):
@@ -494,10 +480,7 @@ with Files("tests/eventsource/**"):
     BUG_COMPONENT = ("Core", "DOM: Events")
 
 with Files("tests/event-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
-
-with Files("tests/feature-policy/**"):
-    BUG_COMPONENT = ("Core", "DOM: Security")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/fenced-frame/**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
@@ -600,7 +583,7 @@ with Files("tests/js/**"):
     BUG_COMPONENT = ("Core", "JavaScript Engine")
 
 with Files("tests/js-self-profiling/**"):
-    BUG_COMPONENT = ("Core", "Performance Engineering")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 # To be implemented in bug 1348405
 with Files("tests/keyboard-lock/**"):
@@ -610,7 +593,7 @@ with Files("tests/keyboard-map/**"):
     BUG_COMPONENT = ("Core", "DOM: UI Events & Focus Handling")
 
 with Files("tests/largest-contentful-paint/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/layout-instability/**"):
     BUG_COMPONENT = ("Core", "Layout")
@@ -621,10 +604,10 @@ with Files("tests/loading/**"):
 
 # No reference to longtask in bugzilla or codebase
 with Files("tests/longtask-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/long-animation-frame/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 # depends on generic-sensor, check bug 1359076
 with Files("tests/magnetometer/**"):
@@ -679,7 +662,7 @@ with Files("tests/navigation-api/**"):
     BUG_COMPONENT = ("Core", "DOM: Navigation")
 
 with Files("tests/navigation-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/netinfo/**"):
     BUG_COMPONENT = ("Core", "DOM: Device Interfaces")
@@ -709,11 +692,7 @@ with Files("tests/page-visibility/**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
 
 with Files("tests/paint-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
-
-# No tests in here
-with Files("tests/payment-handler/**"):
-    BUG_COMPONENT = ("Core", "DOM: Web Payments")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 # No tests in here
 with Files("tests/payment-method-basic-card/**"):
@@ -730,7 +709,7 @@ with Files("tests/secure-payment-confirmation/**"):
     BUG_COMPONENT = ("Core", "DOM: Web Payments")
 
 with Files("tests/performance-timeline/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/permissions/**"):
     BUG_COMPONENT = ("Core", "DOM: Security")
@@ -785,7 +764,7 @@ with Files("tests/resize-observer/**"):
     BUG_COMPONENT = ("Core", "Layout")
 
 with Files("tests/resource-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/resources/**"):
     BUG_COMPONENT = ("Testing", "web-platform-tests")
@@ -794,7 +773,7 @@ with Files("tests/sanitizer-api/**"):
     BUG_COMPONENT = ("Core", "DOM: Security")
 
 with Files("tests/scheduler/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/screen-capture/**"):
     BUG_COMPONENT = ("Core", "WebRTC: Audio/Video")
@@ -818,7 +797,7 @@ with Files("tests/selection/**"):
     BUG_COMPONENT = ("Core", "DOM: Selection")
 
 with Files("tests/server-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/service-workers/**"):
     BUG_COMPONENT = ("Core", "DOM: Service Workers")
@@ -827,7 +806,7 @@ with Files("tests/shadow-dom/**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
 
 with Files("tests/shape-detection/**"):
-    BUG_COMPONENT = ("Geckoview", "General")
+    BUG_COMPONENT = ("Core", "DOM: Core & HTML")
 
 with Files("tests/speech-api/**"):
     BUG_COMPONENT = ("Core", "Web Speech")
@@ -851,7 +830,7 @@ with Files("tests/svg-aam/**"):
     BUG_COMPONENT = ("Core", "SVG")
 
 with Files("tests/timing-entrytypes-registry/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/touch-events/**"):
     BUG_COMPONENT = ("Core", "DOM: Events")
@@ -881,7 +860,7 @@ with Files("tests/urlpattern/**"):
     BUG_COMPONENT = ("Core", "DOM: Networking")
 
 with Files("tests/user-timing/**"):
-    BUG_COMPONENT = ("Core", "DOM: Performance")
+    BUG_COMPONENT = ("Core", "DOM: Performance APIs")
 
 with Files("tests/vibration/**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
@@ -899,7 +878,7 @@ with Files("tests/wai-aria/**"):
     BUG_COMPONENT = ("Core", "Disability Access APIs")
 
 with Files("tests/wasm/**"):
-    BUG_COMPONENT = ("Core", "Javascript: WebAssembly")
+    BUG_COMPONENT = ("Core", "JavaScript: WebAssembly")
 
 with Files("tests/web-animations/**"):
     BUG_COMPONENT = ("Core", "DOM: Animation")
@@ -978,9 +957,6 @@ with Files("tests/webtransport/**"):
 
 with Files("tests/webusb/**"):
     BUG_COMPONENT = ("Core", "DOM: Device Interfaces")
-
-with Files("tests/webvr/**"):
-    BUG_COMPONENT = ("Core", "WebVR")
 
 with Files("tests/webxr/**"):
     BUG_COMPONENT = ("Core", "WebVR")

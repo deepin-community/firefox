@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,7 +25,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
   if (XRE_IsParentProcess()) {
     LOG_PRIN(("Saving the userInteraction for %s", _spec), aPrincipal);
 
-    PermissionManager* permManager = PermissionManager::GetInstance();
+    RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
     if (NS_WARN_IF(!permManager)) {
       LOG(("Permission manager is null, bailing out early"));
       return;
@@ -51,7 +49,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
     rv = permManager->AddFromPrincipal(aPrincipal, USER_INTERACTION_PERM,
                                        nsIPermissionManager::ALLOW_ACTION,
                                        expirationType, when);
-    Unused << NS_WARN_IF(NS_FAILED(rv));
+    (void)NS_WARN_IF(NS_FAILED(rv));
 
     if (StaticPrefs::privacy_antitracking_testing()) {
       nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
@@ -72,7 +70,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
 
 /* static */
 bool ContentBlockingUserInteraction::Exists(nsIPrincipal* aPrincipal) {
-  PermissionManager* permManager = PermissionManager::GetInstance();
+  RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
   if (NS_WARN_IF(!permManager)) {
     return false;
   }

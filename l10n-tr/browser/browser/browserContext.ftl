@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Yeni sekmede aç
     .accesskey = Y
+main-context-menu-open-link-split-view =
+    .label = Bağlantıyı ayrık görünümde aç
+    .accesskey = r
 main-context-menu-open-link-container-tab =
     .label = Bağlantıyı yeni kapsayıcı sekmede aç
     .accesskey = k
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Bağlantıyı { -pocket-brand-name }’a kaydet
     .accesskey = P
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = E-posta adresini kopyala
@@ -162,10 +163,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Bağlantıyı kopyala
     .accesskey = B
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Takip kodunu silerek bağlantıyı kopyala
+main-context-menu-preview-link =
+    .label = Bağlantıyı ön izle
+    .accesskey = ö
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Temiz bağlantıyı kopyala
     .accesskey = T
 
 ## Media (video/audio) controls
@@ -175,8 +180,8 @@ main-context-menu-strip-on-share-link =
 ## mutually exclusive.
 
 main-context-menu-media-play =
-    .label = Yürüt
-    .accesskey = Y
+    .label = Oynat
+    .accesskey = O
 main-context-menu-media-pause =
     .label = Duraklat
     .accesskey = D
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Düğmeleri gizle
     .accesskey = m
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Tam ekran
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Açıklamayı göster
     .accesskey = A
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Resmi { $engine } ile ara
+    .accesskey = a
 main-context-menu-video-save-as =
     .label = Videoyu farklı kaydet…
     .accesskey = f
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Sesi e-posta ile gönder…
     .accesskey = ö
+main-context-menu-send-to-device-2 =
+    .label = Cihaza gönder
+    .accesskey = C
+main-context-menu-send-to-mobile-2 =
+    .label = Mobil cihaza gönder
+    .accesskey = c
+main-context-menu-send-to-mobile-sign-in = Sekme göndermek için giriş yapın
+main-context-menu-send-to-mobile-enable-sync2 = Sekme göndermek için eşitlemeyi etkinleştirin
+main-context-menu-send-to-mobile-connect-phone2 = Telefonunuzu bağlayın
+main-context-menu-send-to-mobile-device-missing2 = Cihazınızı göremiyor musunuz?
+main-context-menu-send-to-mobile-sign-in-from-link = Bağlantı göndermek için giriş yapın
+main-context-menu-send-to-mobile-sign-in-from-page = Sayfa göndermek için giriş yapın
+main-context-menu-send-to-mobile-enable-sync3 = Sekme göndermek için eşitlemeyi açın
+main-context-menu-send-to-mobile-enable-sync-from-link = Bağlantı göndermek için eşitlemeyi açın
+main-context-menu-send-to-mobile-enable-sync-from-page = Sayfa göndermek için eşitlemeyi açın
+main-context-menu-send-to-mobile-connect-phone3 = Sekme göndermek için bir cihaz bağlayın
+main-context-menu-send-to-mobile-connect-phone-from-link = Bağlantı göndermek için cihaz bağlayın
+main-context-menu-send-to-mobile-connect-phone-from-page = Sayfa göndermek için cihaz bağlayın
 main-context-menu-save-to-pocket =
     .label = Sayfayı { -pocket-brand-name }’a kaydet
     .accesskey = P
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Sayfayı cihaza gönder
     .accesskey = ö
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Kayıtlı hesabı kullan
@@ -319,8 +345,14 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Bu arama için anahtar kelime ekle…
     .accesskey = k
+main-context-menu-add-engine =
+    .label = Arama motoru ekle
+    .accesskey = A
 main-context-menu-link-send-to-device =
     .label = Bağlantıyı cihaza gönder
+    .accesskey = c
+main-context-menu-link-send-to-mobile =
+    .label = Bağlantıyı mobil cihaza gönder
     .accesskey = c
 main-context-menu-frame =
     .label = Bu çerçeve
@@ -379,13 +411,23 @@ main-context-menu-inspect =
 main-context-menu-inspect-a11y-properties =
     .label = Erişilebilirlik özelliklerini denetle
 main-context-menu-eme-learn-more =
-    .label = DRM hakkında daha fazla bilgi alın…
+    .label = DRM hakkında bilgi al…
     .accesskey = D
 # Variables
 #   $containerName (String): The name of the current container
 main-context-menu-open-link-in-container-tab =
     .label = Bağlantıyı yeni { $containerName } sekmesinde aç
-    .accesskey = t
+    .accesskey = i
 main-context-menu-reveal-password =
     .label = Parolayı göster
     .accesskey = o
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Yeni
+main-context-menu-pdfjs-copy-page =
+    .label = Sayfayı kopyala
+main-context-menu-pdfjs-cut-page =
+    .label = Sayfayı kes
+main-context-menu-pdfjs-delete-page =
+    .label = Sayfayı sil
+main-context-menu-pdfjs-save-page =
+    .label = Seçimi farklı kaydet…

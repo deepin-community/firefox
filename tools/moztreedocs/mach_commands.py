@@ -3,6 +3,7 @@
 # file, # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import fnmatch
+import functools
 import json
 import os
 import re
@@ -19,7 +20,7 @@ import sentry_sdk
 import yaml
 from mach.decorators import Command, CommandArgument, SubCommand
 from mach.registrar import Registrar
-from mozbuild.util import cpu_count, memoize
+from mozbuild.util import cpu_count
 from mozfile import load_source
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -92,15 +93,10 @@ BASE_LINK = "http://gecko-docs.mozilla.org-l1.s3-website.us-west-2.amazonaws.com
     "--dump-trees", default=None, help="Dump the Sphinx trees to specified file."
 )
 @CommandArgument(
-    "--fatal-warnings",
-    dest="enable_fatal_warnings",
+    "--disable-warnings-check",
+    dest="disable_warnings_check",
     action="store_true",
-    help="Enable fatal warnings.",
-)
-@CommandArgument(
-    "--check-num-warnings",
-    action="store_true",
-    help="Check that the upper bound on the number of warnings is respected.",
+    help="Disable checking for warnings",
 )
 @CommandArgument("--verbose", action="store_true", help="Run Sphinx in verbose mode")
 @CommandArgument(
@@ -122,17 +118,17 @@ def build_docs(
     write_url=None,
     linkcheck=None,
     dump_trees=None,
-    enable_fatal_warnings=False,
-    check_num_warnings=False,
+    disable_warnings_check=False,
     verbose=None,
     no_autodoc=False,
 ):
     # TODO: Bug 1704891 - move the ESLint setup tools to a shared place.
     import setup_helper
+    from mozbuild.nodeutil import check_node_executables_valid
 
     setup_helper.set_project_root(command_context.topsrcdir)
 
-    if not setup_helper.check_node_executables_valid():
+    if not check_node_executables_valid():
         return 1
 
     setup_helper.eslint_maybe_setup()
@@ -153,7 +149,7 @@ def build_docs(
 
     from moztreedocs.package import create_tarball
 
-    unique_id = "%s/%s" % (project(), str(uuid.uuid1()))
+    unique_id = f"{project()}/{str(uuid.uuid1())}"
 
     outdir = outdir or os.path.join(command_context.topobjdir, "docs")
     savedir = os.path.join(outdir, fmt)
@@ -174,16 +170,16 @@ def build_docs(
         print(_dump_sphinx_backtrace())
         return die(
             "failed to generate documentation:\n"
-            "%s: could not find docs at this location" % path
+            f"{path}: could not find docs at this location"
         )
 
     if linkcheck:
         # We want to verify if the links are valid or not
         fmt = "linkcheck"
     if no_autodoc:
-        if check_num_warnings:
+        if disable_warnings_check:
             return die(
-                "'--no-autodoc' flag may not be used with '--check-num-warnings'"
+                "'--no-autodoc' flag may not be used with '--disable-warnings-check'"
             )
         toggle_no_autodoc()
 
@@ -191,24 +187,20 @@ def build_docs(
     if status != 0:
         print(_dump_sphinx_backtrace())
         return die(
-            "failed to generate documentation:\n"
-            "%s: sphinx return code %d" % (path, status)
+            f"failed to generate documentation:\n{path}: sphinx return code {status}"
         )
     else:
-        print("\nGenerated documentation:\n%s" % savedir)
-    msg = ""
+        print(f"\nGenerated documentation:\n{savedir}")
 
-    if enable_fatal_warnings:
-        fatal_warnings = _check_sphinx_fatal_warnings(warnings)
-        if fatal_warnings:
-            msg += f"Error: Got fatal warnings:\n{''.join(fatal_warnings)}"
-    if check_num_warnings:
-        [num_new, num_actual] = _check_sphinx_num_warnings(warnings)
-        print("Logged %s warnings\n" % num_actual)
-        if num_new:
-            msg += f"Error: {num_new} new warnings have been introduced compared to the limit in docs/config.yml"
-    if msg:
-        return dieWithTestFailure(msg)
+    if not disable_warnings_check:
+        with open(os.path.join(DOC_ROOT, "config.yml")) as fh:
+            docs_config = yaml.safe_load(fh)
+
+        [fatal_errors, known_errors] = _check_sphinx_warnings(warnings, docs_config)
+
+        log_results(fatal_errors, known_errors)
+        if len(fatal_errors):
+            return 1
 
     # Upload the artifact containing the link to S3
     # This would be used by code-review to post the link to Phabricator
@@ -227,9 +219,9 @@ def build_docs(
             json.dump(manager().trees, fh)
 
     if archive:
-        archive_path = os.path.join(outdir, "%s.tar.gz" % project())
+        archive_path = os.path.join(outdir, f"{project()}.tar.gz")
         create_tarball(archive_path, savedir)
-        print("Archived to %s" % archive_path)
+        print(f"Archived to {archive_path}")
 
     if upload:
         _s3_upload(savedir, project(), unique_id, version())
@@ -246,7 +238,7 @@ def build_docs(
         host, port = http.split(":", 1)
         port = int(port)
     except ValueError:
-        return die("invalid address: %s" % http)
+        return die(f"invalid address: {http}")
 
     server = Server()
 
@@ -282,9 +274,7 @@ def _dump_sphinx_backtrace():
         if fnmatch.fnmatch(name, pattern):
             pathFile = os.path.join(tmpdir, name)
             stat = os.stat(pathFile)
-            output += "Name: {0} / Creation date: {1}\n".format(
-                pathFile, time.ctime(stat.st_mtime)
-            )
+            output += f"Name: {pathFile} / Creation date: {time.ctime(stat.st_mtime)}\n"
             with open(pathFile) as f:
                 output += f.read()
     return output
@@ -319,7 +309,7 @@ def _run_sphinx(docdir, savedir, config=None, fmt="html", jobs=None, verbose=Non
         print("Run sphinx with:")
         print(args)
         status = sphinx.cmd.build.build_main(args)
-        with open(warn_path) as warn_file:
+        with open(warn_path, encoding="utf-8") as warn_file:
             warnings = warn_file.readlines()
         return status, warnings
     finally:
@@ -329,25 +319,33 @@ def _run_sphinx(docdir, savedir, config=None, fmt="html", jobs=None, verbose=Non
             print(ex)
 
 
-def _check_sphinx_fatal_warnings(warnings):
-    with open(os.path.join(DOC_ROOT, "config.yml"), "r") as fh:
-        fatal_warnings_src = yaml.safe_load(fh)["fatal warnings"]
-    fatal_warnings_regex = [re.compile(item) for item in fatal_warnings_src]
-    fatal_warnings = []
-    for warning in warnings:
-        if any(item.search(warning) for item in fatal_warnings_regex):
-            fatal_warnings.append(warning)
-    return fatal_warnings
-
-
-def _check_sphinx_num_warnings(warnings):
+def _check_sphinx_warnings(warnings, docs_config):
+    allowed_warnings_regex = [
+        re.compile(item) for item in docs_config["allowed_warnings"]
+    ]
     # warnings file contains other strings as well
-    num_warnings = len([w for w in warnings if "WARNING" in w])
-    with open(os.path.join(DOC_ROOT, "config.yml"), "r") as fh:
-        max_num = yaml.safe_load(fh)["max_num_warnings"]
-    if num_warnings > max_num:
-        return [num_warnings - max_num, num_warnings]
-    return [0, num_warnings]
+    errors = []
+    known_errors = []
+    for warning in warnings:
+        stripped = warning.strip()
+        # Replace slashes so that we can do matching against the Windows paths
+        # whilst not having to change the regexps.
+        stripped_and_slashes_changed = stripped.replace("\\", "/")
+
+        if len(stripped) and any(
+            x in stripped for x in ["ERROR", "CRITICAL", "WARNING"]
+        ):
+            if not (
+                any(
+                    item.search(stripped_and_slashes_changed)
+                    for item in allowed_warnings_regex
+                )
+            ):
+                errors.append(stripped)
+            else:
+                known_errors.append(stripped)
+
+    return [errors, known_errors]
 
 
 def manager():
@@ -362,7 +360,7 @@ def toggle_no_autodoc():
     moztreedocs._SphinxManager.NO_AUTODOC = True
 
 
-@memoize
+@functools.cache
 def _read_project_properties():
     path = os.path.normpath(manager().conf_py_path)
     conf = load_source("doc_conf", path)
@@ -429,7 +427,7 @@ def _s3_upload(root, project, unique_id, version=None):
     files = list(distribution_files(root))
     key_prefixes = []
     if version:
-        key_prefixes.append("%s/%s" % (project, version))
+        key_prefixes.append(f"{project}/{version}")
 
     # Until we redirect / to main/latest, upload the main docs
     # to the root.
@@ -438,7 +436,7 @@ def _s3_upload(root, project, unique_id, version=None):
 
     key_prefixes.append(unique_id)
 
-    with open(os.path.join(DOC_ROOT, "config.yml"), "r") as fh:
+    with open(os.path.join(DOC_ROOT, "config.yml")) as fh:
         redirects = yaml.safe_load(fh)["redirects"]
 
     redirects = {k.strip("/"): v.strip("/") for k, v in redirects.items()}
@@ -454,9 +452,10 @@ def _s3_upload(root, project, unique_id, version=None):
         if (version and prefix.endswith(version)) or prefix == unique_id:
             continue
 
-        if prefix:
-            prefix += "/"
-        all_redirects.update({prefix + k: prefix + v for k, v in redirects.items()})
+        redirect_prefix = prefix + "/" if prefix else ""
+        all_redirects.update({
+            redirect_prefix + k: redirect_prefix + v for k, v in redirects.items()
+        })
 
     print("Redirects currently staged")
     pprint(all_redirects, indent=1)
@@ -475,7 +474,7 @@ def _s3_upload(root, project, unique_id, version=None):
 def generate_telemetry_docs(command_context):
     args = [
         sys.executable,
-        "-m" "glean_parser",
+        "-mglean_parser",
         "translate",
         "-f",
         "markdown",
@@ -490,9 +489,9 @@ def generate_telemetry_docs(command_context):
         for handler in Registrar.command_handlers.values()
         if handler.metrics_path is not None
     ]
-    args.extend(
-        [os.path.join(command_context.topsrcdir, path) for path in set(metrics_paths)]
-    )
+    args.extend([
+        os.path.join(command_context.topsrcdir, path) for path in set(metrics_paths)
+    ])
     subprocess.check_call(args)
 
 
@@ -527,13 +526,88 @@ def show_reference_targets(command_context, fmt="html", outdir=None):
 
 
 def die(msg, exit_code=1):
-    msg = "%s %s: %s" % (sys.argv[0], sys.argv[1], msg)
+    msg = f"{sys.argv[0]} {sys.argv[1]}: {msg}"
     print(msg, file=sys.stderr)
     return exit_code
 
 
-def dieWithTestFailure(msg, exit_code=1):
-    for m in msg.split("\n"):
-        msg = "TEST-UNEXPECTED-FAILURE | %s %s | %s" % (sys.argv[0], sys.argv[1], m)
-        print(msg, file=sys.stderr)
-    return exit_code
+@functools.cache
+def transform_error_regexp():
+    # Lazily created, because we need to wait to get the staging_dir.
+
+    # This regexp matches a couple of styles of message:
+    #
+    # path/to/simpletest.rst: WARNING: document isn't included in any toctree
+    # path/to/index.rst:2: WARNING: Title underline too short.
+    #
+    # The distinction is that some of them give a line number and some of them don't.
+    # We need to replace the path, and split the text of the message so
+    # that we can insert a pipe for automation to detect.
+    return re.compile(
+        re.escape(os.path.join(manager().staging_dir, "")) + r"(.*?)(:[0-9]*)?:\s*(.*)"
+    )
+
+
+def transform_error(msg):
+    match = transform_error_regexp().match(msg)
+    if match:
+        filePath = match.group(1)
+        for staging_path, original_path in manager().trees.items():
+            if staging_path != os.path.dirname(filePath):
+                continue
+
+            return {
+                "linter": "source-test-doc-upload",
+                "path": os.path.join(
+                    str(manager().topsrcdir),
+                    filePath.replace(staging_path, original_path),
+                ),
+                "relpath": filePath.replace(staging_path, original_path),
+                # Remove the first character, as it'll be the :
+                "lineno": (
+                    int(match.group(2)[1:]) if match.group(2) is not None else None
+                ),
+                "message": match.group(3),
+            }
+
+    return {
+        "linter": "source-test-doc-upload",
+        "message": msg,
+    }
+
+
+def print_result_to_stderr(known_or_unexpected, result_details):
+    lineno = (
+        (f":{str(result_details['lineno'])}")
+        if "lineno" in result_details and result_details["lineno"] is not None
+        else ""
+    )
+    path = (
+        f"{result_details['relpath']}{lineno} |" if "relpath" in result_details else ""
+    )
+
+    print(
+        f"TEST-{known_or_unexpected}-FAIL | {sys.argv[0]} {sys.argv[1]} | {path} {result_details['message']}",
+        file=sys.stderr,
+    )
+
+
+def log_results(fatal_errors, known_errors):
+    """
+    This will always output to stdout, but optionally also dump messages
+    to error_file in the JSON format needed for the review bot.
+
+    Ideally we should reuse mozlint's logger here.
+    """
+
+    for m in known_errors:
+        result_details = transform_error(m)
+        print_result_to_stderr("KNOWN", result_details)
+
+    print(f"Known Failures: {len(known_errors)}")
+
+    for m in fatal_errors:
+        result_details = transform_error(m)
+        print_result_to_stderr("UNEXPECTED", result_details)
+
+    print(f"Failures: {len(fatal_errors)}")

@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = ไม่สามารถอัปเดต — ใช้ร่วมกับระบบไม่ได้
 appmenuitem-banner-update-restart =
     .label = มีการอัปเดต — เริ่มใหม่ทันที
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = รับ { -brand-short-name } ใหม่เอี่ยม โดยยังคงแท็บทั้งหมดของคุณไว้
+appmenu-nova-update-link = เริ่มการทำงานใหม่เพื่ออัปเดต
+appmenu-nova-fxa-sign-in = ลงชื่อเข้า
+appmenu-nova-switch-device-promo =
+    .message = กำลังจะเปลี่ยนไปใช้อุปกรณ์เครื่องใหม่ใช่ไหม? นำ { -brand-short-name } ไปด้วยสิ!
+appmenu-nova-switch-device-link = วิธีการย้ายข้อมูลของคุณ
 appmenuitem-new-tab =
     .label = แท็บใหม่
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = หน้าต่างส่วนตัวใหม่
 appmenuitem-history =
     .label = ประวัติ
+appmenuitem-tab-groups =
+    .label = กลุ่มแท็บ
 appmenuitem-downloads =
     .label = การดาวน์โหลด
 appmenuitem-passwords =
     .label = รหัสผ่าน
+appmenuitem-extensions-and-themes =
+    .label = ส่วนขยายและชุดตกแต่ง
+appmenuitem-extensions =
+    .label = ส่วนขยาย
 appmenuitem-addons-and-themes =
     .label = ส่วนเสริมและชุดตกแต่ง
 appmenuitem-print =
@@ -84,15 +98,15 @@ appmenu-remote-tabs-show-inactive-tabs =
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = ไม่มีแท็บที่เปิดอยู่
 # This is shown when Sync is configured but syncing tabs is disabled.
-appmenu-remote-tabs-tabsnotsyncing = เปิดการซิงค์แท็บเพื่อดูรายการแท็บจากอุปกรณ์อื่นๆ ของคุณ
+appmenu-remote-tabs-tabsnotsyncing = เปิดการซิงค์แท็บเพื่อดูรายการแท็บจากอุปกรณ์อื่น ๆ ของคุณ
 appmenu-remote-tabs-opensettings =
     .label = การตั้งค่า
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
-appmenu-remote-tabs-noclients = ต้องการเห็นแท็บของคุณจากอุปกรณ์อื่นๆ ที่นี่ไหม?
+appmenu-remote-tabs-noclients = ต้องการเห็นแท็บของคุณจากอุปกรณ์อื่น ๆ ที่นี่ไหม?
 appmenu-remote-tabs-connectdevice =
     .label = เชื่อมต่ออุปกรณ์อื่น
-appmenu-remote-tabs-welcome = ดูรายการแท็บจากอุปกรณ์อื่นๆ ของคุณ
+appmenu-remote-tabs-welcome = ดูรายการแท็บจากอุปกรณ์อื่น ๆ ของคุณ
 appmenu-remote-tabs-unverified = บัญชีของคุณจำเป็นต้องได้รับการยืนยัน
 appmenuitem-fxa-toolbar-sync-now2 = ซิงค์ตอนนี้
 appmenuitem-fxa-sign-in = ลงชื่อเข้า { -brand-product-name }
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = ซิงค์และบันทึกข�
 appmenu-fxa-signed-in-label = ลงชื่อเข้า
 appmenu-fxa-setup-sync =
     .label = เปิดการซิงค์…
+appmenu-fxa-setup-sync-new = เปิด
 appmenuitem-save-page =
     .label = บันทึกหน้าเป็น…
+appmenuitem-fxa-sync-off-title = Sync ปิดอยู่
+appmenuitem-fxa-sync-off-description = ปกป้องและเข้าถึงที่คั่นหน้า รหัสผ่าน และอื่น ๆ ของคุณได้ทุกที่
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = เปิดแผงตัวสร้างโปรไฟล์
+    .tooltiptext = เปิดแผงตัวสร้างโปรไฟล์
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับเสียงและวิดีโอใน { -brand-shorter-name }
 profiler-popup-presets-media-label =
     .label = สื่อ
+profiler-popup-presets-ml-description = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับการเรียนรู้ของเครื่องใน { -brand-shorter-name }
+profiler-popup-presets-ml-label =
+    .label = การเรียนรู้ของเครื่อง
 profiler-popup-presets-networking-description = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับระบบเครือข่ายใน { -brand-shorter-name }
 profiler-popup-presets-networking-label =
     .label = ระบบเครือข่าย
@@ -199,6 +222,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = พรีเซ็ตสำหรับการดีบั๊กใน { -brand-shorter-name }  มีโอเวอร์เฮดสูง อย่าใช้เพื่องานด้านประสิทธิภาพ แต่ให้ใช้เพื่อทำความเข้าใจพฤติกรรมการทำงานของเบราว์เซอร์
 profiler-popup-presets-debug-label =
     .label = ดีบั๊ก
+profiler-popup-presets-web-compat-description = พรีเซ็ตที่แนะนำสำหรับการดีบั๊กปัญหาเกี่ยวกับความเข้ากันได้ของเว็บในเว็บไซต์ แทนที่จะติดตามประสิทธิภาพ
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = กำหนดเอง
 
@@ -207,7 +233,7 @@ profiler-popup-presets-custom-label =
 appmenu-manage-history =
     .label = จัดการประวัติ
 appmenu-restore-session =
-    .label = เรียกคืนวาระก่อนหน้า
+    .label = เรียกคืนเซสชันก่อนหน้า
 appmenu-clear-history =
     .label = ล้างประวัติล่าสุด…
 appmenu-recent-history-subheader = ประวัติล่าสุด
@@ -235,7 +261,7 @@ appmenu-help-more-troubleshooting-info =
 appmenu-help-report-site-issue =
     .label = รายงานปัญหาไซต์…
 appmenu-help-share-ideas =
-    .label = แบ่งปันแนวคิดและคำติชม…
+    .label = แบ่งปันแนวคิดและข้อเสนอแนะ…
     .accesskey = บ
 appmenu-help-switch-device =
     .label = สลับไปยังอุปกรณ์ใหม่
@@ -264,6 +290,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = ปรับแต่งแถบเครื่องมือ…
+appmenu-abouttranslations =
+    .label = แปล…
 appmenu-developer-tools-subheader = เครื่องมือสำหรับเบราว์เซอร์
 appmenu-developer-tools-extensions =
     .label = ส่วนขยายสำหรับนักพัฒนา
@@ -277,5 +305,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = รับการแจ้งเตือนเมื่อเกิดการรั่วไหลของข้อมูล
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = ปิดบังอีเมลและหมายเลขโทรศัพท์จริงของคุณ
+appmenuitem-services-relay-description = เปิดแดชบอร์ดตัวปกปิดอีเมล
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = รับการป้องกันครอบคลุมทั้งอุปกรณ์
 appmenuitem-vpn-description = ปกป้องกิจกรรมออนไลน์ของคุณ
+appmenu-services-header = บริการของฉัน
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = ลองใช้เครื่องมือป้องกันอื่น ๆ จาก Mozilla:
+appmenu-other-protection-header = ลองใช้เครื่องมือป้องกันอื่น ๆ จาก { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = โปรไฟล์อื่น ๆ
+appmenu-manage-profiles =
+    .label = จัดการโปรไฟล์
+appmenu-copy-profile =
+    .label = คัดลอกโปรไฟล์นี้
+appmenu-create-profile =
+    .label = โปรไฟล์ใหม่
+appmenu-edit-profile =
+    .aria-label = แก้ไขโปรไฟล์
+appmenu-profiles-2 =
+    .label = โปรไฟล์

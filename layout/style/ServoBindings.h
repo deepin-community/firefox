@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -47,12 +45,13 @@ extern "C" {
 
 #define BASIC_RULE_FUNCS_WITH_PREFIX(type_, prefix_)                        \
   StyleStrong<mozilla::Style##prefix_##type_##Rule>                         \
-      Servo_CssRules_Get##type_##RuleAt(const StyleLockedCssRules* rules,   \
-                                        uint32_t index, uint32_t* line,     \
-                                        uint32_t* column);                  \
+  Servo_CssRules_Get##type_##RuleAt(const StyleLockedCssRules* rules,       \
+                                    uint32_t index, uint32_t* line,         \
+                                    uint32_t* column);                      \
   void Servo_StyleSet_##type_##RuleChanged(                                 \
       const StylePerDocumentStyleData*, const Style##prefix_##type_##Rule*, \
-      const StyleDomStyleSheet*, StyleRuleChangeKind);                      \
+      const StyleDomStyleSheet*, StyleRuleChangeKind,                       \
+      const nsTArray<StyleCssRuleRef>*);                                    \
   BASIC_RULE_FUNCS_WITHOUT_GETTER_WITH_PREFIX(type_##Rule, prefix_)
 
 #define BASIC_RULE_FUNCS_LOCKED(type_) \
@@ -78,6 +77,7 @@ GROUP_RULE_FUNCS_UNLOCKED(Media)
 GROUP_RULE_FUNCS_UNLOCKED(Document)
 BASIC_RULE_FUNCS_UNLOCKED(Namespace)
 BASIC_RULE_FUNCS_UNLOCKED(Margin)
+BASIC_RULE_FUNCS_UNLOCKED(CustomMedia)
 GROUP_RULE_FUNCS_LOCKED(Page)
 BASIC_RULE_FUNCS_UNLOCKED(Property)
 GROUP_RULE_FUNCS_UNLOCKED(Supports)
@@ -90,7 +90,10 @@ BASIC_RULE_FUNCS_LOCKED(CounterStyle)
 GROUP_RULE_FUNCS_UNLOCKED(Container)
 GROUP_RULE_FUNCS_UNLOCKED(Scope)
 GROUP_RULE_FUNCS_UNLOCKED(StartingStyle)
+GROUP_RULE_FUNCS_UNLOCKED(AppearanceBase)
 BASIC_RULE_FUNCS_LOCKED(PositionTry)
+BASIC_RULE_FUNCS_LOCKED(NestedDeclarations)
+BASIC_RULE_FUNCS_UNLOCKED(ViewTransition)
 
 #undef GROUP_RULE_FUNCS_LOCKED
 #undef GROUP_RULE_FUNCS_UNLOCKED
@@ -101,31 +104,6 @@ BASIC_RULE_FUNCS_LOCKED(PositionTry)
 #undef BASIC_RULE_FUNCS_WITHOUT_GETTER_LOCKED
 #undef BASIC_RULE_FUNCS_WITHOUT_GETTER_UNLOCKED
 #undef BASIC_RULE_FUNCS_WITHOUT_GETTER_WITH_PREFIX
-
-#define BASIC_SERDE_FUNCS(type_)                                            \
-  bool Servo_##type_##_Deserialize(mozilla::ipc::ByteBuf* input, type_* v); \
-  bool Servo_##type_##_Serialize(const type_* v, mozilla::ipc::ByteBuf* output);
-
-BASIC_SERDE_FUNCS(LengthPercentage)
-BASIC_SERDE_FUNCS(StyleRotate)
-BASIC_SERDE_FUNCS(StyleScale)
-BASIC_SERDE_FUNCS(StyleTranslate)
-BASIC_SERDE_FUNCS(StyleTransform)
-BASIC_SERDE_FUNCS(StyleOffsetPath)
-BASIC_SERDE_FUNCS(StyleOffsetRotate)
-BASIC_SERDE_FUNCS(StylePositionOrAuto)
-BASIC_SERDE_FUNCS(StyleOffsetPosition)
-BASIC_SERDE_FUNCS(StyleComputedTimingFunction)
-
-#undef BASIC_SERDE_FUNCS
-
-void Servo_CounterStyleRule_GetDescriptorCssText(
-    const StyleLockedCounterStyleRule* rule, nsCSSCounterDesc desc,
-    nsACString* result);
-
-bool Servo_CounterStyleRule_SetDescriptor(
-    const StyleLockedCounterStyleRule* rule, nsCSSCounterDesc desc,
-    const nsACString* value);
 
 }  // extern "C"
 

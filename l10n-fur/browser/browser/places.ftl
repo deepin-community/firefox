@@ -99,7 +99,7 @@ places-delete-page =
            *[other] Elimine lis pagjinis
         }
     .accesskey = E
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Segnelibris gjestîts
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -268,3 +268,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Il sisteme di segnelibris e cronologjie nol funzionarà parcè che une altre aplicazion e sta doprant un dai files di { -brand-short-name }.  Cierts programs di sigurece a puedin causâ chest probleme.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Condivît cartele
+    .badge = Gnûf

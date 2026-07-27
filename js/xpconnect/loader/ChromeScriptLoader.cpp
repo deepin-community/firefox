@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -197,7 +195,7 @@ class AsyncScriptCompileTask final : public Task {
 };
 
 /* static */ mozilla::StaticMutex AsyncScriptCompileTask::sOngoingTasksMutex;
-/* static */ Vector<AsyncScriptCompileTask*>
+MOZ_RUNINIT /* static */ Vector<AsyncScriptCompileTask*>
     AsyncScriptCompileTask::sOngoingTasks;
 /* static */ bool AsyncScriptCompileTask::sIsShutdownRegistered = false;
 
@@ -517,8 +515,10 @@ PrecompiledScript::PrecompiledScript(nsISupports* aParent,
   MOZ_ASSERT(aParent);
   MOZ_ASSERT(aStencil);
 #ifdef DEBUG
+  // AsyncScriptCompiler::Start can call JS::CompileOptions::setForceFullParse,
+  // but it should be compatible with the default JS::InstantiateOptions.
   JS::InstantiateOptions options(aOptions);
-  options.assertDefault();
+  options.assertCompatibleWithDefault();
 #endif
 };
 

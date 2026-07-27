@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>بخشی از این صفحه خراب شد.</strong> برای اطلاع { -brand-product-name } از این مسئله و رفع سریعتر آن، لطفاً گزارشی ارسال کنید.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,6 @@ pending-crash-reports-send =
     .label = ارسال
 pending-crash-reports-always-send =
     .label = همیشه ارسال شود
+requested-crash-reports-dont-show-again =
+    .label = دیگر این را نمایش نده
+    .accesskey = ن

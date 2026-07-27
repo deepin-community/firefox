@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +14,6 @@
 #include "mozilla/Assertions.h"  // for MOZ_ASSERT, etc
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"  // for override
-#include "mozilla/DebugOnly.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/RefPtr.h"  // for RefPtr, RefCounted
 #include "mozilla/dom/ipc/IdType.h"
@@ -24,15 +21,16 @@
 #include "mozilla/gfx/CriticalSection.h"
 #include "mozilla/gfx/Point.h"  // for IntSize
 #include "mozilla/gfx/Types.h"  // for SurfaceFormat
-#include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/ipc/Shmem.h"  // for Shmem
 #include "mozilla/layers/AtomicRefCountedWithFinalize.h"
 #include "mozilla/layers/CompositorTypes.h"  // for TextureFlags, etc
 #include "mozilla/layers/ISurfaceAllocator.h"
 #include "mozilla/layers/LayersSurfaces.h"  // for SurfaceDescriptor
 #include "mozilla/layers/LayersTypes.h"
+#include "mozilla/layers/PTextureChild.h"  // for PTextureChild
 #include "mozilla/layers/SyncObject.h"
-#include "mozilla/mozalloc.h"  // for operator delete
+#include "mozilla/mozalloc.h"             // for operator delete
+#include "mozilla/UniquePtrExtensions.h"  // for UniqueFileHandle
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "nsCOMPtr.h"         // for already_AddRefed
 #include "nsISupportsImpl.h"  // for TextureImage::AddRef, etc
@@ -63,6 +61,8 @@ class TextureClient;
 class ITextureClientRecycleAllocator;
 class SharedSurfaceTextureData;
 class TextureForwarder;
+class ImageBridgeChild;
+class RecordedTextureData;
 struct RemoteTextureOwnerId;
 
 /**
@@ -96,6 +96,9 @@ enum TextureAllocationFlags {
 
   // Force allocation of remote/recorded texture, or fail if not possible.
   ALLOC_FORCE_REMOTE = 1 << 9,
+
+  // Prefer to use keyed mutex than D3D11Fence on Windows
+  USE_D3D11_KEYED_MUTEX = 1 << 10,
 };
 
 enum class BackendSelector { Content, Canvas };
@@ -249,6 +252,8 @@ class TextureData {
     return nullptr;
   }
 
+  virtual void ReturnDrawTarget(already_AddRefed<gfx::DrawTarget> aDT);
+
   /**
    * When the TextureData is not being Unlocked, this can be used to inform a
    * TextureData that drawing has finished until the next BorrowDrawTarget.
@@ -259,7 +264,7 @@ class TextureData {
     return nullptr;
   }
 
-  virtual void ReturnSnapshot(already_AddRefed<gfx::SourceSurface> aSnapshot) {}
+  virtual void ReturnSnapshot(already_AddRefed<gfx::SourceSurface> aSnapshot);
 
   virtual bool BorrowMappedData(MappedTextureData&) { return false; }
 
@@ -306,6 +311,8 @@ class TextureData {
     return nullptr;
   }
 
+  virtual RecordedTextureData* AsRecordedTextureData() { return nullptr; }
+
   // It is used by AndroidHardwareBufferTextureData and
   // SharedSurfaceTextureData. Returns buffer id when it owns
   // AndroidHardwareBuffer. It is used only on android.
@@ -314,11 +321,7 @@ class TextureData {
   // The acquire fence is a fence that is used for waiting until rendering to
   // its AHardwareBuffer is completed.
   // It is used only on android.
-  virtual mozilla::ipc::FileDescriptor GetAcquireFence() {
-    return mozilla::ipc::FileDescriptor();
-  }
-
-  virtual void SetRemoteTextureOwnerId(RemoteTextureOwnerId) {}
+  virtual UniqueFileHandle GetAcquireFence() { return UniqueFileHandle(); }
 
   virtual bool RequiresRefresh() const { return false; }
 
@@ -382,7 +385,9 @@ class TextureClient : public AtomicRefCountedWithFinalize<TextureClient> {
       const gfx::IntSize& aCbCrSize, uint32_t aCbCrStride,
       StereoMode aStereoMode, gfx::ColorDepth aColorDepth,
       gfx::YUVColorSpace aYUVColorSpace, gfx::ColorRange aColorRange,
-      gfx::ChromaSubsampling aSubsampling, TextureFlags aTextureFlags);
+      gfx::TransferFunction aTransferFunction,
+      gfx::ChromaSubsampling aSubsampling, TextureFlags aTextureFlags,
+      const Maybe<gfx::HDRMetadata>& aHDRMetadata = Nothing());
 
   // Creates and allocates a TextureClient (can be accessed through raw
   // pointers).
@@ -492,15 +497,12 @@ class TextureClient : public AtomicRefCountedWithFinalize<TextureClient> {
                            const gfx::IntPoint* aPoint);
 
   /**
-   * Allocate and deallocate a TextureChild actor.
+   * Allocate a TextureChild actor.
    *
    * TextureChild is an implementation detail of TextureClient that is not
-   * exposed to the rest of the code base. CreateIPDLActor and DestroyIPDLActor
-   * are for use with the managing IPDL protocols only (so that they can
-   * implement AllocPextureChild and DeallocPTextureChild).
+   * exposed to the rest of the code base.
    */
-  static PTextureChild* CreateIPDLActor();
-  static bool DestroyIPDLActor(PTextureChild* actor);
+  static already_AddRefed<PTextureChild> CreateIPDLActor();
 
   /**
    * Get the TextureClient corresponding to the actor passed in parameter.
@@ -745,9 +747,6 @@ class TextureClient : public AtomicRefCountedWithFinalize<TextureClient> {
   gl::GfxTextureWasteTracker mWasteTracker;
 
   OpenMode mOpenMode;
-#ifdef DEBUG
-  uint32_t mExpectedDtRefs;
-#endif
   bool mIsLocked;
   bool mIsReadLocked MOZ_GUARDED_BY(mMutex);
   bool mIsPendingForwardReadLocked MOZ_GUARDED_BY(mMutex) = false;
@@ -779,6 +778,9 @@ class TextureClient : public AtomicRefCountedWithFinalize<TextureClient> {
   friend class TextureChild;
   friend void TestTextureClientSurface(TextureClient*, gfxImageSurface*);
   friend void TestTextureClientYCbCr(TextureClient*, PlanarYCbCrData&);
+  friend void TestYCbCrDescriptorTransferFunction(gfx::TransferFunction,
+                                                  Maybe<gfx::HDRMetadata>,
+                                                  RefPtr<ImageBridgeChild>);
   friend already_AddRefed<TextureHost> CreateTextureHostWithBackend(
       TextureClient*, ISurfaceAllocator*, LayersBackend&);
 };

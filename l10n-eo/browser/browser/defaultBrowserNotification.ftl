@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # The question portion of the following message should have the <strong> and </strong> tags surrounding it.
-default-browser-notification-message = <strong>Ĉu elekti { -brand-short-name } kiel vian norman retumilon?</strong> Profitu rapidan, sekuran kaj privatan retumon kiam ajn vi uzas la teksaĵon.
+default-browser-notification-message = <strong>Ĉu elekti { -brand-short-name } kiel vian norman retumilon?</strong> Profitu rapidan, sekuran kaj privatan retumon kiam ajn vi estas en la reto.
 default-browser-notification-button =
     .label = Elekti kiel norman
     .accesskey = E
@@ -40,3 +40,6 @@ default-browser-guidance-notification-body-instruction-win11 =
     Paŝo 2: Elektu “Difini kiel norman” por { -brand-short-name }
 default-browser-guidance-notification-info-page = Montri al mi
 default-browser-guidance-notification-dismiss = Farita
+default-browser-guidance-notification-v2-title = Fini la elekton de { -brand-short-name } kiel via ĉefa retumilo
+default-browser-guidance-notification-v2-body = En Agordoj, elektu "Difini kiel norma" por { -brand-short-name }.
+default-browser-guidance-notification-v2-title-only = En viaj agordoj elektu { -brand-short-name } kiel vian ĉefan retumilon

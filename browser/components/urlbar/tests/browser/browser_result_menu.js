@@ -1,12 +1,16 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
+add_setup(async function init() {
+  registerCleanupFunction(async function () {
+    await PlacesUtils.history.clear();
+    await UrlbarTestUtils.formHistory.clear();
+  });
+});
+
 add_task(async function test_history() {
   const TEST_URL = "https://remove.me/from_urlbar/";
   await PlacesTestUtils.addVisits(TEST_URL);
-  registerCleanupFunction(async function () {
-    await PlacesUtils.history.clear();
-  });
 
   const resultIndex = 1;
   let result;
@@ -28,7 +32,7 @@ add_task(async function test_history() {
   EventUtils.synthesizeKey("KEY_Tab");
   isnot(
     UrlbarTestUtils.getSelectedElement(window),
-    UrlbarTestUtils.getButtonForResultIndex(window, "menu", resultIndex),
+    UrlbarTestUtils.getButtonForResultIndex(window, "result-menu", resultIndex),
     "Tab key skips over menu button with resultMenu.keyboardAccessible pref set to false"
   );
   info(
@@ -44,7 +48,7 @@ add_task(async function test_history() {
   EventUtils.synthesizeKey("KEY_Tab");
   is(
     UrlbarTestUtils.getSelectedElement(window),
-    UrlbarTestUtils.getButtonForResultIndex(window, "menu", resultIndex),
+    UrlbarTestUtils.getButtonForResultIndex(window, "result-menu", resultIndex),
     "Tab key doesn't skip over menu button with resultMenu.keyboardAccessible pref reset to true"
   );
 
@@ -94,12 +98,19 @@ add_task(async function test_history() {
   }
 
   await UrlbarTestUtils.promisePopupClose(window);
+  await PlacesUtils.history.clear();
 });
 
 add_task(async function test_remove_search_history() {
-  await SearchTestUtils.installSearchExtension({}, { setAsDefault: true });
-  let engine = Services.search.getEngineByName("Example");
-  await Services.search.moveEngine(engine, 0);
+  let extension = await SearchTestUtils.installSearchExtension(
+    {},
+    {
+      setAsDefault: true,
+      skipUnload: true,
+    }
+  );
+  let engine = SearchService.getEngineByName("Example");
+  await SearchService.moveEngine(engine, 0);
   await SpecialPowers.pushPrefEnv({
     set: [
       ["browser.urlbar.suggest.searches", true],
@@ -142,7 +153,7 @@ add_task(async function test_remove_search_history() {
       break;
     }
   }
-  Assert.ok(resultIndex < count, "Result found");
+  Assert.less(resultIndex, count, "Result found");
 
   await UrlbarTestUtils.openResultMenuAndPressAccesskey(window, "R", {
     resultIndex,
@@ -177,6 +188,7 @@ add_task(async function test_remove_search_history() {
   );
 
   await SpecialPowers.popPrefEnv();
+  await extension.unload();
 });
 
 add_task(async function firefoxSuggest() {
@@ -185,19 +197,18 @@ add_task(async function firefoxSuggest() {
   let provider = new UrlbarTestUtils.TestProvider({
     priority: Infinity,
     results: [
-      new UrlbarResult(
-        UrlbarUtils.RESULT_TYPE.URL,
-        UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-        {
+      new UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.URL,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        payload: {
           url,
           isBlockable: true,
-          blockL10n: { id: "urlbar-result-menu-dismiss-firefox-suggest" },
           helpUrl,
           helpL10n: {
-            id: "urlbar-result-menu-learn-more-about-firefox-suggest",
+            id: "urlbar-result-menu-learn-more",
           },
-        }
-      ),
+        },
+      }),
     ],
   });
 
@@ -208,7 +219,8 @@ add_task(async function firefoxSuggest() {
     controller.removeResult(details.result);
   };
 
-  UrlbarProvidersManager.registerProvider(provider);
+  let providersManager = ProvidersManager.getInstanceForSap("urlbar");
+  providersManager.registerProvider(provider);
 
   async function openResults() {
     await UrlbarTestUtils.promiseAutocompleteResultPopup({
@@ -256,5 +268,5 @@ add_task(async function firefoxSuggest() {
   );
 
   await UrlbarTestUtils.promisePopupClose(window);
-  UrlbarProvidersManager.unregisterProvider(provider);
+  providersManager.unregisterProvider(provider);
 });

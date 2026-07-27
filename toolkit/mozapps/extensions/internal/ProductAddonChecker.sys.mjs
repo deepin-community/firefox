@@ -34,7 +34,7 @@ const TIMEOUT_DELAY_MS = 20000;
  *
  * @param  request
  *         The XMLHttpRequest.
- * @returns {Object} result - An object containing the results.
+ * @returns {object} result - An object containing the results.
  * @returns {integer} result.status - Request status code, if available, else the channel nsresult.
  * @returns {integer} result.channelStatus - Channel nsresult.
  * @returns {integer} result.errorCode - Request error code.
@@ -224,17 +224,10 @@ async function verifyGmpContentSignature(
  *         The url to download from.
  * @param  allowNonBuiltIn
  *         Whether to trust SSL certificates without a built-in CA issuer.
- * @param  allowedCerts
- *         The list of certificate attributes to match the SSL certificate
- *         against or null to skip checks.
  * @return a promise that resolves to the ServiceRequest request on success or
  *         rejects with a JS exception in case of error.
  */
-function downloadXMLWithRequest(
-  url,
-  allowNonBuiltIn = false,
-  allowedCerts = null
-) {
+function downloadXMLWithRequest(url, allowNonBuiltIn = false) {
   return new Promise((resolve, reject) => {
     let request = new lazy.ServiceRequest();
     // This is here to let unit test code override the ServiceRequest.
@@ -292,7 +285,7 @@ function downloadXMLWithRequest(
       let request = event.target;
 
       try {
-        CertUtils.checkCert(request.channel, allowNonBuiltIn, allowedCerts);
+        CertUtils.checkCert(request.channel, allowNonBuiltIn);
       } catch (ex) {
         logger.error("Request failed certificate checks: " + ex);
         ex.status = getRequestStatus(request).requestStatus;
@@ -322,9 +315,6 @@ function downloadXMLWithRequest(
  *         The url to download from.
  * @param  allowNonBuiltIn
  *         Whether to trust SSL certificates without a built-in CA issuer.
- * @param  allowedCerts
- *         The list of certificate attributes to match the SSL certificate
- *         against or null to skip checks.
  * @param  verifyContentSignature
  *         When true, will verify the content signature information from the
  *         response header. Failure to verify will result in an error.
@@ -337,15 +327,10 @@ function downloadXMLWithRequest(
 async function downloadXML(
   url,
   allowNonBuiltIn = false,
-  allowedCerts = null,
   verifyContentSignature = false,
   trustedContentSignatureRoot = null
 ) {
-  let request = await downloadXMLWithRequest(
-    url,
-    allowNonBuiltIn,
-    allowedCerts
-  );
+  let request = await downloadXMLWithRequest(url, allowNonBuiltIn);
   if (verifyContentSignature) {
     await verifyGmpContentSignature(
       request.response,
@@ -386,7 +371,7 @@ function parseXML(document) {
   let results = [];
   let addonList = document.querySelectorAll("updates:root > addons > addon");
   for (let addonElement of addonList) {
-    let addon = {};
+    let addon = { mirrorURLs: [] };
 
     for (let name of [
       "id",
@@ -401,6 +386,13 @@ function parseXML(document) {
       }
     }
     addon.size = Number(addon.size) || undefined;
+
+    let mirrorList = addonElement.querySelectorAll("mirror");
+    for (let mirrorElement of mirrorList) {
+      if (mirrorElement.hasAttribute("URL")) {
+        addon.mirrorURLs.push(mirrorElement.getAttribute("URL"));
+      }
+    }
 
     results.push(addon);
   }
@@ -479,6 +471,26 @@ function downloadFile(url, options = { httpsOnlyNoUpgrade: false }) {
   });
 }
 
+async function downloadAndVerifyFile(addon, url, options) {
+  logger.info(`Try to download addon ${addon.id} from ${url}`);
+  let path;
+  try {
+    path = await downloadFile(url, options);
+  } catch (e) {
+    logger.warn(`Failed to download addon ${addon.id} from ${url}: ${e}`);
+    throw e;
+  }
+
+  try {
+    await verifyFile(addon, path);
+    return path;
+  } catch (e) {
+    logger.warn(`Failed to verify addon ${addon.id} from ${url}: ${e}`);
+    await IOUtils.remove(path);
+    throw e;
+  }
+}
+
 /**
  * Verifies that a downloaded file matches what was expected.
  *
@@ -533,9 +545,6 @@ export const ProductAddonChecker = {
    *         The url to download from.
    * @param  allowNonBuiltIn
    *         Whether to trust SSL certificates without a built-in CA issuer.
-   * @param  allowedCerts
-   *         The list of certificate attributes to match the SSL certificate
-   *         against or null to skip checks.
    * @param  verifyContentSignature
    *         When true, will verify the content signature information from the
    *         response header. Failure to verify will result in an error.
@@ -551,14 +560,12 @@ export const ProductAddonChecker = {
   getProductAddonList(
     url,
     allowNonBuiltIn = false,
-    allowedCerts = null,
     verifyContentSignature = false,
     trustedContentSignatureRoot = null
   ) {
     return downloadXML(
       url,
       allowNonBuiltIn,
-      allowedCerts,
       verifyContentSignature,
       trustedContentSignatureRoot
     ).then(parseXML);
@@ -577,12 +584,16 @@ export const ProductAddonChecker = {
    *         with a JS exception in case of error.
    */
   async downloadAddon(addon, options = { httpsOnlyNoUpgrade: false }) {
-    let path = await downloadFile(addon.URL, options);
     try {
-      await verifyFile(addon, path);
-      return path;
+      return await downloadAndVerifyFile(addon, addon.URL, options);
     } catch (e) {
-      await IOUtils.remove(path);
+      for (const url of addon.mirrorURLs) {
+        try {
+          return await downloadAndVerifyFile(addon, url, options);
+        } catch {
+          // Already logged; ignore error and continue.
+        }
+      }
       throw e;
     }
   },
@@ -592,6 +603,7 @@ export const ProductAddonChecker = {
 export const ProductAddonCheckerTestUtils = {
   /**
    * Used to override ServiceRequest calls with a mock request.
+   *
    * @param mockRequest The mocked ServiceRequest object.
    * @param callback Method called with the overridden ServiceRequest. The override
    *        is undone after the callback returns.

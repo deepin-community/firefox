@@ -1,5 +1,9 @@
 add_task(async function () {
-  await pushPrefs(["ui.key.contentAccess", 5], ["ui.key.chromeAccess", 5]);
+  await pushPrefs(
+    ["test.wait300msAfterTabSwitch", true],
+    ["ui.key.contentAccess", 5],
+    ["ui.key.chromeAccess", 5]
+  );
 
   const gPageURL1 =
     "data:text/html,<body><p>" +
@@ -117,6 +121,24 @@ add_task(async function () {
   gBrowser.removeTab(tab4);
 
   newButton.remove();
+
+  // Accesskey on input label in shadow host should work
+  const gPageURL5 = `data:text/html,
+    <body>
+      <div id="host">
+        <template shadowrootmode="open">
+          <label for="tab5Checkbox" accesskey="y">Label accesskey is "y":</label>
+          <input id="tab5Checkbox" type="checkbox">
+        </template>
+      </div>
+    </body>`;
+  let tab5 = await BrowserTestUtils.openNewForegroundTab(gBrowser, gPageURL5);
+  Services.focus.clearFocus(window);
+  focusedId = await performAccessKey(tab5.linkedBrowser, "y");
+
+  is(focusedId, "host", "the shadow host in tab5 should be focused");
+
+  gBrowser.removeTab(tab5);
 });
 
 function performAccessKey(browser, key) {
@@ -144,9 +166,9 @@ function performAccessKey(browser, key) {
           return false; // ignore window and document focus events
         }
 
-        event.target.ownerGlobal._sent = true;
-        let focusedElement = event.target.ownerGlobal.document.activeElement;
-        event.target.ownerGlobal._oldFocusedElement = focusedElement;
+        event.target.documentGlobal._sent = true;
+        let focusedElement = event.target.documentGlobal.document.activeElement;
+        event.target.documentGlobal._oldFocusedElement = focusedElement;
         focusedElement.blur();
         return true;
       }
@@ -158,7 +180,7 @@ function performAccessKey(browser, key) {
       () => {},
       { capture: true },
       event => {
-        event.target.ownerGlobal._sent = false;
+        event.target.documentGlobal._sent = false;
         return true;
       }
     );
@@ -169,10 +191,11 @@ function performAccessKey(browser, key) {
       callback,
       {},
       event => {
-        if (!event.target.ownerGlobal._sent) {
-          event.target.ownerGlobal._sent = true;
-          let focusedElement = event.target.ownerGlobal.document.activeElement;
-          event.target.ownerGlobal._oldFocusedElement = focusedElement;
+        if (!event.target.documentGlobal._sent) {
+          event.target.documentGlobal._sent = true;
+          let focusedElement =
+            event.target.documentGlobal.document.activeElement;
+          event.target.documentGlobal._oldFocusedElement = focusedElement;
           focusedElement.blur();
           return true;
         }

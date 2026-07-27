@@ -1,11 +1,7 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=4:tabstop=4:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <stdlib.h>
 #include "mozilla/Types.h"
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
@@ -21,20 +17,26 @@ union wl_argument;
 #pragma GCC visibility push(default)
 const struct wl_interface wl_buffer_interface;
 const struct wl_interface wl_callback_interface;
+const struct wl_interface wl_compositor_interface;
 const struct wl_interface wl_data_device_interface;
 const struct wl_interface wl_data_device_manager_interface;
 const struct wl_interface wl_keyboard_interface;
+const struct wl_interface wl_output_interface;
 const struct wl_interface wl_pointer_interface;
 const struct wl_interface wl_region_interface;
 const struct wl_interface wl_registry_interface;
+const struct wl_interface wl_seat_interface;
 const struct wl_interface wl_shm_interface;
 const struct wl_interface wl_shm_pool_interface;
-const struct wl_interface wl_seat_interface;
-const struct wl_interface wl_surface_interface;
-const struct wl_interface wl_subsurface_interface;
-const struct wl_interface wl_compositor_interface;
 const struct wl_interface wl_subcompositor_interface;
-const struct wl_interface wl_output_interface;
+const struct wl_interface wl_subsurface_interface;
+const struct wl_interface wl_surface_interface;
+const struct wl_interface wl_touch_interface;
+const struct wl_interface xdg_popup_interface;
+const struct wl_interface xdg_positioner_interface;
+const struct wl_interface xdg_surface_interface;
+const struct wl_interface xdg_toplevel_interface;
+const struct wl_interface xdg_wm_base_interface;
 #pragma GCC visibility pop
 
 MOZ_EXPORT void wl_event_queue_destroy(struct wl_event_queue* queue) {}
@@ -221,14 +223,25 @@ MOZ_EXPORT struct wl_surface* gdk_wayland_window_get_wl_surface(
   return NULL;
 }
 
+MOZ_EXPORT void gdk_wayland_window_set_use_custom_surface(
+    GdkWaylandWindow* window) {}
+
 MOZ_EXPORT struct wl_pointer* gdk_wayland_device_get_wl_pointer(
     GdkDevice* device) {
   return NULL;
 }
+
+MOZ_EXPORT struct wl_seat* gdk_wayland_device_get_wl_seat(GdkDevice* device) {
+  return NULL;
+}
+
 MOZ_EXPORT struct wl_display* gdk_wayland_display_get_wl_display(
     GdkDisplay* display) {
   return NULL;
 }
+
+MOZ_EXPORT void wl_display_set_max_buffer_size(struct wl_display* display,
+                                               size_t max_buffer_size) {}
 
 MOZ_EXPORT struct xkb_context* xkb_context_new(enum xkb_context_flags flags) {
   return NULL;
@@ -248,6 +261,10 @@ MOZ_EXPORT struct xkb_keymap* xkb_keymap_new_from_string(
   return NULL;
 }
 
+MOZ_EXPORT struct xkb_keymap* xkb_keymap_ref(struct xkb_keymap* keymap) {
+  return NULL;
+}
+
 MOZ_EXPORT void xkb_keymap_unref(struct xkb_keymap* keymap) {}
 
 MOZ_EXPORT const char* xkb_keymap_layout_get_name(struct xkb_keymap* keymap,
@@ -258,4 +275,28 @@ MOZ_EXPORT const char* xkb_keymap_layout_get_name(struct xkb_keymap* keymap,
 MOZ_EXPORT xkb_mod_index_t xkb_keymap_mod_get_index(struct xkb_keymap* keymap,
                                                     const char* name) {
   return XKB_MOD_INVALID;
+}
+
+MOZ_EXPORT int xkb_keymap_key_repeats(struct xkb_keymap* keymap,
+                                      xkb_keycode_t kc) {
+  return 0;
+}
+
+MOZ_EXPORT struct xkb_state* xkb_state_new(struct xkb_keymap* keymap) {
+  return NULL;
+}
+
+MOZ_EXPORT void xkb_state_unref(struct xkb_state* state) {}
+
+MOZ_EXPORT enum xkb_state_component xkb_state_update_mask(
+    struct xkb_state* state, xkb_mod_mask_t depressed_mods,
+    xkb_mod_mask_t latched_mods, xkb_mod_mask_t locked_mods,
+    xkb_layout_index_t depressed_layout, xkb_layout_index_t latched_layout,
+    xkb_layout_index_t locked_layout) {
+  return 0;
+}
+
+MOZ_EXPORT xkb_mod_mask_t xkb_state_serialize_mods(
+    struct xkb_state* state, enum xkb_state_component components) {
+  return 0;
 }

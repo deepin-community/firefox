@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,14 +6,14 @@
 #define LAYOUT_SVG_SVGIMAGEFRAME_H_
 
 // Keep in (case-insensitive) order:
-#include "mozilla/gfx/2D.h"
-#include "mozilla/DisplaySVGItem.h"
-#include "mozilla/ISVGDisplayableFrame.h"
 #include "gfxContext.h"
 #include "gfxPlatform.h"
 #include "imgIContainer.h"
-#include "nsContainerFrame.h"
 #include "imgINotificationObserver.h"
+#include "mozilla/DisplaySVGItem.h"
+#include "mozilla/ISVGDisplayableFrame.h"
+#include "mozilla/gfx/2D.h"
+#include "nsContainerFrame.h"
 #include "nsIReflowCallback.h"
 
 namespace mozilla {
@@ -63,9 +61,9 @@ class SVGImageFrame final : public nsIFrame,
                 imgDrawingParams& aImgParams) override;
   nsIFrame* GetFrameForPoint(const gfxPoint& aPoint) override;
   void ReflowSVG() override;
-  void NotifySVGChanged(uint32_t aFlags) override;
+  void NotifySVGChanged(ChangeFlags aFlags) override;
   SVGBBox GetBBoxContribution(const Matrix& aToBBoxUserspace,
-                              uint32_t aFlags) override;
+                              SVGBBoxFlags aFlags) override;
   bool IsDisplayContainer() override { return false; }
 
   // nsIFrame interface:
@@ -73,7 +71,7 @@ class SVGImageFrame final : public nsIFrame,
                         const nsDisplayListSet& aLists) override;
 
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
   void OnVisibilityChange(
       Visibility aNewVisibility,
@@ -137,7 +135,7 @@ class DisplaySVGImage final : public DisplaySVGItem {
     MOZ_COUNT_CTOR(DisplaySVGImage);
   }
 
-  MOZ_COUNTED_DTOR_OVERRIDE(DisplaySVGImage)
+  MOZ_COUNTED_DTOR_FINAL(DisplaySVGImage)
 
   NS_DISPLAY_DECL_NAME("DisplaySVGImage", TYPE_SVG_IMAGE)
 

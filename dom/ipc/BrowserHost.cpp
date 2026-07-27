@@ -1,17 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/BrowserHost.h"
 
-#include "mozilla/Unused.h"
+#include "mozilla/ProcessPriorityManager.h"
+#include "mozilla/dom/BrowsingContextGroup.h"
 #include "mozilla/dom/CancelContentJSOptionsBinding.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/WindowGlobalParent.h"
-#include "mozilla/ProcessPriorityManager.h"
-
 #include "nsIObserverService.h"
 
 namespace mozilla::dom {
@@ -48,12 +45,7 @@ BrowsingContext* BrowserHost::GetBrowsingContext() const {
   return mRoot->GetBrowsingContext();
 }
 
-nsILoadContext* BrowserHost::GetLoadContext() const {
-  RefPtr<nsILoadContext> loadContext = mRoot->GetLoadContext();
-  return loadContext;
-}
-
-bool BrowserHost::CanRecv() const { return mRoot && mRoot->CanRecv(); }
+bool BrowserHost::CanSend() const { return mRoot && mRoot->CanSend(); }
 
 a11y::DocAccessibleParent* BrowserHost::GetTopLevelDocAccessible() const {
   return mRoot ? mRoot->GetTopLevelDocAccessible() : nullptr;
@@ -90,8 +82,8 @@ bool BrowserHost::Show(const OwnerShowInfo& aShowInfo) {
   return mRoot->Show(aShowInfo);
 }
 
-void BrowserHost::UpdateDimensions(const nsIntRect& aRect,
-                                   const ScreenIntSize& aSize) {
+void BrowserHost::UpdateDimensions(const LayoutDeviceIntRect& aRect,
+                                   const LayoutDeviceIntSize& aSize) {
   mRoot->UpdateDimensions(aRect, aSize);
 }
 
@@ -100,7 +92,7 @@ void BrowserHost::UpdateEffects(EffectsInfo aEffects) {
     return;
   }
   mEffectsInfo = aEffects;
-  Unused << mRoot->SendUpdateEffects(mEffectsInfo);
+  (void)mRoot->SendUpdateEffects(mEffectsInfo);
 }
 
 /* attribute boolean renderLayers; */
@@ -253,6 +245,14 @@ BrowserHost::CreateAboutBlankDocumentViewer(
     return NS_OK;
   }
 
+  // Before creating the viewer in-content, ensure that the process is allowed
+  // to load this principal.
+  if (NS_WARN_IF(!mRoot->Manager()->ValidatePrincipal(aPrincipal))) {
+    ContentParent::LogAndAssertFailedPrincipalValidationInfo(
+        aPrincipal, "BrowserHost::CreateAboutBlankDocumentViewer");
+    return NS_ERROR_DOM_SECURITY_ERR;
+  }
+
   // Ensure the content process has permisisons for the new document we're about
   // to create in it.
   nsresult rv = GetContentParent()->TransmitPermissionsForPrincipal(aPrincipal);
@@ -260,8 +260,14 @@ BrowserHost::CreateAboutBlankDocumentViewer(
     return rv;
   }
 
-  Unused << mRoot->SendCreateAboutBlankDocumentViewer(aPrincipal,
-                                                      aPartitionedPrincipal);
+  // Ensure that UsesOriginAgentCluster has been initialized for this
+  // BrowsingContextGroup/principal pair before creating the document in
+  // content.
+  mRoot->GetBrowsingContext()->Group()->EnsureUsesOriginAgentClusterInitialized(
+      aPrincipal);
+
+  (void)mRoot->SendCreateAboutBlankDocumentViewer(aPrincipal,
+                                                  aPartitionedPrincipal);
   return NS_OK;
 }
 

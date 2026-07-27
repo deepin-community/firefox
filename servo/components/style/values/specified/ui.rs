@@ -4,6 +4,7 @@
 
 //! Specified types for UI properties.
 
+use crate::derives::*;
 use crate::parser::{Parse, ParserContext};
 use crate::values::generics::ui as generics;
 use crate::values::specified::color::Color;
@@ -87,8 +88,10 @@ impl SpecifiedValueInfo for CursorImage {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(transparent)]
+#[typed(todo_derive_fields)]
 pub struct BoolInteger(pub bool);
 
 impl BoolInteger {
@@ -157,6 +160,7 @@ impl Parse for ScrollbarColor {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum UserSelect {
@@ -232,6 +236,32 @@ pub enum CursorKind {
 }
 
 /// The keywords allowed in the -moz-theme property.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
+)]
+#[repr(u8)]
+pub enum MozTheme {
+    /// Choose the default (maybe native) rendering.
+    Auto,
+    /// Choose the non-native rendering.
+    NonNative,
+}
+
+/// The pointer-events property
+/// https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty
 #[allow(missing_docs)]
 #[derive(
     Clone,
@@ -247,11 +277,77 @@ pub enum CursorKind {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
-pub enum MozTheme {
-    /// Choose the default (maybe native) rendering.
+pub enum PointerEvents {
     Auto,
-    /// Choose the non-native rendering.
-    NonNative,
+    None,
+    #[cfg(feature = "gecko")]
+    Visiblepainted,
+    #[cfg(feature = "gecko")]
+    Visiblefill,
+    #[cfg(feature = "gecko")]
+    Visiblestroke,
+    #[cfg(feature = "gecko")]
+    Visible,
+    #[cfg(feature = "gecko")]
+    Painted,
+    #[cfg(feature = "gecko")]
+    Fill,
+    #[cfg(feature = "gecko")]
+    Stroke,
+    #[cfg(feature = "gecko")]
+    All,
+}
+
+/// Internal property to represent the inert attribute state:
+/// https://html.spec.whatwg.org/multipage/#inert-subtrees
+#[allow(missing_docs)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
+)]
+#[repr(u8)]
+pub enum Inert {
+    None,
+    Inert,
+}
+
+/// Internal -moz-user-focus property.
+/// https://developer.mozilla.org/en-US/docs/Web/CSS/-moz-user-focus
+#[allow(missing_docs)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
+)]
+#[repr(u8)]
+pub enum UserFocus {
+    Normal,
+    None,
+    Ignore,
 }

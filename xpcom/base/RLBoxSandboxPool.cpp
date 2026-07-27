@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsThreadUtils.h"
-#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/RLBoxSandboxPool.h"
 #ifdef MOZ_USING_WASM_SANDBOXING
@@ -19,13 +17,9 @@ NS_IMPL_ISUPPORTS(RLBoxSandboxPool, nsITimerCallback, nsINamed)
 void RLBoxSandboxPool::StartTimer() {
   mMutex.AssertCurrentThreadOwns();
   MOZ_ASSERT(!mTimer, "timer already initialized");
-  if (NS_IsMainThread() &&
-      PastShutdownPhase(ShutdownPhase::AppShutdownConfirmed)) {
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
     // If we're shutting down, setting the time might fail, and we don't need it
-    // (since all the memory will be cleaned up soon anyway). Note that
-    // PastShutdownPhase() can only be called on the main thread, but that's
-    // fine, because other threads will have joined already by the point timers
-    // start failing to register.
+    // (since all the memory will be cleaned up soon anyway).
     mPool.Clear();
     return;
   }

@@ -6,7 +6,6 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   CreditCard: "resource://gre/modules/CreditCard.sys.mjs",
-  FormAutofillUtils: "resource://gre/modules/shared/FormAutofillUtils.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(
@@ -129,8 +128,8 @@ class ProfileAutoCompleteResult {
   }
 
   getLabelAt(index) {
-    const label = this.getAt(index);
-    return typeof label == "string" ? label : label.primary;
+    const item = this.getAt(index);
+    return typeof item == "string" ? item : item.primary || item.label;
   }
 
   /**
@@ -157,7 +156,7 @@ class ProfileAutoCompleteResult {
         data.fillMessageName = "FormAutofill:ClearForm";
         break;
       case "manage":
-        data.fillMessageName = "FormAutofill:OpenPreferences";
+        data.fillMessageName = this.openPreferenceMessage;
         break;
       case "insecure":
         data.noLearnMore = true;
@@ -259,6 +258,10 @@ class ProfileAutoCompleteResult {
 }
 
 export class AddressResult extends ProfileAutoCompleteResult {
+  get openPreferenceMessage() {
+    return `FormAutofill:OpenAddressPreferences`;
+  }
+
   _getSecondaryLabel(focusedFieldName, allFieldNames, profile) {
     // We group similar fields into the same field name so we won't pick another
     // field in the same group as the secondary label.
@@ -349,107 +352,49 @@ export class AddressResult extends ProfileAutoCompleteResult {
       return labels;
     }
 
-    let focusedCategory =
-      lazy.FormAutofillUtils.getCategoryFromFieldName(focusedFieldName);
+    const labels = [];
+    for (let idx = 0; idx < profiles.length; idx++) {
+      const profile = profiles[idx];
 
-    // Skip results without a primary label.
-    let labels = profiles
-      .filter(profile => {
-        return !!profile[focusedFieldName];
-      })
-      .map(profile => {
-        let primaryLabel = profile[focusedFieldName];
-        if (
-          focusedFieldName == "street-address" &&
-          profile["-moz-street-address-one-line"]
-        ) {
-          primaryLabel = profile["-moz-street-address-one-line"];
-        }
+      let primary = profile[focusedFieldName];
+      // Skip results without a primary label.
+      if (!primary) {
+        continue;
+      }
 
-        let profileFields = allFieldNames.filter(
-          fieldName => !!profile[fieldName]
-        );
+      if (
+        focusedFieldName == "street-address" &&
+        profile["-moz-street-address-one-line"]
+      ) {
+        primary = profile["-moz-street-address-one-line"];
+      }
 
-        let categories =
-          lazy.FormAutofillUtils.getCategoriesFromFieldNames(profileFields);
-        let status = this.getStatusNote(categories, focusedCategory);
-        let secondary = this._getSecondaryLabel(
-          focusedFieldName,
-          allFieldNames,
-          profile
-        );
-        const ariaLabel = [primaryLabel, secondary, status]
-          .filter(chunk => !!chunk) // Exclude empty chunks.
-          .join(" ");
-        return {
-          primary: primaryLabel,
-          secondary,
-          status,
-          ariaLabel,
-        };
+      const secondary = this._getSecondaryLabel(
+        focusedFieldName,
+        allFieldNames,
+        profile
+      );
+      // Exclude empty chunks.
+      const ariaLabel = [primary, secondary].filter(chunk => !!chunk).join(" ");
+
+      labels.push({
+        primary,
+        secondary,
+        ariaLabel,
       });
-
-    let allCategories =
-      lazy.FormAutofillUtils.getCategoriesFromFieldNames(allFieldNames);
-
-    if (allCategories && allCategories.length) {
-      let statusItem = {
-        primary: "",
-        secondary: "",
-        status: this.getStatusNote(allCategories, focusedCategory),
-        style: "status",
-      };
-      labels.push(statusItem);
     }
 
     labels.push(footerItem);
 
     return labels;
   }
-
-  getStatusNote(categories, focusedCategory) {
-    if (!categories || !categories.length) {
-      return "";
-    }
-
-    // If the length of categories is 1, that means all the fillable fields are in the same
-    // category. We will change the way to inform user according to this flag. When the value
-    // is true, we show "Also autofills ...", otherwise, show "Autofills ..." only.
-    let hasExtraCategories = categories.length > 1;
-    // Show the categories in certain order to conform with the spec.
-    let orderedCategoryList = [
-      "address",
-      "name",
-      "organization",
-      "tel",
-      "email",
-    ];
-    let showCategories = hasExtraCategories
-      ? orderedCategoryList.filter(
-          category =>
-            categories.includes(category) && category != focusedCategory
-        )
-      : [orderedCategoryList.find(category => category == focusedCategory)];
-
-    let formatter = new Intl.ListFormat(undefined, {
-      style: "narrow",
-    });
-
-    let categoriesText = showCategories.map(category =>
-      lazy.l10n.formatValueSync("autofill-category-" + category)
-    );
-    categoriesText = formatter.format(categoriesText);
-
-    let statusTextTmplKey = hasExtraCategories
-      ? "autofill-phishing-warningmessage-extracategory"
-      : "autofill-phishing-warningmessage";
-    return lazy.l10n.formatValueSync(statusTextTmplKey, {
-      categories: categoriesText,
-    });
-  }
 }
 
 export class CreditCardResult extends ProfileAutoCompleteResult {
+  get openPreferenceMessage() {
+    return `FormAutofill:OpenPaymentPreferences`;
+  }
+
   _getSecondaryLabel(focusedFieldName, allFieldNames, profile) {
     const GROUP_FIELDS = {
       "cc-name": [
@@ -498,13 +443,9 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
 
   _generateLabels(focusedFieldName, allFieldNames, profiles) {
     if (!this._isSecure) {
-      let brandName =
-        lazy.FormAutofillUtils.brandBundle.GetStringFromName("brandShortName");
-
       return [
-        lazy.FormAutofillUtils.stringBundle.formatStringFromName(
-          "insecureFieldWarningDescription",
-          [brandName]
+        lazy.l10n.formatValueSync(
+          "autofill-insecure-field-warning-description"
         ),
       ];
     }
@@ -553,10 +494,10 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
         const ccTypeL10nId = lazy.CreditCard.getNetworkL10nId(ccType);
         const ccTypeName = ccTypeL10nId
           ? lazy.l10n.formatValueSync(ccTypeL10nId)
-          : ccType ?? ""; // Unknown card type
+          : (ccType ?? ""); // Unknown card type
         const ariaLabel = [
           ccTypeName,
-          primary.toString().replaceAll("*", ""),
+          primary.toString().replaceAll("•", ""),
           secondary,
         ]
           .filter(chunk => !!chunk) // Exclude empty chunks.

@@ -59,7 +59,7 @@ about-private-browsing-pin-promo-link-text =
         [macos] Yn Dock hâlde
        *[other] Oan taakbalke fêstsette
     }
-about-private-browsing-pin-promo-title = Gjin bewarre cookies of skiednis, direkt fan jo buroblêd. Blêdzje as oft net ien meisjocht.
+about-private-browsing-pin-promo-title = Gjin bewarre cookies of skiednis, streekrjocht fan jo buroblêd ôf. Blêdzje as oft net ien sjocht.
 
 ## Strings used in a promotion message for cookie banner reduction
 
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Lit { -brand-short-name } 
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } rekkenet foar jo ôf mei cookiebanners
 about-private-browsing-cookie-banners-promo-body = In protte cookiebanners wurde no automatysk wegere, sadat jo minder folge wurde kinne en werom kinne nei ôfliedingsfrij navigearje.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Lit gjin spoaren efter op dit apparaat
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } wisket jo cookies, skiednis en websitegegevens as jo al jo priveefinsters slute.
 about-private-browsing-felt-privacy-v1-info-link = Wa kin myn aktiviteit sjen?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Troch al jo priveefinsters te sluten, wurde jo cookies, skiednis en websitegegevens fuortsmiten.
+about-private-browsing-nova-info-link = Wa kin myn aktiviteit noch sjen?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Jo aktiviteit wurdt net fêstlein
+about-private-browsing-nova-info-subheader = Wy wiskje elke sykopdracht en oanmelding as jo dit finster slute. De ynboude beskermingen fan { -brand-short-name } binne hjir ek oanwêzich, lykas it blokkearjen fan trackers.

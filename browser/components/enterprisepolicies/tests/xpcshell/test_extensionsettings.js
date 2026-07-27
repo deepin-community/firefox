@@ -2,19 +2,20 @@
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 "use strict";
 
-const { AddonTestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/AddonTestUtils.sys.mjs"
-);
 const { AddonManager } = ChromeUtils.importESModule(
   "resource://gre/modules/AddonManager.sys.mjs"
 );
-const { ExtensionTestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/ExtensionXPCShellUtils.sys.mjs"
+const { AddonTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/AddonTestUtils.sys.mjs"
+);
+const { TestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TestUtils.sys.mjs"
 );
 
 AddonTestUtils.init(this);
 AddonTestUtils.overrideCertDB();
 AddonTestUtils.appInfo = getAppInfo();
+AddonTestUtils.usePrivilegedSignatures = false;
 ExtensionTestUtils.init(this);
 
 const server = AddonTestUtils.createHttpServer({ hosts: ["example.com"] });
@@ -25,34 +26,6 @@ let themeID = "policytheme@mozilla.com";
 let policyOnlyID = "policy_installed_only@mozilla.com";
 
 let fileURL;
-
-async function assertManagementAPIInstallType(addonId, expectedInstallType) {
-  const addon = await AddonManager.getAddonByID(addonId);
-  const expectInstalledByPolicy = expectedInstallType === "admin";
-  equal(
-    addon.isInstalledByEnterprisePolicy,
-    expectInstalledByPolicy,
-    `Addon should ${
-      expectInstalledByPolicy ? "be" : "NOT be"
-    } marked as installed by enterprise policy`
-  );
-  const policy = WebExtensionPolicy.getByID(addonId);
-  const pageURL = policy.extension.baseURI.resolve(
-    "_generated_background_page.html"
-  );
-  const page = await ExtensionTestUtils.loadContentPage(pageURL);
-  const { id, installType } = await page.spawn([], async () => {
-    const res = await this.content.wrappedJSObject.browser.management.getSelf();
-    return { id: res.id, installType: res.installType };
-  });
-  await page.close();
-  Assert.equal(id, addonId, "Got results for the expected addon id");
-  Assert.equal(
-    installType,
-    expectedInstallType,
-    "Got the expected installType on policy installed extension"
-  );
-}
 
 function waitForAddonInstall(addonId) {
   return new Promise(resolve => {
@@ -147,6 +120,48 @@ add_task(async function test_extensionsettings() {
   );
 });
 
+add_task(async function test_force_installed_updates_disabled() {
+  await setupPolicyEngineWithJson({
+    policies: {
+      ExtensionSettings: {
+        "force@mozilla.com": {
+          installation_mode: "force_installed",
+          install_url: "https://example.com/test.xpi",
+        },
+        "force_explicit@mozilla.com": {
+          installation_mode: "force_installed",
+          install_url: "https://example.com/test.xpi",
+          updates_disabled: true,
+        },
+        "normal@mozilla.com": {
+          installation_mode: "normal_installed",
+          install_url: "https://example.com/test.xpi",
+        },
+      },
+    },
+  });
+
+  equal(
+    Services.policies.getExtensionSettings("force@mozilla.com")
+      .updates_disabled,
+    false,
+    "force_installed with no updates_disabled should default to false"
+  );
+  equal(
+    Services.policies.getExtensionSettings("force_explicit@mozilla.com")
+      .updates_disabled,
+    true,
+    "force_installed with explicit updates_disabled: true should be respected"
+  );
+  ok(
+    !(
+      "updates_disabled" in
+      Services.policies.getExtensionSettings("normal@mozilla.com")
+    ),
+    "non-force_installed should not synthesize updates_disabled"
+  );
+});
+
 add_task(async function test_addon_blocked() {
   await setupPolicyEngineWithJson({
     policies: {
@@ -189,7 +204,7 @@ add_task(async function test_addon_allowed() {
   await assertManagementAPIInstallType(install.addon.id, "normal");
   equal(install.addon.appDisabled, false, "Addon should not be disabled");
   equal(
-    install.addon.isInstalledByEnterprisePolicy,
+    Services.policies.isAddonRequiredByPolicy(install.addon.id),
     false,
     "Addon should NOT be marked as installed by enterprise policy"
   );
@@ -555,7 +570,7 @@ add_task(async function test_policy_installed_only_addon() {
   // Setting back the extension settings with installation_mode set to force_installed
   // will install the extension again, and so we need to wait for that and uninstall
   // it first (otherwise the addon may endup being installed when the test task is
-  // completed and trigger an intermittent failre).
+  // completed and trigger an intermittent failure).
   installPromise = waitForAddonInstall(policyOnlyID);
   await setupPolicyEngineWithJson({
     policies: {
@@ -613,3 +628,294 @@ add_task(async function test_policy_installed_only_addon() {
     "Got the expect error logged on installing enterprise only extension"
   );
 });
+
+add_task(async function test_private_browsing() {
+  async function assertPrivateBrowsingAccess({
+    addonId,
+    extensionSettings,
+    extensionManifest = {},
+    expectedPrivateBrowsingAccess,
+    message,
+  }) {
+    await setupPolicyEngineWithJson({
+      policies: {
+        ExtensionSettings: {
+          [addonId]: { ...extensionSettings },
+        },
+      },
+    });
+
+    let ext = ExtensionTestUtils.loadExtension({
+      manifest: {
+        browser_specific_settings: {
+          gecko: { id: addonId },
+        },
+        ...extensionManifest,
+      },
+      useAddonManager: "temporary",
+      background() {
+        browser.test.onMessage.addListener(async msg => {
+          switch (msg) {
+            case "checkPrivateBrowsing": {
+              let isAllowed =
+                await browser.extension.isAllowedIncognitoAccess();
+              browser.test.sendMessage("privateBrowsing", isAllowed);
+              break;
+            }
+          }
+        });
+      },
+    });
+
+    await ext.startup();
+
+    ext.sendMessage("checkPrivateBrowsing");
+    let isAllowedIncognitoAccess = await ext.awaitMessage("privateBrowsing");
+    Assert.equal(
+      isAllowedIncognitoAccess,
+      expectedPrivateBrowsingAccess,
+      message
+    );
+
+    let addon = await AddonManager.getAddonByID(ext.id);
+    // Sanity check (to ensure the test extension used in this test are not privileged).
+    ok(!addon.isPrivileged, "Addon should not be privileged");
+
+    let expectLocked = typeof extensionSettings?.private_browsing === "boolean";
+    Assert.equal(
+      !(
+        addon.permissions & AddonManager.PERM_CAN_CHANGE_PRIVATEBROWSING_ACCESS
+      ),
+      expectLocked,
+      `Addon should ${expectLocked ? "NOT" : ""} be able to change private browsing setting.`
+    );
+
+    await ext.unload();
+  }
+
+  await assertPrivateBrowsingAccess({
+    addonId: "privatebrowsing-granted-nonprivileged@test",
+    extensionSettings: { private_browsing: true },
+    expectedPrivateBrowsingAccess: true,
+    message:
+      "Should have access to private browsing (set to true in policy extension setting)",
+  });
+
+  await assertPrivateBrowsingAccess({
+    addonId: "privatebrowsing-revoked-nonprivileged@test",
+    extensionSettings: { private_browsing: false },
+    expectedPrivateBrowsingAccess: false,
+    message:
+      "Should NOT have access to private browsing (set to false in policy extension setting)",
+  });
+
+  await assertPrivateBrowsingAccess({
+    addonId: "privatebrowsing-nosetting-nonprivileged@test",
+    extensionSettings: {},
+    expectedPrivateBrowsingAccess: false,
+    message:
+      "Should NOT have access to private browsing (NOT set in policy extension setting)",
+  });
+
+  await assertPrivateBrowsingAccess({
+    addonId: "privatebrowsing-notallowed-nonprivileged@test",
+    extensionSettings: { private_browsing: true },
+    extensionManifest: {
+      incognito: "not_allowed",
+    },
+    expectedPrivateBrowsingAccess: false,
+    message:
+      "incognito 'not_allowed' extensions should NOT have access to private browser",
+  });
+});
+
+add_task(
+  {
+    // Allow insecure (http) update URLs in this test.
+    pref_set: [
+      ["extensions.checkUpdateSecurity", false],
+      // Fake default url where we expect the background update check requests
+      // to be directed to when there isn't an update_url override provided
+      // through the enterprise policies settings.
+      ["extensions.update.background.url", `${BASE_URL}/default_update.json`],
+    ],
+  },
+  async function test_update_url_policy() {
+    const XPI_FROM_DEFAULT_UPDATE_URL = `${BASE_URL}/policy_updating_from_default.xpi`;
+    const XPI_FROM_POLICIES_UPDATE_URL = `${BASE_URL}/policy_updating_from_policies.xpi`;
+
+    const defaultFakeUpdates = [
+      {
+        version: "2.0",
+        update_link: XPI_FROM_DEFAULT_UPDATE_URL,
+      },
+    ];
+    const policiesFakeUpdates = [
+      {
+        version: "2.0",
+        update_link: XPI_FROM_POLICIES_UPDATE_URL,
+      },
+    ];
+
+    let defaultUpdateURLHit = false;
+    let policiesUpdateURLHit = false;
+
+    server.registerPathHandler(
+      "/data/default_update.json",
+      (request, response) => {
+        defaultUpdateURLHit = true;
+        response.setHeader("Content-Type", "application/json");
+        response.write(
+          JSON.stringify({
+            addons: {
+              [addonID]: {
+                updates: defaultFakeUpdates,
+              },
+            },
+          })
+        );
+      }
+    );
+
+    server.registerPathHandler(
+      "/data/policy_update.json",
+      (request, response) => {
+        policiesUpdateURLHit = true;
+        response.setHeader("Content-Type", "application/json");
+        response.write(
+          JSON.stringify({
+            addons: {
+              [addonID]: {
+                updates: policiesFakeUpdates,
+              },
+            },
+          })
+        );
+      }
+    );
+
+    const verifyAddonUpdateCheck = async (expected, msg) => {
+      defaultUpdateURLHit = false;
+      policiesUpdateURLHit = false;
+
+      // Trigger the update check.
+      const updateFound = await AddonTestUtils.promiseFindAddonUpdates(addon);
+
+      Assert.ok(
+        updateFound?.updateAvailable,
+        "Got an add-on update as expected"
+      );
+
+      const actual = {
+        defaultUpdateURLHit,
+        policiesUpdateURLHit,
+        update_link: updateFound?.updateAvailable?.sourceURI.spec,
+      };
+      Assert.deepEqual(actual, expected, msg);
+      await updateFound?.updateAvailable?.cancel();
+    };
+
+    let install = await AddonManager.getInstallForURL(
+      BASE_URL + "/policy_test.xpi"
+    );
+    await install.install();
+    let addon = await AddonManager.getAddonByID(addonID);
+    Assert.notEqual(addon, null, "Addon should be installed");
+
+    info(
+      "Verify add-on update checks default update url before enterprise policies data is set"
+    );
+    // Sanity check (the default add-ons update url is used by default).
+    await verifyAddonUpdateCheck(
+      {
+        defaultUpdateURLHit: true,
+        policiesUpdateURLHit: false,
+        update_link: XPI_FROM_DEFAULT_UPDATE_URL,
+      },
+      "Expect addon update check to have been initially requested on the default update url"
+    );
+
+    info(
+      "Verify add-on update checks default update url on invalid update url in enterprise policies data"
+    );
+    let stopConsoleListener = TestUtils.listenForConsoleMessages();
+    await setupPolicyEngineWithJson({
+      policies: {
+        ExtensionSettings: {
+          [addonID]: {
+            update_url: "not-a-valid-url",
+          },
+        },
+      },
+    });
+    const messages = await stopConsoleListener();
+    const updateURLValidationError = messages.find(
+      msg =>
+        msg.level == "error" &&
+        msg.arguments[0].includes(
+          `Ignoring parameter "not-a-valid-url" - scheme (http or https) must be specified`
+        )
+    );
+    Assert.ok(
+      updateURLValidationError,
+      "Got expected JsonSchemaValidator error for the invalid update_url"
+    );
+
+    await verifyAddonUpdateCheck(
+      {
+        defaultUpdateURLHit: true,
+        policiesUpdateURLHit: false,
+        update_link: XPI_FROM_DEFAULT_UPDATE_URL,
+      },
+      "Expect addon update check to be requested on the default update url on invalid policies update_url"
+    );
+
+    info(
+      "Verify add-on update checks policy overridden update url after enterprise policies data is set"
+    );
+    await setupPolicyEngineWithJson({
+      policies: {
+        ExtensionSettings: {
+          [addonID]: {
+            update_url: `${BASE_URL}/policy_update.json`,
+          },
+        },
+      },
+    });
+    await verifyAddonUpdateCheck(
+      {
+        defaultUpdateURLHit: false,
+        policiesUpdateURLHit: true,
+        update_link: XPI_FROM_POLICIES_UPDATE_URL,
+      },
+      "Expect addon update check hits the custom update url set in the policies data"
+    );
+
+    info(
+      "Verify add-on update checks default update url after enterprise policies update_url is removed"
+    );
+    await setupPolicyEngineWithJson({
+      policies: {
+        ExtensionSettings: {
+          [addonID]: {
+            // Override the addonID setting with a new non-empty object
+            // without the update_url set (an empty object would
+            // not update the settings loaded in the previous step
+            // of this same test).
+            installation_mode: "allowed",
+          },
+        },
+      },
+    });
+    await verifyAddonUpdateCheck(
+      {
+        defaultUpdateURLHit: true,
+        policiesUpdateURLHit: false,
+        update_link: XPI_FROM_DEFAULT_UPDATE_URL,
+      },
+      "Expect addon update check hits the default update url after policies data removal"
+    );
+
+    await addon.uninstall();
+  }
+);

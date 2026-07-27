@@ -23,12 +23,12 @@ import mozilla.components.support.ktx.android.content.hasCamera
 import mozilla.components.support.ktx.android.content.isPermissionGranted
 import mozilla.components.support.ktx.android.view.hideKeyboard
 import mozilla.telemetry.glean.private.NoExtras
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.SyncAuth
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.databinding.FragmentTurnOnSyncBinding
+import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.increaseTapArea
 import org.mozilla.fenix.ext.navigateWithBreadcrumb
@@ -36,7 +36,10 @@ import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 
-class TurnOnSyncFragment : Fragment(), AccountObserver {
+/**
+ * Settings screen allowing users to log into their Firefox account.
+ */
+class TurnOnSyncFragment : Fragment(), AccountObserver, SystemInsetsPaddedFragment {
 
     private val args by navArgs<TurnOnSyncFragmentArgs>()
     private lateinit var interactor: DefaultSyncInteractor
@@ -119,7 +122,7 @@ class TurnOnSyncFragment : Fragment(), AccountObserver {
             pairWithEmailStarted = true
         } else {
             requireComponents.backgroundServices.accountManager.register(this, owner = this)
-            showToolbar(getString(R.string.preferences_sync_2))
+            showToolbar(getString(R.string.preferences_sign_in))
         }
     }
 
@@ -133,11 +136,7 @@ class TurnOnSyncFragment : Fragment(), AccountObserver {
         binding.signInScanButton.setOnClickListener(paringClickListener)
         binding.signInEmailButton.setOnClickListener(signInClickListener)
         binding.signInInstructions.text = HtmlCompat.fromHtml(
-            if (requireContext().settings().allowDomesticChinaFxaServer && Config.channel.isMozillaOnline) {
-                getString(R.string.sign_in_instructions_cn)
-            } else {
-                getString(R.string.sign_in_instructions)
-            },
+            getString(R.string.sign_in_instructions),
             HtmlCompat.FROM_HTML_MODE_LEGACY,
         )
 

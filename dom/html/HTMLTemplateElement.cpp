@@ -1,30 +1,35 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLTemplateElement.h"
-#include "mozilla/dom/HTMLTemplateElementBinding.h"
 
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/HTMLTemplateElementBinding.h"
 #include "mozilla/dom/NameSpaceConstants.h"
 #include "mozilla/dom/ShadowRootBinding.h"
+#include "nsAtom.h"
 #include "nsGenericHTMLElement.h"
 #include "nsGkAtoms.h"
 #include "nsStyleConsts.h"
-#include "nsAtom.h"
 
 NS_IMPL_NS_NEW_HTML_ELEMENT(Template)
 
 namespace mozilla::dom {
 
-static constexpr nsAttrValue::EnumTable kShadowRootModeTable[] = {
+static constexpr nsAttrValue::EnumTableEntry kShadowRootModeTable[] = {
     {"open", ShadowRootMode::Open},
     {"closed", ShadowRootMode::Closed},
-    {nullptr, {}}};
+};
 
-const nsAttrValue::EnumTable* kShadowRootModeDefault = &kShadowRootModeTable[2];
+static constexpr nsAttrValue::EnumTableEntry kSlotAssignmentTable[] = {
+    {"named", SlotAssignmentMode::Named},
+    {"manual", SlotAssignmentMode::Manual},
+};
+
+static constexpr const nsAttrValue::EnumTableEntry* kSlotAssignmentDefault =
+    &kSlotAssignmentTable[0];
 
 HTMLTemplateElement::HTMLTemplateElement(
     already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
@@ -73,6 +78,12 @@ JSObject* HTMLTemplateElement::WrapNode(JSContext* aCx,
   return HTMLTemplateElement_Binding::Wrap(aCx, this, aGivenProto);
 }
 
+void HTMLTemplateElement::GetShadowRootSlotAssignment(
+    nsAString& aResult) const {
+  GetEnumAttr(nsGkAtoms::shadowrootslotassignment, kSlotAssignmentDefault->tag,
+              aResult);
+}
+
 void HTMLTemplateElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
                                        const nsAttrValue* aValue,
                                        const nsAttrValue* aOldValue,
@@ -94,17 +105,37 @@ bool HTMLTemplateElement::ParseAttribute(int32_t aNamespaceID,
                                          const nsAString& aValue,
                                          nsIPrincipal* aMaybeScriptedPrincipal,
                                          nsAttrValue& aResult) {
-  if (aNamespaceID == kNameSpaceID_None &&
-      aAttribute == nsGkAtoms::shadowrootmode) {
-    return aResult.ParseEnumValue(aValue, kShadowRootModeTable, false, nullptr);
+  if (aNamespaceID == kNameSpaceID_None) {
+    if (aAttribute == nsGkAtoms::shadowrootmode) {
+      return aResult.ParseEnumValue(aValue, kShadowRootModeTable, false,
+                                    nullptr);
+    }
+    if (aAttribute == nsGkAtoms::shadowrootslotassignment &&
+        StaticPrefs::dom_shadowdom_shadowRootSlotAssignment_enabled()) {
+      return aResult.ParseEnumValue(aValue, kSlotAssignmentTable, false,
+                                    kSlotAssignmentDefault);
+    }
   }
   return nsGenericHTMLElement::ParseAttribute(aNamespaceID, aAttribute, aValue,
                                               aMaybeScriptedPrincipal, aResult);
 }
 
-void HTMLTemplateElement::SetHTMLUnsafe(const nsAString& aHTML) {
+void HTMLTemplateElement::SetHTML(const nsAString& aHTML,
+                                  const SetHTMLOptions& aOptions,
+                                  ErrorResult& aError) {
   RefPtr<DocumentFragment> content = mContent;
-  nsContentUtils::SetHTMLUnsafe(content, this, aHTML);
+  nsContentUtils::SetHTML(content, this, aHTML, aOptions, aError);
+}
+
+/* https://html.spec.whatwg.org/#dom-element-sethtmlunsafe */
+void HTMLTemplateElement::SetHTMLUnsafe(const TrustedHTMLOrString& aHTML,
+                                        const SetHTMLUnsafeOptions& aOptions,
+                                        nsIPrincipal* aSubjectPrincipal,
+                                        ErrorResult& aError) {
+  RefPtr<DocumentFragment> content = mContent;
+  nsContentUtils::SetHTMLUnsafe(content, this, aHTML, aOptions,
+                                false /*aIsShadowRoot*/, aSubjectPrincipal,
+                                aError);
 }
 
 }  // namespace mozilla::dom

@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Uusi välilehti
     .accesskey = U
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Sulje välilehdet vasemmalla
     .accesskey = v
+close-tabs-to-the-start-vertical =
+    .label = Sulje yläpuolella olevat välilehdet
+    .accesskey = y
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Sulje välilehdet oikealla
     .accesskey = o
+close-tabs-to-the-end-vertical =
+    .label = Sulje alapuolella olevat välilehdet
+    .accesskey = a
 close-other-tabs =
     .label = Sulje muut välilehdet
     .accesskey = m
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Siirrä uuteen ikkunaan
     .accesskey = S
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Siirrä profiiliin { $profileName }
 tab-context-close-multiple-tabs =
     .label = Sulje useita välilehtiä
     .accesskey = t
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Jaa
     .accesskey = J
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Uusi välilehti oikealle
+    .accesskey = o
+tab-context-new-tab-open-vertical =
+    .label = Uusi välilehti alapuolelle
+    .accesskey = p
+tab-context-new-group =
+    .label = Uusi ryhmä
+    .accesskey = r
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -103,6 +127,28 @@ tab-context-move-tabs =
            *[other] Siirrä välilehdet
         }
     .accesskey = r
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Lähetä laitteeseen
+            [one] Lähetä laitteeseen
+           *[other] Lähetä { $tabCount } välilehteä laitteeseen
+        }
+    .accesskey = n
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-mobile =
+    .label =
+        { $tabCount ->
+            [1] Lähetä välilehti mobiililaitteeseen
+            [one] Lähetä { $tabCount } välilehti mobiililaitteeseen
+           *[other] Lähetä { $tabCount } välilehteä mobiililaitteeseen
+        }
+    .accesskey = n
+# Verb: share a collection of selected tabs as a link
+tab-context-share-selected-tabs =
+    .label = Luo jaettava linkki
+    .accesskey = a
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -110,3 +156,11 @@ tab-context-send-tabs-to-device =
            *[other] Lähetä { $tabCount } välilehteä laitteeseen
         }
     .accesskey = L
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Vapauta välilehti muistista
+            [one] Vapauta välilehti muistista
+           *[other] Vapauta { $tabCount } välilehteä muistista
+        }
+    .accesskey = u

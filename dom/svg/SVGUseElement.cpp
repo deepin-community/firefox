@@ -1,32 +1,29 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGUseElement.h"
 
-#include "mozilla/ArrayUtils.h"
+#include "SVGGeometryProperty.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/StaticPrefs_svg.h"
 #include "mozilla/SVGObserverUtils.h"
 #include "mozilla/SVGUseFrame.h"
+#include "mozilla/ScopeExit.h"
+#include "mozilla/StaticPrefs_svg.h"
 #include "mozilla/URLExtraData.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/ElementBinding.h"
 #include "mozilla/dom/ReferrerInfo.h"
-#include "mozilla/dom/ShadowIncludingTreeIterator.h"
 #include "mozilla/dom/SVGGraphicsElement.h"
 #include "mozilla/dom/SVGLengthBinding.h"
-#include "mozilla/dom/SVGSVGElement.h"
 #include "mozilla/dom/SVGSwitchElement.h"
 #include "mozilla/dom/SVGSymbolElement.h"
 #include "mozilla/dom/SVGUseElementBinding.h"
-#include "nsGkAtoms.h"
+#include "mozilla/dom/ShadowIncludingTreeIterator.h"
 #include "nsContentUtils.h"
+#include "nsGkAtoms.h"
 #include "nsIReferrerInfo.h"
 #include "nsIURI.h"
-#include "SVGGeometryProperty.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Use)
 
@@ -42,13 +39,13 @@ JSObject* SVGUseElement::WrapNode(JSContext* aCx,
 
 SVGElement::LengthInfo SVGUseElement::sLengthInfo[4] = {
     {nsGkAtoms::x, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
-     SVGContentUtils::X},
+     SVGLength::Axis::X},
     {nsGkAtoms::y, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
-     SVGContentUtils::Y},
+     SVGLength::Axis::Y},
     {nsGkAtoms::width, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
-     SVGContentUtils::X},
+     SVGLength::Axis::X},
     {nsGkAtoms::height, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
-     SVGContentUtils::Y},
+     SVGLength::Axis::Y},
 };
 
 SVGElement::StringInfo SVGUseElement::sStringInfo[2] = {
@@ -81,8 +78,8 @@ SVGUseElement::SVGUseElement(
     already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
     : SVGUseElementBase(std::move(aNodeInfo)), mReferencedElementTracker(this) {
   SetEnabledCallbacks(kCharacterDataChanged | kAttributeChanged |
-                      kContentAppended | kContentInserted | kContentRemoved |
-                      kNodeWillBeDestroyed);
+                      kContentAppended | kContentInserted |
+                      kContentWillBeRemoved | kNodeWillBeDestroyed);
 }
 
 SVGUseElement::~SVGUseElement() {
@@ -178,7 +175,8 @@ void SVGUseElement::UnbindFromTree(UnbindContext& aContext) {
 }
 
 already_AddRefed<DOMSVGAnimatedString> SVGUseElement::Href() {
-  return mStringAttributes[HREF].IsExplicitlySet()
+  return mStringAttributes[HREF].IsExplicitlySet() ||
+                 !mStringAttributes[XLINK_HREF].IsExplicitlySet()
              ? mStringAttributes[HREF].ToDOMAnimatedString(this)
              : mStringAttributes[XLINK_HREF].ToDOMAnimatedString(this);
 }
@@ -213,7 +211,7 @@ void SVGUseElement::CharacterDataChanged(nsIContent* aContent,
 }
 
 void SVGUseElement::AttributeChanged(Element* aElement, int32_t aNamespaceID,
-                                     nsAtom* aAttribute, int32_t aModType,
+                                     nsAtom* aAttribute, AttrModType,
                                      const nsAttrValue* aOldValue) {
   if (nsContentUtils::IsInSameAnonymousTree(mReferencedElementTracker.get(),
                                             aElement)) {
@@ -221,7 +219,8 @@ void SVGUseElement::AttributeChanged(Element* aElement, int32_t aNamespaceID,
   }
 }
 
-void SVGUseElement::ContentAppended(nsIContent* aFirstNewContent) {
+void SVGUseElement::ContentAppended(nsIContent* aFirstNewContent,
+                                    const ContentAppendInfo&) {
   // FIXME(emilio, bug 1442336): Why does this check the parent but
   // ContentInserted the child?
   if (nsContentUtils::IsInSameAnonymousTree(mReferencedElementTracker.get(),
@@ -230,7 +229,8 @@ void SVGUseElement::ContentAppended(nsIContent* aFirstNewContent) {
   }
 }
 
-void SVGUseElement::ContentInserted(nsIContent* aChild) {
+void SVGUseElement::ContentInserted(nsIContent* aChild,
+                                    const ContentInsertInfo&) {
   // FIXME(emilio, bug 1442336): Why does this check the child but
   // ContentAppended the parent?
   if (nsContentUtils::IsInSameAnonymousTree(mReferencedElementTracker.get(),
@@ -239,8 +239,8 @@ void SVGUseElement::ContentInserted(nsIContent* aChild) {
   }
 }
 
-void SVGUseElement::ContentRemoved(nsIContent* aChild,
-                                   nsIContent* aPreviousSibling) {
+void SVGUseElement::ContentWillBeRemoved(nsIContent* aChild,
+                                         const ContentRemoveInfo&) {
   if (nsContentUtils::IsInSameAnonymousTree(mReferencedElementTracker.get(),
                                             aChild)) {
     TriggerReclone();
@@ -295,8 +295,9 @@ auto SVGUseElement::ScanAncestors(const Element& aTarget) const -> ScanResult {
   return ScanAncestorsInternal(aTarget, count);
 }
 
-auto SVGUseElement::ScanAncestorsInternal(
-    const Element& aTarget, uint32_t& aCount) const -> ScanResult {
+auto SVGUseElement::ScanAncestorsInternal(const Element& aTarget,
+                                          uint32_t& aCount) const
+    -> ScanResult {
   if (&aTarget == this) {
     return ScanResult::CyclicReference;
   }
@@ -416,7 +417,9 @@ void SVGUseElement::UpdateShadowTree() {
 
   RefPtr<ShadowRoot> shadow = GetShadowRoot();
   if (!shadow) {
-    shadow = AttachShadowWithoutNameChecks(ShadowRootMode::Closed);
+    ShadowRootInit init;
+    init.mMode = ShadowRootMode::Closed;
+    shadow = AttachShadowWithoutNameChecks(init);
   }
   MOZ_ASSERT(shadow);
 
@@ -453,7 +456,7 @@ void SVGUseElement::UpdateShadowTree() {
     const bool isCrossDocument = targetElement->OwnerDoc() != OwnerDoc();
 
     nsNodeInfoManager* nodeInfoManager =
-        isCrossDocument ? OwnerDoc()->NodeInfoManager() : nullptr;
+        isCrossDocument ? NodeInfoManager() : nullptr;
 
     nsCOMPtr<nsINode> newNode =
         targetElement->Clone(true, nodeInfoManager, IgnoreErrors());
@@ -484,22 +487,23 @@ void SVGUseElement::UpdateShadowTree() {
   targetElement->AddMutationObserver(this);
 }
 
-nsIURI* SVGUseElement::GetSourceDocURI() {
+Document* SVGUseElement::GetSourceDocument() const {
   nsIContent* targetElement = mReferencedElementTracker.get();
-  if (!targetElement) {
-    return nullptr;
-  }
-
-  return targetElement->OwnerDoc()->GetDocumentURI();
+  return targetElement ? targetElement->OwnerDoc() : nullptr;
 }
 
-const Encoding* SVGUseElement::GetSourceDocCharacterSet() {
-  nsIContent* targetElement = mReferencedElementTracker.get();
-  if (!targetElement) {
-    return nullptr;
+nsIURI* SVGUseElement::GetSourceDocURI() const {
+  if (auto* doc = GetSourceDocument()) {
+    return doc->GetDocumentURI();
   }
+  return nullptr;
+}
 
-  return targetElement->OwnerDoc()->GetDocumentCharacterSet();
+const Encoding* SVGUseElement::GetSourceDocCharacterSet() const {
+  if (auto* doc = GetSourceDocument()) {
+    return doc->GetDocumentCharacterSet();
+  }
+  return nullptr;
 }
 
 static nsINode* GetClonedChild(const SVGUseElement& aUseElement) {
@@ -543,7 +547,7 @@ void SVGUseElement::SyncWidthOrHeight(nsAtom* aName) {
   // Our width/height attribute is now no longer explicitly set, so we
   // need to set the value to 100%
   SVGAnimatedLength length;
-  length.Init(SVGContentUtils::XY, 0xff, 100,
+  length.Init(SVGLength::Axis::XY, 0xff, 100,
               SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE);
   target->SetLength(aName, length);
 }
@@ -562,7 +566,7 @@ void SVGUseElement::LookupHref() {
 
   Element* treeToWatch = mOriginal ? mOriginal.get() : this;
   if (nsContentUtils::IsLocalRefURL(href)) {
-    mReferencedElementTracker.ResetWithLocalRef(*treeToWatch, href);
+    mReferencedElementTracker.ResetToLocalFragmentID(*treeToWatch, href);
     return;
   }
 
@@ -576,15 +580,14 @@ void SVGUseElement::LookupHref() {
 
   // Don't allow <use href="data:...">. Using "#ref" inside a data: document is
   // handled above.
-  if (targetURI->SchemeIs("data") &&
-      !StaticPrefs::svg_use_element_data_url_href_allowed()) {
+  if (targetURI->SchemeIs("data")) {
     return;
   }
 
   nsIReferrerInfo* referrer =
       OwnerDoc()->ReferrerInfoForInternalCSSAndSVGResources();
-  mReferencedElementTracker.ResetToURIFragmentID(treeToWatch, targetURI,
-                                                 referrer);
+  mReferencedElementTracker.ResetToURIWithFragmentID(*treeToWatch, targetURI,
+                                                     referrer);
 }
 
 void SVGUseElement::TriggerReclone() {
@@ -604,29 +607,12 @@ void SVGUseElement::UnlinkSource() {
 // SVGElement methods
 
 /* virtual */
-gfxMatrix SVGUseElement::PrependLocalTransformsTo(
-    const gfxMatrix& aMatrix, SVGTransformTypes aWhich) const {
-  if (aWhich == eUserSpaceToParent) {
-    return aMatrix;
-  }
-
-  // our 'x' and 'y' attributes:
+gfxMatrix SVGUseElement::ChildToUserSpaceTransform() const {
   float x, y;
   if (!SVGGeometryProperty::ResolveAll<SVGT::X, SVGT::Y>(this, &x, &y)) {
     const_cast<SVGUseElement*>(this)->GetAnimatedLengthValues(&x, &y, nullptr);
   }
-
-  gfxMatrix childToUser = gfxMatrix::Translation(x, y);
-  MOZ_ASSERT(aWhich == eChildToUserSpace || aWhich == eAllTransforms,
-             "Unknown TransformTypes");
-  // The following may look broken because pre-multiplying our eChildToUserSpace
-  // transform with another matrix without including our eUserSpaceToParent
-  // transform between the two wouldn't make sense.  We don't expect that to
-  // ever happen though.  We get here either when the identity matrix has been
-  // passed because our caller just wants our eChildToUserSpace transform, or
-  // when our eUserSpaceToParent transform has already been multiplied into the
-  // matrix that our caller passes (such as when we're called from PaintSVG).
-  return childToUser * aMatrix;
+  return gfxMatrix::Translation(x, y);
 }
 
 /* virtual */
@@ -643,12 +629,12 @@ bool SVGUseElement::HasValidDimensions() const {
 
 SVGElement::LengthAttributesInfo SVGUseElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 SVGElement::StringAttributesInfo SVGUseElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 SVGUseFrame* SVGUseElement::GetFrame() const {
@@ -671,7 +657,8 @@ SVGUseElement::IsAttributeMapped(const nsAtom* name) const {
          SVGUseElementBase::IsAttributeMapped(name);
 }
 
-nsCSSPropertyID SVGUseElement::GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum) {
+NonCustomCSSPropertyId SVGUseElement::GetCSSPropertyIdForAttrEnum(
+    uint8_t aAttrEnum) {
   switch (aAttrEnum) {
     case ATTR_X:
       return eCSSProperty_x;

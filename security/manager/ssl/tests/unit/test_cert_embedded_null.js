@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -30,7 +29,7 @@ async function do_testcase(certname, checkCommonName) {
     certdb,
     cert,
     SSL_ERROR_BAD_CERT_DOMAIN,
-    certificateUsageSSLServer,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
     undefined,
     "www.bank1.com"
   );
@@ -38,7 +37,7 @@ async function do_testcase(certname, checkCommonName) {
     certdb,
     cert,
     SSL_ERROR_BAD_CERT_DOMAIN,
-    certificateUsageSSLServer,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
     undefined,
     "www.bad-guy.com"
   );

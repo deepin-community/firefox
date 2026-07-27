@@ -4,15 +4,16 @@
 
 package mozilla.components.lib.crash
 
-import android.app.ActivityOptions
-import android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.BadParcelableException
 import android.os.Build
 import androidx.annotation.StyleRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,9 +21,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mozilla.components.concept.base.crash.Breadcrumb
 import mozilla.components.concept.base.crash.CrashReporting
+import mozilla.components.lib.crash.CrashReporter.Companion.requireInstance
 import mozilla.components.lib.crash.db.CrashDatabase
+import mozilla.components.lib.crash.db.forceSerializable
 import mozilla.components.lib.crash.db.insertCrashSafely
 import mozilla.components.lib.crash.db.insertReportSafely
+import mozilla.components.lib.crash.db.toCrash
 import mozilla.components.lib.crash.db.toEntity
 import mozilla.components.lib.crash.db.toReportEntity
 import mozilla.components.lib.crash.handler.ExceptionHandler
@@ -32,7 +36,6 @@ import mozilla.components.lib.crash.service.CrashReporterService
 import mozilla.components.lib.crash.service.CrashTelemetryService
 import mozilla.components.lib.crash.service.SendCrashReportService
 import mozilla.components.lib.crash.service.SendCrashTelemetryService
-import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.log.logger.Logger
 
 /**
@@ -56,6 +59,15 @@ private class BreadcrumbList(val maxBreadCrumbs: Int) {
         breadcrumbs.add(breadcrumb)
     }
 }
+
+/**
+ * When we turned on the new crash reporting dialog flow, the number of old unsent crashes being sent
+ * in on nightly was unexpectedly high. In order to avoid an unmanageable volume when we turned the
+ * feature on in the Release channel, we decided to only send crashes that were as new as the feature
+ * itself.
+ * This timestamp is equivalent to Mon Aug 18 2025 00:00:00 GMT+0000
+ */
+private const val START_OF_144_NIGHTLY_TIMESTAMP = 1755475200000L
 
 /**
  *
@@ -84,21 +96,54 @@ private class BreadcrumbList(val maxBreadCrumbs: Int) {
  * @param nonFatalCrashIntent A [PendingIntent] that will be launched if a non fatal crash (main process not affected)
  *                            happened. This gives the app the opportunity to show an in-app confirmation UI before
  *                            sending a crash report. See component README for details.
+ * @param useLegacyReporting Enable/Disable handling crash reporting through a notification or system dialog.
  */
-class CrashReporter(
-    context: Context,
+class CrashReporter internal constructor(
     private val services: List<CrashReporterService> = emptyList(),
     private val telemetryServices: List<CrashTelemetryService> = emptyList(),
     private val shouldPrompt: Prompt = Prompt.NEVER,
-    var enabled: Boolean = true,
+    enabled: Boolean = true,
     internal val promptConfiguration: PromptConfiguration = PromptConfiguration(),
     private val nonFatalCrashIntent: PendingIntent? = null,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
     private val maxBreadCrumbs: Int = 30,
-    private val notificationsDelegate: NotificationsDelegate,
     private val runtimeTagProviders: List<RuntimeTagProvider> = emptyList(),
+    databaseProvider: () -> CrashDatabase,
+    private val useLegacyReporting: Boolean = true,
 ) : CrashReporting {
-    private val database: CrashDatabase by lazy { CrashDatabase.get(context) }
+
+    constructor(
+        context: Context,
+        services: List<CrashReporterService> = emptyList(),
+        telemetryServices: List<CrashTelemetryService> = emptyList(),
+        shouldPrompt: Prompt = Prompt.NEVER,
+        enabled: Boolean = true,
+        promptConfiguration: PromptConfiguration = PromptConfiguration(),
+        nonFatalCrashIntent: PendingIntent? = null,
+        mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+        scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
+        maxBreadCrumbs: Int = 30,
+        runtimeTagProviders: List<RuntimeTagProvider> = emptyList(),
+        useLegacyReporting: Boolean = true,
+    ) : this(
+        services = services,
+        telemetryServices = telemetryServices,
+        shouldPrompt = shouldPrompt,
+        enabled = enabled,
+        promptConfiguration = promptConfiguration,
+        nonFatalCrashIntent = nonFatalCrashIntent,
+        mainDispatcher = mainDispatcher,
+        scope = scope,
+        maxBreadCrumbs = maxBreadCrumbs,
+        runtimeTagProviders = runtimeTagProviders,
+        databaseProvider = { CrashDatabase.get(context) },
+        useLegacyReporting = useLegacyReporting,
+    )
+
+    var enabled: Boolean = enabled
+
+    private val database: CrashDatabase by lazy { databaseProvider() }
 
     internal val logger = Logger("mozac/CrashReporter")
 
@@ -109,15 +154,18 @@ class CrashReporter(
         get() = runtimeTagProviders.fold(emptyMap()) { acc, provider -> acc + provider() }
 
     init {
-        if (services.isEmpty() and telemetryServices.isEmpty()) {
-            throw IllegalArgumentException("No crash reporter services defined")
+        require(services.isNotEmpty() || telemetryServices.isNotEmpty()) {
+            "No crash reporter services defined"
         }
     }
 
     /**
      * Install this [CrashReporter] instance. At this point the component will be setup to collect crash reports.
      */
-    fun install(applicationContext: Context): CrashReporter {
+    fun install(
+        applicationContext: Context,
+        handleCaughtExceptionSideEffects: (() -> Unit)? = null,
+    ): CrashReporter {
         instance = this
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
@@ -125,10 +173,43 @@ class CrashReporter(
             context = applicationContext,
             crashReporter = this,
             defaultExceptionHandler = defaultHandler,
+            handleCaughtException = handleCaughtExceptionSideEffects,
         )
         Thread.setDefaultUncaughtExceptionHandler(handler)
 
         return this
+    }
+
+    /**
+     * Checks to see if there are any unsent crash reports since the provided [timestampMillis].
+     *
+     * @param timestampMillis Timestamp in milliseconds to retrieve reports after. Defaults to the start
+     * of the Fenix 134 cycle when this feature went live.
+     */
+    suspend fun hasUnsentCrashReportsSince(timestampMillis: Long = START_OF_144_NIGHTLY_TIMESTAMP): Boolean {
+        return database.crashDao().numberOfUnsentCrashesSince(timestampMillis) > 0
+    }
+
+    /**
+     * Fetches crash reports that were created after [timestampMillis] from the crash reporter that
+     * have not been sent.
+     *
+     * @param timestampMillis Timestamp in milliseconds to retrieve reports after. Defaults to the start
+     * of the Fenix 134 cycle when this feature went live.
+     */
+    suspend fun unsentCrashReportsSince(timestampMillis: Long = START_OF_144_NIGHTLY_TIMESTAMP): List<Crash> {
+        return database.crashDao().getCrashesWithoutReportsSince(timestampMillis)
+            .map { it.toCrash() }
+    }
+
+    /**
+     * Fetches specific crash reports that are identified by they ID.
+     *
+     * @param crashIDs The list of strings representing the crash IDs to find.
+     */
+    suspend fun findCrashReports(crashIDs: Array<String>): List<Crash> {
+        return database.crashDao().getCrashesFromID(crashIDs)
+            .map { it.toCrash() }
     }
 
     /**
@@ -159,7 +240,7 @@ class CrashReporter(
             }
 
             logger.info("Crash report submitted to ${services.size} services")
-            withContext(Dispatchers.Main) {
+            withContext(mainDispatcher) {
                 then()
             }
         }
@@ -178,7 +259,7 @@ class CrashReporter(
             }
 
             logger.info("Crash report submitted to ${telemetryServices.size} telemetry services")
-            withContext(Dispatchers.Main) {
+            withContext(mainDispatcher) {
                 then()
             }
         }
@@ -219,6 +300,13 @@ class CrashReporter(
     }
 
     /**
+     * Set whether telemetry has been enabled.
+     */
+    fun setTelemetryEnabled(enabled: Boolean) {
+        telemetryServices.forEach { it.setTelemetryEnabled(enabled) }
+    }
+
+    /**
      * Called when a crash occurs. The crash information will be persisted locally along with
      * relevant runtime tags, and this function will decide whether to send a report automatically,
      * prompt the user to send a report, or do nothing.
@@ -245,6 +333,12 @@ class CrashReporter(
             return
         }
 
+        // If an application chooses to handle crash reporting themselves they will want to opt-out
+        // of showing a prompt or notification.
+        if (!useLegacyReporting) {
+            return
+        }
+
         if (services.isNotEmpty()) {
             if (CrashPrompt.shouldPromptForCrash(shouldPrompt, crashWithTags)) {
                 showPromptOrNotification(context, crashWithTags)
@@ -264,9 +358,6 @@ class CrashReporter(
             val onFinished = null
             val handler = null
             val requiredPermission = null
-            val activityOptions = ActivityOptions.makeBasic()
-            activityOptions.pendingIntentBackgroundActivityStartMode =
-                MODE_BACKGROUND_ACTIVITY_START_ALLOWED
 
             nonFatalCrashIntent?.send(
                 context,
@@ -275,14 +366,13 @@ class CrashReporter(
                 onFinished,
                 handler,
                 requiredPermission,
-                activityOptions.toBundle(),
             )
         } else {
             nonFatalCrashIntent?.send(context, 0, additionalIntent)
         }
     }
 
-    private fun showPromptOrNotification(context: Context, crash: Crash) {
+    internal fun showPromptOrNotification(context: Context, crash: Crash) {
         if (services.isEmpty()) {
             return
         }
@@ -302,18 +392,56 @@ class CrashReporter(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun showNotification(context: Context, crash: Crash) {
-        val notification = CrashNotification(context, crash, promptConfiguration, notificationsDelegate)
+        val notification = CrashNotification(context, crash, promptConfiguration)
         notification.show()
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun sendCrashReport(context: Context, crash: Crash) {
+    internal fun sendCrashReport(context: Context, crash: Crash) = try {
         ContextCompat.startForegroundService(context, SendCrashReportService.createReportIntent(context, crash))
+    } catch (e: BadParcelableException) {
+        (crash as? Crash.UncaughtExceptionCrash)?.let {
+            // We may end up with a throwable that isn't completely serializable, which will cause
+            // a crash when the service tries to unbundle it.
+            val updatedCrash = it.copy(throwable = it.throwable.forceSerializable())
+            ContextCompat.startForegroundService(
+                context,
+                SendCrashReportService.createReportIntent(context, updatedCrash),
+            )
+            logger.warn("replaced throwable for crash that could not be serialized")
+        }
+    } catch (e: IllegalStateException) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S &&
+            e is ForegroundServiceStartNotAllowedException
+        ) {
+            logger.warn("ignored failed service start while backgrounded")
+        } else {
+            throw e
+        }
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun sendCrashTelemetry(context: Context, crash: Crash) {
+    internal fun sendCrashTelemetry(context: Context, crash: Crash) = try {
         ContextCompat.startForegroundService(context, SendCrashTelemetryService.createReportIntent(context, crash))
+    } catch (e: BadParcelableException) {
+        (crash as? Crash.UncaughtExceptionCrash)?.let {
+            // We may end up with a throwable that isn't completely serializable, which will cause
+            // a crash when the service tries to unbundle it.
+            val updatedCrash = it.copy(throwable = it.throwable.forceSerializable())
+            ContextCompat.startForegroundService(
+                context,
+                SendCrashTelemetryService.createReportIntent(context, updatedCrash),
+            )
+            logger.warn("replaced throwable for crash that could not be serialized")
+        }
+    } catch (e: IllegalStateException) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S &&
+            e is ForegroundServiceStartNotAllowedException
+        ) {
+            logger.warn("ignored failed service start while backgrounded")
+        } else {
+            throw e
+        }
     }
 
     @VisibleForTesting
@@ -331,7 +459,8 @@ class CrashReporter(
             // and can notify the app. Background child process crashes will be recovered from
             // automatically, and main process crashes cannot be recovered from, so we do not
             // send the intent for those.
-            crash is Crash.NativeCodeCrash && crash.processType == Crash.NativeCodeCrash.PROCESS_TYPE_FOREGROUND_CHILD
+            crash is Crash.NativeCodeCrash &&
+                crash.processVisibility == Crash.NativeCodeCrash.PROCESS_VISIBILITY_FOREGROUND_CHILD
         }
     }
 
@@ -363,22 +492,52 @@ class CrashReporter(
         internal val appName: String = "App",
         internal val organizationName: String = "Mozilla",
         internal val message: String? = null,
-        @StyleRes internal val theme: Int = R.style.Theme_Mozac_CrashReporter,
+        @param:StyleRes internal val theme: Int = R.style.Theme_Mozac_CrashReporter,
     )
 
     companion object {
         @Volatile
         private var instance: CrashReporter? = null
 
+        private var deferredInitializer: (() -> CrashReporter)? = null
+
         @VisibleForTesting
         internal fun reset() {
             instance = null
+            deferredInitializer = null
+        }
+
+        /**
+         * Register a deferred initializer that will be called lazily when [requireInstance] is accessed.
+         * This allows processes to register crash reporting setup without immediately initializing
+         * the CrashReporter and its dependencies.
+         *
+         * Note: This will not register the [Thread.UncaughtExceptionHandler] and is primarily for
+         * cases where we access the crash database or uploader.
+         *
+         * @param initializer A function that returns a configured and installed CrashReporter instance.
+         */
+        fun registerDeferredInitializer(initializer: () -> CrashReporter) = synchronized(this) {
+            deferredInitializer = initializer
         }
 
         internal val requireInstance: CrashReporter
-            get() = instance ?: throw IllegalStateException(
-                "You need to call install() on your CrashReporter instance from Application.onCreate().",
-            )
+            get() = synchronized(this) {
+                instance?.let { return it }
+
+                deferredInitializer?.let { initializer ->
+                    return initializer().also {
+                        it.logger.info("Ran deferred CrashReporter initializer")
+                        instance = it
+                        deferredInitializer = null
+                    }
+                }
+
+                throw IllegalStateException(
+                    "You need to call install() or registerDeferredInitializer() on your" +
+                        " CrashReporter from Application.onCreate().",
+                )
+            }
     }
 }
 

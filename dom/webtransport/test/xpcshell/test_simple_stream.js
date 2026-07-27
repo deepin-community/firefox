@@ -17,7 +17,6 @@ var host;
 registerCleanupFunction(async () => {
   Services.prefs.clearUserPref("network.dns.localDomains");
   Services.prefs.clearUserPref("network.webtransport.enabled");
-  Services.prefs.clearUserPref("network.webtransport.datagrams.enabled");
   Services.prefs.clearUserPref("network.webtransport.redirect.enabled");
 });
 
@@ -47,7 +46,6 @@ function addCertFromFile(certdb, filename, trustString) {
 add_setup(async function setup() {
   Services.prefs.setCharPref("network.dns.localDomains", "foo.example.com");
   Services.prefs.setBoolPref("network.webtransport.enabled", true);
-  Services.prefs.setBoolPref("network.webtransport.datagrams.enabled", true);
   Services.prefs.setBoolPref("network.webtransport.redirect.enabled", true);
 
   h3Port = Services.env.get("MOZHTTP3_PORT");
@@ -166,5 +164,20 @@ add_task(async function test_wt_incoming_bidi_stream() {
   const str = await read_stream_as_string(bidi_stream.readable);
   Assert.equal(str, "asdfg");
 
+  wt.close();
+});
+
+add_task(async function test_wt_incoming_bidi_stream_huge_data() {
+  let wt = new WebTransport(
+    "https://" + host + "/create_bidi_stream_and_large_data"
+  );
+  // await wt.ready; // causes occasional hang on release --verify
+
+  const stream_reader = wt.incomingBidirectionalStreams.getReader();
+  const { value: bidi_stream } = await stream_reader.read();
+  stream_reader.releaseLock();
+
+  const str = await read_stream_as_string(bidi_stream.readable);
+  Assert.equal(str.length, 32 * 1024 * 1024);
   wt.close();
 });

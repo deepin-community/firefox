@@ -39,6 +39,10 @@ const {
   },
 } = require("resource://devtools/shared/constants.js");
 
+const { getMdnLinkParams } = ChromeUtils.importESModule(
+  "resource://devtools/shared/mdn.mjs"
+);
+
 // Used in accessible component for properties tree rendering.
 exports.TREE_ROW_HEIGHT = 21;
 
@@ -112,22 +116,19 @@ exports.ACCESSIBLE_EVENTS = [
   "index-in-parent-change",
 ];
 
-// Telemetry name constants.
-exports.A11Y_SERVICE_DURATION =
-  "DEVTOOLS_ACCESSIBILITY_SERVICE_TIME_ACTIVE_SECONDS";
-
 // URL constants
 exports.A11Y_LEARN_MORE_LINK =
   "https://firefox-source-docs.mozilla.org/devtools-user/accessibility_inspector/";
 exports.A11Y_CONTRAST_LEARN_MORE_LINK =
-  "https://developer.mozilla.org/docs/Web/Accessibility/Understanding_WCAG/Perceivable/" +
-  "Color_contrast?utm_source=devtools&utm_medium=a11y-panel-checks-color-contrast";
+  "https://developer.mozilla.org/docs/Web/Accessibility/Guides/Understanding_WCAG/Perceivable/" +
+  "Color_contrast?" +
+  getMdnLinkParams("a11y-panel-checks-color-contrast");
 exports.A11Y_SIMULATION_DOCUMENTATION_LINK =
   "https://firefox-source-docs.mozilla.org/devtools-user/accessibility_inspector/simulation/";
 
 const A11Y_TEXT_LABEL_LINK_BASE =
-  "https://developer.mozilla.org/docs/Web/Accessibility/Understanding_WCAG/Text_labels_and_names" +
-  "?utm_source=devtools&utm_medium=a11y-panel-checks-text-label";
+  "https://developer.mozilla.org/docs/Web/Accessibility/Guides/Understanding_WCAG/Text_labels_and_names?" +
+  getMdnLinkParams("a11y-panel-checks-text-label");
 
 const A11Y_TEXT_LABEL_LINK_IDS = {
   [AREA_NO_NAME_FROM_ALT]:
@@ -155,15 +156,14 @@ const A11Y_TEXT_LABEL_LINK_IDS = {
 
 const A11Y_TEXT_LABEL_LINKS = {};
 for (const key in A11Y_TEXT_LABEL_LINK_IDS) {
-  A11Y_TEXT_LABEL_LINKS[
-    key
-  ] = `${A11Y_TEXT_LABEL_LINK_BASE}#${A11Y_TEXT_LABEL_LINK_IDS[key]}`;
+  A11Y_TEXT_LABEL_LINKS[key] =
+    `${A11Y_TEXT_LABEL_LINK_BASE}#${A11Y_TEXT_LABEL_LINK_IDS[key]}`;
 }
 exports.A11Y_TEXT_LABEL_LINKS = A11Y_TEXT_LABEL_LINKS;
 
 const A11Y_KEYBOARD_LINK_BASE =
-  "https://developer.mozilla.org/docs/Web/Accessibility/Understanding_WCAG/Keyboard" +
-  "?utm_source=devtools&utm_medium=a11y-panel-checks-keyboard";
+  "https://developer.mozilla.org/docs/Web/Accessibility/Guides/Understanding_WCAG/Keyboard?" +
+  getMdnLinkParams("a11y-panel-checks-keyboard");
 
 const A11Y_KEYBOARD_LINK_IDS = {
   [FOCUSABLE_NO_SEMANTICS]:
@@ -180,9 +180,8 @@ const A11Y_KEYBOARD_LINK_IDS = {
 
 const A11Y_KEYBOARD_LINKS = {};
 for (const key in A11Y_KEYBOARD_LINK_IDS) {
-  A11Y_KEYBOARD_LINKS[
-    key
-  ] = `${A11Y_KEYBOARD_LINK_BASE}#${A11Y_KEYBOARD_LINK_IDS[key]}`;
+  A11Y_KEYBOARD_LINKS[key] =
+    `${A11Y_KEYBOARD_LINK_BASE}#${A11Y_KEYBOARD_LINK_IDS[key]}`;
 }
 exports.A11Y_KEYBOARD_LINKS = A11Y_KEYBOARD_LINKS;
 

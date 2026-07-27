@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Sûnder websitetracking kopiearje
-    .accesskey = n
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Skjinne keppeling kopiearje
+    .accesskey = k
 text-action-paste =
     .label = Plakke
     .accesskey = P
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Fuortsmite
     .accesskey = F
+text-action-reveal-password =
+    .label = Wachtwurd toane
+    .accesskey = u
 text-action-select-all =
     .label = Alles selektearje
     .accesskey = A
@@ -64,3 +68,26 @@ text-action-search-text-box-clear =
     .title = Wiskje
 text-action-highlight-selection =
     .label = Seleksje markearje
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Opmerking oan seleksje tafoegje
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Keppeling nei markearring kopiearje
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Skjinne keppeling nei markearring kopiearje
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Markearring fuortsmite
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Alle markearringen fuortsmite
+profile-window-menu-edit =
+    .label = Bewurkje
+    .accesskey = w

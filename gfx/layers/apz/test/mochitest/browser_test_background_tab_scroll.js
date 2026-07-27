@@ -1,3 +1,9 @@
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function test_main() {
   // Load page in the background. This will cause the first-paint of the
   // tab (which has ScrollPositionUpdate instances) to get sent to the
@@ -16,7 +22,7 @@ add_task(async function test_main() {
   dump("Switched background tab to foreground\n");
 
   // Verify main-thread scroll position is where we expect
-  let scrollPos = await ContentTask.spawn(browser, null, function () {
+  let scrollPos = await SpecialPowers.spawn(browser, [], function () {
     return content.window.scrollY;
   });
   is(scrollPos, 5000, "Expected background tab to be at scroll pos 5000");
@@ -51,7 +57,7 @@ add_task(async function test_main() {
     );
     return content.window.scrollY;
   };
-  scrollPos = await ContentTask.spawn(browser, null, contentScrollFunction);
+  scrollPos = await SpecialPowers.spawn(browser, [], contentScrollFunction);
 
   // Verify main-thread scroll position has changed
   ok(

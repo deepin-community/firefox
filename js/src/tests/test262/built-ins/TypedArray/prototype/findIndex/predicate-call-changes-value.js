@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -26,12 +25,12 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var arr = [10, 20, 30];
   var sample;
   var result;
 
-  sample = new TA(3);
+  sample = new TA(makeCtorArg(3));
   sample.findIndex(function(val, i) {
     sample[i] = arr[i];
 

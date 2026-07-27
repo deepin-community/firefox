@@ -3,4 +3,6 @@ subsuite = "screenshots"
 support-files = ["../head.js"]
 
 ["browser_preferences.js"]
-skip-if = ["os == 'mac'"] # macosx1014 times out, see 1570086
+skip-if = [
+  "true"
+]

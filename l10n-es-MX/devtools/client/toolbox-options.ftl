@@ -10,19 +10,15 @@
 
 # The heading
 options-select-default-tools-label = Herramientas de desarrollador predeterminadas
-
 # The label for the explanation of the * marker on a tool which is currently not supported
 # for the target of the toolbox.
 options-tool-not-supported-label = * No soportado en la actual caja de herramientas
-
 # The label for the heading of group of checkboxes corresponding to the developer tools
 # added by add-ons. This heading is hidden when there is no developer tool installed by add-ons.
 options-select-additional-tools-label = Herramientas de desarrollador instaladas por complementos
-
 # The label for the heading of group of checkboxes corresponding to the default developer
 # tool buttons.
 options-select-enabled-toolbox-buttons-label = Botones disponibles en la caja de herramientas
-
 # The label for the heading of the radiobox corresponding to the theme
 options-select-dev-tools-theme-label = Temas
 
@@ -30,27 +26,36 @@ options-select-dev-tools-theme-label = Temas
 
 # The heading
 options-context-inspector = Inspector
-
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = Mostrar estilos de navegador
 options-show-user-agent-styles-tooltip =
     .title = Activar esto mostrará los estilos por defecto que se cargan por el navegador.
-
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Mostrar Shadow DOM del navegador
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Al activar esta opción, se mostrarán los elementos Shadow DOM gestionados por el navegador.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Truncar atributos DOM
 options-collapse-attrs-tooltip =
     .title = Truncar atributos largos en el inspector
-
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Mostrar comentario
+options-show-comments-tooltip =
+    .title = Mostrar nodos de comentarios en el inspector
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Haz clic y arrastra para editar los valores de tamaño
 options-inspector-draggable-properties-tooltip =
     .title = Haz clic y arrastra para editar los valores de tamaño en la vista de reglas del inspector.
-
 # The label for the checkbox option to enable simplified highlighting on page elements
 # within the inspector for users who enabled prefers-reduced-motion = reduce
 options-inspector-simplified-highlighters-label = Usa resaltadores más simples con prefers-reduced-motion
 options-inspector-simplified-highlighters-tooltip =
     .title = Habilita resaltadores simplificados cuando se habilita prefers-reduced-motion. Dibuja líneas en lugar de rectángulos rellenados alrededor de los elementos resaltados para evitar efectos de parpadeo.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Pasar el foco a la siguiente entrada con <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Cuando está habilitado, al presionar la tecla Enter al editar un selector, el nombre o el valor de una propiedad, se moverá el foco a la siguiente entrada.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -62,11 +67,19 @@ options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nombres del color
 
+## Web Console section
+
+# The heading
+options-webconsole-label = Consola web
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Habilitar consola dividida
+options-webconsole-split-console-tooltip =
+    .title = Abrir la consola dividida con la tecla Escape
+
 ## Style Editor section
 
 # The heading
 options-styleeditor-label = Editor de estilos
-
 # The label for the checkbox that toggles autocompletion of css in the Style Editor
 options-stylesheet-autocompletion-label = Autocompletar CSS
 options-stylesheet-autocompletion-tooltip =
@@ -76,12 +89,10 @@ options-stylesheet-autocompletion-tooltip =
 
 # The heading
 options-screenshot-label = Comportamiento de la captura de pantalla
-
 # Label for the checkbox that toggles screenshot to clipboard feature
 options-screenshot-clipboard-only-label = Captura de pantalla solo al portapapeles
 options-screenshot-clipboard-tooltip2 =
     .title = Guarda la captura de pantalla directamente en el portapapeles
-
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Reproducir el sonido del obturador de la cámara
 options-screenshot-audio-tooltip =
@@ -91,7 +102,6 @@ options-screenshot-audio-tooltip =
 
 # The heading
 options-sourceeditor-label = Preferencias de Editor
-
 options-sourceeditor-detectindentation-tooltip =
     .title = Adivina la sangría basada en contenido de la fuente
 options-sourceeditor-detectindentation-label = Sangrado detectado
@@ -105,45 +115,93 @@ options-sourceeditor-tabsize-label = Tamaño de la pestaña
 options-sourceeditor-keybinding-label = Combinaciones de teclas
 options-sourceeditor-keybinding-default-label = Predeterminado
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Modo local
+options-local-mode-only-work-locally = El modo local solo funciona localmente y se desactiva al depurar contextos remotos.
+options-local-mode-behavior = El modo local te permite cargar archivos locales a través de URL https sin ninguna dependencia externa. Las URL solo se pueden cargar desde pestañas que tengan las DevTools abiertas.
+options-local-mode-domain-label = Dominio personalizado:
+options-local-mode-origin-input =
+    .placeholder = Origen para el mapeo local
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Este origen entra en conflicto con otro mapeo existente.
+options-local-mode-origin-invalid = Este origen no es válido
+options-local-mode-folder-label = Carpeta local:
+options-local-mode-choose-folder = Buscar…
+    .title = Elige una carpeta local para vincular este mapeo
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Elige la carpeta de modo local para: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Esta carpeta no existe o no es válida.
+options-local-mode-toggle =
+    .title = Alterna este mapeo local
+options-local-mode-toggle-enable = Habilitar
+options-local-mode-toggle-disable = Deshabilitar
+options-local-mode-navigate-to =
+    .title = Ir a la URL de este mapeo
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = ¿Quieres eliminar el mapeo “{ $mappingOrigin }”?
+options-local-mode-new-mapping = Agregar un nuevo mapeo local
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
-options-context-advanced-settings = Configuración avanzada
-
+options-context-advanced-settings = Ajustes avanzados
 # The label for the checkbox that toggles the HTTP cache on or off
 options-disable-http-cache-label = Desactivar caché HTTP (cuando la caja de herramientas esté abierta)
 options-disable-http-cache-tooltip =
     .title = Habilitar esta opción deshabilitará el caché HTTP para todas las pestañas que tengan la caja de herramientas abierta. Los Service Workers no están afectados por esta opción.
-
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Deshabilitar JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Deshabilitar JavaScript *
 options-disable-javascript-tooltip =
     .title = Usando esta opción deshabilitará JavaScript para la pestaña actual. Si la pestaña o la caja de herramientas se cierra entonces esta configuración se deshabilitará.
-
 # The label for checkbox that toggles chrome debugging, i.e. the devtools.chrome.enabled preference
 options-enable-chrome-label = Activar cajas de herramientas de depuración de chrome del navegador y del complemento
 options-enable-chrome-tooltip =
     .title = Activar esta opción te permitirá usar varias herramientas de desarrollador en el contexto del navegador (a través de Herramientas > Desarrollador web > Caja de herramientas del navegador) y depurar complementos desde el administrador de complementos
-
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Habilitar depuración remota
 options-enable-remote-tooltip2 =
     .title = Activar esta opción permitirá depurar esta instancia del navegador de forma remota
-
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Usa la tecla F12 para abrir o cerrar DevTools
+options-enable-f12-tooltip =
+    .title = Activar esta opción vinculará la tecla F12 para abrir o cerrar la caja de herramientas DevTools
 # The label for checkbox that toggles custom formatters for objects
 options-enable-custom-formatters-label = Habilita formatos personalizados
 options-enable-custom-formatters-tooltip =
     .title = Activar esta opción permite que los sitios definan formateadores personalizados para objetos DOM
-
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Activar service workers bajo HTTP (cuando la caja de herramientas esté abierta)
 options-enable-service-workers-http-tooltip =
     .title = Activar esta opción permitirá funcionar a los service workers bajo HTTP en todas las pestañas que tengan abierta la caja de herramientas.
-
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Habilitar mapas de fuentes
 options-source-maps-tooltip =
     .title = Si activas esta opción, las fuentes serán mapeadas en las herramientas.
-
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (Solo en la sesión actual, recarga la página)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Sólo la sesión actual, recarga la página
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (recarga la página)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Auto
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Obsoleto. Saber más…

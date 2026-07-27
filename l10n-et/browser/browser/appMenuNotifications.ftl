@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Peida
     .secondarybuttonaccesskey = P
 appmenu-update-restart-message2 = Hangi { -brand-shorter-name }i uusim versioon. Avatud kaardid ja aknad taastatakse.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Võta tagasi
+    .secondarybuttonaccesskey = V
 appmenu-update-other-instance =
     .label = { -brand-shorter-name }il pole võimalik automaatselt uuendada uusima versiooni peale.
     .buttonlabel = Uuenda { -brand-shorter-name } sellegipoolest
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Mitte praegu
     .secondarybuttonaccesskey = M
 appmenu-update-other-instance-message = { -brand-shorter-name }ile on saadaval uuendus, aga seda ei saa paigaldada, sest töötab veel üks versioon { -brand-shorter-name }ist. Uuendamiseks sulge see või vali uuendamine sellegipoolest (teine versioon võib vajada korrektselt töötamiseks taaskäivitamist).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Sobib
     .buttonaccesskey = S
 appmenu-addon-post-install-message3 = Halda lisasid ja teemasid rakenduse menüü kaudu.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Saad õigusi ja andme-eelistusi igal ajal <a data-l10n-name="settings-link">laienduse sätetes</a> uuendada.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Laiendus kinnitatakse tööriistaribale
+    .accesskey = k
 appmenu-addon-post-install-incognito-checkbox =
     .label = Sellel laiendusel lubatakse käivituda privaatsetes akendes
     .accesskey = S
-
 appmenu-new-tab-controlled-changes =
     .label = Uue kaardi sisu on muutunud.
     .buttonlabel = Säilita muudatused

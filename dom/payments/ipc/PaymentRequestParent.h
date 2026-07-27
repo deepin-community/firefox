@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,13 +5,15 @@
 #ifndef mozilla_dom_PaymentRequestParent_h
 #define mozilla_dom_PaymentRequestParent_h
 
+#include "mozilla/WeakPtr.h"
 #include "mozilla/dom/PPaymentRequestParent.h"
-#include "nsIPaymentAddress.h"
 #include "nsIPaymentActionResponse.h"
+#include "nsIPaymentAddress.h"
 
 namespace mozilla::dom {
 
-class PaymentRequestParent final : public PPaymentRequestParent {
+class PaymentRequestParent final : public PPaymentRequestParent,
+                                   public SupportsWeakPtr {
   friend class PPaymentRequestParent;
 
   NS_INLINE_DECL_REFCOUNTING(PaymentRequestParent)

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,7 +5,6 @@
 #ifndef mozilla_image_encoders_bmp_nsBMPEncoder_h
 #define mozilla_image_encoders_bmp_nsBMPEncoder_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/ReentrantMonitor.h"
 #include "mozilla/UniquePtr.h"
 
@@ -14,12 +12,12 @@
 
 #include "nsCOMPtr.h"
 
-#define NS_BMPENCODER_CID                            \
-  { /* 13a5320c-4c91-4FA4-bd16-b081a3ba8c0b */       \
-    0x13a5320c, 0x4c91, 0x4fa4, {                    \
-      0xbd, 0x16, 0xb0, 0x81, 0xa3, 0Xba, 0x8c, 0x0b \
-    }                                                \
-  }
+#define NS_BMPENCODER_CID                     \
+  {/* 13a5320c-4c91-4FA4-bd16-b081a3ba8c0b */ \
+   0x13a5320c,                                \
+   0x4c91,                                    \
+   0x4fa4,                                    \
+   {0xbd, 0x16, 0xb0, 0x81, 0xa3, 0Xba, 0x8c, 0x0b}}
 
 namespace mozilla {
 namespace image {

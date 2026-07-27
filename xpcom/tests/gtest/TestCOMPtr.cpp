@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,20 +6,15 @@
 #include "gtest/gtest.h"
 
 #include "mozilla/gtest/MozAssertions.h"
-#include "mozilla/Unused.h"
 
-#define NS_IFOO_IID                                  \
-  {                                                  \
-    0x6f7652e0, 0xee43, 0x11d1, {                    \
-      0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3 \
-    }                                                \
-  }
+#define NS_IFOO_IID \
+  {0x6f7652e0, 0xee43, 0x11d1, {0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3}}
 
 namespace TestCOMPtr {
 
 class IFoo : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IFOO_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IFOO_IID)
 
  public:
   IFoo();
@@ -37,8 +31,6 @@ class IFoo : public nsISupports {
   static int total_destructions_;
   static int total_queries_;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(IFoo, NS_IFOO_IID)
 
 int IFoo::total_constructions_;
 int IFoo::total_destructions_;
@@ -108,16 +100,12 @@ static nsCOMPtr<IFoo> return_a_IFoo() {
   return foop;
 }
 
-#define NS_IBAR_IID                                  \
-  {                                                  \
-    0x6f7652e1, 0xee43, 0x11d1, {                    \
-      0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3 \
-    }                                                \
-  }
+#define NS_IBAR_IID \
+  {0x6f7652e1, 0xee43, 0x11d1, {0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3}}
 
 class IBar : public IFoo {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IBAR_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IBAR_IID)
 
  public:
   IBar();
@@ -128,8 +116,6 @@ class IBar : public IFoo {
   static int total_destructions_;
   static int total_queries_;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(IBar, NS_IBAR_IID)
 
 int IBar::total_destructions_;
 int IBar::total_queries_;
@@ -258,7 +244,7 @@ TEST(COMPtr, AddRefAndRelease)
 
   {
     nsCOMPtr<IFoo> foop(do_QueryInterface(static_cast<nsISupports*>(new IBar)));
-    mozilla::Unused << foop;
+    (void)foop;
   }
 
   ASSERT_EQ(IBar::total_destructions_, 1);

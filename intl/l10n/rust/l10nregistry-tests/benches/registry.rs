@@ -11,11 +11,9 @@ fn get_paths() -> Vec<ResourceId> {
     let paths: Vec<&'static str> = vec![
         "branding/brand.ftl",
         "browser/sanitize.ftl",
-        "browser/preferences/blocklists.ftl",
         "browser/preferences/colors.ftl",
         "browser/preferences/selectBookmark.ftl",
         "browser/preferences/connection.ftl",
-        "browser/preferences/addEngine.ftl",
         "browser/preferences/siteDataSettings.ftl",
         "browser/preferences/fonts.ftl",
         "browser/preferences/languages.ftl",
@@ -25,7 +23,7 @@ fn get_paths() -> Vec<ResourceId> {
         "toolkit/global/textActions.ftl",
         "toolkit/printing/printUI.ftl",
         "toolkit/updates/history.ftl",
-        "toolkit/featuregates/features.ftl",
+        "toolkit/firefoxlabs/features.ftl",
     ];
 
     paths.into_iter().map(ResourceId::from).collect()

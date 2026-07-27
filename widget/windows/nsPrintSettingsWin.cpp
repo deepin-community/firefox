@@ -1,10 +1,8 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "nsPrintSettingsWin.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "nsCRT.h"
 #include "nsDeviceContextSpecWin.h"
 #include "nsPrintSettingsImpl.h"
@@ -166,7 +164,7 @@ nsPrintSettingsWin::nsPrintSettingsWin(const nsPrintSettingsWin& aPS)
 /* static */
 void nsPrintSettingsWin::PaperSizeUnitFromDmPaperSize(short aPaperSize,
                                                       int16_t& aPaperSizeUnit) {
-  if (aPaperSize > 0 && aPaperSize < int32_t(ArrayLength(kPaperSizeUnits))) {
+  if (aPaperSize > 0 && aPaperSize < int32_t(std::size(kPaperSizeUnits))) {
     aPaperSizeUnit = kPaperSizeUnits[aPaperSize];
   }
 }
@@ -374,7 +372,7 @@ void nsPrintSettingsWin::CopyToNative(DEVMODEW* aDevMode) {
   MOZ_ASSERT(aDevMode);
 
   if (!mPaperId.IsEmpty()) {
-    aDevMode->dmPaperSize = _wtoi((const wchar_t*)mPaperId.BeginReading());
+    aDevMode->dmPaperSize = _wtoi((const wchar_t*)mPaperId.get());
     aDevMode->dmFields |= DM_PAPERSIZE;
   } else {
     aDevMode->dmPaperSize = 0;

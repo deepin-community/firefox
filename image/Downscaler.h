@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -69,15 +68,15 @@ class Downscaler {
    *                      output; this is the same buffer where the Decoder
    *                      would write its output when not downscaling during
    *                      decode.
-   * @param aHasAlpha Whether or not this frame has an alpha channel.
-   *                  Performance is a little better if it doesn't have one.
+   * @param aFormat The format of this frame. Performance is a little better if
+   *                it is opaque.
    * @param aFlipVertically If true, output rows will be written to the output
    *                        buffer in reverse order vertically, which matches
    *                        the way they are stored in some image formats.
    */
   nsresult BeginFrame(const nsIntSize& aOriginalSize,
                       const Maybe<nsIntRect>& aFrameRect,
-                      uint8_t* aOutputBuffer, bool aHasAlpha,
+                      uint8_t* aOutputBuffer, gfx::SurfaceFormat aFormat,
                       bool aFlipVertically = false);
 
   bool IsFrameComplete() const {
@@ -136,7 +135,7 @@ class Downscaler {
   int32_t mCurrentOutLine;
   int32_t mCurrentInLine;
 
-  bool mHasAlpha : 1;
+  gfx::SurfaceFormat mFormat;
   bool mFlipVertically : 1;
 };
 

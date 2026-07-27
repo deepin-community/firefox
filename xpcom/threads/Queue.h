@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #ifndef mozilla_Queue_h
 #define mozilla_Queue_h
 
+#include <algorithm>
 #include <utility>
 #include <stdint.h>
 #include "mozilla/MemoryReporting.h"
@@ -14,9 +13,6 @@
 #include "mozalloc.h"
 
 namespace mozilla {
-
-// define to turn on additional (DEBUG) asserts
-// #define EXTRA_ASSERTS 1
 
 // A queue implements a singly linked list of pages, each of which contains some
 // number of elements. Since the queue needs to store a "next" pointer, the
@@ -33,18 +29,18 @@ namespace mozilla {
 // Cases:
 //   a) single buffer, circular
 //      Push: if not full:
-//              Add to tail, bump tail and reset to 0 if at end
+//              Add to tail, increase count
 //            full:
-//              Add new page, insert there and set tail to 1
+//              Add new page, insert there and increase count.
 //      Pop:
-//            take entry and bump head, reset to 0 if at end
+//            take entry, bump head and decrease count
 //   b) multiple buffers:
 //      Push: if not full:
-//              Add to tail, bump tail
+//              Add to tail, increase count
 //            full:
-//              Add new page, insert there and set tail to 1
+//              Add new page, insert there and increase count.
 //      Pop:
-//            take entry and bump head, reset to 0 if at end
+//            take entry, bump head and decrease count
 //            if buffer is empty, free head buffer and promote next to head
 //
 template <class T, size_t RequestedItemsPerPage = 256>
@@ -55,18 +51,18 @@ class Queue {
   Queue(Queue&& aOther) noexcept
       : mHead(std::exchange(aOther.mHead, nullptr)),
         mTail(std::exchange(aOther.mTail, nullptr)),
+        mCount(std::exchange(aOther.mCount, 0)),
         mOffsetHead(std::exchange(aOther.mOffsetHead, 0)),
-        mHeadLength(std::exchange(aOther.mHeadLength, 0)),
-        mTailLength(std::exchange(aOther.mTailLength, 0)) {}
+        mHeadLength(std::exchange(aOther.mHeadLength, 0)) {}
 
   Queue& operator=(Queue&& aOther) noexcept {
     Clear();
 
     mHead = std::exchange(aOther.mHead, nullptr);
     mTail = std::exchange(aOther.mTail, nullptr);
+    mCount = std::exchange(aOther.mCount, 0);
     mOffsetHead = std::exchange(aOther.mOffsetHead, 0);
     mHeadLength = std::exchange(aOther.mHeadLength, 0);
-    mTailLength = std::exchange(aOther.mTailLength, 0);
     return *this;
   }
 
@@ -78,16 +74,18 @@ class Queue {
       Pop();
     }
     if (mHead) {
+      MOZ_ASSERT(mHead == mTail);
       free(mHead);
       mHead = nullptr;
+      mTail = nullptr;
     }
   }
 
   T& Push(T&& aElement) {
-#if defined(EXTRA_ASSERTS) && DEBUG
-    size_t original_length = Count();
-#endif
+    MOZ_RELEASE_ASSERT(mCount < std::numeric_limits<uint32_t>::max());
+
     if (!mHead) {
+      // First page
       mHead = NewPage();
       MOZ_ASSERT(mHead);
 
@@ -95,16 +93,25 @@ class Queue {
       T* eltPtr = &mTail->mEvents[0];
       new (eltPtr) T(std::move(aElement));
       mOffsetHead = 0;
+      mCount = 1;
       mHeadLength = 1;
-#ifdef EXTRA_ASSERTS
-      MOZ_ASSERT(Count() == original_length + 1);
-#endif
       return *eltPtr;
     }
-    if ((mHead == mTail && mHeadLength == ItemsPerPage) ||
-        (mHead != mTail && mTailLength == ItemsPerPage)) {
-      // either we have one (circular) buffer and it's full, or
-      // we have multiple buffers and the last buffer is full
+    if (mHead == mTail && mCount < ItemsPerPage) {
+      // Single buffer, circular
+      uint16_t offsetTail = (mOffsetHead + mCount) % ItemsPerPage;
+      T* eltPtr = &mHead->mEvents[offsetTail];
+      new (eltPtr) T(std::move(aElement));
+      ++mCount;
+      ++mHeadLength;
+      MOZ_ASSERT(mCount == mHeadLength);
+      return *eltPtr;
+    }
+
+    // Multiple buffers
+    uint16_t offsetTail = (mCount - mHeadLength) % ItemsPerPage;
+    if (offsetTail == 0) {
+      // Tail buffer is full
       Page* page = NewPage();
       MOZ_ASSERT(page);
 
@@ -112,124 +119,88 @@ class Queue {
       mTail = page;
       T* eltPtr = &page->mEvents[0];
       new (eltPtr) T(std::move(aElement));
-      mTailLength = 1;
-#ifdef EXTRA_ASSERTS
-      MOZ_ASSERT(Count() == original_length + 1);
-#endif
+      ++mCount;
       return *eltPtr;
     }
-    if (mHead == mTail) {
-      // we have space in the (single) head buffer
-      uint16_t offset = (mOffsetHead + mHeadLength++) % ItemsPerPage;
-      T* eltPtr = &mTail->mEvents[offset];
-      new (eltPtr) T(std::move(aElement));
-#ifdef EXTRA_ASSERTS
-      MOZ_ASSERT(Count() == original_length + 1);
-#endif
-      return *eltPtr;
-    }
-    // else we have space to insert into last buffer
-    T* eltPtr = &mTail->mEvents[mTailLength++];
+
+    MOZ_ASSERT(mHead != mTail, "can't have a non-circular single buffer");
+    T* eltPtr = &mTail->mEvents[offsetTail];
     new (eltPtr) T(std::move(aElement));
-#ifdef EXTRA_ASSERTS
-    MOZ_ASSERT(Count() == original_length + 1);
-#endif
+    ++mCount;
     return *eltPtr;
   }
 
-  bool IsEmpty() const {
-    return !mHead || (mHead == mTail && mHeadLength == 0);
-  }
+  bool IsEmpty() const { return !mCount; }
 
   T Pop() {
-#if defined(EXTRA_ASSERTS) && DEBUG
-    size_t original_length = Count();
-#endif
-    MOZ_ASSERT(!IsEmpty());
+    MOZ_RELEASE_ASSERT(!IsEmpty());
 
     T result = std::move(mHead->mEvents[mOffsetHead]);
     mHead->mEvents[mOffsetHead].~T();
+    // Could be circular buffer, or not.
     mOffsetHead = (mOffsetHead + 1) % ItemsPerPage;
+    mCount -= 1;
     mHeadLength -= 1;
 
-    // Check if mHead points to empty (circular) Page and we have more
-    // pages
+    // Check if the head page is empty and we have more pages.
     if (mHead != mTail && mHeadLength == 0) {
       Page* dead = mHead;
       mHead = mHead->mNext;
       free(dead);
+      // Non-circular buffer
       mOffsetHead = 0;
+      mHeadLength =
+          static_cast<uint16_t>(std::min<uint32_t>(mCount, ItemsPerPage));
       // if there are still >1 pages, the new head is full.
-      if (mHead != mTail) {
-        mHeadLength = ItemsPerPage;
-      } else {
-        mHeadLength = mTailLength;
-        mTailLength = 0;
-      }
     }
 
-#ifdef EXTRA_ASSERTS
-    MOZ_ASSERT(Count() == original_length - 1);
-#endif
     return result;
   }
 
   T& FirstElement() {
-    MOZ_ASSERT(!IsEmpty());
+    MOZ_RELEASE_ASSERT(!IsEmpty());
     return mHead->mEvents[mOffsetHead];
   }
 
   const T& FirstElement() const {
-    MOZ_ASSERT(!IsEmpty());
+    MOZ_RELEASE_ASSERT(!IsEmpty());
     return mHead->mEvents[mOffsetHead];
   }
 
-  T& LastElement() {
-    MOZ_ASSERT(!IsEmpty());
-    uint16_t offset =
-        mHead == mTail ? mOffsetHead + mHeadLength - 1 : mTailLength - 1;
-    return mTail->mEvents[offset];
-  }
-
-  const T& LastElement() const {
-    MOZ_ASSERT(!IsEmpty());
-    uint16_t offset =
-        mHead == mTail ? mOffsetHead + mHeadLength - 1 : mTailLength - 1;
-    return mTail->mEvents[offset];
-  }
-
-  size_t Count() const {
-    // It is obvious count is 0 when the queue is empty.
-    if (!mHead) {
-      return 0;
-    }
-
-    // Compute full (intermediate) pages; Doesn't count first or last page
-    int count = 0;
-    // 1 buffer will have mHead == mTail; 2 will have mHead->mNext == mTail
-    for (Page* page = mHead; page != mTail && page->mNext != mTail;
-         page = page->mNext) {
-      count += ItemsPerPage;
-    }
-    // add first and last page
-    count += mHeadLength + mTailLength;
-    MOZ_ASSERT(count >= 0);
-
-    return count;
-  }
+  size_t Count() const { return mCount; }
 
   size_t ShallowSizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const {
     size_t n = 0;
-    if (mHead) {
-      for (Page* page = mHead; page != mTail; page = page->mNext) {
-        n += aMallocSizeOf(page);
-      }
+    for (Page* page = mHead; page != nullptr; page = page->mNext) {
+      n += aMallocSizeOf(page);
     }
     return n;
   }
 
   size_t ShallowSizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const {
     return aMallocSizeOf(this) + ShallowSizeOfExcludingThis(aMallocSizeOf);
+  }
+
+  template <typename Callback>
+  void Iterate(Callback&& aCallback) {
+    if (mCount == 0) {
+      return;
+    }
+
+    std::decay_t<Callback> callback = std::forward<Callback>(aCallback);
+
+    uint16_t start = mOffsetHead;
+    uint32_t count = mCount;
+    uint16_t countInPage = mHeadLength;
+    for (Page* page = mHead; page != nullptr; page = page->mNext) {
+      IterateOverPage(page, start, countInPage, callback);
+      start = 0;
+      count -= countInPage;
+      countInPage = std::min(count, static_cast<uint32_t>(ItemsPerPage));
+      MOZ_ASSERT(count < mCount);
+    }
+
+    MOZ_ASSERT(count == 0);
   }
 
  private:
@@ -240,7 +211,7 @@ class Queue {
   // Since a Page must also contain a "next" pointer, we use one of the items to
   // store this pointer. If sizeof(T) > sizeof(Page*), then some space will be
   // wasted. So be it.
-  static const size_t ItemsPerPage = RequestedItemsPerPage - 1;
+  static constexpr size_t ItemsPerPage = RequestedItemsPerPage - 1;
 
   // Page objects are linked together to form a simple deque.
   struct Page {
@@ -252,14 +223,38 @@ class Queue {
     return static_cast<Page*>(moz_xcalloc(1, sizeof(Page)));
   }
 
+  template <typename Callback>
+  void IterateOverPage(Page* aPage, size_t aOffsetStart, size_t aCount,
+                       Callback& aCallback) {
+    size_t aOffsetEnd = aOffsetStart + aCount;
+    MOZ_ASSERT(aCount <= ItemsPerPage);
+    MOZ_ASSERT(aOffsetEnd > aOffsetStart);
+    for (size_t i = aOffsetStart; i < aOffsetEnd; ++i) {
+      // The initial page may be circular
+      aCallback(aPage->mEvents[i % ItemsPerPage]);
+    }
+  }
+
   Page* mHead = nullptr;
   Page* mTail = nullptr;
 
+  uint32_t mCount = 0;       // Number of items in the queue
   uint16_t mOffsetHead = 0;  // Read position in head page
-  uint16_t mHeadLength = 0;  // Number of items in the head page
-  uint16_t mTailLength = 0;  // Number of items in the tail page
+  uint16_t mHeadLength = 0;  // Number of items in the circular head page
 };
 
 }  // namespace mozilla
+
+template <class T, size_t RequestedItemsPerPage>
+inline void ImplCycleCollectionUnlink(
+    mozilla::Queue<T, RequestedItemsPerPage>& aField) {
+  aField.Clear();
+}
+
+template <class T, size_t RequestedItemsPerPage, typename Callback>
+inline void ImplCycleCollectionIndexedContainer(
+    mozilla::Queue<T, RequestedItemsPerPage>& aField, Callback&& aCallback) {
+  aField.Iterate(std::forward<Callback>(aCallback));
+}
 
 #endif  // mozilla_Queue_h

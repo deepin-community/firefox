@@ -1,25 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FilePickerParent.h"
-#include "nsComponentManagerUtils.h"
-#include "nsNetCID.h"
-#include "mozilla/dom/Document.h"
-#include "nsIFile.h"
-#include "nsISimpleEnumerator.h"
-#include "mozilla/Unused.h"
+
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
 #include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/FileBlobImpl.h"
 #include "mozilla/dom/FileSystemSecurity.h"
 #include "mozilla/dom/IPCBlobUtils.h"
+#include "nsComponentManagerUtils.h"
+#include "nsIFile.h"
+#include "nsISimpleEnumerator.h"
+#include "nsNetCID.h"
 
-using mozilla::Unused;
 using namespace mozilla::dom;
 
 NS_IMPL_ISUPPORTS(FilePickerParent::FilePickerShownCallback,
@@ -45,12 +42,13 @@ FilePickerParent::~FilePickerParent() = default;
 // 2. The stream transport thread stat()s the file in Run() and then dispatches
 // the same runnable on the main thread.
 // 3. The main thread sends the results over IPC.
-FilePickerParent::IORunnable::IORunnable(FilePickerParent* aFPParent,
-                                         nsTArray<nsCOMPtr<nsIFile>>&& aFiles,
-                                         bool aIsDirectory)
+FilePickerParent::IORunnable::IORunnable(
+    FilePickerParent* aFPParent, nsTArray<nsCOMPtr<nsIFile>>&& aFiles,
+    nsTArray<RefPtr<BlobImpl>>&& aFilesInWebKitDirectory, bool aIsDirectory)
     : mozilla::Runnable("dom::FilePickerParent::IORunnable"),
       mFilePickerParent(aFPParent),
       mFiles(std::move(aFiles)),
+      mFilesInWebKitDirectory(std::move(aFilesInWebKitDirectory)),
       mIsDirectory(aIsDirectory) {
   MOZ_ASSERT_IF(aIsDirectory, mFiles.Length() == 1);
 }
@@ -73,7 +71,8 @@ FilePickerParent::IORunnable::Run() {
   // results.
   if (NS_IsMainThread()) {
     if (mFilePickerParent) {
-      mFilePickerParent->SendFilesOrDirectories(mResults);
+      mFilePickerParent->SendFilesOrDirectories(mResults,
+                                                mFilesInWebKitDirectory);
     }
     return NS_OK;
   }
@@ -128,13 +127,14 @@ FilePickerParent::IORunnable::Run() {
 void FilePickerParent::IORunnable::Destroy() { mFilePickerParent = nullptr; }
 
 void FilePickerParent::SendFilesOrDirectories(
-    const nsTArray<BlobImplOrString>& aData) {
+    const nsTArray<BlobImplOrString>& aData,
+    const nsTArray<RefPtr<BlobImpl>>& aFilesInWebKitDirectory) {
   ContentParent* parent = BrowserParent::GetFrom(Manager())->Manager();
 
   if (mMode == nsIFilePicker::modeGetFolder) {
     MOZ_ASSERT(aData.Length() <= 1);
     if (aData.IsEmpty()) {
-      Unused << Send__delete__(this, void_t(), mResult);
+      (void)Send__delete__(this, void_t(), mResult);
       return;
     }
 
@@ -146,9 +146,21 @@ void FilePickerParent::SendFilesOrDirectories(
     fss->GrantAccessToContentProcess(parent->ChildID(),
                                      aData[0].mDirectoryPath);
 
+    nsTArray<IPCBlob> ipcBlobs;
+    for (const auto& blob : aFilesInWebKitDirectory) {
+      IPCBlob ipcBlob;
+
+      nsresult rv = IPCBlobUtils::Serialize(blob, ipcBlob);
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        break;
+      }
+      ipcBlobs.AppendElement(ipcBlob);
+    }
+
     InputDirectory input;
     input.directoryPath() = aData[0].mDirectoryPath;
-    Unused << Send__delete__(this, input, mResult);
+    input.blobsInWebKitDirectory() = std::move(ipcBlobs);
+    (void)Send__delete__(this, input, mResult);
     return;
   }
 
@@ -169,14 +181,14 @@ void FilePickerParent::SendFilesOrDirectories(
   InputBlobs inblobs;
   inblobs.blobs() = std::move(ipcBlobs);
 
-  Unused << Send__delete__(this, inblobs, mResult);
+  (void)Send__delete__(this, inblobs, mResult);
 }
 
 void FilePickerParent::Done(nsIFilePicker::ResultCode aResult) {
   mResult = aResult;
 
   if (mResult != nsIFilePicker::returnOK) {
-    Unused << Send__delete__(this, void_t(), mResult);
+    (void)Send__delete__(this, void_t(), mResult);
     return;
   }
 
@@ -204,17 +216,40 @@ void FilePickerParent::Done(nsIFilePicker::ResultCode aResult) {
   }
 
   if (files.IsEmpty()) {
-    Unused << Send__delete__(this, void_t(), mResult);
+    (void)Send__delete__(this, void_t(), mResult);
     return;
   }
 
+  nsTArray<RefPtr<BlobImpl>> blobsInWebKitDirectory;
+
+#ifdef MOZ_WIDGET_ANDROID
+  if (mMode == nsIFilePicker::modeGetFolder) {
+    nsCOMPtr<nsISimpleEnumerator> iter;
+    if (NS_SUCCEEDED(
+            mFilePicker->GetDomFilesInWebKitDirectory(getter_AddRefs(iter)))) {
+      nsCOMPtr<nsISupports> supports;
+
+      bool loop = true;
+      while (NS_SUCCEEDED(iter->HasMoreElements(&loop)) && loop) {
+        iter->GetNext(getter_AddRefs(supports));
+        if (supports) {
+          RefPtr<BlobImpl> file = static_cast<File*>(supports.get())->Impl();
+          MOZ_ASSERT(file);
+          blobsInWebKitDirectory.AppendElement(file);
+        }
+      }
+    }
+  }
+#endif
+
   MOZ_ASSERT(!mRunnable);
-  mRunnable = new IORunnable(this, std::move(files),
-                             mMode == nsIFilePicker::modeGetFolder);
+  mRunnable =
+      new IORunnable(this, std::move(files), std::move(blobsInWebKitDirectory),
+                     mMode == nsIFilePicker::modeGetFolder);
 
   // Dispatch to background thread to do I/O:
   if (!mRunnable->Dispatch()) {
-    Unused << Send__delete__(this, void_t(), nsIFilePicker::returnCancel);
+    (void)Send__delete__(this, void_t(), nsIFilePicker::returnCancel);
   }
 }
 
@@ -229,7 +264,8 @@ bool FilePickerParent::CreateFilePicker() {
     return false;
   }
 
-  return NS_SUCCEEDED(mFilePicker->Init(mBrowsingContext, mTitle, mMode));
+  return NS_SUCCEEDED(
+      mFilePicker->Init(mBrowsingContext, mTitle, mMode, nullptr));
 }
 
 mozilla::ipc::IPCResult FilePickerParent::RecvOpen(
@@ -240,7 +276,7 @@ mozilla::ipc::IPCResult FilePickerParent::RecvOpen(
     const nsString& aDisplaySpecialDirectory, const nsString& aOkButtonLabel,
     const nsIFilePicker::CaptureTarget& aCapture) {
   if (!CreateFilePicker()) {
-    Unused << Send__delete__(this, void_t(), nsIFilePicker::returnCancel);
+    (void)Send__delete__(this, void_t(), nsIFilePicker::returnCancel);
     return IPC_OK();
   }
 
@@ -261,9 +297,9 @@ mozilla::ipc::IPCResult FilePickerParent::RecvOpen(
   mFilePicker->SetCapture(aCapture);
 
   if (!aDisplayDirectory.IsEmpty()) {
-    nsCOMPtr<nsIFile> localFile = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
-    if (localFile) {
-      localFile->InitWithPath(aDisplayDirectory);
+    nsCOMPtr<nsIFile> localFile;
+    if (NS_SUCCEEDED(
+            NS_NewLocalFile(aDisplayDirectory, getter_AddRefs(localFile)))) {
       mFilePicker->SetDisplayDirectory(localFile);
     }
   } else if (!aDisplaySpecialDirectory.IsEmpty()) {

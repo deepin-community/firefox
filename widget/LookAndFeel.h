@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __LookAndFeel
-#define __LookAndFeel
+#ifndef LookAndFeel_h_
+#define LookAndFeel_h_
 
 #ifndef MOZILLA_INTERNAL_API
 #  error "This header is only usable from within libxul (MOZILLA_INTERNAL_API)."
@@ -33,6 +32,7 @@ class Document;
 
 namespace widget {
 class FullLookAndFeel;
+class LookAndFeelFont;
 }  // namespace widget
 
 enum class StyleSystemColor : uint8_t;
@@ -104,6 +104,12 @@ class LookAndFeel {
      */
     WindowsAccentColorInTitlebar,
 
+    /* Whether Windows mica effect is enabled and available */
+    WindowsMica,
+
+    /* Whether Windows mica effect is enabled and available on popups */
+    WindowsMicaPopups,
+
     /*
      * A Boolean value to determine whether the macOS Big Sur-specific
      * theming should be used.
@@ -111,12 +117,10 @@ class LookAndFeel {
     MacBigSurTheme,
 
     /*
-     * A Boolean value to determine whether macOS is in RTL mode or not.
+     * A Boolean value to determine whether the macOS Tahoe-specific
+     * theming should be used.
      */
-    MacRTL,
-
-    /* Native macOS titlebar height. */
-    MacTitlebarHeight,
+    MacTahoeTheme,
 
     /*
      * AlertNotificationOrigin indicates from which corner of the
@@ -295,8 +299,8 @@ class LookAndFeel {
     /** GTK titlebar radius */
     TitlebarRadius,
 
-    /** GTK button-to-button spacing in the inline axis */
-    TitlebarButtonSpacing,
+    /** GTK tooltip radius */
+    TooltipRadius,
 
     /**
      * Corresponding to dynamic-range.
@@ -317,6 +321,19 @@ class LookAndFeel {
 
     /* Whether macOS' full keyboard access is enabled */
     FullKeyboardAccess,
+
+    // TODO(krosylight): This should ultimately be able to replace
+    // IntID::AllPointerCapabilities. (Bug 1918207)
+    //
+    // Note that PrimaryPointerCapabilities may not be replaceable as it has a
+    // bit more system specific heuristic, e.g. IsTabletMode on Windows.
+    PointingDeviceKinds,
+
+    /* Whether the menubar is native / outside the application */
+    NativeMenubar,
+
+    // The system's hour cycle, either 0 if unknown, 12, or 24.
+    HourCycle,
 
     /*
      * Not an ID; used to define the range of valid IDs.  Must be last.
@@ -385,6 +402,13 @@ class LookAndFeel {
   };
 
   using FontID = mozilla::StyleSystemFont;
+
+  enum class PointingDeviceKinds : uint8_t {
+    None = 0,
+    Mouse = 1 << 0,
+    Touch = 1 << 1,
+    Pen = 1 << 2,
+  };
 
   static ColorScheme SystemColorScheme() {
     return GetInt(IntID::SystemUsesDarkTheme) ? ColorScheme::Dark
@@ -486,6 +510,7 @@ class LookAndFeel {
    * @param aStyle Styling to apply to the font.
    */
   static bool GetFont(FontID aID, nsString& aName, gfxFontStyle& aStyle);
+  static void GetFont(FontID, widget::LookAndFeelFont&);
 
   /**
    * GetPasswordCharacter() returns a unicode character which should be used
@@ -500,10 +525,14 @@ class LookAndFeel {
    */
   static bool GetEchoPassword();
 
-  /**
-   * Whether we should be drawing in the titlebar by default.
-   */
+  /** Whether we should be drawing in the titlebar by default. */
   static bool DrawInTitlebar();
+
+  static int32_t CaretBlinkCount() {
+    return GetInt(IntID::CaretBlinkCount, -1);
+  }
+
+  static int32_t CaretBlinkTime() { return GetInt(IntID::CaretBlinkTime, 500); }
 
   enum class TitlebarAction {
     None,
@@ -543,14 +572,10 @@ class LookAndFeel {
   static void Refresh();
 
   /**
-   * GTK's initialization code can't be run off main thread, call this
-   * if you plan on using LookAndFeel off main thread later.
-   *
-   * This initialized state may get reset due to theme changes, so it
-   * must be called prior to each potential off-main-thread LookAndFeel
-   * call, not just once.
+   * LookAndFeel initialization must be done on the main thread. If you need
+   * LookAndFeel to be initialized OMT then you need to call this first.
    */
-  static void NativeInit();
+  static void EnsureInit();
 
   static void SetData(widget::FullLookAndFeel&& aTables);
   static void NotifyChangedAllWindows(widget::ThemeChangeKind);
@@ -570,6 +595,8 @@ class LookAndFeel {
   // no need to notify it from more than one prescontext.
   static bool sGlobalThemeChanged;
 };
+
+MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(LookAndFeel::PointingDeviceKinds);
 
 }  // namespace mozilla
 
@@ -596,4 +623,4 @@ constexpr nscolor NS_40PERCENT_FOREGROUND_COLOR =
 #define NS_ALERT_LEFT 2
 #define NS_ALERT_TOP 4
 
-#endif /* __LookAndFeel */
+#endif /* LookAndFeel_h_ */

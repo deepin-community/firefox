@@ -10,10 +10,10 @@ use std::fs;
 
 use serde_json::json;
 
-use glean_core::metrics::*;
 use glean_core::{
     get_timestamp_ms, test_get_num_recorded_errors, CommonMetricData, ErrorType, Lifetime,
 };
+use glean_core::{metrics::*, Glean};
 
 #[test]
 fn record_properly_records_without_optional_arguments() {
@@ -144,7 +144,6 @@ fn snapshot_correctly_clears_the_stores() {
         assert_eq!(1, s.as_array().unwrap().len());
         assert_eq!("telemetry", s[0]["category"]);
         assert_eq!("test_event_clear", s[0]["name"]);
-        println!("{:?}", s[0].get("extra"));
         assert!(s[0].get("extra").is_none());
     }
 }
@@ -163,16 +162,11 @@ fn test_sending_of_event_ping_when_it_fills_up() {
     let store_names: Vec<String> = vec!["events".into()];
 
     for store_name in &store_names {
-        glean.register_ping_type(&PingType::new(
-            store_name.clone(),
-            true,
-            false,
-            true,
-            true,
-            true,
-            vec![],
-            vec!["max_capacity".to_string()],
-        ));
+        glean.register_ping_type(
+            &PingBuilder::new(store_name)
+                .with_reasons(vec!["max_capacity".to_string()])
+                .build(),
+        );
     }
 
     let click = EventMetric::new(
@@ -230,16 +224,11 @@ fn test_server_knobs_config_changing_max_events() {
     let store_names: Vec<String> = vec!["events".into()];
 
     for store_name in &store_names {
-        glean.register_ping_type(&PingType::new(
-            store_name.clone(),
-            true,
-            false,
-            true,
-            true,
-            true,
-            vec![],
-            vec!["max_capacity".to_string()],
-        ));
+        glean.register_ping_type(
+            &PingBuilder::new(store_name)
+                .with_reasons(vec!["max_capacity".to_string()])
+                .build(),
+        );
     }
 
     // 1. Set up an event to record
@@ -396,7 +385,7 @@ fn snapshot_sorts_the_timestamps() {
 fn ensure_custom_ping_events_dont_overflow() {
     let (glean, _dir) = new_glean(None);
 
-    let store_name = "store-name";
+    let store_name = "store1";
     let event_meta = CommonMetricData {
         name: "name".into(),
         category: "category".into(),
@@ -441,7 +430,7 @@ fn ensure_custom_ping_events_dont_overflow() {
 fn ensure_custom_ping_events_from_multiple_runs_work() {
     let (mut tempdir, _) = tempdir();
 
-    let store_name = "store-name";
+    let store_name = "store1";
     let event = EventMetric::new(
         CommonMetricData {
             name: "name".into(),
@@ -507,35 +496,32 @@ fn event_storage_trimming() {
         },
         vec![],
     );
-    // First, record the event in the two pings.
-    // Successfully records just fine because nothing's checking on record that these pings
-    // exist and are registered.
+
+    let new_ping = |glean: &mut Glean, ping: &str| {
+        // In Rust, pings are registered via construction.
+        // But that's done asynchronously, so we do it synchronously here:
+        glean.register_ping_type(&PingBuilder::new(ping).build());
+    };
+
+    // First, register both pings, so that we can record the event in the two pings.
     {
-        let (glean, dir) = new_glean(Some(tempdir));
+        let (mut glean, dir) = new_glean(Some(tempdir));
         tempdir = dir;
+
+        new_ping(&mut glean, store_name);
+        new_ping(&mut glean, store_name_2);
+
         event.record_sync(&glean, 10, HashMap::new(), 0);
 
         assert_eq!(1, event.get_value(&glean, store_name).unwrap().len());
         assert_eq!(1, event.get_value(&glean, store_name_2).unwrap().len());
     }
-    // Second, construct (but don't init) Glean over again.
+    // Second, construct (but don't init) Glean again.
     // Register exactly one of the two pings.
     // Then process the part of init that does the trimming (`on_ready_to_submit_pings`).
-    // This ought to load the data from the registered ping and trim the data from the unregistered one.
     {
         let (mut glean, _dir) = new_glean(Some(tempdir));
-        // In Rust, pings are registered via construction.
-        // But that's done asynchronously, so we do it synchronously here:
-        glean.register_ping_type(&PingType::new(
-            store_name.to_string(),
-            true,
-            false,
-            true,
-            true,
-            true,
-            vec![],
-            vec![],
-        ));
+        new_ping(&mut glean, store_name);
 
         glean.on_ready_to_submit_pings(true);
 
@@ -568,9 +554,11 @@ fn with_event_timestamps() {
         ping_lifetime_threshold: 0,
         ping_lifetime_max_time: 0,
     };
-    let glean = Glean::new(cfg).unwrap();
+    let mut glean = Glean::new(cfg).unwrap();
+    let ping = PingBuilder::new("store1").build();
+    glean.register_ping_type(&ping);
 
-    let store_name = "store-name";
+    let store_name = "store1";
     let event = EventMetric::new(
         CommonMetricData {
             name: "name".into(),
@@ -599,4 +587,37 @@ fn with_event_timestamps() {
         .parse()
         .expect("glean_timestamp should be an integer");
     assert_eq!(12345, glean_timestamp);
+}
+
+#[test]
+fn doesnt_crash_on_inaccessible_event_store_file() {
+    let store_names = vec!["store1".into(), "store2".into()];
+
+    let (glean, t) = new_glean(None);
+
+    // put a directory in the way of the event storage file
+    let event_path = t.path().join("events").join("store1");
+    fs::create_dir_all(&event_path).unwrap();
+
+    let metric = EventMetric::new(
+        CommonMetricData {
+            name: "test_event_no_optional".into(),
+            category: "telemetry".into(),
+            send_in_pings: store_names.clone(),
+            disabled: false,
+            lifetime: Lifetime::Ping,
+            ..Default::default()
+        },
+        vec![],
+    );
+
+    metric.record_sync(&glean, 1000, HashMap::new(), 0);
+
+    for store_name in store_names {
+        let events = metric.get_value(&glean, &*store_name).unwrap();
+        assert_eq!(1, events.len());
+        assert_eq!("telemetry", events[0].category);
+        assert_eq!("test_event_no_optional", events[0].name);
+        assert!(events[0].extra.is_none());
+    }
 }

@@ -19,6 +19,7 @@ import "chrome://browser/content/firefoxview/fxview-tab-list.mjs";
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
+  AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
 });
 
 const SS_NOTIFY_CLOSED_OBJECTS_CHANGED = "sessionstore-closed-objects-changed";
@@ -58,7 +59,7 @@ class RecentlyClosedTabsInView extends ViewPage {
   static queries = {
     cardEl: "card-container",
     emptyState: "fxview-empty-state",
-    searchTextbox: "fxview-search-textbox",
+    searchTextbox: "moz-input-search",
     tabList: "fxview-tab-list",
   };
 
@@ -66,7 +67,7 @@ class RecentlyClosedTabsInView extends ViewPage {
     if (
       topic == SS_NOTIFY_CLOSED_OBJECTS_CHANGED ||
       (topic == SS_NOTIFY_BROWSER_SHUTDOWN_FLUSH &&
-        subject.ownerGlobal == getWindow())
+        subject.documentGlobal == getWindow())
     ) {
       this.updateRecentlyClosedTabs();
     }
@@ -91,7 +92,7 @@ class RecentlyClosedTabsInView extends ViewPage {
 
     if (this.recentBrowsing) {
       this.recentBrowsingElement.addEventListener(
-        "fxview-search-textbox-query",
+        "MozInputSearch:search",
         this
       );
     }
@@ -116,7 +117,7 @@ class RecentlyClosedTabsInView extends ViewPage {
 
     if (this.recentBrowsing) {
       this.recentBrowsingElement.removeEventListener(
-        "fxview-search-textbox-query",
+        "MozInputSearch:search",
         this
       );
     }
@@ -130,7 +131,7 @@ class RecentlyClosedTabsInView extends ViewPage {
   }
 
   handleEvent(event) {
-    if (this.recentBrowsing && event.type === "fxview-search-textbox-query") {
+    if (this.recentBrowsing && event.type === "MozInputSearch:search") {
       this.onSearchQuery(event);
     }
   }
@@ -163,9 +164,8 @@ class RecentlyClosedTabsInView extends ViewPage {
   }
 
   updateRecentlyClosedTabs() {
-    let recentlyClosedTabsData = lazy.SessionStore.getClosedTabData(
-      getWindow()
-    );
+    let recentlyClosedTabsData =
+      lazy.SessionStore.getClosedTabData(getWindow());
     if (Services.prefs.getBoolPref(INCLUDE_CLOSED_TABS_FROM_CLOSED_WINDOWS)) {
       recentlyClosedTabsData.push(
         ...lazy.SessionStore.getClosedTabDataFromClosedWindows()
@@ -203,14 +203,33 @@ class RecentlyClosedTabsInView extends ViewPage {
   onReopenTab(e) {
     const closedId = parseInt(e.originalTarget.closedId, 10);
     const sourceClosedId = parseInt(e.originalTarget.sourceClosedId, 10);
+
+    const originalEvent = e.detail.originalEvent;
+    const isModifierClick =
+      lazy.AppConstants.platform == "macosx"
+        ? originalEvent.metaKey
+        : originalEvent.ctrlKey;
+
+    const win = getWindow();
+    const activeTabBeforeRestore = isModifierClick
+      ? win.gBrowser?.selectedTab
+      : null;
+
     if (isNaN(sourceClosedId)) {
-      lazy.SessionStore.undoCloseById(closedId, getWindow());
+      lazy.SessionStore.undoCloseById(closedId, win);
     } else {
       lazy.SessionStore.undoClosedTabFromClosedWindow(
         { sourceClosedId },
         closedId,
-        getWindow()
+        win
       );
+    }
+
+    if (
+      activeTabBeforeRestore &&
+      win.gBrowser?.selectedTab !== activeTabBeforeRestore
+    ) {
+      win.gBrowser.selectedTab = activeTabBeforeRestore;
     }
 
     // Record telemetry
@@ -220,25 +239,15 @@ class RecentlyClosedTabsInView extends ViewPage {
 
     let now = Date.now();
     let deltaSeconds = (now - tabClosedAt) / 1000;
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "recently_closed",
-      "tabs",
-      null,
-      {
-        position: position.toString(),
-        delta: deltaSeconds.toString(),
-        page: this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
-      }
-    );
+    Glean.firefoxviewNext.recentlyClosedTabs.record({
+      position,
+      delta: deltaSeconds,
+      page: this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
+    });
     if (this.searchQuery) {
-      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
-        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
-      );
-      searchesHistogram.add(
-        this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
-        this.cumulativeSearches
-      );
+      Glean.firefoxview.cumulativeSearches[
+        this.recentBrowsing ? "recentbrowsing" : "recentlyclosed"
+      ].accumulateSingleSample(this.cumulativeSearches);
       this.cumulativeSearches = 0;
     }
   }
@@ -272,17 +281,11 @@ class RecentlyClosedTabsInView extends ViewPage {
 
     let now = Date.now();
     let deltaSeconds = (now - tabClosedAt) / 1000;
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "dismiss_closed_tab",
-      "tabs",
-      null,
-      {
-        position: position.toString(),
-        delta: deltaSeconds.toString(),
-        page: this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
-      }
-    );
+    Glean.firefoxviewNext.dismissClosedTabTabs.record({
+      position,
+      delta: deltaSeconds,
+      page: this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
+    });
   }
 
   willUpdate() {
@@ -308,10 +311,9 @@ class RecentlyClosedTabsInView extends ViewPage {
     let descriptionLink;
     if (Services.prefs.getBoolPref(NEVER_REMEMBER_HISTORY_PREF, false)) {
       // History pref set to never remember history
-      descriptionHeader = "firefoxview-dont-remember-history-empty-header";
+      descriptionHeader = "firefoxview-dont-remember-history-empty-header-2";
       descriptionLabels = [
-        "firefoxview-dont-remember-history-empty-description",
-        "firefoxview-dont-remember-history-empty-description-two",
+        "firefoxview-dont-remember-history-empty-description-one",
       ];
       descriptionLink = {
         url: "about:preferences#privacy",
@@ -337,7 +339,7 @@ class RecentlyClosedTabsInView extends ViewPage {
         class="empty-state recentlyclosed"
         ?isInnerCard=${this.recentBrowsing}
         ?isSelectedTab=${this.selectedTab}
-        mainImageUrl="chrome://browser/content/firefoxview/recentlyclosed-empty.svg"
+        mainImageUrl="chrome://browser/content/firefoxview/history-empty.svg"
       >
       </fxview-empty-state>
     `;
@@ -351,26 +353,23 @@ class RecentlyClosedTabsInView extends ViewPage {
       />
       ${when(
         !this.recentBrowsing,
-        () => html`<div
-          class="sticky-container bottom-fade"
-          ?hidden=${!this.selectedTab}
-        >
-          <h2
-            class="page-header"
-            data-l10n-id="firefoxview-recently-closed-header"
-          ></h2>
-          <div>
-            <fxview-search-textbox
-              data-l10n-id="firefoxview-search-text-box-recentlyclosed"
-              data-l10n-attrs="placeholder"
-              @fxview-search-textbox-query=${this.onSearchQuery}
-              .size=${this.searchTextboxSize}
-              pageName=${this.recentBrowsing
-                ? "recentbrowsing"
-                : "recentlyclosed"}
-            ></fxview-search-textbox>
-          </div>
-        </div>`
+        () =>
+          html`<div
+            class="sticky-container bottom-fade"
+            ?hidden=${!this.selectedTab}
+          >
+            <h2
+              class="page-header"
+              data-l10n-id="firefoxview-recently-closed-header"
+            ></h2>
+            <div>
+              <moz-input-search
+                data-l10n-id="firefoxview-search-text-box-recentlyclosed"
+                data-l10n-attrs="placeholder"
+                @MozInputSearch:search=${this.onSearchQuery}
+              ></moz-input-search>
+            </div>
+          </div>`
       )}
       <div class=${classMap({ "cards-container": this.selectedTab })}>
         <card-container
@@ -387,22 +386,21 @@ class RecentlyClosedTabsInView extends ViewPage {
           ></h3>
           ${when(
             this.recentlyClosedTabs.length,
-            () =>
-              html`
-                <fxview-tab-list
-                  slot="main"
-                  .maxTabsLength=${!this.recentBrowsing || this.showAll
-                    ? -1
-                    : MAX_TABS_FOR_RECENT_BROWSING}
-                  .searchQuery=${ifDefined(
-                    this.searchResults && this.searchQuery
-                  )}
-                  .tabItems=${this.searchResults || this.recentlyClosedTabs}
-                  @fxview-tab-list-secondary-action=${this.onDismissTab}
-                  @fxview-tab-list-primary-action=${this.onReopenTab}
-                  secondaryActionClass="dismiss-button"
-                ></fxview-tab-list>
-              `
+            () => html`
+              <fxview-tab-list
+                slot="main"
+                .maxTabsLength=${!this.recentBrowsing || this.showAll
+                  ? -1
+                  : MAX_TABS_FOR_RECENT_BROWSING}
+                .searchQuery=${ifDefined(
+                  this.searchResults && this.searchQuery
+                )}
+                .tabItems=${this.searchResults || this.recentlyClosedTabs}
+                @fxview-tab-list-secondary-action=${this.onDismissTab}
+                @fxview-tab-list-primary-action=${this.onReopenTab}
+                secondaryActionClass="dismiss-button"
+              ></fxview-tab-list>
+            `
           )}
           ${when(
             this.recentBrowsing && !this.recentlyClosedTabs.length,
@@ -410,15 +408,16 @@ class RecentlyClosedTabsInView extends ViewPage {
           )}
           ${when(
             this.isShowAllLinkVisible(),
-            () => html` <div
-              @click=${this.enableShowAll}
-              @keydown=${this.enableShowAll}
-              data-l10n-id="firefoxview-show-all"
-              ?hidden=${!this.isShowAllLinkVisible()}
-              slot="footer"
-              tabindex="0"
-              role="link"
-            ></div>`
+            () =>
+              html` <div
+                @click=${this.enableShowAll}
+                @keydown=${this.enableShowAll}
+                data-l10n-id="firefoxview-show-all"
+                ?hidden=${!this.isShowAllLinkVisible()}
+                slot="footer"
+                tabindex="0"
+                role="link"
+              ></div>`
           )}
         </card-container>
         ${when(
@@ -430,6 +429,11 @@ class RecentlyClosedTabsInView extends ViewPage {
   }
 
   onSearchQuery(e) {
+    if (!this.recentBrowsing) {
+      Glean.firefoxviewNext.searchInitiatedSearch.record({
+        page: "recentlyclosed",
+      });
+    }
     this.searchQuery = e.detail.query;
     this.showAll = false;
     this.cumulativeSearches = this.searchQuery
@@ -461,15 +465,9 @@ class RecentlyClosedTabsInView extends ViewPage {
     ) {
       event.preventDefault();
       this.showAll = true;
-      Services.telemetry.recordEvent(
-        "firefoxview_next",
-        "search_show_all",
-        "showallbutton",
-        null,
-        {
-          section: "recentlyclosed",
-        }
-      );
+      Glean.firefoxviewNext.searchShowAllShowallbutton.record({
+        section: "recentlyclosed",
+      });
     }
   }
 }

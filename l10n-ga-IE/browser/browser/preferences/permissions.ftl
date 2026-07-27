@@ -5,41 +5,31 @@
 permissions-window2 =
     .title = Eisceachtaí
     .style = min-width: 49em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Seoladh an tsuímh Ghréasáin
     .accesskey = e
-
 permissions-block =
     .label = Coisc
     .accesskey = C
-
 permissions-session =
     .label = Ceadaigh don Seisiún
     .accesskey = S
-
 permissions-allow =
     .label = Ceadaigh
     .accesskey = C
-
 permissions-site-name =
     .label = Suíomh Gréasáin
-
 permissions-status =
     .label = Stádas
-
 permissions-searchbox =
     .placeholder = Cuardaigh Suíomh Gréasáin
-
 permissions-capabilities-allow =
     .label = Ceadaigh
 permissions-capabilities-block =
     .label = Coisc
 permissions-capabilities-prompt =
     .label = Fiafraigh Díom i gCónaí
-
 permissions-capabilities-listitem-allow =
     .value = Ceadaigh
 permissions-capabilities-listitem-block =
@@ -51,15 +41,6 @@ permissions-capabilities-listitem-allow-session =
 
 permissions-invalid-uri-title = Óstainm neamhbhailí
 permissions-invalid-uri-label = Cuir óstainm bailí isteach, le do thoil
-
-## Exceptions - Tracking Protection
-
-
-## Exceptions - Cookies
-
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -80,22 +61,3 @@ permissions-exceptions-addons-desc = Is féidir na suímh a bhfuil cead acu brei
 permissions-site-autoplay-window2 =
     .title = Socruithe - Uathsheinm
     .style = { permissions-window2.style }
-
-## Site Permissions - Notifications
-
-
-## Site Permissions - Location
-
-
-## Site Permissions - Virtual Reality
-
-
-## Site Permissions - Camera
-
-
-## Site Permissions - Microphone
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -63,9 +61,7 @@ enum class DefaultFont {
   COUNT
 };
 
-void LangGroupFontPrefs::Initialize(nsStaticAtom* aLangGroupAtom) {
-  mLangGroup = aLangGroupAtom;
-
+void LangGroupFontPrefs::Initialize() {
   /* Fetch the font prefs to be used -- see bug 61883 for details.
      Not all prefs are needed upfront. Some are fallback prefs intended
      for the GFX font sub-system...
@@ -92,7 +88,7 @@ void LangGroupFontPrefs::Initialize(nsStaticAtom* aLangGroupAtom) {
   */
 
   nsAutoCString langGroup;
-  aLangGroupAtom->ToUTF8String(langGroup);
+  mLangGroup->ToUTF8String(langGroup);
 
   mDefaultVariableFont.size = Length::FromPixels(16.0f);
   mDefaultMonospaceFont.size = Length::FromPixels(13.0f);
@@ -117,7 +113,7 @@ void LangGroupFontPrefs::Initialize(nsStaticAtom* aLangGroupAtom) {
     &mDefaultSystemUiFont,
   };
   // clang-format on
-  static_assert(MOZ_ARRAY_LENGTH(fontTypes) == size_t(DefaultFont::COUNT),
+  static_assert(std::size(fontTypes) == size_t(DefaultFont::COUNT),
                 "FontTypes array count is not correct");
 
   // Get attributes specific to each generic font. We do not get the user's
@@ -199,65 +195,43 @@ void LangGroupFontPrefs::Initialize(nsStaticAtom* aLangGroupAtom) {
   }
 }
 
-nsStaticAtom* StaticPresData::GetLangGroup(nsAtom* aLanguage,
-                                           bool* aNeedsToCache) const {
-  nsStaticAtom* langGroupAtom =
-      mLangService->GetLanguageGroup(aLanguage, aNeedsToCache);
+nsStaticAtom* StaticPresData::GetLangGroup(nsAtom* aLanguage) const {
+  nsStaticAtom* langGroupAtom = mLangService->GetLanguageGroup(aLanguage);
   // Assume x-western is safe...
   return langGroupAtom ? langGroupAtom : nsGkAtoms::x_western;
 }
 
-nsStaticAtom* StaticPresData::GetUncachedLangGroup(nsAtom* aLanguage) const {
-  nsStaticAtom* langGroupAtom =
-      mLangService->GetUncachedLanguageGroup(aLanguage);
-  return langGroupAtom ? langGroupAtom : nsGkAtoms::x_western;
-}
-
 const LangGroupFontPrefs* StaticPresData::GetFontPrefsForLang(
-    nsAtom* aLanguage, bool* aNeedsToCache) {
-  // Get language group for aLanguage:
+    nsAtom* aLanguage) {
   MOZ_ASSERT(aLanguage);
   MOZ_ASSERT(mLangService);
 
-  nsStaticAtom* langGroupAtom = GetLangGroup(aLanguage, aNeedsToCache);
-  if (aNeedsToCache && *aNeedsToCache) {
-    return nullptr;
-  }
+  nsStaticAtom* langGroupAtom = GetLangGroup(aLanguage);
 
-  if (!aNeedsToCache) {
-    AssertIsMainThreadOrServoFontMetricsLocked();
-  }
-
-  LangGroupFontPrefs* prefs = &mLangGroupFontPrefs;
-  if (prefs->mLangGroup) {  // if initialized
-    DebugOnly<uint32_t> count = 0;
-    for (;;) {
-      if (prefs->mLangGroup == langGroupAtom) {
-        return prefs;
+  {
+    AutoReadLock lock(mLock);
+    for (const auto* p = mLangGroupFontPrefs.get(); p; p = p->mNext.get()) {
+      if (p->mLangGroup == langGroupAtom) {
+        return p;
       }
-      if (!prefs->mNext) {
-        break;
-      }
-      prefs = prefs->mNext.get();
     }
-    if (aNeedsToCache) {
-      *aNeedsToCache = true;
-      return nullptr;
-    }
-    // nothing cached, so go on and fetch the prefs for this lang group:
-    prefs->mNext = MakeUnique<LangGroupFontPrefs>();
-    prefs = prefs->mNext.get();
   }
 
-  if (aNeedsToCache) {
-    *aNeedsToCache = true;
-    return nullptr;
+  AutoWriteLock lock(mLock);
+  LangGroupFontPrefs* tail = nullptr;
+  for (auto* p = mLangGroupFontPrefs.get(); p; p = p->mNext.get()) {
+    if (p->mLangGroup == langGroupAtom) {
+      return p;
+    }
+    tail = p;
   }
-
-  AssertIsMainThreadOrServoFontMetricsLocked();
-  prefs->Initialize(langGroupAtom);
-
-  return prefs;
+  auto newPrefs = MakeUnique<LangGroupFontPrefs>(langGroupAtom);
+  if (tail) {
+    tail->mNext = std::move(newPrefs);
+    return tail->mNext.get();
+  }
+  mLangGroupFontPrefs = std::move(newPrefs);
+  return mLangGroupFontPrefs.get();
 }
 
 }  // namespace mozilla

@@ -8,19 +8,20 @@ ChromeUtils.defineESModuleGetters(lazy, {
   E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
 });
 
+ChromeUtils.defineLazyGetter(lazy, "PolicyContainer", () => {
+  return Components.Constructor(
+    "@mozilla.org/policycontainer;1",
+    "nsIPolicyContainer",
+    "initFromCSP"
+  );
+});
+
 /**
  * The external API exported by this module.
  */
 export var SessionHistory = Object.freeze({
   isEmpty(docShell) {
     return SessionHistoryInternal.isEmpty(docShell);
-  },
-
-  collect(docShell, aFromIdx = -1) {
-    if (Services.appinfo.sessionHistoryInParent) {
-      throw new Error("Use SessionHistory.collectFromParent instead");
-    }
-    return SessionHistoryInternal.collect(docShell, aFromIdx);
   },
 
   collectFromParent(uri, documentHasChildNodes, history, aFromIdx = -1) {
@@ -32,20 +33,9 @@ export var SessionHistory = Object.freeze({
     );
   },
 
-  collectNonWebControlledBlankLoadingSession(browsingContext) {
-    return SessionHistoryInternal.collectNonWebControlledBlankLoadingSession(
+  collectNonWebControlledLoadingSession(browsingContext) {
+    return SessionHistoryInternal.collectNonWebControlledLoadingSession(
       browsingContext
-    );
-  },
-
-  restore(docShell, tabData) {
-    if (Services.appinfo.sessionHistoryInParent) {
-      throw new Error("Use SessionHistory.restoreFromParent instead");
-    }
-    return SessionHistoryInternal.restore(
-      docShell.QueryInterface(Ci.nsIWebNavigation).sessionHistory
-        .legacySHistory,
-      tabData
     );
   },
 
@@ -77,28 +67,6 @@ var SessionHistoryInternal = {
     }
     let uri = webNavigation.currentURI.spec;
     return uri == "about:blank" && history.count == 0;
-  },
-
-  /**
-   * Collects session history data for a given docShell.
-   *
-   * @param docShell
-   *        The docShell that owns the session history.
-   * @param aFromIdx
-   *        The starting local index to collect the history from.
-   * @return An object reprereseting a partial global history update.
-   */
-  collect(docShell, aFromIdx = -1) {
-    let webNavigation = docShell.QueryInterface(Ci.nsIWebNavigation);
-    let uri = webNavigation.currentURI.displaySpec;
-    let body = webNavigation.document.body;
-    let history = webNavigation.sessionHistory;
-    return this.collectCommon(
-      uri,
-      body && body.hasChildNodes(),
-      history.legacySHistory,
-      aFromIdx
-    );
   },
 
   collectCommon(uri, documentHasChildNodes, shistory, aFromIdx) {
@@ -153,10 +121,10 @@ var SessionHistoryInternal = {
     return data;
   },
 
-  collectNonWebControlledBlankLoadingSession(browsingContext) {
+  collectNonWebControlledLoadingSession(browsingContext) {
     if (
       browsingContext.sessionHistory?.count === 0 &&
-      browsingContext.nonWebControlledBlankURI &&
+      browsingContext.nonWebControlledLoadingURI &&
       browsingContext.mostRecentLoadingSessionHistoryEntry
     ) {
       return {
@@ -277,13 +245,6 @@ var SessionHistoryInternal = {
       );
     }
 
-    if (shEntry.partitionedPrincipalToInherit) {
-      entry.partitionedPrincipalToInherit_base64 =
-        lazy.E10SUtils.serializePrincipal(
-          shEntry.partitionedPrincipalToInherit
-        );
-    }
-
     entry.hasUserInteraction = shEntry.hasUserInteraction;
 
     if (shEntry.triggeringPrincipal) {
@@ -292,8 +253,10 @@ var SessionHistoryInternal = {
       );
     }
 
-    if (shEntry.csp) {
-      entry.csp = lazy.E10SUtils.serializeCSP(shEntry.csp);
+    if (shEntry.policyContainer) {
+      entry.policyContainer = lazy.E10SUtils.serializePolicyContainer(
+        shEntry.policyContainer
+      );
     }
 
     entry.docIdentifier = shEntry.bfcacheID;
@@ -323,7 +286,10 @@ var SessionHistoryInternal = {
       }
     }
 
-    entry.persist = shEntry.persist;
+    entry.transient = shEntry.isTransient();
+
+    entry.navigationKey = shEntry.navigationKey.toString();
+    entry.navigationId = shEntry.navigationId.toString();
 
     return entry;
   },
@@ -380,7 +346,6 @@ var SessionHistoryInternal = {
       if (!entry.url) {
         continue;
       }
-      let persist = "persist" in entry ? entry.persist : true;
       let shEntry = this.deserializeEntry(entry, idMap, docIdentMap, history);
 
       // To enable a smooth migration, we treat values of null/undefined as having
@@ -395,7 +360,7 @@ var SessionHistoryInternal = {
         shEntry.hasUserInteraction = entry.hasUserInteraction;
       }
 
-      history.addEntry(shEntry, persist);
+      history.addEntry(shEntry);
     }
 
     // Select the right history entry.
@@ -415,7 +380,7 @@ var SessionHistoryInternal = {
    *        Hash for ensuring unique frame IDs
    * @param docIdentMap
    *        Hash to ensure reuse of BFCache entries
-   * @returns nsISHEntry
+   * @returns {nsISHEntry}
    */
   deserializeEntry(entry, idMap, docIdentMap, shistory) {
     var shEntry = shistory.createEntry();
@@ -473,6 +438,18 @@ var SessionHistoryInternal = {
 
     if (entry.cacheKey) {
       shEntry.cacheKey = entry.cacheKey;
+    }
+
+    // The persist attribute was replaced by SetTransient() and IsTransient().
+    // But existing session storage might contain entries with the persist attribute,
+    // so we translate them to transient.
+    // Bug 1971274 tracks removing this.
+    if ("persist" in entry) {
+      entry.transient = !entry.persist;
+    }
+
+    if (entry.transient) {
+      shEntry.setTransient();
     }
 
     if (entry.ID) {
@@ -570,22 +547,30 @@ var SessionHistoryInternal = {
     );
     // As both partitionedPrincipal and principalToInherit are both not required to load
     // it's ok to keep these undefined when we don't have a previously defined principal.
-    if (entry.partitionedPrincipalToInherit_base64) {
-      shEntry.partitionedPrincipalToInherit =
-        lazy.E10SUtils.deserializePrincipal(
-          entry.partitionedPrincipalToInherit_base64
-        );
-    }
     if (entry.principalToInherit_base64) {
       shEntry.principalToInherit = lazy.E10SUtils.deserializePrincipal(
         entry.principalToInherit_base64
       );
     }
-    if (entry.csp) {
-      shEntry.csp = lazy.E10SUtils.deserializeCSP(entry.csp);
+    if (entry.policyContainer) {
+      // Firefox 143 and later writes to policyContainer (bug 1974070).
+      shEntry.policyContainer = lazy.E10SUtils.deserializePolicyContainer(
+        entry.policyContainer
+      );
+    } else if (entry.csp) {
+      // Firefox 142 and earlier writes entry.csp;
+      const csp = lazy.E10SUtils.deserializeCSP(entry.csp);
+      shEntry.policyContainer = new lazy.PolicyContainer(csp);
     }
     if (entry.wireframe) {
       shEntry.wireframe = entry.wireframe;
+    }
+
+    if (entry.navigationKey) {
+      shEntry.navigationKey = Components.ID(entry.navigationKey);
+    }
+    if (entry.navigationId) {
+      shEntry.navigationId = Components.ID(entry.navigationId);
     }
 
     if (entry.children) {

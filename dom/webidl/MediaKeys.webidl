@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,7 +17,7 @@ enum MediaKeySessionType {
   // persistent-usage-record,
 };
 
-// https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+// https://www.w3.org/TR/eme-hdcp-version-registry/
 enum HDCPVersion {
     "1.0",
     "1.1",
@@ -32,6 +31,8 @@ enum HDCPVersion {
 };
 
 // https://w3c.github.io/encrypted-media/#idl-def-mediakeyspolicy
+// The spec uses DOMString, but it's equivalent for us to use enum. We will keep
+// the enum up to date with the registry.
 dictionary MediaKeysPolicy {
   HDCPVersion minHdcpVersion;
 };

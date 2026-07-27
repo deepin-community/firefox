@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -22,10 +21,10 @@ features: [Symbol, TypedArray]
 
 var s = Symbol("1");
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var sample, result;
 
-  sample = new TA(2);
+  sample = new TA(makeCtorArg(2));
   sample.foo = 42;
   sample.bar = "bar";
   sample[s] = 1;

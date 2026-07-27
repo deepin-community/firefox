@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,30 +7,31 @@
  * attribute.
  */
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/HashFunctions.h"
-
 #include "nsAttrValue.h"
-#include "nsAttrValueInlines.h"
-#include "nsUnicharUtils.h"
+
+#include <algorithm>
+
+#include "ReferrerInfo.h"
+#include "mozilla/ArrayUtils.h"
 #include "mozilla/AttributeStyles.h"
-#include "mozilla/ClearOnShutdown.h"
 #include "mozilla/BloomFilter.h"
+#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/DebugOnly.h"
 #include "mozilla/DeclarationBlock.h"
+#include "mozilla/HashFunctions.h"
 #include "mozilla/MemoryReporting.h"
+#include "mozilla/SVGAttrValueWrapper.h"
 #include "mozilla/ServoBindingTypes.h"
 #include "mozilla/ServoUtils.h"
 #include "mozilla/ShadowParts.h"
-#include "mozilla/SVGAttrValueWrapper.h"
 #include "mozilla/URLExtraData.h"
 #include "mozilla/dom/Document.h"
+#include "nsAttrValueInlines.h"
 #include "nsContentUtils.h"
+#include "nsIURI.h"
 #include "nsReadableUtils.h"
 #include "nsStyledElement.h"
-#include "nsIURI.h"
-#include "ReferrerInfo.h"
-#include <algorithm>
+#include "nsUnicharUtils.h"
 
 using namespace mozilla;
 
@@ -239,7 +238,7 @@ void MiscContainer::Evict() {
   }
 }
 
-nsTArray<const nsAttrValue::EnumTable*>* nsAttrValue::sEnumTableArray = nullptr;
+nsTArray<nsAttrValue::EnumTableSpan>* nsAttrValue::sEnumTableArray = nullptr;
 
 nsAttrValue::nsAttrValue() : mBits(0) {}
 
@@ -262,7 +261,7 @@ nsAttrValue::~nsAttrValue() { ResetIfSet(); }
 /* static */
 void nsAttrValue::Init() {
   MOZ_ASSERT(!sEnumTableArray, "nsAttrValue already initialized");
-  sEnumTableArray = new nsTArray<const EnumTable*>;
+  sEnumTableArray = new nsTArray<EnumTableSpan>;
 }
 
 /* static */
@@ -635,7 +634,7 @@ void nsAttrValue::ToString(nsAString& aResult) const {
     case eInteger: {
       nsAutoString intStr;
       intStr.AppendInt(GetIntegerValue());
-      aResult = intStr;
+      aResult = std::move(intStr);
 
       break;
     }
@@ -791,19 +790,17 @@ void nsAttrValue::GetEnumString(nsAString& aResult, bool aRealTag) const {
                              ? static_cast<uint32_t>(GetIntInternal())
                              : GetMiscContainer()->mValue.mEnumValue;
   int16_t val = allEnumBits >> NS_ATTRVALUE_ENUMTABLEINDEX_BITS;
-  const EnumTable* table = sEnumTableArray->ElementAt(
+  EnumTableSpan table = sEnumTableArray->ElementAt(
       allEnumBits & NS_ATTRVALUE_ENUMTABLEINDEX_MASK);
-
-  while (table->tag) {
-    if (table->value == val) {
-      aResult.AssignASCII(table->tag);
+  for (const auto& entry : table) {
+    if (entry.value == val) {
+      aResult.AssignASCII(entry.tag);
       if (!aRealTag &&
           allEnumBits & NS_ATTRVALUE_ENUMTABLE_VALUE_NEEDS_TO_UPPER) {
         nsContentUtils::ASCIIToUpper(aResult);
       }
       return;
     }
-    table++;
   }
 
   MOZ_ASSERT_UNREACHABLE("couldn't find value in EnumTable");
@@ -1335,7 +1332,11 @@ void nsAttrValue::ParseAtom(const nsAString& aValue) {
 void nsAttrValue::ParseAtomArray(nsAtom* aValue) {
   if (MiscContainer* cont = AtomArrayCache::Lookup(aValue)) {
     // Set our MiscContainer to the cached one.
+    // AddRef must happen before ResetIfSet: the cache does not hold a strong
+    // reference, and ResetIfSet could release the last reference to cont if
+    // this nsAttrValue is already holding it.
     NS_ADDREF(cont);
+    ResetIfSet();
     SetPtrValueAndType(cont, eOtherBase);
     return;
   }
@@ -1528,8 +1529,19 @@ mozilla::StringBuffer* nsAttrValue::GetStoredStringBuffer() const {
   return nullptr;
 }
 
-int16_t nsAttrValue::GetEnumTableIndex(const EnumTable* aTable) {
-  int16_t index = sEnumTableArray->IndexOf(aTable);
+/**
+ * Compares two `EnumTableItem` spans by comparing their data pointer.
+ */
+struct EnumTablesHaveEqualContent {
+  bool Equals(const nsAttrValue::EnumTableSpan& aSpan1,
+              const nsAttrValue::EnumTableSpan& aSpan2) const {
+    return aSpan1.Elements() == aSpan2.Elements();
+  }
+};
+
+int16_t nsAttrValue::GetEnumTableIndex(EnumTableSpan aTable) {
+  int16_t index =
+      sEnumTableArray->IndexOf(aTable, 0, EnumTablesHaveEqualContent());
   if (index < 0) {
     index = sEnumTableArray->Length();
     NS_ASSERTION(index <= NS_ATTRVALUE_ENUMTABLEINDEX_MAXVALUE,
@@ -1540,47 +1552,42 @@ int16_t nsAttrValue::GetEnumTableIndex(const EnumTable* aTable) {
   return index;
 }
 
-int32_t nsAttrValue::EnumTableEntryToValue(const EnumTable* aEnumTable,
-                                           const EnumTable* aTableEntry) {
+int32_t nsAttrValue::EnumTableEntryToValue(EnumTableSpan aEnumTable,
+                                           const EnumTableEntry& aTableEntry) {
   int16_t index = GetEnumTableIndex(aEnumTable);
   int32_t value =
-      (aTableEntry->value << NS_ATTRVALUE_ENUMTABLEINDEX_BITS) + index;
+      (aTableEntry.value << NS_ATTRVALUE_ENUMTABLEINDEX_BITS) + index;
   return value;
 }
 
-bool nsAttrValue::ParseEnumValue(const nsAString& aValue,
-                                 const EnumTable* aTable, bool aCaseSensitive,
-                                 const EnumTable* aDefaultValue) {
+bool nsAttrValue::ParseEnumValue(const nsAString& aValue, EnumTableSpan aTable,
+                                 bool aCaseSensitive,
+                                 const EnumTableEntry* aDefaultValue) {
   ResetIfSet();
-  const EnumTable* tableEntry = aTable;
-
-  while (tableEntry->tag) {
-    if (aCaseSensitive ? aValue.EqualsASCII(tableEntry->tag)
-                       : aValue.LowerCaseEqualsASCII(tableEntry->tag)) {
+  for (const auto& tableEntry : aTable) {
+    if (aCaseSensitive ? aValue.EqualsASCII(tableEntry.tag)
+                       : aValue.LowerCaseEqualsASCII(tableEntry.tag)) {
       int32_t value = EnumTableEntryToValue(aTable, tableEntry);
 
-      bool equals = aCaseSensitive || aValue.EqualsASCII(tableEntry->tag);
+      bool equals = aCaseSensitive || aValue.EqualsASCII(tableEntry.tag);
       if (!equals) {
         nsAutoString tag;
-        tag.AssignASCII(tableEntry->tag);
+        tag.AssignASCII(tableEntry.tag);
         nsContentUtils::ASCIIToUpper(tag);
         if ((equals = tag.Equals(aValue))) {
           value |= NS_ATTRVALUE_ENUMTABLE_VALUE_NEEDS_TO_UPPER;
         }
       }
       SetIntValueAndType(value, eEnum, equals ? nullptr : &aValue);
-      NS_ASSERTION(GetEnumValue() == tableEntry->value,
+      NS_ASSERTION(GetEnumValue() == tableEntry.value,
                    "failed to store enum properly");
 
       return true;
     }
-    tableEntry++;
   }
 
   if (aDefaultValue) {
-    MOZ_ASSERT(aTable <= aDefaultValue && aDefaultValue < tableEntry,
-               "aDefaultValue not inside aTable?");
-    SetIntValueAndType(EnumTableEntryToValue(aTable, aDefaultValue), eEnum,
+    SetIntValueAndType(EnumTableEntryToValue(aTable, *aDefaultValue), eEnum,
                        &aValue);
     return true;
   }
@@ -1929,15 +1936,19 @@ bool nsAttrValue::ParseStyleAttribute(const nsAString& aString,
   if (cachingAllowed) {
     if (MiscContainer* cont = attrStyles->LookupStyleAttr(aString)) {
       // Set our MiscContainer to the cached one.
+      // AddRef must happen before ResetIfSet: the cache does not hold a strong
+      // reference, and ResetIfSet could release the last reference to cont if
+      // this nsAttrValue is already holding it.
       NS_ADDREF(cont);
+      ResetIfSet();
       SetPtrValueAndType(cont, eOtherBase);
       return true;
     }
   }
 
-  RefPtr<DeclarationBlock> decl =
-      DeclarationBlock::FromCssText(aString, data, doc->GetCompatibilityMode(),
-                                    doc->CSSLoader(), StyleCssRuleType::Style);
+  RefPtr<DeclarationBlock> decl = DeclarationBlock::FromCssText(
+      aString, data, doc->GetCompatibilityMode(), doc->GetExistingCSSLoader(),
+      StyleCssRuleType::Style);
   if (!decl) {
     return false;
   }
@@ -2131,7 +2142,7 @@ size_t nsAttrValue::SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const {
       n += aMallocSizeOf(container);
 
       // We only count the size of the object pointed by otherPtr if it's a
-      // string. When it's an atom, it's counted separatly.
+      // string. When it's an atom, it's counted separately.
       if (mozilla::StringBuffer* buf = container->GetStoredStringBuffer()) {
         n += buf->SizeOfIncludingThisIfUnshared(aMallocSizeOf);
       }
@@ -2143,8 +2154,8 @@ size_t nsAttrValue::SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const {
         // need a way to call the Servo heap_size_of function.
         // n += container->mCSSDeclaration->SizeOfIncludingThis(aMallocSizeOf);
       } else if (Type() == eAtomArray && container->mValue.mAtomArray) {
-        // Don't measure each nsAtom, they are measured separatly.
-        n += container->mValue.mAtomArray->mArray.ShallowSizeOfIncludingThis(
+        // Don't measure each nsAtom, because they are measured separately.
+        n += container->mValue.mAtomArray->ShallowSizeOfIncludingThis(
             aMallocSizeOf);
       }
       break;

@@ -9,14 +9,14 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.ResolveInfo
-import android.net.Uri
+import androidx.core.net.toUri
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
+import kotlin.test.assertNotNull
 
 @Ignore("https://bugzilla.mozilla.org/show_bug.cgi?id=1794926")
 class BrowsersCacheTest {
@@ -109,7 +109,7 @@ class BrowsersCacheTest {
         browsers.forEach { packageName ->
             val intent = Intent(Intent.ACTION_VIEW)
             intent.`package` = packageName
-            intent.data = Uri.parse(url)
+            intent.data = url.toUri()
             intent.addCategory(Intent.CATEGORY_BROWSABLE)
 
             val packageInfo = PackageInfo().apply {
@@ -133,7 +133,7 @@ class BrowsersCacheTest {
 
         if (defaultBrowser != null) {
             val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(url)
+            intent.data = url.toUri()
             intent.addCategory(Intent.CATEGORY_BROWSABLE)
 
             val activityInfo = ActivityInfo().apply {

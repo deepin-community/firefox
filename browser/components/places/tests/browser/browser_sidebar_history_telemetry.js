@@ -23,6 +23,11 @@ let gResponse = 1;
 })();
 
 add_setup(async function () {
+  // This test is specific to the legacy history sidebar. For equivalent telemetry for
+  // the new sidebar and history panel implementation, see bug 2002108.
+  await SpecialPowers.pushPrefEnv({
+    set: [["sidebar.revamp", false]],
+  });
   await PlacesUtils.history.clear();
 
   // Visited pages listed by descending visit date.
@@ -38,7 +43,7 @@ add_setup(async function () {
   let places = [];
   for (let i = 0; i < pages.length; i++) {
     places.push({
-      uri: NetUtil.newURI(pages[i]),
+      uri: Services.io.newURI(pages[i]),
       visitDate: (time - i) * 1000,
       transition: PlacesUtils.history.TRANSITION_TYPED,
     });
@@ -71,7 +76,7 @@ add_task(async function test_click_multiple_history_entries() {
     });
 
     // open multiple history items with a single click
-    synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
+    await synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
 
     TelemetryTestUtils.assertScalarUnset(
       TelemetryTestUtils.getProcessScalars("parent", true, true),
@@ -81,7 +86,7 @@ add_task(async function test_click_multiple_history_entries() {
     // if they proceed with opening history multiple history items despite the warning,
     // telemetry should be recorded
     gResponse = 0;
-    synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
+    await synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
 
     TelemetryTestUtils.assertKeyedScalar(
       TelemetryTestUtils.getProcessScalars("parent", true, true),
@@ -93,14 +98,14 @@ add_task(async function test_click_multiple_history_entries() {
     let parentNode = tree.selectedNode;
     if (!parentNode.containerOpen) {
       // Only need to open/expand container node on first run
-      synthesizeClickOnSelectedTreeCell(tree);
+      await synthesizeClickOnSelectedTreeCell(tree);
     }
     if (parentNode.title == "Today" && parentNode.hasChildren) {
       info(`Selecting node with title ${parentNode?.getChild(0)?.title}`);
       tree.selectNode(parentNode.getChild(0));
     }
 
-    synthesizeClickOnSelectedTreeCell(tree, {
+    await synthesizeClickOnSelectedTreeCell(tree, {
       button: 2,
       type: "contextmenu",
     });
@@ -126,7 +131,7 @@ add_task(async function test_click_multiple_history_entries() {
 
     let newWinOpened = BrowserTestUtils.waitForNewWindow();
 
-    synthesizeClickOnSelectedTreeCell(tree, {
+    await synthesizeClickOnSelectedTreeCell(tree, {
       button: 2,
       type: "contextmenu",
     });
@@ -158,7 +163,7 @@ add_task(async function test_click_multiple_history_entries() {
 
     let newPrivateWinOpened = BrowserTestUtils.waitForNewWindow();
 
-    synthesizeClickOnSelectedTreeCell(tree, {
+    await synthesizeClickOnSelectedTreeCell(tree, {
       button: 2,
       type: "contextmenu",
     });
@@ -209,22 +214,19 @@ add_task(async function test_search_and_filter() {
 
     // Search the tree.
     let searchBox = tree.ownerDocument.getElementById("search-box");
-    searchBox.value = "sidebar.mozilla";
-    searchBox.doCommand();
+    await setSearch(searchBox, "sidebar.mozilla");
     info("Tree was searched with sting sidebar.mozilla");
 
-    searchBox.value = "";
-    searchBox.doCommand();
+    await setSearch(searchBox, "");
     info("Search was reset");
 
     // Perform a second search.
-    searchBox.value = "sidebar.mozilla";
-    searchBox.doCommand();
+    await setSearch(searchBox, "sidebar.mozilla");
     info("Second search was performed");
 
     // Select the first link and click on it.
     tree.selectNode(tree.view.nodeForTreeIndex(firstNodeIndex));
-    synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
+    await synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
     info("First link was selected and then clicked on");
 
     TelemetryTestUtils.assertKeyedScalar(
@@ -259,12 +261,11 @@ add_task(async function test_search_and_filter() {
 
     // Search the tree.
     let searchBox = tree.ownerDocument.getElementById("search-box");
-    searchBox.value = "sidebar.mozilla";
-    searchBox.doCommand();
+    await setSearch(searchBox, "sidebar.mozilla");
 
     // Select the first link and click on it.
     tree.selectNode(tree.view.nodeForTreeIndex(firstNodeIndex));
-    synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
+    await synthesizeClickOnSelectedTreeCell(tree, { button: 1 });
 
     TelemetryTestUtils.assertKeyedScalar(
       TelemetryTestUtils.getProcessScalars("parent", true, true),

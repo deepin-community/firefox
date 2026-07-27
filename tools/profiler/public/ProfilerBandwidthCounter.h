@@ -5,25 +5,14 @@
 #ifndef ProfilerBandwidthCounter_h
 #define ProfilerBandwidthCounter_h
 
-#ifndef MOZ_GECKO_PROFILER
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/ProfilerCounts.h"
 
-namespace mozilla {
-
-inline void profiler_count_bandwidth_read_bytes(int64_t aCount) {}
-inline void profiler_count_bandwidth_written_bytes(int64_t aCount) {}
-
-}  // namespace mozilla
-
-#else
-
-#  include "mozilla/ProfilerMarkers.h"
-#  include "mozilla/ProfilerCounts.h"
-
-class ProfilerBandwidthCounter final : public BaseProfilerCount {
+class ProfilerBandwidthCounter final : public AtomicProfilerCount {
  public:
   ProfilerBandwidthCounter()
-      : BaseProfilerCount("bandwidth", &mCounter, &mNumber, "Bandwidth",
-                          "Amount of data transfered") {
+      : AtomicProfilerCount("bandwidth", &mCounter, &mNumber, "Bandwidth",
+                            "Amount of data transfered") {
     Register();
   }
 
@@ -100,7 +89,5 @@ inline void profiler_count_bandwidth_written_bytes(int64_t aCount) {
 }
 
 }  // namespace mozilla
-
-#endif  // !MOZ_GECKO_PROFILER
 
 #endif  // ProfilerBandwidthCounter_h

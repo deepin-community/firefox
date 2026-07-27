@@ -18,13 +18,11 @@ abuse-report-addon-authored-by = аутор: <a data-l10n-name="author-name">{ $
 abuse-report-learnmore =
     Нисте сигурни шта да изаберете?
     <a data-l10n-name="learnmore-link">Сазнајте више о пријављивању додатака и тема</a>
-abuse-report-learnmore-intro = Нисте сигурни шта да изаберете?
-abuse-report-learnmore-link = Сазнајте више о пријављивању додатака и тема
 abuse-report-submit-description = Опишите проблем (опционално)
 abuse-report-textarea =
     .placeholder = Лакше ћемо решити проблем ако га детаљније опишете. Хвала вам на помоћи.
 abuse-report-submit-note =
-    Напомена: не уносите личне податке попут имена, имејл-адресе, броја телефона или физичке адресе.
+    Напомена: не уносите личне податке попут имена, е-адресе, броја телефона или физичке адресе.
     { -vendor-short-name } води сталну евиденцију ових извештаја.
 
 ## Panel buttons.
@@ -48,24 +46,6 @@ abuse-report-messagebar-removed-sitepermission = Хвала што сте под
 abuse-report-messagebar-removed-theme = Хвала вам на извештају. Уклонили сте тему <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error = Дошло је до грешке при слању извештаја о додатку <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error-recent-submit = Додатак <span data-l10n-name="addon-name">{ $addon-name }</span> није пријављен јер сте га недавно већ пријавили.
-abuse-report-messagebar-aborted2 =
-    .message = Пријава злоупотребе за { $addon-name } је отказана.
-abuse-report-messagebar-submitting2 =
-    .message = Слање извештаја за { $addon-name }.
-abuse-report-messagebar-submitted2 =
-    .message = Хвала вам на извештају. Желите ли да уклоните додатак { $addon-name }?
-abuse-report-messagebar-submitted-noremove2 =
-    .message = Хвала вам на извештају.
-abuse-report-messagebar-removed-extension2 =
-    .message = Хвала вам на извештају. Уклонили сте додатак { $addon-name }.
-abuse-report-messagebar-removed-sitepermission2 =
-    .message = Хвала што сте поднели пријаву. Уклонили сте додатак { $addon-name } за дозволе ове странице.
-abuse-report-messagebar-removed-theme2 =
-    .message = Хвала вам на извештају. Уклонили сте тему { $addon-name }.
-abuse-report-messagebar-error2 =
-    .message = Дошло је до грешке при слању извештаја о додатку { $addon-name }.
-abuse-report-messagebar-error-recent-submit2 =
-    .message = Додатак { $addon-name } није пријављен јер сте га недавно већ пријавили.
 
 ## Message bars actions.
 
@@ -84,10 +64,10 @@ abuse-report-damage-reason-v2 = Штетно за мој рачунар или �
 abuse-report-damage-example = Пример: малвер или крађа података
 abuse-report-spam-reason-v2 = Садржи непожељан садржај или рекламе
 abuse-report-spam-example = Пример: додаје рекламе на веб-странице
-abuse-report-settings-reason-v2 = Промењен ми је претраживач, почетна страница или страница нове картице без питања
+abuse-report-settings-reason-v2 = Промењен ми је претраживач, почетна страница или страница новог језичка без питања
 abuse-report-settings-suggestions = Покушајте да промените подешавања пре пријављивања злоупотребе:
 abuse-report-settings-suggestions-search = Промените подразумевана подешавања претраге
-abuse-report-settings-suggestions-homepage = Промените почетну страницу и страницу нове картице
+abuse-report-settings-suggestions-homepage = Промените почетну страницу и страницу новог језичка
 abuse-report-deceptive-reason-v2 = Лажно представља своју вредност или функције
 abuse-report-deceptive-example = Пример: опис или слика доводе у заблуду
 abuse-report-broken-reason-extension-v2 = Не ради, нарушава веб-сајтове или успорава { -brand-product-name(case: "acc") }

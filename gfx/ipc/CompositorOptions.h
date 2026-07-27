@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -42,6 +40,7 @@ class CompositorOptions {
   bool AllowSoftwareWebRenderOGL() const { return mAllowSoftwareWebRenderOGL; }
   bool InitiallyPaused() const { return mInitiallyPaused; }
   bool NeedFastSnaphot() const { return mNeedFastSnaphot; }
+  bool AllowNativeCompositor() const { return mAllowNativeCompositor; }
 
   void SetUseAPZ(bool aUseAPZ) { mUseAPZ = aUseAPZ; }
 
@@ -61,13 +60,18 @@ class CompositorOptions {
     mNeedFastSnaphot = aNeedFastSnaphot;
   }
 
+  void SetAllowNativeCompositor(bool aAllowNativeCompositor) {
+    mAllowNativeCompositor = aAllowNativeCompositor;
+  }
+
   bool EqualsIgnoringApzEnablement(const CompositorOptions& aOther) const {
     return mUseSoftwareWebRender == aOther.mUseSoftwareWebRender &&
            mAllowSoftwareWebRenderD3D11 ==
                aOther.mAllowSoftwareWebRenderD3D11 &&
            mAllowSoftwareWebRenderOGL == aOther.mAllowSoftwareWebRenderOGL &&
            mInitiallyPaused == aOther.mInitiallyPaused &&
-           mNeedFastSnaphot == aOther.mNeedFastSnaphot;
+           mNeedFastSnaphot == aOther.mNeedFastSnaphot &&
+           mAllowNativeCompositor == aOther.mAllowNativeCompositor;
   }
 
   bool operator==(const CompositorOptions& aOther) const {
@@ -83,6 +87,7 @@ class CompositorOptions {
   bool mAllowSoftwareWebRenderOGL = false;
   bool mInitiallyPaused = false;
   bool mNeedFastSnaphot = false;
+  bool mAllowNativeCompositor = true;
 
   // Make sure to add new fields to the ParamTraits implementation
   // in LayersMessageUtils.h

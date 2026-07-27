@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -15,8 +15,6 @@
 #include "test/util.h"
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/encoder/av1_fwd_txfm1d.h"
-
-typedef TX_SIZE TxSize;
 
 using libaom_test::ACMRandom;
 using libaom_test::input_base;
@@ -75,7 +73,7 @@ TEST(av1_inv_txfm1d, InvAccuracyCheck) {
   ASSERT_EQ(NELEMENTS(inv_txfm_func_ls), TX_SIZES);
   for (int i = 0; i < count_test_block; ++i) {
     // choose a random transform to test
-    const TxSize tx_size = static_cast<TxSize>(rnd.Rand8() % TX_SIZES);
+    const TX_SIZE tx_size = static_cast<TX_SIZE>(rnd.Rand8() % TX_SIZES);
     const int txfm_size = txfm_size_ls[tx_size];
     const TxfmFunc inv_txfm_func = inv_txfm_func_ls[tx_size][0];
 
@@ -102,7 +100,7 @@ TEST(av1_inv_txfm1d, InvAccuracyCheck) {
   }
 }
 
-static INLINE int get_max_bit(int x) {
+static inline int get_max_bit(int x) {
   int max_bit = -1;
   while (x) {
     x = x >> 1;
@@ -152,6 +150,17 @@ TEST(av1_inv_txfm1d, round_trip) {
       }
     }
   }
+}
+
+TEST(av1_inv_txfm1d, iadst4_overflow_bug471847850) {
+  // Test case to trigger integer overflow in av1_iadst4
+  int32_t input[4] = { 300000, 0, 300000, 300000 };
+  int32_t output[4];
+
+  av1_iadst4(input, output, 12, range_bit);
+
+  // Verify that the transform completes and the output is greater than zero.
+  EXPECT_GT(output[0], 0);
 }
 
 }  // namespace

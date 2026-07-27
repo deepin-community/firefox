@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Pytanje zmylkow - běžny čas / { $se
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Tutón { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Tutón { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Tutón { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Připrawjenje
+about-debugging-sidebar-setup-title =
+    .title = Připrawjenje
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Słužba Push
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Pochad
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Přepruwowanje service worker je tuchwilu znjemóžnjene za multiprocesowy { -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Multiprocesowe graty
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Hłowny proces a wobsahowe procesy za cilowy wobhladowak
+about-debugging-message-error-icon =
+    .alt = Zmylkowy symbol
+about-debugging-message-info-icon =
+    .alt = Informaciski symbol
+about-debugging-message-warning-icon =
+    .alt = Warnowanski symbol
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Zdźělenku začinić
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Zdźělenku začinić
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Zmylkowe podrobnosće
 about-debugging-message-details-label-warning = Warnowanske podrobnosće
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Podrobnosće
+about-debugging-sidebar =
+    .heading = Pytanje za zmylkami

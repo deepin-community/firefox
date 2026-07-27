@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef __ClearKeyPersistence_h__
-#define __ClearKeyPersistence_h__
+#ifndef ClearKeyPersistence_h_
+#define ClearKeyPersistence_h_
 
 // This include is required in order for content_decryption_module to work
 // on Unix systems.
-#include <stddef.h>
 
 #include <functional>
 #include <set>
 #include <string>
-#include <vector>
-
-#include "content_decryption_module.h"
 
 #include "RefCounted.h"
+#include "content_decryption_module.h"
 
 class ClearKeySessionManager;
 
@@ -37,7 +34,7 @@ enum PersistentKeyState { UNINITIALIZED, LOADING, LOADED };
 
 class ClearKeyPersistence : public RefCounted {
  public:
-  explicit ClearKeyPersistence(cdm::Host_10* aHost);
+  explicit ClearKeyPersistence(cdm::Host_11* aHost);
 
   void EnsureInitialized(bool aPersistentStateAllowed,
                          std::function<void()>&& aOnInitialized);
@@ -51,7 +48,7 @@ class ClearKeyPersistence : public RefCounted {
   void PersistentSessionRemoved(std::string& aSid);
 
  private:
-  cdm::Host_10* mHost = nullptr;
+  cdm::Host_11* mHost = nullptr;
 
   PersistentKeyState mPersistentKeyState = PersistentKeyState::UNINITIALIZED;
 
@@ -61,4 +58,4 @@ class ClearKeyPersistence : public RefCounted {
   void WriteIndex();
 };
 
-#endif  // __ClearKeyPersistence_h__
+#endif  // ClearKeyPersistence_h_

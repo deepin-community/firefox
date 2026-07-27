@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,6 +17,7 @@
 #include "gfxUtils.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/SVGImageContext.h"
+#include "nsPresContext.h"
 
 #include "mozilla/gfx/2D.h"
 
@@ -125,7 +125,7 @@ ClippedImage::ClippedImage(Image* aImage, nsIntRect aClip,
   }
 }
 
-ClippedImage::~ClippedImage() {}
+ClippedImage::~ClippedImage() = default;
 
 bool ClippedImage::ShouldClip() {
   // We need to evaluate the clipping region against the image's width and
@@ -196,21 +196,32 @@ ClippedImage::GetHeight(int32_t* aHeight) {
 }
 
 NS_IMETHODIMP
-ClippedImage::GetIntrinsicSize(nsSize* aSize) {
+ClippedImage::GetIntrinsicSize(ImageIntrinsicSize* aIntrinsicSize) {
   if (!ShouldClip()) {
-    return InnerImage()->GetIntrinsicSize(aSize);
+    return InnerImage()->GetIntrinsicSize(aIntrinsicSize);
   }
 
-  *aSize = nsSize(mClip.Width(), mClip.Height());
+  aIntrinsicSize->mWidth = Some(mClip.Width());
+  aIntrinsicSize->mHeight = Some(mClip.Height());
   return NS_OK;
 }
 
-Maybe<AspectRatio> ClippedImage::GetIntrinsicRatio() {
+NS_IMETHODIMP
+ClippedImage::GetIntrinsicSizeInAppUnits(nsSize* aSize) {
+  if (!ShouldClip()) {
+    return InnerImage()->GetIntrinsicSizeInAppUnits(aSize);
+  }
+
+  *aSize = nsSize(nsPresContext::CSSPixelsToAppUnits(mClip.Width()),
+                  nsPresContext::CSSPixelsToAppUnits(mClip.Height()));
+  return NS_OK;
+}
+
+AspectRatio ClippedImage::GetIntrinsicRatio() {
   if (!ShouldClip()) {
     return InnerImage()->GetIntrinsicRatio();
   }
-
-  return Some(AspectRatio::FromSize(mClip.Width(), mClip.Height()));
+  return AspectRatio::FromSize(mClip.Width(), mClip.Height());
 }
 
 NS_IMETHODIMP_(already_AddRefed<SourceSurface>)
@@ -257,11 +268,9 @@ std::pair<ImgDrawResult, RefPtr<SourceSurface>> ClippedImage::GetFrameInternal(
     gfxContext ctx(target);
 
     // Create our callback.
-    RefPtr<DrawSingleTileCallback> drawTileCallback =
-        new DrawSingleTileCallback(this, aSize, aSVGContext, aWhichFrame,
-                                   aFlags, aOpacity);
-    RefPtr<gfxDrawable> drawable =
-        new gfxCallbackDrawable(drawTileCallback, aSize);
+    auto drawTileCallback = MakeRefPtr<DrawSingleTileCallback>(
+        this, aSize, aSVGContext, aWhichFrame, aFlags, aOpacity);
+    auto drawable = MakeRefPtr<gfxCallbackDrawable>(drawTileCallback, aSize);
 
     // Actually draw. The callback will end up invoking DrawSingleTile.
     gfxUtils::DrawPixelSnapped(&ctx, drawable, SizeDouble(aSize),
@@ -345,8 +354,7 @@ ClippedImage::Draw(gfxContext* aContext, const nsIntSize& aSize,
     }
 
     // Create a drawable from that surface.
-    RefPtr<gfxSurfaceDrawable> drawable =
-        new gfxSurfaceDrawable(surface, aSize);
+    auto drawable = MakeRefPtr<gfxSurfaceDrawable>(surface, aSize);
 
     // Draw.
     gfxUtils::DrawPixelSnapped(aContext, drawable, SizeDouble(aSize), aRegion,

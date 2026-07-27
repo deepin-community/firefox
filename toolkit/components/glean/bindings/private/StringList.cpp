@@ -1,11 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/glean/bindings/StringList.h"
 
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/ToJSValue.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
@@ -13,6 +12,7 @@
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "nsString.h"
 #include "nsTArray.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -21,7 +21,7 @@ namespace impl {
 void StringListMetric::Add(const nsACString& aValue) const {
   auto scalarId = ScalarIdForMetric(mId);
   if (scalarId) {
-    Telemetry::ScalarSet(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue),
+    TelemetryScalar::Set(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue),
                          true);
   }
   fog_string_list_add(mId, &aValue);

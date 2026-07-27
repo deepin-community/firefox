@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 40; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,19 +26,14 @@ class ScrollbarDrawingGTK final : public ScrollbarDrawing {
   template <typename PaintBackendData>
   bool DoPaintScrollbarThumb(PaintBackendData&, const LayoutDeviceRect&,
                              ScrollbarKind, nsIFrame*, const ComputedStyle&,
-                             const ElementState& aElementState,
-                             const DocumentState& aDocumentState, const Colors&,
+                             const ElementState&, const Colors&,
                              const DPIRatio&);
   bool PaintScrollbarThumb(DrawTarget&, const LayoutDeviceRect&, ScrollbarKind,
-                           nsIFrame*, const ComputedStyle& aStyle,
-                           const ElementState& aElementState,
-                           const DocumentState& aDocumentState, const Colors&,
-                           const DPIRatio&) override;
+                           nsIFrame*, const ComputedStyle&, const ElementState&,
+                           const Colors&, const DPIRatio&) override;
   bool PaintScrollbarThumb(WebRenderBackendData&, const LayoutDeviceRect&,
-                           ScrollbarKind, nsIFrame*,
-                           const ComputedStyle& aStyle,
-                           const ElementState& aElementState,
-                           const DocumentState& aDocumentState, const Colors&,
+                           ScrollbarKind, nsIFrame*, const ComputedStyle&,
+                           const ElementState&, const Colors&,
                            const DPIRatio&) override;
 
   void RecomputeScrollbarParams() override;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -65,7 +63,7 @@ class nsILineBreakSink {
  */
 class nsLineBreaker {
  public:
-  nsLineBreaker();
+  nsLineBreaker() = default;
   ~nsLineBreaker();
 
   static inline bool IsSpace(char16_t u) {
@@ -217,6 +215,16 @@ class nsLineBreaker {
     mWordContinuation = aContinuation;
   }
 
+  /**
+   * Set the hyphenate-limit-chars values. Values are clamped to be <= 255.
+   */
+  void SetHyphenateLimitChars(uint32_t aWordLength, uint32_t aStartLength,
+                              uint32_t aEndLength) {
+    mHyphenateLimitWord = std::min(255u, aWordLength);
+    mHyphenateLimitStart = std::min(255u, aStartLength);
+    mHyphenateLimitEnd = std::min(255u, aEndLength);
+  }
+
  private:
   // This is a list of text sources that make up the "current word" (i.e.,
   // run of text which does not contain any whitespace). All the mLengths
@@ -250,10 +258,6 @@ class nsLineBreaker {
                              const char16_t* aTextLimit, uint8_t* aBreakState);
 
   inline constexpr bool IsSegmentSpace(char16_t u) const {
-    if (mLegacyBehavior) {
-      return nsLineBreaker::IsSpace(u);
-    }
-
     return u == 0x0020 ||  // SPACE u
            u == 0x0009 ||  // CHARACTER TABULATION
            u == 0x000D;    // CARRIAGE RETURN
@@ -262,27 +266,38 @@ class nsLineBreaker {
   AutoTArray<char16_t, 100> mCurrentWord;
   // All the items that contribute to mCurrentWord
   AutoTArray<TextItem, 2> mTextItems;
-  nsAtom* mCurrentWordLanguage;
-  bool mCurrentWordContainsMixedLang;
+  nsAtom* mCurrentWordLanguage = nullptr;
+
+  // Constraints from CSS `hyphenate-limit-chars` property, to block the use of
+  // auto-hyphenation if the word is too short, or at positions too near the
+  // beginning/end of the word.
+  // (Note that per CSS Text spec, these counts ignore combining marks, etc.,
+  // so they are not purely codepoint or character counts.)
+  // (Zero values would have no effect; but text-frame code will update the
+  // values from CSS before calling the line-breaker.)
+  uint8_t mHyphenateLimitWord = 0;   // Min word length to auto-hyphenate
+  uint8_t mHyphenateLimitStart = 0;  // Min number of chars before the break
+  uint8_t mHyphenateLimitEnd = 0;    // Min number of chars after the break
+
+  bool mCurrentWordContainsMixedLang = false;
   bool mCurrentWordMightBeBreakable = false;
-  bool mScriptIsChineseOrJapanese;
+  bool mScriptIsChineseOrJapanese = false;
 
   // True if the previous character was breakable whitespace
-  bool mAfterBreakableSpace;
+  bool mAfterBreakableSpace = false;
   // True if a break must be allowed at the current position because
   // a run of breakable whitespace ends here
-  bool mBreakHere;
+  bool mBreakHere = false;
   // Break rules for letters from the "word-break" property.
-  mozilla::intl::WordBreakRule mWordBreak;
+  mozilla::intl::WordBreakRule mWordBreak =
+      mozilla::intl::WordBreakRule::Normal;
   // Line breaking strictness from the "line-break" property.
-  mozilla::intl::LineBreakRule mLineBreak;
+  mozilla::intl::LineBreakRule mLineBreak = mozilla::intl::LineBreakRule::Auto;
   // Should the text be treated as continuing a word-in-progress (for purposes
   // of initial capitalization)? Normally this is set to false whenever we
   // start using a linebreaker, but it may be set to true if the line-breaker
   // has been explicitly flushed mid-word.
-  bool mWordContinuation;
-  // True if using old line segmenter.
-  const bool mLegacyBehavior;
+  bool mWordContinuation = false;
 };
 
 #endif /*NSLINEBREAKER_H_*/

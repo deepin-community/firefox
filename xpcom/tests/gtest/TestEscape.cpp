@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsEscape.h"
 #include "gtest/gtest.h"
-#include "mozilla/ArrayUtils.h"
 #include "nsNetUtil.h"
 
 using namespace mozilla;
@@ -23,7 +20,7 @@ TEST(Escape, FallibleNoEscape)
   nsresult rv = NS_EscapeURL(toEscape, esc_OnlyNonASCII, escaped, fallible);
   EXPECT_EQ(rv, NS_OK);
   // Nothing should have been escaped, they should be the same string.
-  EXPECT_STREQ(toEscape.BeginReading(), escaped.BeginReading());
+  EXPECT_STREQ(toEscape.get(), escaped.get());
   // We expect them to point at the same buffer.
   EXPECT_EQ(toEscape.BeginReading(), escaped.BeginReading());
 }
@@ -36,9 +33,9 @@ TEST(Escape, FallibleEscape)
   nsCString escaped;
   nsresult rv = NS_EscapeURL(toEscape, esc_OnlyNonASCII, escaped, fallible);
   EXPECT_EQ(rv, NS_OK);
-  EXPECT_STRNE(toEscape.BeginReading(), escaped.BeginReading());
+  EXPECT_STRNE(toEscape.get(), escaped.get());
   const char* const kExpected = "data:,Hello%2C%20World!%C4%9F";
-  EXPECT_STREQ(escaped.BeginReading(), kExpected);
+  EXPECT_STREQ(escaped.get(), kExpected);
 }
 
 TEST(Escape, BadEscapeSequences)
@@ -107,11 +104,11 @@ TEST(Escape, nsAppendEscapedHTML)
       "foo&#39;&quot;&amp;&gt;&lt;abc",
   };
 
-  ASSERT_EQ(ArrayLength(srcs), ArrayLength(dsts1));
-  ASSERT_EQ(ArrayLength(srcs), ArrayLength(dsts2));
+  ASSERT_EQ(std::size(srcs), std::size(dsts1));
+  ASSERT_EQ(std::size(srcs), std::size(dsts2));
 
   // Test when the destination is empty.
-  for (size_t i = 0; i < ArrayLength(srcs); i++) {
+  for (size_t i = 0; i < std::size(srcs); i++) {
     nsCString src(srcs[i]);
     nsCString dst;
     nsAppendEscapedHTML(src, dst);
@@ -120,7 +117,7 @@ TEST(Escape, nsAppendEscapedHTML)
 
   // Test when the destination is non-empty.
   nsCString dst;
-  for (size_t i = 0; i < ArrayLength(srcs); i++) {
+  for (size_t i = 0; i < std::size(srcs); i++) {
     nsCString src(srcs[i]);
     nsAppendEscapedHTML(src, dst);
     ASSERT_TRUE(dst.Equals(dsts2[i]));
@@ -136,12 +133,12 @@ TEST(Escape, EscapeSpaces)
   nsresult rv = NS_EscapeURL(toEscape, esc_OnlyNonASCII, escaped, fallible);
   EXPECT_EQ(rv, NS_OK);
   // Only non-ASCII and C0
-  EXPECT_STREQ(escaped.BeginReading(), "data:%0D%0A spa ces%C4%9F");
+  EXPECT_STREQ(escaped.get(), "data:%0D%0A spa ces%C4%9F");
 
   escaped.Truncate();
   rv = NS_EscapeURL(toEscape, esc_OnlyNonASCII | esc_Spaces, escaped, fallible);
   EXPECT_EQ(rv, NS_OK);
-  EXPECT_STREQ(escaped.BeginReading(), "data:%0D%0A%20spa%20ces%C4%9F");
+  EXPECT_STREQ(escaped.get(), "data:%0D%0A%20spa%20ces%C4%9F");
 }
 
 TEST(Escape, AppleNSURLEscapeHash)
@@ -150,7 +147,7 @@ TEST(Escape, AppleNSURLEscapeHash)
   nsCString escaped;
   bool isEscapedOK = NS_Escape(toEscape, escaped, url_NSURLRef);
   EXPECT_EQ(isEscapedOK, true);
-  EXPECT_STREQ(escaped.BeginReading(), "%23");
+  EXPECT_STREQ(escaped.get(), "%23");
 }
 
 TEST(Escape, AppleNSURLEscapeNoDouble)
@@ -160,7 +157,7 @@ TEST(Escape, AppleNSURLEscapeNoDouble)
   nsCString escaped;
   bool isEscapedOK = NS_Escape(toEscape, escaped, url_NSURLRef);
   EXPECT_EQ(isEscapedOK, true);
-  EXPECT_STREQ(escaped.BeginReading(), "%23");
+  EXPECT_STREQ(escaped.get(), "%23");
 }
 
 // Test escaping of URLs that shouldn't be changed by escaping.
@@ -176,7 +173,7 @@ TEST(Escape, AppleNSURLEscapeLists)
     nsCString escaped;
     nsresult rv = NS_GetSpecWithNSURLEncoding(escaped, pair.first);
     EXPECT_EQ(rv, NS_OK);
-    EXPECT_STREQ(pair.second.BeginReading(), escaped.BeginReading());
+    EXPECT_STREQ(pair.second.get(), escaped.get());
   }
 
   // A list of URLs that should not be changed by encoding.
@@ -198,7 +195,7 @@ TEST(Escape, AppleNSURLEscapeLists)
     nsCString escaped;
     nsresult rv = NS_GetSpecWithNSURLEncoding(escaped, toEscape);
     EXPECT_EQ(rv, NS_OK);
-    EXPECT_STREQ(toEscape.BeginReading(), escaped.BeginReading());
+    EXPECT_STREQ(toEscape.get(), escaped.get());
   }
 }
 
@@ -227,7 +224,7 @@ TEST(Escape, EscapeURLExternalHandlerURLs)
       "web+foo://user:1234@example.com:8080?foo=bar"_ns,
       "ext+bar://id='myId'"_ns};
 
-  for (size_t i = 0; i < ArrayLength(input); i++) {
+  for (size_t i = 0; i < std::size(input); i++) {
     nsCString src(input[i]);
     nsCString dst;
     nsresult rv =

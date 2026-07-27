@@ -37,6 +37,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Hapus Semua Situs Web
     .accesskey = a
+permissions-save-changes-2 =
+    .buttonlabelaccept = Simpan Perubahan
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = Simpan Perubahan
     .buttonaccesskeyaccept = S
@@ -91,6 +94,11 @@ permissions-exceptions-https-only-window2 =
     .title = Pengecualian - Mode HTTPS-Only
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Anda dapat mematikan Mode HTTPS-Saja untuk situs web tertentu. { -brand-short-name } tidak akan mencoba meningkatkan sambungan ke HTTPS aman untuk situs-situs tersebut. Pengecualian tidak berlaku untuk jendela-jendela pribadi.
+permissions-exceptions-https-only-desc2 = Anda dapat mematikan Mode HTTPS-Saja untuk situs web tertentu. { -brand-short-name } tidak akan mencoba meningkatkan sambungan ke HTTPS aman untuk situs-situs tersebut.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-desc2 = Anda dapat menentukan situs web mana yang diizinkan untuk membuka jendela pop-up dan diarahkan oleh bingkai pihak ketiga.
 
 ## Exceptions - Pop-ups
 
@@ -108,6 +116,10 @@ permissions-exceptions-saved-logins-desc = Info masuk untuk situs berikut ini ti
 
 ## Exceptions - Saved Passwords
 
+permissions-exceptions-saved-passwords-window =
+    .title = Pengecualian - Sandi Tersimpan
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name } tidak akan menyimpan sandi untuk situs yang terdaftar di sini.
 
 ## Exceptions - Add-ons
 
@@ -163,6 +175,12 @@ permissions-site-camera-disable-label =
     .label = Blokir permintaan baru untuk mengakses kamera Anda
 permissions-site-camera-disable-desc = Ini akan mencegah situs web apa pun yang tidak tercantum di atas minta mengakses kamera Anda. Memblokir akses ke kamera Anda dapat menghentikan beberapa fitur situs web.
 
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Pengaturan - Aplikasi dan layanan perangkat
+    .style = { permissions-window2.style }
+
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
@@ -177,6 +195,21 @@ permissions-site-microphone-disable-desc = Ini akan mencegah situs web apa pun y
 ##
 ## "Speaker" refers to an audio output device.
 
+permissions-site-speaker-window =
+    .title = Setelan - Izin Speaker
+    .style = { permissions-window2.style }
+permissions-site-speaker-desc = Situs web berikut meminta untuk memilih perangkat output audio. Anda dapat menentukan situs web mana saja yang diizinkan untuk memilih perangkat output audio.
+permissions-exceptions-doh-window =
+    .title = Pengecualian Situs Web untuk DNS melalui HTTPS
+    .style = { permissions-window2.style }
+permissions-exceptions-manage-doh-desc = { -brand-short-name } tidak akan menggunakan DNS aman untuk situs berikut beserta subdomainnya.
+permissions-doh-entry-field = Masukkan nama domain situs web
+    .accesskey = d
+permissions-doh-add-exception =
+    .label = Tambahkan
+    .accesskey = a
+permissions-doh-col =
+    .label = Domain
 permissions-doh-remove =
     .label = Hapus
     .accesskey = H

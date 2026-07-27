@@ -8,14 +8,15 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
-  UrlbarTokenizer: "resource:///modules/UrlbarTokenizer.sys.mjs",
+  UrlbarTokenizer:
+    "moz-src:///browser/components/urlbar/UrlbarTokenizer.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "touchBarUpdater",
   "@mozilla.org/widget/touchbarupdater;1",
-  "nsITouchBarUpdater"
+  Ci.nsITouchBarUpdater
 );
 
 // For accessing TouchBarHelper methods from static contexts in this file.
@@ -23,7 +24,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "touchBarHelper",
   "@mozilla.org/widget/touchbarhelper;1",
-  "nsITouchBarHelper"
+  Ci.nsITouchBarHelper
 );
 
 /**
@@ -130,7 +131,7 @@ var gBuiltInInputs = {
   },
   Sidebar: {
     title: "open-sidebar",
-    image: "chrome://browser/skin/sidebars.svg",
+    image: "chrome://browser/skin/sidebar-collapsed.svg",
     type: kInputTypes.BUTTON,
     callback: () => {
       let win = lazy.BrowserWindowTracker.getTopWindow();
@@ -256,16 +257,26 @@ export class TouchBarHelper {
     }
   }
 
+  get activeUrl() {
+    if (!TouchBarHelper.window) {
+      return "";
+    }
+    let tabbrowser = TouchBarHelper.window.gBrowser;
+    if (tabbrowser) {
+      return tabbrowser.selectedBrowser.currentURI.spec;
+    }
+    return "";
+  }
+
   get activeTitle() {
     if (!TouchBarHelper.window) {
       return "";
     }
-    let tabbrowser = TouchBarHelper.window.ownerGlobal.gBrowser;
-    let activeTitle;
+    let tabbrowser = TouchBarHelper.window.gBrowser;
     if (tabbrowser) {
-      activeTitle = tabbrowser.selectedBrowser.contentTitle;
+      return tabbrowser.selectedBrowser.contentTitle;
     }
-    return activeTitle;
+    return "";
   }
 
   get allItems() {
@@ -441,14 +452,13 @@ export class TouchBarHelper {
 
   observe(subject, topic, data) {
     switch (topic) {
-      case "touchbar-location-change":
+      case "touchbar-location-change": {
         let updatedInputs = ["Back", "Forward"];
         gBuiltInInputs.Back.disabled =
           !TouchBarHelper.window.gBrowser.canGoBack;
         gBuiltInInputs.Forward.disabled =
           !TouchBarHelper.window.gBrowser.canGoForward;
         if (subject.QueryInterface(Ci.nsIWebProgress)?.isTopLevel) {
-          this.activeUrl = data;
           // ReaderView button is disabled on every toplevel location change
           // since Reader View must determine if the new page can be Reader
           // Viewed.
@@ -457,6 +467,7 @@ export class TouchBarHelper {
         }
         this._updateTouchBarInputs(...updatedInputs);
         break;
+      }
       case "fullscreen-painted":
         if (TouchBarHelper.window.document.fullscreenElement) {
           gBuiltInInputs.OpenLocation.title = "touchbar-fullscreen-exit";

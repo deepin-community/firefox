@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,13 +6,16 @@
 #include "nsNetUtil.h"
 #include "nsAboutProtocolUtils.h"
 #include "nsBaseChannel.h"
-#include "mozilla/ArrayUtils.h"
 #include "nsIProtocolHandler.h"
 #include "nsXULAppAPI.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/RemoteType.h"
 #include "mozilla/gfx/GPUProcessManager.h"
+
+#ifdef MOZ_WIDGET_ANDROID
+#  include "mozilla/java/GeckoAppShellWrappers.h"
+#endif
 
 #define ABOUT_CONFIG_ENABLED_PREF "general.aboutConfig.enable"
 
@@ -48,6 +49,12 @@ class CrashChannel final : public nsBaseChannel {
     if (spec.EqualsASCII("about:crashcontent") && XRE_IsContentProcess()) {
       MOZ_CRASH("Crash via about:crashcontent");
     }
+
+#ifdef MOZ_WIDGET_ANDROID
+    if (spec.EqualsASCII("about:crashcontentjava") && XRE_IsContentProcess()) {
+      mozilla::java::GeckoAppShell::CrashByUncaughtException();
+    }
+#endif
 
     if (spec.EqualsASCII("about:crashextensions") && XRE_IsParentProcess()) {
       using ContentParent = mozilla::dom::ContentParent;
@@ -86,8 +93,10 @@ class CrashChannel final : public nsBaseChannel {
  */
 static const RedirEntry kRedirMap[] = {
     {"about", "chrome://global/content/aboutAbout.html", 0},
+#ifndef MOZ_WIDGET_ANDROID
     {"addons", "chrome://mozapps/content/extensions/aboutaddons.html",
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::IS_SECURE_CHROME_UI},
+#endif
     {"buildconfig", "chrome://global/content/buildconfig.html",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::IS_SECURE_CHROME_UI},
@@ -99,7 +108,8 @@ static const RedirEntry kRedirMap[] = {
      nsIAboutModule::IS_SECURE_CHROME_UI},
 #else
     {"config", "chrome://geckoview/content/config.xhtml",
-     nsIAboutModule::IS_SECURE_CHROME_UI},
+     nsIAboutModule::IS_SECURE_CHROME_UI |
+         nsIAboutModule::HIDE_FROM_ABOUTABOUT},
 #endif
 #ifdef MOZ_CRASHREPORTER
     {"crashes", "chrome://global/content/crashes.html",
@@ -114,6 +124,12 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::HIDE_FROM_ABOUTABOUT | nsIAboutModule::ALLOW_SCRIPT |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
          nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS},
+#ifdef MOZ_WIDGET_ANDROID
+    {"home", "about:blank",
+     nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS |
+         nsIAboutModule::URI_MUST_LOAD_IN_CHILD},
+#endif
     {"httpsonlyerror", "chrome://global/content/httpsonlyerror/errorpage.html",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_CAN_LOAD_IN_CHILD | nsIAboutModule::ALLOW_SCRIPT |
@@ -125,12 +141,10 @@ static const RedirEntry kRedirMap[] = {
     {"license", "chrome://global/content/license.html",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::IS_SECURE_CHROME_UI},
-    {"logging", "chrome://global/content/aboutLogging.html",
+    {"logging", "chrome://global/content/aboutLogging/aboutLogging.html",
      nsIAboutModule::ALLOW_SCRIPT},
     {"logo", "chrome://branding/content/about.png",
-     nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
-         // Linkable for testing reasons.
-         nsIAboutModule::MAKE_LINKABLE},
+     nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT},
     {"memory", "chrome://global/content/aboutMemory.xhtml",
      nsIAboutModule::ALLOW_SCRIPT},
     {"certificate", "chrome://global/content/certviewer/certviewer.html",
@@ -156,6 +170,11 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::HIDE_FROM_ABOUTABOUT},
     {"processes", "chrome://global/content/aboutProcesses.html",
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::IS_SECURE_CHROME_UI},
+    {"restricted",
+     "chrome://global/content/aboutRestricted/aboutRestricted.html",
+     nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::URI_CAN_LOAD_IN_CHILD | nsIAboutModule::ALLOW_SCRIPT |
+         nsIAboutModule::HIDE_FROM_ABOUTABOUT},
     // about:serviceworkers always wants to load in the parent process because
     // the only place nsIServiceWorkerManager has any data is in the parent
     // process.
@@ -194,12 +213,14 @@ static const RedirEntry kRedirMap[] = {
 #endif
     {"telemetry", "chrome://global/content/aboutTelemetry.xhtml",
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::IS_SECURE_CHROME_UI},
-    {"translations", "chrome://global/content/translations/translations.html",
+#ifndef MOZ_WIDGET_ANDROID
+    {"translations",
+     "chrome://global/content/translations/about-translations.html",
      nsIAboutModule::ALLOW_SCRIPT |
          nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
-         nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS |
-         nsIAboutModule::HIDE_FROM_ABOUTABOUT},
+         nsIAboutModule::URI_CAN_LOAD_IN_PRIVILEGEDABOUT_PROCESS},
+#endif
     {"url-classifier", "chrome://global/content/aboutUrlClassifier.xhtml",
      nsIAboutModule::ALLOW_SCRIPT},
     {"webrtc", "chrome://global/content/aboutwebrtc/aboutWebrtc.html",
@@ -210,9 +231,15 @@ static const RedirEntry kRedirMap[] = {
          nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_CAN_LOAD_IN_CHILD |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD},
+#ifdef MOZ_WIDGET_ANDROID
+    {"crashcontentjava", "about:blank",
+     nsIAboutModule::HIDE_FROM_ABOUTABOUT |
+         nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+         nsIAboutModule::URI_CAN_LOAD_IN_CHILD |
+         nsIAboutModule::URI_MUST_LOAD_IN_CHILD},
+#endif
     {"crashgpu", "about:blank", nsIAboutModule::HIDE_FROM_ABOUTABOUT},
     {"crashextensions", "about:blank", nsIAboutModule::HIDE_FROM_ABOUTABOUT}};
-static const int kRedirTotal = mozilla::ArrayLength(kRedirMap);
 
 NS_IMETHODIMP
 nsAboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
@@ -229,7 +256,11 @@ nsAboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
   NS_ENSURE_SUCCESS(rv, rv);
 
   if (path.EqualsASCII("crashparent") || path.EqualsASCII("crashcontent") ||
-      path.EqualsASCII("crashgpu") || path.EqualsASCII("crashextensions")) {
+      path.EqualsASCII("crashgpu") || path.EqualsASCII("crashextensions")
+#ifdef MOZ_WIDGET_ANDROID
+      || path.EqualsASCII("crashcontentjava")
+#endif
+  ) {
     bool isExternal;
     aLoadInfo->GetLoadTriggeredFromExternal(&isExternal);
     if (isExternal || !aLoadInfo->TriggeringPrincipal() ||
@@ -248,11 +279,11 @@ nsAboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
     return NS_ERROR_NOT_AVAILABLE;
   }
 
-  for (int i = 0; i < kRedirTotal; i++) {
-    if (!strcmp(path.get(), kRedirMap[i].id)) {
+  for (const auto& redir : kRedirMap) {
+    if (!strcmp(path.get(), redir.id)) {
       nsCOMPtr<nsIChannel> tempChannel;
       nsCOMPtr<nsIURI> tempURI;
-      rv = NS_NewURI(getter_AddRefs(tempURI), kRedirMap[i].url);
+      rv = NS_NewURI(getter_AddRefs(tempURI), redir.url);
       NS_ENSURE_SUCCESS(rv, rv);
 
       rv = NS_NewChannelInternal(getter_AddRefs(tempChannel), tempURI,
@@ -293,9 +324,9 @@ nsAboutRedirector::GetURIFlags(nsIURI* aURI, uint32_t* aResult) {
   nsresult rv = NS_GetAboutModuleName(aURI, name);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  for (int i = 0; i < kRedirTotal; i++) {
-    if (name.EqualsASCII(kRedirMap[i].id)) {
-      *aResult = kRedirMap[i].flags;
+  for (const auto& redir : kRedirMap) {
+    if (name.EqualsASCII(redir.id)) {
+      *aResult = redir.flags;
       return NS_OK;
     }
   }

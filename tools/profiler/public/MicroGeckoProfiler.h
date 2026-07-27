@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +17,7 @@ extern "C" {
 
 #include <mozilla/Types.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef _WIN32
 #  include <libloaderapi.h>
@@ -59,6 +58,8 @@ extern MOZ_EXPORT void uprofiler_native_backtrace(const void* top,
                                                   struct NativeStack* stack);
 
 extern MOZ_EXPORT bool uprofiler_is_active();
+
+extern MOZ_EXPORT bool uprofiler_feature_active(int32_t feature);
 
 extern MOZ_EXPORT bool uprofiler_get(struct UprofilerFuncPtrs* aFuncPtrs);
 
@@ -106,6 +107,7 @@ struct UprofilerFuncPtrs {
   bool (*backtrace_into_buffer)(struct NativeStack* stack, void* aBuffer);
   void (*native_backtrace)(const void* top, struct NativeStack* stack);
   bool (*is_active)();
+  bool (*feature_active)(int32_t feature);
 };
 
 #pragma GCC diagnostic push
@@ -147,6 +149,8 @@ static void native_backtrace_noop(const void* top,
 
 static bool is_active_noop() { /* no-op */ return false; }
 
+static bool feature_active_noop(int32_t feature) { /* no-op */ return false; }
+
 #pragma GCC diagnostic pop
 
 #if defined(_WIN32)
@@ -183,7 +187,8 @@ static bool is_active_noop() { /* no-op */ return false; }
   FETCH(simple_event_marker_with_stack)    \
   FETCH(backtrace_into_buffer)             \
   FETCH(native_backtrace)                  \
-  FETCH(is_active)
+  FETCH(is_active)                         \
+  FETCH(feature_active)
 
 // Assumes that a variable of type UprofilerFuncPtrs, named uprofiler
 // is accessible in the scope
@@ -201,6 +206,7 @@ static bool is_active_noop() { /* no-op */ return false; }
     uprofiler.backtrace_into_buffer = backtrace_into_buffer_noop; \
     uprofiler.native_backtrace = native_backtrace_noop;           \
     uprofiler.is_active = is_active_noop;                         \
+    uprofiler.feature_active = feature_active_noop;               \
   }                                                               \
   UPROFILER_VISIT()
 

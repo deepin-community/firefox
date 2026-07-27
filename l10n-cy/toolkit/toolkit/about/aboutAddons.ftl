@@ -65,7 +65,7 @@ detail-private-disallowed-label = Heb ei ganiatáu mewn Ffenestri Preifat
 detail-private-disallowed-description2 = Nid yw'r estyniad hwn yn rhedeg tra'n pori'n preifat. <a data-l10n-name="learn-more">Darllen rhagor</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Angen Mynediad at Ffenestri Preifat
-detail-private-required-description2 = Mae gan yr estyniad hwn fynediad i'ch gweithgareddau ar-lein wrth bori'n breifat. <a data-l10n-name="learn-more">Dysgu mwy</a>
+detail-private-required-description2 = Mae gan yr estyniad hwn fynediad i'ch gweithgareddau ar-lein wrth bori'n breifat. <a data-l10n-name="learn-more">Rhagor</a>
 detail-private-browsing-on =
     .label = Caniatáu
     .tooltiptext = Caniatáu wrth Bori Preifat
@@ -117,6 +117,8 @@ legacy-extensions-description = Nid yw'r estyniadau hyn yn cyrraedd safonau cyfr
 private-browsing-description2 =
     Mae { -brand-short-name } yn newid sut mae estyniadau'n gweithio o fewn pori preifat. Ni fydd unrhyw estyniadau newydd y byddwch chi'n eu hychwanegu at { -brand-short-name } yn rhedeg yn ragosodedig o fewn Ffenestri Prefat. Oni bai eich bod yn ei ganiatáu yn y gosodiadau, ni fydd estyniad yn gweithio wrth bori'n preifat, ac ni chaiff fynediad at eich gweithgareddau ar-lein yno. Rydym wedi gwneud y newid hwn i gadw eich pori preifat yn breifat.
     <label data-l10n-name="private-browsing-learn-more">Dysgu sut i reoli gosodiadau estyniad.</label>
+aboutaddons-sidebar =
+    .heading = Ychwanegion
 addon-category-discover = Argymhellion
 addon-category-discover-title =
     .title = Argymhellion
@@ -167,6 +169,8 @@ extensions-warning-update-security-button = Galluogi
 extensions-warning-imported-addons2 =
     .message = Gorffennwch osod yr estyniadau a fewnforiwyd i { -brand-short-name }.
 extensions-warning-imported-addons-button = Gosod Estyniadau
+extensions-warning-safe-mode3 =
+    .message = Mae pob ychwanegyn wedi'i analluogi gan y Modd Datrys Problemau.
 
 ## Strings connected to add-on updates
 
@@ -202,6 +206,10 @@ addon-updates-manual-updates-found = Gweld Diweddariadau ar Gael
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Gosod Ychwanegyn o Ffeil…
+    .accesskey = G
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Gosod neu ddiweddaru Ychwanegyn o Ffeil…
     .accesskey = G
 addon-install-from-file-dialog-title = Dewis ategyn i'w osod
 addon-install-from-file-filter-name = Ychwanegion
@@ -277,6 +285,19 @@ discopane-notice-recommendations2 =
         Mae rhai o'r argymhellion hyn wedi'u dewis yn benodol ar eich cyfer chi. Maen nhw'n seiliedig ar 
         estyniadau eraill rydych chi wedi'u gosod, eich proffil dewisiadau, a'ch ystadegau defnydd.
 discopane-notice-learn-more = Darllen rhagor
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Cafodd eich thema(au) llwybrau lliw eu dileu.
+    .message =
+        Mae { -brand-product-name } wedi diweddaru ei gasgliad llwybrau lliw. Rydym wedi dileu'r
+        hen fersiwn o'ch rhestr “Themâu wedi'u Cadw”.
+        Mae modd cael fersiynau newydd yn y wefan ychwanegion.
+colorway-removal-notice-learn-more = Dysgu rhagor
+colorway-removal-notice-button = Cael y themâu llwybrau lliw diweddaraf
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Mae eich gosodiadau cyferbyniad Windows yn diystyru themâu { -brand-short-name }. Diffoddwch y gosodiadau hyn i ddefnyddio themâu yn { -brand-short-name }.
 privacy-policy = Polisi Preifatrwydd
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -297,6 +318,17 @@ find-more-themes = Canfod themâu eraill
 # used for screen readers.
 addon-options-button =
     .aria-label = Rhagor o Ddewisiadau
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Mae estyniadau a themâu yn gadael i chi gyfaddasu { -brand-product-name }. Gallan nhw hybu
+    preifatrwydd, gwella cynhyrchiant, gwella cyfryngau, newid y ffordd y mae { -brand-product-name }
+    yn edrych, a chymaint mwy. Mae'r rhaglenni meddalwedd bach hyn yn aml yn cael eu datblygu gan
+    drydydd partïon. Dyma ddewis o'r rhai y mae Firefox  yn eu
+    <a data-l10n-name="learn-more-trigger">hargymell</a> ar gyfer diogelwch eithriadol, perfformiad,
+    ac ymarferoldeb.
 
 ## Add-on actions
 
@@ -387,6 +419,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Caniatáu mewn ffenestri preifat
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Caniatáu mewn ffenestri preifat
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -426,6 +462,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Mae'r estyniad hwn wedi'i adolygu i fodloni ein safonau ar gyfer diogelwch a pherfformiad
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Estyniad swyddogol wedi'i adeiladu gan Mozilla. Mae'n cydfynd â safonau diogelwch a pherfformiad
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Mae'r estyniad hwn wedi'i adolygu i fodloni safonau diogelwch a pherfformiad
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Dim ond estyniadau sy'n cwrdd â'n safonau diogelwch a pherfformiad y mae Firefox yn eu hargymell
 
 ##
 
@@ -433,10 +487,18 @@ available-updates-heading = Diweddariadau ar Gael
 recent-updates-heading = Diweddariadau Diweddar
 release-notes-loading = Yn llwytho…
 release-notes-error = Ymddiheuriadau ond bu gwall llwytho'r nodiadau ryddhau.
+addon-permissions-heading = Caniatâd
+addon-permissions-empty2 = Nid oes angen unrhyw ganiatâd ar gyfer yr estyniad hwn.
+addon-permissions-required-label = Angenrheidiol:
+addon-permissions-optional-label = Dewisol:
 addon-permissions-empty = Nid oes angen unrhyw ganiatâd ar yr estyniad hwn
 addon-permissions-required = Caniatâd angenrheidiol y swyddogaethau craidd:
 addon-permissions-optional = Caniatâd dewisol ar gyfer y swyddogaethau ychwanegol:
 addon-permissions-learnmore = Darllen rhagor am ganiatâd
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Mae rhai caniatâd yn cael eu rheoli gan eich sefydliad.
 recommended-extensions-heading = Estyniadau Cymeradwy
 recommended-themes-heading = Themâu Cymeradwy
 # Variables:
@@ -460,6 +522,9 @@ shortcuts-heading = Rheoli Estyniad Llwybrau Byr
 default-heading-search-label = Canfod rhagor o ychwanegion
 addons-heading-search-input =
     .placeholder = Search addons.mozilla.org
+addons-heading-search-button =
+    .title = Chwilio addons.mozilla.org
+    .aria-label = Chwilio addons.mozilla.org
 addon-page-options-button =
     .title = Offer ar gyfer pob ychwanegyn
 
@@ -482,14 +547,32 @@ details-notification-unsigned-and-disabled-link = Rhagor o Wybodaeth
 details-notification-unsigned = Nid oedd modd dilysu { $name } i'w defnyddio yn { -brand-short-name }. Cymerwch ofal.
 details-notification-unsigned2 =
     .message = Nid oedd modd dilysu { $name } i'w defnyddio yn { -brand-short-name }. Cymerwch ofal.
+details-notification-hard-blocked-extension =
+    .message = Mae'r estyniad hwn wedi'i rwystro am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi.
+details-notification-hard-blocked-other =
+    .message = Mae'r ychwanegyn hwn wedi'i rwystro am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi.
 details-notification-unsigned-link = Rhagor o Wybodaeth
 details-notification-blocked = Mae { $name } wedi ei analluogi o ganlyniad i faterion diogelwch a sefydlogrwydd.
-details-notification-blocked2 =
-    .message = Mae { $name } wedi ei analluogi o ganlyniad i faterion diogelwch a sefydlogrwydd.
+details-notification-blocked-link2 = Gweld Manylion
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Mae'r estyniad hwn wedi'i gyfyngu ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Mae'r estyniad hwn wedi'i gyfyngu. Gall fod yn beryglus ei ddefnyddio.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Mae'r ychwanegyn hwn wedi'i gyfyngu ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Mae'r estyniad hwn wedi'i gyfyngu. Gall fod yn beryglus ei ddefnyddio.
+details-notification-soft-blocked-extension-disabled =
+    .message = Mae'r estyniad hwn wedi'i gyfyngu am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-extension-enabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla. Gall fod yn beryglus ei ddefnyddio.
+details-notification-soft-blocked-other-disabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-other-enabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla. Gall fod yn beryglus ei ddefnyddio.
+details-notification-softblocked-link2 = Gweld Manylion
 details-notification-blocked-link = Rhagor o Wybodaeth
 details-notification-softblocked = Mae'n hysbys fod { $name } yn achosi anawsterau diogelwch a sefydlogrwydd.
-details-notification-softblocked2 =
-    .message = Mae'n hysbys fod { $name } yn achosi anawsterau diogelwch a sefydlogrwydd.
 details-notification-softblocked-link = Rhagor o Wybodaeth
 details-notification-gmp-pending = Bydd { $name } yn cael ei osod yn fuan.
 details-notification-gmp-pending2 =
@@ -503,3 +586,46 @@ plugins-openh264-name = OpenH264 Video Codec wedi ei ddarparu gan Cisco Systems,
 plugins-openh264-description = Mae'r ategyn hwn yn cael ei osod yn awtomatig gan Mozilla er mwyn cyd-fynd â manyleb y WebRTC ac i alluogi galwadau WebRTC gyda dyfeisiau sydd angen y codec fideo H.264. Ewch i http://www.openh264.org/ i weld y cod ffynhonnell a darllen rhagor am ei ddefnyddio.
 plugins-widevine-name = Mae'r Widevine Content Decryption Module wedi ei ddarparu gan Google Inc.
 plugins-widevine-description = Mae'r ategyn hwn yn galluogi chwarae cyfryngau amgryptiedig yn unol â manyleb Estyniadau Cyfryngau Amgryptiedig. Fel rheol defnyddir cyfryngau wedi'i amgryptio gan wefannau i ddiogelu rhag copïo cynnwys cyfryngau premiwm. Ewch i https://www.w3.org/TR/encrypted-media/ am fwy o wybodaeth ar Estyniadau Cyfryngau Amgryptiedig.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Casglu data gofynnol:
+addon-permissions-optional-data-collection = Casglu data dewisol:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Caniatâd a data
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Yn cael ei defnyddio gan yr estyniad { $extensionName }
+addon-permissions-data-collection-heading = Casglu Data
+addon-permissions-data-collection-empty = Mae'r datblygwr yn dweud nad oes angen casglu data ar yr estyniad hwn.
+addon-data-collection-provided = Gwybodaeth wedi'i darparu gan ddatblygwr yr estyniad
+addon-data-collection-learnmore = Darllen rhagor am gasglu data
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = Mae { -brand-short-name } yn defnyddio hwn ar about:inference
+mlmodel-link-preview = Mae { -brand-short-name } yn defnyddio hwn i gynhyrchu pwyntiau allweddol pan fyddwch yn cael rhagolwg o ddolenni
+mlmodel-pdfjs = Mae { -brand-short-name } yn defnyddio hwn i greu testun amgen ar gyfer delweddau rydych yn eu hychwanegu at ffeiliau PDF
+mlmodel-smart-tab-topic-engine = Mae { -brand-short-name } yn defnyddio hwn i awgrymu enwau ar gyfer eich grwpiau tab
+mlmodel-smart-tab-embedding-engine = Mae { -brand-short-name } yn defnyddio hwn i awgrymu tabiau ar gyfer eich grwpiau tabiau
+mlmodel-formfill-engine = Mae { -brand-short-name } yn defnyddio hwn i helpu i lenwi ffurflenni cyfeiriad
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI Ar-ddyfais
+addon-category-mlmodel-title =
+    .title = AI Ar-ddyfais
+mlmodel-heading = Rheoli Modelau AI Ar-Ddyfais
+mlmodel-description = Mae rhai nodweddion ac estyniadau yn { -brand-short-name } yn cael eu pweru gan fodelau AI sy'n gweithio'n lleol ar eich dyfais. Mae'r dull hwn yn amddiffyn eich preifatrwydd ac, mewn llawer o achosion, yn cyflymu perfformiad. <a data-l10n-name="learn-more">Dysgu rhagor</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Tynnu
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Maint ffeil
+mlmodel-addon-detail-last-used-label = Defnyddiwyd Diwethaf
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Defnyddiwyd gan
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Cerdyn model
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Gweld ar Hugging Face

@@ -7,72 +7,57 @@
 
 # Key shortcut used to focus the filter box on top of the data view
 storage-filter-key = CmdOrCtrl+F
-
 # Hint shown when the selected storage host does not contain any data
 storage-table-empty-text = No hay datos para el servidor seleccionado
-
 # Hint shown when the cookies storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/Cookies
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/cookies/
 storage-table-type-cookies-hint = Ver y editar cookies seleccionando un servidor. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Hint shown when the local storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/Local_Storage_Session_Storage
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/local_storage_session_storage/
 storage-table-type-localstorage-hint = Ver y editar el almacenamiento local seleccionando un servidor. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Hint shown when the session storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/Local_Storage_Session_Storage
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/local_storage_session_storage/
 storage-table-type-sessionstorage-hint = Ver y editar el almacenamiento de sesión seleccionando un servidor. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Hint shown when the IndexedDB storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/IndexedDB
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/indexeddb/
 storage-table-type-indexeddb-hint = Ver y eliminar entradas de IndexedDB seleccionando una base de datos. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Hint shown when the cache storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/Cache_Storage
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/cache_storage/
 storage-table-type-cache-hint = Ver y eliminar las entradas de almacenamiento caché seleccionando un almacenamiento. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Hint shown when the extension storage type is selected. Clicking the link will open
-# https://developer.mozilla.org/docs/Tools/Storage_Inspector/Extension_Storage
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/extension_storage/
 storage-table-type-extensionstorage-hint = Ver y editar el almacenamiento de extensión seleccionando un servidor. <a data-l10n-name="learn-more-link">Saber más</a>
-
 # Placeholder for the searchbox that allows you to filter the table items
 storage-search-box =
     .placeholder = Filtrar elementos
-
 # Placeholder text in the sidebar search box
 storage-variable-view-search-box =
     .placeholder = Filtro de valores
-
 # Add Item button title
 storage-add-button =
     .title = Agregar ítem
-
+storage-delete-all-button =
+    .title = Eliminar todo
 # Refresh button title
 storage-refresh-button =
     .title = Actualizar elementos
-
 # Context menu action to delete all storage items
 storage-context-menu-delete-all =
     .label = Eliminar todo
-
 # Context menu action to delete all session cookies
 storage-context-menu-delete-all-session-cookies =
     .label = Eliminar todas las cookies de la sesión
-
 # Context menu action to copy a storage item
 storage-context-menu-copy =
     .label = Copiar
-
 # Context menu action to delete storage item
 # Variables:
 #   $itemName (String) - Name of the storage item that will be deleted
 storage-context-menu-delete =
     .label = Eliminar “{ $itemName }”
-
 # Context menu action to add an item
 storage-context-menu-add-item =
     .label = Agregar ítem
-
 # Context menu action to delete all storage items from a given host
 # Variables:
 #   $host (String) - Host for which we want to delete the items
@@ -88,6 +73,7 @@ storage-table-headers-cookies-expires = Expira / Tiempo máximo
 storage-table-headers-cookies-size = Tamaño
 storage-table-headers-cookies-last-accessed = Último acceso
 storage-table-headers-cookies-creation-time = Creación
+storage-table-headers-cookies-update-time = Actualizado
 storage-table-headers-cache-status = Estado
 storage-table-headers-extension-storage-area = Área de almacenamiento
 
@@ -106,27 +92,29 @@ storage-tree-labels-extension-storage = Almacenamiento de extensiones
 # storage UI when the panel is closed.
 storage-expand-pane =
     .title = Ampliar panel
-
 # Tooltip for the button that collapses the right panel in the
 # storage UI when the panel is open.
 storage-collapse-pane =
     .title = Colapsar Panel
-
 # String displayed in the expires column when the cookie is a Session Cookie
 storage-expires-session = Sesión
-
 # Heading displayed over the item value in the sidebar
 storage-data = Datos
-
 # Heading displayed over the item parsed value in the sidebar
 storage-parsed-value = Valor interpretado
-
 # Warning notification when IndexedDB database could not be deleted immediately.
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-blocked = La base de datos “{ $dbName }” será eliminada después de que se cierren todas las conexiones.
-
 # Error notification when IndexedDB database could not be deleted.
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = La base de datos “{ $dbName }” no pudo ser eliminada.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = No se pudo crear la cookie: “{ $errorString }”.
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = No se pudo actualizar la cookie: “{ $errorString }”.

@@ -174,11 +174,19 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] තැටියෙහි { -brand-short-name } තබාගන්න
        *[other] කාර්ය තීරුවට { -brand-short-name } අමුණන්න
     }
+# Subtitle will be used when user already has Firefox pinned, but
+# has not set it as their default browser.
+# When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
+# and makes sense in the context of navigating the web.
+mr2022-onboarding-set-default-only-subtitle = ලාභ නොලබන පිටුබලයක් සහිත අතිරික්සුවකින් අරඹන්න. ඔබ අන්තර්ජාලය පුරා සැරිසරන අතරතුර ඔබගේ පෞද්ගලිකත්‍වය සුරකිනු ඇත.
 
 ## MR2022 Existing User Pin Firefox Screen Strings
 
 # Title used on multistage onboarding page for existing users when Firefox is not pinned
 mr2022-onboarding-existing-pin-header = { -brand-product-name } තෝරා ගැනීමට තුති!
+# Subtitle will be used on the welcome screen for existing users
+# when they already have Firefox pinned but not set as default
+mr2022-onboarding-existing-set-default-only-subtitle = ඔබ අන්තර්ජාලය පුරා සැරිසරන අතරතුර ඔබගේ පෞද්ගලිකත්‍වය සුරකින අතිරික්සුවක් භාවිතා කරන්න. අපගේ නවතම යාවත්කාලය ඔබ කැමති දේවල් වලින් පුරවා ඇත.
 mr2022-onboarding-existing-pin-checkbox-label = එසේම { -brand-short-name } පෞද්. පිරික්සුමට යොදන්න
 
 ## MR2022 New User Set Default screen strings
@@ -186,6 +194,9 @@ mr2022-onboarding-existing-pin-checkbox-label = එසේම { -brand-short-name
 # This string is the title used when the user already has pinned the browser, but has not set default.
 mr2022-onboarding-set-default-title = { -brand-short-name } දෛනික අතිරික්සුව කරන්න
 mr2022-onboarding-set-default-primary-button-label = { -brand-short-name } පෙරනිමි අතිරික්සුව කරන්න
+# When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
+# and makes sense in the context of navigating the web.
+mr2022-onboarding-set-default-subtitle = ලාභ නොලබන පිටුබලයක් සහිත අතිරික්සුවක් භාවිතා කරන්න. ඔබ අන්තර්ජාලය පුරා සැරිසරන අතරතුර ඔබගේ පෞද්ගලිකත්‍වය සුරකිනු ඇත
 
 ## MR2022 Get Started screen strings.
 ## These strings will be used on the welcome page
@@ -196,7 +207,9 @@ mr2022-onboarding-set-default-primary-button-label = { -brand-short-name } ප�
 mr2022-onboarding-get-started-primary-subtitle = අපගේ නවතම අනුවාදය ඔබ වෙනුවෙන්ම තනන ලදි. වියමන පුරා වේගයෙන් සැරිසැරීමට අන් කවරදාටත් වඩා පහසු කරයි. ඔබ ඇලුම් කරනු ඇතැයි සිතන විශේෂාංග වලින් පුරවා ඇත.
 mr2022-onboarding-get-started-primary-button-label = තත්පර කිහිපයකින් සකසන්න
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-subtitle = ඔබ කැමති ආකාරයට { -brand-short-name } සකසන්න. ඔබගේ පරණ අතිරික්සුවෙන් පොත්යොමු, මුරපද සහ තවත් දෑ එක් කරන්න.
 mr2022-onboarding-import-primary-button-label-no-attribution = කලින් අතිරික්සුවෙන් ආයාත කරන්න
@@ -274,11 +287,40 @@ mr2022-onboarding-gratitude-secondary-button-label = පිරික්සුම
 
 onboarding-infrequent-import-primary-button = { -brand-short-name } වෙත ආයාත කරන්න
 
-## MR2022 Illustration alt tags
-## Descriptive tags for illustrations used by screen readers and other assistive tech
-
-
 ## Device migration onboarding
 
 onboarding-device-migration-title = සාදරයෙන් පිළිගනිමු!
 onboarding-device-migration-primary-button-label = පිවිසෙන්න
+
+## Add-ons Picker screen
+
+amo-picker-install-button-label = { -brand-short-name } වෙත එක් කරන්න
+amo-picker-install-complete-label = ස්ථාපිතයි
+amo-picker-collection-link = තවත් එක්කහු සොයාගන්න
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = ඔබට ආරක්‍ෂාව සලසන්නෙමු
+onboarding-easy-setup-security-and-privacy-subtitle = අපගේ ලාභ නොලබන පිටුබලයක් සහිත අතිරික්සුව අන්තර්ජාලය පුරා ඔබව රහසින් ලුහුබඳින සමාගම් නවත්වයි.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = ඔබ උපාංග අතර පනින විට සංකේතිතව සිටින්න
+onboarding-mobile-download-security-and-privacy-subtitle = ඔබ සමමුහූර්ත විට, { -brand-short-name } ඔබගේ මුරපද, පොත්යොමු සහ අනෙකුත් දෑ සංකේතනය කරයි. තවද ඔබගේ වෙනත් උපාංග වලින් පටිති ඇහිඳීමට හැකිය.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ඔබ සමඟයි
+onboarding-gratitude-security-and-privacy-subtitle = මොසිල්ලා පදනම මගින් පිටුබලය ලබන { -brand-short-name } භාවිතා කිරීමට තුති. ඔබගේ සහාය ඇතිව සැවොම සඳහා ප්‍රවේශ්‍ය සහ ආරක්‍ෂිත අන්තර්ජාලයක් ගොඩනගමින් සිටින්නෙමු.
+
+## New user time and familiarity survey strings
+
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = ඊළඟ
+onboarding-new-user-survey-legal-link-label = “{ onboarding-new-user-survey-next-button-label }” තේරීමෙන් ඔබ { -brand-product-name } <a data-l10n-name="privacy_notice">රහස්‍යතා දැන්වීම</a> එකඟ වේ.
+
+## UI strings for the sidebar and vertical tabs
+
+onboarding-flair-text = නව!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = තිරස් පටිති තබාගන්න
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = පැති තීරුවේ AI කතා ක්‍රමලේඛයක් තබා බලන්න
+onboarding-genai-sidebar-primary-button = කතා ක්‍රමලේඛයක් තෝරන්න

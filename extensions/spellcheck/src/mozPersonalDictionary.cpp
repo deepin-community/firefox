@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +6,7 @@
 
 #include <utility>
 
+#include "mozilla/Try.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsCRT.h"
 #include "nsIFile.h"
@@ -90,9 +90,9 @@ class mozPersonalDictionarySave final : public mozilla::Runnable {
       mozilla::MonitorAutoLock mon(mDict->mMonitorSave);
 
       nsCOMPtr<nsIOutputStream> outStream;
-      NS_NewSafeLocalFileOutputStream(getter_AddRefs(outStream), mFile,
-                                      PR_CREATE_FILE | PR_WRONLY | PR_TRUNCATE,
-                                      0664);
+      MOZ_TRY(NS_NewSafeLocalFileOutputStream(
+          getter_AddRefs(outStream), mFile,
+          PR_CREATE_FILE | PR_WRONLY | PR_TRUNCATE, 0664));
 
       // Get a buffered output stream 4096 bytes big, to optimize writes.
       nsCOMPtr<nsIOutputStream> bufferedOutputStream;
@@ -150,7 +150,7 @@ mozPersonalDictionary::mozPersonalDictionary()
       mMonitor("mozPersonalDictionary::mMonitor"),
       mMonitorSave("mozPersonalDictionary::mMonitorSave") {}
 
-mozPersonalDictionary::~mozPersonalDictionary() {}
+mozPersonalDictionary::~mozPersonalDictionary() = default;
 
 nsresult mozPersonalDictionary::Init() {
   nsCOMPtr<nsIObserverService> svc =
@@ -273,7 +273,10 @@ void mozPersonalDictionary::SyncLoadInternal() {
   }
 
   nsCOMPtr<nsIInputStream> inStream;
-  NS_NewLocalFileInputStream(getter_AddRefs(inStream), mFile);
+  rv = NS_NewLocalFileInputStream(getter_AddRefs(inStream), mFile);
+  if (NS_FAILED(rv)) {
+    return;
+  }
 
   nsCOMPtr<nsIUnicharInputStream> convStream;
   rv = NS_NewUnicharInputStream(inStream, getter_AddRefs(convStream));

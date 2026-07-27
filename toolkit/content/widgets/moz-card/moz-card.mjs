@@ -1,10 +1,11 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {
   html,
+  staticHtml,
+  literal,
   ifDefined,
   when,
 } from "chrome://global/content/vendor/lit.all.mjs";
@@ -21,9 +22,9 @@ import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
  * is visible. You can use the "expanded" attribute to force the accordion
  * card to show its content on initial render.
  *
- *
  * @property {string} heading - The heading text that will be used for the card.
- * @property {string} icon - (optional) A flag to indicate the header should include an icon
+ * @property {number} headingLevel - Can be used to specify whether the heading is h1-h6 if not a regular span.
+ * @property {string} iconSrc - Path to the icon that should be displayed in the card.
  * @property {string} type - (optional) The type of card. No type specified
  *   will be the default card. The other available type is "accordion"
  * @property {boolean} expanded - A flag to indicate whether the card is
@@ -35,12 +36,15 @@ export default class MozCard extends MozLitElement {
   static queries = {
     detailsEl: "#moz-card-details",
     headingEl: "#heading",
-    contentSlotEl: "#content",
+    contentEl: "#content",
+    summaryEl: "summary",
+    contentSlotEl: "#content-slot",
   };
 
   static properties = {
-    heading: { type: String },
-    icon: { type: Boolean },
+    heading: { type: String, fluent: true },
+    headingLevel: { type: Number },
+    iconSrc: { type: String },
     type: { type: String, reflect: true },
     expanded: { type: Boolean },
   };
@@ -49,6 +53,22 @@ export default class MozCard extends MozLitElement {
     super();
     this.type = "default";
     this.expanded = false;
+    /* When set to 1-6, it uses h1-h6 around the heading */
+    this.headingLevel = 0;
+  }
+
+  headingTextTemplate() {
+    const headingLevels = [
+      literal`span`,
+      literal`h1`,
+      literal`h2`,
+      literal`h3`,
+      literal`h4`,
+      literal`h5`,
+      literal`h6`,
+    ];
+    const tagName = headingLevels[this.headingLevel] || headingLevels[0];
+    return staticHtml`<${tagName} id="heading" title=${ifDefined(this.heading)} part="heading">${this.heading}</${tagName}>`;
   }
 
   headingTemplate() {
@@ -56,19 +76,21 @@ export default class MozCard extends MozLitElement {
       return "";
     }
     return html`
-      <div id="heading-wrapper">
+      <div id="heading-wrapper" part="moz-card-heading-wrapper">
         ${when(
           this.type == "accordion",
           () => html`<div class="chevron-icon"></div>`
         )}
         ${when(
-          this.icon,
+          !!this.iconSrc,
           () =>
-            html`<div part="icon" id="heading-icon" role="presentation"></div>`
+            html`<img
+              id="heading-icon"
+              src=${this.iconSrc}
+              role="presentation"
+            />`
         )}
-        <span id="heading" title=${ifDefined(this.heading)} part="heading"
-          >${this.heading}</span
-        >
+        ${this.headingTextTemplate()}
       </div>
     `;
   }
@@ -78,11 +100,11 @@ export default class MozCard extends MozLitElement {
       return html`
         <details
           id="moz-card-details"
-          @toggle="${this.onToggle}"
+          @toggle=${this.onToggle}
           ?open=${this.expanded}
         >
           <summary part="summary">${this.headingTemplate()}</summary>
-          <div id="content"><slot></slot></div>
+          <div id="content"><slot id="content-slot"></slot></div>
         </details>
       `;
     }
@@ -95,27 +117,6 @@ export default class MozCard extends MozLitElement {
         </div>
       </div>
     `;
-  }
-  /**
-   * Handles the click event on the chevron icon.
-   *
-   * Without this, the click event would be passed to
-   * toggleDetails which would force the details element
-   * to stay open.
-   *
-   * @memberof MozCard
-   */
-  onDetailsClick() {
-    this.toggleDetails();
-  }
-
-  /**
-   * @param {boolean} force - Used to force open or force close the
-   * details element.
-   * @memberof MozCard
-   */
-  toggleDetails(force) {
-    this.expanded = force ?? !this.detailsEl.open;
   }
 
   onToggle() {
@@ -130,6 +131,10 @@ export default class MozCard extends MozLitElement {
 
   render() {
     return html`
+      <link
+        rel="stylesheet"
+        href="chrome://global/skin/design-system/text-and-typography.css"
+      />
       <link
         rel="stylesheet"
         href="chrome://global/content/elements/moz-card.css"

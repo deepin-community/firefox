@@ -1,12 +1,16 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: nil; -*-
- * Any copyright is dedicated to the Public Domain.
+/* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 package org.mozilla.geckoview.test
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import org.hamcrest.Matchers.* // ktlint-disable no-wildcard-imports
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertTrue
+import org.hamcrest.Matchers.endsWith
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.nullValue
 import org.junit.Assume.assumeThat
 import org.junit.Ignore
 import org.junit.Test
@@ -250,9 +254,6 @@ class HistoryDelegateTest : BaseSessionTest() {
     }
 
     @Test fun onHistoryStateChangeSavingState() {
-        // TODO: Bug 1837551
-        assumeThat(sessionRule.env.isFission, equalTo(false))
-
         // This is a smaller version of the above test, in the hopes to minimize race conditions
         mainSession.loadTestPath(HELLO_HTML_PATH)
 
@@ -299,5 +300,34 @@ class HistoryDelegateTest : BaseSessionTest() {
                 )
             }
         })
+    }
+
+    @Test fun flushSessionStateTriggersHistoryChange() {
+        mainSession.loadTestPath(HELLO_HTML_PATH)
+        mainSession.loadTestPath(HELLO2_HTML_PATH)
+
+        sessionRule.delegateUntilTestEnd(object : HistoryDelegate {
+            @AssertCalled(count = 1)
+            override fun onHistoryStateChange(session: GeckoSession, state: GeckoSession.HistoryDelegate.HistoryList) {
+                assertThat(
+                    "History should have two entries",
+                    state.size,
+                    equalTo(2),
+                )
+                assertThat(
+                    "URLs should match",
+                    state[state.currentIndex].uri,
+                    endsWith(HELLO2_HTML_PATH),
+                )
+                assertThat(
+                    "History index should be 1",
+                    state.currentIndex,
+                    equalTo(1),
+                )
+            }
+        })
+
+        sessionRule.waitForPageStops(2)
+        mainSession.flushSessionState()
     }
 }

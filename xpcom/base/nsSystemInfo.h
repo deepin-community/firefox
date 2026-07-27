@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _NSSYSTEMINFO_H_
-#define _NSSYSTEMINFO_H_
+#ifndef NSSYSTEMINFO_H_
+#define NSSYSTEMINFO_H_
 
 #include "nsHashPropertyBag.h"
 #include "nsISystemInfo.h"
@@ -56,6 +54,9 @@ struct ProcessInfo {
   bool isWindowsSMode = false;
   int32_t cpuCount = 0;
   int32_t cpuCores = 0;
+  int32_t cpuPCount = 0;
+  int32_t cpuMCount = 0;
+  int32_t cpuECount = 0;
   nsCString cpuVendor;
   nsCString cpuName;
   int32_t cpuFamily = 0;
@@ -120,11 +121,7 @@ class nsSystemInfo final : public nsISystemInfo, public nsHashPropertyBag {
 };
 
 #define NS_SYSTEMINFO_CONTRACTID "@mozilla.org/system-info;1"
-#define NS_SYSTEMINFO_CID                            \
-  {                                                  \
-    0xd962398a, 0x99e5, 0x49b2, {                    \
-      0x85, 0x7a, 0xc1, 0x59, 0x04, 0x9c, 0x7f, 0x6c \
-    }                                                \
-  }
+#define NS_SYSTEMINFO_CID \
+  {0xd962398a, 0x99e5, 0x49b2, {0x85, 0x7a, 0xc1, 0x59, 0x04, 0x9c, 0x7f, 0x6c}}
 
-#endif /* _NSSYSTEMINFO_H_ */
+#endif /* NSSYSTEMINFO_H_ */

@@ -4,7 +4,6 @@
 
 # Menu item that sends a tab to all synced devices.
 account-send-to-all-devices = Seol chuig gach gléas
-
 # Menu item that links to the Firefox Accounts settings for connected devices.
 account-manage-devices = Bainistigh gléasanna…
 
@@ -23,7 +22,6 @@ account-send-to-all-devices-titlecase = Seol chuig gach gléas
 
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-status = Níl aon ghléas ceangailte
-
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-learnmore = Maidir le Seoladh Cluaisíní…
 
@@ -33,9 +31,6 @@ account-send-tab-to-device-singledevice-learnmore = Maidir le Seoladh Cluaisín�
 account-send-tab-to-device-verify-status = Níl an cuntas deimhnithe
 account-send-tab-to-device-verify = Deimhnigh Do Chuntas…
 
-## These strings are used in a notification shown when a new device joins the Firefox account.
-
-
 ## These strings are used in a notification shown when we're opening
 ## a single tab another device sent us to display.
 ## The body for this notification is the URL of the received tab.
@@ -44,7 +39,6 @@ account-single-tab-arriving-title = Cluaisín Faighte
 # Variables:
 #   $deviceName (String): the device name.
 account-single-tab-arriving-from-device-title = Cluaisín ó { $deviceName }
-
 # Used when a tab from a remote device arrives but the URL must be truncated.
 # Should display the URL with an indication that it's been truncated.
 # Variables:
@@ -57,7 +51,6 @@ account-single-tab-arriving-truncated-url = { $url }…
 ##   $tabCount (Number): the number of tabs received
 
 account-multiple-tabs-arriving-title = Cluaisíní Faighte
-
 # Variables:
 #   $deviceName (String): the device name.
 account-multiple-tabs-arriving-from-single-device =

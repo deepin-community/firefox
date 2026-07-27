@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } kullanıcı
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Yer imlerinize her yerden ulaşın.
 cfr-doorhanger-bookmark-fxa-body = Bu yer imine mobil cihazlarınızdan da ulaşmak istemez miydiniz? Hemen { -fxaccount-brand-name } açın.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Yer imlerini eşitle…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Kapat düğmesi
     .title = Kapat
+fxa-adoption-addresses-backup-title = Kayıtlı adreslerinizi yedekleyelim
+fxa-adoption-addresses-backup-subtitle = Kayıtlı adreslerinizi şifreleyip diğer cihazlarınızla eşitleyerek onları koruyabilirsiniz.
+fxa-adoption-credit-cards-backup-title = Ödeme yöntemlerinizi yedekleyelim
+fxa-adoption-credit-cards-backup-subtitle = Ödeme yöntemlerinizi şifreleyip diğer cihazlarınızla eşitleyerek onları koruyabilirsiniz.
+fxa-adoption-bookmarks-treatment-backup-title = Yer imlerinizi yedekleyelim
+fxa-adoption-bookmarks-treatment-backup-subtitle = Yer imlerinizi şifreleyip diğer cihazlarınızla eşitleyerek onları koruyabilirsiniz.
+fxa-adoption-primary-button-label = Kaydol
 
 ## Protections panel
 
@@ -226,6 +233,20 @@ fox-doodle-pin-secondary = Şimdi değil
 set-default-pdf-handler-headline = <strong>PDF’leriniz artık { -brand-short-name } ile açılıyor.</strong> Formları doğrudan tarayıcınızda düzenleyebilir ve imzalayabilirsiniz. Varsayılan ayarları değiştirmek isterseniz ayarlarda “PDF” araması yapabilirsiniz.
 set-default-pdf-handler-primary = Anladım
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = İstediğiniz yeri imzalayın!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = İmzanızı çizin, yazın veya yükleyin; ardından istediğiniz yere yerleştirin. İmzalarınızı daha sonra kullanmak üzere kaydedebilirsiniz.
+annotations-make-default-pdf-handler-title = { -brand-short-name } varsayılan PDF düzenleyiciniz olarak ayarlansın mı?
+annotations-make-default-pdf-handler-subtitle = PDF dosyalarını her açtığınızda araçlarımıza erişebileceksiniz.
+annotations-make-default-pdf-primary-cta-label = Varsayılan yap
+annotations-make-default-pdf-next-label = İleri
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Yeni bir cihaza geçmeyi düşünüyor musunuz?
@@ -246,6 +267,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Hesap oluştur
 device-migration-fxa-spotlight-getting-new-device-header-2 = Yeni bir cihaza geçmeyi düşünüyor musunuz?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Yeni bir cihaza geçerken yer imlerinizi, geçmişinizi ve parolalarınızı yanınızda götürmek isterseniz birkaç basit adımda işe başlayabilirsiniz.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Verilerimi nasıl yedekleyebilirim?
+device-migration-fxa-spotlight-sync-header = Hiçbir şeyi kaçırmadan gezin
+device-migration-fxa-spotlight-sync-body = Yer imleriniz ve parolalarınız gibi tüm önemli bilgilerinizi şifreleyerek eşitleyin. { -brand-product-name } kullandığınız her yerde tüm bilgilerinize ulaşabilirsiniz.
+device-migration-fxa-spotlight-sync-primary-button = Başlayın
 
 ## Set as Default PDF Reader Infobar
 
@@ -272,6 +296,20 @@ launch-on-login-infobar-final-message = <strong>Bilgisayarınızı her yeniden b
 launch-on-login-infobar-final-reject-button = Hayır
     .accesskey = H
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Bilgisayarınızı her açtığınızda { -brand-short-name } açılsın mı?
+launch-on-login-spotlight-startup-checkbox = { -brand-short-name } tarayıcısını başlangıçta çalıştır
+launch-on-login-spotlight-pin-taskbar-checkbox = Görev çubuğuna sabitle
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Önceki pencereleri ve sekmeleri aç
+launch-on-login-spotlight-primary-button = { -brand-short-name } tarayıcısını kaydet ve kapat
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -282,3 +320,177 @@ tail-fox-spotlight-title = İstenmeyen takip kodlarına izinizi kaybettirin
 tail-fox-spotlight-subtitle = Can sıkıcı reklam takip kodlarını engelleyerek daha güvenli, daha hızlı bir internet deneyimine kavuşun.
 tail-fox-spotlight-primary-button = Bağlantılarımı { -brand-short-name } ile aç
 tail-fox-spotlight-secondary-button = Şimdi değil
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Yerleşik gizliliğe geri dönün
+welcome-back-spotlight-subtitle = Kâr amacı gütmeyen bir kuruluş tarafından geliştirilen tek büyük tarayıcıya yeniden hoş geldiniz. Gezindiğiniz tüm sitelerde verilerinizi korumak için ek önlemler alıyoruz.
+welcome-back-embedded-import-title = Verilerinizi içe aktarın, { -brand-short-name } tarayıcınızda yabancılık çekmeyin
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } tarayıcısının eski sürümleri 14 Ocak 2025’ten itibaren sorun yaşamaya başlayabilir.</strong>
+root-certificate-succession-infobar-march-message = <strong>{ -brand-short-name } tarayıcınızı 14 Mart 2025’ten sonra da kullanmaya devam etmek için güncelleme yapın.</strong>
+root-certificate-succession-infobar-link = Neden güncellemeliyim?
+root-certificate-succession-infobar-primary-button =
+    .label = Şimdi güncelle
+    .accesskey = m
+root-certificate-succession-infobar-secondary-button =
+    .label = Daha sonra
+    .accesskey = D
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Önemli bir { -brand-short-name } güncellemesini kaçırdınız
+root-certificate-windows-background-notification-subtitle = Güncelleme yapmazsanız tarayıcınızın bazı kısımları yakında çalışmayacak. En yeni korumalarımızı ve özelliklerimizi edinmenin şimdi tam zamanı.
+root-certificate-windows-background-notification-learn-more-button = Daha fazla bilgi alın
+root-certificate-windows-background-notification-update-button = { -brand-short-name } tarayıcısını güncelle
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Kapat
+    .aria-label = Kapat
+fxa-menu-message-sign-up-button = Kaydol
+fxa-menu-message-sign-in-button = Giriş yap
+fxa-menu-message-sync-button = Eşitlemeyi başlat
+fxa-menu-message-sync-devices-primary-text = Tüm cihazlarınızı eşitleyin
+fxa-menu-message-sync-devices-secondary-text = Yer imlerinizi, parolalarınızı ve diğer bilgilerinizi { -brand-short-name } kullandığınız her yere götürün.
+fxa-menu-message-sync-devices-secondary-text2 = Yer imlerinize, parolalarınıza ve diğer bilgilerinize { -brand-short-name } tarayıcısına giriş yaptığınız her yerden ulaşın.
+fxa-menu-message-sync-devices-collapsed-text = Tüm cihazlarınızı eşitleyin
+fxa-menu-message-backup-data-primary-text = Tarayıcı verilerinizi yedekleyin
+fxa-menu-message-backup-data-secondary-text = Tüm cihazlarınızdaki yer imlerinizi, parolalarınızı ve diğer bilgileri otomatik olarak koruyun.
+fxa-menu-message-backup-data-collapsed-text = Tarayıcı verilerinizi yedekleyin
+fxa-menu-message-backup-sync-primary-text = Verilerinizi güvende ve eşitlenmiş tutun
+fxa-menu-message-backup-sync-secondary-text = Eşitleme özelliği verilerinizin çoğunu yedekler. Böylece { -brand-short-name } kullandığınız her yerden verilerinize erişebilirsiniz.
+fxa-menu-message-backup-sync-collapsed-text = Verileri eşitleyip yedekleyin
+fxa-menu-message-mobile-primary-text = Sekmeleri telefonunuza gönderin
+fxa-menu-message-mobile-secondary-text = Sekmelerinizi mobil cihazınızla eşitleyerek kaldığınız yerden devam edin.
+fxa-menu-message-mobile-collapsed-text = Telefonunuzla eşitleyin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Yeniden hoş geldiniz
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } tarayıcısını varsayılan tarayıcım yap
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } tarayıcısını Başlat menüsüne sabitle
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } tarayıcısını Dock’a sabitle
+       *[other] { -brand-short-name } tarayıcısını görev çubuğuna sabitle
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Gezinmeye başla
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } tarayıcısını ana tarayıcım yap
+multi-cta-fox-doodle-quick-reminder-subtitle = Küçük bir hatırlatma: En sevdiğiniz gizlilik odaklı tarayıcınızı bir tık kadar yakınınızda tutabilirsiniz.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da Dock’a sabitleyin.
+       *[other] Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da görev çubuğunuza sabitleyin.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da görev çubuğunuza ve Başlat menünüze sabitleyin.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Yakında Windows 10’dan yükseltme mi yapacaksınız?
+windows-10-eos-sync-spotlight-subtitle = Parolalarınızı ve yer imlerinizi yedekleyerek yeni cihazınıza geçmeye hazırlanın.
+windows-10-eos-sync-spotlight-primary-label = { -brand-short-name } tarayıcınızı yedekleyin
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Windows 11’e mi geçeceksiniz? Yer imlerinizi ve parolalarınızı kaybetmeyin.
+windows-10-eos-sync-toast-subtitle = { -brand-short-name } verilerinizi şimdi yedekleyin, sonra ister bu bilgisayarınıza ister yeni bilgisayarınıza geri yükleyin.
+windows-10-eos-sync-toast-primary-label = Başlayın
+windows-10-eos-sync-toast-secondary-label = Daha sonra hatırlat
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } diğer büyük şirketlerin tarayıcıları gibi gereksiz özelliklerle dolu halde gelmez.
+windows-10-eos-challenger-sync-callout-subtitle = { -brand-product-name } yer imlerinizi ve parolalarınızı yedeklerseniz bunları daha sonra yeni cihazınıza aktarmanız kolaylaşır.
+windows-10-eos-challenger-pin-callout-subtitle = { -brand-shorter-name } uygulamasını görev çubuğunuza sabitleyin, favori tarayıcınız her an yanınızda olsun.
+windows-10-eos-challenger-sync-primary-button = { -brand-shorter-name } uygulamasını yedekle
+windows-10-eos-challenger-pin-primary-button = { -brand-shorter-name } uygulamasını sabitle
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } kripto madencilerini, sosyal medya takip kodlarını ve parmak izi toplayıcılarını engeller.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Takip kodları cihazınızı tanımlayamaz veya sizi web’de takip edemez. Buna izin vermiyoruz.
+windows-10-eos-sync-callout-privacy-screen-2-title = Parolalarınızı ve yer imlerinizi yeni cihazınız için güvence altına alın.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = { -brand-shorter-name } tarayıcınızı yedekleyerek verilerinizi ve gizlilik ayarlarınızı kolayca yanınızda taşıyabilirsiniz.
+windows-10-eos-sync-callout-privacy-info-button = Nelerin engellendiğini görün
+windows-10-eos-callout-addons-title = Eklentileri deneyin: Basit yükseltmeler, büyük etkiler
+windows-10-eos-callout-addons-subtitle = Bu uzantıları üretkenliğinizi ve güvenliğinizi artırmak, dikkat dağınıklığınızı azaltmak için seçtik.
+windows-10-eos-callout-addons-primary-button = Seçtiklerimize bakın
+windows-10-eos-sync-callout-addons-title = Windows 10’dan yükseltme yaparken eklentilerinizi kaybetmeyin.
+windows-10-eos-sync-callout-addons-subtitle = Cihazınızı değiştirseniz bile { -brand-product-name } eklentilerinizi kullanmaya devam etmek için şimdi eşitleme yapın.
+windows-10-eos-sync-callout-next-button = İleri
+windows-10-eos-sync-callout-get-started-button = Başla
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Dikey sekmeler ve sekme grupları kullanıma hazır!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Yoğun istek üzerine { -brand-product-name } gezinmenizi kolaylaştıracak ve odaklanmanızı sağlayacak yeni özellikleri kullanıma sundu.
+windows-10-eos-feature-toast-whats-new-button = Yeniliklere bak
+windows-10-eos-feature-toast-dismiss-button = Kapat
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft artık Windows 10’u desteklemiyor.</strong> { -brand-product-name } tarayıcınızı Windows 11’e hazırlamak için bilgilerinizi yedekleyin.
+windows-10-eos-global-infobar-primary-button = Yedeklemeyi etkinleştir
+    .accesskey = Y
+windows-10-eos-global-infobar-learn-more-link = Daha fazla bilgi al
+    .accessKey = D
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Sıkı izlenme koruması bazı sitelerin bozulmasına yol açabilir.</strong> Takip kodu içerebilecek temel öğelerin engelini kaldırarak sık karşılaşılan sorunları düzeltebilirsiniz.
+etp-strict-exceptions-infobar-learn-more = Daha fazla bilgi al
+etp-strict-exceptions-infobar-button = Düzeltmeleri uygula
+    .accesskey = D
+etp-strict-exceptions-infobar-not-now = Şimdi değil
+    .accesskey = d
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } varsayılan tarayıcınız değil
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } ana tarayıcınız değil
+set-default-menu-message-row-layout-title = { -brand-short-name } ana tarayıcınız olsun
+set-default-menu-message-row-layout-title-variant = { -brand-short-name }’u varsayılan tarayıcım yap
+set-default-menu-message-row-layout-subtitle = Her seferinde hızlı, güvenli ve gizli gezintiye kavuşun.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } daima elinizin altında olsun: Varsayılan tarayıcınız yapın ve Dock’ta tutun.
+       *[other] { -brand-short-name } daima elinizin altında olsun: Varsayılan tarayıcınız yapın ve görev çubuğunuzda tutun.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } parmaklarınızın ucunda
+       *[other] Tüm bağlantıları { -brand-short-name } ile açın
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Saptanmış tarayıcınız yapıp Dock’unuza sabitleyin.
+       *[other] Daha hızlı gezinti ve otomatik gizlilik korumasına kavuşun.
+    }
+set-default-menu-message-primary-button = Varsayılan olarak ayarla
+set-default-menu-message-primary-button-variant = Ana tarayıcı olarak ayarla
+set-default-menu-message-primary-button-short-variant = { -brand-short-name } tarayıcısını varsayılan yap
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 e-posta maskesi bizden
+relay-50-masks-announcement-subtitle = Artık 50 maske ücretsiz. (Eskiden 5’ti.) Gerçek e-posta adresinizi gizli tutmak adına her hesap için ayrı bir maske kullanabilirsiniz.
+relay-50-masks-announcement-primary-button = { -relay-brand-name }’e git
+    .accesskey = e
+relay-50-masks-announcement-secondary-button = Kapat
+    .accesskey = K
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } tasarımı yenileniyor.</strong> Bu yılın sonlarında çıkacak tasarımın erken ve bitmemiş bir sürümünü kullanıyorsunuz.
+nova-early-access-share-feedback-link = Görüş bildir
+    .accesskey = G
+nova-early-access-infobar-primary-button = Anladım
+    .accesskey = A

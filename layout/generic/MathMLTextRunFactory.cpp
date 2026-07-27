@@ -1,22 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MathMLTextRunFactory.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/BinarySearch.h"
 #include "mozilla/ComputedStyle.h"
 #include "mozilla/ComputedStyleInlines.h"
 #include "mozilla/StaticPrefs_mathml.h"
 #include "mozilla/intl/UnicodeScriptCodes.h"
-
+#include "nsDeviceContext.h"
+#include "nsFontMetrics.h"
 #include "nsStyleConsts.h"
 #include "nsTextFrameUtils.h"
-#include "nsFontMetrics.h"
-#include "nsDeviceContext.h"
 
 using namespace mozilla;
 
@@ -366,23 +362,23 @@ static uint32_t MathvarMappingSearch(uint32_t aKey,
        */
       case StyleMathVariant::Initial:
         mapTable = gArabicInitialMapTable;
-        tableLength = ArrayLength(gArabicInitialMapTable);
+        tableLength = std::size(gArabicInitialMapTable);
         break;
       case StyleMathVariant::Tailed:
         mapTable = gArabicTailedMapTable;
-        tableLength = ArrayLength(gArabicTailedMapTable);
+        tableLength = std::size(gArabicTailedMapTable);
         break;
       case StyleMathVariant::Stretched:
         mapTable = gArabicStretchedMapTable;
-        tableLength = ArrayLength(gArabicStretchedMapTable);
+        tableLength = std::size(gArabicStretchedMapTable);
         break;
       case StyleMathVariant::Looped:
         mapTable = gArabicLoopedMapTable;
-        tableLength = ArrayLength(gArabicLoopedMapTable);
+        tableLength = std::size(gArabicLoopedMapTable);
         break;
       case StyleMathVariant::DoubleStruck:
         mapTable = gArabicDoubleMapTable;
-        tableLength = ArrayLength(gArabicDoubleMapTable);
+        tableLength = std::size(gArabicDoubleMapTable);
         break;
       default:
         // No valid transformations exist
@@ -407,7 +403,7 @@ static uint32_t MathvarMappingSearch(uint32_t aKey,
     // mathematical block, so the spaces where they ought to be are used
     // as keys for a lookup table containing the correct character mappings.
     newChar = MathvarMappingSearch(tempChar, gLatinExceptionMapTable,
-                                   ArrayLength(gLatinExceptionMapTable));
+                                   std::size(gLatinExceptionMapTable));
   }
 
   if (newChar) {
@@ -519,8 +515,8 @@ void MathMLTextRunFactory::RebuildTextRun(
   StyleMathVariant mathVar = StyleMathVariant::None;
   bool doMathvariantStyling = true;
 
-  // Ensure it will be safe to call FindFontForChar in the loop below.
-  fontGroup->CheckForUpdatedPlatformList();
+  // Ensure the fontGroup is ready to be searched.
+  fontGroup->EnsureFontList();
 
   for (uint32_t i = 0; i < length; ++i) {
     int extraChars = 0;
@@ -651,7 +647,9 @@ void MathMLTextRunFactory::RebuildTextRun(
         flags, nsTextFrameUtils::Flags(), aMFR);
     child = cachedChild.get();
   }
-  if (!child) return;
+  if (!child) {
+    return;
+  }
 
   typedef gfxTextRun::Range Range;
 

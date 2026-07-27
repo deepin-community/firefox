@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* Copyright (c) 2011, The WebRTC project authors. All rights reserved.
  * Copyright (c) 2014, Mozilla
  *
@@ -34,8 +33,8 @@
 #ifndef GMP_VIDEO_CODEC_h_
 #define GMP_VIDEO_CODEC_h_
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 enum { kGMPPayloadNameSize = 32 };
 enum { kGMPMaxSimulcastStreams = 4 };
@@ -209,6 +208,9 @@ enum GMPApiVersion {
 
   // Adds new options for encoding
   kGMPVersion35 = 35,
+
+  // Adds temporal layer options for encoding
+  kGMPVersion36 = 36,
 };
 
 struct GMPVideoCodec {
@@ -245,6 +247,9 @@ struct GMPVideoCodec {
   GMPRateControlMode mRateControlMode;
   GMPSliceMode mSliceMode;
   bool mUseThreadedEncode;
+
+  // Since GMP version 36
+  int32_t mTemporalLayerNum;
 };
 
 // Either single encoded unit, or multiple units separated by 8/16/24/32

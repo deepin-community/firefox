@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef CTTestUtils_h
 #define CTTestUtils_h
-
-#include <iostream>
 
 #include "mozpkix/Input.h"
 #include "mozpkix/Time.h"
@@ -39,8 +35,13 @@ Buffer GetTestDigitallySigned();
 // Returns the source data of the test DigitallySigned.
 Buffer GetTestDigitallySignedData();
 
-// Returns the binary representation of a test serialized SCT.
+// Returns the binary representation of various test SCTs.
 Buffer GetTestSignedCertificateTimestamp();
+Buffer GetTestSignedCertificateTimestampWithLeafIndexExtension();
+Buffer GetTestSignedCertificateTimestampWithTwoLeafIndexExtensions();
+Buffer GetTestSignedCertificateTimestampWithUnknownExtension();
+Buffer GetTestSignedCertificateTimestampWithUnknownAndLeafIndexExtensions();
+Buffer GetTestSignedCertificateTimestampWithTooShortExtension();
 
 // Returns the binary representation of a test serialized InclusionProof.
 Buffer GetTestInclusionProof();

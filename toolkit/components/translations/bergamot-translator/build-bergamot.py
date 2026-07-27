@@ -13,37 +13,28 @@ not to check the code change in.
 """
 
 import argparse
-import multiprocessing
-import os
+import logging
+import platform
 import shutil
 import subprocess
-from collections import namedtuple
+from pathlib import Path
+from typing import Any
 
 import yaml
+import zstandard as zstd
 
-DIR_PATH = os.path.realpath(os.path.dirname(__file__))
-THIRD_PARTY_PATH = os.path.join(DIR_PATH, "thirdparty")
-MOZ_YAML_PATH = os.path.join(DIR_PATH, "moz.yaml")
-PATCHES_PATH = os.path.join(DIR_PATH, "patches")
-BERGAMOT_PATH = os.path.join(THIRD_PARTY_PATH, "bergamot-translator")
-MARIAN_PATH = os.path.join(BERGAMOT_PATH, "3rd_party/marian-dev")
-GEMM_SCRIPT = os.path.join(BERGAMOT_PATH, "wasm/patch-artifacts-import-gemm-module.sh")
-BUILD_PATH = os.path.join(THIRD_PARTY_PATH, "build-wasm")
-EMSDK_PATH = os.path.join(THIRD_PARTY_PATH, "emsdk")
-EMSDK_ENV_PATH = os.path.join(EMSDK_PATH, "emsdk_env.sh")
-WASM_PATH = os.path.join(BUILD_PATH, "bergamot-translator-worker.wasm")
-JS_PATH = os.path.join(BUILD_PATH, "bergamot-translator-worker.js")
-FINAL_JS_PATH = os.path.join(DIR_PATH, "bergamot-translator.js")
-ROOT_PATH = os.path.join(DIR_PATH, "../../../..")
+DIR_PATH = Path(__file__).parent
+ROOT_PATH = (DIR_PATH / "../../../..").resolve()
 
-# 3.1.47 had an error compiling sentencepiece.
-EMSDK_VERSION = "3.1.8"
-EMSDK_REVISION = "2346baa7bb44a4a0571cc75f1986ab9aaa35aa03"
+MOZ_YAML_PATH = DIR_PATH / "moz.yaml"
+FINAL_JS_PATH = DIR_PATH / "bergamot-translator.js"
+PATCHES_PATH = DIR_PATH / "patches"
 
-patches = [
-    (BERGAMOT_PATH, os.path.join(PATCHES_PATH, "allocation-bergamot.patch")),
-    (MARIAN_PATH, os.path.join(PATCHES_PATH, "allocation-marian.patch")),
-]
+THIRD_PARTY_PATH = DIR_PATH / "thirdparty"
+REPO_PATH = THIRD_PARTY_PATH / "translations"
+BUILD_PATH = REPO_PATH / "inference/build-wasm"
+JS_PATH = BUILD_PATH / "bergamot-translator.js"
+WASM_PATH = BUILD_PATH / "bergamot-translator.wasm"
 
 parser = argparse.ArgumentParser(
     description=__doc__,
@@ -58,213 +49,234 @@ parser.add_argument(
     action="store_true",
     help="Build with debug symbols, useful for profiling",
 )
+parser.add_argument(
+    "--translations_repo",
+    metavar="DIRECTORY",
+    type=Path,
+    help="Optionally use a local copy of the https://github.com/mozilla/translations",
+)
+parser.add_argument(
+    "--allow_run_on_host",
+    action="store_true",
+    help="Do not use Docker when building, run the build on the host machine",
+)
+parser.add_argument(
+    "--force_rebuild",
+    action="store_true",
+    help="Always rebuild the artifacts",
+)
 
-ArgNamespace = namedtuple("ArgNamespace", ["clobber", "debug"])
+logging.basicConfig(level=logging.INFO, format="[%(name)s] %(message)s")
+logger = logging.getLogger(Path(__file__).stem)
+logger.setLevel(logging.INFO)
 
 
-def git_clone_update(name: str, repo_path: str, repo_url: str, revision: str):
-    if not os.path.exists(repo_path):
-        print(f"\n⬇️ Clone the {name} repo into {repo_path}\n")
+def git_clone_update(name: str, repo_url: str, revision: str):
+    if not REPO_PATH.exists():
+        logger.info(f"Clone the {name} repo into {REPO_PATH}\n")
         subprocess.check_call(
-            ["git", "clone", repo_url],
+            ["git", "clone", repo_url, REPO_PATH],
             cwd=THIRD_PARTY_PATH,
         )
 
+    def run(command):
+        return subprocess.check_call(command, cwd=REPO_PATH)
+
     local_head = subprocess.check_output(
         ["git", "rev-parse", "HEAD"],
-        cwd=repo_path,
+        cwd=REPO_PATH,
         text=True,
     ).strip()
 
-    def run(command):
-        return subprocess.check_call(command, cwd=repo_path)
-
     if local_head != revision:
-        print(f"The head ({local_head}) and revision ({revision}) don't match.")
-        print(f"\n🔎 Fetching the latest from {name}.\n")
-        run(["git", "fetch", "--recurse-submodules"])
+        logger.info(f"The head ({local_head}) and revision ({revision}) don't match.")
+        logger.info(f"Fetching revision {revision} from {name}.\n")
+        run(["git", "fetch", "--recurse-submodules", "origin", revision])
 
-        print(f"🛒 Checking out the revision {revision}")
+        logger.info(f"Checking out the revision {revision}")
         run(["git", "checkout", revision])
-        run(["git", "submodule", "update", "--init", "--recursive"])
 
 
-def install_and_activate_emscripten(args: ArgNamespace):
-    git_clone_update(
-        name="emsdk",
-        repo_path=EMSDK_PATH,
-        repo_url="https://github.com/emscripten-core/emsdk.git",
-        revision=EMSDK_REVISION,
-    )
+def maybe_remove_repo_path():
+    """
+    Removes the REPO_PATH if it exists, handling files, directories, and symlinks.
+    """
+    if not REPO_PATH.exists():
+        return
 
-    # Run these commands in the shell so that the configuration is saved.
-    def run_shell(command):
-        return subprocess.run(command, cwd=EMSDK_PATH, shell=True, check=True)
+    if REPO_PATH.is_symlink() or REPO_PATH.is_file():
+        REPO_PATH.unlink()
+    elif REPO_PATH.is_dir():
+        shutil.rmtree(REPO_PATH)
 
-    print(f"\n🛠️ Installing EMSDK version {EMSDK_VERSION}\n")
-    run_shell("./emsdk install " + EMSDK_VERSION)
-
-    print("\n🛠️ Activating emsdk\n")
-    run_shell("./emsdk activate " + EMSDK_VERSION)
+    logger.info(f"Remove existing path: {REPO_PATH}")
 
 
-def install_bergamot():
-    with open(MOZ_YAML_PATH, "r", encoding="utf8") as file:
-        text = file.read()
+def fetch_bergamot_source(translations_repo: Path | None):
+    """
+    Fetches the Bergamot source code either from the --translations_repo path,
+    or by cloning the repository as defined in the moz.yaml file.
 
-    moz_yaml = yaml.safe_load(text)
+    Returns:
+        str: The path to the Bergamot repository.
+    """
+    maybe_remove_repo_path()
 
-    git_clone_update(
-        name="bergamot",
-        repo_path=BERGAMOT_PATH,
-        repo_url=moz_yaml["origin"]["url"],
-        revision=moz_yaml["origin"]["revision"],
-    )
-
-
-def to_human_readable(size):
-    """Convert sizes to human-readable format"""
-    size_in_mb = size / 1048576
-    return f"{size_in_mb:.2f}M ({size} bytes)"
-
-
-def apply_git_patch(repo_path, patch_path):
-    print(f"Applying patch {patch_path} to {os.path.basename(repo_path)}")
-    subprocess.check_call(["git", "apply", "--reject", patch_path], cwd=repo_path)
-
-
-def revert_git_patch(repo_path, patch_path):
-    print(f"Reverting patch {patch_path} from {os.path.basename(repo_path)}")
-    subprocess.check_call(["git", "apply", "-R", "--reject", patch_path], cwd=repo_path)
-
-
-def build_bergamot(args: ArgNamespace):
-    if args.clobber and os.path.exists(BUILD_PATH):
-        shutil.rmtree(BUILD_PATH)
-
-    if not os.path.exists(BUILD_PATH):
-        os.mkdir(BUILD_PATH)
-
-    print("\n 🖌️ Applying source code patches\n")
-    for repo_path, patch_path in patches:
-        apply_git_patch(repo_path, patch_path)
-
-    # These commands require the emsdk environment variables to be set up.
-    def run_shell(command):
-        if '"' in command or "'" in command:
-            raise Exception("This run_shell utility does not support quotes.")
-
-        return subprocess.run(
-            # "source" is not available in all shells so explicitly
-            f"bash -c 'source {EMSDK_ENV_PATH} && {command}'",
-            cwd=BUILD_PATH,
-            shell=True,
-            check=True,
+    if translations_repo:
+        assert translations_repo.is_dir(), (
+            f"The translations repo must be a directory: {translations_repo}"
         )
 
-    try:
-        flags = ""
-        if args.debug:
-            flags = "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+        logger.info(f"Using local mozilla/translations repo: {translations_repo}")
 
-        print("\n 🏃 Running CMake for Bergamot\n")
-        run_shell(
-            f"emcmake cmake -DCOMPILE_WASM=on -DWORMHOLE=off {flags} {BERGAMOT_PATH}"
+        Path(REPO_PATH).symlink_to(translations_repo)
+        logger.info(f"Create symlink: {REPO_PATH} -> {translations_repo}")
+
+        return REPO_PATH
+    else:
+        logger.info(
+            "The --translations_repo was not set. Cloning the repository as per moz.yaml."
         )
 
-        print("\n 🏃 Building Bergamot with emmake\n")
-        run_shell(f"emmake make -j {multiprocessing.cpu_count()}")
+        with open(MOZ_YAML_PATH, encoding="utf8") as file:
+            moz_yaml = yaml.safe_load(file)
 
-        print("\n 🪚 Patching Bergamot for gemm support\n")
-        subprocess.check_call(["bash", GEMM_SCRIPT, BUILD_PATH])
+        repo_url = moz_yaml["origin"]["url"]
+        revision = moz_yaml["origin"]["revision"]
 
-        print("\n✅ Build complete\n")
-        print("  " + JS_PATH)
-        print("  " + WASM_PATH)
-
-        # Get the sizes of the build artifacts.
-        wasm_size = os.path.getsize(WASM_PATH)
-        gzip_size = int(
-            subprocess.run(
-                f"gzip -c {WASM_PATH} | wc -c",
-                check=True,
-                shell=True,
-                capture_output=True,
-            ).stdout.strip()
+        git_clone_update(
+            name="translations",
+            repo_url=repo_url,
+            revision=revision,
         )
-        print(f"  Uncompressed wasm size: {to_human_readable(wasm_size)}")
-        print(f"  Compressed wasm size: {to_human_readable(gzip_size)}")
-    finally:
-        print("\n🖌️ Reverting the source code patches\n")
-        for repo_path, patch_path in patches[::-1]:
-            revert_git_patch(repo_path, patch_path)
+
+
+def create_command(allow_run_on_host: bool, force_rebuild: bool, task_args: list[str]):
+    extra_args = []
+    if force_rebuild:
+        extra_args.extend(["--", "--force-rebuild"])
+    if allow_run_on_host:
+        # Attempt to build the WASM artifacts on the host computer.
+        command = ["task", "inference-build-wasm", *extra_args]
+    else:
+        # Attempt to build the WASM artifacts within a Docker container.
+        command = [
+            "task",
+            "docker-run",
+            "--",
+            "--volume",
+            f"{BUILD_PATH}:/inference/build_wasm",
+            "task",
+            "inference-build-wasm",
+            *extra_args,
+        ]
+
+        if platform.system() == "Linux":
+            # Linux seems to have an issue with permissions involving `tar`
+            # unless the UID and GID are set to the current user.
+            command.append("--run-as-user")
+
+    # Append task arguments if they exist
+    if task_args:
+        command.extend(task_args)
+
+    return command
+
+
+def build_bergamot(args: Any):
+    """
+    Builds the inference engine by calling the 'inference-build-wasm' task.
+
+    If the --allow_run_on_host flag is set, then the build will attempt to run
+    locally on the host system.
+
+    Otherwise, by default, the WASM artifacts will be built with a Docker container
+    using the Docker image specified by the repository.
+    """
+
+    if WASM_PATH.exists() and JS_PATH.exists() and not args.force_rebuild:
+        logger.info("The build artifacts already exist: skipping build step...")
+        logger.info("Use the --force_rebuild flag to build them again.")
+        return
+
+    task_args = []
+    if args.clobber:
+        task_args.append("--clobber")
+    if args.debug:
+        task_args.append("--debug")
+
+    command = create_command(args.allow_run_on_host, args.force_rebuild, task_args)
+
+    logger.info("Building inference engine WASM...\n")
+    return subprocess.run(command, cwd=REPO_PATH, shell=False, check=True)
 
 
 def write_final_bergamot_js_file():
     """
-    The generated JS file requires some light patching for integration.
+    Formats and writes the final JavaScript file for Bergamot by running ESLint on
+    a temporary copy and moving it to the final destination.
     """
+    with open(JS_PATH, encoding="utf8") as file:
+        logger.info("Formatting the final Bergamot file")
 
-    source = "\n".join(
-        [
-            "/* This Source Code Form is subject to the terms of the Mozilla Public",
-            " * License, v. 2.0. If a copy of the MPL was not distributed with this",
-            " * file, You can obtain one at http://mozilla.org/MPL/2.0/. */",
-            "",
-            "function loadBergamot(Module) {",
-            "",
-        ]
-    )
+        # Create the file outside of this directory so it's not ignored by ESLint.
+        temp_path = DIR_PATH / "../temp-bergamot.js"
+        with open(temp_path, "w", encoding="utf8") as temp_file:
+            temp_file.write(file.read())
 
-    with open(JS_PATH, "r", encoding="utf8") as file:
-        for line in file.readlines():
-            source += "  " + line
+        subprocess.run(
+            f"./mach eslint --fix {temp_path} --rule 'curly:error'",
+            cwd=ROOT_PATH,
+            check=True,
+            shell=True,
+            capture_output=True,
+        )
 
-    source += "  return Module;\n}"
+        logger.info(f"Writing out final Bergamot file: {FINAL_JS_PATH}")
+        shutil.move(temp_path, FINAL_JS_PATH)
 
-    # Use the Module's printing.
-    source = source.replace("console.log(", "Module.print(")
+    if PATCHES_PATH.exists():
+        for patch_file in PATCHES_PATH.iterdir():
+            if patch_file.is_file() and patch_file.suffix == ".diff":
+                logger.info(f"Applying patch: {patch_file.name}")
+                subprocess.check_call(
+                    ["git", "apply", "--reject", str(patch_file)], cwd=DIR_PATH
+                )
 
-    # Add some instrumentation to the module's memory size.
-    source = source.replace(
-        "function updateGlobalBufferAndViews(buf) {",
-        """
-        function updateGlobalBufferAndViews(buf) {
-          const mb = (buf.byteLength / 1_000_000).toFixed();
-          Module.print(
-            `Growing wasm buffer to ${mb}MB (${buf.byteLength} bytes).`
-          );
-    """,
-    )
 
-    print("\n Formatting the final bergamot file")
-    # Create the file outside of this directory so it's not ignored by eslint.
-    temp_path = os.path.join(DIR_PATH, "../temp-bergamot.js")
-    with open(temp_path, "w", encoding="utf8") as file:
-        file.write(source)
+def compress_wasm_file():
+    """
+    Compresses the generated .wasm file using zstd and saves it as .wasm.zst.
+    """
+    if not WASM_PATH.exists():
+        logger.error(f"WASM file not found: {WASM_PATH}")
+        return
 
-    subprocess.run(
-        f"./mach eslint --fix {temp_path}",
-        cwd=ROOT_PATH,
-        check=True,
-        shell=True,
-        capture_output=True,
-    )
+    compressed_path = WASM_PATH.with_suffix(".wasm.zst")
 
-    print(f"\n Writing out final bergamot file: {FINAL_JS_PATH}")
-    shutil.move(temp_path, FINAL_JS_PATH)
+    logger.info(f"Compressing WASM file: {compressed_path}")
+
+    with open(WASM_PATH, "rb") as f_in, open(compressed_path, "wb") as f_out:
+        compressor = zstd.ZstdCompressor(19)
+        f_out.write(compressor.compress(f_in.read()))
+
+    logger.info(f"Compressed WASM saved to: {compressed_path}")
 
 
 def main():
-    args: ArgNamespace = parser.parse_args()
+    args = parser.parse_args()
 
-    if not os.path.exists(THIRD_PARTY_PATH):
-        os.mkdir(THIRD_PARTY_PATH)
+    if not THIRD_PARTY_PATH.exists():
+        THIRD_PARTY_PATH.mkdir()
 
-    install_and_activate_emscripten(args)
-    install_bergamot()
+    fetch_bergamot_source(args.translations_repo)
     build_bergamot(args)
     write_final_bergamot_js_file()
+    compress_wasm_file()
+
+    logger.info(
+        "Uncomment the line in toolkit/components/translations/jar.mn to test the wasm artifact locally"
+    )
 
 
 if __name__ == "__main__":

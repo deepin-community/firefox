@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,8 +6,8 @@
 #define MOZ_UNIT_TRANSFORMS_H_
 
 #include "Units.h"
-#include "mozilla/gfx/Matrix.h"
 #include "mozilla/Maybe.h"
+#include "mozilla/gfx/Matrix.h"
 #include "nsRegion.h"
 
 namespace mozilla {
@@ -44,9 +42,6 @@ enum class PixelCastJustification : uint8_t {
   // reference point as a screen point. The reverse is useful when synthetically
   // created WidgetEvents need to be converted back to InputData.
   LayoutDeviceIsScreenForUntransformedEvent,
-  // Similar to LayoutDeviceIsScreenForUntransformedEvent, PBrowser handles
-  // some widget/tab dimension information as the OS does -- in screen units.
-  LayoutDeviceIsScreenForTabDims,
   // A combination of LayoutDeviceIsScreenForBounds and
   // ScreenIsParentLayerForRoot, which is how we're using it.
   LayoutDeviceIsParentLayerForRCDRSF,

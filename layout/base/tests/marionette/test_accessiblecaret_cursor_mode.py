@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -222,7 +221,7 @@ class AccessibleCaretCursorModeTestCase(MarionetteTestCase):
 
     def test_drag_caret_from_front_to_end_across_columns(self):
         self.open_test_html("layout/test_carets_columns.html")
-        el = self.marionette.find_element(By.ID, "columns-inner")
+        el = self.marionette.find_element(By.ID, "columns")
         sel = SelectionManager(el)
         content_to_add = "!"
         target_content = sel.content + content_to_add

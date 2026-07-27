@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -51,7 +50,7 @@ function checkEndEntity(cert, expectedResult) {
     certdb,
     cert,
     expectedResult,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 
@@ -60,7 +59,7 @@ function checkIntermediate(cert, expectedResult) {
     certdb,
     cert,
     expectedResult,
-    certificateUsageSSLCA
+    Ci.nsIX509CertDB.verifyUsageTLSServerCA
   );
 }
 

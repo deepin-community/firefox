@@ -1,5 +1,19 @@
 #!/bin/bash
 
+function find_repo_type()
+{
+  if [ -d ".git" ]; then
+      MOZ_REPO="git"
+  elif [ -d ".hg" ]; then
+      MOZ_REPO="hg"
+  else
+    echo "Unable to detect repo (git or hg)"
+    exit 1
+  fi
+}
+export -f find_repo_type
+
+
 # Assume that if STATE_DIR is already defined, we do not need to
 # execute this file again.
 if [ "x$STATE_DIR" != "x" ]; then
@@ -65,9 +79,9 @@ source $MOZ_CONFIG_PATH
 
 function find_base_commit()
 {
-  # read the last line of README.moz-ff-commit to retrieve our current base
+  # read the last line of README.mozilla.last-vendor to retrieve our current base
   # commit in moz-libwebrtc
-  MOZ_LIBWEBRTC_BASE=`tail -1 third_party/libwebrtc/README.moz-ff-commit`
+  MOZ_LIBWEBRTC_BASE=`tail -1 third_party/libwebrtc/README.mozilla.last-vendor`
   echo "prelim MOZ_LIBWEBRTC_BASE: $MOZ_LIBWEBRTC_BASE"
   # if we've advanced into a chrome release branch, we need to adjust the
   # MOZ_LIBWEBRTC_BASE to the last common commit so we can now advance up
@@ -78,6 +92,7 @@ function find_base_commit()
   echo "adjusted MOZ_LIBWEBRTC_BASE: $MOZ_LIBWEBRTC_BASE"
 }
 export -f find_base_commit
+
 
 function find_next_commit()
 {

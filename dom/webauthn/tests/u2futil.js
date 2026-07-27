@@ -20,6 +20,10 @@ var { AppConstants } = SpecialPowers.ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
 
+var { DER } = SpecialPowers.ChromeUtils.importESModule(
+  "resource://gre/modules/psm/DER.sys.mjs"
+);
+
 async function addVirtualAuthenticator(
   protocol = "ctap2_1",
   transport = "internal",
@@ -70,6 +74,18 @@ async function addVirtualAuthenticator(
   });
 
   return id;
+}
+
+async function setUserVerified(authenticatorId, isUserVerified) {
+  await SpecialPowers.spawnChrome(
+    [authenticatorId, isUserVerified],
+    (authenticatorId, isUserVerified) => {
+      let webauthnService = Cc["@mozilla.org/webauthn/service;1"].getService(
+        Ci.nsIWebAuthnService
+      );
+      webauthnService.setUserVerified(authenticatorId, isUserVerified);
+    }
+  );
 }
 
 function handleEventMessage(event) {
@@ -424,22 +440,12 @@ function verifySignature(key, data, derSig) {
     );
   }
 
-  // Copy signature data into the current context.
-  let derSigCopy = new ArrayBuffer(derSig.byteLength);
-  new Uint8Array(derSigCopy).set(new Uint8Array(derSig));
-
-  let sigAsn1 = org.pkijs.fromBER(derSigCopy);
-
-  // pkijs.asn1 seems to erroneously set an error code when calling some
-  // internal function. The test suite doesn't like dangling globals.
-  delete window.error;
-
-  let sigR = new Uint8Array(
-    sigAsn1.result.value_block.value[0].value_block.value_hex
-  );
-  let sigS = new Uint8Array(
-    sigAsn1.result.value_block.value[1].value_block.value_hex
-  );
+  let der = new DER.DERDecoder(Array.from(new Uint8Array(derSig)));
+  let seqContents = new DER.DERDecoder(der.readTagAndGetContents(DER.SEQUENCE));
+  let sigR = seqContents.readTagAndGetContents(DER.INTEGER);
+  let sigS = seqContents.readTagAndGetContents(DER.INTEGER);
+  seqContents.assertAtEnd();
+  der.assertAtEnd();
 
   // The resulting R and S values from the ASN.1 Sequence must be fit into 32
   // bytes. Sometimes they have leading zeros, sometimes they're too short, it

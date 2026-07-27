@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Бұл сертификат се
 cert-error-trust-expired-issuer = Сертификатты растау мүмкін емес, өйткені шығарушы сертификатының мерзімі аяқталған.
 cert-error-trust-self-signed = Сертификатқа сенім жоқ, өйткені оның қолтаңбасы өздігінен қойылған.
 cert-error-trust-symantec = GeoTrust, RapidSSL, Symantec, Thawte және VeriSign шығарған сертификаттар бұдан былай қауіпсіз деп саналмайды, себебі бұл сертификаттау орталықтары қауіпсіздік тәжірибелерін бұрын орындамады.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } { $hostname } серверіне сенбейді, себебі ол публикалық сертификаттың мөлдірлілік талаптарына сәйкес келетінін дәлелдей алмады.
 cert-error-untrusted-default = Сертификат сенуге болатын көзден шыққан емес.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,105 @@ open-in-new-window-for-csp-or-xfo-error = Сайтты жаңа терезеде
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Қауіпсіздігіңізді қорғау үшін, { $hostname } { -brand-short-name } үшін бетті көрсетуге рұқсат етпейді, егер оны басқа сайт ендірілген болса. Бұл бетті қарау үшін, оны жаңа терезеде ашыңыз.
+fp-certerror-view-certificate-link = Сайт сертификатын қарау
+fp-certerror-return-to-previous-page-recommended-button-2 = Артқа оралу (ұсынылады)
+    .accesskey = т
+fp-certerror-return-to-previous-page-recommended-button = Артқа оралу (ұсынылады)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-certerror-revoked-why-dangerous-body = { -brand-short-name } бұл сайт туралы сізге ескертеді, себебі { $hostname } үшін берілген сертификат кері қайтарылған және бұдан былай сенімді емес.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-revoked-what-can-you-do-body = Бұл ештеңені білдірмеуі де мүмкін, себебі мәселе сайттың өзінде болуы мүмкін. Мәселенің шешілуін бақылап отырған-отырмағанын білу үшін веб-сайт иесіне хабарласып көрсеңіз болады.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Сайт тек қауіпсіз байланыстарға рұқсат беретіндей бапталған, бірақ сайт сертификатында мәселе бар. Зиянкес жақ сайттың жалған көшірмесін көрсетуге тырысуы мүмкін. Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. { -brand-short-name } бұл сайтқа сенбейді, себебі оның сертификаты { $hostname } үшін жарамсыз. Сертификат тек мыналар үшін жарамды: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Ешнәрсе емес сияқты, себебі сайттың өзінде мәселе болуы мүмкін. Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. Бірақ егер сіз корпоративтік желіде болсаңыз, қолдау көрсету тобында қосымша ақпарат болуы мүмкін. Вирусқа қарсы бағдарламалық құралды пайдаланып жатсаңыз, мүмкін болған қайшылықтарды немесе белгілі мәселелерді іздеп көріңіз.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-certerror-untrusted-issuer-why-dangerous-body = { -brand-short-name } бұл сайт туралы сізге ескертеді, себебі { $hostname } үшін берілген сертификат бұдан былай сенімді емес сертификаттау орталығы арқылы шығарылған.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-untrusted-issuer-what-can-you-do-body = Бұл ештеңені білдірмеуі де мүмкін, себебі мәселе сайттың өзінде болуы мүмкін. Мәселенің шешілуін бақылап отырған-отырмағанын білу үшін веб-сайт иесіне хабарласып көрсеңіз болады.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Сайт сертификатында мәселе бар. Зиянкес жақ сайттың жалған көшірмесін көрсетуге тырысуы мүмкін. Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. { -brand-short-name } бұл сайтқа сенбейді, себебі сертификатты кім бергенін айта алмаймыз, ол өздігінен қол қойған немесе сайт біз сенетін аралық сертификаттарды жібермейді.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Ешнәрсе емес сияқты, себебі сайттың өзінде мәселе болуы мүмкін. Бірақ егер сіз корпоративтік желіде болсаңыз, қолдау көрсету тобында қосымша ақпарат болуы мүмкін. Вирусқа қарсы бағдарламалық құралды пайдаланып жатсаңыз, оны { -brand-short-name } қолданбасымен жұмыс істеу үшін баптау қажет болуы мүмкін.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Себебі сайт сертификатында мәселе бар. Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. Бұл сайттың сертификатына өздігінен қол қойылған. Оны танылған сертификаттау органы бермеген, сондықтан біз оған үнсіз келісім бойынша сенбейміз.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Көп емес. Сайттың өзінде мәселе болуы мүмкін.
+fp-certerror-self-signed-important-note = МАҢЫЗДЫ ЕСКЕРТПЕ: Егер сіз корпоративтік интранет арқылы осы сайтқа кіргіңіз келсе, АТ қызметкерлері өздігінен қол қойылған сертификаттарды пайдалана алады. Олар сізге олардың шынайылығын тексеруге көмектеседі.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. { -brand-short-name } бұл сайтқа сенбейді, себебі сертификаттың мерзімі { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } күні біткен сияқты.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Сайттар өздерінің кім екенін растау үшін сертификаттау орталығы берген сертификаттарды пайдаланады. { -brand-short-name } бұл сайтқа сенбейді, себебі сертификаттың мерзімі { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } күніне дейін жарамды емес сияқты.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Сіздің құрылғыңыздың сағаты { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } шамасына орнатылған. Бұл дұрыс болса, қауіпсіздік мәселесі сайттың өзінде болуы мүмкін. Бұл дұрыс емес болса, оны құрылғының жүйелік баптауларынан өзгертуге болады.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Қате коды: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-certerror-transparency-why-dangerous-body = { -brand-short-name } { $hostname } серверіне сенбейді, себебі ол публикалық сертификаттың мөлдірлілік талаптарына сәйкес келетінін дәлелдей алмады.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-transparency-what-can-you-do-body = Ешнәрсе емес сияқты, себебі сайттың өзінде мәселе болуы мүмкін.
+fp-learn-more-about-secure-connection-failures = Қауіпсіз байланыс ақаулары туралы қосымша ақпарат алу
+fp-learn-more-about-cert-issues = Сертификат мәселелерінің осы түрлері туралы көбірек білу
+fp-learn-more-about-time-related-errors = Уақытқа байланысты қателерді шешу туралы көбірек білу
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $datetime (Date) - Date the cert becomes valid.
+fp-certerror-pkix-not-yet-valid-why-dangerous-body = { -brand-short-name } бұл сайтқа сенбейді, себебі берілген сертификат { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } күні сағат { DATETIME($date, timeStyle: "short") } уақытына дейін жарамсыз сияқты.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Device's clock date.
+fp-certerror-pkix-not-yet-valid-what-can-you-do-body = Сіздің құрылғыңыздың сағаты { DATETIME($date, timeStyle: "short") } { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } шамасына орнатылған. Бұл дұрыс болса, қауіпсіздік мәселесі сайттың өзінде болуы мүмкін. Бұл дұрыс емес болса, оны құрылғының жүйелік баптауларынан өзгертуге болады.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-certerror-invalid-cert-why-dangerous = { $hostname } иесі оны дұрыс баптамады және қауіпсіз байланысты жасау мүмкін емес.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $now (Date) - The current datetime, to be formatted as a date
+fp-certerror-clock-skew-intro = Компьютеріңіз қазіргі уақытты { DATETIME($now, dateStyle: "medium") } деп санайды, бұл { -brand-short-name } үшін қауіпсіз қосылым орнатуға кедергі келтіреді. <strong>{ $hostname }</strong> торабына өту үшін, жүйе баптауларында компьютер сағатын ағымдағы күнге, уақытқа және уақыт белдеуіне жаңартыңыз да, парақты қайта жүктеңіз.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $now (Date) - The current datetime, to be formatted as a date
+fp-certerror-clock-skew-what-can-you-do-body = Жүйе баптауларында компьютер сағатын ағымдағы күнге, уақытқа және уақыт белдеуіне жаңартыңыз да, парақты қайта жүктеңіз. Компьютеріңіз қазіргі уақытты { DATETIME($now, dateStyle: "medium") } деп санайды.
+
+## Variables:
+##   $hostname (string) - Hostname of the website with cert error.
+
+cert-error-revoked-certificate = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат кері қайтарылған және бұдан былай сенімді емес.
+cert-error-bad-signature = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификаттың қолтаңбасы жарамсыз.
+cert-error-key-pinning-failure = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат күтілгеннен басқа ашық кілтті пайдаланады.
+cert-error-bad-der = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат дұрыс кодталмаған.
+cert-error-cert-not-in-name-space = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат оны шығарған сертификаттың атау шектеулеріне сәйкес келмейді.
+cert-error-inadequate-cert-type = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификатты веб-сервер пайдалануына рұқсат етілмеген.
+cert-error-path-len-constraint-invalid = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификаттың түбірлік сертификатқа дейінгі жолында аралық сертификаттар тым көп.
+cert-error-invalid-key = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификаттың кілті жарамсыз. Шамасы, бұл кілт қауіпсіздікті қамтамасыз ету үшін тым қысқа.
+cert-error-unknown-critical-extension = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификатта қолдау көрсетілмейтін маңызды кеңейту бар.
+cert-error-extension-value-invalid = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификатта жарамсыз кеңейту бар.
+cert-error-untrusted-issuer = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат бұдан былай сенімді емес сертификаттау орталығы арқылы шығарылған.
+cert-error-untrusted-cert = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификат сенімсіз деп белгіленген.
+cert-error-invalid-integer-encoding = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификатта бүтін санның кодталуы қате. Жиі кездесетін себептерге теріс сериялық нөмірлер, теріс RSA модульдері және қажеттіліктен ұзын кодтаулар жатады.
+cert-error-unsupported-keyalg = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификаттың кілт түріне қолдау көрсетілмейді.
+cert-error-issuer-no-longer-trusted = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификатты шығарған сертификаттау орталығы бұдан былай сенімді емес.
+cert-error-signature-algorithm-mismatch = { -brand-short-name } бұл сайтқа кіруіңізді блоктады, себебі { $hostname } үшін берілген сертификаттың қолтаңба алгоритмі оның қолтаңба алгоритмі өрісіне сәйкес келмейді.
 
 ## Messages used for certificate error titles
 
@@ -76,6 +178,7 @@ deniedPortAccess-title = Бұл портқа тыйым салынған
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 dnsNotFound-title = Кешіріңіз, бұл сайтты таба алмадық.
+internet-connection-offline-title = Интернет байланысыңызда мәселе бар сияқты.
 dns-not-found-trr-only-title2 = Бұл доменді іздеуде қауіпсіздік тәуекелі болуы мүмкін
 dns-not-found-native-fallback-title2 = Бұл доменді іздеуде қауіпсіздік тәуекелі болуы мүмкін
 fileNotFound-title = Файл табылмады
@@ -92,6 +195,7 @@ contentEncodingError-title = Құраманы декодтау кезінде қ
 unsafeContentType-title = Қауіпсіз емес файл түрі
 netReset-title = Байланыс үзілген
 netTimeout-title = Байланысты күту уақыты аяқталды
+httpErrorPage-title = Бұл сайтта мәселе бар сияқты
 serverError-title = Бұл сайтта мәселе бар сияқты
 unknownProtocolFound-title = Адресті талдау қатесі
 proxyConnectFailure-title = Прокси сервері сұранымдарды үзіп тұр
@@ -100,6 +204,7 @@ redirectLoop-title = Парақтағы бағдарлау дұрыс емес
 unknownSocketType-title = Сервердің жауабы күтпеген түрде
 nssFailure2-title = Қорғалған байланысты орнату сәтсіз аяқталды
 csp-xfo-error-title = { -brand-short-name } бұл парақты аша алмайды
+corruptedContentErrorv2-title = Мазмұнның зақымдану қатесі
 corruptedContentError-title = Зақымдалған құрама қатесі
 sslv3Used-title = Қауіпсіз түрде байланысу мүмкін емес
 inadequateSecurityError-title = Сіздің байланысыңыз қауіпсіз емес
@@ -109,3 +214,23 @@ networkProtocolError-title = Желілік хаттама қатесі
 nssBadCert-title = Назарыңызға: алдыңызда тәуекел бар сияқты
 nssBadCert-sts-title = Байланыс орнатылмады: мүмкін қауіпсіздік мәселесі
 certerror-mitm-title = Бағдарламалық қамтама { -brand-short-name } үшін бұл сайтқа қауіпсіз түрде байланысуға жол бермейді
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Ескерту: Қауіпсіздік тәуекелі
+fp-certerror-body-title = Сақ болыңыз. Бірдеңе дұрыс емес сияқты.
+fp-certerror-why-site-dangerous = Сайтты қауіпті етіп көрсететін не?
+fp-certerror-what-can-you-do = Оған не жасауыңызға болады?
+fp-certerror-advanced-title = Кеңейтілген
+fp-certerror-advanced-button = Кеңейтілген
+fp-certerror-hide-advanced-button = Кеңейтілгенді жасыру
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = { $hostname } адресіне өту (Тәуекелі бар)
+fp-certerror-intro = { -brand-short-name } <strong>{ $hostname }</strong> адресіндегі мүмкін болған маңызды қауіпсіздік мәселесін анықтады. Біреулер сайттың жалған көшірмесін жасап несие карта, парольдер немесе электрондық пошта ақпаратын ұрлауға әрекет етуі мүмкін.
+fp-certerror-expired-into = { -brand-short-name } <strong>{ $hostname }</strong> адресіндегі қауіпсіздік мәселесін анықтады. Сайт дұрыс бапталмаған немесе құрылғының сағаты дұрыс емес күнге/уақытқа орнатылған болуы мүмкін.
+fp-certerror-transparency-intro = Біреу өзін <strong>{ $hostname }</strong> ретінде көрсетіп, несие картасының деректері, парольдер немесе электрондық пошта сияқты ақпаратты ұрлауға әрекет жасауы мүмкін.
+fp-certerror-override-exception-button-2 = { $hostname } адресіне өту (Тәуекелі бар)
+    .accesskey = т

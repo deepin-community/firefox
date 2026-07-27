@@ -17,7 +17,7 @@ add_task(async function () {
     wait: true,
   });
 
-  const swatch = property.valueSpan.querySelector(".ruleview-filterswatch");
+  const swatch = property.valueSpan.querySelector(".inspector-filterswatch");
 
   const filterTooltip = view.tooltips.getTooltip("filterEditor");
   // Clicking on a cssfilter swatch sets the current filter value in the tooltip
@@ -51,7 +51,11 @@ add_task(async function () {
   info("Hide the filter select");
   const onSelectPopupHidden = once(selectPopup, "popuphidden");
   const blurMenuItem = selectPopup.querySelector("menuitem[label='blur']");
-  EventUtils.synthesizeMouseAtCenter(blurMenuItem, {}, window);
+  if (selectPopup.isNativeMenu) {
+    selectPopup.activateItem(blurMenuItem);
+  } else {
+    EventUtils.synthesizeMouseAtCenter(blurMenuItem, {}, window);
+  }
   await onSelectPopupHidden;
   await waitFor(() => select.value === "blur");
   is(

@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -74,6 +73,9 @@ export class BackgroundThumbnailsChild extends JSWindowActorChild {
           loadFlags: Ci.nsIWebNavigation.LOAD_FLAGS_STOP_CONTENT,
         };
         try {
+          // Some URIs like external protocols don't necessarily stop the
+          // ongoing network activity. See also bug 1917863.
+          docShell.stop(Ci.nsIWebNavigation.STOP_ALL);
           docShell.loadURI(
             Services.io.newURI(message.data.url),
             loadURIOptions

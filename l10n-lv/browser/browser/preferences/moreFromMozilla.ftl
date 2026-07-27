@@ -19,6 +19,8 @@ more-from-moz-qr-code-firefox-mobile-img =
     .alt = QR kods, lai lejupielādētu { -brand-product-name } Mobile
 more-from-moz-button-mozilla-vpn-2 = Iegūt VPN
 more-from-moz-learn-more-link = Uzzināt vairāk
+more-from-moz-title2 = Vairāk no { -vendor-short-name }
+    .title = Vairāk no { -vendor-short-name }
 
 ## These strings are for the Firefox Relay card in about:preferences moreFromMozilla page
 

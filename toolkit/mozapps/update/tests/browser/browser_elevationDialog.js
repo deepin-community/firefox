@@ -8,6 +8,12 @@ add_task(async function elevation_dialog() {
     set: [[PREF_APP_UPDATE_DISABLEDFORTESTING, false]],
   });
 
+  // Ensure the update service is initialized before we start opening
+  // elevation dialogs. Otherwise, the dialog's onLoad calling
+  // getReadyUpdate() would trigger a full initialization (including
+  // another #asyncInit) that opens an extra dialog.
+  await initUpdateService();
+
   // Create a mock of nsIAppStartup's quit method so clicking the restart button
   // won't restart the application.
   let { startup } = Services;
@@ -137,7 +143,13 @@ async function waitForElevationDialog() {
   let updates = getLocalUpdateString(updateProps, patches);
   writeUpdatesToXMLFile(getLocalUpdatesXMLString(updates), true);
   writeStatusFile(STATE_PENDING_ELEVATE);
-  reloadUpdateManagerData();
+
+  // Write a dummy MAR to make this look like a valid startup state.
+  const readyMarFile = getUpdateDirFile(FILE_UPDATE_MAR, DIR_PATCH);
+  writeFile(readyMarFile, "test mar contents");
+  Assert.ok(readyMarFile.exists(), `exists: ${readyMarFile.path}`);
+
+  await reloadUpdateManagerData();
   await testPostUpdateProcessing();
 
   return elevationDialogLoadedPromise;

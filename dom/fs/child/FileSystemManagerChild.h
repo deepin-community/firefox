@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,8 +15,13 @@ class FileSystemBackgroundRequestHandler;
 
 class FileSystemManagerChild : public PFileSystemManagerChild {
  public:
+  using ActorPromise =
+      MozPromise<RefPtr<FileSystemManagerChild>, nsresult, false>;
+
   NS_INLINE_DECL_REFCOUNTING_WITH_DESTROY(FileSystemManagerChild, Destroy(),
                                           override)
+
+  bool CloseAllReceived() const { return mCloseAllReceived; }
 
   void SetBackgroundRequestHandler(
       FileSystemBackgroundRequestHandler* aBackgroundRequestHandler);
@@ -55,6 +58,8 @@ class FileSystemManagerChild : public PFileSystemManagerChild {
  private:
   template <class T>
   void CloseAllWritablesImpl(T& aPromises);
+
+  bool mCloseAllReceived = false;
 };
 
 }  // namespace mozilla::dom

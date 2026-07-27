@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +7,10 @@
 
 #include <set>
 
+#include "SystemTime.h"
 #include "domstubs.h"
 #include "jsapi/RTCStatsReport.h"
 #include "nsISupportsImpl.h"
-#include "SystemTime.h"
 
 // libwebrtc includes
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
@@ -23,6 +21,7 @@ namespace mozilla {
 class AbstractThread;
 class MediaSessionConduit;
 class SharedWebrtcState;
+class WebrtcEnvironmentWrapper;
 
 namespace media {
 class ShutdownBlockingTicket;
@@ -34,6 +33,7 @@ class WebrtcCallWrapper {
   typedef webrtc::CallConfig Config;
 
   static RefPtr<WebrtcCallWrapper> Create(
+      RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
       const dom::RTCStatsTimestampMaker& aTimestampMaker,
       UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket,
       const RefPtr<SharedWebrtcState>& aSharedState);
@@ -83,8 +83,7 @@ class WebrtcCallWrapper {
   WebrtcCallWrapper(RefPtr<SharedWebrtcState> aSharedState,
                     UniquePtr<webrtc::VideoBitrateAllocatorFactory>
                         aVideoBitrateAllocatorFactory,
-                    UniquePtr<webrtc::RtcEventLog> aEventLog,
-                    UniquePtr<webrtc::TaskQueueFactory> aTaskQueueFactory,
+                    RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
                     const dom::RTCStatsTimestampMaker& aTimestampMaker,
                     UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket);
 
@@ -101,8 +100,7 @@ class WebrtcCallWrapper {
   const RefPtr<webrtc::AudioDecoderFactory> mAudioDecoderFactory;
   const UniquePtr<webrtc::VideoBitrateAllocatorFactory>
       mVideoBitrateAllocatorFactory;
-  const UniquePtr<webrtc::RtcEventLog> mEventLog;
-  const UniquePtr<webrtc::TaskQueueFactory> mTaskQueueFactory;
+  const RefPtr<WebrtcEnvironmentWrapper> mEnvWrapper;
 
  protected:
   // Call worker thread only.

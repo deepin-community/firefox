@@ -1,7 +1,5 @@
-commit 599f3366f901eb0cc0af9de6c9de99998734bb8a
-Author: Robert Bastian <4706271+robertbastian@users.noreply.github.com>
-Date:   Tue May 28 22:46:57 2024 +0200
+commit 3579f233b2bdffbd99183d797231f9d7a0448548
+Author: Henri Sivonen <hsivonen@hsivonen.fi>
+Date:   Mon Mar 2 12:30:50 2026 +0200
 
-    Published changes (#4958)
-    
-    #4925
+    Use write16 from crates.io

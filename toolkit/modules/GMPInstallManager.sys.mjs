@@ -19,7 +19,6 @@ import { ProductAddonChecker } from "resource://gre/modules/addons/ProductAddonC
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  CertUtils: "resource://gre/modules/CertUtils.sys.mjs",
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
   ServiceRequest: "resource://gre/modules/ServiceRequest.sys.mjs",
   UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
@@ -57,6 +56,27 @@ function getLocalSources() {
   let log = getScopedLogger("GMPInstallManager.checkForAddons");
   log.info("ignoring local sources");
   return [];
+}
+
+function redirectChromiumUpdateService(uri) {
+  let log = getScopedLogger("GMPInstallManager.checkForAddons");
+  log.info("fetching redirect from: " + uri);
+  return new Promise((resolve, reject) => {
+    let xmlHttp = new lazy.ServiceRequest({ mozAnon: true });
+
+    xmlHttp.onload = function () {
+      resolve(this.responseURL);
+    };
+
+    xmlHttp.onerror = function (e) {
+      reject("Fetching " + uri + " results in error code: " + e.target.status);
+    };
+
+    xmlHttp.open("GET", uri);
+    xmlHttp.overrideMimeType("*/*");
+    xmlHttp.setRequestHeader("Range", "bytes=0-0");
+    xmlHttp.send();
+  });
 }
 
 function downloadJSON(uri) {
@@ -116,6 +136,7 @@ function downloadLocalConfig(sources) {
         return {
           id: conf.id,
           URL: details.fileUrl,
+          mirrorURLs: details.mirrorUrls,
           hashFunction: addons.hashFunction,
           hashValue: details.hashValue,
           version: addons.vendors[conf.id].version,
@@ -163,6 +184,7 @@ GMPInstallManager.prototype = {
 
   /**
    * Determines the root to use for verifying content signatures.
+   *
    * @param url
    *        The Balrog URL, i.e. the return value of _getURL().
    */
@@ -194,6 +216,7 @@ GMPInstallManager.prototype = {
   /**
    * Records telemetry results on if fetching update.xml from Balrog succeeded
    * when content signature was used to verify the response from Balrog.
+   *
    * @param didGetAddonList
    *        A boolean indicating if an update.xml containing the addon list was
    *        successfully fetched (true) or not (false).
@@ -207,19 +230,11 @@ GMPInstallManager.prototype = {
       "GMPInstallManager.recordUpdateXmlTelemetryForContentSignature"
     );
     try {
-      let updateResultHistogram = Services.telemetry.getHistogramById(
-        "MEDIA_GMP_UPDATE_XML_FETCH_RESULT"
-      );
-
-      // The non-glean telemetry used here will be removed in future and just
-      // the glean data will be gathered.
       if (didGetAddonList) {
-        updateResultHistogram.add("content_sig_ok");
         Glean.gmp.updateXmlFetchResult.content_sig_success.add(1);
         return;
       }
       // All remaining cases are failure cases.
-      updateResultHistogram.add("content_sig_fail");
       if (!err?.addonCheckerErr) {
         // Unknown error case. If this is happening we should audit error paths
         // to identify why we're not getting an error, or not getting it
@@ -253,68 +268,8 @@ GMPInstallManager.prototype = {
   },
 
   /**
-   * Records telemetry results on if fetching update.xml from Balrog succeeded
-   * when cert pinning was used to verify the response from Balrog. This
-   * should be removed once we're no longer using cert pinning.
-   * @param didGetAddonList
-   *        A boolean indicating if an update.xml containing the addon list was
-   *        successfully fetched (true) or not (false).
-   * @param err
-   *        The error that was thrown (if it exists) for the failure case. This
-   *        is expected to have a addonCheckerErr member which provides further
-   *        information on why the addon checker failed.
-   */
-  recordUpdateXmlTelemetryForCertPinning(didGetAddonList, err = null) {
-    let log = getScopedLogger(
-      "GMPInstallManager.recordUpdateXmlTelemetryForCertPinning"
-    );
-    try {
-      let updateResultHistogram = Services.telemetry.getHistogramById(
-        "MEDIA_GMP_UPDATE_XML_FETCH_RESULT"
-      );
-
-      // The non-glean telemetry used here will be removed in future and just
-      // the glean data will be gathered.
-      if (didGetAddonList) {
-        updateResultHistogram.add("cert_pinning_ok");
-        Glean.gmp.updateXmlFetchResult.cert_pin_success.add(1);
-        return;
-      }
-      // All remaining cases are failure cases.
-      updateResultHistogram.add("cert_pinning_fail");
-      if (!err?.addonCheckerErr) {
-        // Unknown error case. If this is happening we should audit error paths
-        // to identify why we're not getting an error, or not getting it
-        // labelled.
-        Glean.gmp.updateXmlFetchResult.cert_pin_unknown_error.add(1);
-        return;
-      }
-      const errorToHistogramMap = {
-        [ProductAddonChecker.NETWORK_REQUEST_ERR]: "cert_pin_net_request_error",
-        [ProductAddonChecker.NETWORK_TIMEOUT_ERR]: "cert_pin_net_timeout",
-        [ProductAddonChecker.ABORT_ERR]: "cert_pin_abort",
-        [ProductAddonChecker.VERIFICATION_MISSING_DATA_ERR]:
-          "cert_pin_missing_data",
-        [ProductAddonChecker.VERIFICATION_FAILED_ERR]: "cert_pin_failed",
-        [ProductAddonChecker.VERIFICATION_INVALID_ERR]: "cert_pin_invalid",
-        [ProductAddonChecker.XML_PARSE_ERR]: "cert_pin_xml_parse_error",
-      };
-      let metricID =
-        errorToHistogramMap[err.addonCheckerErr] ?? "cert_pin_unknown_error";
-      let metric = Glean.gmp.updateXmlFetchResult[metricID];
-      metric.add(1);
-    } catch (e) {
-      // We don't expect this path to be hit, but we don't want telemetry
-      // failures to break GMP updates, so catch any issues here and let the
-      // update machinery continue.
-      log.error(
-        `Failed to record telemetry result of getProductAddonList, got error: ${e}`
-      );
-    }
-  },
-
-  /**
    * Performs an addon check.
+   *
    * @return a promise which will be resolved or rejected.
    *         The promise is resolved with an object with properties:
    *           addons: array of addons
@@ -340,35 +295,11 @@ GMPInstallManager.prototype = {
     this._deferred = Promise.withResolvers();
     let deferredPromise = this._deferred.promise;
 
-    // Should content signature checking of Balrog replies be used? If so this
-    // will be done instead of the older cert pinning method.
-    let checkContentSignature = GMPPrefs.getBool(
-      GMPPrefs.KEY_CHECK_CONTENT_SIGNATURE,
-      true
-    );
-
-    let allowNonBuiltIn = true;
-    let certs = null;
-    // Only check certificates if we're not using a custom URL, and only if
-    // we're not checking a content signature.
-    if (
-      !Services.prefs.prefHasUserValue(GMPPrefs.KEY_URL_OVERRIDE) &&
-      !checkContentSignature
-    ) {
-      allowNonBuiltIn = !GMPPrefs.getString(
-        GMPPrefs.KEY_CERT_REQUIREBUILTIN,
-        true
-      );
-      if (GMPPrefs.getBool(GMPPrefs.KEY_CERT_CHECKATTRS, true)) {
-        certs = lazy.CertUtils.readCertPrefs(GMPPrefs.KEY_CERTS_BRANCH);
-      }
-    }
-
     let url = await this._getURL();
     let trustedContentSignatureRoot = this._getContentSignatureRootForURL(url);
 
     log.info(
-      `Fetching product addon list url=${url}, allowNonBuiltIn=${allowNonBuiltIn}, certs=${certs}, checkContentSignature=${checkContentSignature}, trustedContentSignatureRoot=${trustedContentSignatureRoot}`
+      `Fetching product addon list url=${url}, trustedContentSignatureRoot=${trustedContentSignatureRoot}`
     );
 
     let success = true;
@@ -376,24 +307,15 @@ GMPInstallManager.prototype = {
     try {
       res = await ProductAddonChecker.getProductAddonList(
         url,
-        allowNonBuiltIn,
-        certs,
-        checkContentSignature,
+        /* allowNonBuiltIn */ true,
+        /* verifyContentSignature */ true,
         trustedContentSignatureRoot
       );
 
-      if (checkContentSignature) {
-        this.recordUpdateXmlTelemetryForContentSignature(true);
-      } else {
-        this.recordUpdateXmlTelemetryForCertPinning(true);
-      }
+      this.recordUpdateXmlTelemetryForContentSignature(true);
     } catch (err) {
       success = false;
-      if (checkContentSignature) {
-        this.recordUpdateXmlTelemetryForContentSignature(false, err);
-      } else {
-        this.recordUpdateXmlTelemetryForCertPinning(false, err);
-      }
+      this.recordUpdateXmlTelemetryForContentSignature(false, err);
     }
 
     let localSources = getLocalSources();
@@ -447,12 +369,135 @@ GMPInstallManager.prototype = {
       log.info("Failed to force addons: " + err);
     }
 
+    // Now let's check the addons that we are configured to override to go
+    // directly to the Chromium component update service.
+    await this.adjustForChromiumUpdateService(addons);
+
     this._deferred.resolve({ addons });
     delete this._deferred;
     return deferredPromise;
   },
   /**
+   * Adjusts addon records based on the Chromium update service, if applicable.
+   * If not allowed for an addon, there is no change. If allowed but not forced,
+   * it will prefer the URL returned by the Chromium update service if and only
+   * if the version matches that from the balrog service. If allowed and forced,
+   * it will always use the Chromium update service URL and ignores the version
+   * and hash restrictions from balrog.
+   *
+   * @param addons
+   *        Array of GMPAddon to potentially adjust.
+   */
+  async adjustForChromiumUpdateService(addons) {
+    let log = getScopedLogger("GMPInstallManager.checkForAddons");
+    for (let gmpAddon of addons) {
+      try {
+        const forced = GMPPrefs.getBool(
+          GMPPrefs.KEY_PLUGIN_FORCE_CHROMIUM_UPDATE,
+          false,
+          gmpAddon.id
+        );
+        const allowed = GMPPrefs.getBool(
+          GMPPrefs.KEY_PLUGIN_ALLOW_CHROMIUM_UPDATE,
+          false,
+          gmpAddon.id
+        );
+        if (!allowed && !forced) {
+          continue;
+        }
+
+        const guid = GMPPrefs.getString(
+          GMPPrefs.KEY_PLUGIN_CHROMIUM_GUID,
+          "",
+          gmpAddon.id
+        );
+        if (guid === "") {
+          log.warn("Skipping chromium update, missing GUID for ", gmpAddon.id);
+          continue;
+        }
+
+        const params = GMPUtils._getChromiumUpdateParameters(gmpAddon);
+        const serviceUrl = GMPPrefs.getString(
+          GMPPrefs.KEY_CHROMIUM_UPDATE_URL,
+          ""
+        );
+        const redirectUrl = await redirectChromiumUpdateService(
+          serviceUrl.replace("%GUID%", guid) + params
+        );
+        const versionMatch = redirectUrl.match(/_(\d+\.\d+\.\d+\.\d+)\//);
+        if (!versionMatch || versionMatch.length !== 2) {
+          log.warn(
+            "Skipping chromium update, no version from URL: ",
+            redirectUrl
+          );
+          continue;
+        }
+
+        const version = versionMatch[1];
+        if (forced) {
+          // With a forced update, we just use whatever URL/version the
+          // service gives us.
+          gmpAddon.mirrorURLs = [];
+          gmpAddon.version = version;
+          gmpAddon.forcedChromiumUpdate = true;
+
+          // Delete these properties to avoid verifying the addon against our
+          // balrog configuration, which may or may not match.
+          delete gmpAddon.size;
+          delete gmpAddon.hashValue;
+          delete gmpAddon.hashFunction;
+        } else {
+          // While we prefer the URL given by the Chromium update service,
+          // the version must match what we were provisioned with on balrog.
+          if (gmpAddon.version !== version) {
+            log.warn(
+              "Skipping chromium update, expected version " +
+                gmpAddon.version +
+                ", got " +
+                version
+            );
+            continue;
+          }
+
+          // If the preferred URL is in the mirror list, make sure we remove
+          // it instead of trying twice.
+          gmpAddon.mirrorURLs = gmpAddon.mirrorURLs.filter(
+            url => url !== redirectUrl
+          );
+
+          // Only add the default URL to the mirror list if it is different
+          // from what the Chromium service gave us.
+          if (gmpAddon.URL !== redirectUrl) {
+            gmpAddon.mirrorURLs.unshift(gmpAddon.URL);
+          }
+        }
+
+        // Note that if we only prefer the Chromium update service URL but
+        // we aren't forcing it, we still verify the hash from balrog which
+        // makes this safe.
+        gmpAddon.URL = redirectUrl;
+
+        log.info(
+          "Downloading " +
+            gmpAddon.id +
+            " version " +
+            version +
+            " from chromium update " +
+            redirectUrl
+        );
+      } catch (err) {
+        log.info(
+          "Failed to switch addon " +
+            gmpAddon.id +
+            " to Chromium update service: " +
+            err
+        );
+      }
+    }
+  },
+  /**
    * Installs the specified addon and calls a callback when done.
+   *
    * @param gmpAddon The GMPAddon object to install
    * @return a promise which will be resolved or rejected
    *         The promise will resolve with an array of paths that were extracted
@@ -512,6 +557,7 @@ GMPInstallManager.prototype = {
    * Wrapper for checkForAddons and installAddon.
    * Will only install if not already installed and will log the results.
    * This will only install/update the OpenH264 and EME plugins
+   *
    * @return a promise which will be resolved if all addons could be installed
    *         successfully, rejected otherwise.
    */
@@ -669,6 +715,7 @@ GMPInstallManager.prototype = {
 export function GMPAddon(addon) {
   let log = getScopedLogger("GMPAddon.constructor");
   this.usedFallback = false;
+  this.forcedChromiumUpdate = false;
   for (let name of Object.keys(addon)) {
     this[name] = addon[name];
   }
@@ -697,6 +744,7 @@ GMPAddon.prototype = {
   },
   /**
    * If all the fields aren't specified don't consider this addon valid
+   *
    * @return true if the addon is parsed and valid
    */
   get isValid() {
@@ -704,18 +752,18 @@ GMPAddon.prototype = {
       this.id &&
       this.URL &&
       this.version &&
-      this.hashFunction &&
-      !!this.hashValue
+      (this.forcedChromiumUpdate || (this.hashFunction && !!this.hashValue))
     );
   },
   get isInstalled() {
     return (
       this.version &&
-      !!this.hashValue &&
       GMPPrefs.getString(GMPPrefs.KEY_PLUGIN_VERSION, "", this.id) ===
         this.version &&
-      GMPPrefs.getString(GMPPrefs.KEY_PLUGIN_HASHVALUE, "", this.id) ===
-        this.hashValue
+      (this.forcedChromiumUpdate ||
+        (!!this.hashValue &&
+          GMPPrefs.getString(GMPPrefs.KEY_PLUGIN_HASHVALUE, "", this.id) ===
+            this.hashValue))
     );
   },
   get isEME() {
@@ -739,6 +787,7 @@ GMPAddon.prototype = {
 /**
  * Constructs a GMPExtractor object which is used to extract a GMP zip
  * into the specified location.
+ *
  * @param zipPath The path on disk of the zip file to extract
  * @param relativePath The relative path components inside the profile directory
  *                     to extract the zip to.
@@ -789,6 +838,7 @@ GMPExtractor.prototype = {
 /**
  * Constructs an object which downloads and initiates an install of
  * the specified GMPAddon object.
+ *
  * @param gmpAddon The addon to install.
  */
 export function GMPDownloader(gmpAddon) {
@@ -798,6 +848,7 @@ export function GMPDownloader(gmpAddon) {
 GMPDownloader.prototype = {
   /**
    * Starts the download process for an addon.
+   *
    * @return a promise which will be resolved or rejected
    *         See GMPInstallManager.installAddon for resolve/rejected info
    */
@@ -814,15 +865,9 @@ GMPDownloader.prototype = {
         type: "downloaderr",
       });
     }
-    // If the HTTPS-Only Mode is enabled, every insecure request gets upgraded
-    // by default. This upgrade has to be prevented for openh264 downloads since
-    // the server doesn't support https://
-    const downloadOptions = {
-      httpsOnlyNoUpgrade: gmpAddon.isOpenH264,
-    };
-    return ProductAddonChecker.downloadAddon(gmpAddon, downloadOptions).then(
+    return ProductAddonChecker.downloadAddon(gmpAddon).then(
       zipPath => {
-        let now = Math.round(Date.now() / 1000);
+        now = Math.round(Date.now() / 1000);
         GMPPrefs.setInt(GMPPrefs.KEY_PLUGIN_LAST_DOWNLOAD, now, gmpAddon.id);
         log.info(
           `install to directory path: ${gmpAddon.id}/${gmpAddon.version}`
@@ -836,7 +881,7 @@ GMPDownloader.prototype = {
           .then(
             extractedPaths => {
               // Success, set the prefs
-              let now = Math.round(Date.now() / 1000);
+              now = Math.round(Date.now() / 1000);
               GMPPrefs.setInt(
                 GMPPrefs.KEY_PLUGIN_LAST_UPDATE,
                 now,
@@ -849,12 +894,16 @@ GMPDownloader.prototype = {
               log.info("Setting ABI to '" + abi + "' for " + gmpAddon.id);
               GMPPrefs.setString(GMPPrefs.KEY_PLUGIN_ABI, abi, gmpAddon.id);
               // We use the combination of the hash and version to ensure we are
-              // up to date.
-              GMPPrefs.setString(
-                GMPPrefs.KEY_PLUGIN_HASHVALUE,
-                gmpAddon.hashValue,
-                gmpAddon.id
-              );
+              // up to date. Ignored if we used the Chromium update service directly.
+              if (!gmpAddon.forcedChromiumUpdate) {
+                GMPPrefs.setString(
+                  GMPPrefs.KEY_PLUGIN_HASHVALUE,
+                  gmpAddon.hashValue,
+                  gmpAddon.id
+                );
+              } else {
+                GMPPrefs.reset(GMPPrefs.KEY_PLUGIN_HASHVALUE, gmpAddon.id);
+              }
               // Setting the version pref signals installation completion to consumers,
               // if you need to set other prefs etc. do it before this.
               GMPPrefs.setString(
@@ -870,7 +919,7 @@ GMPDownloader.prototype = {
                 reason,
                 gmpAddon.id
               );
-              let now = Math.round(Date.now() / 1000);
+              now = Math.round(Date.now() / 1000);
               GMPPrefs.setInt(
                 GMPPrefs.KEY_PLUGIN_LAST_INSTALL_FAILED,
                 now,
@@ -895,7 +944,7 @@ GMPDownloader.prototype = {
           reason,
           gmpAddon.id
         );
-        let now = Math.round(Date.now() / 1000);
+        now = Math.round(Date.now() / 1000);
         GMPPrefs.setInt(
           GMPPrefs.KEY_PLUGIN_LAST_DOWNLOAD_FAILED,
           now,
@@ -904,5 +953,27 @@ GMPDownloader.prototype = {
         throw reason;
       }
     );
+  },
+};
+
+// For test use only.
+export const GMPInstallManagerTestUtils = {
+  /**
+   * Used to override ServiceRequest calls with a mock request.
+   *
+   * @param mockRequest The mocked ServiceRequest object.
+   * @param callback Method called with the overridden ServiceRequest. The override
+   *        is undone after the callback returns.
+   */
+  async overrideServiceRequest(mockRequest, callback) {
+    let originalServiceRequest = lazy.ServiceRequest;
+    lazy.ServiceRequest = function () {
+      return mockRequest;
+    };
+    try {
+      return await callback();
+    } finally {
+      lazy.ServiceRequest = originalServiceRequest;
+    }
   },
 };

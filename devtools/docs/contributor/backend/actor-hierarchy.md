@@ -64,7 +64,8 @@ The overall hierarchy of actors looks like this:
        |  one for each popup, ...
        |
        |  The other targets actors are:
-       |    * worker targets
+       |    * worker targets (for regular workers, as well as shared and service workers)
+       |    * web extension content script targets
        |    * process targets (only used in the Browser Toolbox to debug the browser itself made of many processes)
        |
        \ -- Target-scoped actors:
@@ -232,5 +233,5 @@ instantiated just in time to service the request.
 The actor IDs of all these actors can be retrieve in the "form" of each target actor.
 The "form" is notified by the Watcher actor via `target-avaible-form` RDP packet.
 
-[actors-folder]: https://searchfox.org/mozilla-central/source/devtools/server/actors/
-[resources-folder]: https://searchfox.org/mozilla-central/source/devtools/server/actors/resources/
+[actors-folder]: https://searchfox.org/firefox-main/source/devtools/server/actors/
+[resources-folder]: https://searchfox.org/firefox-main/source/devtools/server/actors/resources/

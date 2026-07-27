@@ -7,24 +7,25 @@
 #include "AudioDeviceInfo.h"
 #include "MediaEngine.h"
 #include "MediaEngineFake.h"
+#include "MediaTrackConstraints.h"
+#include "mozilla/MediaManager.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/FeaturePolicyUtils.h"
-#include "mozilla/dom/MediaStreamBinding.h"
 #include "mozilla/dom/MediaDeviceInfo.h"
 #include "mozilla/dom/MediaDevicesBinding.h"
+#include "mozilla/dom/MediaStreamBinding.h"
+#include "mozilla/dom/MediaTrackSupportedConstraintsBinding.h"
 #include "mozilla/dom/NavigatorBinding.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/WindowContext.h"
 #include "mozilla/intl/Localization.h"
-#include "mozilla/MediaManager.h"
-#include "mozilla/StaticPrefs_media.h"
-#include "MediaTrackConstraints.h"
 #include "nsContentUtils.h"
+#include "nsGlobalWindowInner.h"
 #include "nsINamed.h"
 #include "nsIScriptGlobalObject.h"
 #include "nsPIDOMWindow.h"
-#include "nsGlobalWindowInner.h"
 #include "nsQueryObject.h"
 
 namespace mozilla::dom {
@@ -41,6 +42,15 @@ MediaDevices::MediaDevices(nsPIDOMWindowInner* aWindow)
 MediaDevices::~MediaDevices() {
   MOZ_ASSERT(NS_IsMainThread());
   mDeviceChangeListener.DisconnectIfExists();
+}
+
+// No code needed, unless controlled by prefs, as
+// MediaTrackSupportedConstraints members default to true.
+void MediaDevices::GetSupportedConstraints(
+    MediaTrackSupportedConstraints& aResult) {
+  if (Preferences::GetBool("media.navigator.video.resize_mode.enabled")) {
+    aResult.mResizeMode.Construct(true);
+  }
 }
 
 already_AddRefed<Promise> MediaDevices::GetUserMedia(
@@ -200,15 +210,18 @@ void MediaDevices::MaybeResumeDeviceExposure() {
       return;
     }
   }
+  bool shouldResistFingerprinting =
+      window->AsGlobal()->ShouldResistFingerprinting(RFPTarget::MediaDevices);
   MediaManager::Get()->GetPhysicalDevices()->Then(
       GetCurrentSerialEventTarget(), __func__,
       [self = RefPtr(this), this,
        haveDeviceListChange = mHaveUnprocessedDeviceListChange,
-       enumerateDevicesPromises = std::move(mPendingEnumerateDevicesPromises)](
+       enumerateDevicesPromises = std::move(mPendingEnumerateDevicesPromises),
+       shouldResistFingerprinting](
           RefPtr<const MediaDeviceSetRefCnt> aAllDevices) mutable {
         RefPtr<MediaDeviceSetRefCnt> exposedDevices =
             FilterExposedDevices(*aAllDevices);
-        if (haveDeviceListChange) {
+        if (haveDeviceListChange && !shouldResistFingerprinting) {
           if (ShouldQueueDeviceChange(*exposedDevices)) {
             NS_DispatchToCurrentThread(NS_NewRunnableFunction(
                 "devicechange", [self = RefPtr(this), this] {
@@ -226,6 +239,21 @@ void MediaDevices::MaybeResumeDeviceExposure() {
         MOZ_ASSERT_UNREACHABLE("GetPhysicalDevices does not reject");
       });
   mHaveUnprocessedDeviceListChange = false;
+}
+
+static bool IsLegacyMode(nsPIDOMWindowInner* window) {
+  if (StaticPrefs::media_devices_enumerate_legacy_enabled()) {
+    return true;
+  }
+  if (window->GetDocumentURI()) {
+    nsAutoCString host;
+    window->GetDocumentURI()->GetAsciiHost(host);
+    if (media::HostnameInPref("media.devices.enumerate.legacy.allowlist",
+                              host)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 RefPtr<MediaDeviceSetRefCnt> MediaDevices::FilterExposedDevices(
@@ -246,8 +274,9 @@ RefPtr<MediaDeviceSetRefCnt> MediaDevices::FilterExposedDevices(
   bool dropSpeakers =
       !Preferences::GetBool("media.setsinkid.enabled") ||
       !FeaturePolicyUtils::IsFeatureAllowed(doc, u"speaker-selection"_ns);
-
-  bool legacy = StaticPrefs::media_devices_enumerate_legacy_enabled();
+  bool shouldResistFingerprinting =
+      window->AsGlobal()->ShouldResistFingerprinting(RFPTarget::MediaDevices);
+  bool legacy = IsLegacyMode(window);
   bool outputIsDefault = true;  // First output is the default.
   bool haveDefaultOutput = false;
   nsTHashSet<nsString> exposedMicrophoneGroupIds;
@@ -275,8 +304,10 @@ RefPtr<MediaDeviceSetRefCnt> MediaDevices::FilterExposedDevices(
       case MediaDeviceKind::Audiooutput:
         if (dropSpeakers ||
             (!mExplicitlyGrantedAudioOutputRawIds.Contains(device->mRawID) &&
-             // Assumes aDevices order has microphones before speakers.
-             !exposedMicrophoneGroupIds.Contains(device->mRawGroupID))) {
+             (!mCanExposeMicrophoneInfo ||
+              (shouldResistFingerprinting &&
+               // Assumes aDevices order has microphones before speakers.
+               !exposedMicrophoneGroupIds.Contains(device->mRawGroupID))))) {
           outputIsDefault = false;
           continue;
         }
@@ -464,7 +495,7 @@ void MediaDevices::ResolveEnumerateDevicesPromise(
   nsCOMPtr<nsPIDOMWindowInner> window = GetOwnerWindow();
   auto windowId = window->WindowID();
   nsTArray<RefPtr<MediaDeviceInfo>> infos;
-  bool legacy = StaticPrefs::media_devices_enumerate_legacy_enabled();
+  bool legacy = IsLegacyMode(window);
   bool capturePermitted =
       legacy &&
       MediaManager::Get()->IsActivelyCapturingOrHasAPermission(windowId);
@@ -760,28 +791,6 @@ void MediaDevices::OnDeviceChange() {
   if (NS_FAILED(CheckCurrentGlobalCorrectness())) {
     // This is a ghost window, don't do anything.
     return;
-  }
-
-  // Do not fire event to content script when
-  // privacy.resistFingerprinting is true.
-
-  if (nsContentUtils::ShouldResistFingerprinting(
-          "Guarding the more expensive RFP check with a simple one",
-          RFPTarget::MediaDevices)) {
-    nsCOMPtr<nsPIDOMWindowInner> window = GetOwnerWindow();
-    auto* wrapper = GetWrapper();
-    if (!window && wrapper) {
-      nsCOMPtr<nsIGlobalObject> global = xpc::NativeGlobal(wrapper);
-      window = do_QueryInterface(global);
-    }
-    if (!window) {
-      return;
-    }
-
-    if (nsGlobalWindowInner::Cast(window)->ShouldResistFingerprinting(
-            RFPTarget::MediaDevices)) {
-      return;
-    }
   }
 
   mHaveUnprocessedDeviceListChange = true;

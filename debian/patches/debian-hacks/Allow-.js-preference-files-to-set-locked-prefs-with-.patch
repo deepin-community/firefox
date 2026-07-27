@@ -9,7 +9,7 @@ the syntax we had supported for a while.
  1 file changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/parser/src/lib.rs b/modules/libpref/parser/src/lib.rs
-index 3a0ad2c..c6e34be 100644
+index 9f5d3b8..682fac0 100644
 --- a/modules/libpref/parser/src/lib.rs
 +++ b/modules/libpref/parser/src/lib.rs
 @@ -11,8 +11,9 @@
@@ -51,7 +51,7 @@ index 3a0ad2c..c6e34be 100644
  ];
  
  struct Parser<'t> {
-@@ -373,14 +379,15 @@ impl<'t> Parser<'t> {
+@@ -374,14 +380,15 @@ impl<'t> Parser<'t> {
          // this will be either the first token of a new pref, or EOF.
          loop {
              // <pref-spec>
@@ -71,7 +71,7 @@ index 3a0ad2c..c6e34be 100644
                  Token::SingleChar(EOF) => return !self.has_errors,
                  _ => {
                      token = self.error_and_recover(
-@@ -490,7 +497,6 @@ impl<'t> Parser<'t> {
+@@ -491,7 +498,6 @@ impl<'t> Parser<'t> {
              };
  
              // ("," <pref-attr>)*   // default pref files only

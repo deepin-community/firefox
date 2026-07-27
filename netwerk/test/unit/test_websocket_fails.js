@@ -7,8 +7,21 @@
 /* import-globals-from head_cache.js */
 /* import-globals-from head_cookies.js */
 /* import-globals-from head_channels.js */
-/* import-globals-from head_servers.js */
 /* import-globals-from head_websocket.js */
+
+const {
+  NodeWebSocketServer,
+  NodeHTTPSProxyServer,
+  WebSocketConnection,
+  NodeProxyFilter,
+} = ChromeUtils.importESModule("resource://testing-common/NodeServer.sys.mjs");
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
 
 var CC = Components.Constructor;
 const ServerSocket = CC(
@@ -33,6 +46,7 @@ registerCleanupFunction(() => {
 async function test_tls_fail_on_direct_ws_server_handshake() {
   // no cert and no proxy
   let wss = new NodeWebSocketServer();
+  wss._skipCert = true;
   await wss.start();
   registerCleanupFunction(async () => {
     await wss.stop();
@@ -59,9 +73,8 @@ async function test_tls_fail_on_direct_ws_server_handshake() {
 // TLS handshake to proxy fails
 async function test_tls_fail_on_proxy_handshake() {
   // we have ws cert, but no proxy cert
-  addCertFromFile(certdb, "http2-ca.pem", "CTu,u,u");
-
   let proxy = new NodeHTTPSProxyServer();
+  proxy._skipCert = true;
   await proxy.start();
 
   let wss = new NodeWebSocketServer();

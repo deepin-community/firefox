@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -298,6 +296,7 @@ APZEventResult InputQueue::ReceiveMouseInput(
 
     INPQ_LOG(
         "started new drag block %p id %" PRIu64
+        " "
         "for %sconfirmed target %p; on scrollbar: %d; on scrollthumb: %d\n",
         block.get(), block->GetBlockId(), aFlags.mTargetConfirmed ? "" : "un",
         aTarget.get(), aFlags.mHitScrollbar, aFlags.mHitScrollThumb);
@@ -358,7 +357,6 @@ APZEventResult InputQueue::ReceiveScrollWheelInput(
 
     mActiveWheelBlock = block;
 
-    CancelAnimationsForNewBlock(block, ExcludeWheel);
     MaybeRequestContentResponse(aTarget, block);
   } else {
     INPQ_LOG("received new wheel event in block %p\n", block.get());
@@ -442,13 +440,6 @@ APZEventResult InputQueue::ReceivePanGestureInput(
     TargetConfirmationFlags aFlags, const PanGestureInput& aEvent) {
   APZEventResult result(aTarget, aFlags);
 
-  if (aEvent.mType == PanGestureInput::PANGESTURE_MAYSTART ||
-      aEvent.mType == PanGestureInput::PANGESTURE_CANCELLED) {
-    // Ignore these events for now.
-    result.SetStatusAsConsumeDoDefault(aTarget);
-    return result;
-  }
-
   if (aEvent.mType == PanGestureInput::PANGESTURE_INTERRUPTED) {
     if (RefPtr<PanGestureBlockState> block = mActivePanGestureBlock.get()) {
       mQueuedInputs.AppendElement(MakeUnique<QueuedInput>(aEvent, *block));
@@ -458,8 +449,11 @@ APZEventResult InputQueue::ReceivePanGestureInput(
     return result;
   }
 
+  bool startsNewBlock = aEvent.mType == PanGestureInput::PANGESTURE_MAYSTART ||
+                        aEvent.mType == PanGestureInput::PANGESTURE_START;
+
   RefPtr<PanGestureBlockState> block;
-  if (aEvent.mType != PanGestureInput::PANGESTURE_START) {
+  if (!startsNewBlock) {
     block = mActivePanGestureBlock.get();
   }
 
@@ -483,10 +477,10 @@ APZEventResult InputQueue::ReceivePanGestureInput(
       // by turning the event into a pan-start below.
       return result;
     }
-    if (event.mType != PanGestureInput::PANGESTURE_START) {
-      // Only PANGESTURE_START events are allowed to start a new pan gesture
-      // block, but we really want to start a new block here, so we magically
-      // turn this input into a PANGESTURE_START.
+    if (!startsNewBlock) {
+      // Only PANGESTURE_MAYSTART or PANGESTURE_START events are allowed to
+      // start a new pan gesture block, but we really want to start a new block
+      // here, so we magically turn this input into a PANGESTURE_START.
       INPQ_LOG(
           "transmogrifying pan input %d to PANGESTURE_START for new block\n",
           event.mType);
@@ -496,9 +490,12 @@ APZEventResult InputQueue::ReceivePanGestureInput(
     INPQ_LOG("started new pan gesture block %p id %" PRIu64 " for target %p\n",
              block.get(), block->GetBlockId(), aTarget.get());
 
+    if (event.mType == PanGestureInput::PANGESTURE_MAYSTART) {
+      block->ConfirmForHoldGesture();
+    }
+
     mActivePanGestureBlock = block;
 
-    CancelAnimationsForNewBlock(block);
     const bool waitingForContentResponse =
         MaybeRequestContentResponse(aTarget, block);
 

@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -55,7 +54,8 @@ class imgFrame {
   nsresult InitForDecoder(const nsIntSize& aImageSize, SurfaceFormat aFormat,
                           bool aNonPremult,
                           const Maybe<AnimationParams>& aAnimParams,
-                          bool aShouldRecycle);
+                          bool aShouldRecycle,
+                          uint32_t* aImageDataLength = nullptr);
 
   /**
    * Reinitialize this imgFrame with the new parameters, but otherwise retain
@@ -65,7 +65,8 @@ class imgFrame {
    * given an IDecoderFrameRecycler object which may yield a recycled imgFrame
    * that was discarded to save memory.
    */
-  nsresult InitForDecoderRecycle(const AnimationParams& aAnimParams);
+  nsresult InitForDecoderRecycle(const AnimationParams& aAnimParams,
+                                 uint32_t* aImageDataLength = nullptr);
 
   /**
    * Initialize this imgFrame with a new surface and draw the provided
@@ -90,7 +91,8 @@ class imgFrame {
   /**
    * Create a RawAccessFrameRef for the frame.
    */
-  RawAccessFrameRef RawAccessRef();
+  RawAccessFrameRef RawAccessRef(
+      gfx::DataSourceSurface::MapType aMapType = gfx::DataSourceSurface::READ);
 
   bool Draw(gfxContext* aContext, const ImageRegion& aRegion,
             SamplingFilter aSamplingFilter, uint32_t aImageFlags,
@@ -160,8 +162,6 @@ class imgFrame {
   BlendMethod GetBlendMethod() const { return mBlendMethod; }
   DisposalMethod GetDisposalMethod() const { return mDisposalMethod; }
   bool FormatHasAlpha() const { return mFormat == SurfaceFormat::OS_RGBA; }
-  void GetImageData(uint8_t** aData, uint32_t* length) const;
-  uint8_t* GetImageData() const;
 
   const IntRect& GetDirtyRect() const { return mDirtyRect; }
   void SetDirtyRect(const IntRect& aDirtyRect) { mDirtyRect = aDirtyRect; }
@@ -186,7 +186,6 @@ class imgFrame {
 
   bool AreAllPixelsWritten() const MOZ_REQUIRES(mMonitor);
   nsresult ImageUpdatedInternal(const nsIntRect& aUpdateRect);
-  void GetImageDataInternal(uint8_t** aData, uint32_t* length) const;
   uint32_t GetImageBytesPerRow() const;
   uint32_t GetImageDataLength() const;
   void FinalizeSurfaceInternal();
@@ -196,7 +195,8 @@ class imgFrame {
     RefPtr<gfxDrawable> mDrawable;
     SurfaceFormat mFormat;
     SurfaceWithFormat() : mFormat(SurfaceFormat::UNKNOWN) {}
-    SurfaceWithFormat(gfxDrawable* aDrawable, SurfaceFormat aFormat)
+    SurfaceWithFormat(already_AddRefed<gfxDrawable> aDrawable,
+                      SurfaceFormat aFormat)
         : mDrawable(aDrawable), mFormat(aFormat) {}
     SurfaceWithFormat(SurfaceWithFormat&& aOther)
         : mDrawable(std::move(aOther.mDrawable)), mFormat(aOther.mFormat) {}
@@ -311,6 +311,9 @@ class DrawableFrameRef final {
     return *this;
   }
 
+  DrawableFrameRef(const DrawableFrameRef& aOther) = delete;
+  DrawableFrameRef& operator=(const DrawableFrameRef& aOther) = delete;
+
   explicit operator bool() const { return bool(mFrame); }
 
   imgFrame* operator->() {
@@ -332,9 +335,6 @@ class DrawableFrameRef final {
   }
 
  private:
-  DrawableFrameRef(const DrawableFrameRef& aOther) = delete;
-  DrawableFrameRef& operator=(const DrawableFrameRef& aOther) = delete;
-
   RefPtr<imgFrame> mFrame;
   Maybe<DataSourceSurface::ScopedMap> mRef;
 };
@@ -356,13 +356,25 @@ class DrawableFrameRef final {
  */
 class RawAccessFrameRef final {
  public:
-  RawAccessFrameRef() : mData(nullptr) {}
+  RawAccessFrameRef() = default;
 
-  explicit RawAccessFrameRef(imgFrame* aFrame)
-      : mFrame(aFrame), mData(nullptr) {
+  explicit RawAccessFrameRef(imgFrame* aFrame,
+                             gfx::DataSourceSurface::MapType aMapType)
+      : mFrame(aFrame) {
     MOZ_ASSERT(mFrame, "Need a frame");
 
-    mData = mFrame->GetImageData();
+    // Note that we do not use ScopedMap here because it holds a strong
+    // reference to the underlying surface. This affects the reuse logic for
+    // recycling in imgFrame::InitForDecoderRecycle.
+    {
+      MonitorAutoLock lock(mFrame->mMonitor);
+      gfx::DataSourceSurface::MappedSurface map;
+      if (mFrame->mRawSurface && mFrame->mRawSurface->Map(aMapType, &map)) {
+        MOZ_ASSERT(map.mData);
+        mData = map.mData;
+      }
+    }
+
     if (!mData) {
       mFrame = nullptr;
     }
@@ -373,17 +385,24 @@ class RawAccessFrameRef final {
     aOther.mData = nullptr;
   }
 
-  ~RawAccessFrameRef() = default;
+  ~RawAccessFrameRef() { reset(); }
 
   RawAccessFrameRef& operator=(RawAccessFrameRef&& aOther) {
     MOZ_ASSERT(this != &aOther, "Self-moves are prohibited");
 
+    if (mFrame) {
+      MonitorAutoLock lock(mFrame->mMonitor);
+      mFrame->mRawSurface->Unmap();
+    }
     mFrame = std::move(aOther.mFrame);
     mData = aOther.mData;
     aOther.mData = nullptr;
 
     return *this;
   }
+
+  RawAccessFrameRef(const RawAccessFrameRef& aOther) = delete;
+  RawAccessFrameRef& operator=(const RawAccessFrameRef& aOther) = delete;
 
   explicit operator bool() const { return bool(mFrame); }
 
@@ -401,6 +420,10 @@ class RawAccessFrameRef final {
   const imgFrame* get() const { return mFrame; }
 
   void reset() {
+    if (mFrame) {
+      MonitorAutoLock lock(mFrame->mMonitor);
+      mFrame->mRawSurface->Unmap();
+    }
     mFrame = nullptr;
     mData = nullptr;
   }
@@ -408,11 +431,8 @@ class RawAccessFrameRef final {
   uint8_t* Data() const { return mData; }
 
  private:
-  RawAccessFrameRef(const RawAccessFrameRef& aOther) = delete;
-  RawAccessFrameRef& operator=(const RawAccessFrameRef& aOther) = delete;
-
   RefPtr<imgFrame> mFrame;
-  uint8_t* mData;
+  uint8_t* mData = nullptr;
 };
 
 }  // namespace image

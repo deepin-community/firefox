@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = Nastajenja kontejnera { $name }
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Mě
+    .placeholder = Mě pśidaś
+containers-icon-label2 =
+    .label = Symbol
+containers-color-label2 =
+    .label = Barwa
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = Mě
     .accesskey = M
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Zapódajśo kontejnerowe mě
-
 containers-icon-label = Symbol
     .accesskey = S
     .style = { -containers-labels-style }
-
 containers-color-label = Barwa
     .accesskey = B
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = Gótowo
     .buttonaccesskeyaccept = G
-
 containers-color-blue =
     .label = Módry
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Purpurowy
 containers-color-toolbar =
     .label = Symbolowej rědce pśiměriś
-
 containers-icon-fence =
     .label = Płośik
 containers-icon-fingerprint =
@@ -90,4 +88,20 @@ containers-icon-pet =
 containers-icon-tree =
     .label = Bom
 containers-icon-chill =
-    .label = Chłodnosć
+    .label = Wódychanje
+containers-window-new3 =
+    .title = Nowy kontejner pśidaś
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Nastajenja kontejnera { $name }
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Nowy kontejner pśidaś
+containers-panel-create-button =
+    .label = Dokóńcony
+containers-panel-cancel-button =
+    .label = Pśetergnuś

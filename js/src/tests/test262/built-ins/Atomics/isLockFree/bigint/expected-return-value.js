@@ -3,7 +3,7 @@
 // This code is governed by the BSD license found in the LICENSE file.
 
 /*---
-esid: sec-atomics.isLockFree
+esid: sec-atomics.islockfree
 description: >
   Atomics.isLockFree returns a boolean that indicates whether
   operations on datum of size will be performed without the agent
@@ -20,7 +20,7 @@ info: |
   7. Return false.
 
 features: [Atomics, BigInt, SharedArrayBuffer, TypedArray]
-includes: [testBigIntTypedArray.js]
+includes: [testTypedArray.js]
 ---*/
 
 testWithBigIntTypedArrayConstructors(function(TA) {
@@ -31,7 +31,7 @@ testWithBigIntTypedArrayConstructors(function(TA) {
     observed,
     'Atomics.isLockFree(TA.BYTES_PER_ELEMENT) returns the value of `observed` (Atomics.isLockFree(TA.BYTES_PER_ELEMENT))'
   );
-});
+}, null, ["passthrough"]);
 
 
 

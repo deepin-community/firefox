@@ -1,8 +1,13 @@
-Telemetry
-=========
+.. _urlbar-telemetry:
+
+Address Bar Telemetry
+=====================
 
 This section describes existing telemetry probes measuring interaction with the
 Address Bar.
+
+This document only covers Legacy telemetry, not Glean telemetry.
+Glean metrics are self-documenting and can be looked up in the Glean dictionary.
 
 For telemetry specific to Firefox Suggest, see the
 :doc:`firefox-suggest-telemetry` document.
@@ -20,14 +25,25 @@ PLACES_AUTOCOMPLETE_1ST_RESULT_TIME_MS
   This probe tracks the amount of time it takes to get the first result.
   It is an exponential histogram with values between 5 and 100.
 
+  Changelog
+    Firefox 138
+      Mirrored from Glean (urlbar.autocomplete_first_result_time) . (See bug 1938938)
+
 PLACES_AUTOCOMPLETE_6_FIRST_RESULTS_TIME_MS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   This probe tracks the amount of time it takes to get the first six results.
   It is an exponential histogram with values between 50 and 1000.
 
+  Changelog
+    Firefox 138
+      Mirrored from Glean (urlbar.autocomplete_sixth_result_time). (See bug 1938938)
+
 FX_URLBAR_SELECTED_RESULT_METHOD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  NOTE: This histogram has been completely removed, as its data is now
+  collected as part of the `urlbar.engagement` Glean event. (See bug 1932707)
 
   This probe tracks how a result was picked by the user from the list.
   It is a categorical histogram with these values:
@@ -66,11 +82,15 @@ FX_URLBAR_ZERO_PREFIX_DWELL_TIME_MS
   with 50 buckets. Values are in milliseconds. This histogram was introduced in
   Firefox 110.0 in bug 1806765.
 
+  Changelog
+    Firefox 138
+      Removed completely. (See bug 1938938)
+
 PLACES_FRECENCY_RECALC_CHUNK_TIME_MS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   This records the time necessary to recalculate frecency of a chunk of pages,
-  as defined in the `PlacesFrecencyRecalculator <https://searchfox.org/mozilla-central/source/toolkit/components/places/PlacesFrecencyRecalculator.sys.mjs>`_ module.
+  as defined in the :searchfox:`PlacesFrecencyRecalculator <toolkit/components/places/PlacesFrecencyRecalculator.sys.mjs>` module.
 
 Scalars
 -------
@@ -78,11 +98,20 @@ Scalars
 urlbar.abandonment
 ~~~~~~~~~~~~~~~~~~
 
+  NOTE: This telemetry is no longer collected. See changelog below.
+
   A uint recording the number of abandoned engagements in the urlbar. An
   abandonment occurs when the user begins using the urlbar but stops before
   completing the engagement. This can happen when the user clicks outside the
   urlbar to focus a different part of the window. It can also happen when the
   user switches to another window while the urlbar is focused.
+
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.abandonment`` telemetry mirrored to Glean. (See bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.abandonment`` telemetry and Glean ``urlbar.abandonment_count`` telemetry
+      removed completely. (See bug 1932711)
 
 urlbar.autofill_deletion
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,13 +123,24 @@ urlbar.autofill_deletion
 urlbar.engagement
 ~~~~~~~~~~~~~~~~~
 
+  NOTE: This telemetry is no longer collected. See changelog below.
+
   A uint recording the number of engagements the user completes in the urlbar.
   An engagement occurs when the user navigates to a page using the urlbar, for
   example by picking a result in the urlbar panel or typing a search term or URL
   in the urlbar and pressing the enter key.
 
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.engagement`` telemetry mirrored to Glean. (See bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.engagement`` telemetry and Glean ``urlbar.engagement_count`` telemetry
+      removed completely. (See bug 1932711)
+
 urlbar.impression.*
 ~~~~~~~~~~~~~~~~~~~
+
+  NOTE: This telemetry is no longer collected. See changelog below.
 
   A uint recording the number of impression that was displaying when user picks
   any result.
@@ -119,6 +159,13 @@ urlbar.impression.*
     code that is not properly setting a specific autofill type.
   - ``autofill_url``
     For url type autofill.
+
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.impression.*`` telemetry mirrored to Glean. (See bug 1927093)
+    Firefox 138
+      Legacy ``urlbar.impression.*`` telemetry and Glean ``urlbar.impression.*`` telemetry
+      removed completely. (See bug 1932712)
 
 urlbar.persistedsearchterms.revert_by_popup_count
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,6 +192,8 @@ urlbar.persistedsearchterms.view_count
 
 urlbar.tips
 ~~~~~~~~~~~
+
+  NOTE: This telemetry is no longer collected. See changelog below.
 
   This is a keyed scalar whose values are uints and are incremented each time a
   tip result is shown, a tip is picked, and a tip's help button is picked. The
@@ -221,6 +270,13 @@ urlbar.tips
   - ``searchTip_redirect-shown``
     Incremented when the redirect search tip is shown.
 
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.tips`` telemetry mirrored to Glean. (See bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.tips`` telemetry and Glean ``urlbar.tips`` telemetry
+      removed completely. (See bug 1932716)
+
 urlbar.searchmode.*
 ~~~~~~~~~~~~~~~~~~~
 
@@ -231,6 +287,9 @@ urlbar.searchmode.*
   - ``bookmarkmenu``
     Used when the user selects the Search Bookmarks menu item in the Library
     menu.
+  - ``messaging_system``
+    Used when the user enters search mode through the messaging system.
+    This is added in Firefox 150, and it is only available in Glean.
   - ``handoff``
     Used when the user uses the search box on the new tab page and is handed off
     to the address bar. NOTE: This entry point was disabled from Firefox 88 to
@@ -240,6 +299,10 @@ urlbar.searchmode.*
     Used when the user selects a keyword offer result.
   - ``oneoff``
     Used when the user selects a one-off engine in the Urlbar.
+  - ``searchbutton``
+    Used when the user entered search mode via the unified search button.
+    Added in Firefox 133, but the unified search button was not enabled in
+    release until 136.
   - ``shortcut``
     Used when the user enters search mode with a keyboard shortcut or menu bar
     item (e.g. ``Accel+K``).
@@ -273,16 +336,65 @@ urlbar.searchmode.*
   a remote search mode with a built-in engine, we record the engine name. If the
   user enters a remote search mode with an engine they installed (e.g. via
   OpenSearch or a WebExtension), we record ``other`` (not to be confused with
-  the ``urlbar.searchmode.other`` scalar above). If they enter a local search
-  mode, we record the English name of the result source (e.g. "bookmarks",
-  "history", "tabs"). Note that we slightly modify the engine name for some
-  built-in engines: we flatten all localized Amazon sites (Amazon.com,
-  Amazon.ca, Amazon.de, etc.) to "Amazon" and we flatten all localized
-  Wikipedia sites (Wikipedia (en), Wikipedia (fr), etc.) to "Wikipedia". This
-  is done to reduce the number of keys used by these scalars.
+  the ``urlbar.searchmode.other`` scalar above).
+
+  When a user enters local search mode, we record the English name of the
+  result source (e.g., "bookmarks," "history," "tabs"). If they enter local
+  search mode via ``typed``, we record the result source name with the suffix
+  "keyword" or "symbol," depending on whether the user used a symbol
+  (``^, %, *, >``) or a keyword (``@tabs, @bookmarks, @history, @actions``).
+  If they enter local search mode through ``keywordoffer``, we record the
+  result source name with the suffix "keyword" when they select a restrict
+  keyword.
+
+  Note that we slightly modify the engine name for some built-in engines: we
+  flatten all localized Amazon sites (Amazon.com, Amazon.ca, Amazon.de, etc.)
+  to "Amazon" and we flatten all localized Wikipedia sites (Wikipedia (en),
+  Wikipedia (fr), etc.) to "Wikipedia". This is done to reduce the number of
+  keys used by these scalars.
+
+  Changelog
+    Firefox 132
+      The scalar keys for ``urlbar.searchmode.typed`` and
+      ``urlbar.searchmode.keywordoffer`` have been updated.
+
+      For ``urlbar.searchmode.typed``:
+       - If the user enters local search mode using a restrict keyword (@tabs,
+         @history, @bookmarks, @actions) the scalar key is prefixed with
+         "keyword".
+       - If the user enters via a symbol (``%, ^, *, >``) the key is prefixed
+         with "symbol".
+
+      For example, in history search mode:
+       - If entered via a restrict keyword, the scalar key recorded is
+         ``history_keyword``.
+       - If entered via a symbol, the scalar key recorded is ``history_symbol``.
+
+      For ``urlbar.searchmode.keywordoffer``:
+       - If the user uses a restrict keyword through the keywordoffer method,
+         the scalar key is prefixed with "keyword".
+
+      Please note that symbols cannot trigger the ``urlbar.searchmode.keywordoffer``
+      telemetry, as symbols are only valid for typed. [Bug `1919180`_]
+
+    Firefox 133
+      Added ``urlbar.searchmode.searchbutton``:
+        - This new probe is for accesses to search mode from the unified search
+          button. The button was released in Firefox 136 and replaced the previous
+          one-off buttons (``urlbar.searchmode.oneoff``).
+
+      Added Glean equivalents of the probes as labeled counters.
+
+    Firefox 150
+      Added ``urlbar.searchmode.messaging_system``:
+        - This new probe is for accesses to search mode from the messaging system.
+          This is added in Firefox 150, and it is only available in Glean.
+
 
 urlbar.picked.*
 ~~~~~~~~~~~~~~~
+
+  NOTE: This telemetry is no longer collected. See changelog below.
 
   This is a set of keyed scalars whose values are uints incremented each
   time a result is picked from the Urlbar. The suffix on the scalar name
@@ -317,6 +429,11 @@ urlbar.picked.*
     full URLs instead of "up to the next slash" partial URLs. For more
     information on this type of autofill, see this `adaptive history autofill
     document`_.
+  - ``history_autofill_fallback_origin``
+    The origin fallback result shown alongside an adaptive history URL autofill.
+    When adaptive autofill suggests a deep URL, the root origin is surfaced as a
+    second result to accommodate users who alternate between root and subpage
+    navigation.
   - ``autofill_origin``
     An autofilled origin_ from the user's history. Typically "origin" means a
     domain or host name like "mozilla.org". Technically it can also include a
@@ -370,6 +487,14 @@ urlbar.picked.*
     A Firefox Suggest (a.k.a. quick suggest) suggestion.
   - ``remotetab``
     A tab synced from another device.
+  - ``restrict_keyword_actions``
+    A restrict keyword result to enter search mode for actions.
+  - ``restrict_keyword_bookmarks``
+    A restrict keyword result to enter search mode for bookmarks.
+  - ``restrict_keyword_history``
+    A restrict keyword result to enter search mode for history.
+  - ``restrict_keyword_tabs``
+    A restrict keyword result to enter search mode for tabs.
   - ``searchengine``
     A search result, but not a suggestion. May be the default search action
     or a search alias.
@@ -395,8 +520,17 @@ urlbar.picked.*
   .. _adaptive history autofill document: https://docs.google.com/document/d/e/2PACX-1vRBLr_2dxus-aYhZRUkW9Q3B1K0uC-a0qQyE3kQDTU3pcNpDHb36-Pfo9fbETk89e7Jz4nkrqwRhi4j/pub
   .. _origin: https://html.spec.whatwg.org/multipage/origin.html#origin
 
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.picked`` telemetry mirrored to Glean. (See bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.picked`` telemetry and Glean ``urlbar.picked`` telemetry
+      removed completely. (See bug 1932713)
+
 urlbar.picked.searchmode.*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  NOTE: This telemetry is no longer collected. See changelog below.
 
   This is a set of keyed scalars whose values are uints incremented each time a
   result is picked from the Urlbar while the Urlbar is in search mode. The
@@ -416,8 +550,19 @@ urlbar.picked.searchmode.*
     a Google search suggestion at index 2, we would record in **both**
     ``urlbar.picked.searchsuggestion`` and ``urlbar.picked.searchmode.oneoff``.
 
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.picked.searchmode`` telemetry mirrored to Glean. (See
+      bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.picked.searchmode`` telemetry and Glean
+      ``urlbar.picked.searchmode`` telemetry removed completely. (See
+      bug 1932713)
+
 urlbar.tabtosearch.*
 ~~~~~~~~~~~~~~~~~~~~
+
+  NOTE: This telemetry is no longer collected. See changelog below.
 
   This is a set of keyed scalars whose values are uints incremented when a
   tab-to-search result is shown, once per engine per engagement. There are two
@@ -432,6 +577,14 @@ urlbar.tabtosearch.*
   .. note::
     Due to the potentially sensitive nature of these data, they are currently
     collected only on pre-release version of Firefox. See bug 1686330.
+
+  Changelog
+    Firefox 134
+      Legacy ``urlbar.tabtosearch.*`` telemetry mirrored to Glean. (See
+      bug 1927093)
+    Firefox 137
+      Legacy ``urlbar.tabtosearch.*`` telemetry and Glean
+      ``urlbar.tabtosearch.*`` telemetry removed completely. (See bug 1932715)
 
 urlbar.zeroprefix.abandonment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -464,19 +617,25 @@ urlbar.zeroprefix.exposure
   the "top sites" view since normally it shows the user's top sites. This scalar
   was introduced in Firefox 110.0 in bug 1806765.
 
-urlbar.quickaction.impression
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  A uint recording the number of times the user was shown a quickaction, the
-  key is in the form $key-$n where $n is the number of characters the user typed
-  in order for the suggestion to show. See bug 1806024.
-
 urlbar.quickaction.picked
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
   A uint recording the number of times the user selected a quickaction, the
   key is in the form $key-$n where $n is the number of characters the user typed
   in order for the suggestion to show. See bug 1783155.
+
+urlbar.unifiedsearchbutton.opened
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  A uint recording the number of times the user opens search mode popup via
+  Unified Search Button.
+  See bug 1936673.
+
+urlbar.unifiedsearchbutton.picked
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  A uint recording the number of times the user selected a search mode via
+  Unified Search Button. See bug 1936673.
 
 places.*
 ~~~~~~~~
@@ -499,9 +658,7 @@ Search Engagement Telemetry
 ---------------------------
 
 The search engagement telemetry provided since Firefox 110 is is recorded using
-Glean events. Because of the data size, these events are collected only for a
-subset of the population, using the Glean Sampling feature. Please see the
-following documents for the details.
+Glean events. Please see the following documents for the details.
 
   - `Engagement`_ :
     It is defined as a completed action in urlbar, where a user picked one of
@@ -516,12 +673,19 @@ following documents for the details.
 .. _Abandonment: https://dictionary.telemetry.mozilla.org/apps/firefox_desktop/metrics/urlbar_abandonment
 
 Changelog
+  Firefox 141
+    New result types have been added, in particular sub-types can now be added
+    to `history` and `tab`, indicating whether they are from semantic history,
+    or SERP, e.g. `history_serp`, `history_semantic`, `tab_semantic_serp`.
+    [Bug `1971534`_]
+
   Firefox 128
     The "actions" key was added to the engagement event. [Bug `1893067`_]
 
   Firefox 125
     The "impression" engagement event has been removed. [Bug `1878983`_]
 
+.. _1971534: https://bugzilla.mozilla.org/show_bug.cgi?id=1971534
 .. _1893067: https://bugzilla.mozilla.org/show_bug.cgi?id=1893067
 .. _1878983: https://bugzilla.mozilla.org/show_bug.cgi?id=1878983
 
@@ -553,7 +717,7 @@ Other telemetry relevant to the Address Bar
 Search Telemetry
 ~~~~~~~~~~~~~~~~
 
-  Some of the `search telemetry`_ is also relevant to the address bar.
+  Some of `the search telemetry`_ is also relevant to the address bar.
 
 contextual.services.topsites.*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -587,4 +751,5 @@ Firefox Suggest
   Telemetry specific to Firefox Suggest is described in the
   :doc:`firefox-suggest-telemetry` document.
 
-.. _search telemetry: /browser/search/telemetry.html
+.. _the search telemetry: /browser/search/telemetry.html
+.. _1919180: https://bugzilla.mozilla.org/show_bug.cgi?id=1919180

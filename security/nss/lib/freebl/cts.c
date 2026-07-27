@@ -91,8 +91,8 @@ CTS_EncryptUpdate(CTSContext *cts, unsigned char *outbuf,
 {
     unsigned char lastBlock[MAX_BLOCK_SIZE];
     unsigned int tmp;
-    int fullblocks;
-    int written;
+    unsigned int fullblocks;
+    unsigned int written;
     unsigned char *saveout = outbuf;
     SECStatus rv;
 
@@ -213,12 +213,12 @@ CTS_DecryptUpdate(CTSContext *cts, unsigned char *outbuf,
         if (inbuf != outbuf) {
             memcpy(outbuf, inbuf, inlen);
             /* keep the names so we logically know how we are using the
-         * buffers */
+             * buffers */
             inbuf = outbuf;
         }
         memcpy(lastBlock, inbuf + inlen - blocksize, blocksize);
         /* we know inbuf == outbuf now, inbuf is declared const and can't
-     * be the target, so use outbuf for the target here */
+         * be the target, so use outbuf for the target here */
         memcpy(outbuf + inlen - pad, inbuf + inlen - blocksize - pad, pad);
         memcpy(outbuf + inlen - blocksize - pad, lastBlock, blocksize);
     }

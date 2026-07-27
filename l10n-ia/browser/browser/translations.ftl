@@ -37,9 +37,9 @@ translations-panel-displayname-beta =
 
 translations-panel-settings-manage-languages =
     .label = Gerer le linguas
-translations-panel-settings-about = Re le traductiones in { -brand-shorter-name }
+translations-panel-settings-about = A proposito del traductiones in { -brand-shorter-name }
 translations-panel-settings-about2 =
-    .label = Re le traductiones in { -brand-shorter-name }
+    .label = A proposito del traductiones in { -brand-shorter-name }
 # Text displayed for the option to always translate a given language
 # Variables:
 #   $language (string) - The localized display name of the detected language
@@ -72,7 +72,7 @@ translations-panel-translate-cancel =
     .label = Cancellar
 translations-panel-learn-more-link = Pro saper plus
 translations-panel-intro-header = Discoperi le traductiones private in { -brand-shorter-name }
-translations-panel-intro-description = Pro respectar tu confidentialiate, le traductiones non lassa jammais tu apparato. Nove linguas e meliorationes venira tosto!
+translations-panel-intro-description = Pro respectar tu confidentialitate, le traductiones non lassa jammais tu apparato. Nove linguas e meliorationes venira tosto!
 translations-panel-error-translating = Il habeva un problema traducente. Retenta.
 translations-panel-error-load-languages = Impossibile cargar linguas
 translations-panel-error-load-languages-hint = Verifica tu connexion a internet e retenta.
@@ -83,6 +83,14 @@ translations-panel-error-dismiss-button =
     .label = Comprendite
 translations-panel-error-change-button =
     .label = Cambiar lingua fonte
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Desolate, nos ancora non supporta traductiones ab { $language }
+translations-panel-error-unsupported-hint-unknown-2 = Desolate, nos ancora non supporta traductiones ab  iste lingua.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
@@ -110,7 +118,7 @@ translations-panel-to-label = Traducer in
 # Variables:
 #   $fromLanguage (string) - The original language of the document.
 #   $toLanguage (string) - The target language of the translation.
-translations-panel-revisit-header = Iste pagina es traducite ab le { $fromLanguage } in { $toLanguage }
+translations-panel-revisit-header = Iste pagina es traducite de { $fromLanguage } in { $toLanguage }
 translations-panel-choose-language =
     .label = Elige un lingua
 translations-panel-restore-button =
@@ -122,19 +130,12 @@ translations-manage-header = Traductiones
 translations-manage-settings-button =
     .label = Parametros…
     .accesskey = t
-translations-manage-description = Discargar le linguas pro traducer offline.
+translations-manage-description = Discargar linguas pro traducer foras de linea.
 translations-manage-all-language = Tote le linguas
 translations-manage-download-button = Discargar
 translations-manage-delete-button = Deler
-translations-manage-intro = Defini tu preferentias de lingua e traduction de sito, e gere le linguas installate pro le traduction sin connexion.
-translations-manage-install-description = Installar linguas pro traducer offline.
-translations-manage-language-install-button =
-    .label = Installar
-translations-manage-language-install-all-button =
-    .label = Installar toto
-    .accesskey = I
 translations-manage-intro-2 = Defini tu preferentias de lingua e traduction de sito, e gere le linguas discargate pro le traduction sin connexion.
-translations-manage-download-description = Discargar linguas pro traducer offline.
+translations-manage-download-description = Discargar linguas pro traducer foras de linea
 translations-manage-language-download-button =
     .label = Discargar
 translations-manage-language-download-all-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Remover toto
     .accesskey = e
-translations-manage-error-install = Il habeva un problema installante le files del linguas. Retenta.
 translations-manage-error-download = Il habeva un problema discargante le files del linguas. Retenta.
 translations-manage-error-delete = Il habeva un problema delente le files del linguas. Retenta.
 translations-manage-error-remove = Il habeva un problema removente le files del linguas. Retenta.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Il habeva un problema traducente. Retenta.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Desolate, nos ancora non supporta traductiones ab { $language }
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Desolate, nos ancora non supporta traductiones ab iste lingua.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

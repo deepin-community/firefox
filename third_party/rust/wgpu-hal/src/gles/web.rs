@@ -1,3 +1,5 @@
+use alloc::{format, string::String, vec::Vec};
+
 use glow::HasContext;
 use parking_lot::{Mutex, RwLock};
 use wasm_bindgen::{JsCast, JsValue};
@@ -25,7 +27,9 @@ impl AdapterContext {
 }
 
 #[derive(Debug)]
-pub struct Instance;
+pub struct Instance {
+    options: wgt::GlBackendOptions,
+}
 
 impl Instance {
     pub fn create_surface_from_canvas(
@@ -64,9 +68,10 @@ impl Instance {
                 // “not supported” could include “insufficient GPU resources” or “the GPU process
                 // previously crashed”. So, we must return it as an `Err` since it could occur
                 // for circumstances outside the application author's control.
-                return Err(crate::InstanceError::new(String::from(
-                    "canvas.getContext() returned null; webgl2 not available or canvas already in use"
-                )));
+                return Err(crate::InstanceError::new(String::from(concat!(
+                    "canvas.getContext() returned null; ",
+                    "webgl2 not available or canvas already in use"
+                ))));
             }
             Err(js_error) => {
                 // <https://html.spec.whatwg.org/multipage/canvas.html#dom-canvas-getcontext>
@@ -109,9 +114,11 @@ unsafe impl Send for Instance {}
 impl crate::Instance for Instance {
     type A = super::Api;
 
-    unsafe fn init(_desc: &crate::InstanceDescriptor) -> Result<Self, crate::InstanceError> {
+    unsafe fn init(desc: &crate::InstanceDescriptor<'_>) -> Result<Self, crate::InstanceError> {
         profiling::scope!("Init OpenGL (WebGL) Backend");
-        Ok(Instance)
+        Ok(Instance {
+            options: desc.backend_options.gl.clone(),
+        })
     }
 
     unsafe fn enumerate_adapters(
@@ -122,10 +129,13 @@ impl crate::Instance for Instance {
             let gl = glow::Context::from_webgl2_context(surface_hint.webgl2_context.clone());
 
             unsafe {
-                super::Adapter::expose(AdapterContext {
-                    glow_context: gl,
-                    webgl2_context: surface_hint.webgl2_context.clone(),
-                })
+                super::Adapter::expose(
+                    AdapterContext {
+                        glow_context: gl,
+                        webgl2_context: surface_hint.webgl2_context.clone(),
+                    },
+                    self.options.clone(),
+                )
             }
             .into_iter()
             .collect()
@@ -166,6 +176,44 @@ impl crate::Instance for Instance {
         };
 
         self.create_surface_from_canvas(canvas)
+    }
+}
+
+impl super::Adapter {
+    /// Creates a new external adapter from an existing WebGL2 rendering context.
+    ///
+    /// # Safety
+    ///
+    /// - The underlying WebGL2 context must be valid (not lost).
+    /// - The underlying WebGL2 context must be valid when interfacing with any objects returned by
+    ///   wgpu-hal from this adapter.
+    /// - The underlying WebGL2 context must be valid when dropping this adapter and when
+    ///   dropping any objects returned from this adapter.
+    pub unsafe fn new_external(
+        webgl2_context: web_sys::WebGl2RenderingContext,
+        options: wgt::GlBackendOptions,
+    ) -> Option<crate::ExposedAdapter<super::Api>> {
+        let glow_context = glow::Context::from_webgl2_context(webgl2_context.clone());
+        unsafe {
+            Self::expose(
+                AdapterContext {
+                    glow_context,
+                    webgl2_context,
+                },
+                options,
+            )
+        }
+    }
+
+    pub fn adapter_context(&self) -> &AdapterContext {
+        &self.shared.context
+    }
+}
+
+impl super::Device {
+    /// Returns the underlying WebGL2 `AdapterContext`.
+    pub fn context(&self) -> &AdapterContext {
+        &self.shared.context
     }
 }
 
@@ -412,9 +460,9 @@ impl crate::Surface for Surface {
 
     unsafe fn acquire_texture(
         &self,
-        _timeout_ms: Option<std::time::Duration>, //TODO
+        _timeout_ms: Option<core::time::Duration>, //TODO
         _fence: &super::Fence,
-    ) -> Result<Option<crate::AcquiredSurfaceTexture<super::Api>>, crate::SurfaceError> {
+    ) -> Result<crate::AcquiredSurfaceTexture<super::Api>, crate::SurfaceError> {
         let swapchain = self.swapchain.read();
         let sc = swapchain.as_ref().unwrap();
         let texture = super::Texture {
@@ -433,10 +481,10 @@ impl crate::Surface for Surface {
                 depth: 1,
             },
         };
-        Ok(Some(crate::AcquiredSurfaceTexture {
+        Ok(crate::AcquiredSurfaceTexture {
             texture,
             suboptimal: false,
-        }))
+        })
     }
 
     unsafe fn discard_texture(&self, _texture: super::Texture) {}

@@ -35,7 +35,8 @@ const EXISTING_RESOURCES = [
   {
     styleText: "",
     href: null,
-    nodeHref: null,
+    nodeHref:
+      "https://example.com/browser/devtools/shared/commands/resource/tests/style_document.html",
     isNew: false,
     disabled: false,
     constructed: true,
@@ -97,7 +98,8 @@ const ADDITIONAL_INLINE_RESOURCE = {
 const ADDITIONAL_CONSTRUCTED_RESOURCE = {
   styleText: "",
   href: null,
-  nodeHref: null,
+  nodeHref:
+    "https://example.com/browser/devtools/shared/commands/resource/tests/style_document.html",
   isNew: false,
   disabled: false,
   constructed: true,
@@ -148,9 +150,8 @@ async function testResourceAvailableDestroyedFeature() {
     "Should have two entires for resource timing"
   );
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Check whether ResourceCommand gets existing stylesheet");
   const availableResources = [];
@@ -182,9 +183,9 @@ async function testResourceAvailableDestroyedFeature() {
   );
 
   info("Check whether ResourceCommand gets additonal stylesheet");
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     tab.linkedBrowser,
-    ADDITIONAL_INLINE_RESOURCE.styleText,
+    [ADDITIONAL_INLINE_RESOURCE.styleText],
     text => {
       const document = content.document;
       const stylesheet = document.createElement("style");
@@ -202,7 +203,7 @@ async function testResourceAvailableDestroyedFeature() {
   );
 
   info("Check whether ResourceCommand gets additonal constructed stylesheet");
-  await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     const document = content.document;
     const s = new content.CSSStyleSheet();
     // We use the different number of rules to meaningfully differentiate
@@ -222,9 +223,8 @@ async function testResourceAvailableDestroyedFeature() {
   info(
     "Check whether ResourceCommand gets additonal stylesheet which is added by DevTools"
   );
-  const styleSheetsFront = await targetCommand.targetFront.getFront(
-    "stylesheets"
-  );
+  const styleSheetsFront =
+    await targetCommand.targetFront.getFront("stylesheets");
   await styleSheetsFront.addStyleSheet(
     ADDITIONAL_FROM_ACTOR_RESOURCE.styleText
   );
@@ -240,7 +240,7 @@ async function testResourceAvailableDestroyedFeature() {
   is(destroyedResources.length, 0, "There was no removed stylesheets yet");
 
   info("Remove inline stylesheet added in the test");
-  await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     content.document.querySelector("#inline-from-test").remove();
   });
   await waitUntil(() => destroyedResources.length === 1);
@@ -249,7 +249,7 @@ async function testResourceAvailableDestroyedFeature() {
   });
 
   info("Remove existing top-level inline stylesheet");
-  await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     content.document.querySelector("style").remove();
   });
   await waitUntil(() => destroyedResources.length === 2);
@@ -261,7 +261,7 @@ async function testResourceAvailableDestroyedFeature() {
   });
 
   info("Remove existing top-level <link> stylesheet");
-  await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     content.document.querySelector("link").remove();
   });
   await waitUntil(() => destroyedResources.length === 3);
@@ -311,9 +311,8 @@ async function testResourceUpdateFeature() {
 
   const tab = await addTab(STYLE_TEST_URL);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Setup the watcher");
   const availableResources = [];
@@ -357,9 +356,9 @@ async function testResourceUpdateFeature() {
   );
 
   // Check whether the actual stylesheet is updated correctly.
-  const styleSheetDisabled = await ContentTask.spawn(
+  const styleSheetDisabled = await SpecialPowers.spawn(
     tab.linkedBrowser,
-    null,
+    [],
     () => {
       const document = content.document;
       const stylesheet = document.styleSheets[0];
@@ -435,21 +434,27 @@ async function testResourceUpdateFeature() {
   await client.close();
 }
 
+function resizeToInner(win, wantedInnerWidth, wantedInnerHeight) {
+  const diffX = wantedInnerWidth - win.innerWidth;
+  const diffY = wantedInnerHeight - win.innerHeight;
+  win.resizeBy(diffX, diffY);
+}
+
 async function testNestedResourceUpdateFeature() {
   info("Check nested resource update feature of the ResourceCommand");
 
   const tab = await addTab(STYLE_TEST_URL);
+  const win = tab.documentGlobal;
 
-  const { outerWidth: originalWindowWidth, outerHeight: originalWindowHeight } =
-    tab.ownerGlobal;
+  const { innerWidth: originalWindowWidth, innerHeight: originalWindowHeight } =
+    win;
 
   registerCleanupFunction(() => {
-    tab.ownerGlobal.resizeTo(originalWindowWidth, originalWindowHeight);
+    resizeToInner(win, originalWindowWidth, originalWindowHeight);
   });
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Setup the watcher");
   const availableResources = [];
@@ -468,8 +473,8 @@ async function testNestedResourceUpdateFeature() {
   // In order to avoid applying the media query (min-height: 400px).
   if (originalWindowHeight !== 300) {
     await new Promise(resolve => {
-      tab.ownerGlobal.addEventListener("resize", resolve, { once: true });
-      tab.ownerGlobal.resizeTo(originalWindowWidth, 300);
+      win.addEventListener("resize", resolve, { once: true });
+      resizeToInner(win, originalWindowWidth, 300);
     });
   }
 
@@ -516,7 +521,7 @@ async function testNestedResourceUpdateFeature() {
   is(resource.atRules[0].matches, false, "Media query is not matched yet");
 
   info("Change window size to fire matches-change event");
-  tab.ownerGlobal.resizeTo(originalWindowWidth, 500);
+  resizeToInner(win, originalWindowWidth, 500);
   await waitUntil(() => updates.length === 4);
 
   // Check the update content.
@@ -578,7 +583,7 @@ async function testNestedResourceUpdateFeature() {
   );
   assertAtRules(styleSheetResult.atRules, expectedAtRules);
 
-  tab.ownerGlobal.resizeTo(originalWindowWidth, originalWindowHeight);
+  resizeToInner(win, originalWindowWidth, originalWindowHeight);
 
   targetCommand.destroy();
   await client.close();
@@ -595,7 +600,7 @@ function findMatchingExpectedResource(resource) {
 }
 
 async function getStyleSheetResult(tab) {
-  const result = await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  const result = await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     const document = content.document;
     const stylesheet = document.styleSheets[0];
     let ruleCount = 0;
@@ -725,7 +730,7 @@ function assertDestroyed(resource, expected) {
 }
 
 function getResourceTimingCount(tab) {
-  return ContentTask.spawn(tab.linkedBrowser, [], () => {
+  return SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     return content.performance.getEntriesByType("resource").length;
   });
 }

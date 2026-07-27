@@ -1,15 +1,20 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: nil; -*-
- * Any copyright is dedicated to the Public Domain.
+/* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 package org.mozilla.geckoview.test
 
 import android.view.KeyEvent
+import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import org.hamcrest.Matchers.* // ktlint-disable no-wildcard-imports
+import androidx.test.platform.app.InstrumentationRegistry
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.endsWith
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.isEmptyOrNullString
+import org.hamcrest.Matchers.notNullValue
+import org.hamcrest.Matchers.nullValue
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.geckoview.AllowOrDeny
@@ -111,18 +116,99 @@ class PromptDelegateTest : BaseSessionTest(
         mainSession.waitForRoundTrip()
     }
 
-    @Ignore // TODO: Reenable when 1501574 is fixed.
+    @Test fun redirectTestAllow() {
+        // Ensure popup and redirect blocking is enabled for this test.
+        sessionRule.setPrefsUntilTestEnd(mapOf("dom.disable_open_during_load" to true))
+        sessionRule.setPrefsUntilTestEnd(mapOf("dom.security.framebusting_intervention.enabled" to true))
+
+        sessionRule.delegateDuringNextWait(object : PromptDelegate, NavigationDelegate {
+            @AssertCalled(count = 1)
+            override fun onRedirectPrompt(session: GeckoSession, prompt: PromptDelegate.RedirectPrompt): GeckoResult<PromptDelegate.PromptResponse>? {
+                assertThat("Session should not be null", session, notNullValue())
+                assertThat("URL should not be null", prompt.targetUri, notNullValue())
+                assertThat("URL should match", prompt.targetUri, equalTo(FRAMEBUSTING_CHILD_URI))
+                return GeckoResult.fromValue(prompt.confirm(AllowOrDeny.ALLOW))
+            }
+
+            @AssertCalled(count = 2)
+            override fun onLocationChange(
+                session: GeckoSession,
+                url: String?,
+                perms: List<GeckoSession.PermissionDelegate.ContentPermission>,
+                hasUserGesture: Boolean,
+            ) {
+                assertThat("Session should not be null", session, notNullValue())
+                assertThat("URL should not be null", url, notNullValue())
+                assertThat("URL should match", url, equalTo(forEachCall(FRAMEBUSTING_PARENT_URI, FRAMEBUSTING_CHILD_URI)))
+            }
+
+            @AssertCalled(count = 0)
+            override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession>? {
+                Assert.fail("Should not call onNewSession")
+                return null
+            }
+        })
+
+        mainSession.loadUri(FRAMEBUSTING_PARENT_URI)
+        sessionRule.waitForPageStop()
+        mainSession.waitForRoundTrip()
+    }
+
+    @Test fun redirectTestBlock() {
+        // Ensure popup and redirect blocking is enabled for this test.
+        sessionRule.setPrefsUntilTestEnd(mapOf("dom.disable_open_during_load" to true))
+        sessionRule.setPrefsUntilTestEnd(mapOf("dom.security.framebusting_intervention.enabled" to true))
+
+        sessionRule.delegateUntilTestEnd(object : PromptDelegate, NavigationDelegate {
+            @AssertCalled(count = 1)
+            override fun onRedirectPrompt(session: GeckoSession, prompt: PromptDelegate.RedirectPrompt): GeckoResult<PromptDelegate.PromptResponse>? {
+                assertThat("Session should not be null", session, notNullValue())
+                assertThat("URL should not be null", prompt.targetUri, notNullValue())
+                assertThat("URL should match", prompt.targetUri, equalTo(FRAMEBUSTING_CHILD_URI))
+                return GeckoResult.fromValue(prompt.confirm(AllowOrDeny.DENY))
+            }
+
+            @AssertCalled(count = 1)
+            override fun onLocationChange(
+                session: GeckoSession,
+                url: String?,
+                perms: List<GeckoSession.PermissionDelegate.ContentPermission>,
+                hasUserGesture: Boolean,
+            ) {
+                assertThat("Session should not be null", session, notNullValue())
+                assertThat("URL should not be null", url, notNullValue())
+                assertThat("URL should match", url, equalTo(FRAMEBUSTING_PARENT_URI))
+            }
+
+            @AssertCalled(count = 0)
+            override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession>? {
+                Assert.fail("Should not call onNewSession")
+                return null
+            }
+        })
+
+        mainSession.loadUri(FRAMEBUSTING_PARENT_URI)
+        sessionRule.waitForPageStop()
+        mainSession.waitForRoundTrip()
+    }
+
     @Test
     fun alertTest() {
-        mainSession.evaluateJS("alert('Alert!');")
+        mainSession.loadTestPath(HELLO_HTML_PATH)
+        sessionRule.waitForPageStop()
 
-        sessionRule.waitUntilCalled(object : PromptDelegate {
+        val result = GeckoResult<Void>()
+        sessionRule.delegateDuringNextWait(object : PromptDelegate {
             @AssertCalled(count = 1)
             override fun onAlertPrompt(session: GeckoSession, prompt: PromptDelegate.AlertPrompt): GeckoResult<PromptDelegate.PromptResponse> {
                 assertThat("Message should match", "Alert!", equalTo(prompt.message))
+                result.complete(null)
                 return GeckoResult.fromValue(prompt.dismiss())
             }
         })
+
+        mainSession.evaluateJS("alert('Alert!');")
+        sessionRule.waitForResult(result)
     }
 
     // This test checks that saved logins are returned to the app when calling onAuthPrompt
@@ -662,82 +748,6 @@ class PromptDelegateTest : BaseSessionTest(
         )
     }
 
-    @Test
-    fun fedCMProviderPromptTest() {
-        sessionRule.setPrefsUntilTestEnd(
-            mapOf(
-                "dom.security.credentialmanagement.identity.enabled" to true,
-            ),
-        )
-        sessionRule.setPrefsUntilTestEnd(
-            mapOf(
-                "dom.security.credentialmanagement.identity.heavyweight.enabled" to true,
-            ),
-        )
-        sessionRule.setPrefsUntilTestEnd(
-            mapOf(
-                "dom.security.credentialmanagement.identity.test_ignore_well_known" to true,
-            ),
-        )
-        mainSession.loadTestPath(FEDCM_RP_HTML_PATH)
-
-        sessionRule.delegateDuringNextWait(object : PromptDelegate {
-            @AssertCalled(count = 1)
-            override fun onSelectIdentityCredentialProvider(
-                session: GeckoSession,
-                prompt: PromptDelegate.IdentityCredential.ProviderSelectorPrompt,
-            ): GeckoResult<PromptResponse> {
-                prompt.providers.mapIndexed { index, item ->
-                    assertThat("ID should match", index, equalTo(item.id))
-                    assertThat(
-                        "Name should be the name of the IDP taken from the manifest",
-                        item.name,
-                        containsString("Demo IDP"),
-                    )
-                    assertThat("Icon should contain a valid image", item.icon ?: "", containsString("data:image"))
-                }
-                return GeckoResult.fromValue(prompt.confirm(0))
-            }
-
-            @AssertCalled(count = 1)
-            override fun onSelectIdentityCredentialAccount(
-                session: GeckoSession,
-                prompt: PromptDelegate.IdentityCredential.AccountSelectorPrompt,
-            ): GeckoResult<PromptResponse> {
-                prompt.accounts.forEachIndexed { index, item ->
-                    assertThat("ID should match", index, equalTo(item.id))
-                }
-                return GeckoResult.fromValue(prompt.confirm(0))
-            }
-
-            @AssertCalled(count = 1)
-            override fun onShowPrivacyPolicyIdentityCredential(
-                session: GeckoSession,
-                prompt: PromptDelegate.IdentityCredential.PrivacyPolicyPrompt,
-            ): GeckoResult<PromptResponse> {
-                assertThat("Host should be localhost", prompt.host, equalTo("localhost"))
-                assertThat("Privacy policy url should be the same as specified in fedcm_idp_metadata.json ", prompt.privacyPolicyUrl, equalTo("privacy_policy"))
-                assertThat("Terms of service url should be the same as specified in fedcm_idp_metadata.json ", prompt.termsOfServiceUrl, equalTo("terms_of_service"))
-                assertThat("Icon should contain a valid image", prompt.icon ?: "", containsString("data:image"))
-                return GeckoResult.fromValue(prompt.confirm(true))
-            }
-        })
-
-        mainSession.waitForJS(
-            """
-        navigator.credentials.get({
-        identity: {
-          providers: [{
-            configURL: "${createTestUrl(FEDCM_IDP_MANIFEST_PATH)}",
-            clientId: "localhost",
-            nonce: "nonce",
-          }]
-        }
-      });
-            """.trimIndent(),
-        )
-    }
-
     @WithDisplay(width = 100, height = 100)
     @Test
     fun colorTest() {
@@ -822,8 +832,8 @@ class PromptDelegateTest : BaseSessionTest(
             """.trimIndent(),
         )
 
-        mainSession.evaluateJS("document.addEventListener('click', () => this.c.click(), { once: true });")
-        mainSession.synthesizeTap(1, 1)
+        mainSession.notifyUserGestureActivation()
+        mainSession.evaluateJS("document.getElementById('colorexample').showPicker()")
 
         assertThat(
             "Value should match",
@@ -838,16 +848,9 @@ class PromptDelegateTest : BaseSessionTest(
         mainSession.loadTestPath(PROMPT_HTML_PATH)
         mainSession.waitForPageStop()
 
-        mainSession.evaluateJS(
-            """
-            document.documentElement.style.paddingTop = "50px";
-            document.addEventListener("click", () => {
-                document.getElementById('dateexample').showPicker();
-            });
-            """.trimIndent(),
-        )
+        mainSession.notifyUserGestureActivation()
+        mainSession.evaluateJS("document.getElementById('dateexample').showPicker()")
 
-        mainSession.synthesizeTap(1, 1) // Provides user activation.
         sessionRule.waitUntilCalled(object : PromptDelegate {
             @AssertCalled(count = 1)
             override fun onDateTimePrompt(session: GeckoSession, prompt: PromptDelegate.DateTimePrompt): GeckoResult<PromptDelegate.PromptResponse> {
@@ -1088,8 +1091,8 @@ class PromptDelegateTest : BaseSessionTest(
         mainSession.loadTestPath(PROMPT_HTML_PATH)
         mainSession.waitForPageStop()
 
-        mainSession.evaluateJS("document.addEventListener('click', () => document.getElementById('fileexample').click(), { once: true });")
-        mainSession.synthesizeTap(1, 1)
+        mainSession.notifyUserGestureActivation()
+        mainSession.evaluateJS("document.getElementById('fileexample').showPicker()")
 
         sessionRule.waitUntilCalled(object : PromptDelegate {
             @AssertCalled(count = 1)
@@ -1098,7 +1101,70 @@ class PromptDelegateTest : BaseSessionTest(
                 assertThat("First accept attribute should match", "image/*", equalTo(prompt.mimeTypes?.get(0)))
                 assertThat("Second accept attribute should match", ".pdf", equalTo(prompt.mimeTypes?.get(1)))
                 assertThat("Capture attribute should match", PromptDelegate.FilePrompt.Capture.USER, equalTo(prompt.capture))
+                assertThat("Type should match", prompt.type, equalTo(PromptDelegate.FilePrompt.Type.SINGLE))
                 return GeckoResult.fromValue(prompt.dismiss())
+            }
+        })
+    }
+
+    @WithDisplay(width = 100, height = 100)
+    @Test
+    fun fileMultipleTest() {
+        sessionRule.setPrefsUntilTestEnd(mapOf("dom.disable_open_during_load" to false))
+
+        mainSession.loadTestPath(PROMPT_HTML_PATH)
+        mainSession.waitForPageStop()
+
+        mainSession.notifyUserGestureActivation()
+        mainSession.evaluateJS("document.getElementById('filemultipleexample').showPicker()")
+
+        sessionRule.waitUntilCalled(object : PromptDelegate {
+            @AssertCalled(count = 1)
+            override fun onFilePrompt(session: GeckoSession, prompt: PromptDelegate.FilePrompt): GeckoResult<PromptDelegate.PromptResponse> {
+                assertThat("Length of mimeTypes should match", 2, equalTo(prompt.mimeTypes!!.size))
+                assertThat("First accept attribute should match", "image/*", equalTo(prompt.mimeTypes?.get(0)))
+                assertThat("Second accept attribute should match", ".pdf", equalTo(prompt.mimeTypes?.get(1)))
+                assertThat("Capture attribute should match", PromptDelegate.FilePrompt.Capture.NONE, equalTo(prompt.capture))
+                assertThat("Type should match", prompt.type, equalTo(PromptDelegate.FilePrompt.Type.MULTIPLE))
+                return GeckoResult.fromValue(prompt.dismiss())
+            }
+        })
+    }
+
+    @WithDisplay(width = 100, height = 100)
+    @Test
+    fun directoryTest() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "dom.disable_open_during_load" to false,
+                "dom.webkitBlink.dirPicker.enabled" to true,
+            ),
+        )
+
+        mainSession.loadTestPath(PROMPT_HTML_PATH)
+        mainSession.waitForPageStop()
+
+        sessionRule.delegateUntilTestEnd(object : PromptDelegate {
+            @AssertCalled(count = 1)
+            override fun onFilePrompt(session: GeckoSession, prompt: PromptDelegate.FilePrompt): GeckoResult<PromptDelegate.PromptResponse> {
+                assertThat("Type should match", prompt.type, equalTo(PromptDelegate.FilePrompt.Type.FOLDER))
+                return GeckoResult.fromValue(
+                    prompt.confirm(
+                        InstrumentationRegistry.getInstrumentation().targetContext,
+                        "file:///storage/emulated/0/Download".toUri(),
+                    ),
+                )
+            }
+        })
+
+        mainSession.notifyUserGestureActivation()
+        mainSession.evaluateJS("document.getElementById('direxample').showPicker()")
+
+        sessionRule.waitUntilCalled(object : PromptDelegate {
+            @AssertCalled(count = 1)
+            override fun onFolderUploadPrompt(session: GeckoSession, prompt: PromptDelegate.FolderUploadPrompt): GeckoResult<PromptDelegate.PromptResponse>? {
+                assertThat("directoryName should match", prompt.directoryName, equalTo("Download"))
+                return GeckoResult.fromValue(prompt.confirm(AllowOrDeny.ALLOW))
             }
         })
     }
@@ -1327,6 +1393,81 @@ class PromptDelegateTest : BaseSessionTest(
         } catch (e: GeckoSessionTestRule.RejectedPromiseException) {
             assertThat(
                 "Error should be correct",
+                e.reason as String,
+                containsString("NotAllowedError"),
+            )
+        }
+    }
+
+    @Test
+    fun webAuthnRelatedOriginPromptAllow() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "security.webauth.webauthn_enable_softtoken" to true,
+                "security.webauth.webauthn_enable_usbtoken" to false,
+                "security.webauthn.related_origin_requests_mode" to 2,
+            ),
+        )
+
+        // Load from https://example.com with rpId "example.org" to trigger the
+        // related-origin flow. https://example.org/.well-known/webauthn is served
+        // by the shared mochitest infrastructure and returns
+        // {"origins":["https://example.com"]} by default.
+        mainSession.loadUri(WEBAUTHN_RELATED_ORIGIN_PATH)
+        sessionRule.waitForPageStop()
+
+        val authenticatorId = sessionRule.addVirtualAuthenticator()
+        try {
+            sessionRule.delegateUntilTestEnd(object : PromptDelegate {
+                @AssertCalled(count = 1)
+                override fun onWebAuthnRelatedOriginPrompt(
+                    session: GeckoSession,
+                    prompt: PromptDelegate.WebAuthnRelatedOriginPrompt,
+                ): GeckoResult<PromptResponse>? {
+                    assertThat("origin", prompt.origin, equalTo("example.com"))
+                    assertThat("rpId", prompt.rpId, equalTo("example.org"))
+                    assertThat("isCreate", prompt.isCreate, equalTo(true))
+                    return GeckoResult.fromValue(prompt.confirm(AllowOrDeny.ALLOW))
+                }
+            })
+
+            val credential = mainSession.evaluateJS("createCredential()")
+            assertThat("credential created", credential, notNullValue())
+        } finally {
+            sessionRule.removeVirtualAuthenticator(authenticatorId)
+        }
+    }
+
+    @Test
+    fun webAuthnRelatedOriginPromptDeny() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "security.webauth.webauthn_enable_softtoken" to true,
+                "security.webauth.webauthn_enable_usbtoken" to false,
+                "security.webauthn.related_origin_requests_mode" to 2,
+            ),
+        )
+
+        mainSession.loadUri(WEBAUTHN_RELATED_ORIGIN_PATH)
+        sessionRule.waitForPageStop()
+
+        sessionRule.delegateUntilTestEnd(object : PromptDelegate {
+            @AssertCalled(count = 1)
+            override fun onWebAuthnRelatedOriginPrompt(
+                session: GeckoSession,
+                prompt: PromptDelegate.WebAuthnRelatedOriginPrompt,
+            ): GeckoResult<PromptResponse>? {
+                assertThat("isCreate", prompt.isCreate, equalTo(true))
+                return GeckoResult.fromValue(prompt.confirm(AllowOrDeny.DENY))
+            }
+        })
+
+        try {
+            mainSession.evaluateJS("createCredential()")
+            Assert.fail("credential creation should fail when prompt is denied")
+        } catch (e: GeckoSessionTestRule.RejectedPromiseException) {
+            assertThat(
+                "error is NotAllowedError",
                 e.reason as String,
                 containsString("NotAllowedError"),
             )

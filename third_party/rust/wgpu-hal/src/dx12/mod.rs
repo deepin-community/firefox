@@ -13,13 +13,52 @@ and destination states match, and they are for storage sync.
 
 For now, all resources are created with "committed" memory.
 
+## Sampler Descriptor Management
+
+At most one descriptor heap of each type can be bound at once. This
+means that the descriptors from all bind groups need to be present
+in the same heap, and they need to be contiguous within that heap.
+This is not a problem for the SRV/CBV/UAV heap as it can be sized into
+the millions of entries. However the sampler heap is limited to 2048 entries.
+
+In order to work around this limitation, we refer to samplers indirectly by index.
+The entire sampler heap is bound at once and a buffer containing all sampler indexes
+for that bind group is bound. The shader then uses the index to look up the sampler
+in the heap. To help visualize this, the generated HLSL looks like this:
+
+```wgsl
+@group(0) @binding(2) var myLinearSampler: sampler;
+@group(1) @binding(1) var myAnisoSampler: sampler;
+@group(1) @binding(4) var myCompSampler: sampler;
+```
+
+```cpp
+// These bindings alias the same descriptors. Depending on the type, the shader will use the correct one.
+SamplerState nagaSamplerHeap[2048]: register(s0, space0);
+SamplerComparisonState nagaComparisonSamplerHeap[2048]: register(s2048, space1);
+
+StructuredBuffer<uint> nagaGroup0SamplerIndexArray : register(t0, space0);
+StructuredBuffer<uint> nagaGroup1SamplerIndexArray : register(t1, space0);
+
+// Indexes into group 0 index array
+static const SamplerState myLinearSampler = nagaSamplerHeap[nagaGroup0SamplerIndexArray[0]];
+
+// Indexes into group 1 index array
+static const SamplerState myAnisoSampler = nagaSamplerHeap[nagaGroup1SamplerIndexArray[0]];
+static const SamplerComparisonState myCompSampler = nagaComparisonSamplerHeap[nagaGroup1SamplerIndexArray[1]];
+```
+
+Without this transform we would need separate set of sampler descriptors for each unique combination of samplers
+in a bind group. This results in a lot of duplication and makes it easy to hit the 2048 limit. With the transform
+the limit is merely 2048 unique samplers in existence, which is much more reasonable.
+
 ## Resource binding
 
-See ['Device::create_pipeline_layout`] documentation for the structure
+See [`crate::Device::create_pipeline_layout`] documentation for the structure
 of the root signature corresponding to WebGPU pipeline layout.
 
 Binding groups is mostly straightforward, with one big caveat:
-all bindings have to be reset whenever the pipeline layout changes.
+all bindings have to be reset whenever the root signature changes.
 This is the rule of D3D12, and we can do nothing to help it.
 
 We detect this change at both [`crate::CommandEncoder::set_bind_group`]
@@ -36,28 +75,39 @@ Otherwise, we pass a range corresponding only to the current bind group.
 mod adapter;
 mod command;
 mod conv;
+mod dcomp;
 mod descriptor;
 mod device;
+mod device_creation;
 mod instance;
+mod pipeline_desc;
+mod sampler;
 mod shader_compilation;
 mod suballocation;
 mod types;
 mod view;
 
-use std::{ffi, fmt, mem, num::NonZeroU32, ops::Deref, sync::Arc};
+use alloc::{borrow::ToOwned as _, string::String, sync::Arc, vec::Vec};
+use core::{ffi, fmt, mem, ops::Deref, sync::atomic::AtomicU64};
 
 use arrayvec::ArrayVec;
+use hashbrown::HashMap;
 use parking_lot::{Mutex, RwLock};
+use suballocation::Allocator;
 use windows::{
-    core::{Interface, Param as _},
+    core::{Free as _, Interface},
     Win32::{
         Foundation,
-        Graphics::{Direct3D, Direct3D12, DirectComposition, Dxgi},
+        Graphics::{
+            Direct3D,
+            Direct3D12::{self, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT},
+            DirectComposition, Dxgi,
+        },
         System::Threading,
     },
 };
-use windows_core::Free;
 
+use self::dcomp::DCompLib;
 use crate::auxil::{
     self,
     dxgi::{
@@ -67,38 +117,82 @@ use crate::auxil::{
 };
 
 #[derive(Debug)]
+struct DynLib {
+    inner: libloading::Library,
+}
+
+impl DynLib {
+    unsafe fn new<P>(filename: P) -> Result<Self, libloading::Error>
+    where
+        P: AsRef<std::ffi::OsStr>,
+    {
+        unsafe { libloading::Library::new(filename) }.map(|inner| Self { inner })
+    }
+
+    unsafe fn get<T>(
+        &self,
+        symbol: &[u8],
+    ) -> Result<libloading::Symbol<'_, T>, crate::DeviceError> {
+        unsafe { self.inner.get(symbol) }.map_err(|e| match e {
+            libloading::Error::GetProcAddress { .. } | libloading::Error::GetProcAddressUnknown => {
+                crate::DeviceError::Unexpected
+            }
+            libloading::Error::IncompatibleSize
+            | libloading::Error::CreateCString { .. }
+            | libloading::Error::CreateCStringWithTrailing { .. } => crate::hal_internal_error(e),
+            _ => crate::DeviceError::Unexpected, // could be unreachable!() but we prefer to be more robust
+        })
+    }
+}
+
+#[derive(Debug)]
 struct D3D12Lib {
-    lib: libloading::Library,
+    lib: DynLib,
+}
+
+#[derive(Clone, Copy)]
+pub enum CreateDeviceError {
+    GetProcAddress,
+    D3D12CreateDevice(windows_core::HRESULT),
+    RetDeviceIsNull,
 }
 
 impl D3D12Lib {
     fn new() -> Result<Self, libloading::Error> {
-        unsafe { libloading::Library::new("d3d12.dll").map(|lib| D3D12Lib { lib }) }
+        unsafe { DynLib::new("d3d12.dll").map(|lib| Self { lib }) }
     }
 
     fn create_device(
         &self,
         adapter: &DxgiAdapter,
         feature_level: Direct3D::D3D_FEATURE_LEVEL,
-    ) -> Result<windows_core::Result<Direct3D12::ID3D12Device>, libloading::Error> {
+    ) -> Result<Direct3D12::ID3D12Device, CreateDeviceError> {
         // Calls windows::Win32::Graphics::Direct3D12::D3D12CreateDevice on d3d12.dll
         type Fun = extern "system" fn(
-            padapter: *mut core::ffi::c_void,
+            padapter: *mut ffi::c_void,
             minimumfeaturelevel: Direct3D::D3D_FEATURE_LEVEL,
             riid: *const windows_core::GUID,
-            ppdevice: *mut *mut core::ffi::c_void,
+            ppdevice: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"D3D12CreateDevice") }?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"D3D12CreateDevice".to_bytes()) }
+                .map_err(|_| CreateDeviceError::GetProcAddress)?;
 
-        let mut result__ = None;
-        Ok((func)(
-            unsafe { adapter.param().abi() },
+        let mut result__: Option<Direct3D12::ID3D12Device> = None;
+
+        let res = (func)(
+            adapter.as_raw(),
             feature_level,
             // TODO: Generic?
             &Direct3D12::ID3D12Device::IID,
             <*mut _>::cast(&mut result__),
-        )
-        .map(|| result__.expect("D3D12CreateDevice succeeded but result is NULL?")))
+        );
+
+        if res.is_err() {
+            return Err(CreateDeviceError::D3D12CreateDevice(res));
+        }
+
+        result__.ok_or(CreateDeviceError::RetDeviceIsNull)
     }
 
     fn serialize_root_signature(
@@ -112,14 +206,11 @@ impl D3D12Lib {
         type Fun = extern "system" fn(
             prootsignature: *const Direct3D12::D3D12_ROOT_SIGNATURE_DESC,
             version: Direct3D12::D3D_ROOT_SIGNATURE_VERSION,
-            ppblob: *mut *mut core::ffi::c_void,
-            pperrorblob: *mut *mut core::ffi::c_void,
+            ppblob: *mut *mut ffi::c_void,
+            pperrorblob: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"D3D12SerializeRootSignature") }
-            .map_err(|e| {
-                log::error!("Unable to find serialization function: {:?}", e);
-                crate::DeviceError::Lost
-            })?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"D3D12SerializeRootSignature".to_bytes()) }?;
 
         let desc = Direct3D12::D3D12_ROOT_SIGNATURE_DESC {
             NumParameters: parameters.len() as _,
@@ -138,8 +229,6 @@ impl D3D12Lib {
             <*mut _>::cast(&mut error),
         )
         .ok()
-        // TODO: If there's a HRESULT, error may still be non-null and
-        // contain info.
         .into_device_result("Root signature serialization")?;
 
         if let Some(error) = error {
@@ -148,104 +237,167 @@ impl D3D12Lib {
                 "Root signature serialization error: {:?}",
                 unsafe { error.as_c_str() }.unwrap().to_str().unwrap()
             );
-            return Err(crate::DeviceError::Lost);
+            return Err(crate::DeviceError::Unexpected); // could be hal_usage_error or hal_internal_error
         }
 
-        Ok(D3DBlob(blob.expect(
-            "D3D12SerializeRootSignature succeeded but result is NULL?",
-        )))
+        blob.ok_or(crate::DeviceError::Unexpected)
     }
 
-    fn debug_interface(
-        &self,
-    ) -> Result<windows::core::Result<Direct3D12::ID3D12Debug>, libloading::Error> {
+    fn debug_interface(&self) -> Result<Option<Direct3D12::ID3D12Debug>, crate::DeviceError> {
         // Calls windows::Win32::Graphics::Direct3D12::D3D12GetDebugInterface on d3d12.dll
         type Fun = extern "system" fn(
             riid: *const windows_core::GUID,
-            ppvdebug: *mut *mut core::ffi::c_void,
+            ppvdebug: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"D3D12GetDebugInterface") }?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"D3D12GetDebugInterface".to_bytes()) }?;
 
-        let mut result__ = core::ptr::null_mut();
-        Ok((func)(&Direct3D12::ID3D12Debug::IID, &mut result__)
-            .and_then(|| unsafe { windows_core::Type::from_abi(result__) }))
+        let mut result__ = None;
+
+        let res = (func)(&Direct3D12::ID3D12Debug::IID, <*mut _>::cast(&mut result__)).ok();
+
+        if let Err(ref err) = res {
+            match err.code() {
+                Dxgi::DXGI_ERROR_SDK_COMPONENT_MISSING => return Ok(None),
+                _ => {}
+            }
+        }
+
+        res.into_device_result("GetDebugInterface")?;
+
+        result__.ok_or(crate::DeviceError::Unexpected).map(Some)
+    }
+
+    /// Calls D3D12GetInterface to obtain a COM interface by CLSID and IID.
+    ///
+    /// This is used by the Independent Devices API to obtain `ID3D12SDKConfiguration1`.
+    fn get_interface<T: Interface>(
+        &self,
+        clsid: &windows_core::GUID,
+    ) -> Result<T, GetInterfaceError> {
+        // Calls windows::Win32::Graphics::Direct3D12::D3D12GetInterface on d3d12.dll
+        type Fun = extern "system" fn(
+            rclsid: *const windows_core::GUID,
+            riid: *const windows_core::GUID,
+            ppvdebug: *mut *mut ffi::c_void,
+        ) -> windows_core::HRESULT;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"D3D12GetInterface".to_bytes()) }
+                .map_err(|_| GetInterfaceError::GetProcAddress)?;
+
+        let mut result__: Option<T> = None;
+
+        let res = (func)(clsid, &T::IID, <*mut _>::cast(&mut result__));
+
+        if res.is_err() {
+            return Err(GetInterfaceError::D3D12GetInterface(res));
+        }
+
+        result__.ok_or(GetInterfaceError::RetIsNull)
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(super) enum GetInterfaceError {
+    GetProcAddress,
+    D3D12GetInterface(windows_core::HRESULT),
+    RetIsNull,
+}
+
+impl fmt::Display for GetInterfaceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::GetProcAddress => write!(f, "D3D12GetInterface not found in d3d12.dll"),
+            Self::D3D12GetInterface(hr) => write!(f, "D3D12GetInterface failed: {hr}"),
+            Self::RetIsNull => write!(f, "D3D12GetInterface returned null"),
+        }
+    }
+}
+
+impl core::error::Error for GetInterfaceError {}
+
 #[derive(Debug)]
 pub(super) struct DxgiLib {
-    lib: libloading::Library,
+    lib: DynLib,
 }
 
 impl DxgiLib {
     pub fn new() -> Result<Self, libloading::Error> {
-        unsafe { libloading::Library::new("dxgi.dll").map(|lib| DxgiLib { lib }) }
+        unsafe { DynLib::new("dxgi.dll").map(|lib| Self { lib }) }
     }
 
-    pub fn debug_interface1(
-        &self,
-    ) -> Result<windows::core::Result<Dxgi::IDXGIInfoQueue>, libloading::Error> {
+    /// Will error with crate::DeviceError::Unexpected if DXGI 1.3 is not available.
+    pub fn debug_interface1(&self) -> Result<Option<Dxgi::IDXGIInfoQueue>, crate::DeviceError> {
         // Calls windows::Win32::Graphics::Dxgi::DXGIGetDebugInterface1 on dxgi.dll
         type Fun = extern "system" fn(
             flags: u32,
             riid: *const windows_core::GUID,
-            pdebug: *mut *mut core::ffi::c_void,
+            pdebug: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"DXGIGetDebugInterface1") }?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"DXGIGetDebugInterface1".to_bytes()) }?;
 
-        let mut result__ = core::ptr::null_mut();
-        Ok((func)(0, &Dxgi::IDXGIInfoQueue::IID, &mut result__)
-            .and_then(|| unsafe { windows_core::Type::from_abi(result__) }))
+        let mut result__ = None;
+
+        let res = (func)(0, &Dxgi::IDXGIInfoQueue::IID, <*mut _>::cast(&mut result__)).ok();
+
+        if let Err(ref err) = res {
+            match err.code() {
+                Dxgi::DXGI_ERROR_SDK_COMPONENT_MISSING => return Ok(None),
+                _ => {}
+            }
+        }
+
+        res.into_device_result("debug_interface1")?;
+
+        result__.ok_or(crate::DeviceError::Unexpected).map(Some)
     }
 
-    pub fn create_factory1(
-        &self,
-    ) -> Result<windows::core::Result<Dxgi::IDXGIFactory1>, libloading::Error> {
-        // Calls windows::Win32::Graphics::Dxgi::CreateDXGIFactory1 on dxgi.dll
-        type Fun = extern "system" fn(
-            riid: *const windows_core::GUID,
-            ppfactory: *mut *mut core::ffi::c_void,
-        ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"CreateDXGIFactory1") }?;
-
-        let mut result__ = core::ptr::null_mut();
-        Ok((func)(&Dxgi::IDXGIFactory1::IID, &mut result__)
-            .and_then(|| unsafe { windows_core::Type::from_abi(result__) }))
-    }
-
-    pub fn create_factory2(
+    /// Will error with crate::DeviceError::Unexpected if DXGI 1.4 is not available.
+    pub fn create_factory4(
         &self,
         factory_flags: Dxgi::DXGI_CREATE_FACTORY_FLAGS,
-    ) -> Result<windows::core::Result<Dxgi::IDXGIFactory4>, libloading::Error> {
+    ) -> Result<Dxgi::IDXGIFactory4, crate::DeviceError> {
         // Calls windows::Win32::Graphics::Dxgi::CreateDXGIFactory2 on dxgi.dll
         type Fun = extern "system" fn(
             flags: Dxgi::DXGI_CREATE_FACTORY_FLAGS,
             riid: *const windows_core::GUID,
-            ppfactory: *mut *mut core::ffi::c_void,
+            ppfactory: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"CreateDXGIFactory2") }?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"CreateDXGIFactory2".to_bytes()) }?;
 
-        let mut result__ = core::ptr::null_mut();
-        Ok(
-            (func)(factory_flags, &Dxgi::IDXGIFactory4::IID, &mut result__)
-                .and_then(|| unsafe { windows_core::Type::from_abi(result__) }),
+        let mut result__ = None;
+
+        (func)(
+            factory_flags,
+            &Dxgi::IDXGIFactory4::IID,
+            <*mut _>::cast(&mut result__),
         )
+        .ok()
+        .into_device_result("create_factory4")?;
+
+        result__.ok_or(crate::DeviceError::Unexpected)
     }
 
-    pub fn create_factory_media(
-        &self,
-    ) -> Result<windows::core::Result<Dxgi::IDXGIFactoryMedia>, libloading::Error> {
+    /// Will error with crate::DeviceError::Unexpected if DXGI 1.3 is not available.
+    pub fn create_factory_media(&self) -> Result<Dxgi::IDXGIFactoryMedia, crate::DeviceError> {
         // Calls windows::Win32::Graphics::Dxgi::CreateDXGIFactory1 on dxgi.dll
         type Fun = extern "system" fn(
             riid: *const windows_core::GUID,
-            ppfactory: *mut *mut core::ffi::c_void,
+            ppfactory: *mut *mut ffi::c_void,
         ) -> windows_core::HRESULT;
-        let func: libloading::Symbol<Fun> = unsafe { self.lib.get(b"CreateDXGIFactory1") }?;
+        let func: libloading::Symbol<Fun> =
+            unsafe { self.lib.get(c"CreateDXGIFactory1".to_bytes()) }?;
 
-        let mut result__ = core::ptr::null_mut();
+        let mut result__ = None;
+
         // https://learn.microsoft.com/en-us/windows/win32/api/dxgi1_3/nn-dxgi1_3-idxgifactorymedia
-        Ok((func)(&Dxgi::IDXGIFactoryMedia::IID, &mut result__)
-            .and_then(|| unsafe { windows_core::Type::from_abi(result__) }))
+        (func)(&Dxgi::IDXGIFactoryMedia::IID, <*mut _>::cast(&mut result__))
+            .ok()
+            .into_device_result("create_factory_media")?;
+
+        result__.ok_or(crate::DeviceError::Unexpected)
     }
 }
 
@@ -289,7 +441,7 @@ impl Deref for D3DBlob {
 
 impl D3DBlob {
     unsafe fn as_slice(&self) -> &[u8] {
-        unsafe { std::slice::from_raw_parts(self.GetBufferPointer().cast(), self.GetBufferSize()) }
+        unsafe { core::slice::from_raw_parts(self.GetBufferPointer().cast(), self.GetBufferSize()) }
     }
 
     unsafe fn as_c_str(&self) -> Result<&ffi::CStr, ffi::FromBytesUntilNulError> {
@@ -301,6 +453,8 @@ impl D3DBlob {
 pub struct Api;
 
 impl crate::Api for Api {
+    const VARIANT: wgt::Backend = wgt::Backend::Dx12;
+
     type Instance = Instance;
     type Surface = Surface;
     type Adapter = Adapter;
@@ -355,20 +509,39 @@ crate::impl_dyn_resource!(
 
 // Limited by D3D12's root signature size of 64. Each element takes 1 or 2 entries.
 const MAX_ROOT_ELEMENTS: usize = 64;
+/// See comment in [`Adapter::expose`].
+/// You must change the math in the comment before you update this value.
+const MAX_IMMEDIATE_SIZE: u32 = 128;
+const MAX_IMMEDIATES: usize = MAX_IMMEDIATE_SIZE as usize / 4;
 const ZERO_BUFFER_SIZE: wgt::BufferAddress = 256 << 10;
 
 pub struct Instance {
     factory: DxgiFactory,
     factory_media: Option<Dxgi::IDXGIFactoryMedia>,
+    // `device_factory` must be dropped before `library` because the COM
+    // object's Release call goes through the d3d12.dll vtable.  If
+    // `library` (which unloads d3d12.dll) is dropped first the Release
+    // segfaults.
+    device_factory: Arc<device_creation::DeviceFactory>,
     library: Arc<D3D12Lib>,
+    dcomp_lib: Arc<DCompLib>,
     supports_allow_tearing: bool,
+    presentation_system: wgt::Dx12SwapchainKind,
     _lib_dxgi: DxgiLib,
     flags: wgt::InstanceFlags,
-    dxc_container: Option<Arc<shader_compilation::DxcContainer>>,
+    memory_budget_thresholds: wgt::MemoryBudgetThresholds,
+    compiler_container: Arc<shader_compilation::CompilerContainer>,
+    options: wgt::Dx12BackendOptions,
+    telemetry: Option<crate::Telemetry>,
 }
 
 impl Instance {
-    pub unsafe fn create_surface_from_visual(&self, visual: *mut std::ffi::c_void) -> Surface {
+    /// Get the raw DXGI factory associated with this instance.
+    pub unsafe fn raw_factory4(&self) -> &Dxgi::IDXGIFactory4 {
+        self.factory.deref()
+    }
+
+    pub unsafe fn create_surface_from_visual(&self, visual: *mut ffi::c_void) -> Surface {
         let visual = unsafe { DirectComposition::IDCompositionVisual::from_raw_borrowed(&visual) }
             .expect("COM pointer should not be NULL");
         Surface {
@@ -377,12 +550,13 @@ impl Instance {
             target: SurfaceTarget::Visual(visual.to_owned()),
             supports_allow_tearing: self.supports_allow_tearing,
             swap_chain: RwLock::new(None),
+            options: self.options.clone(),
         }
     }
 
     pub unsafe fn create_surface_from_surface_handle(
         &self,
-        surface_handle: *mut std::ffi::c_void,
+        surface_handle: *mut ffi::c_void,
     ) -> Surface {
         // TODO: We're not given ownership, so we shouldn't call HANDLE::free(). This puts an extra burden on the caller to keep it alive.
         // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle could help us, even though DirectComposition is not in the list?
@@ -394,12 +568,13 @@ impl Instance {
             target: SurfaceTarget::SurfaceHandle(surface_handle),
             supports_allow_tearing: self.supports_allow_tearing,
             swap_chain: RwLock::new(None),
+            options: self.options.clone(),
         }
     }
 
     pub unsafe fn create_surface_from_swap_chain_panel(
         &self,
-        swap_chain_panel: *mut std::ffi::c_void,
+        swap_chain_panel: *mut ffi::c_void,
     ) -> Surface {
         let swap_chain_panel =
             unsafe { types::ISwapChainPanelNative::from_raw_borrowed(&swap_chain_panel) }
@@ -410,6 +585,7 @@ impl Instance {
             target: SurfaceTarget::SwapChainPanel(swap_chain_panel.to_owned()),
             supports_allow_tearing: self.supports_allow_tearing,
             swap_chain: RwLock::new(None),
+            options: self.options.clone(),
         }
     }
 }
@@ -424,7 +600,7 @@ struct SwapChain {
     // when the swapchain is destroyed
     resources: Vec<Direct3D12::ID3D12Resource>,
     /// Handle is freed in [`Self::release_resources()`]
-    waitable: Foundation::HANDLE,
+    waitable: Option<Foundation::HANDLE>,
     acquired_count: usize,
     present_mode: wgt::PresentMode,
     format: wgt::TextureFormat,
@@ -434,6 +610,11 @@ struct SwapChain {
 enum SurfaceTarget {
     /// Borrowed, lifetime externally managed
     WndHandle(Foundation::HWND),
+    /// `handle` is borrowed, lifetime externally managed
+    VisualFromWndHandle {
+        handle: Foundation::HWND,
+        dcomp_state: Mutex<dcomp::DCompState>,
+    },
     Visual(DirectComposition::IDCompositionVisual),
     /// Borrowed, lifetime externally managed
     SurfaceHandle(Foundation::HANDLE),
@@ -446,10 +627,23 @@ pub struct Surface {
     target: SurfaceTarget,
     supports_allow_tearing: bool,
     swap_chain: RwLock<Option<SwapChain>>,
+    options: wgt::Dx12BackendOptions,
 }
 
 unsafe impl Send for Surface {}
 unsafe impl Sync for Surface {}
+
+impl Surface {
+    pub fn swap_chain(&self) -> Option<Dxgi::IDXGISwapChain3> {
+        Some(self.swap_chain.read().as_ref()?.raw.clone())
+    }
+
+    /// Returns the waitable handle associated with this swap chain, if any.
+    /// Handle is only valid while the swap chain is alive.
+    pub unsafe fn waitable_handle(&self) -> Option<Foundation::HANDLE> {
+        self.swap_chain.read().as_ref()?.waitable
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 enum MemoryArchitecture {
@@ -463,6 +657,7 @@ enum MemoryArchitecture {
 #[derive(Debug, Clone, Copy)]
 struct PrivateCapabilities {
     instance_flags: wgt::InstanceFlags,
+    workarounds: Workarounds,
     #[allow(unused)]
     heterogeneous_resource_heaps: bool,
     memory_architecture: MemoryArchitecture,
@@ -470,29 +665,47 @@ struct PrivateCapabilities {
     casting_fully_typed_format_supported: bool,
     suballocation_supported: bool,
     shader_model: naga::back::hlsl::ShaderModel,
+    max_sampler_descriptor_heap_size: u32,
+    unrestricted_buffer_texture_copy_pitch_supported: bool,
 }
 
-#[derive(Default)]
+impl PrivateCapabilities {
+    fn texture_data_placement_alignment(&self) -> u64 {
+        if self.unrestricted_buffer_texture_copy_pitch_supported {
+            4
+        } else {
+            D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT.into()
+        }
+    }
+}
+
+#[derive(Default, Debug, Copy, Clone)]
 struct Workarounds {
-    // On WARP, temporary CPU descriptors are still used by the runtime
-    // after we call `CopyDescriptors`.
-    avoid_cpu_descriptor_overwrites: bool,
+    // On WARP 1.0.13+, debug information in shaders in certain situations causes the device
+    // to hang. https://github.com/gfx-rs/wgpu/issues/8368
+    avoid_shader_debug_info: bool,
 }
 
 pub struct Adapter {
     raw: DxgiAdapter,
     device: Direct3D12::ID3D12Device,
     library: Arc<D3D12Lib>,
+    dcomp_lib: Arc<DCompLib>,
     private_caps: PrivateCapabilities,
     presentation_timer: auxil::dxgi::time::PresentationTimer,
-    // Note: this isn't used right now, but we'll need it later.
-    #[allow(unused)]
-    workarounds: Workarounds,
-    dxc_container: Option<Arc<shader_compilation::DxcContainer>>,
+    memory_budget_thresholds: wgt::MemoryBudgetThresholds,
+    compiler_container: Arc<shader_compilation::CompilerContainer>,
+    options: wgt::Dx12BackendOptions,
 }
 
 unsafe impl Send for Adapter {}
 unsafe impl Sync for Adapter {}
+
+impl Adapter {
+    pub fn as_raw(&self) -> &Dxgi::IDXGIAdapter3 {
+        &self.raw
+    }
+}
 
 struct Event(pub Foundation::HANDLE);
 impl Event {
@@ -513,20 +726,23 @@ impl Drop for Event {
 /// Helper structure for waiting for GPU.
 struct Idler {
     fence: Direct3D12::ID3D12Fence,
-    event: Event,
 }
 
+#[derive(Debug, Clone)]
 struct CommandSignatures {
     draw: Direct3D12::ID3D12CommandSignature,
     draw_indexed: Direct3D12::ID3D12CommandSignature,
+    draw_mesh: Option<Direct3D12::ID3D12CommandSignature>,
     dispatch: Direct3D12::ID3D12CommandSignature,
 }
 
 struct DeviceShared {
+    adapter: DxgiAdapter,
     zero_buffer: Direct3D12::ID3D12Resource,
     cmd_signatures: CommandSignatures,
     heap_views: descriptor::GeneralHeap,
-    heap_samplers: descriptor::GeneralHeap,
+    sampler_heap: sampler::SamplerHeap,
+    private_caps: PrivateCapabilities,
 }
 
 unsafe impl Send for DeviceShared {}
@@ -536,21 +752,38 @@ pub struct Device {
     raw: Direct3D12::ID3D12Device,
     present_queue: Direct3D12::ID3D12CommandQueue,
     idler: Idler,
-    private_caps: PrivateCapabilities,
+    features: wgt::Features,
     shared: Arc<DeviceShared>,
+    options: wgt::Dx12BackendOptions,
     // CPU only pools
-    rtv_pool: Mutex<descriptor::CpuPool>,
+    rtv_pool: Arc<Mutex<descriptor::CpuPool>>,
     dsv_pool: Mutex<descriptor::CpuPool>,
     srv_uav_pool: Mutex<descriptor::CpuPool>,
-    sampler_pool: Mutex<descriptor::CpuPool>,
     // library
     library: Arc<D3D12Lib>,
+    dcomp_lib: Arc<DCompLib>,
     #[cfg(feature = "renderdoc")]
     render_doc: auxil::renderdoc::RenderDoc,
     null_rtv_handle: descriptor::Handle,
-    mem_allocator: Mutex<suballocation::GpuAllocatorWrapper>,
-    dxc_container: Option<Arc<shader_compilation::DxcContainer>>,
-    counters: wgt::HalCounters,
+    mem_allocator: Allocator,
+    compiler_container: Arc<shader_compilation::CompilerContainer>,
+    shader_cache: Mutex<ShaderCache>,
+    counters: Arc<wgt::HalCounters>,
+    limits: wgt::Limits,
+}
+
+impl Drop for Device {
+    fn drop(&mut self) {
+        self.rtv_pool.lock().free_handle(self.null_rtv_handle);
+        if self
+            .shared
+            .private_caps
+            .instance_flags
+            .contains(wgt::InstanceFlags::VALIDATION)
+        {
+            auxil::dxgi::exception::unregister_exception_handler();
+        }
+    }
 }
 
 unsafe impl Send for Device {}
@@ -559,6 +792,53 @@ unsafe impl Sync for Device {}
 pub struct Queue {
     raw: Direct3D12::ID3D12CommandQueue,
     temp_lists: Mutex<Vec<Option<Direct3D12::ID3D12CommandList>>>,
+    idle_fence: Direct3D12::ID3D12Fence,
+    idle_event: Event,
+    idle_fence_value: AtomicU64,
+    pending_waits: Mutex<Vec<(Direct3D12::ID3D12Fence, u64)>>,
+    pending_signals: Mutex<Vec<(Direct3D12::ID3D12Fence, u64)>>,
+}
+
+impl Queue {
+    pub fn as_raw(&self) -> &Direct3D12::ID3D12CommandQueue {
+        &self.raw
+    }
+
+    /// Stage a `ID3D12CommandQueue::Wait(fence, value)` for the next
+    /// [`crate::Queue::submit`]. The wait is enqueued before the
+    /// submit's command lists, so subsequent GPU work observes the
+    /// foreign signal at `value`.
+    pub fn add_wait_fence(&self, fence: Direct3D12::ID3D12Fence, value: u64) {
+        self.pending_waits.lock().push((fence, value));
+    }
+
+    /// Remove `fence` from the pending wait list if it is still present.
+    /// Returns `true` if it was found and removed.
+    pub fn remove_wait_fence(&self, fence: &Direct3D12::ID3D12Fence) -> bool {
+        let target = fence.as_raw();
+        let mut waits = self.pending_waits.lock();
+        let before = waits.len();
+        waits.retain(|(f, _)| f.as_raw() != target);
+        waits.len() != before
+    }
+
+    /// Stage a `ID3D12CommandQueue::Signal(fence, value)` for the next
+    /// [`crate::Queue::submit`]. The signal is enqueued after the
+    /// submit's command lists complete, so a foreign API waiting on
+    /// `(fence, value)` observes the wgpu work as done.
+    pub fn add_signal_fence(&self, fence: Direct3D12::ID3D12Fence, value: u64) {
+        self.pending_signals.lock().push((fence, value));
+    }
+
+    /// Remove `fence` from the pending signal list if it is still present.
+    /// Returns `true` if it was found and removed.
+    pub fn remove_signal_fence(&self, fence: &Direct3D12::ID3D12Fence) -> bool {
+        let target = fence.as_raw();
+        let mut signals = self.pending_signals.lock();
+        let before = signals.len();
+        signals.retain(|(f, _)| f.as_raw() != target);
+        signals.len() != before
+    }
 }
 
 unsafe impl Send for Queue {}
@@ -583,21 +863,53 @@ struct PassResolve {
     format: Dxgi::Common::DXGI_FORMAT,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct SpecialConstants {
+    /// The first vertex in an indirect draw call, _or_ the `x` of a compute dispatch.
+    first_vertex_or_x: i32,
+    /// The first instance in an indirect draw call, _or_ the `y` of a compute dispatch.
+    first_instance_or_y: u32,
+    /// Unused in an indirect draw call, _or_ the `z` of a compute dispatch.
+    unused_or_z: u32,
+}
+
+impl SpecialConstants {
+    fn from_indirect_draw_call_params(first_vertex: i32, first_instance: u32) -> Self {
+        Self {
+            first_vertex_or_x: first_vertex,
+            first_instance_or_y: first_instance,
+            unused_or_z: 0,
+        }
+    }
+
+    fn from_compute_dispatch_params(workgroup_count: [u32; 3]) -> Self {
+        Self {
+            first_vertex_or_x: workgroup_count[0] as i32,
+            first_instance_or_y: workgroup_count[1],
+            unused_or_z: workgroup_count[2],
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 enum RootElement {
     Empty,
-    Constant,
-    SpecialConstantBuffer {
-        first_vertex: i32,
-        first_instance: u32,
-        other: u32,
-    },
-    /// Descriptor table.
-    Table(Direct3D12::D3D12_GPU_DESCRIPTOR_HANDLE),
-    /// Descriptor for a buffer that has dynamic offset.
-    DynamicOffsetBuffer {
-        kind: BufferViewKind,
+    Immediates,
+    SpecialConstants(SpecialConstants),
+    DescriptorTable(Direct3D12::D3D12_GPU_DESCRIPTOR_HANDLE),
+    /// Descriptor table referring to the entire sampler heap.
+    SamplerHeapDescriptorTable,
+    /// Root descriptor for a uniform buffer binding that has a dynamic offset.
+    DynamicUniformBuffer {
         address: Direct3D12::D3D12_GPU_DESCRIPTOR_HANDLE,
+    },
+    /// Root constants for storage buffer bindings with dynamic offsets.
+    ///
+    /// start..end is the range of values in [`PassState::dynamic_storage_buffer_offsets`]
+    /// that will be used to update the root constants.
+    DynamicStorageBufferOffsets {
+        start: usize,
+        end: usize,
     },
 }
 
@@ -613,17 +925,16 @@ struct PassState {
     resolves: ArrayVec<PassResolve, { crate::MAX_COLOR_ATTACHMENTS }>,
     layout: PipelineLayoutShared,
     root_elements: [RootElement; MAX_ROOT_ELEMENTS],
-    constant_data: [u32; MAX_ROOT_ELEMENTS],
+    immediates: [u32; MAX_IMMEDIATES],
+    dynamic_storage_buffer_offsets: Vec<u32>,
     dirty_root_elements: u64,
     vertex_buffers: [Direct3D12::D3D12_VERTEX_BUFFER_VIEW; crate::MAX_VERTEX_BUFFERS],
     dirty_vertex_buffers: usize,
     kind: PassKind,
 }
 
-#[test]
-fn test_dirty_mask() {
-    assert_eq!(MAX_ROOT_ELEMENTS, mem::size_of::<u64>() * 8);
-}
+// `root_elements` size must match `dirty_root_elements` bit size
+const _: () = assert!(MAX_ROOT_ELEMENTS == u64::BITS as usize);
 
 impl PassState {
     fn new() -> Self {
@@ -633,11 +944,13 @@ impl PassState {
             layout: PipelineLayoutShared {
                 signature: None,
                 total_root_elements: 0,
-                special_constants_root_index: None,
-                root_constant_info: None,
+                special_constants: None,
+                immediates_info: None,
+                sampler_heap_root_index: None,
             },
             root_elements: [RootElement::Empty; MAX_ROOT_ELEMENTS],
-            constant_data: [0; MAX_ROOT_ELEMENTS],
+            immediates: [0; MAX_IMMEDIATES],
+            dynamic_storage_buffer_offsets: Vec::new(),
             dirty_root_elements: 0,
             vertex_buffers: [Default::default(); crate::MAX_VERTEX_BUFFERS],
             dirty_vertex_buffers: 0,
@@ -655,6 +968,13 @@ pub struct CommandEncoder {
     allocator: Direct3D12::ID3D12CommandAllocator,
     device: Direct3D12::ID3D12Device,
     shared: Arc<DeviceShared>,
+    mem_allocator: Allocator,
+
+    rtv_pool: Arc<Mutex<descriptor::CpuPool>>,
+    temp_rtv_handles: Vec<descriptor::Handle>,
+
+    intermediate_copy_bufs: Vec<Buffer>,
+
     null_rtv_handle: descriptor::Handle,
     list: Option<Direct3D12::ID3D12GraphicsCommandList>,
     free_lists: Vec<Direct3D12::ID3D12GraphicsCommandList>,
@@ -664,6 +984,8 @@ pub struct CommandEncoder {
     /// If set, the end of the next render/compute pass will write a timestamp at
     /// the given pool & location.
     end_of_pass_timer_query: Option<(Direct3D12::ID3D12QueryHeap, u32)>,
+
+    counters: Arc<wgt::HalCounters>,
 }
 
 unsafe impl Send for CommandEncoder {}
@@ -691,8 +1013,17 @@ unsafe impl Sync for CommandBuffer {}
 #[derive(Debug)]
 pub struct Buffer {
     resource: Direct3D12::ID3D12Resource,
+    // While the allocation also has _a_ size, it may not
+    // be the same as the original size of the buffer,
+    // as the allocation size varies for assorted reasons.
     size: wgt::BufferAddress,
-    allocation: Option<suballocation::AllocationWrapper>,
+    allocation: suballocation::Allocation,
+}
+
+impl Buffer {
+    pub unsafe fn raw_resource(&self) -> &Direct3D12::ID3D12Resource {
+        &self.resource
+    }
 }
 
 unsafe impl Send for Buffer {}
@@ -722,13 +1053,19 @@ pub struct Texture {
     size: wgt::Extent3d,
     mip_level_count: u32,
     sample_count: u32,
-    allocation: Option<suballocation::AllocationWrapper>,
+    allocation: suballocation::Allocation,
+}
+
+impl Texture {
+    pub unsafe fn raw_resource(&self) -> &Direct3D12::ID3D12Resource {
+        &self.resource
+    }
 }
 
 impl crate::DynTexture for Texture {}
 impl crate::DynSurfaceTexture for Texture {}
 
-impl std::borrow::Borrow<dyn crate::DynTexture> for Texture {
+impl core::borrow::Borrow<dyn crate::DynTexture> for Texture {
     fn borrow(&self) -> &dyn crate::DynTexture {
         self
     }
@@ -752,8 +1089,11 @@ impl Texture {
 
     fn calc_subresource_for_copy(&self, base: &crate::TextureCopyBase) -> u32 {
         let plane = match base.aspect {
-            crate::FormatAspects::COLOR | crate::FormatAspects::DEPTH => 0,
-            crate::FormatAspects::STENCIL => 1,
+            crate::FormatAspects::COLOR
+            | crate::FormatAspects::DEPTH
+            | crate::FormatAspects::PLANE_0 => 0,
+            crate::FormatAspects::STENCIL | crate::FormatAspects::PLANE_1 => 1,
+            crate::FormatAspects::PLANE_2 => 2,
             _ => unreachable!(),
         };
         self.calc_subresource(base.mip_level, base.array_layer, plane)
@@ -764,8 +1104,10 @@ impl Texture {
 pub struct TextureView {
     raw_format: Dxgi::Common::DXGI_FORMAT,
     aspects: crate::FormatAspects,
-    /// only used by resolve
-    target_base: (Direct3D12::ID3D12Resource, u32),
+    dimension: wgt::TextureViewDimension,
+    texture: Direct3D12::ID3D12Resource,
+    subresource_index: u32,
+    mip_slice: u32,
     handle_srv: Option<descriptor::Handle>,
     handle_uav: Option<descriptor::Handle>,
     handle_rtv: Option<descriptor::Handle>,
@@ -780,7 +1122,8 @@ unsafe impl Sync for TextureView {}
 
 #[derive(Debug)]
 pub struct Sampler {
-    handle: descriptor::Handle,
+    index: sampler::SamplerIndex,
+    desc: Direct3D12::D3D12_SAMPLER_DESC,
 }
 
 impl crate::DynSampler for Sampler {}
@@ -820,24 +1163,28 @@ pub struct BindGroupLayout {
     /// Sorted list of entries.
     entries: Vec<wgt::BindGroupLayoutEntry>,
     cpu_heap_views: Option<descriptor::CpuHeap>,
-    cpu_heap_samplers: Option<descriptor::CpuHeap>,
     copy_counts: Vec<u32>, // all 1's
 }
 
 impl crate::DynBindGroupLayout for BindGroupLayout {}
 
 #[derive(Debug, Clone, Copy)]
-enum BufferViewKind {
-    Constant,
-    ShaderResource,
-    UnorderedAccess,
+enum DynamicBuffer {
+    Uniform(Direct3D12::D3D12_GPU_DESCRIPTOR_HANDLE),
+    Storage,
+}
+
+#[derive(Debug)]
+struct SamplerIndexBuffer {
+    buffer: Direct3D12::ID3D12Resource,
+    allocation: suballocation::Allocation,
 }
 
 #[derive(Debug)]
 pub struct BindGroup {
     handle_views: Option<descriptor::DualHandle>,
-    handle_samplers: Option<descriptor::DualHandle>,
-    dynamic_buffers: Vec<Direct3D12::D3D12_GPU_DESCRIPTOR_HANDLE>,
+    sampler_index_buffer: Option<SamplerIndexBuffer>,
+    dynamic_buffers: Vec<DynamicBuffer>,
 }
 
 impl crate::DynBindGroup for BindGroup {}
@@ -857,32 +1204,48 @@ type RootIndex = u32;
 struct BindGroupInfo {
     base_root_index: RootIndex,
     tables: TableTypes,
-    dynamic_buffers: Vec<BufferViewKind>,
+    dynamic_storage_buffer_offsets: Option<DynamicStorageBufferOffsets>,
 }
 
 #[derive(Debug, Clone)]
-struct RootConstantInfo {
+struct ImmediatesInfo {
     root_index: RootIndex,
-    range: std::ops::Range<u32>,
+    size: u32,
+}
+
+#[derive(Debug, Clone)]
+struct DynamicStorageBufferOffsets {
+    root_index: RootIndex,
+    range: core::ops::Range<usize>,
 }
 
 #[derive(Debug, Clone)]
 struct PipelineLayoutShared {
     signature: Option<Direct3D12::ID3D12RootSignature>,
     total_root_elements: RootIndex,
-    special_constants_root_index: Option<RootIndex>,
-    root_constant_info: Option<RootConstantInfo>,
+    special_constants: Option<PipelineLayoutSpecialConstants>,
+    immediates_info: Option<ImmediatesInfo>,
+    sampler_heap_root_index: Option<RootIndex>,
 }
 
 unsafe impl Send for PipelineLayoutShared {}
 unsafe impl Sync for PipelineLayoutShared {}
+
+#[derive(Debug, Clone)]
+struct PipelineLayoutSpecialConstants {
+    root_index: RootIndex,
+    indirect_cmd_signatures: Option<CommandSignatures>,
+}
+
+unsafe impl Send for PipelineLayoutSpecialConstants {}
+unsafe impl Sync for PipelineLayoutSpecialConstants {}
 
 #[derive(Debug)]
 pub struct PipelineLayout {
     shared: PipelineLayoutShared,
     // Storing for each associated bind group, which tables we created
     // in the root signature. This is required for binding descriptor sets.
-    bind_group_infos: ArrayVec<BindGroupInfo, { crate::MAX_BIND_GROUPS }>,
+    bind_group_infos: [Option<BindGroupInfo>; crate::MAX_BIND_GROUPS],
     naga_options: naga::back::hlsl::Options,
 }
 
@@ -890,33 +1253,58 @@ impl crate::DynPipelineLayout for PipelineLayout {}
 
 #[derive(Debug)]
 pub struct ShaderModule {
-    naga: crate::NagaShader,
-    raw_name: Option<ffi::CString>,
+    source: ShaderModuleSource,
+    raw_name: Option<alloc::ffi::CString>,
+    runtime_checks: wgt::ShaderRuntimeChecks,
 }
 
 impl crate::DynShaderModule for ShaderModule {}
 
+#[derive(Default)]
+pub struct ShaderCache {
+    nr_of_shaders_compiled: u32,
+    entries: HashMap<ShaderCacheKey, ShaderCacheValue>,
+}
+
+#[derive(PartialEq, Eq, Hash)]
+pub(super) struct ShaderCacheKey {
+    source: String,
+    entry_point: String,
+    stage: naga::ShaderStage,
+    shader_model: naga::back::hlsl::ShaderModel,
+}
+
+pub(super) struct ShaderCacheValue {
+    /// This is the value of [`ShaderCache::nr_of_shaders_compiled`]
+    /// at the time the cache entry was last used.
+    last_used: u32,
+    shader: CompiledShader,
+}
+
+#[derive(Clone)]
 pub(super) enum CompiledShader {
-    #[allow(unused)]
-    Dxc(Vec<u8>),
+    Dxc(Direct3D::Dxc::IDxcBlob),
     Fxc(Direct3D::ID3DBlob),
+    Precompiled(Vec<u8>),
 }
 
 impl CompiledShader {
     fn create_native_shader(&self) -> Direct3D12::D3D12_SHADER_BYTECODE {
         match self {
             CompiledShader::Dxc(shader) => Direct3D12::D3D12_SHADER_BYTECODE {
-                pShaderBytecode: shader.as_ptr().cast(),
-                BytecodeLength: shader.len(),
+                pShaderBytecode: unsafe { shader.GetBufferPointer() },
+                BytecodeLength: unsafe { shader.GetBufferSize() },
             },
             CompiledShader::Fxc(shader) => Direct3D12::D3D12_SHADER_BYTECODE {
                 pShaderBytecode: unsafe { shader.GetBufferPointer() },
                 BytecodeLength: unsafe { shader.GetBufferSize() },
             },
+            CompiledShader::Precompiled(shader) => Direct3D12::D3D12_SHADER_BYTECODE {
+                pShaderBytecode: shader.as_ptr().cast(),
+                BytecodeLength: shader.len(),
+            },
         }
     }
-
-    unsafe fn destroy(self) {}
 }
 
 #[derive(Debug)]
@@ -924,7 +1312,7 @@ pub struct RenderPipeline {
     raw: Direct3D12::ID3D12PipelineState,
     layout: PipelineLayoutShared,
     topology: Direct3D::D3D_PRIMITIVE_TOPOLOGY,
-    vertex_strides: [Option<NonZeroU32>; crate::MAX_VERTEX_BUFFERS],
+    vertex_strides: [Option<u32>; crate::MAX_VERTEX_BUFFERS],
 }
 
 impl crate::DynRenderPipeline for RenderPipeline {}
@@ -949,32 +1337,44 @@ pub struct PipelineCache;
 impl crate::DynPipelineCache for PipelineCache {}
 
 #[derive(Debug)]
-pub struct AccelerationStructure {}
+pub struct AccelerationStructure {
+    resource: Direct3D12::ID3D12Resource,
+    allocation: suballocation::Allocation,
+}
 
 impl crate::DynAccelerationStructure for AccelerationStructure {}
 
 impl SwapChain {
     unsafe fn release_resources(mut self) -> Dxgi::IDXGISwapChain3 {
-        unsafe { Foundation::HANDLE::free(&mut self.waitable) };
+        if let Some(mut waitable) = self.waitable.take() {
+            unsafe { Foundation::HANDLE::free(&mut waitable) };
+        }
         self.raw
     }
 
     unsafe fn wait(
         &mut self,
-        timeout: Option<std::time::Duration>,
+        timeout: Option<core::time::Duration>,
     ) -> Result<bool, crate::SurfaceError> {
         let timeout_ms = match timeout {
             Some(duration) => duration.as_millis() as u32,
             None => Threading::INFINITE,
         };
-        match unsafe { Threading::WaitForSingleObject(self.waitable, timeout_ms) } {
-            Foundation::WAIT_ABANDONED | Foundation::WAIT_FAILED => Err(crate::SurfaceError::Lost),
-            Foundation::WAIT_OBJECT_0 => Ok(true),
-            Foundation::WAIT_TIMEOUT => Ok(false),
-            other => {
-                log::error!("Unexpected wait status: 0x{:x?}", other);
-                Err(crate::SurfaceError::Lost)
+
+        if let Some(waitable) = self.waitable {
+            match unsafe { Threading::WaitForSingleObject(waitable, timeout_ms) } {
+                Foundation::WAIT_ABANDONED | Foundation::WAIT_FAILED => {
+                    Err(crate::SurfaceError::Lost)
+                }
+                Foundation::WAIT_OBJECT_0 => Ok(true),
+                Foundation::WAIT_TIMEOUT => Ok(false),
+                other => {
+                    log::error!("Unexpected wait status: 0x{other:x?}");
+                    Err(crate::SurfaceError::Lost)
+                }
             }
+        } else {
+            Ok(true)
         }
     }
 }
@@ -1026,8 +1426,8 @@ impl crate::Surface for Surface {
                         flags,
                     )
                 };
-                if let Err(err) = result.into_result() {
-                    log::error!("ResizeBuffers failed: {}", err);
+                if let Err(err) = result {
+                    log::error!("ResizeBuffers failed: {err}");
                     return Err(crate::SurfaceError::Other("window is in use"));
                 }
                 raw
@@ -1052,12 +1452,16 @@ impl crate::Surface for Surface {
                     Flags: flags.0 as u32,
                 };
                 let swap_chain1 = match self.target {
-                    SurfaceTarget::Visual(_) | SurfaceTarget::SwapChainPanel(_) => {
-                        profiling::scope!("IDXGIFactory4::CreateSwapChainForComposition");
+                    SurfaceTarget::Visual(_)
+                    | SurfaceTarget::VisualFromWndHandle { .. }
+                    | SurfaceTarget::SwapChainPanel(_) => {
+                        profiling::scope!("IDXGIFactory2::CreateSwapChainForComposition");
                         unsafe {
-                            self.factory
-                                .unwrap_factory2()
-                                .CreateSwapChainForComposition(&device.present_queue, &desc, None)
+                            self.factory.CreateSwapChainForComposition(
+                                &device.present_queue,
+                                &desc,
+                                None,
+                            )
                         }
                     }
                     SurfaceTarget::SurfaceHandle(handle) => {
@@ -1070,16 +1474,16 @@ impl crate::Surface for Surface {
                                 .ok_or(crate::SurfaceError::Other("IDXGIFactoryMedia not found"))?
                                 .CreateSwapChainForCompositionSurfaceHandle(
                                     &device.present_queue,
-                                    handle,
+                                    Some(handle),
                                     &desc,
                                     None,
                                 )
                         }
                     }
                     SurfaceTarget::WndHandle(hwnd) => {
-                        profiling::scope!("IDXGIFactory4::CreateSwapChainForHwnd");
+                        profiling::scope!("IDXGIFactory2::CreateSwapChainForHwnd");
                         unsafe {
-                            self.factory.unwrap_factory2().CreateSwapChainForHwnd(
+                            self.factory.CreateSwapChainForHwnd(
                                 &device.present_queue,
                                 hwnd,
                                 &desc,
@@ -1091,25 +1495,51 @@ impl crate::Surface for Surface {
                 };
 
                 let swap_chain1 = swap_chain1.map_err(|err| {
-                    log::error!("SwapChain creation error: {}", err);
-                    crate::SurfaceError::Other("swap chain creation")
+                    log::error!("SwapChain creation error: {err}");
+                    crate::SurfaceError::Other("swapchain creation")
                 })?;
 
                 match &self.target {
                     SurfaceTarget::WndHandle(_) | SurfaceTarget::SurfaceHandle(_) => {}
+                    SurfaceTarget::VisualFromWndHandle {
+                        handle,
+                        dcomp_state,
+                    } => {
+                        let mut dcomp_state = dcomp_state.lock();
+                        let dcomp_state =
+                            unsafe { dcomp_state.get_or_init(&device.dcomp_lib, handle) }?;
+                        // Set the new swap chain as the content for the backing visual
+                        // and commit the changes to the composition visual tree.
+                        {
+                            profiling::scope!("IDCompositionVisual::SetContent");
+                            unsafe { dcomp_state.visual.SetContent(&swap_chain1) }.map_err(
+                                |err| {
+                                    log::error!("IDCompositionVisual::SetContent failed: {err}");
+                                    crate::SurfaceError::Other("IDCompositionVisual::SetContent")
+                                },
+                            )?;
+                        }
+
+                        // Commit the changes to the composition device.
+                        {
+                            profiling::scope!("IDCompositionDevice::Commit");
+                            unsafe { dcomp_state.device.Commit() }.map_err(|err| {
+                                log::error!("IDCompositionDevice::Commit failed: {err}");
+                                crate::SurfaceError::Other("IDCompositionDevice::Commit")
+                            })?;
+                        }
+                    }
                     SurfaceTarget::Visual(visual) => {
-                        if let Err(err) = unsafe { visual.SetContent(&swap_chain1) }.into_result() {
-                            log::error!("Unable to SetContent: {}", err);
+                        if let Err(err) = unsafe { visual.SetContent(&swap_chain1) } {
+                            log::error!("Unable to SetContent: {err}");
                             return Err(crate::SurfaceError::Other(
                                 "IDCompositionVisual::SetContent",
                             ));
                         }
                     }
                     SurfaceTarget::SwapChainPanel(swap_chain_panel) => {
-                        if let Err(err) =
-                            unsafe { swap_chain_panel.SetSwapChain(&swap_chain1) }.into_result()
-                        {
-                            log::error!("Unable to SetSwapChain: {}", err);
+                        if let Err(err) = unsafe { swap_chain_panel.SetSwapChain(&swap_chain1) } {
+                            log::error!("Unable to SetSwapChain: {err}");
                             return Err(crate::SurfaceError::Other(
                                 "ISwapChainPanelNative::SetSwapChain",
                             ));
@@ -1117,13 +1547,10 @@ impl crate::Surface for Surface {
                     }
                 }
 
-                match swap_chain1.cast::<Dxgi::IDXGISwapChain3>() {
-                    Ok(swap_chain3) => swap_chain3,
-                    Err(err) => {
-                        log::error!("Unable to cast swap chain: {}", err);
-                        return Err(crate::SurfaceError::Other("swap chain cast to 3"));
-                    }
-                }
+                swap_chain1.cast::<Dxgi::IDXGISwapChain3>().map_err(|err| {
+                    log::error!("Unable to cast swapchain: {err}");
+                    crate::SurfaceError::Other("swapchain cast to version 3")
+                })?
             }
         };
 
@@ -1139,13 +1566,21 @@ impl crate::Surface for Surface {
                 .into_device_result("MakeWindowAssociation")?;
             }
             SurfaceTarget::Visual(_)
+            | SurfaceTarget::VisualFromWndHandle { .. }
             | SurfaceTarget::SurfaceHandle(_)
             | SurfaceTarget::SwapChainPanel(_) => {}
         }
 
         unsafe { swap_chain.SetMaximumFrameLatency(config.maximum_frame_latency) }
             .into_device_result("SetMaximumFrameLatency")?;
-        let waitable = unsafe { swap_chain.GetFrameLatencyWaitableObject() };
+
+        let waitable = match device.options.latency_waitable_object {
+            wgt::Dx12UseFrameLatencyWaitableObject::None => None,
+            wgt::Dx12UseFrameLatencyWaitableObject::Wait
+            | wgt::Dx12UseFrameLatencyWaitableObject::DontWait => {
+                Some(unsafe { swap_chain.GetFrameLatencyWaitableObject() })
+            }
+        };
 
         let mut resources = Vec::with_capacity(swap_chain_buffer as usize);
         for i in 0..swap_chain_buffer {
@@ -1186,13 +1621,19 @@ impl crate::Surface for Surface {
 
     unsafe fn acquire_texture(
         &self,
-        timeout: Option<std::time::Duration>,
+        timeout: Option<core::time::Duration>,
         _fence: &Fence,
-    ) -> Result<Option<crate::AcquiredSurfaceTexture<Api>>, crate::SurfaceError> {
+    ) -> Result<crate::AcquiredSurfaceTexture<Api>, crate::SurfaceError> {
         let mut swapchain = self.swap_chain.write();
         let sc = swapchain.as_mut().unwrap();
 
-        unsafe { sc.wait(timeout) }?;
+        match self.options.latency_waitable_object {
+            wgt::Dx12UseFrameLatencyWaitableObject::None
+            | wgt::Dx12UseFrameLatencyWaitableObject::DontWait => {}
+            wgt::Dx12UseFrameLatencyWaitableObject::Wait => {
+                unsafe { sc.wait(timeout) }?;
+            }
+        }
 
         let base_index = unsafe { sc.raw.GetCurrentBackBufferIndex() } as usize;
         let index = (base_index + sc.acquired_count) % sc.resources.len();
@@ -1205,12 +1646,15 @@ impl crate::Surface for Surface {
             size: sc.size,
             mip_level_count: 1,
             sample_count: 1,
-            allocation: None,
+            allocation: suballocation::Allocation::none(
+                suballocation::AllocationType::Texture,
+                sc.format.theoretical_memory_footprint(sc.size),
+            ),
         };
-        Ok(Some(crate::AcquiredSurfaceTexture {
+        Ok(crate::AcquiredSurfaceTexture {
             texture,
             suboptimal: false,
-        }))
+        })
     }
     unsafe fn discard_texture(&self, _texture: Texture) {
         let mut swapchain = self.swap_chain.write();
@@ -1234,6 +1678,17 @@ impl crate::Queue for Queue {
             temp_lists.push(Some(cmd_buf.raw.clone().into()));
         }
 
+        // Drain caller-staged waits before ExecuteCommandLists so the
+        // GPU queue blocks on each foreign signal before running our
+        // command lists. D3D12 queue commands are FIFO - Wait calls
+        // here gate everything submitted after them.
+        {
+            let mut waits = self.pending_waits.lock();
+            for (fence, value) in waits.drain(..) {
+                unsafe { self.raw.Wait(&fence, value) }.into_device_result("Wait pending fence")?;
+            }
+        }
+
         {
             profiling::scope!("ID3D12CommandQueue::ExecuteCommandLists");
             unsafe { self.raw.ExecuteCommandLists(&temp_lists) }
@@ -1241,6 +1696,16 @@ impl crate::Queue for Queue {
 
         unsafe { self.raw.Signal(&signal_fence.raw, signal_value) }
             .into_device_result("Signal fence")?;
+
+        // Drain caller-staged signals after our own Signal so each
+        // additional fence value publishes once the submit completes.
+        {
+            let mut signals = self.pending_signals.lock();
+            for (fence, value) in signals.drain(..) {
+                unsafe { self.raw.Signal(&fence, value) }
+                    .into_device_result("Signal pending fence")?;
+            }
+        }
 
         // Note the lack of synchronization here between the main Direct queue
         // and the dedicated presentation queue. This is automatically handled
@@ -1279,4 +1744,60 @@ impl crate::Queue for Queue {
         let frequency = unsafe { self.raw.GetTimestampFrequency() }.expect("GetTimestampFrequency");
         (1_000_000_000.0 / frequency as f64) as f32
     }
+
+    unsafe fn wait_for_idle(&self) -> Result<(), crate::DeviceError> {
+        let value = self
+            .idle_fence_value
+            .fetch_add(1, core::sync::atomic::Ordering::Relaxed)
+            + 1;
+        unsafe { self.raw.Signal(&self.idle_fence, value) }
+            .into_device_result("Signal idle fence")?;
+        unsafe {
+            self.idle_fence
+                .SetEventOnCompletion(value, self.idle_event.0)
+        }
+        .into_device_result("SetEventOnCompletion")?;
+        unsafe { Threading::WaitForSingleObject(self.idle_event.0, Threading::INFINITE) };
+        Ok(())
+    }
+}
+#[derive(Debug)]
+pub struct DxilPassthroughShader {
+    pub shader: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct HlslPassthroughShader {
+    pub shader: String,
+}
+
+#[derive(Debug)]
+pub enum ShaderModuleSource {
+    Naga(crate::NagaShader),
+    DxilPassthrough(DxilPassthroughShader),
+    HlslPassthrough(HlslPassthroughShader),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum FeatureLevel {
+    V11_0,
+    V11_1,
+    V12_0,
+    V12_1,
+    V12_2,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ShaderModel {
+    V5_1,
+    V6_0,
+    V6_1,
+    V6_2,
+    V6_3,
+    V6_4,
+    V6_5,
+    V6_6,
+    V6_7,
+    V6_8,
+    V6_9,
 }

@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env node */
-
 const { logTest, logTask } = require("./utils/profiling");
 
 module.exports = logTest(
@@ -34,7 +32,7 @@ module.exports = logTest(
         await commands.wait.byTime(page_cycle_delay);
 
         context.log.info("Cycle %d, starting the measure", count);
-        await await commands.measure.start();
+        await commands.measure.start();
         await commands.js.run(`
         const notifyDone = arguments[arguments.length - 1];
         async function resPromise() {

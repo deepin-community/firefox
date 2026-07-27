@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,12 @@
 #include <errno.h>
 #include <shlwapi.h>
 #include <string.h>
+
+#ifdef MOZ_CLANG_PLUGIN
+#  define MOZ_RUNINIT __attribute__((annotate("moz_global_var")))
+#else
+#  define MOZ_RUNINIT
+#endif
 
 /**
  * Note: The reason that these functions are separated from those in
@@ -19,7 +23,7 @@
 // This section implements the minimum set of dirent APIs used by updater.cpp on
 // Windows.  If updater.cpp is modified to use more of this API, we need to
 // implement those parts here too.
-static dirent gDirEnt;
+MOZ_RUNINIT static dirent gDirEnt;
 
 DIR::DIR(const WCHAR* path) : findHandle(INVALID_HANDLE_VALUE) {
   memset(name, 0, sizeof(name));

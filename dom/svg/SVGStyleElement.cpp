@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -51,13 +49,13 @@ SVGStyleElement::SVGStyleElement(
     : SVGStyleElementBase(std::move(aNodeInfo)) {
   AddMutationObserver(this);
   SetEnabledCallbacks(kCharacterDataChanged | kContentAppended |
-                      kContentInserted | kContentRemoved);
+                      kContentInserted | kContentWillBeRemoved);
 }
 
 //----------------------------------------------------------------------
 // nsINode methods
 
-NS_IMPL_ELEMENT_CLONE_WITH_INIT(SVGStyleElement)
+NS_IMPL_ELEMENT_CLONE(SVGStyleElement)
 
 //----------------------------------------------------------------------
 // nsIContent methods
@@ -73,7 +71,7 @@ void SVGStyleElement::UnbindFromTree(UnbindContext& aContext) {
   nsCOMPtr<Document> oldDoc = GetUncomposedDoc();
   ShadowRoot* oldShadow = GetContainingShadow();
   SVGStyleElementBase::UnbindFromTree(aContext);
-  Unused << UpdateStyleSheetInternal(oldDoc, oldShadow);
+  (void)UpdateStyleSheetInternal(oldDoc, oldShadow);
 }
 
 void SVGStyleElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
@@ -84,7 +82,7 @@ void SVGStyleElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
   if (aNameSpaceID == kNameSpaceID_None) {
     if (aName == nsGkAtoms::title || aName == nsGkAtoms::media ||
         aName == nsGkAtoms::type) {
-      Unused << UpdateStyleSheetInternal(nullptr, nullptr, ForceUpdate::Yes);
+      (void)UpdateStyleSheetInternal(nullptr, nullptr, ForceUpdate::Yes);
     }
   }
 
@@ -114,22 +112,33 @@ void SVGStyleElement::CharacterDataChanged(nsIContent* aContent,
   ContentChanged(aContent);
 }
 
-void SVGStyleElement::ContentAppended(nsIContent* aFirstNewContent) {
+void SVGStyleElement::ContentAppended(nsIContent* aFirstNewContent,
+                                      const ContentAppendInfo&) {
   ContentChanged(aFirstNewContent->GetParent());
 }
 
-void SVGStyleElement::ContentInserted(nsIContent* aChild) {
+void SVGStyleElement::ContentInserted(nsIContent* aChild,
+                                      const ContentInsertInfo&) {
   ContentChanged(aChild);
 }
 
-void SVGStyleElement::ContentRemoved(nsIContent* aChild,
-                                     nsIContent* aPreviousSibling) {
-  ContentChanged(aChild);
+void SVGStyleElement::ContentWillBeRemoved(nsIContent* aChild,
+                                           const ContentRemoveInfo& aInfo) {
+  if (!nsContentUtils::IsInSameAnonymousTree(this, aChild)) {
+    return;
+  }
+  if (aInfo.mBatchRemovalState && !aInfo.mBatchRemovalState->mIsFirst) {
+    return;
+  }
+  // Make sure to run this once the removal has taken place.
+  nsContentUtils::AddScriptRunner(NS_NewRunnableFunction(
+      "SVGStyleElement::ContentWillBeRemoved",
+      [self = RefPtr{this}] { self->UpdateStyleSheetInternal(); }));
 }
 
 void SVGStyleElement::ContentChanged(nsIContent* aContent) {
   if (nsContentUtils::IsInSameAnonymousTree(this, aContent)) {
-    Unused << UpdateStyleSheetInternal(nullptr, nullptr);
+    (void)UpdateStyleSheetInternal(nullptr, nullptr);
   }
 }
 
@@ -204,6 +213,13 @@ Maybe<LinkStyle::SheetInfo> SVGStyleElement::GetStyleSheetInfo() {
       IsExplicitlyEnabled::No,
       FetchPriority::Auto,
   });
+}
+
+nsresult SVGStyleElement::CopyInnerTo(SVGStyleElement* aDest) {
+  nsresult rv = Element::CopyInnerTo(aDest);
+  NS_ENSURE_SUCCESS(rv, rv);
+  MaybeStartCopyStyleSheetTo(aDest, aDest->OwnerDoc());
+  return NS_OK;
 }
 
 }  // namespace mozilla::dom

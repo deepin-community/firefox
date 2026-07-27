@@ -19,7 +19,6 @@ import java.util.UUID
  * @property currentBytesCopied The number of current bytes copied.
  * @property status The current status of the download.
  * @property userAgent The user agent to be used for the download.
- * @property destinationDirectory The matching destination directory for this type of download.
  * @property directoryPath The full path to the directory where the file should be saved.
  * @property filePath The file path the file was saved at.
  * @property referrerUrl The site that linked to this download.
@@ -42,8 +41,7 @@ data class DownloadState(
     val currentBytesCopied: Long = 0,
     val status: Status = Status.INITIATED,
     val userAgent: String? = null,
-    val destinationDirectory: String = Environment.DIRECTORY_DOWNLOADS,
-    val directoryPath: String = Environment.getExternalStoragePublicDirectory(destinationDirectory).path,
+    val directoryPath: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path,
     val referrerUrl: String? = null,
     val skipConfirmation: Boolean = false,
     val openInApp: Boolean = false,
@@ -53,9 +51,25 @@ data class DownloadState(
     val createdTime: Long = System.currentTimeMillis(),
     val response: Response? = null,
     val notificationId: Int? = null,
+    val etag: String? = null,
 ) {
     val filePath: String
         get() = directoryPath + File.separatorChar + fileName
+
+    val isPdf: Boolean
+        get() =
+            if (contentType == null) {
+                fileName?.let { File(it).extension } == "pdf"
+            } else {
+                contentType == "application/pdf"
+            }
+
+    val progress: Float?
+        get() = if (contentLength == null || contentLength == 0L) {
+            null
+        } else {
+            currentBytesCopied.toFloat() / contentLength.toFloat()
+        }
 
     /**
      * Status that represents every state that a download can be in.
@@ -77,7 +91,7 @@ data class DownloadState(
         PAUSED(PAUSED_ID),
 
         /**
-         * Indicates that the download that has been [DOWNLOADING] has been cancelled.
+         * Indicates that the download has been cancelled.
          */
         CANCELLED(CANCELLED_ID),
 

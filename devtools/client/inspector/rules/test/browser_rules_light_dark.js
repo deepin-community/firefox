@@ -100,7 +100,7 @@ add_task(async function () {
     }
   );
   if (isDarkScheme) {
-    const onRuleViewRefreshed = view.once("ruleview-refreshed");
+    const onRuleViewRefreshed = inspector.once("rule-view-refreshed");
     inspector.panelDoc
       .querySelector("#color-scheme-simulation-light-toggle")
       .click();
@@ -114,7 +114,7 @@ add_task(async function () {
   ]);
 
   info("Trigger dark mode simulation");
-  const onRuleViewRefreshed = view.once("ruleview-refreshed");
+  const onRuleViewRefreshed = inspector.once("rule-view-refreshed");
   inspector.panelDoc
     .querySelector("#color-scheme-simulation-dark-toggle")
     .click();
@@ -147,7 +147,7 @@ function assertColorSpans(view, ruleSelector, propertyName, expectedColors) {
       `Expected color ${i} for ${ruleSelector} ${propertyName}`
     );
     is(
-      !colorSpan.classList.contains("ruleview-unmatched"),
+      !colorSpan.classList.contains("inspector-unmatched"),
       expectedColorData.matched,
       `Color ${i} for ${ruleSelector} ${propertyName} is ${
         expectedColorData.matched ? "matched" : "unmatched"

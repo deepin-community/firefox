@@ -1,38 +1,29 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsWrapperCache_h___
-#define nsWrapperCache_h___
+#ifndef nsWrapperCache_h_
+#define nsWrapperCache_h_
 
-#include "nsCycleCollectionParticipant.h"
-#include "mozilla/Assertions.h"
-#include "mozilla/ServoUtils.h"
-#include "mozilla/RustCell.h"
+#include <type_traits>
+
 #include "js/HeapAPI.h"
 #include "js/RootingAPI.h"
 #include "js/TracingAPI.h"
 #include "js/TypeDecls.h"
+#include "mozilla/Assertions.h"
+#include "mozilla/RustCell.h"
+#include "mozilla/ServoUtils.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsISupports.h"
 #include "nsISupportsUtils.h"
-#include <type_traits>
 
-namespace mozilla::dom {
-class ContentProcessMessageManager;
-class InProcessBrowserChildMessageManager;
-class BrowserChildMessageManager;
-}  // namespace mozilla::dom
-class SandboxPrivate;
-class nsWindowRoot;
+namespace mozilla::dom::binding_detail {
+class CastableToWrapperCacheHelper;
+}  // namespace mozilla::dom::binding_detail
 
-#define NS_WRAPPERCACHE_IID                          \
-  {                                                  \
-    0x6f3179a1, 0x36f7, 0x4a5c, {                    \
-      0x8c, 0xf1, 0xad, 0xc8, 0x7c, 0xde, 0x3e, 0x87 \
-    }                                                \
-  }
+#define NS_WRAPPERCACHE_IID \
+  {0x6f3179a1, 0x36f7, 0x4a5c, {0x8c, 0xf1, 0xad, 0xc8, 0x7c, 0xde, 0x3e, 0x87}}
 
 // There are two sets of flags used by DOM nodes. One comes from reusing the
 // remaining bits of the inherited nsWrapperCache flags (mFlags), and another is
@@ -92,7 +83,7 @@ static_assert(sizeof(void*) == 4, "Only support 32-bit and 64-bit");
 
 class JS_HAZ_ROOTED nsWrapperCache {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_WRAPPERCACHE_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_WRAPPERCACHE_IID)
 
   nsWrapperCache() = default;
   ~nsWrapperCache() {
@@ -178,11 +169,7 @@ class JS_HAZ_ROOTED nsWrapperCache {
     }
   }
 
-  /**
-   * Update the wrapper when the object moves between globals.
-   */
-  template <typename T>
-  void UpdateWrapperForNewGlobal(T* aScriptObjectHolder, JSObject* aNewWrapper);
+  void ClearWrapperOnWrapFailure();
 
   /**
    * Update the wrapper if the object it contains is moved.
@@ -329,6 +316,10 @@ class JS_HAZ_ROOTED nsWrapperCache {
 
   void ReleaseWrapper(void* aScriptObjectHolder);
 
+  // Special case version of ReleaseWrapper. For use by
+  // Rule::UnlinkDeclarationWrapper only.
+  void ReleaseWrapperWithoutDrop();
+
   void TraceWrapper(JSTracer* aTrc, const char* name) {
     if (mWrapper) {
       js::UnsafeTraceManuallyBarrieredEdge(aTrc, &mWrapper, name);
@@ -346,6 +337,8 @@ class JS_HAZ_ROOTED nsWrapperCache {
 
  private:
   void SetWrapperJSObject(JSObject* aWrapper);
+
+  void ReleaseWrapperAndMaybeDropHolder(void* aScriptObjectHolderToDrop);
 
   // We'd like to assert that these aren't used from servo threads, but we don't
   // have a great way to do that because:
@@ -380,9 +373,10 @@ class JS_HAZ_ROOTED nsWrapperCache {
  public:
   void CheckCCWrapperTraversal(void* aScriptObjectHolder,
                                nsScriptObjectTracer* aTracer);
+#endif  // DEBUG
 
  private:
-#endif  // DEBUG
+  friend class mozilla::dom::binding_detail::CastableToWrapperCacheHelper;
 
   /**
    * If this bit is set then we're preserving the wrapper, which in effect ties
@@ -418,8 +412,6 @@ class JS_HAZ_ROOTED nsWrapperCache {
 };
 
 enum { WRAPPER_CACHE_FLAGS_BITS_USED = 1 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsWrapperCache, NS_WRAPPERCACHE_IID)
 
 #define NS_WRAPPERCACHE_INTERFACE_TABLE_ENTRY           \
   if (aIID.Equals(NS_GET_IID(nsWrapperCache))) {        \
@@ -652,4 +644,4 @@ NS_DEFINE_STATIC_IID_ACCESSOR(nsWrapperCache, NS_WRAPPERCACHE_IID)
     NS_IMPL_CYCLE_COLLECTION_TRACE_PRESERVED_WRAPPER                        \
   NS_IMPL_CYCLE_COLLECTION_TRACE_END
 
-#endif /* nsWrapperCache_h___ */
+#endif /* nsWrapperCache_h_ */

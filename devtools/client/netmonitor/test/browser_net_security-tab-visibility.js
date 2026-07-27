@@ -26,7 +26,7 @@ add_task(async function () {
       visibleOnNewEvent: true,
       visibleOnSecurityInfo: true,
       visibleOnceComplete: true,
-      securityState: "secure",
+      securityState: "secure-custom-root",
     },
     {
       desc: "broken https request",
@@ -77,6 +77,8 @@ add_task(async function () {
       { type: "mousedown" },
       document.querySelectorAll(".request-list-item")[0]
     );
+
+    await waitForAllNetworkUpdateEvents();
 
     is(
       getSelectedRequest(store.getState()).securityState,

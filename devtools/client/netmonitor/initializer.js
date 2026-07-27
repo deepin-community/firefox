@@ -19,9 +19,6 @@ const require = (window.windowRequire = BrowserLoader({
 }).require);
 
 const {
-  NetMonitorAPI,
-} = require("resource://devtools/client/netmonitor/src/api.js");
-const {
   NetMonitorApp,
 } = require("resource://devtools/client/netmonitor/src/app.js");
 const EventEmitter = require("resource://devtools/shared/event-emitter.js");
@@ -32,7 +29,7 @@ EventEmitter.decorate(window);
 /**
  * This is the initialization point for the Network monitor.
  *
- * @param {Object} api Allows reusing existing API object.
+ * @param {object} api Allows reusing existing API object.
  */
 function initialize(api) {
   const app = new NetMonitorApp(api);
@@ -49,7 +46,6 @@ function initialize(api) {
 
 /**
  * The following code is used to open Network monitor in a tab.
- * Like the Launchpad, but without Launchpad.
  *
  * For example:
  * chrome://devtools/content/netmonitor/index.html?type=process
@@ -95,6 +91,9 @@ if (window.location.protocol === "chrome:" && url.search.length > 1) {
         commands,
       };
 
+      const {
+        NetMonitorAPI,
+      } = require("resource://devtools/client/netmonitor/src/api.js");
       const api = new NetMonitorAPI();
       await api.connect(toolbox);
       const app = window.initialize(api);

@@ -13,6 +13,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.StringReader
+import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
 class SafelistTest {
@@ -74,16 +75,18 @@ class SafelistTest {
         Assert.assertNull(trie.findNode("abc"))
 
         val foundSafelist = trie.findNode("def") as SafelistTrie
-        Assert.assertNotNull(foundSafelist)
-        Assert.assertNotNull(foundSafelist.safelist?.findNode("abc"))
+        assertNotNull(foundSafelist)
+        assertNotNull(foundSafelist.safelist?.findNode("abc"))
 
         try {
             trie.putSafelist("def", safelist)
             fail("Expected IllegalStateException")
-        } catch (e: IllegalStateException) { }
+        } catch (e: IllegalStateException) {
+            // Expected
+        }
     }
 
-    val SAFE_LIST_JSON = """{
+    val safelistJson = """{
       "Host1": {
         "properties": [
           "host1.com",
@@ -108,7 +111,7 @@ class SafelistTest {
 
     @Test
     fun fromJson() {
-        val safelist = Safelist.fromJson(JsonReader(StringReader(SAFE_LIST_JSON)))
+        val safelist = Safelist.fromJson(JsonReader(StringReader(safelistJson)))
 
         assertTrue(safelist.contains("http://host1.com", "http://host1ads.com"))
         assertTrue(safelist.contains("https://host1.com", "https://host1ads.de"))

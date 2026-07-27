@@ -11,7 +11,7 @@ about-private-browsing-search-btn =
 # Variables
 #  $engine (String): the name of the user's default search engine
 about-private-browsing-handoff =
-    .title = Търсене с { $engine } или въвеждане на адрес
+    .title = Търсене чрез { $engine } или въвеждане на адрес
 about-private-browsing-handoff-no-engine =
     .title = Търсете или въведете адрес
 # Variables
@@ -33,7 +33,7 @@ about-private-browsing-focus-promo-text = Мобилното ни приложе
 ## The following strings will be used for experiments in Fx99 and Fx100
 
 about-private-browsing-focus-promo-header-b = Вземете поверителното разглеждане на телефона си
-about-private-browsing-focus-promo-text-b = Използвайте { -focus-brand-name } за онова търсене, което не искате да правите с основния си мобилен четец.
+about-private-browsing-focus-promo-text-b = Използвайте { -focus-brand-name } за онова търсене, което не искате да правите с основния си мобилен браузър.
 about-private-browsing-focus-promo-header-c = Следващо ниво поверителност за мобилни устройства
 about-private-browsing-focus-promo-text-c = { -focus-brand-name } изчиства историята всеки път, а също спира реклами и проследяване.
 # This string is the title for the banner for search engine selection
@@ -73,7 +73,7 @@ about-private-browsing-cookie-banners-promo-message = Нека { -brand-short-na
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } се грижи за банерите за бисквитки вместо вас
 about-private-browsing-cookie-banners-promo-body = Вече автоматично отказваме много от банерите за бисквитки, за да можете да бъдете проследяване по-малко и да разглеждате без да бъдете разсейвани от тях.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Без никакви следи на устройството
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } изтрива бисквитките, историята и данни от разглеждането, когато затворите всички поверителни прозорци.

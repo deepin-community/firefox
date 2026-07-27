@@ -7,14 +7,28 @@
   ### DO NOT edit it by hand.                                       ###
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
+CXXFLAGS += CONFIG["MOZ_GBM_CFLAGS"]
+if not CONFIG["MOZ_SYSTEM_GBM"]:
+    LOCAL_INCLUDES += [ "/third_party/gbm/gbm/" ]
+CXXFLAGS += CONFIG["MOZ_LIBDRM_CFLAGS"]
+if not CONFIG["MOZ_SYSTEM_LIBDRM"]:
+    LOCAL_INCLUDES += [ "/third_party/drm/drm/",
+                        "/third_party/drm/drm/include/",
+                        "/third_party/drm/drm/include/libdrm" ]
+CXXFLAGS += CONFIG["MOZ_PIPEWIRE_CFLAGS"]
+if not CONFIG["MOZ_SYSTEM_PIPEWIRE"]:
+    LOCAL_INCLUDES += [ "/third_party/pipewire/" ]
 
 COMPILE_FLAGS["OS_INCLUDES"] = []
 AllowCompilerWarnings()
 
 DEFINES["ABSL_ALLOCATOR_NOTHROW"] = "1"
+DEFINES["PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII"] = "0"
 DEFINES["RTC_DAV1D_IN_INTERNAL_DECODER_FACTORY"] = True
 DEFINES["RTC_ENABLE_VP9"] = True
+DEFINES["WEBRTC_DEPRECATE_PLAN_B"] = True
 DEFINES["WEBRTC_ENABLE_PROTOBUF"] = "0"
+DEFINES["WEBRTC_ENCODER_PSNR_STATS"] = True
 DEFINES["WEBRTC_LIBRARY_IMPL"] = True
 DEFINES["WEBRTC_MOZILLA_BUILD"] = True
 DEFINES["WEBRTC_NON_STATIC_TRACE_EVENT_HANDLERS"] = "0"
@@ -24,13 +38,14 @@ FINAL_LIBRARY = "xul"
 
 
 LOCAL_INCLUDES += [
+    "!/dist/include/libwebrtc_overrides",
     "!/ipc/ipdl/_ipdlheaders",
     "!/third_party/libwebrtc/gen",
     "/ipc/chromium/src",
     "/media/libyuv/",
     "/media/libyuv/libyuv/include/",
+    "/third_party/abseil-cpp/",
     "/third_party/libwebrtc/",
-    "/third_party/libwebrtc/third_party/abseil-cpp/",
     "/tools/profiler/public"
 ]
 
@@ -75,8 +90,6 @@ if CONFIG["OS_TARGET"] == "Darwin":
 
     DEFINES["WEBRTC_MAC"] = True
     DEFINES["WEBRTC_POSIX"] = True
-    DEFINES["_LIBCPP_HAS_NO_ALIGNED_ALLOCATION"] = True
-    DEFINES["__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES"] = "0"
     DEFINES["__STDC_CONSTANT_MACROS"] = True
     DEFINES["__STDC_FORMAT_MACROS"] = True
 
@@ -91,10 +104,8 @@ if CONFIG["OS_TARGET"] == "Linux":
 
     DEFINES["USE_AURA"] = "1"
     DEFINES["USE_GLIB"] = "1"
-    DEFINES["USE_NSS_CERTS"] = "1"
     DEFINES["USE_OZONE"] = "1"
     DEFINES["USE_UDEV"] = True
-    DEFINES["WEBRTC_ENABLE_LIBEVENT"] = True
     DEFINES["WEBRTC_LINUX"] = True
     DEFINES["WEBRTC_POSIX"] = True
     DEFINES["_FILE_OFFSET_BITS"] = "64"
@@ -102,10 +113,6 @@ if CONFIG["OS_TARGET"] == "Linux":
     DEFINES["_LARGEFILE_SOURCE"] = True
     DEFINES["__STDC_CONSTANT_MACROS"] = True
     DEFINES["__STDC_FORMAT_MACROS"] = True
-
-    OS_LIBS += [
-        "rt"
-    ]
 
     SOURCES += [
         "/third_party/libwebrtc/modules/desktop_capture/mouse_cursor_monitor_linux.cc"
@@ -120,9 +127,7 @@ if CONFIG["OS_TARGET"] == "OpenBSD":
 
     DEFINES["USE_GLIB"] = "1"
     DEFINES["USE_OZONE"] = "1"
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_BSD"] = True
-    DEFINES["WEBRTC_ENABLE_LIBEVENT"] = True
     DEFINES["WEBRTC_POSIX"] = True
     DEFINES["WEBRTC_USE_X11"] = True
     DEFINES["_FILE_OFFSET_BITS"] = "64"
@@ -153,7 +158,6 @@ if CONFIG["OS_TARGET"] == "OpenBSD":
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc",
         "/third_party/libwebrtc/modules/desktop_capture/screen_capturer_linux.cc",
@@ -175,6 +179,7 @@ if CONFIG["OS_TARGET"] == "WINNT":
     DEFINES["WINAPI_FAMILY"] = "WINAPI_FAMILY_DESKTOP_APP"
     DEFINES["WINVER"] = "0x0A00"
     DEFINES["_ATL_NO_OPENGL"] = True
+    DEFINES["_CRT_NONSTDC_NO_WARNINGS"] = True
     DEFINES["_CRT_RAND_S"] = True
     DEFINES["_CRT_SECURE_NO_DEPRECATE"] = True
     DEFINES["_ENABLE_EXTENDED_ALIGNED_STORAGE"] = True
@@ -185,6 +190,7 @@ if CONFIG["OS_TARGET"] == "WINNT":
     DEFINES["_UNICODE"] = True
     DEFINES["_WIN32_WINNT"] = "0x0A00"
     DEFINES["_WINDOWS"] = True
+    DEFINES["_WINSOCK_DEPRECATED_NO_WARNINGS"] = True
     DEFINES["__STD_C"] = True
 
     OS_LIBS += [
@@ -214,6 +220,7 @@ if CONFIG["OS_TARGET"] == "WINNT":
         "/third_party/libwebrtc/modules/desktop_capture/win/display_configuration_monitor.cc",
         "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_adapter_duplicator.cc",
         "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_context.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_desktop_frame.cc",
         "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_duplicator_controller.cc",
         "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_frame.cc",
         "/third_party/libwebrtc/modules/desktop_capture/win/dxgi_output_duplicator.cc",
@@ -240,6 +247,7 @@ if CONFIG["TARGET_CPU"] == "aarch64":
 
     DEFINES["WEBRTC_ARCH_ARM64"] = True
     DEFINES["WEBRTC_HAS_NEON"] = True
+    DEFINES["__ARM_NEON__"] = "1"
 
 if CONFIG["TARGET_CPU"] == "arm":
 
@@ -254,13 +262,8 @@ if CONFIG["TARGET_CPU"] == "arm":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -277,6 +280,33 @@ if CONFIG["TARGET_CPU"] == "arm":
         "/third_party/libwebrtc/modules/desktop_capture/linux/wayland/shared_screencast_stream.cc"
     ]
 
+if CONFIG["TARGET_CPU"] == "loongarch64":
+
+    DEFINES["WEBRTC_USE_X11"] = True
+    DEFINES["_GNU_SOURCE"] = True
+
+    OS_LIBS += [
+        "X11",
+        "Xcomposite",
+        "Xdamage",
+        "Xext",
+        "Xfixes",
+        "Xrandr",
+        "Xrender"
+    ]
+
+    UNIFIED_SOURCES += [
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/mouse_cursor_monitor_x11.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/screen_capturer_x11.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/shared_x_display.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_capturer_x11.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
+        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
+    ]
+
 if CONFIG["TARGET_CPU"] == "mips32":
 
     DEFINES["MIPS32_LE"] = True
@@ -285,13 +315,8 @@ if CONFIG["TARGET_CPU"] == "mips32":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -314,13 +339,8 @@ if CONFIG["TARGET_CPU"] == "mips64":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -339,7 +359,6 @@ if CONFIG["TARGET_CPU"] == "mips64":
 
 if CONFIG["TARGET_CPU"] == "ppc64":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -360,7 +379,6 @@ if CONFIG["TARGET_CPU"] == "ppc64":
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
@@ -395,13 +413,8 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "aarch64":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -420,7 +433,6 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "aarch64":
 
 if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "riscv64":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -441,7 +453,6 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "riscv64":
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
@@ -456,13 +467,8 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -485,13 +491,8 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86_64":
     DEFINES["_GNU_SOURCE"] = True
 
     LOCAL_INCLUDES += [
-        "/gfx/angle/checkout/include/",
-        "/third_party/drm/drm/",
-        "/third_party/drm/drm/include/",
-        "/third_party/drm/drm/include/libdrm/",
-        "/third_party/gbm/gbm/",
         "/third_party/libepoxy/libepoxy/include/",
-        "/third_party/pipewire/"
+        "/third_party/libwebrtc/third_party/libepoxy/libepoxy/include/"
     ]
 
     SOURCES += [
@@ -510,7 +511,6 @@ if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86_64":
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "aarch64":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -531,14 +531,12 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "arm":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -559,14 +557,12 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "mips32":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -587,14 +583,12 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "mips64":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -615,14 +609,12 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -643,14 +635,12 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]
 
 if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "x86_64":
 
-    DEFINES["USE_X11"] = "1"
     DEFINES["WEBRTC_USE_X11"] = True
 
     OS_LIBS += [
@@ -671,7 +661,6 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGE
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_finder_x11.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/window_list_utils.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_atom_cache.cc",
-        "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_error_trap.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc",
         "/third_party/libwebrtc/modules/desktop_capture/linux/x11/x_window_property.cc"
     ]

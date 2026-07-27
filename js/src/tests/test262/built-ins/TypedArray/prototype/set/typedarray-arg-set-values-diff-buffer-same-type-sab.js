@@ -1,4 +1,4 @@
-// |reftest| shell-option(--enable-float16array) skip-if(!this.hasOwnProperty('SharedArrayBuffer')) -- SharedArrayBuffer is not enabled unconditionally
+// |reftest| skip-if(!this.hasOwnProperty('SharedArrayBuffer')) -- SharedArrayBuffer is not enabled unconditionally
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // Copyright (C) 2017 Mozilla Corporation. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
@@ -13,7 +13,7 @@ features: [SharedArrayBuffer, TypedArray]
 
 var int_views = [Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Uint32Array];
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var sample, result;
 
   var sab = new SharedArrayBuffer(2 * TA.BYTES_PER_ELEMENT);
@@ -21,23 +21,23 @@ testWithTypedArrayConstructors(function(TA) {
   src[0] = 42;
   src[1] = 43;
 
-  sample = new TA([1, 2, 3, 4]);
+  sample = new TA(makeCtorArg([1, 2, 3, 4]));
   result = sample.set(src, 1);
   assert(compareArray(sample, [1, 42, 43, 4]), "src is SAB-backed, offset: 1, result: " + sample);
   assert.sameValue(result, undefined, "returns undefined");
 
-  sample = new TA([1, 2, 3, 4]);
+  sample = new TA(makeCtorArg([1, 2, 3, 4]));
   result = sample.set(src, 0);
   assert(compareArray(sample, [42, 43, 3, 4]), "src is SAB-backed, offset: 0, result: " + sample);
   assert.sameValue(result, undefined, "returns undefined");
 
-  sample = new TA([1, 2, 3, 4]);
+  sample = new TA(makeCtorArg([1, 2, 3, 4]));
   result = sample.set(src, 2);
   assert(compareArray(sample, [1, 2, 42, 43]), "src is SAB-backed, offset: 2, result: " + sample);
   assert.sameValue(result, undefined, "returns undefined");
 
 
-  src = new TA([42, 43]);
+  src = new TA(makeCtorArg([42, 43]));
 
   sab = new SharedArrayBuffer(4 * TA.BYTES_PER_ELEMENT);
   sample = new TA(sab);

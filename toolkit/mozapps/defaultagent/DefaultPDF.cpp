@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -37,7 +35,7 @@ constexpr std::pair<std::string_view, PDFHandler> kStringPdfHandlerMap[]{
     {"Sumatra", PDFHandler::SumatraPDF},
 };
 
-static_assert(mozilla::ArrayLength(kStringPdfHandlerMap) == kPDFHandlerCount);
+static_assert(std::size(kStringPdfHandlerMap) == kPDFHandlerCount);
 
 std::string GetStringForPDFHandler(PDFHandler handler) {
   for (const auto& [mapString, mapPdf] : kStringPdfHandlerMap) {
@@ -125,8 +123,7 @@ static PdfResult GetDefaultPdf() {
   // Unknown - removed; not a real pdf handler.
   // AdobeAcrobat - duplicate; `Adobe` and `Acrobat` prefixes are both seen in
   // telemetry.
-  static_assert(mozilla::ArrayLength(kFriendlyNamePrefixes) ==
-                kPDFHandlerCount - 2 + 1);
+  static_assert(std::size(kFriendlyNamePrefixes) == kPDFHandlerCount - 2 + 1);
 
   PDFHandler resolvedHandler = PDFHandler::Unknown;
   for (const auto& [knownHandlerSubstring, handlerEnum] :
@@ -142,10 +139,7 @@ static PdfResult GetDefaultPdf() {
 }
 
 DefaultPdfResult GetDefaultPdfInfo() {
-  DefaultPdfInfo pdfInfo;
-  MOZ_TRY_VAR(pdfInfo.currentDefaultPdf, GetDefaultPdf());
-
-  return pdfInfo;
+  return DefaultPdfInfo{MOZ_TRY(GetDefaultPdf())};
 }
 
 }  // namespace mozilla::default_agent

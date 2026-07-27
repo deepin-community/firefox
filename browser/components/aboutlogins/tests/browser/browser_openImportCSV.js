@@ -12,6 +12,13 @@ let { TelemetryTestUtils } = ChromeUtils.importESModule(
 
 let { MockFilePicker } = SpecialPowers;
 
+add_setup(async function () {
+  registerCleanupFunction(async function () {
+    SpecialPowers.clearUserPref("signon.rustMirror.migrationNeeded");
+    SpecialPowers.clearUserPref("signon.rustMirror.poisoned");
+  });
+});
+
 /**
  * A helper class to deal with Login CSV import UI.
  */
@@ -48,7 +55,7 @@ class CsvImportHelper {
    * @returns {Promise} A promise that is resolved when the picker selects the file.
    */
   static async clickImportFromCsvMenu(browser, linesInFile) {
-    MockFilePicker.init(window.browsingContext);
+    MockFilePicker.init();
     MockFilePicker.returnValue = MockFilePicker.returnOK;
     let csvFile = await LoginTestUtils.file.setupCsvFileWithLines(linesInFile);
 
@@ -65,12 +72,7 @@ class CsvImportHelper {
 
     function getImportMenuItem() {
       let menuButton = window.document.querySelector("menu-button");
-      let importButton = menuButton.shadowRoot.querySelector(
-        ".menuitem-import-file"
-      );
-      // Force the menu item to be visible for the test.
-      importButton.hidden = false;
-      return importButton;
+      return menuButton.shadowRoot.querySelector(".menuitem-import-file");
     }
 
     BrowserTestUtils.synthesizeMouseAtCenter(getImportMenuItem, {}, browser);
@@ -103,7 +105,7 @@ class CsvImportHelper {
    *
    * @param {browser} browser
    *        The browser object.
-   * @returns {Promise<Object>} A promise that contains added, modified, noChange and errors count.
+   * @returns {Promise<object>} A promise that contains added, modified, noChange and errors count.
    */
   static async getCsvImportSuccessDialogData(browser) {
     return SpecialPowers.spawn(browser, [], async () => {
@@ -146,7 +148,7 @@ class CsvImportHelper {
    *
    * @param {browser} browser
    *        The browser object.
-   * @returns {Promise<Object>} A promise that contains the hidden state and l10n id for title, description and focused element.
+   * @returns {Promise<object>} A promise that contains the hidden state and l10n id for title, description and focused element.
    */
   static async getCsvImportErrorDialogData(browser) {
     return SpecialPowers.spawn(browser, [], async () => {
@@ -189,7 +191,7 @@ class CsvImportHelper {
    *
    * @param {browser} browser
    *        The browser object.
-   * @returns {Promise<Object>} A promise that contains the about:loginsimportreport tab.
+   * @returns {Promise<object>} A promise that contains the about:loginsimportreport tab.
    */
   static async clickDetailedReport(browser) {
     let loadedReportTab = BrowserTestUtils.waitForNewTab(
@@ -217,7 +219,7 @@ class CsvImportHelper {
   /**
    * An utility method to fetch data from the about:loginsimportreport page.
    *
-   * @returns {Promise<Object>} A promise that contains the detailed report data like added, modified, noChange, errors and rows.
+   * @returns {Promise<object>} A promise that contains the detailed report data like added, modified, noChange, errors and rows.
    */
   static async getDetailedReportData() {
     const data = await SpecialPowers.spawn(
@@ -254,8 +256,8 @@ class CsvImportHelper {
 const random = Math.round(Math.random() * 100000001);
 
 add_setup(async function () {
-  registerCleanupFunction(() => {
-    Services.logins.removeAllUserFacingLogins();
+  registerCleanupFunction(async () => {
+    await Services.logins.removeAllUserFacingLoginsAsync();
   });
 });
 
@@ -269,9 +271,8 @@ add_task(async function test_open_import_one_item_from_csv() {
       ]);
       await CsvImportHelper.waitForImportToComplete();
 
-      let summary = await CsvImportHelper.getCsvImportSuccessDialogData(
-        browser
-      );
+      let summary =
+        await CsvImportHelper.getCsvImportSuccessDialogData(browser);
       Assert.equal(summary.added, "1", "It should have one item as added");
       Assert.equal(
         summary.l10nFocused,
@@ -309,9 +310,8 @@ add_task(async function test_open_import_all_four_categories() {
       await CsvImportHelper.clickImportFromCsvMenu(browser, updatedCsvData);
       await CsvImportHelper.waitForImportToComplete();
 
-      let summary = await CsvImportHelper.getCsvImportSuccessDialogData(
-        browser
-      );
+      let summary =
+        await CsvImportHelper.getCsvImportSuccessDialogData(browser);
       Assert.equal(summary.added, "1", "It should have one item as added");
       Assert.equal(
         summary.modified,
@@ -385,9 +385,8 @@ add_task(async function test_open_import_from_csv_with_invalid_file() {
       ]);
 
       info("Waiting for the import error dialog");
-      const errorDialog = await CsvImportHelper.getCsvImportErrorDialogData(
-        browser
-      );
+      const errorDialog =
+        await CsvImportHelper.getCsvImportErrorDialogData(browser);
       Assert.equal(errorDialog.hidden, false, "Dialog should not be hidden");
       Assert.equal(
         errorDialog.l10nTitle,

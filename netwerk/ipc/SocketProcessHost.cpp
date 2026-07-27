@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -36,6 +35,10 @@ using namespace mozilla::ipc;
 namespace mozilla {
 namespace net {
 
+#if defined(XP_MACOSX) || defined(XP_IOS)
+static bool sAppleFastDatapathProbeAllowed = true;
+#endif
+
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 bool SocketProcessHost::sLaunchWithMacSandbox = false;
 #endif
@@ -65,7 +68,7 @@ bool SocketProcessHost::Launch() {
   MOZ_ASSERT(!mSocketProcessParent);
   MOZ_ASSERT(NS_IsMainThread());
 
-  std::vector<std::string> extraArgs;
+  geckoargs::ChildProcessArgs extraArgs;
   ProcessChild::AddPlatformBuildID(extraArgs);
 
   SharedPreferenceSerializer prefSerializer;
@@ -76,7 +79,8 @@ bool SocketProcessHost::Launch() {
   prefSerializer.AddSharedPrefCmdLineArgs(*this, extraArgs);
 
   mLaunchPhase = LaunchPhase::Waiting;
-  if (!GeckoChildProcessHost::LaunchAndWaitForProcessHandle(extraArgs)) {
+  if (!GeckoChildProcessHost::LaunchAndWaitForProcessHandle(
+          std::move(extraArgs))) {
     mLaunchPhase = LaunchPhase::Complete;
     return false;
   }
@@ -169,16 +173,20 @@ void SocketProcessHost::InitAfterConnect(bool aSucceeded) {
                                 attributes.mSandboxBroker().ref());
       // This is unlikely to fail and probably indicates OS resource
       // exhaustion.
-      Unused << NS_WARN_IF(mSandboxBroker == nullptr);
+      (void)NS_WARN_IF(mSandboxBroker == nullptr);
       MOZ_ASSERT(attributes.mSandboxBroker().ref().IsValid());
     }
     attributes.mInitSandbox() = true;
   }
 #endif  // XP_LINUX && MOZ_SANDBOX
 
-  Unused << GetActor()->SendInit(attributes);
+#if defined(XP_MACOSX) || defined(XP_IOS)
+  attributes.mAppleFastDatapathProbeAllowed() = sAppleFastDatapathProbeAllowed;
+#endif
 
-  Unused << GetActor()->SendInitProfiler(
+  (void)GetActor()->SendInit(attributes);
+
+  (void)GetActor()->SendInitProfiler(
       ProfilerParent::CreateForProcess(GetActor()->OtherPid()));
 
   if (mListener) {
@@ -210,6 +218,12 @@ void SocketProcessHost::Shutdown() {
 
 void SocketProcessHost::OnChannelClosed() {
   MOZ_ASSERT(NS_IsMainThread());
+
+#if defined(XP_MACOSX) || defined(XP_IOS)
+  if (!mShutdownRequested && !mAppleFastDatapathProbeResultReceived) {
+    sAppleFastDatapathProbeAllowed = false;
+  }
+#endif
 
   mChannelClosed = true;
 

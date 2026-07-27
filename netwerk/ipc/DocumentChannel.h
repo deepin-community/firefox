@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,12 +13,8 @@
 
 class nsDocShell;
 
-#define DOCUMENT_CHANNEL_IID                         \
-  {                                                  \
-    0x6977bc44, 0xb1db, 0x41b7, {                    \
-      0xb5, 0xc5, 0xe2, 0x13, 0x68, 0x22, 0xc9, 0x8f \
-    }                                                \
-  }
+#define DOCUMENT_CHANNEL_IID \
+  {0x6977bc44, 0xb1db, 0x41b7, {0xb5, 0xc5, 0xe2, 0x13, 0x68, 0x22, 0xc9, 0x8f}}
 
 namespace mozilla {
 namespace net {
@@ -45,7 +38,7 @@ class DocumentChannel : public nsIIdentChannel {
   NS_DECL_NSICHANNEL
   NS_DECL_NSIIDENTCHANNEL
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(DOCUMENT_CHANNEL_IID)
+  NS_INLINE_DECL_STATIC_IID(DOCUMENT_CHANNEL_IID)
 
   void SetNavigationTiming(nsDOMNavigationTiming* aTiming) {
     mTiming = aTiming;
@@ -111,8 +104,6 @@ class DocumentChannel : public nsIIdentChannel {
   // NS_ERROR_CSP_FRAME_ANCESTOR_VIOLATION.
   bool mIsEmbeddingBlockedError = false;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(DocumentChannel, DOCUMENT_CHANNEL_IID)
 
 }  // namespace net
 }  // namespace mozilla

@@ -3,8 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Page title
-about-processes-title = Менаџер процеса
-
+about-processes-title = Управник процеса
 # The Actions column
 about-processes-column-action =
     .title = Радње
@@ -12,10 +11,11 @@ about-processes-column-action =
 ## Tooltips
 
 about-processes-shutdown-process =
-    .title = Затвори картице и окончај процесе
+    .title = Затвори језичке и окончај процесе
+about-processes-kill-process =
+    .title = Убиј процес
 about-processes-shutdown-tab =
-    .title = Затвори картицу
-
+    .title = Затвори језичке
 # Profiler icons
 # Variables:
 #    $duration (Number) The time in seconds during which the profiler will be running.
@@ -54,12 +54,26 @@ about-processes-remote-sandbox-broker-process = Даљински Sandbox Broker 
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Унапред додељено ({ $pid })
 about-processes-utility-process = Помоћни програм ({ $pid })
-
+about-processes-inference-process = Закључивање ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = Друго: { $type } ({ $pid })
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = приватно
+about-processes-web-isolated-property-serviceworker = сервисни радник
+about-processes-web-isolated-property-jit-disabled = JIT је онемогућен
+about-processes-web-isolated-property-with-coop-coep = изоловано унакрсним пореклом
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
 
 ## Isolated process names
 ## Variables:
@@ -90,7 +104,6 @@ about-processes-active-threads =
         [few] { $active } активне нити од { $number }: { $list }
        *[other] { $active } активних нити од { $number }: { $list }
     }
-
 # Single-line summary of threads (idle process)
 # Variables:
 #    $number (Number) The number of threads in the process. Typically larger
@@ -103,25 +116,21 @@ about-processes-inactive-threads =
         [few] { $number } неактивне нити
        *[other] { $number } неактивних нити
     }
-
 # Thread details
 # Variables:
 #   $name (String) The name assigned to the thread.
 #   $tid (String) The thread id of this thread, assigned by the OS.
 about-processes-thread-name-and-id = { $name }
     .title = ID нити: { $tid }
-
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = Језичак: { $name }
-about-processes-preloaded-tab = Унапред учитана нова картица
-
+about-processes-preloaded-tab = Унапред учитан нови језичак
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
 about-processes-frame-name-one = Подоквир: { $url }
-
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
@@ -137,6 +146,9 @@ about-processes-utility-actor-audio-decoder-wmf = Windows Media Framework ауд
 about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
 # "Oracle" refers to an internal Firefox process and should be kept in English
 about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Windows алатке
+about-processes-utility-actor-windows-file-dialog = Windows прозор за датотеке
+about-processes-utility-actor-pkcs11-module = Помоћник безбедносног модула
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -150,15 +162,12 @@ about-processes-utility-actor-js-oracle = JavaScript Oracle
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
     .title = Укупно процесорско време: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
-
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (мерење)
-
 # Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
 # This case only occurs on Windows where the precision of the CPU times is low.
 about-processes-cpu-almost-idle = < 0.1%
     .title = Укупно CPU време: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
-
 # Special case: process or thread is currently idle.
 about-processes-cpu-fully-idle = чекање
     .title = Укупно CPU време: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
@@ -177,7 +186,6 @@ about-processes-cpu-fully-idle = чекање
 # Common case.
 about-processes-total-memory-size-changed = { NUMBER($total, maximumFractionDigits: 0) } { $totalUnit }
     .title = Развој: { $deltaSign }{ NUMBER($delta, maximumFractionDigits: 0) } { $deltaUnit }
-
 # Special case: no change.
 about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
 

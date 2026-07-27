@@ -17,7 +17,7 @@ printpreview-portrait =
     .label = Wusoki format
     .accesskey = W
 printpreview-landscape =
-    .label = Precny format
+    .label = Prěcny format
     .accesskey = c
 printpreview-scale =
     .value = Měritko:
@@ -38,7 +38,6 @@ printpreview-page-setup =
 printpreview-page =
     .value = Bok:
     .accesskey = B
-
 # Variables
 # $sheetNum (integer) - The current sheet number
 # $sheetCount (integer) - The total number of sheets to print
@@ -62,7 +61,6 @@ printpreview-nextarrow =
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = Slědny bok
-
 printpreview-homearrow-button =
     .title = Prědny bok
 printpreview-previousarrow-button =

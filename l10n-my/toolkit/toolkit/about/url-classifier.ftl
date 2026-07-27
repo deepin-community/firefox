@@ -17,7 +17,6 @@ url-classifier-debug-sb-modules = Safe Browsing မှတ်တမ်း မေ�
 url-classifier-debug-modules = လက်ရှိ မှတ်တမ်း မော်ဂျူးများ
 url-classifier-debug-sbjs-modules = Safe Browsing JS မှတ်တမ်း
 url-classifier-debug-file = လက်ရှိ မှတ်တမ်းဖိုင်
-
 url-classifier-trigger-update = အဆင့်မြှင့်တင်မှု ဆောင်ရွက်ရန်
 url-classifier-not-available = N/A
 url-classifier-disable-sbjs-log = Safe Browsing JS မှတ်တမ်းကို ပိတ်ရန်
@@ -26,7 +25,3 @@ url-classifier-enabled = ဖွင့်ထားသည်
 url-classifier-disabled = ပိတ်ထားသည်
 url-classifier-updating = ပြင်ဆင်နေသည်
 url-classifier-cannot-update = မပြင်ဆင်နိုင်ပါ
-
-## Variables
-##   $error (string) - Error message
-

@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ScrollbarActivity_h___
-#define ScrollbarActivity_h___
+#ifndef ScrollbarActivity_h_
+#define ScrollbarActivity_h_
 
 #include "mozilla/Assertions.h"
 #include "nsCOMPtr.h"
@@ -83,38 +81,24 @@ class ScrollbarActivity final : public nsIDOMEventListener {
   void StartFadeTimer();
   void CancelFadeTimer();
   void BeginFade();
-  void HandleEventForScrollbar(const nsAString& aType, nsIContent* aTarget,
-                               dom::Element* aScrollbar,
-                               bool* aStoredHoverState);
 
-  void StartListeningForScrollbarEvents();
   void StartListeningForScrollAreaEvents();
-  void StopListeningForScrollbarEvents();
   void StopListeningForScrollAreaEvents();
-  void AddScrollbarEventListeners(dom::EventTarget* aScrollbar);
-  void RemoveScrollbarEventListeners(dom::EventTarget* aScrollbar);
-
-  void HoveredScrollbar(dom::Element* aScrollbar);
 
   dom::Element* GetScrollbarContent(bool aVertical);
   dom::Element* GetHorizontalScrollbar() { return GetScrollbarContent(false); }
   dom::Element* GetVerticalScrollbar() { return GetScrollbarContent(true); }
 
   nsIScrollbarMediator* const mScrollableFrame;
-  nsCOMPtr<dom::EventTarget> mHorizontalScrollbar;  // null while inactive
-  nsCOMPtr<dom::EventTarget> mVerticalScrollbar;    // null while inactive
   nsCOMPtr<nsITimer> mFadeTimer;
   uint32_t mNestedActivityCounter = 0;
   // This boolean is true from the point activity starts to the point BeginFade
   // runs, and effectively reflects the "active" attribute of the scrollbar.
   bool mScrollbarEffectivelyVisible = false;
-  bool mListeningForScrollbarEvents = false;
   bool mListeningForScrollAreaEvents = false;
-  bool mHScrollbarHovered = false;
-  bool mVScrollbarHovered = false;
 };
 
 }  // namespace layout
 }  // namespace mozilla
 
-#endif /* ScrollbarActivity_h___ */
+#endif /* ScrollbarActivity_h_ */

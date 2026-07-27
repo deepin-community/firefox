@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -27,10 +26,10 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(0, -10),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(0, -10),
       [0, 1, 2, 3]
     ),
     '[0, 1, 2, 3]).copyWithin(0, -10) -> [0, 1, 2, 3]'
@@ -38,7 +37,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([1, 2, 3, 4, 5]).copyWithin(0, -Infinity),
+      new TA(makeCtorArg([1, 2, 3, 4, 5])).copyWithin(0, -Infinity),
       [1, 2, 3, 4, 5]
     ),
     '[1, 2, 3, 4, 5]).copyWithin(0, -Infinity) -> [1, 2, 3, 4, 5]'
@@ -46,7 +45,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3, 4]).copyWithin(2, -10),
+      new TA(makeCtorArg([0, 1, 2, 3, 4])).copyWithin(2, -10),
       [0, 1, 0, 1, 2]
     ),
     '[0, 1, 2, 3, 4]).copyWithin(2, -2) -> [0, 1, 0, 1, 2]'
@@ -54,7 +53,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([1, 2, 3, 4, 5]).copyWithin(2, -Infinity),
+      new TA(makeCtorArg([1, 2, 3, 4, 5])).copyWithin(2, -Infinity),
       [1, 2, 1, 2, 3]
     ),
     '[1, 2, 3, 4, 5]).copyWithin(2, -Infinity) -> [1, 2, 1, 2, 3]'
@@ -62,7 +61,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3, 4]).copyWithin(10, -10),
+      new TA(makeCtorArg([0, 1, 2, 3, 4])).copyWithin(10, -10),
       [0, 1, 2, 3, 4]
     ),
     '[0, 1, 2, 3, 4]).copyWithin(10, -10) -> [0, 1, 2, 3, 4]'
@@ -70,7 +69,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([1, 2, 3, 4, 5]).copyWithin(10, -Infinity),
+      new TA(makeCtorArg([1, 2, 3, 4, 5])).copyWithin(10, -Infinity),
       [1, 2, 3, 4, 5]
     ),
     '[1, 2, 3, 4, 5]).copyWithin(10, -Infinity) -> [1, 2, 3, 4, 5]'
@@ -78,7 +77,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(-9, -10),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(-9, -10),
       [0, 1, 2, 3]
     ),
     '[0, 1, 2, 3].copyWithin(-9, -10) -> [0, 1, 2, 3]'
@@ -86,7 +85,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([1, 2, 3, 4, 5]).copyWithin(-9, -Infinity),
+      new TA(makeCtorArg([1, 2, 3, 4, 5])).copyWithin(-9, -Infinity),
       [1, 2, 3, 4, 5]
     ),
     '[1, 2, 3, 4, 5].copyWithin(-9, -Infinity) -> [1, 2, 3, 4, 5]'

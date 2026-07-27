@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,8 +19,8 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/dom/Selection.h"
 #include "mozilla/dom/Element.h"
+#include "mozilla/dom/ElementInlines.h"
 #include "nsAString.h"
-#include "nsAlgorithm.h"
 #include "nsCOMPtr.h"
 #include "nsDebug.h"
 #include "nsError.h"
@@ -323,10 +322,21 @@ NS_IMETHODIMP HTMLEditor::InsertTableCell(int32_t aNumberOfCellsToInsert,
 
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eInsertTableCellElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -370,7 +380,8 @@ HTMLEditor::InsertTableCellsWithTransaction(
   MOZ_ASSERT(aPointToInsert.IsSetAndValid());
   MOZ_ASSERT(aNumberOfCellsToInsert > 0);
 
-  if (!HTMLEditUtils::IsTableRow(aPointToInsert.GetContainer())) {
+  if (!HTMLEditUtils::IsTableRowElement(
+          aPointToInsert.GetContainerAs<nsIContent>())) {
     NS_WARNING("Tried to insert cell elements to non-<tr> element");
     return Err(NS_ERROR_FAILURE);
   }
@@ -476,7 +487,7 @@ NS_IMETHODIMP HTMLEditor::GetFirstRow(Element* aTableOrElementInTable,
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetFirstRow);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetFirstRow() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -593,10 +604,21 @@ NS_IMETHODIMP HTMLEditor::InsertTableColumn(int32_t aNumberOfColumnsToInsert,
 
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eInsertTableColumn);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -641,8 +663,9 @@ nsresult HTMLEditor::InsertTableColumnsWithTransaction(
     return NS_ERROR_FAILURE;
   }
 
-  if (!HTMLEditUtils::IsTableRow(aPointToInsert.GetContainer())) {
-    NS_WARNING("Tried to insert columns to non-<tr> element");
+  if (NS_WARN_IF(!aPointToInsert.IsInContentNode()) ||
+      NS_WARN_IF(!HTMLEditUtils::IsTableRowElement(
+          *aPointToInsert.ContainerAs<nsIContent>()))) {
     return NS_ERROR_FAILURE;
   }
 
@@ -668,8 +691,7 @@ nsresult HTMLEditor::InsertTableColumnsWithTransaction(
   // the caller wants to insert column immediately after the last cell of
   // the pointing cell element or in the raw.
   const bool insertAfterPreviousCell = [&]() {
-    if (!aPointToInsert.IsEndOfContainer() &&
-        HTMLEditUtils::IsTableCell(aPointToInsert.GetChild())) {
+    if (HTMLEditUtils::IsTableCellElement(aPointToInsert.GetChild())) {
       return false;  // Insert before the cell element.
     }
     // There is a previous cell element, we should add a column after it.
@@ -692,7 +714,7 @@ nsresult HTMLEditor::InsertTableColumnsWithTransaction(
       // Insert columns immediately before current column.
       const OwningNonNull<Element> tableCellElement =
           *aPointToInsert.GetChild()->AsElement();
-      MOZ_ASSERT(HTMLEditUtils::IsTableCell(tableCellElement));
+      MOZ_ASSERT(HTMLEditUtils::IsTableCellElement(*tableCellElement));
       CellIndexes cellIndexes(*tableCellElement, presShell);
       if (NS_WARN_IF(cellIndexes.isErr())) {
         return Err(NS_ERROR_FAILURE);
@@ -835,7 +857,7 @@ nsresult HTMLEditor::InsertTableColumnsWithTransaction(
         cellElementToPutCaret =
             unwrappedInsertCellElementsResult.UnwrapNewNode();
         MOZ_ASSERT(cellElementToPutCaret);
-        MOZ_ASSERT(HTMLEditUtils::IsTableCell(cellElementToPutCaret));
+        MOZ_ASSERT(HTMLEditUtils::IsTableCellElement(*cellElementToPutCaret));
       }
     }
     return cellElementToPutCaret;
@@ -863,10 +885,21 @@ NS_IMETHODIMP HTMLEditor::InsertTableRow(int32_t aNumberOfRowsToInsert,
 
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eInsertTableRowElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -894,7 +927,7 @@ nsresult HTMLEditor::InsertTableRowsWithTransaction(
     Element& aCellElement, int32_t aNumberOfRowsToInsert,
     InsertPosition aInsertPosition) {
   MOZ_ASSERT(IsEditActionDataAvailable());
-  MOZ_ASSERT(HTMLEditUtils::IsTableCell(&aCellElement));
+  MOZ_ASSERT(HTMLEditUtils::IsTableCellElement(aCellElement));
 
   const RefPtr<PresShell> presShell = GetPresShell();
   if (MOZ_UNLIKELY(NS_WARN_IF(!presShell))) {
@@ -902,7 +935,7 @@ nsresult HTMLEditor::InsertTableRowsWithTransaction(
   }
 
   if (MOZ_UNLIKELY(
-          !HTMLEditUtils::IsTableRow(aCellElement.GetParentElement()))) {
+          !HTMLEditUtils::IsTableRowElement(aCellElement.GetParentElement()))) {
     NS_WARNING("Tried to insert columns to non-<tr> element");
     return NS_ERROR_FAILURE;
   }
@@ -1017,7 +1050,7 @@ nsresult HTMLEditor::InsertTableRowsWithTransaction(
         if (!referenceRowElement) {
           if (Element* maybeTableRowElement =
                   cellDataInStartRow.mElement->GetParentElement()) {
-            if (HTMLEditUtils::IsTableRow(maybeTableRowElement)) {
+            if (HTMLEditUtils::IsTableRowElement(*maybeTableRowElement)) {
               referenceRowElement = maybeTableRowElement;
             }
           }
@@ -1075,8 +1108,9 @@ nsresult HTMLEditor::InsertTableRowsWithTransaction(
   }
 
   MOZ_ASSERT_IF(referenceRowData.mElement,
-                HTMLEditUtils::IsTableRow(referenceRowData.mElement));
-  if (NS_WARN_IF(!HTMLEditUtils::IsTableRow(aCellElement.GetParentElement()))) {
+                HTMLEditUtils::IsTableRowElement(*referenceRowData.mElement));
+  if (NS_WARN_IF(
+          !HTMLEditUtils::IsTableRowElement(aCellElement.GetParentElement()))) {
     return NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE;
   }
 
@@ -1184,8 +1218,7 @@ nsresult HTMLEditor::InsertTableRowsWithTransaction(
       EditorRawDOMPoint point(firstInsertedTRElementOrError.inspect(),
                               referenceRowData.mOffsetInTRElementToPutCaret);
       if (MOZ_LIKELY(point.IsSetAndValid()) &&
-          MOZ_LIKELY(!point.IsEndOfContainer()) &&
-          MOZ_LIKELY(HTMLEditUtils::IsTableCell(point.GetChild()))) {
+          MOZ_LIKELY(HTMLEditUtils::IsTableCellElement(point.GetChild()))) {
         return OwningNonNull<Element>(*point.GetChild()->AsElement());
       }
     }
@@ -1248,10 +1281,21 @@ nsresult HTMLEditor::DeleteTableElementAndChildrenWithTransaction(
 NS_IMETHODIMP HTMLEditor::DeleteTable() {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eRemoveTableElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -1279,10 +1323,21 @@ NS_IMETHODIMP HTMLEditor::DeleteTable() {
 NS_IMETHODIMP HTMLEditor::DeleteTableCell(int32_t aNumberOfCellsToDelete) {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eRemoveTableCellElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -1570,10 +1625,21 @@ nsresult HTMLEditor::DeleteTableCellWithTransaction(
 NS_IMETHODIMP HTMLEditor::DeleteTableCellContents() {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eDeleteTableCellContents);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -1661,10 +1727,21 @@ nsresult HTMLEditor::DeleteTableCellContentsWithTransaction() {
 NS_IMETHODIMP HTMLEditor::DeleteTableColumn(int32_t aNumberOfColumnsToDelete) {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eRemoveTableColumn);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -1911,10 +1988,21 @@ nsresult HTMLEditor::DeleteTableColumnWithTransaction(Element& aTableElement,
 NS_IMETHODIMP HTMLEditor::DeleteTableRow(int32_t aNumberOfRowsToDelete) {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eRemoveTableRowElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -2197,7 +2285,7 @@ nsresult HTMLEditor::DeleteTableRowWithTransaction(Element& aTableElement,
 NS_IMETHODIMP HTMLEditor::SelectTable() {
   AutoEditActionDataSetter editActionData(*this, EditAction::eSelectTable);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::SelectTable() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -2225,7 +2313,7 @@ NS_IMETHODIMP HTMLEditor::SelectTable() {
 NS_IMETHODIMP HTMLEditor::SelectTableCell() {
   AutoEditActionDataSetter editActionData(*this, EditAction::eSelectTableCell);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::SelectTableCell() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -2255,7 +2343,7 @@ NS_IMETHODIMP HTMLEditor::SelectAllTableCells() {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eSelectAllTableCells);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::SelectAllTableCells() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -2355,7 +2443,7 @@ NS_IMETHODIMP HTMLEditor::SelectAllTableCells() {
 NS_IMETHODIMP HTMLEditor::SelectTableRow() {
   AutoEditActionDataSetter editActionData(*this, EditAction::eSelectTableRow);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::SelectTableRow() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -2475,7 +2563,7 @@ NS_IMETHODIMP HTMLEditor::SelectTableColumn() {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eSelectTableColumn);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::SelectTableColumn() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -2590,10 +2678,21 @@ NS_IMETHODIMP HTMLEditor::SelectTableColumn() {
 NS_IMETHODIMP HTMLEditor::SplitTableCell() {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eSplitTableCellElement);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -2890,10 +2989,21 @@ NS_IMETHODIMP HTMLEditor::SwitchTableCellHeaderType(Element* aSourceCell,
 
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eSetTableCellElementType);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -2945,10 +3055,21 @@ NS_IMETHODIMP HTMLEditor::SwitchTableCellHeaderType(Element* aSourceCell,
 NS_IMETHODIMP HTMLEditor::JoinTableCells(bool aMergeNonContiguousContents) {
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eJoinTableCellElements);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CanHandleAndFlushPendingNotifications() failed");
+    return EditorBase::ToGenericNSResult(rv);
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -3588,10 +3709,19 @@ nsresult HTMLEditor::FixBadColSpan(Element* aTable, int32_t aColIndex,
 
 NS_IMETHODIMP HTMLEditor::NormalizeTable(Element* aTableOrElementInTable) {
   AutoEditActionDataSetter editActionData(*this, EditAction::eNormalizeTable);
-  nsresult rv = editActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_WARN_IF(!editActionData.CanHandle())) {
+    return NS_ERROR_NOT_INITIALIZED;
+  }
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(editingHost &&
+                 editingHost->IsContentEditablePlainTextOnly())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  nsresult rv = editActionData.MaybeDispatchBeforeInputEvent();
+  if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
-                         "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
+                         "MaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
   }
 
@@ -3727,7 +3857,7 @@ NS_IMETHODIMP HTMLEditor::GetCellIndexes(Element* aCellElement,
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetCellIndexes);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetCellIndexes() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -3806,7 +3936,7 @@ NS_IMETHODIMP HTMLEditor::GetTableSize(Element* aTableOrElementInTable,
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetTableSize);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetTableSize() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -3850,7 +3980,7 @@ NS_IMETHODIMP HTMLEditor::GetCellDataAt(
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetCellDataAt);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetCellDataAt() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -3904,7 +4034,7 @@ NS_IMETHODIMP HTMLEditor::GetCellAt(Element* aTableElement, int32_t aRowIndex,
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetCellAt);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetCellAt() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -4007,14 +4137,16 @@ nsresult HTMLEditor::GetCellContext(Element** aTable, Element** aCell,
     if (!cellOrRowOrTableElementOrError.inspect()) {
       return NS_SUCCESS_EDITOR_ELEMENT_NOT_FOUND;
     }
-    if (HTMLEditUtils::IsTable(cellOrRowOrTableElementOrError.inspect())) {
+    if (cellOrRowOrTableElementOrError.inspect()->IsHTMLElement(
+            nsGkAtoms::table)) {
       // We have a selected table, not a cell
       if (aTable) {
         cellOrRowOrTableElementOrError.unwrap().forget(aTable);
       }
       return NS_OK;
     }
-    if (!HTMLEditUtils::IsTableCell(cellOrRowOrTableElementOrError.inspect())) {
+    if (!HTMLEditUtils::IsTableCellElement(
+            cellOrRowOrTableElementOrError.inspect())) {
       return NS_SUCCESS_EDITOR_ELEMENT_NOT_FOUND;
     }
 
@@ -4078,7 +4210,7 @@ NS_IMETHODIMP HTMLEditor::GetSelectedCells(
 
   AutoEditActionDataSetter editActionData(*this, EditAction::eGetSelectedCells);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetSelectedCells() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }
@@ -4106,7 +4238,7 @@ NS_IMETHODIMP HTMLEditor::GetFirstSelectedCellInTable(int32_t* aRowIndex,
   AutoEditActionDataSetter editActionData(
       *this, EditAction::eGetFirstSelectedCellInTable);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING(
         "HTMLEditor::GetFirstSelectedCellInTable() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
@@ -4234,7 +4366,7 @@ NS_IMETHODIMP HTMLEditor::GetSelectedOrParentTableElement(
   AutoEditActionDataSetter editActionData(
       *this, EditAction::eGetSelectedOrParentTableElement);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING(
         "HTMLEditor::GetSelectedOrParentTableElement() couldn't handle the "
         "job");
@@ -4262,21 +4394,21 @@ NS_IMETHODIMP HTMLEditor::GetSelectedOrParentTableElement(
     return NS_OK;
   }
 
-  if (HTMLEditUtils::IsTableCell(cellOrRowOrTableElement)) {
+  if (HTMLEditUtils::IsTableCellElement(*cellOrRowOrTableElement)) {
     aTagName.AssignLiteral("td");
     // Keep *aSelectedCount as 0.
     cellOrRowOrTableElement.forget(aCellOrRowOrTableElement);
     return NS_OK;
   }
 
-  if (HTMLEditUtils::IsTable(cellOrRowOrTableElement)) {
+  if (cellOrRowOrTableElement->IsHTMLElement(nsGkAtoms::table)) {
     aTagName.AssignLiteral("table");
     *aSelectedCount = 1;
     cellOrRowOrTableElement.forget(aCellOrRowOrTableElement);
     return NS_OK;
   }
 
-  if (HTMLEditUtils::IsTableRow(cellOrRowOrTableElement)) {
+  if (HTMLEditUtils::IsTableRowElement(*cellOrRowOrTableElement)) {
     aTagName.AssignLiteral("tr");
     *aSelectedCount = 1;
     cellOrRowOrTableElement.forget(aCellOrRowOrTableElement);
@@ -4315,7 +4447,7 @@ Result<RefPtr<Element>, nsresult> HTMLEditor::GetSelectedOrParentTableElement(
   }
 
   // If anchor selects a <td>, <table> or <tr>, return it.
-  if (anchorRef.Container()->HasChildNodes()) {
+  if (anchorRef.GetContainer()->HasChildNodes()) {
     nsIContent* selectedContent = anchorRef.GetChildAtOffset();
     if (selectedContent) {
       // XXX Why do we ignore <th> element in this case?
@@ -4336,14 +4468,14 @@ Result<RefPtr<Element>, nsresult> HTMLEditor::GetSelectedOrParentTableElement(
     }
   }
 
-  if (NS_WARN_IF(!anchorRef.Container()->IsContent())) {
+  if (NS_WARN_IF(!anchorRef.GetContainer()->IsContent())) {
     return RefPtr<Element>();
   }
 
   // Then, look for a cell element (either <td> or <th>) which contains
   // the anchor container.
   cellElement = GetInclusiveAncestorByTagNameInternal(
-      *nsGkAtoms::td, *anchorRef.Container()->AsContent());
+      *nsGkAtoms::td, *anchorRef.GetContainer()->AsContent());
   if (!cellElement) {
     return RefPtr<Element>();  // Not in table.
   }
@@ -4366,11 +4498,11 @@ HTMLEditor::GetFirstSelectedCellElementInTable() const {
   }
 
   const RefPtr<Element>& element = cellOrRowOrTableElementOrError.inspect();
-  if (!HTMLEditUtils::IsTableCell(element)) {
+  if (!HTMLEditUtils::IsTableCellElement(*element)) {
     return RefPtr<Element>();
   }
 
-  if (!HTMLEditUtils::IsTableRow(element->GetParentNode())) {
+  if (!HTMLEditUtils::IsTableRowElement(element->GetParent())) {
     NS_WARNING("There was no parent <tr> element for the found cell");
     return RefPtr<Element>();
   }
@@ -4392,7 +4524,7 @@ NS_IMETHODIMP HTMLEditor::GetSelectedCellsType(Element* aElement,
   AutoEditActionDataSetter editActionData(*this,
                                           EditAction::eGetSelectedCellsType);
   nsresult rv = editActionData.CanHandleAndFlushPendingNotifications();
-  if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+  if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::GetSelectedCellsType() couldn't handle the job");
     return EditorBase::ToGenericNSResult(rv);
   }

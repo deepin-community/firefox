@@ -5,15 +5,25 @@
 pane-general-title = Yamma
 category-general =
     .tooltiptext = { pane-general-title }
+pane-search-title2 = Ceeci
+    .title = Ceeci
+pane-privacy-title3 = Sutura nda saajaw
+    .title = Sutura nda saajaw
 pane-search-title = Ceeci
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Sutura nda saajaw
 pane-privacy-title = Sutura nda saajaw
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } faaba
+    .title = { -brand-short-name } faaba
 help-button-label = { -brand-short-name } faaba
 focus-search =
     .key = f
@@ -28,17 +38,6 @@ should-restart-title = { -brand-short-name } tunandi taaga
 should-restart-ok = { -brand-short-name } tunandi taaga sohõ
 restart-later = Tunandi taaga nd'a too kayna
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = Ceeci duurawey
@@ -51,6 +50,8 @@ always-check-default =
     .accesskey = w
 is-default = { -brand-short-name } ti war tilasu ceecikaa sohõda.
 is-not-default = { -brand-short-name } manti war tilasu ceecikaa sohõda
+tabs-group-header2 =
+    .label = Kanjey
 tabs-group-header = Kanjey
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab willandey kanjey game goyyan kanandi koraw ra
@@ -69,6 +70,8 @@ browser-containers-settings =
     .label = Kayandiyaney…
     .accesskey = n
 containers-disable-alert-title = Sun kanjey kul daabu?
+startup-group =
+    .label = Tunandi
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -119,6 +122,10 @@ check-user-spelling =
 
 ## General Section - Files and Applications
 
+download-save-files-header =
+    .label = Tukey gaabu ga
+download-save-where-3 =
+    .aria-label = Tukey gaabu ga
 download-header = Zumandiyaney
 download-save-where = Tukey gaabu ga
     .accesskey = g
@@ -139,9 +146,11 @@ download-always-ask-where =
 applications-type-column =
     .label = Gundekuna dumi
     .accesskey = d
+applications-type-heading = Gundekuna dumi
 applications-action-column =
     .label = Teera
     .accesskey = T
+applications-action-heading = Teera
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } tuku
@@ -163,11 +172,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Hãa waati kul
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Goy nda { $plugin-name } ({ -brand-short-name } ra)
 
@@ -188,10 +197,13 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
 play-drm-content-learn-more = Bay ka tonton
 update-application-title = { -brand-short-name } taagandirey
+update-history-2 =
+    .label = Taagandiri taariki cebe
+    .accesskey = a
 update-history =
     .label = Taagandiri taariki cebe…
     .accesskey = a
@@ -217,8 +229,10 @@ performance-allow-hw-accel =
     .accesskey = j
 performance-limit-content-process-option = Gundekuna goyandiyan adadu
     .accesskey = d
+performance-group =
+    .label = Teeyan sahã
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Ceeciyan
 browsing-use-autoscroll =
@@ -236,6 +250,8 @@ browsing-use-cursor-navigation =
 browsing-search-on-start-typing =
     .label = Hantum ceeci waati kaŋ ay šintin ka hantum
     .accesskey = H
+browsing-group =
+    .label = Ceeciyan
 
 ## General Section - Proxy
 
@@ -243,10 +259,7 @@ network-proxy-connection-settings =
     .label = Kayandiyaney…
     .accesskey = a
 
-## Home Section
-
-
-## Home Section - Home Page Customization
+## Custom Homepage subpage
 
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
@@ -263,22 +276,14 @@ choose-bookmark =
     .label = Doo-šilbay goyandi...
     .accesskey = D
 
-## Home Section - Firefox Home Content Customization
-
-
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
-
-
-##
-
-
 ## Search Section
 
 search-engine-default-header = Tilasu ceecijinay
 search-suggestions-option =
     .label = Ceeci honnandiyaney noo
     .accesskey = C
+search-suggestions-cant-show-2 =
+    .message = Ceeci honnandiyaney ši cebe gorodoo zuu hunyaney ra zama war na { -brand-short-name } hanse a ma ši honga taariki kul.
 search-suggestions-cant-show = Ceeci honnandiyaney ši cebe gorodoo zuu hunyaney ra zama war na { -brand-short-name } hanse a ma ši honga taariki kul.
 search-choose-engine-column =
     .label = Ceecijinay
@@ -294,13 +299,19 @@ search-remove-engine =
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Kufalkalima filla
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = War na kufalkalima suuba kaŋ goo goy ra "{ $name }" se sohõda. Wa itana foo suuba.
 search-keyword-warning-bookmark = War na kufalkalima suuba kaŋ goo goy ra doo-šilbay se sohõda. Taare iwaani suuba.
+search-engine-group =
+    .label = Tilasu ceecijinay
+search-default-engine =
+    .aria-label = Tilasu ceecijinay
 
 ## Containers Section
 
 containers-header = Diikey kanjey
+containers-section-header =
+    .heading = Diikey kanjey
 containers-add-button =
     .label = Sun taaga tonton
     .accesskey = o
@@ -331,6 +342,7 @@ sync-profile-picture-with-alt =
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } mana korosandi.
 sync-signedin-login-failure = War maa hantum ka ciya koyne { $email }
@@ -340,12 +352,6 @@ sync-signedin-login-failure = War maa hantum ka ciya koyne { $email }
 sync-sign-in =
     .label = Huru
     .accesskey = H
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -359,6 +365,16 @@ sync-engine-history =
 ## The device name controls.
 
 sync-device-name-header = Jinay maa
+sync-device-name-header-2 =
+    .label = Jinay maa
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Jinay maa
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Jinay maa barmay
+    .accesskey = J
 sync-device-name-change =
     .label = Jinay maa barmay…
     .accesskey = J
@@ -379,13 +395,7 @@ sync-verification-sent-body = Tabatandiyan dobu sanbandi { $email } do.
 sync-verification-not-sent-title = Mana hin ka tabatandiyan sanba
 sync-verification-not-sent-body = Ir mana hin ka tabatandiyan bataga sanba sohõda, wa ceeci koyne waati foo.
 
-## Privacy Section
-
-
-## Privacy Section - Logins and Passwords
-
-
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = Hasarawey…
@@ -393,16 +403,13 @@ forms-exceptions =
 forms-saved-logins =
     .label = Huruyan maa gaabuntey…
     .accesskey = m
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Takaddaɲaa šennikufal barmay
     .accesskey = T
 forms-master-pw-fips-desc = Šennikufal mana hin ka barmay mana
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -424,6 +431,9 @@ history-remember-option-never =
     .label = Ma ši honga taarikoo abada
 history-remember-option-custom =
     .label = Hanse bonse taariku se goyandi
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ga goy nda kayandiyan follokey kaŋ goo nda sutura ceeciyan, amma a ši taariku gaabu war tataaru ceeciroo waate.
 history-dontremember-description = { -brand-short-name } ga goy nda kayandiyan follokey kaŋ goo nda sutura ceeciyan, amma a ši taariku gaabu war tataaru ceeciroo waate.
 history-private-browsing-permanent =
     .label = Wa goy sutura naarumi alhaali ra waati kul
@@ -437,17 +447,10 @@ history-clear-on-close-option =
 history-clear-on-close-settings =
     .label = Kayandiyaney…
     .accesskey = n
+history-group =
+    .label = Taariki
 
-## Privacy Section - Site Data
-
-
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-locbar-bookmarks-option =
     .label = Doo-šilbay
@@ -456,22 +459,6 @@ addressbar-locbar-openpage-option =
     .label = Nor lokey feeri
     .accesskey = f
 addressbar-suggestions-settings = Ibaa&ey barmay ceecijinay honnandiyaney se
-
-## Privacy Section - Content Blocking
-
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
-
-# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
-
-
-## Privacy Section - Tracking
-
 
 ## Privacy Section - Permissions
 
@@ -482,12 +469,8 @@ permissions-block-popups =
 permissions-addon-exceptions =
     .label = Hasarawey…
     .accesskey = H
-
-## Privacy Section - Data Collection
-
-
-## Privacy Section - Website Advertising Preferences
-
+permissions-notification2 =
+    .label = Bangandiyaney
 
 ## Privacy Section - Security
 ##
@@ -511,12 +494,7 @@ certs-header = Tabatiyan-tiirawey
 certs-enable-ocsp =
     .label = Hayyan OCSP zaabi feršikey ka sohõda tabatandi tiira booriyanoo cimandi.
     .accesskey = H
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS tunandi
 
 ## The following strings are used in the Download section of settings
 

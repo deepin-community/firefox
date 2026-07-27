@@ -32,8 +32,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = ਕੈਪਚਰ ਕੀਤੀਆ
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = ਆਪਣੇ-ਆਪ ਤਾਜ਼ਾ
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = ਮੂਲ ਰੂਪ ਵਿੱਚ ਆਪੇ ਤਾਜ਼ਾ ਕਰੋ
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = ਤਾਜ਼ਾ ਕਰੋ
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -97,8 +95,8 @@ about-webrtc-save-page-label = ਸਫ਼ੇ ਨੂੰ ਸੰਭਾਲੋ
 about-webrtc-debug-mode-msg-label = ਡੀਬੱਗ ਮੋਡ
 about-webrtc-debug-mode-off-state-label = ਡੀਬੱਗ ਮੋਡ ਨੂੰ ਸ਼ੁਰੂ ਕਰੋ
 about-webrtc-debug-mode-on-state-label = ਡੀਬੱਗ ਮੋਡ ਨੂੰ ਰੋਕੋ
-about-webrtc-enable-logging-label = WebRTC ਲਾਗ ਪ੍ਰੀ-ਸੈੱਟ ਸਮਰੱਥ ਕਰੋ
 about-webrtc-stats-heading = ਸ਼ੈਸ਼ਨ ਅੰਕੜੇ
+about-webrtc-enable-logging-label = WebRTC ਲਾਗ ਪ੍ਰੀ-ਸੈੱਟ ਸਮਰੱਥ ਕਰੋ
 about-webrtc-stats-clear = ਅਤੀਤ ਨੂੰ ਮਿਟਾਓ
 about-webrtc-log-heading = ਕਨੈਕਸ਼ਨ ਲਾਗ
 about-webrtc-log-clear = ਲਾਗ ਮਿਟਾਓ
@@ -168,9 +166,6 @@ about-webrtc-time-elapsed = ਲੱਗਾ ਸਮਾਂ
 about-webrtc-estimated-framerate = ਅੰਦਾਜ਼ਨ ਫਰੇਮ-ਦਰ
 about-webrtc-rotation-degrees = ਘੁੰਮਾਉਣਾ (ਡਿਗਰੀਆਂ)
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
 ## These are displayed on the button that shows or hides the
 ## PeerConnection configuration disclosure
 
@@ -186,10 +181,7 @@ about-webrtc-configuration-element-provided = ਦਿੱਤੇ
 # been provided
 about-webrtc-configuration-element-not-provided = ਨਾ ਦਿੱਤੇ
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = ਸਫ਼ੇ ਨੂੰ ਸੰਭਾਲਿਆ ਗਿਆ: { $path }
 about-webrtc-debug-mode-off-state-msg = ਟਰੇਸ ਲਾਗ ਨੂੰ ਲੱਭਿਆ ਜਾ ਸਕਦਾ ਹੈ: { $path }
@@ -250,17 +242,10 @@ about-webrtc-jitter-label = ਜਿੱਟਰ { $jitter }
 # table with light blue background.
 about-webrtc-trickle-caption-msg = ਜ਼ਾਹਰ ਹੋਏ ਉਮੀਦਵਾਰਾਂ (ਜਵਾਬ ਦੇ ਬਾਅਦ ਪਹੁੰਚੇ) ਨੂੰ ਨੀਲਾ ਵਿੱਚ ਉਘਾੜਿਆ ਜਾ ਰਿਹਾ ਹੈ
 
-## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
-## See http://wikipedia.org/wiki/Session_Description_Protocol
-
-
 ## These are displayed on the button that shows or hides the SDP information disclosure
 
 about-webrtc-show-msg-sdp = SDP ਵੇਖਾਓ
 about-webrtc-hide-msg-sdp = SDP ਓਹਲੇ
-
-##
-
 
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs
@@ -269,6 +254,3 @@ about-webrtc-hide-msg-sdp = SDP ਓਹਲੇ
 about-webrtc-media-context-show-msg = ਮੀਡਿਆ ਪ੍ਰਸੰਗ ਵੇਖਾਓ
 about-webrtc-media-context-hide-msg = ਮੀਡਿਆ ਪ੍ਰਸੰਗ ਓਹਲੇ
 about-webrtc-media-context-heading = ਮੀਡਿਆ ਪ੍ਰਸੰਗ
-
-##
-

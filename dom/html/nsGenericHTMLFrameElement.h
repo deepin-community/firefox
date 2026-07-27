@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef nsGenericHTMLFrameElement_h
 #define nsGenericHTMLFrameElement_h
-
-#include "mozilla/Attributes.h"
 
 #include "nsFrameLoader.h"
 #include "nsFrameLoaderOwner.h"
@@ -25,12 +21,8 @@ class XULFrameElement;
 }  // namespace dom
 }  // namespace mozilla
 
-#define NS_GENERICHTMLFRAMEELEMENT_IID               \
-  {                                                  \
-    0x8190db72, 0xdab0, 0x4d72, {                    \
-      0x94, 0x26, 0x87, 0x5f, 0x5a, 0x8a, 0x2a, 0xe5 \
-    }                                                \
-  }
+#define NS_GENERICHTMLFRAMEELEMENT_IID \
+  {0x8190db72, 0xdab0, 0x4d72, {0x94, 0x26, 0x87, 0x5f, 0x5a, 0x8a, 0x2a, 0xe5}}
 
 /**
  * A helper class for frame elements
@@ -47,7 +39,7 @@ class nsGenericHTMLFrameElement : public nsGenericHTMLElement,
 
   NS_DECL_ISUPPORTS_INHERITED
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_GENERICHTMLFRAMEELEMENT_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_GENERICHTMLFRAMEELEMENT_IID)
 
   // nsIContent
   bool IsHTMLFocusable(mozilla::IsFocusableFlags, bool* aIsFocusable,
@@ -147,8 +139,5 @@ class nsGenericHTMLFrameElement : public nsGenericHTMLElement,
 
   mozilla::dom::BrowsingContext* GetContentWindowInternal();
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsGenericHTMLFrameElement,
-                              NS_GENERICHTMLFRAMEELEMENT_IID)
 
 #endif  // nsGenericHTMLFrameElement_h

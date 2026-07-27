@@ -12,9 +12,6 @@ var { NetUtil } = ChromeUtils.importESModule(
 var { PlacesUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/PlacesUtils.sys.mjs"
 );
-var { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
 var { XPCOMUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
@@ -67,8 +64,9 @@ async function promiseMigration(
 ) {
   // Ensure resource migration is available.
   let availableSources = await migrator.getMigrateData(aProfile);
-  Assert.ok(
-    (availableSources & resourceType) > 0,
+  Assert.greater(
+    availableSources & resourceType,
+    0,
     "Resource supported by migrator"
   );
   let promises = [TestUtils.topicObserved("Migration:Ended")];
@@ -88,22 +86,6 @@ async function promiseMigration(
 
   return Promise.all(promises);
 }
-/**
- * Function that returns a favicon url for a given page url
- *
- * @param {string} uri
- * The Bookmark URI
- * @returns {string} faviconURI
- * The Favicon URI
- */
-async function getFaviconForPageURI(uri) {
-  let faviconURI = await new Promise(resolve => {
-    PlacesUtils.favicons.getFaviconDataForPage(uri, favURI => {
-      resolve(favURI);
-    });
-  });
-  return faviconURI;
-}
 
 /**
  * Takes an array of page URIs and checks that the favicon was imported for each page URI
@@ -112,8 +94,8 @@ async function getFaviconForPageURI(uri) {
  */
 async function assertFavicons(pageURIs) {
   for (let uri of pageURIs) {
-    let faviconURI = await getFaviconForPageURI(uri);
-    Assert.ok(faviconURI, `Got favicon for ${uri.spec}`);
+    let favicon = await PlacesUtils.favicons.getFaviconForPage(uri);
+    Assert.ok(favicon, `Got favicon for ${favicon.uri.spec}`);
   }
 }
 
@@ -128,17 +110,12 @@ async function assertFavicons(pageURIs) {
  *                 Expected mime type of the favicon.
  */
 async function assertFavicon(pageURI, expectedImageData, expectedMimeType) {
-  let result = await new Promise(resolve => {
-    PlacesUtils.favicons.getFaviconDataForPage(
-      Services.io.newURI(pageURI),
-      (faviconURI, dataLen, imageData, mimeType) => {
-        resolve({ faviconURI, dataLen, imageData, mimeType });
-      }
-    );
-  });
+  let result = await PlacesUtils.favicons.getFaviconForPage(
+    Services.io.newURI(pageURI)
+  );
   Assert.ok(!!result, `Got favicon for ${pageURI}`);
   Assert.equal(
-    result.imageData.join(","),
+    result.rawData.join(","),
     expectedImageData.join(","),
     "Image data is correct"
   );
@@ -286,3 +263,22 @@ function createChromeBookmarkStructure(totalBookmarks = 100) {
   }
   return bookmarksData;
 }
+
+// Setup that allows to use the profile service in xpcshell tests,
+// lifted from `toolkit/profile/xpcshell/head.js`.
+function setupProfileService() {
+  let gDataHome = gProfD.clone();
+  gDataHome.append("data");
+  gDataHome.createUnique(Ci.nsIFile.DIRECTORY_TYPE, 0o755);
+  let gDataHomeLocal = gProfD.clone();
+  gDataHomeLocal.append("local");
+  gDataHomeLocal.createUnique(Ci.nsIFile.DIRECTORY_TYPE, 0o755);
+
+  let xreDirProvider = Cc["@mozilla.org/xre/directory-provider;1"].getService(
+    Ci.nsIXREDirProvider
+  );
+  xreDirProvider.setUserDataDirectory(gDataHome, false);
+  xreDirProvider.setUserDataDirectory(gDataHomeLocal, true);
+}
+
+add_setup(setupProfileService);

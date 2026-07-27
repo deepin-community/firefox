@@ -224,6 +224,17 @@ const DE_TESTCASES = [
   },
 ];
 
+var FormAutofillHandler;
+var FormAutofillHeuristics;
+add_task(async function () {
+  ({ FormAutofillHandler } = ChromeUtils.importESModule(
+    "resource://gre/modules/shared/FormAutofillHandler.sys.mjs"
+  ));
+  ({ FormAutofillHeuristics } = ChromeUtils.importESModule(
+    "resource://gre/modules/shared/FormAutofillHeuristics.sys.mjs"
+  ));
+});
+
 const TESTCASES = [FR_TESTCASES, DE_TESTCASES];
 
 for (let localeTests of TESTCASES) {
@@ -239,9 +250,15 @@ for (let localeTests of TESTCASES) {
       let formLike = FormLikeFactory.createFromForm(form);
       let handler = new FormAutofillHandler(formLike);
 
-      handler.collectFormFields();
+      const fieldDetails = FormAutofillHandler.collectFormFieldDetails(
+        handler.form
+      );
+      FormAutofillHeuristics.parseAndUpdateFieldNamesParent(fieldDetails);
+      handler.setIdentifiedFieldDetails(fieldDetails);
+
       handler.focusedInput = form.elements[0];
       let adaptedRecords = handler.getAdaptedProfiles(testcase.profileData);
+      adaptedRecords.forEach(record => delete record._original);
       Assert.deepEqual(adaptedRecords, testcase.expectedResult);
 
       if (testcase.expectedOptionElements) {

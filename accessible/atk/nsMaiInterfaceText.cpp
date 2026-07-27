@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -64,7 +62,7 @@ static AtkAttributeSet* ConvertToAtkTextAttributeSet(
     if (name == nsGkAtoms::color) {
       atkName(ATK_TEXT_ATTR_FG_COLOR);
       colorValue();
-    } else if (name == nsGkAtoms::backgroundColor) {
+    } else if (name == nsGkAtoms::background_color) {
       atkName(ATK_TEXT_ATTR_BG_COLOR);
       colorValue();
     } else if (name == nsGkAtoms::font_family) {
@@ -76,7 +74,7 @@ static AtkAttributeSet* ConvertToAtkTextAttributeSet(
       auto fontSize = iter.Value<FontSize>();
       MOZ_ASSERT(fontSize);
       value.AppendInt(fontSize->mValue);
-    } else if (name == nsGkAtoms::fontWeight) {
+    } else if (name == nsGkAtoms::font_weight) {
       atkName(ATK_TEXT_ATTR_WEIGHT);
       iter.ValueAsString(value);
     } else if (name == nsGkAtoms::invalid) {
@@ -550,7 +548,7 @@ void textInterfaceInitCB(AtkTextIface* aIface) {
   }
 
   // Cache the string values of the atk text attribute names.
-  for (uint32_t i = 0; i < ArrayLength(sAtkTextAttrNames); i++) {
+  for (uint32_t i = 0; i < std::size(sAtkTextAttrNames); i++) {
     sAtkTextAttrNames[i] =
         atk_text_attribute_get_name(static_cast<AtkTextAttribute>(i));
   }

@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,8 +7,9 @@
 
 #ifdef MOZ_HAVE_SHMIMAGE
 #  include "mozilla/X11Util.h"
+#  include "mozilla/PodOperations.h"
 #  include "mozilla/gfx/gfxVars.h"
-#  include "mozilla/ipc/SharedMemory.h"
+#  include "mozilla/ipc/SharedMemoryMapping.h"
 #  include "gfxPlatform.h"
 #  include "nsPrintfCString.h"
 #  include "nsTArray.h"
@@ -54,7 +54,7 @@ static bool gShmAvailable = true;
 bool nsShmImage::UseShm() { return gShmAvailable; }
 
 bool nsShmImage::CreateShmSegment() {
-  size_t size = SharedMemory::PageAlignedSize(mStride * mSize.height);
+  size_t size = shared_memory::PageAlignedSize(mStride * mSize.height);
 
 #  if defined(__OpenBSD__) && defined(MOZ_SANDBOX)
   static mozilla::LazyLogModule sPledgeLog("SandboxPledge");

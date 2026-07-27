@@ -4,80 +4,70 @@
 
 package org.mozilla.fenix.browser
 
-import android.app.Activity
 import android.view.ViewGroup
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat
-import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import mozilla.components.lib.state.helpers.AbstractBinding
-import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppState
-import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.compose.core.Action
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarFactory
+import org.mozilla.fenix.compose.snackbar.SnackbarState
 
 /**
  * A binding that shows standard snackbar errors.
  *
- * @param activity [Activity] used for system interactions and accessing resources.
  * @param snackbarParent [ViewGroup] in which to find a suitable parent for displaying the snackbar.
  * @param appStore The [AppStore] containing information about when to show a snackbar styled for errors.
+ * @param snackbarFactory The [SnackbarFactory] used to create the snackbar.
+ * @param dismissLabel The label for the dismiss action on the snackbar.
+ * @param mainDispatcher The [CoroutineDispatcher] on which the state observation and updates will occur.
+ *                       Defaults to [Dispatchers.Main].
  */
 class StandardSnackbarErrorBinding(
-    private val activity: Activity,
     private val snackbarParent: ViewGroup,
-    appStore: AppStore,
-) : AbstractBinding<AppState>(appStore) {
+    private val appStore: AppStore,
+    private val snackbarFactory: SnackbarFactory,
+    private val dismissLabel: String,
+    mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+) : AbstractBinding<AppState>(appStore, mainDispatcher) {
 
     override suspend fun onState(flow: Flow<AppState>) {
         flow.map { state -> state.standardSnackbarError }
             .distinctUntilChanged()
-            .collect {
-                it?.let { standardSnackbarError ->
-                    snackbarParent.let { view ->
-                        val snackBar = FenixSnackbar.make(
-                            view = view,
-                            duration = Snackbar.LENGTH_INDEFINITE,
-                        )
-                        snackBar.setText(
-                            standardSnackbarError.message,
-                        )
-                        snackBar.setButtonTextColor(
-                            ContextCompat.getColor(
-                                activity,
-                                R.color.fx_mobile_text_color_primary,
-                            ),
-                        )
-                        snackBar.setBackground(
-                            AppCompatResources.getDrawable(
-                                activity,
-                                R.drawable.standard_snackbar_error_background,
-                            ),
-                        )
-                        snackBar.setSnackBarTextColor(
-                            ContextCompat.getColor(
-                                activity,
-                                R.color.fx_mobile_text_color_critical,
-                            ),
-                        )
-                        snackBar.setAction(
-                            text = activity.getString(R.string.standard_snackbar_error_dismiss),
-                            action = {
-                                view.context.components.appStore.dispatch(
-                                    AppAction.UpdateStandardSnackbarErrorAction(
-                                        null,
-                                    ),
-                                )
-                            },
-                        )
-                        snackBar.show()
-                    }
-                }
+            .filterNotNull()
+            .collect { standardSnackbarError ->
+                createErrorSnackbar(standardSnackbarError).show()
             }
+    }
+
+    /**
+     * Creates a snackbar for displaying an error message.
+     *
+     * @param error The [StandardSnackbarError] containing the error message to display.
+     * @return A [Snackbar] configured to display the error.
+     */
+    private fun createErrorSnackbar(error: StandardSnackbarError): Snackbar {
+        val snackbarState = SnackbarState(
+            message = error.message,
+            duration = SnackbarState.Duration.Preset.Indefinite,
+            type = SnackbarState.Type.Warning,
+            action = Action(
+                label = dismissLabel,
+                onClick = {
+                    appStore.dispatch(
+                        AppAction.UpdateStandardSnackbarErrorAction(standardSnackbarError = null),
+                    )
+                },
+            ),
+        )
+        return snackbarFactory.make(snackbarParent, snackbarState)
     }
 }
 

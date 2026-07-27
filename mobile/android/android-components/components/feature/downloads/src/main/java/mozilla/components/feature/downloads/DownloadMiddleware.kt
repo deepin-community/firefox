@@ -7,6 +7,7 @@ package mozilla.components.feature.downloads
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
@@ -25,22 +26,23 @@ import mozilla.components.browser.state.state.content.DownloadState.Status.COMPL
 import mozilla.components.browser.state.state.content.DownloadState.Status.FAILED
 import mozilla.components.feature.downloads.AbstractFetchDownloadService.Companion.ACTION_REMOVE_PRIVATE_DOWNLOAD
 import mozilla.components.lib.state.Middleware
-import mozilla.components.lib.state.MiddlewareContext
 import mozilla.components.lib.state.Store
 import mozilla.components.support.base.android.DefaultPowerManagerInfoProvider
 import mozilla.components.support.base.android.StartForegroundService
 import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.utils.DownloadFileUtils
 import kotlin.coroutines.CoroutineContext
 
 /**
  * [Middleware] implementation for managing downloads via the provided download service. Its
  * purpose is to react to global download state changes (e.g. of [BrowserState.downloads])
  * and notify the download service, as needed.
- */
-@Suppress("ComplexMethod")
+*/
 class DownloadMiddleware(
     private val applicationContext: Context,
     private val downloadServiceClass: Class<*>,
+    private val deleteFileFromStorage: () -> Boolean,
+    private val downloadFileUtils: DownloadFileUtils,
     coroutineContext: CoroutineContext = Dispatchers.IO,
     @get:VisibleForTesting
     internal val downloadStorage: DownloadStorage = DownloadStorage(applicationContext),
@@ -53,18 +55,19 @@ class DownloadMiddleware(
     private var scope = CoroutineScope(coroutineContext)
 
     override fun invoke(
-        context: MiddlewareContext<BrowserState, BrowserAction>,
+        store: Store<BrowserState, BrowserAction>,
         next: (BrowserAction) -> Unit,
         action: BrowserAction,
     ) {
         when (action) {
-            is DownloadAction.RemoveDownloadAction -> removeDownload(action.downloadId, context.store)
+            is DownloadAction.RemoveDownloadAction -> removeDownload(action.downloadId, action.removeFromDisk, store)
             is DownloadAction.RemoveAllDownloadsAction -> removeDownloads()
-            is DownloadAction.UpdateDownloadAction -> updateDownload(action.download, context)
-            is DownloadAction.RestoreDownloadsStateAction -> restoreDownloads(context.store)
-            is ContentAction.CancelDownloadAction -> closeDownloadResponse(context.store, action.sessionId)
+            is DownloadAction.UpdateDownloadAction -> updateDownload(action.download, store)
+            is DownloadAction.RestoreDownloadsStateAction -> restoreDownloads(store)
+            is DownloadAction.RemoveDeletedDownloads -> removeDeletedDownloads(store)
+            is ContentAction.CancelDownloadAction -> closeDownloadResponse(store, action.sessionId)
             is DownloadAction.AddDownloadAction -> {
-                if (!action.download.private && !saveDownload(context.store, action.download)) {
+                if (!action.download.private && !saveDownload(store, action.download)) {
                     // The download was already added before, so we are ignoring this request.
                     logger.debug(
                         "Ignored add action for ${action.download.id} " +
@@ -73,6 +76,7 @@ class DownloadMiddleware(
                     return
                 }
             }
+
             else -> {
                 // no-op
             }
@@ -83,13 +87,13 @@ class DownloadMiddleware(
         when (action) {
             is TabListAction.RemoveAllTabsAction,
             is TabListAction.RemoveAllPrivateTabsAction,
-            -> removePrivateNotifications(context.store)
+            -> removePrivateNotifications(store)
             is TabListAction.RemoveTabsAction,
             is TabListAction.RemoveTabAction,
             -> {
-                val privateTabs = context.store.state.getNormalOrPrivateTabs(private = true)
+                val privateTabs = store.state.getNormalOrPrivateTabs(private = true)
                 if (privateTabs.isEmpty()) {
-                    removePrivateNotifications(context.store)
+                    removePrivateNotifications(store)
                 }
             }
             is DownloadAction.AddDownloadAction -> sendDownloadIntent(action.download)
@@ -102,11 +106,50 @@ class DownloadMiddleware(
 
     private fun removeDownload(
         downloadId: String,
+        removeFromDisk: Boolean?,
         store: Store<BrowserState, BrowserAction>,
-    ) = scope.launch {
-        store.state.downloads[downloadId]?.let {
-            downloadStorage.remove(it)
-            logger.debug("Removed download ${it.fileName} from the storage")
+    ) {
+        val downloadToDelete = store.state.downloads[downloadId] ?: return
+
+        val shouldDeleteFromDisk = removeFromDisk ?: deleteFileFromStorage()
+
+        removeDownload(downloadToDelete, shouldDeleteFromDisk)
+    }
+
+    private fun removeDownload(
+        downloadToDelete: DownloadState,
+        removeFromDisk: Boolean,
+    ) {
+        scope.launch {
+            if (removeFromDisk) {
+                removeFileFromStorage(downloadToDelete)
+            }
+
+            downloadStorage.remove(downloadToDelete)
+            logger.debug("Removed download ${downloadToDelete.fileName} from the storage")
+        }
+    }
+
+    private fun removeFileFromStorage(download: DownloadState) {
+        val fileExists = downloadFileUtils.fileExists(
+            directoryPath = download.directoryPath,
+            fileName = download.fileName,
+        )
+        if (!fileExists) {
+            logger.warn("File to delete not found: ${download.filePath}")
+            return
+        }
+
+        val deletedSuccessfully = downloadFileUtils.deleteMediaFile(
+            contentResolver = applicationContext.contentResolver,
+            directoryPath = download.directoryPath,
+            fileName = download.fileName,
+        )
+
+        if (deletedSuccessfully) {
+            logger.debug("Successfully deleted file: ${download.filePath}")
+        } else {
+            logger.error("Failed to delete file: ${download.filePath} (OS Version: ${Build.VERSION.SDK_INT})")
         }
     }
 
@@ -114,9 +157,9 @@ class DownloadMiddleware(
         downloadStorage.removeAllDownloads()
     }
 
-    private fun updateDownload(updated: DownloadState, context: MiddlewareContext<BrowserState, BrowserAction>) {
+    private fun updateDownload(updated: DownloadState, store: Store<BrowserState, BrowserAction>) {
         if (updated.private) return
-        context.state.downloads[updated.id]?.let { old ->
+        store.state.downloads[updated.id]?.let { old ->
             // To not overwhelm the storage, we only send updates that are relevant,
             // we only care about properties, that we are stored on the storage.
             if (!DownloadStorage.isSameDownload(old, updated)) {
@@ -128,9 +171,30 @@ class DownloadMiddleware(
         }
     }
 
+    private fun removeDeletedDownloads(store: Store<BrowserState, BrowserAction>) = scope.launch {
+        downloadStorage.getDownloadsList()
+            .filter {
+                (it.status == COMPLETED || it.status == CANCELLED) &&
+                    !downloadFileUtils.fileExists(
+                        directoryPath = it.directoryPath,
+                        fileName = it.fileName,
+                    )
+            }
+            .forEach { download ->
+                store.dispatch(DownloadAction.RemoveDownloadAction(download.id))
+            }
+    }
+
     private fun restoreDownloads(store: Store<BrowserState, BrowserAction>) = scope.launch {
         downloadStorage.getDownloadsList().forEach { download ->
-            if (!store.state.downloads.containsKey(download.id) && !download.private) {
+            if (!downloadFileUtils.fileExists(
+                    directoryPath = download.directoryPath,
+                    fileName = download.fileName,
+                )
+            ) {
+                downloadStorage.remove(download)
+                logger.debug("Removed deleted download ${download.fileName} from the storage")
+            } else if (!store.state.downloads.containsKey(download.id) && !download.private) {
                 store.dispatch(DownloadAction.RestoreDownloadStateAction(download))
                 logger.debug("Download restored from the storage ${download.fileName}")
             }
@@ -169,9 +233,6 @@ class DownloadMiddleware(
 
     @VisibleForTesting
     internal fun startForegroundService(intent: Intent) {
-        /**
-         * @see [StartForegroundService]
-         */
         startForegroundService {
             ContextCompat.startForegroundService(applicationContext, intent)
         }

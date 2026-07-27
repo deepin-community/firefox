@@ -8,6 +8,8 @@
 
 #include "CSSEditUtils.h"
 #include "EditAction.h"
+#include "EditorDOMAPIWrapper.h"
+#include "EditorLineBreak.h"
 #include "HTMLEditHelpers.h"
 #include "HTMLEditorEventListener.h"
 #include "HTMLEditUtils.h"
@@ -22,7 +24,6 @@
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/EventTarget.h"
 #include "nsAString.h"
-#include "nsAlgorithm.h"
 #include "nsCOMPtr.h"
 #include "nsComputedDOMStyle.h"
 #include "nsDebug.h"
@@ -132,6 +133,12 @@ NS_IMETHODIMP HTMLEditor::GetAbsolutePositioningEnabled(bool* aIsEnabled) {
 
 NS_IMETHODIMP HTMLEditor::SetAbsolutePositioningEnabled(bool aIsEnabled) {
   EnableAbsolutePositionEditor(aIsEnabled);
+  return NS_OK;
+}
+
+NS_IMETHODIMP HTMLEditor::GetIsAbsolutePositioningActive(bool* aIsActive) {
+  MOZ_ASSERT(aIsActive);
+  *aIsActive = !!mAbsolutelyPositionedObject;
   return NS_OK;
 }
 
@@ -344,7 +351,7 @@ void HTMLEditor::HideGrabberInternal() {
 
   // Move all members to the local variables first since mutation event
   // listener may try to show grabber while we're hiding them.
-  RefPtr<Element> absolutePositioningObject =
+  const RefPtr<Element> absolutePositioningObject =
       std::move(mAbsolutelyPositionedObject);
   ManualNACPtr grabber = std::move(mGrabber);
   ManualNACPtr positioningShadow = std::move(mPositioningShadow);
@@ -364,11 +371,16 @@ void HTMLEditor::HideGrabberInternal() {
     }
   }
 
-  DebugOnly<nsresult> rv = absolutePositioningObject->UnsetAttr(
-      kNameSpaceID_None, nsGkAtoms::_moz_abspos, true);
-  NS_WARNING_ASSERTION(
-      NS_SUCCEEDED(rv),
-      "Element::UnsetAttr(nsGkAtoms::_moz_abspos) failed, but ignored");
+  {
+    AutoElementAttrAPIWrapper elementWrapper(*this, *absolutePositioningObject);
+    if (NS_FAILED(elementWrapper.UnsetAttr(nsGkAtoms::_moz_abspos, true))) {
+      NS_WARNING("AutoElementAttrAPIWrapper::UnsetAttr() failed, but ignored");
+    } else {
+      NS_WARNING_ASSERTION(
+          elementWrapper.IsExpectedResult(EmptyString()),
+          "Removing _moz_abspos attribute caused other mutations, but ignored");
+    }
+  }
 
   // We allow the pres shell to be null; when it is, we presume there
   // are no document observers to notify, but we still want to
@@ -404,11 +416,17 @@ nsresult HTMLEditor::ShowGrabberInternal(Element& aElement) {
     return rv;
   }
 
-  rv = aElement.SetAttr(kNameSpaceID_None, nsGkAtoms::_moz_abspos, classValue,
-                        true);
-  if (NS_FAILED(rv)) {
-    NS_WARNING("Element::SetAttr(nsGkAtoms::_moz_abspos) failed");
-    return rv;
+  {
+    AutoElementAttrAPIWrapper elementWrapper(*this, aElement);
+    nsresult rv =
+        elementWrapper.SetAttr(nsGkAtoms::_moz_abspos, classValue, true);
+    if (NS_FAILED(rv)) {
+      NS_WARNING("AutoElementAttrAPIWrapper::SetAttr() failed");
+      return rv;
+    }
+    NS_WARNING_ASSERTION(
+        elementWrapper.IsExpectedResult(classValue),
+        "Setting _moz_abspos attribute caused other mutations, but ignored");
   }
 
   mAbsolutelyPositionedObject = &aElement;
@@ -475,7 +493,7 @@ nsresult HTMLEditor::StartMoving() {
           nsStyledElement::FromNode(mPositioningShadow.get())) {
     nsresult rv;
     rv = CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction(
-        *positioningShadowStyledElement, *nsGkAtoms::width,
+        *this, *positioningShadowStyledElement, *nsGkAtoms::width,
         mPositionedObjectWidth);
     if (rv == NS_ERROR_EDITOR_DESTROYED) {
       NS_WARNING(
@@ -487,7 +505,7 @@ nsresult HTMLEditor::StartMoving() {
                          "CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction("
                          "nsGkAtoms::width) failed, but ignored");
     rv = CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction(
-        *positioningShadowStyledElement, *nsGkAtoms::height,
+        *this, *positioningShadowStyledElement, *nsGkAtoms::height,
         mPositionedObjectHeight);
     if (rv == NS_ERROR_EDITOR_DESTROYED) {
       NS_WARNING(
@@ -698,19 +716,24 @@ nsresult HTMLEditor::SetPositionToAbsolute(Element& aElement) {
   if (parentNode->GetChildCount() != 1) {
     return NS_OK;
   }
-  Result<CreateElementResult, nsresult> insertBRElementResult =
-      InsertBRElement(WithTransaction::Yes, EditorDOMPoint(parentNode, 0u));
-  if (MOZ_UNLIKELY(insertBRElementResult.isErr())) {
-    NS_WARNING("HTMLEditor::InsertBRElement(WithTransaction::Yes) failed");
-    return insertBRElementResult.unwrapErr();
+  Result<CreateLineBreakResult, nsresult> insertBRElementResultOrError =
+      InsertLineBreak(WithTransaction::Yes, LineBreakType::BRElement,
+                      EditorDOMPoint(parentNode, 0u));
+  if (MOZ_UNLIKELY(insertBRElementResultOrError.isErr())) {
+    NS_WARNING(
+        "HTMLEditor::InsertLineBreak(WithTransaction::Yes, "
+        "LineBreakType::BRElement) failed");
+    return insertBRElementResultOrError.unwrapErr();
   }
+  CreateLineBreakResult insertBRElementResult =
+      insertBRElementResultOrError.unwrap();
+  MOZ_ASSERT(insertBRElementResult.Handled());
   // XXX Is this intentional selection change?
-  nsresult rv = insertBRElementResult.inspect().SuggestCaretPointTo(
+  nsresult rv = insertBRElementResult.SuggestCaretPointTo(
       *this, {SuggestCaret::OnlyIfHasSuggestion,
               SuggestCaret::OnlyIfTransactionsAllowedToDoIt});
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "CreateElementResult::SuggestCaretPointTo() failed");
-  MOZ_ASSERT(insertBRElementResult.inspect().GetNewNode());
   return rv;
 }
 
@@ -781,7 +804,7 @@ nsresult HTMLEditor::SetPositionToStatic(Element& aElement) {
       "CSSEditUtils::RemoveCSSPropertyWithTransaction(nsGkAtoms::z_index) "
       "failed, but ignored");
 
-  if (!HTMLEditUtils::IsImage(styledElement)) {
+  if (!HTMLEditUtils::IsImageElement(*styledElement)) {
     // MOZ_KnownLive(*styledElement): aElement's lifetime must be guarantted
     // by the caller because of MOZ_CAN_RUN_SCRIPT method.
     rv = CSSEditUtils::RemoveCSSPropertyWithTransaction(
@@ -954,11 +977,11 @@ nsresult HTMLEditor::GetTemporaryStyleForFocusedPositionedElement(
   }
 
   nsAutoString backgroundColorValue;
-  rv = CSSEditUtils::GetComputedProperty(aElement, *nsGkAtoms::backgroundColor,
+  rv = CSSEditUtils::GetComputedProperty(aElement, *nsGkAtoms::background_color,
                                          backgroundColorValue);
   if (NS_FAILED(rv)) {
     NS_WARNING(
-        "CSSEditUtils::GetComputedProperty(nsGkAtoms::backgroundColor) "
+        "CSSEditUtils::GetComputedProperty(nsGkAtoms::background_color) "
         "failed");
     return rv;
   }

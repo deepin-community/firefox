@@ -1,6 +1,3 @@
-/* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,9 +6,11 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <stdio.h>
 #include "mozilla/WidgetUtilsGtk.h"
 #include "nsWindow.h"
+#ifdef MOZ_WAYLAND
+#  include "WaylandSurface.h"
+#endif
 
 #ifdef MOZ_LOGGING
 #  include "mozilla/Logging.h"
@@ -34,6 +33,7 @@ static void moz_container_size_allocate(GtkWidget* widget,
                                         GtkAllocation* allocation);
 static void moz_container_realize(GtkWidget* widget);
 static void moz_container_unrealize(GtkWidget* widget);
+static void moz_container_destroy(GtkWidget* widget);
 
 /* public methods */
 
@@ -62,24 +62,18 @@ GType moz_container_get_type(void) {
   return moz_container_type;
 }
 
-GtkWidget* moz_container_new(void) {
+GtkWidget* moz_container_new(void* aWindow,
+                             mozilla::widget::WaylandSurface* aSurface) {
   MozContainer* container;
-
   container =
       static_cast<MozContainer*>(g_object_new(MOZ_CONTAINER_TYPE, nullptr));
-
-  return GTK_WIDGET(container);
-}
-
-static void moz_container_destroy(GtkWidget* widget) {
-  auto* container = MOZ_CONTAINER(widget);
-  if (container->destroyed) {
-    return;  // The destroy signal may run multiple times.
+#ifdef MOZ_WAYLAND
+  if (aSurface) {
+    container->wl = new MozContainerWayland(aSurface);
+    MOZ_WL_CONTAINER(container)->mSurface->SetLoggingWidget(aWindow);
   }
-  LOGCONTAINER(("moz_container_destroy() [%p]\n",
-                (void*)moz_container_get_nsWindow(MOZ_CONTAINER(widget))));
-  container->destroyed = TRUE;
-  container->data.~Data();
+#endif
+  return GTK_WIDGET(container);
 }
 
 void moz_container_class_init(MozContainerClass* klass) {
@@ -107,12 +101,33 @@ void moz_container_class_init(MozContainerClass* klass) {
 }
 
 void moz_container_init(MozContainer* container) {
+  LOGCONTAINER(("%s", __FUNCTION__));
   container->destroyed = FALSE;
-  new (&container->data) MozContainer::Data();
+#ifdef MOZ_WAYLAND
+  container->wl = nullptr;
+#endif
   gtk_widget_set_can_focus(GTK_WIDGET(container), TRUE);
   gtk_widget_set_redraw_on_allocate(GTK_WIDGET(container), FALSE);
-  LOGCONTAINER(("%s [%p]\n", __FUNCTION__,
-                (void*)moz_container_get_nsWindow(container)));
+}
+
+static void moz_container_destroy(GtkWidget* widget) {
+  auto* container = MOZ_CONTAINER(widget);
+  if (container->destroyed) {
+    return;  // The destroy signal may run multiple times.
+  }
+  LOGCONTAINER(("moz_container_destroy() [%p]\n",
+                (void*)moz_container_get_nsWindow(MOZ_CONTAINER(widget))));
+  if (container->entry_widget) {
+    gtk_widget_unparent(container->entry_widget);
+    container->entry_widget = nullptr;
+  }
+  container->destroyed = TRUE;
+#ifdef MOZ_WAYLAND
+  if (container->wl) {
+    delete container->wl;
+    container->wl = nullptr;
+  }
+#endif
 }
 
 void moz_container_map(GtkWidget* widget) {
@@ -174,19 +189,32 @@ void moz_container_realize(GtkWidget* widget) {
   attributes.visual = gtk_widget_get_visual(widget);
 
   window = gdk_window_new(parent, &attributes, attributes_mask);
+  auto w = moz_container_get_nsWindow(container);
 
-  LOGCONTAINER(("moz_container_realize() [%p] GdkWindow %p\n",
-                (void*)moz_container_get_nsWindow(container), (void*)window));
+  LOGCONTAINER(
+      ("moz_container_realize() [%p] GdkWindow %p\n", (void*)w, (void*)window));
 
   gtk_widget_register_window(widget, window);
   gtk_widget_set_window(widget, window);
+
+  MOZ_DIAGNOSTIC_ASSERT(w);
+  w->SetGdkWindow(window);
 }
 
 void moz_container_unrealize(GtkWidget* widget) {
   GdkWindow* window = gtk_widget_get_window(widget);
-  LOGCONTAINER(("moz_container_unrealize() [%p] GdkWindow %p\n",
-                (void*)moz_container_get_nsWindow(MOZ_CONTAINER(widget)),
+  auto w = moz_container_get_nsWindow(MOZ_CONTAINER(widget));
+
+  LOGCONTAINER(("moz_container_unrealize() [%p] GdkWindow %p\n", (void*)w,
                 (void*)window));
+
+  MOZ_DIAGNOSTIC_ASSERT(w);
+  w->SetGdkWindow(nullptr);
+
+  GtkWidget* entry = MOZ_CONTAINER(widget)->entry_widget;
+  if (entry) {
+    gtk_widget_unrealize(entry);
+  }
 
   if (gtk_widget_get_mapped(widget)) {
     gtk_widget_unmap(widget);
@@ -230,4 +258,28 @@ nsWindow* moz_container_get_nsWindow(MozContainer* container) {
   return static_cast<nsWindow*>(user_data);
 }
 
-#undef LOGCONTAINER
+void moz_container_entry_position(MozContainer* container, int x, int y,
+                                  int height) {
+  if (container->entry_widget) {
+    // We want to make GtkEntry widget small as possible.
+    // Emoji picker is placed in the middle of GtkEntry so adjust x coordinate.
+    static const int kEntryWidth = 20;
+    GtkAllocation allocation{(x < kEntryWidth / 2) ? 0 : x - kEntryWidth / 2, y,
+                             kEntryWidth, height};
+    gtk_widget_size_allocate(container->entry_widget, &allocation);
+  }
+}
+
+GtkWidget* moz_container_entry_set(MozContainer* container, GtkWidget* widget) {
+  MOZ_DIAGNOSTIC_ASSERT(!container->entry_widget ||
+                        container->entry_widget == widget);
+  if (!container->entry_widget) {
+    container->entry_widget = widget;
+    gtk_widget_set_parent(widget, GTK_WIDGET(container));
+  }
+  return container->entry_widget;
+}
+
+GtkWidget* moz_container_get_entry(MozContainer* container) {
+  return container->entry_widget;
+}

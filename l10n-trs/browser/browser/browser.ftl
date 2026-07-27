@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -129,8 +126,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Sa raj sun nichrà' doj pagina na ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = Nadurè' sa nana'uî'
+    .accesskey = H
 
 ## Auto-hide Context Menu
 
@@ -162,17 +162,9 @@ search-one-offs-context-set-as-default-private =
 search-one-offs-add-engine-menu =
     .label = Nutò' a'ngô sa ruguñu'unj ñù' nana'uì'
 
-## Local search mode one-off buttons
-## Variables:
-##  $restrict (String): The restriction token corresponding to the search mode.
-##    Restriction tokens are special characters users can type in the urlbar to
-##    restrict their searches to certain sources (e.g., "*" to search only
-##    bookmarks).
-
-
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 quickactions-cmd-addons2 = sa gā\'ue nūtò\'
 
@@ -255,26 +247,9 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = Narán
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = Daran' ventana nu riña si pantayât ni ga'ue garasun nugua'ān ne'.
-
-## WebRTC window or screen share tab switch warning
-
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -296,13 +271,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = A'ngô ra'a:
+urlbar-go-button2 =
+    .title = Gun' dukuán 'na direksion
 urlbar-go-button =
     .tooltiptext = Gun' dukuán 'na direksion
 urlbar-page-action-button =
     .tooltiptext = Sa gi'iaj pajinâ na
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
@@ -312,13 +290,20 @@ urlbar-result-action-search-w-engine = Nana'uì' 'ngà { $engine }
 urlbar-result-action-switch-tab = Naduno' a'ngô rakij ñaj
 urlbar-result-action-visit = Gatu gan'anj ni'iajt
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
+## Strings used for buttons in the urlbar
 
-
-## Labels shown above groups of urlbar results
-
+urlbar-searchmode-bookmarks =
+    .label = Nej sa râj sun nichrà\'t doj
+urlbar-searchmode-tabs =
+    .label = Nej rakïj ñanj
+urlbar-searchmode-history =
+    .label = Sa gini’hiājt
+urlbar-searchmode-actions =
+    .label = Sa gi'hiát
+urlbar-searchmode-bookmarks2 = Nej sa râj sun nichrà\'t doj
+urlbar-searchmode-tabs2 = Nej rakïj ñanj
+urlbar-searchmode-history2 = Sa gini’hiājt
+urlbar-searchmode-actions2 = Sa gi'hiát
 
 ## Reader View toolbar buttons
 
@@ -328,11 +313,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Nàrun' sa ahio'
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -417,10 +397,7 @@ save-to-pocket-button =
     .label = Nanín sa'aj riña { -pocket-brand-name }
     .tooltiptext = Nanín sa'aj riña { -pocket-brand-name }
 
-## Repair text encoding toolbar button
-
-
-## Customize Toolbar Buttons
+##
 
 toolbar-overflow-customize-button =
     .label = Nagi'io' dukuán ma sa rajeunit'...
@@ -451,9 +428,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Hua 'ngo sa achráa nej si video ni rajsun ma software DRM, ga'ue dure'ej { -brand-short-name } sa 'io' 'ngàj.
 
-## Password save/update panel
-
-
 ##
 
 ui-tour-info-panel-close =
@@ -477,10 +451,6 @@ popups-infobar-dont-show-message =
 picture-in-picture-hide-toggle =
     .label = Ga'nïnj huì sa ni'io' riña sa ni'io' Naduna
     .accesskey = H
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -520,29 +490,12 @@ tabs-toolbar-list-all-tabs =
     .label = Ni'io' nej rakïj ñanj hua ni'ninj
     .tooltiptext = Ni'io' nej rakïj ñanj hua ni'ninj
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } a'nîn ma'ān ma dato { -vendor-short-name } da' nahuin hue'e ma.
 data-reporting-notification-button =
     .label = Naduno' sa ga'ni' ga'anj
     .accesskey = C
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -551,9 +504,6 @@ refresh-blocked-redirect-label = { -brand-short-name } nū ga'ue ga'anj ma'an pa
 refresh-blocked-allow =
     .label = Ga'nïn
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

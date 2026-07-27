@@ -7,9 +7,9 @@
 # For developers, this duplicates command because the label attribute is required.
 
 fxviewtabrow-mute-tab = Замолчи јазиче
-    .accesskey = M
+    .accesskey = м
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Замолчи јазиче

@@ -4,7 +4,7 @@
 
 # Used as the FxA toolbar menu item value when user has not
 # finished setting up an account.
-account-finish-account-setup = ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧ ਪੂਰਾ ਹੋਇਆ
+account-finish-account-setup = ਖਾਤੇ ਦਾ ਸੈਟਅੱਪ ਪੂਰਾ ਹੋਇਆ
 # Used as the FxA toolbar menu item title when the user
 # needs to reconnect their account.
 account-disconnected2 = ਖਾਤਾ ਡਿਸ-ਕਨੈਕਟ ਹੈ
@@ -38,6 +38,7 @@ account-send-tab-to-device-connectdevice = …ਹੋਰ ਡਿਵਾਈਸ ਨ�
 ## and the Sync account is unverified. Redirects to the Sync preferences page.
 
 account-send-tab-to-device-verify-status = ਖਾਤਾ ਤਸਦੀਕ ਨਹੀਂ ਹੈ
+account-send-tab-to-device-verify2 = ਆਪਣੇ ਖਾਤੇ ਨੂੰ ਤਸਦੀਕ ਕਰੋ
 account-send-tab-to-device-verify = …ਆਪਣੇ ਖਾਤੇ ਨੂੰ ਤਸਦੀਕ ਕਰੋ
 
 ## These strings are used in a notification shown when a new device joins the Firefox account.

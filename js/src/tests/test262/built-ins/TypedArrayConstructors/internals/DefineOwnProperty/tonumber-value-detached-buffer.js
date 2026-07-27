@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2017 Mozilla Corporation. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -59,7 +58,6 @@ testWithTypedArrayConstructors(function(TA) {
     'Reflect.defineProperty(ta, 0, {value: {valueOf() {$DETACHBUFFER(ta.buffer); return 42;}}} ) must return true'
   );
   assert.sameValue(ta[0], undefined, 'The value of ta[0] is expected to equal `undefined`');
-});
-
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

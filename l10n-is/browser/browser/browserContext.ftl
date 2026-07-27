@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Vista tengil í { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Afrita póstfang
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Afrita tengil
     .accesskey = l
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Afrita tengil án vefsvæðarakningar
-    .accesskey = f
+main-context-menu-preview-link =
+    .label = Forskoða tengil
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Afrita hreinan tengil
+    .accesskey = h
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +218,7 @@ main-context-menu-media-hide-controls =
     .label = Fela stjórntæki
     .accesskey = F
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Fylla skjá
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Lýsing á yfirliti
     .accesskey = y
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Leita að mynd með { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Vista myndband sem…
     .accesskey = V
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Senda hljóðskrá…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Senda í tæki
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Vista síðu í { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Senda síðu á tæki
     .accesskey = æ
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Nota vistaða innskráningu
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Bæta við orði í leit…
     .accesskey = o
+main-context-menu-add-engine =
+    .label = Bæta við leitarvél
+    .accesskey = B
 main-context-menu-link-send-to-device =
     .label = Senda tengil á tæki
     .accesskey = æ
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Birta lykilorð
     .accesskey = y
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nýtt

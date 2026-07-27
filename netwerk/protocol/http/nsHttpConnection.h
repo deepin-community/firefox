@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHttpConnection_h__
-#define nsHttpConnection_h__
+#ifndef nsHttpConnection_h_
+#define nsHttpConnection_h_
 
 #include <functional>
 #include "HttpConnectionBase.h"
@@ -23,6 +22,7 @@
 #include "nsIAsyncInputStream.h"
 #include "nsIAsyncOutputStream.h"
 #include "nsIInterfaceRequestor.h"
+#include "nsILoadInfo.h"
 #include "nsISocketTransport.h"
 #include "nsISupportsPriority.h"
 #include "nsITimer.h"
@@ -38,12 +38,8 @@ class nsHttpHandler;
 class ASpdySession;
 
 // 1dcc863e-db90-4652-a1fe-13fea0b54e46
-#define NS_HTTPCONNECTION_IID                        \
-  {                                                  \
-    0x1dcc863e, 0xdb90, 0x4652, {                    \
-      0xa1, 0xfe, 0x13, 0xfe, 0xa0, 0xb5, 0x4e, 0x46 \
-    }                                                \
-  }
+#define NS_HTTPCONNECTION_IID \
+  {0x1dcc863e, 0xdb90, 0x4652, {0xa1, 0xfe, 0x13, 0xfe, 0xa0, 0xb5, 0x4e, 0x46}}
 
 //-----------------------------------------------------------------------------
 // nsHttpConnection - represents a connection to a HTTP server (or proxy)
@@ -63,7 +59,7 @@ class nsHttpConnection final : public HttpConnectionBase,
   virtual ~nsHttpConnection();
 
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_HTTPCONNECTION_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_HTTPCONNECTION_IID)
   NS_DECL_HTTPCONNECTIONBASE
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSAHTTPSEGMENTREADER
@@ -96,6 +92,11 @@ class nsHttpConnection final : public HttpConnectionBase,
            (mKeepAliveMask && mKeepAlive);
   }
 
+  // Cheap reuse check without the IsAlive() socket probe. Used by
+  // AvailableForDispatchNow() to avoid a redundant probe before
+  // GetIdleConnection() performs the definitive check.
+  bool CanReuseLikely();
+
   // Returns time in seconds for how long connection can be reused.
   uint32_t TimeToLive();
 
@@ -118,6 +119,8 @@ class nsHttpConnection final : public HttpConnectionBase,
 
   int64_t MaxBytesRead() { return mMaxBytesRead; }
   HttpVersion GetLastHttpResponseVersion() { return mLastHttpResponseVersion; }
+
+  nsresult HandshakeError() const { return mHandshakeError; }
 
   friend class HttpConnectionForceIO;
   friend class TlsHandshaker;
@@ -155,7 +158,7 @@ class nsHttpConnection final : public HttpConnectionBase,
   int64_t ContentBytesWritten() { return mContentBytesWritten; }
 
   void SetupSecondaryTLS();
-  void SetInSpdyTunnel();
+  void SetInTunnel() override;
 
   // Check active connections for traffic (or not). SPDY connections send a
   // ping, ordinary HTTP connections get some time to get traffic to be
@@ -174,7 +177,7 @@ class nsHttpConnection final : public HttpConnectionBase,
   // has finished this returns false.
   bool NoClientCertAuth() const override;
 
-  WebSocketSupport GetWebSocketSupport() override;
+  ExtendedCONNECTSupport GetExtendedCONNECTSupport() override;
 
   int64_t BytesWritten() override { return mTotalBytesWritten; }
 
@@ -197,31 +200,27 @@ class nsHttpConnection final : public HttpConnectionBase,
                                                uint32_t*);
 
   nsresult CreateTunnelStream(nsAHttpTransaction* httpTransaction,
-                              nsHttpConnection** aHttpConnection,
-                              bool aIsWebSocket = false);
+                              HttpConnectionBase** aHttpConnection,
+                              bool aIsExtendedCONNECT = false) override;
 
-  bool RequestDone() { return mRequestDone; }
+  // Replace the transaction this H1 connection is currently driving.
+  // Analog of Http2Session::SwapTransaction / Http3Session::SwapTransaction:
+  // used by the HE / 0-RTT adopt path when a HappyEyeballsTransaction shim
+  // is replaced by the real nsHttpTransaction on an already-activated H1
+  // connection. No-op if `aOld` isn't the current mTransaction.
+  void SwapTransaction(nsAHttpTransaction* aOld, nsAHttpTransaction* aNew);
 
  private:
-  enum HttpConnectionState {
-    UNINITIALIZED,
-    SETTING_UP_TUNNEL,
-    REQUEST,
-  } mState{HttpConnectionState::UNINITIALIZED};
-  void ChangeState(HttpConnectionState newState);
-
-  // Tunnel retated functions:
-  bool TunnelSetupInProgress() { return mState == SETTING_UP_TUNNEL; }
-  void SetTunnelSetupDone();
-  nsresult CheckTunnelIsNeeded();
-  nsresult SetupProxyConnectStream();
+  void SetTunnelSetupDone() override;
+  nsresult SetupProxyConnectStream() override;
   nsresult SendConnectRequest(void* closure, uint32_t* transactionBytes);
 
   void HandleTunnelResponse(uint16_t responseStatus, bool* reset);
   void HandleWebSocketResponse(nsHttpRequestHead* requestHead,
                                nsHttpResponseHead* responseHead,
                                uint16_t responseStatus);
-  void ResetTransaction(RefPtr<nsAHttpTransaction>&& trans);
+  void ResetTransaction(RefPtr<nsAHttpTransaction>&& trans,
+                        bool aForH2Proxy = false);
 
   // Value (set in mTCPKeepaliveConfig) indicates which set of prefs to use.
   enum TCPKeepaliveConfig {
@@ -266,6 +265,9 @@ class nsHttpConnection final : public HttpConnectionBase,
 
   void MarkAsDontReuse();
 
+  virtual WebTransportSessionBase* GetWebTransportSession(
+      nsAHttpTransaction* aTransaction) override;
+
  private:
   // mTransaction only points to the HTTP Transaction callbacks if the
   // transaction is open, otherwise it is null.
@@ -288,6 +290,7 @@ class nsHttpConnection final : public HttpConnectionBase,
   PRIntervalTime mIdleTimeout;  // value of keep-alive: timeout=
   PRIntervalTime mConsiderReusedAfterInterval{0};
   PRIntervalTime mConsiderReusedAfterEpoch{0};
+  TimeStamp mLastTRRResponseTime;   // Time of the last successful TRR response
   int64_t mCurrentBytesRead{0};     // data read per activation
   int64_t mMaxBytesRead{0};         // max read in 1 activation
   int64_t mTotalBytesRead{0};       // total data read
@@ -328,7 +331,7 @@ class nsHttpConnection final : public HttpConnectionBase,
   SpdyVersion mUsingSpdyVersion{SpdyVersion::NONE};
 
   RefPtr<ASpdySession> mSpdySession;
-  RefPtr<ASpdySession> mWebSocketHttp2Session;
+  RefPtr<ASpdySession> mExtendedCONNECTHttp2Session;
   int32_t mPriority{nsISupportsPriority::PRIORITY_NORMAL};
   bool mReportedSpdy{false};
 
@@ -337,6 +340,12 @@ class nsHttpConnection final : public HttpConnectionBase,
 
   // mLastHttpResponseVersion stores the last response's http version seen.
   HttpVersion mLastHttpResponseVersion{HttpVersion::v1_1};
+
+  // Set by PostProcessNPNSetup on TLS handshake failure (translated from
+  // the security info's PRErrorCode via psm::GetXPCOMFromNSSError). Read
+  // by HappyEyeballsTransaction::ReadSegments to surface the cert/TLS
+  // error instead of NS_BASE_STREAM_CLOSED.
+  nsresult mHandshakeError{NS_OK};
 
   // If a large keepalive has been requested for any trans,
   // scale the default by this factor
@@ -374,14 +383,11 @@ class nsHttpConnection final : public HttpConnectionBase,
 
   nsCOMPtr<nsIInputStream> mProxyConnectStream;
 
-  bool mRequestDone{false};
   bool mHasTLSTransportLayer{false};
   bool mTransactionDisallowHttp3{false};
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsHttpConnection, NS_HTTPCONNECTION_IID)
-
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // nsHttpConnection_h__
+#endif  // nsHttpConnection_h_

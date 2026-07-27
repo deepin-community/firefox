@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,22 +7,21 @@
  * for internal use
  */
 
-#ifndef nsICSSDeclaration_h__
-#define nsICSSDeclaration_h__
+#ifndef nsICSSDeclaration_h_
+#define nsICSSDeclaration_h_
 
 /**
  * This interface provides access to methods analogous to those of
- * CSSStyleDeclaration; the difference is that these use nsCSSPropertyID
+ * CSSStyleDeclaration; the difference is that these use NonCustomCSSPropertyId
  * enums for the prop names instead of using strings.
  */
 
-#include "mozilla/Attributes.h"
-#include "nsCSSPropertyID.h"
-#include "mozilla/dom/CSSValue.h"
+#include "NonCustomCSSPropertyId.h"
 #include "mozilla/ErrorResult.h"
-#include "nsWrapperCache.h"
-#include "nsStringFwd.h"
+#include "mozilla/dom/CSSValue.h"
 #include "nsCOMPtr.h"
+#include "nsStringFwd.h"
+#include "nsWrapperCache.h"
 
 class nsINode;
 class nsIPrincipal;
@@ -40,16 +37,12 @@ class DocGroup;
 }  // namespace mozilla
 
 // dbeabbfa-6cb3-4f5c-aec2-dd558d9d681f
-#define NS_ICSSDECLARATION_IID                       \
-  {                                                  \
-    0xdbeabbfa, 0x6cb3, 0x4f5c, {                    \
-      0xae, 0xc2, 0xdd, 0x55, 0x8d, 0x9d, 0x68, 0x1f \
-    }                                                \
-  }
+#define NS_ICSSDECLARATION_IID \
+  {0xdbeabbfa, 0x6cb3, 0x4f5c, {0xae, 0xc2, 0xdd, 0x55, 0x8d, 0x9d, 0x68, 0x1f}}
 
 class nsICSSDeclaration : public nsISupports, public nsWrapperCache {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICSSDECLARATION_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_ICSSDECLARATION_IID)
 
   virtual nsINode* GetAssociatedNode() const = 0;
   virtual nsISupports* GetParentObject() const = 0;
@@ -106,11 +99,14 @@ class nsICSSDeclaration : public nsISupports, public nsWrapperCache {
                                    nsACString& aPriority) = 0;
   virtual mozilla::css::Rule* GetParentRule() = 0;
 
+  // [Chrome only]
+  virtual bool HasLonghandProperty(const nsACString& aPropName) {
+    return false;
+  };
+
  protected:
   bool IsReadOnly();
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsICSSDeclaration, NS_ICSSDECLARATION_IID)
 
 #define NS_DECL_NSIDOMCSSSTYLEDECLARATION_HELPER                               \
   void GetCssText(nsACString& aCssText) override;                              \
@@ -129,4 +125,4 @@ NS_DEFINE_STATIC_IID_ACCESSOR(nsICSSDeclaration, NS_ICSSDECLARATION_IID)
   uint32_t Length() override;                                                  \
   mozilla::css::Rule* GetParentRule() override;
 
-#endif  // nsICSSDeclaration_h__
+#endif  // nsICSSDeclaration_h_

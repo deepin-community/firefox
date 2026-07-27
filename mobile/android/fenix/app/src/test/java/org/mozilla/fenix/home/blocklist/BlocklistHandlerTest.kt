@@ -4,7 +4,9 @@
 
 package org.mozilla.fenix.home.blocklist
 
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import mozilla.components.browser.state.state.ContentState
@@ -14,15 +16,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.home.recenttabs.RecentTab
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class BlocklistHandlerTest {
     private val mockSettings: Settings = mockk()
 
@@ -38,7 +40,7 @@ class BlocklistHandlerTest {
         val addedUrl = "url"
         val updateSlot = slot<Set<String>>()
         every { mockSettings.homescreenBlocklist } returns setOf()
-        every { mockSettings.homescreenBlocklist = capture(updateSlot) } returns Unit
+        every { mockSettings.homescreenBlocklist = capture(updateSlot) } just Runs
 
         blocklistHandler.addUrlToBlocklist(addedUrl)
 

@@ -12,9 +12,6 @@ about-webrtc-document-title = WebRTC-tiedot
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = tallenna about:webrtc nimellä
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC-lokitus
@@ -31,8 +28,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Kaapatut lokitiedostot kohteess
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Automaattinen päivitys
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Automaattinen päivitys oletuksena
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Päivitä
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -97,6 +92,9 @@ about-webrtc-debug-mode-msg-label = Virheenjäljitystila
 about-webrtc-debug-mode-off-state-label = Käynnistä virheenjäljitystila
 about-webrtc-debug-mode-on-state-label = Pysäytä virheenjäljitystila
 about-webrtc-stats-heading = Istunnon tilastot
+about-webrtc-peerconnections-section-heading = RTCPeerConnection-tilastot
+about-webrtc-peerconnections-section-show-msg = Näytä RTCPeerConnection-tilastot
+about-webrtc-peerconnections-section-hide-msg = Piilota RTCPeerConnection-tilastot
 about-webrtc-stats-clear = Tyhjennä historia
 about-webrtc-log-heading = Yhteysloki
 about-webrtc-log-clear = Tyhjennä loki
@@ -190,6 +188,17 @@ about-webrtc-configuration-element-provided = Annettu
 about-webrtc-configuration-element-not-provided = Ei annettu
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Käyttäjän asettamat WebRTC-asetukset
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = Käyttäjän muokkaama WebRTC-määritys
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = Näytä käyttäjän muokkaama määritys
+about-webrtc-user-modified-configuration-hide-msg = Piilota käyttäjän muokkaama määritys
+
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Arvioitu kaistanleveys
 # The ID of the MediaStreamTrack
@@ -211,10 +220,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Videon kehystilastot - MediaStreamTrack-tunniste: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = sivu tallennettu kohteeseen: { $path }
 about-webrtc-debug-mode-off-state-msg = jäljitysloki kohteessa: { $path }
@@ -297,9 +303,6 @@ about-webrtc-sdp-set-timestamp = Aikaleima { NUMBER($timestamp, useGrouping: "fa
 about-webrtc-show-msg-sdp = Näytä SDP
 about-webrtc-hide-msg-sdp = Piilota SDP
 
-##
-
-
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs
 ## the negotiated CODEC settings.
@@ -307,6 +310,3 @@ about-webrtc-hide-msg-sdp = Piilota SDP
 about-webrtc-media-context-show-msg = Näytä mediakonteksti
 about-webrtc-media-context-hide-msg = Piilota mediakonteksti
 about-webrtc-media-context-heading = Median konteksti
-
-##
-

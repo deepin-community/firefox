@@ -1,13 +1,13 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FOGIPC.h"
 
+#include <cstdint>
 #include <limits>
 #include "mozilla/glean/fog_ffi_generated.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/ProcesstoolsMetrics.h"
 #include "mozilla/dom/BrowsingContextGroup.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/ContentParent.h"
@@ -17,7 +17,10 @@
 #include "mozilla/gfx/GPUChild.h"
 #include "mozilla/gfx/GPUParent.h"
 #include "mozilla/gfx/GPUProcessManager.h"
+#include "mozilla/glean/bindings/jog/JOG.h"
+#include "mozilla/glean/GleanMetrics.h"
 #include "mozilla/Hal.h"
+#include "mozilla/Logging.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/net/SocketProcessChild.h"
 #include "mozilla/net/SocketProcessParent.h"
@@ -29,7 +32,6 @@
 #include "mozilla/ipc/UtilityProcessManager.h"
 #include "mozilla/ipc/UtilityProcessParent.h"
 #include "mozilla/ipc/UtilityProcessSandboxing.h"
-#include "mozilla/Unused.h"
 #include "GMPPlatform.h"
 #include "GMPServiceParent.h"
 #include "nsIClassifiedChannel.h"
@@ -73,9 +75,9 @@ struct ProcessingTimeMarker {
     MS schema{MS::Location::MarkerChart, MS::Location::MarkerTable};
     schema.AddKeyLabelFormat("time", "Recorded Time", MS::Format::Milliseconds);
     schema.AddKeyLabelFormat("tracker", "Tracker Type", MS::Format::String);
+    schema.AddKeyFormat("label", MS::Format::String, MS::PayloadFlags::Hidden);
     schema.SetTooltipLabel("{marker.name} - {marker.data.label}");
-    schema.SetTableLabel(
-        "{marker.name} - {marker.data.label}: {marker.data.time}");
+    schema.SetTableLabel("{marker.data.label}: {marker.data.time}");
     return schema;
   }
 };
@@ -95,9 +97,9 @@ struct ProcessEnergyMarker {
     using MS = MarkerSchema;
     MS schema{MS::Location::MarkerChart, MS::Location::MarkerTable};
     schema.AddKeyLabelFormat("energy", "Energy (µWh)", MS::Format::Integer);
+    schema.AddKeyFormat("label", MS::Format::String, MS::PayloadFlags::Hidden);
     schema.SetTooltipLabel("{marker.name} - {marker.data.label}");
-    schema.SetTableLabel(
-        "{marker.name} - {marker.data.label}: {marker.data.energy}µWh");
+    schema.SetTableLabel("{marker.data.label}: {marker.data.energy}µWh");
     return schema;
   }
 };
@@ -107,6 +109,8 @@ struct ProcessEnergyMarker {
 
 namespace mozilla::glean {
 
+static LazyLogModule sLog("fog");
+
 // Echoes processtools/metrics.yaml's power.wakeups_per_thread
 enum ProcessType {
   eParentActive,
@@ -114,6 +118,7 @@ enum ProcessType {
   eContentForeground,
   eContentBackground,
   eGpuProcess,
+  eInferenceProcess,
   eUnknown,
 };
 
@@ -187,6 +192,10 @@ void RecordThreadCpuUse(const nsACString& aThreadName, uint64_t aCpuTimeMs,
         power_cpu_ms_per_thread::gpu_process.Get(threadName)
             .Add(int32_t(aCpuTimeMs));
         break;
+      case eInferenceProcess:
+        power_cpu_ms_per_thread::inference_process.Get(threadName)
+            .Add(int32_t(aCpuTimeMs));
+        break;
       case eUnknown:
         // Nothing to do.
         break;
@@ -216,6 +225,10 @@ void RecordThreadCpuUse(const nsACString& aThreadName, uint64_t aCpuTimeMs,
         power_wakeups_per_thread::gpu_process.Get(threadName)
             .Add(int32_t(aWakeCount));
         break;
+      case eInferenceProcess:
+        power_wakeups_per_thread::inference_process.Get(threadName)
+            .Add(int32_t(aWakeCount));
+        break;
       case eUnknown:
         // Nothing to do.
         break;
@@ -233,23 +246,17 @@ void GetTrackerType(nsAutoCString& aTrackerType) {
        nsIClassifiedChannel::CLASSIFIED_TRACKING_AD |
        nsIClassifiedChannel::CLASSIFIED_TRACKING_ANALYTICS |
        nsIClassifiedChannel::CLASSIFIED_TRACKING_SOCIAL);
-  AutoTArray<RefPtr<BrowsingContextGroup>, 5> bcGroups;
-  BrowsingContextGroup::GetAllGroups(bcGroups);
-  for (auto& bcGroup : bcGroups) {
-    AutoTArray<DocGroup*, 5> docGroups;
-    bcGroup->GetDocGroups(docGroups);
-    for (auto* docGroup : docGroups) {
-      for (Document* doc : *docGroup) {
-        nsCOMPtr<nsIClassifiedChannel> classifiedChannel =
-            do_QueryInterface(doc->GetChannel());
-        if (classifiedChannel) {
-          uint32_t classificationFlags =
-              classifiedChannel->GetThirdPartyClassificationFlags();
-          trackingFlags &= classificationFlags;
-          if (!trackingFlags) {
-            return;
-          }
-        }
+  AutoTArray<RefPtr<Document>, 32> allDocuments;
+  Document::GetAllInProcessDocuments(allDocuments);
+  for (auto& doc : allDocuments) {
+    nsCOMPtr<nsIClassifiedChannel> classifiedChannel =
+        do_QueryInterface(doc->GetChannel());
+    if (classifiedChannel) {
+      uint32_t classificationFlags =
+          classifiedChannel->GetThirdPartyClassificationFlags();
+      trackingFlags &= classificationFlags;
+      if (!trackingFlags) {
+        return;
       }
     }
   }
@@ -328,9 +335,9 @@ void RecordPowerMetrics() {
   nsAutoCString type(XRE_GetProcessTypeString());
   nsAutoCString trackerType;
   if (XRE_IsContentProcess()) {
-    auto* cc = dom::ContentChild::GetSingleton();
+    auto* cc = mozilla::dom::ContentChild::GetSingleton();
     if (cc) {
-      type.Assign(dom::RemoteTypePrefix(cc->GetRemoteType()));
+      type.Assign(mozilla::dom::RemoteTypePrefix(cc->GetRemoteType()));
       if (StringBeginsWith(type, WEB_REMOTE_TYPE)) {
         type.AssignLiteral("web");
         switch (cc->GetProcessPriority()) {
@@ -354,6 +361,9 @@ void RecordPowerMetrics() {
             MOZ_ASSERT_UNREACHABLE("Unsuppored process type for cpu time");
             break;
         }
+      } else if (type == INFERENCE_REMOTE_TYPE) {
+        type.AssignLiteral("inference");
+        gThisProcessType = ProcessType::eInferenceProcess;
       }
       GetTrackerType(trackerType);
     } else {
@@ -460,6 +470,7 @@ void FlushFOGData(std::function<void(ipc::ByteBuf&&)>&& aResolver) {
 void FlushAllChildData(
     std::function<void(nsTArray<ipc::ByteBuf>&&)>&& aResolver) {
   auto timerId = fog_ipc::flush_durations.Start();
+  MOZ_LOG(sLog, LogLevel::Verbose, ("glean::FlushAllChildData: start"));
 
   nsTArray<ContentParent*> parents;
   ContentParent::GetAll(parents);
@@ -504,30 +515,53 @@ void FlushAllChildData(
 
   if (promises.Length() == 0) {
     // No child processes at the moment. Resolve synchronously.
+    MOZ_LOG(sLog, LogLevel::Verbose,
+            ("glean::FlushAllChildData: No child processes at the moment."));
     fog_ipc::flush_durations.Cancel(std::move(timerId));
     nsTArray<ipc::ByteBuf> results;
     aResolver(std::move(results));
     return;
   }
 
-  // If fog.ipc.flush_failures ever gets too high:
-  // TODO: Don't throw away resolved data if some of the promises reject.
-  // (not sure how, but it'll mean not using ::All... maybe a custom copy of
-  // AllPromiseHolder? Might be impossible outside MozPromise.h)
-  FlushFOGDataPromise::All(GetCurrentSerialEventTarget(), promises)
-      ->Then(GetCurrentSerialEventTarget(), __func__,
-             [aResolver = std::move(aResolver), timerId](
-                 FlushFOGDataPromise::AllPromiseType::ResolveOrRejectValue&&
-                     aValue) {
-               fog_ipc::flush_durations.StopAndAccumulate(std::move(timerId));
-               if (aValue.IsResolve()) {
-                 aResolver(std::move(aValue.ResolveValue()));
-               } else {
-                 fog_ipc::flush_failures.Add(1);
-                 nsTArray<ipc::ByteBuf> results;
-                 aResolver(std::move(results));
-               }
-             });
+  FlushFOGDataPromise::AllSettled(GetCurrentSerialEventTarget(), promises)
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          [aResolver = std::move(aResolver), timerId,
+           promiseCount = promises.Length()](
+              FlushFOGDataPromise::AllSettledPromiseType::ResolveOrRejectValue&&
+                  aValue) {
+            fog_ipc::flush_durations.StopAndAccumulate(std::move(timerId));
+            if (aValue.IsResolve()) {
+              MOZ_LOG(
+                  sLog, LogLevel::Verbose,
+                  ("glean::FlushAllChildData: AllSettled value is resolved"));
+              nsTArray<ipc::ByteBuf> results;
+              auto& allValues = aValue.ResolveValue();
+              for (auto& value : allValues) {
+                if (value.IsResolve()) {
+                  MOZ_LOG(sLog, LogLevel::Verbose,
+                          ("glean::FlushAllChildData: value is resolved, "
+                           "appending element to results"));
+                  results.AppendElement(std::move(value.ResolveValue()));
+                } else {
+                  MOZ_LOG(sLog, LogLevel::Verbose,
+                          ("glean::FlushAllChildData: value is rejected, "
+                           "appending 1 to flush rejections"));
+                  fog_ipc::flush_rejections.Add(1);
+                }
+              }
+              aResolver(std::move(results));
+            } else {
+              MOZ_LOG(sLog, LogLevel::Verbose,
+                      ("glean::FlushAllChildData: AllSettled value is "
+                       "rejected, adding %zu to flush failures count",
+                       promiseCount));
+              fog_ipc::flush_failures.Add((int32_t)promiseCount);
+              nsTArray<ipc::ByteBuf> results;
+              aResolver(std::move(results));
+            }
+          });
+  MOZ_LOG(sLog, LogLevel::Verbose, ("glean::FlushAllChildData: end"));
 }
 
 /**
@@ -553,18 +587,18 @@ void SendFOGData(ipc::ByteBuf&& buf) {
       mozilla::gmp::SendFOGData(std::move(buf));
     } break;
     case GeckoProcessType_GPU:
-      Unused << mozilla::gfx::GPUParent::GetSingleton()->SendFOGData(
+      (void)mozilla::gfx::GPUParent::GetSingleton()->SendFOGData(
           std::move(buf));
       break;
     case GeckoProcessType_RDD:
-      Unused << mozilla::RDDParent::GetSingleton()->SendFOGData(std::move(buf));
+      (void)mozilla::RDDParent::GetSingleton()->SendFOGData(std::move(buf));
       break;
     case GeckoProcessType_Socket:
-      Unused << net::SocketProcessChild::GetSingleton()->SendFOGData(
+      (void)net::SocketProcessChild::GetSingleton()->SendFOGData(
           std::move(buf));
       break;
     case GeckoProcessType_Utility:
-      Unused << ipc::UtilityProcessChild::GetSingleton()->SendFOGData(
+      (void)ipc::UtilityProcessChild::GetSingleton()->SendFOGData(
           std::move(buf));
       break;
     default:
@@ -594,7 +628,7 @@ RefPtr<GenericPromise> FlushAndUseFOGData() {
 }
 
 void TestTriggerMetrics(uint32_t aProcessType,
-                        const RefPtr<dom::Promise>& promise) {
+                        const RefPtr<mozilla::dom::Promise>& promise) {
   switch (aProcessType) {
     case nsIXULRuntime::PROCESS_TYPE_GMPLUGIN: {
       RefPtr<mozilla::gmp::GeckoMediaPluginServiceParent> gmps(
@@ -619,19 +653,19 @@ void TestTriggerMetrics(uint32_t aProcessType,
     case nsIXULRuntime::PROCESS_TYPE_SOCKET: {
       RefPtr<net::SocketProcessParent> socketParent(
           net::SocketProcessParent::GetSingleton());
-      Unused << socketParent->SendTestTriggerMetrics()->Then(
+      (void)socketParent->SendTestTriggerMetrics()->Then(
           GetCurrentSerialEventTarget(), __func__,
           [promise]() { promise->MaybeResolveWithUndefined(); },
           [promise]() { promise->MaybeRejectWithUndefined(); });
     } break;
     case nsIXULRuntime::PROCESS_TYPE_UTILITY:
-      Unused << ipc::UtilityProcessManager::GetSingleton()
-                    ->GetProcessParent(ipc::SandboxingKind::GENERIC_UTILITY)
-                    ->SendTestTriggerMetrics()
-                    ->Then(
-                        GetCurrentSerialEventTarget(), __func__,
-                        [promise]() { promise->MaybeResolveWithUndefined(); },
-                        [promise]() { promise->MaybeRejectWithUndefined(); });
+      (void)ipc::UtilityProcessManager::GetSingleton()
+          ->GetProcessParent(ipc::SandboxingKind::GENERIC_UTILITY)
+          ->SendTestTriggerMetrics()
+          ->Then(
+              GetCurrentSerialEventTarget(), __func__,
+              [promise]() { promise->MaybeResolveWithUndefined(); },
+              [promise]() { promise->MaybeRejectWithUndefined(); });
       break;
     default:
       promise->MaybeRejectWithUndefined();

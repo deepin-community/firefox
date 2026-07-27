@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Ativar Warp, um projeto para melhora
 experimental-features-ime-search =
     .label = Barra de endereços: Mostrar resultados durante a composição IME
 experimental-features-ime-search-description = Um IME (Input Method Editor, ou editor de método de entrada) é uma ferramenta que permite inserir símbolos complexos, como os usados em idiomas escritos do subcontinente indiano ou do leste asiático, usando um teclado padrão. Ativar este experimento faz com que o painel da barra de endereços se mantenha aberto, mostrando resultados e sugestões de pesquisa ao usar o IME para inserir texto. Note que o IME pode exibir um painel que cubra os resultados da barra de endereços, portanto essa preferência é sugerida apenas para IME que não usa esse tipo de painel.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Picture-in-picture: Abrir automaticamente ao mudar de aba
-experimental-features-auto-pip-description = Ativar picture-in-picture de vídeos ativos ao mudar de aba.
-genai-settings-chat-title =
-    .label = Chatbot de inteligência artificial
-# Updated sidebar settings
-sidebar-title =
-    .label = Painel lateral
-sidebar-description = Acessar facilmente o histórico, abas de outros dispositivos, extensões do painel lateral e muito mais enquanto navega. <a data-l10n-name="connect">Compartilhar opinião</a>
-vertical-tabs-title =
-    .label = Abas na vertical
-vertical-tabs-description = Mover abas do topo para o lado do navegador. Precisa do experimento “Painel lateral“. <a data-l10n-name="connect">Compartilhar opinião</a>
-experimental-features-group-browsing =
-    .label = Navegação
-experimental-features-group-developer-tools =
-    .label = Ferramentas de desenvolvimento
-experimental-features-group-webpage-display =
-    .label = Exibição de página web
-experimental-features-group-customize-browsing =
-    .label = Personalize sua navegação
-experimental-features-group-customize-browsing-description = Se você experimentar estes recursos, <a data-l10n-name="connect">compartilhe o que pensa no Connect</a>

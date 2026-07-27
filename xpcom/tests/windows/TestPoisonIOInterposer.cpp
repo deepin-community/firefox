@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,7 @@ class TempFile final {
  public:
   TempFile() : mFullPath{0} {
     wchar_t tempDir[MAX_PATH + 1];
-    DWORD len = ::GetTempPathW(ArrayLength(tempDir), tempDir);
+    DWORD len = ::GetTempPathW(std::size(tempDir), tempDir);
     if (!len) {
       return;
     }

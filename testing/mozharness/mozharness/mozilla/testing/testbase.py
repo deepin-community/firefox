@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 import copy
 import json
 import os
 import platform
 import ssl
-
-from six.moves import urllib
-from six.moves.urllib.parse import ParseResult, urlparse
+import urllib.parse
+import urllib.request
+from urllib.parse import ParseResult, urlparse
 
 from mozharness.base.errors import BaseErrorList
 from mozharness.base.log import FATAL, WARNING
@@ -35,6 +33,7 @@ from mozharness.mozilla.tooltool import TooltoolMixin
 INSTALLER_SUFFIXES = (
     ".apk",  # Android
     ".tar.bz2",
+    ".tar.xz",
     ".tar.gz",  # Linux
     ".dmg",  # Mac
     ".installer-stub.exe",
@@ -43,7 +42,7 @@ INSTALLER_SUFFIXES = (
     ".zip",  # Windows
 )
 
-# https://searchfox.org/mozilla-central/source/testing/config/tooltool-manifests
+# https://searchfox.org/firefox-main/source/testing/config/tooltool-manifests
 TOOLTOOL_PLATFORM_DIR = {
     "linux": "linux32",
     "linux64": "linux64",
@@ -136,6 +135,15 @@ testing_config_options = (
                 "default": False,
                 "dest": "restartAfterFailure",
                 "help": "Instruct the test harness to terminate on failure and restart where it left off",
+            },
+        ],
+        [
+            ["--restart-between-tests"],
+            {
+                "action": "store_true",
+                "default": False,
+                "dest": "restartBetweenTests",
+                "help": "Restart the browser between each test to identify tests with undocumented dependencies",
             },
         ],
     ]
@@ -298,7 +306,7 @@ class TestingMixin(
             )
 
         for key, value in self.config.items():
-            if type(value) == str and value.startswith("http"):
+            if type(value) is str and value.startswith("http"):
                 self.config[key] = _replace_url(value, c["replace_urls"])
 
         # Any changes to c means that we need credentials
@@ -335,17 +343,16 @@ class TestingMixin(
         # URLs to the right place and enable http authentication
         if "developer_config.py" in self.config["config_files"]:
             return _urlopen_basic_auth(url, **kwargs)
+        # windows certificates need to be refreshed (https://bugs.python.org/issue36011)
+        elif self.platform_name() in ("win64",) and platform.architecture()[0] in (
+            "x64",
+        ):
+            if self.ssl_context is None:
+                self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                self.ssl_context.load_default_certs()
+            return urllib.request.urlopen(url, context=self.ssl_context, **kwargs)
         else:
-            # windows certificates need to be refreshed (https://bugs.python.org/issue36011)
-            if self.platform_name() in ("win64",) and platform.architecture()[0] in (
-                "x64",
-            ):
-                if self.ssl_context is None:
-                    self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-                    self.ssl_context.load_default_certs()
-                return urllib.request.urlopen(url, context=self.ssl_context, **kwargs)
-            else:
-                return urllib.request.urlopen(url, **kwargs)
+            return urllib.request.urlopen(url, **kwargs)
 
     def _query_binary_version(self, regex, cmd):
         output = self.get_output_from_command(cmd, silent=False)
@@ -420,7 +427,7 @@ You can set this by specifying --test-url URL
         target_packages = []
         c = self.config
         for category in suite_categories:
-            specified_suites = c.get("specified_{}_suites".format(category))
+            specified_suites = c.get(f"specified_{category}_suites")
             if specified_suites:
                 found = False
                 for specified_suite in specified_suites:
@@ -456,9 +463,7 @@ You can set this by specifying --test-url URL
                 for req_file in required_files:
                     if req_file not in unpack_dirs:
                         self.info(
-                            "Adding '{}' for extraction from common.tests archive".format(
-                                req_file
-                            )
+                            f"Adding '{req_file}' for extraction from common.tests archive"
                         )
                         unpack_dirs.append(req_file)
 
@@ -482,21 +487,15 @@ You can set this by specifying --test-url URL
         self.download_unpack(self.test_url, test_install_dir, extract_dirs=extract_dirs)
 
     def structured_output(self, suite_category):
-        """Defines whether structured logging is in use in this configuration. This
-        may need to be replaced with data from a different config at the resolution
-        of bug 1070041 and related bugs.
-        """
-        return (
-            "structured_suites" in self.config
-            and suite_category in self.config["structured_suites"]
-        )
+        unstructured_suites = self.config.get("unstructured_suites", [])
+        return suite_category not in unstructured_suites
 
     def get_test_output_parser(
         self,
         suite_category,
         strict=False,
         fallback_parser_class=DesktopUnittestOutputParser,
-        **kwargs
+        **kwargs,
     ):
         """Derive and return an appropriate output parser, either the structured
         output parser or a fallback based on the type of logging in use as determined by
@@ -771,7 +770,7 @@ Did you run with --create-virtualenv? Is mozinstall in virtualenv_modules?"""
             self._run_cmd_checks(c.get("postflight_run_cmd_suites", []))
 
     def query_abs_dirs(self):
-        abs_dirs = super(TestingMixin, self).query_abs_dirs()
+        abs_dirs = super().query_abs_dirs()
         if "MOZ_FETCHES_DIR" in os.environ:
             abs_dirs["abs_fetches_dir"] = os.environ["MOZ_FETCHES_DIR"]
         return abs_dirs

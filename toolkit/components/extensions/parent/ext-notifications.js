@@ -8,7 +8,14 @@ const ToolkitModules = {};
 
 ChromeUtils.defineESModuleGetters(ToolkitModules, {
   EventEmitter: "resource://gre/modules/EventEmitter.sys.mjs",
+  NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
 });
+
+const AlertNotification = Components.Constructor(
+  "@mozilla.org/alert-notification;1",
+  "nsIAlertNotification",
+  "initWithObject"
+);
 
 var { ignoreEvent } = ExtensionCommon;
 
@@ -18,41 +25,11 @@ function Notification(context, notificationsMap, id, options) {
   this.id = id;
   this.options = options;
 
-  let imageURL;
-  if (options.iconUrl) {
-    imageURL = context.extension.baseURI.resolve(options.iconUrl);
-  }
-
   // Set before calling into nsIAlertsService, because the notification may be
   // closed during the call.
   notificationsMap.set(id, this);
 
-  try {
-    let svc = Cc["@mozilla.org/alerts-service;1"].getService(
-      Ci.nsIAlertsService
-    );
-    svc.showAlertNotification(
-      imageURL,
-      options.title,
-      options.message,
-      true, // textClickable
-      this.id,
-      this,
-      this.id,
-      undefined,
-      undefined,
-      undefined,
-      // Principal is not set because doing so reveals buttons to control
-      // notification preferences, which are currently not implemented for
-      // notifications triggered via this extension API (bug 1589693).
-      undefined,
-      context.incognito
-    );
-  } catch (e) {
-    // This will fail if alerts aren't available on the system.
-
-    this.observe(null, "alertfinished", id);
-  }
+  this.showAlert(context);
 }
 
 Notification.prototype = {
@@ -68,23 +45,78 @@ Notification.prototype = {
     this.notificationsMap.delete(this.id);
   },
 
-  observe(subject, topic, data) {
+  async showAlert(context) {
+    let imageURL;
+    if (this.options.iconUrl) {
+      imageURL = context.extension.baseURI.resolve(this.options.iconUrl);
+    }
+
+    let image;
+    try {
+      if (imageURL) {
+        let uri = ToolkitModules.NetUtil.newURI(imageURL);
+        let channel = ToolkitModules.NetUtil.newChannel({
+          uri,
+          securityFlags:
+            Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
+          contentPolicyType: Ci.nsIContentPolicy.TYPE_IMAGE,
+          loadingPrincipal: context.principal,
+        });
+        image = await ChromeUtils.fetchDecodedImage(uri, channel);
+      }
+    } catch (e) {
+      console.error(`Loading image ${imageURL} for Notification failed: ${e}`);
+      imageURL = undefined;
+    }
+
+    // Return if the notification was explicitly closed while waiting for the image.
+    if (!this.notificationsMap.has(this.id)) {
+      this.observe(null, "alertfinished");
+      return;
+    }
+
+    try {
+      let svc = Cc["@mozilla.org/alerts-service;1"].getService(
+        Ci.nsIAlertsService
+      );
+      // Principal is not set because doing so reveals buttons to control
+      // notification preferences, which are currently not implemented for
+      // notifications triggered via this extension API (bug 1589693).
+      let alert = new AlertNotification({
+        // The imageURL and image should be in sync. Only Android still needs
+        // the imageURL instead of image.
+        imageURL,
+        image,
+        title: this.options.title,
+        text: this.options.message,
+        textClickable: true,
+        name: this.id,
+        inPrivateBrowsing: context.incognito,
+      });
+      svc.showAlert(alert, this);
+    } catch (e) {
+      // This will fail if alerts aren't available on the system.
+      this.observe(null, "alertfinished");
+    }
+  },
+
+  observe(subject, topic) {
     switch (topic) {
       case "alertclickcallback":
-        this.notificationsMap.emit("clicked", data);
+        this.notificationsMap.emit("clicked", this.id);
         break;
       case "alertfinished":
-        this.notificationsMap.emit("closed", data);
+        this.notificationsMap.emit("closed", this.id);
         this.notificationsMap.delete(this.id);
         break;
       case "alertshow":
-        this.notificationsMap.emit("shown", data);
+        this.notificationsMap.emit("shown", this.id);
         break;
     }
   },
 };
 
-this.notifications = class extends ExtensionAPI {
+this.notifications = class extends ExtensionAPIPersistent {
   constructor(extension) {
     super(extension);
 
@@ -98,6 +130,55 @@ this.notifications = class extends ExtensionAPI {
       notification.clear();
     }
   }
+
+  PERSISTENT_EVENTS = {
+    onClosed({ fire }) {
+      let listener = (event, notificationId) => {
+        // TODO Bug 1413188, Support the byUser argument.
+        fire.async(notificationId, true);
+      };
+
+      this.notificationsMap.on("closed", listener);
+      return {
+        unregister: () => {
+          this.notificationsMap.off("closed", listener);
+        },
+        convert(_fire) {
+          fire = _fire;
+        },
+      };
+    },
+    onClicked({ fire }) {
+      let listener = (event, notificationId) => {
+        fire.async(notificationId);
+      };
+
+      this.notificationsMap.on("clicked", listener);
+      return {
+        unregister: () => {
+          this.notificationsMap.off("clicked", listener);
+        },
+        convert(_fire) {
+          fire = _fire;
+        },
+      };
+    },
+    onShown({ fire }) {
+      let listener = (event, notificationId) => {
+        fire.async(notificationId);
+      };
+
+      this.notificationsMap.on("shown", listener);
+      return {
+        unregister: () => {
+          this.notificationsMap.off("shown", listener);
+        },
+        convert(_fire) {
+          fire = _fire;
+        },
+      };
+    },
+  };
 
   getAPI(context) {
     let notificationsMap = this.notificationsMap;
@@ -136,48 +217,23 @@ this.notifications = class extends ExtensionAPI {
 
         onClosed: new EventManager({
           context,
-          name: "notifications.onClosed",
-          register: fire => {
-            let listener = (event, notificationId) => {
-              // TODO Bug 1413188, Support the byUser argument.
-              fire.async(notificationId, true);
-            };
-
-            notificationsMap.on("closed", listener);
-            return () => {
-              notificationsMap.off("closed", listener);
-            };
-          },
+          module: "notifications",
+          event: "onClosed",
+          extensionApi: this,
         }).api(),
 
         onClicked: new EventManager({
           context,
-          name: "notifications.onClicked",
-          register: fire => {
-            let listener = (event, notificationId) => {
-              fire.async(notificationId);
-            };
-
-            notificationsMap.on("clicked", listener);
-            return () => {
-              notificationsMap.off("clicked", listener);
-            };
-          },
+          module: "notifications",
+          event: "onClicked",
+          extensionApi: this,
         }).api(),
 
         onShown: new EventManager({
           context,
-          name: "notifications.onShown",
-          register: fire => {
-            let listener = (event, notificationId) => {
-              fire.async(notificationId);
-            };
-
-            notificationsMap.on("shown", listener);
-            return () => {
-              notificationsMap.off("shown", listener);
-            };
-          },
+          module: "notifications",
+          event: "onShown",
+          extensionApi: this,
         }).api(),
 
         // TODO Bug 1190681, implement button support.

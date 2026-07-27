@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Otevřít odkaz v novém panelu
     .accesskey = n
+main-context-menu-open-link-split-view =
+    .label = Otevřít odkaz v rozděleném zobrazení
+    .accesskey = r
 main-context-menu-open-link-container-tab =
     .label = Otevřít odkaz v novém kontejnerovém panelu
     .accesskey = K
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Uložit odkaz do { -pocket-brand-name(case: "gen") }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopírovat e-mailovou adresu
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Zkopírovat odkaz
     .accesskey = a
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Zkopírovat odkaz bez sledovacích prvků
-    .accesskey = k
+main-context-menu-preview-link =
+    .label = Náhled odkazu
+    .accesskey = N
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Zkopírovat čistý odkaz
+    .accesskey = a
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Skrýt ovládání
     .accesskey = o
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Celá obrazovka
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Zobrazit popis
     .accesskey = p
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Vyhledat obrázek pomocí { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Uložit video jako…
     .accesskey = l
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Poslat audio e-mailem…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Poslat do zařízení
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Odeslat do mobilu
+    .accesskey = O
+main-context-menu-send-to-mobile-sign-in = Pro posílání panelů se přihlaste
+main-context-menu-send-to-mobile-enable-sync2 = Povolit synchronizaci pro odeslání panelu
+main-context-menu-send-to-mobile-connect-phone2 = Připojit svůj telefon
+main-context-menu-send-to-mobile-device-missing2 = Nevidíte své zařízení?
+main-context-menu-send-to-mobile-sign-in-from-link = Pro odeslání odkazu se přihlaste
+main-context-menu-send-to-mobile-sign-in-from-page = Pro odeslání stránky se přihlaste
+main-context-menu-send-to-mobile-enable-sync3 = Pro odeslání panelů zapněte synchronizaci
+main-context-menu-send-to-mobile-enable-sync-from-link = Pro odeslání odkazu zapnout synchronizaci
+main-context-menu-send-to-mobile-enable-sync-from-page = Pro odeslání stránky zapnout synchronizaci
+main-context-menu-send-to-mobile-connect-phone3 = Pro posílání panelů zařízení připojte
+main-context-menu-send-to-mobile-connect-phone-from-link = Pro odeslání odkazu zařízení připojte
+main-context-menu-send-to-mobile-connect-phone-from-page = Pro odeslání stránky zařízení připojte
 main-context-menu-save-to-pocket =
     .label = Uložit stránku do { -pocket-brand-name(case: "gen") }
     .accesskey = k
@@ -290,12 +318,10 @@ main-context-menu-send-to-device =
     .label = Poslat stránku do zařízení
     .accesskey = e
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
-    .label = Použit uložené uživatelské jméno
+    .label = Použít uložené uživatelské jméno
     .accesskey = u
 # Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
@@ -317,11 +343,17 @@ main-context-menu-manage-passwords =
     .label = Správa hesel
     .accesskey = S
 main-context-menu-keyword =
-    .label = Přiřadit k tomuto vyhledávání klíčové slovo…
+    .label = Přiřadit tomuto vyhledávání klíčové slovo…
     .accesskey = h
+main-context-menu-add-engine =
+    .label = Přidat vyhledávač
+    .accesskey = v
 main-context-menu-link-send-to-device =
     .label = Poslat odkaz do zařízení
     .accesskey = e
+main-context-menu-link-send-to-mobile =
+    .label = Odeslat odkaz do mobilu
+    .accesskey = O
 main-context-menu-frame =
     .label = Tento rám
     .accesskey = T
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Zobrazit heslo
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nové
+main-context-menu-pdfjs-copy-page =
+    .label = Kopírovat stránku
+main-context-menu-pdfjs-cut-page =
+    .label = Vyjmout stránku
+main-context-menu-pdfjs-delete-page =
+    .label = Smazat stránku
+main-context-menu-pdfjs-save-page =
+    .label = Uložit výběr jako…

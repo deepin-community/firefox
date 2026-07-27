@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -105,6 +103,12 @@ bool KeyAlgorithmProxy::ReadStructuredClone(JSStructuredCloneReader* aReader) {
       }
 
       mEc.mName = mName;
+      return true;
+    }
+
+    case OKP: {
+      mType = OKP;
+      mEd.mName = mName;
       return true;
     }
   }
@@ -228,6 +232,10 @@ nsString KeyAlgorithmProxy::JwkAlg() const {
     if (curveName.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_P521)) {
       return NS_LITERAL_STRING_FROM_CSTRING(JWK_ALG_ECDSA_P_521);
     }
+  }
+
+  if (mName.EqualsLiteral(WEBCRYPTO_ALG_ED25519)) {
+    return NS_LITERAL_STRING_FROM_CSTRING(JWK_ALG_ED25519);
   }
 
   return nsString();

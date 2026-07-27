@@ -7,24 +7,40 @@ do-not-track-learn-more = और अधिक जानें
 do-not-track-option-always =
     .label = हमेशा
 settings-page-title = सेटिंग
+category-nav-heading =
+    .heading = सेटिंग
 managed-notice = आपके ब्राउज़र को आपके संगठन द्वारा प्रबंधित किया जा रहा है।
+managed-notice-nav =
+    .label = आपके ब्राउज़र को आपके संगठन द्वारा प्रबंधित किया जा रहा है।
 pane-general-title = सामान्य
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = मुख्य पृष्ठ
+pane-search-title2 = खोजें
+    .title = खोजें
+pane-privacy-title3 = गोपनीयता व सुरक्षा
+    .title = गोपनीयता व सुरक्षा
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = खोजें
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = गोपनीयता व सुरक्षा
 pane-privacy-title = गोपनीयता व सुरक्षा
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } समर्थन
+    .title = { -brand-short-name } समर्थन
+addons-button-label2 = एक्सटेंशन और थीम
+    .title = एक्सटेंशन और थीम
 help-button-label = { -brand-short-name } समर्थन
 addons-button-label = एक्सटेंशन और थीम
 focus-search =
@@ -78,6 +94,8 @@ startup-restore-warn-on-quit =
     .label = ब्राउज़र को छोड़ने पर आपको चेतावनी देता है
 disable-extension =
     .label = एक्सटेंशन अक्षम करें
+tabs-group-header2 =
+    .label = टैब
 tabs-group-header = टैब
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab टैब्स के द्वारा हाल ही में उपयोग किये गये अनुक्रम में घूमता है
@@ -99,6 +117,8 @@ browser-containers-settings =
     .label = सेटिंग्स…
     .accesskey = i
 containers-disable-alert-title = क्या आप सभी कंटेनर टैब्स बंद करना चाहते हैं?
+startup-group =
+    .label = आरंभन
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -144,6 +164,9 @@ default-font-size = आकार
 advanced-fonts =
     .label = विस्तृत...
     .accesskey = A
+preferences-default-zoom-label =
+    .label = तयशुदा ज़ूम
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = ज़ूम
 preferences-default-zoom = तयशुदा ज़ूम
@@ -180,6 +203,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = फ़ाइल व अनुप्रयोग
+download-save-files-header =
+    .label = यहाँ फ़ाइल सहेजें
+download-save-where-3 =
+    .aria-label = यहाँ फ़ाइल सहेजें
 download-header = डाउनलोड
 download-save-where = यहाँ फ़ाइल सहेजें
     .accesskey = v
@@ -204,9 +231,11 @@ applications-filter =
 applications-type-column =
     .label = अंतर्वस्तु प्रकार
     .accesskey = T
+applications-type-heading = अंतर्वस्तु प्रकार
 applications-action-column =
     .label = क्रिया
     .accesskey = A
+applications-action-heading = क्रिया
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } फाइल
@@ -263,8 +292,10 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = डिजिटल राइट्स मैनेजमेंट (DRM) सामग्री
 drm-content-header = डिजिटल राइट्स मैनेजमेंट (DRM) सामग्री
 play-drm-content =
     .label = DRM-नियंत्रित सामग्री चलाएं
@@ -275,6 +306,9 @@ update-application-description = सर्वोत्तम प्रदर्�
 # Variables:
 # $version (string) - Firefox version
 update-application-version = संस्करण { $version } <a data-l10n-name="learn-more">नया क्या है</a>
+update-history-2 =
+    .label = अद्यतन इतिहास दिखाएँ
+    .accesskey = p
 update-history =
     .label = अद्यतन इतिहास दिखाएँ…
     .accesskey = p
@@ -317,8 +351,10 @@ performance-limit-content-process-blocked-desc = सामग्री प्र
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (तयशुदा)
+performance-group =
+    .label = प्रदर्शन
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = ब्राउज़िंग
 browsing-use-autoscroll =
@@ -342,6 +378,8 @@ browsing-cfr-features =
     .label = ब्राउज़ करते समय सुविधाओं की सिफारिश करें
     .accesskey = f
 browsing-cfr-recommendations-learn-more = और जानें
+browsing-group =
+    .label = ब्राउज़िंग
 
 ## General Section - Proxy
 
@@ -357,10 +395,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = नया विंडोज और टैब
 home-new-windows-tabs-description2 = चुनें कि आप अपने होमपेज, नयी विंडो और नए टैब को खोलते समय क्या देखेंगे.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = तयशुदा बनाएँ
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = मुखपृष्ठ और नई विंडो
 home-newtabs-mode-label = नया टैब
+home-homepage-new-tabs =
+    .label = नया टैब
 home-restore-defaults =
     .label = डिफ़ॉल्ट पुनः स्थापित करें
     .accesskey = R
@@ -390,8 +436,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = वेब खोज
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } द्वारा अनुशंसित
@@ -444,6 +489,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = पता पट्टी परिणाम में खोज सुझाव दिखाएँ
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = खोज सुझाव स्थान पट्टी में दिखाएँ नहीं जायेंगे क्योंकी आपने { -brand-short-name } को कभी भी इतिहास याद न रखने क लिए कॉन्फ़िगर करा है
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -473,10 +520,16 @@ search-keyword-warning-title = बीजशब्द अनुकृति
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = आपने एक बीजशब्द चुना है जो अभी "{ $name }" के द्वारा प्रयोग में है. कृपया दूसरा चुनें.
 search-keyword-warning-bookmark = आपने एक बीजशब्द चुना है जो अभी बुकमार्क के द्वारा प्रयोग में है. कृपया दूसरा चुनें.‌
+search-engine-group =
+    .label = तयशुदा खोज इंजिन
+search-default-engine =
+    .aria-label = तयशुदा खोज इंजिन
 
 ## Containers Section
 
 containers-header = पात्र टैब
+containers-section-header =
+    .heading = पात्र टैब
 containers-add-button =
     .label = नया पात्र जोड़े
     .accesskey = A
@@ -512,11 +565,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = साइन आउट…
     .accesskey = g
+sync-sign-out2 =
+    .label = साइन आउट
+    .accesskey = g
 sync-manage-account = खाता प्रबंधित करें
+    .accesskey = o
+sync-manage-account2 =
+    .label = खाता प्रबंधित करें
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } सत्यापित नहीं है.
 sync-signedin-login-failure = फिर से कनेक्ट करने के लिए साइन इन करें { $email }
@@ -542,8 +602,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = अभी सिंक करें
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = अभी सिंक करें
+    .accesskey = N
 prefs-syncing-button =
     .label = सिंक हो रहा है…
+prefs-syncing-button-2 =
+    .label = सिंक हो रहा है…
+    .title = अभी सिंक करें
 
 ## The list of things currently syncing.
 
@@ -591,6 +657,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = डिवाइस का नाम
+sync-device-name-header-2 =
+    .label = डिवाइस का नाम
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = डिवाइस का नाम
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = उपकरण का नाम बदले
+    .accesskey = h
 sync-device-name-change =
     .label = उपकरण का नाम बदले…
     .accesskey = h
@@ -601,6 +677,8 @@ sync-device-name-save =
     .label = सहेजें
     .accesskey = v
 sync-connect-another-device = अन्य डिवाइस जोड़ें
+sync-connect-another-device-2 =
+    .label = अन्य डिवाइस जोड़ें
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -626,7 +704,7 @@ forms-ask-to-save-logins =
     .label = वेबसाइटों के लिए लॉग इन और पासवर्ड सहेजने के लिए पूछें
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = अपवाद…
@@ -653,9 +731,6 @@ forms-windows-sso-learn-more-link = अधिक जानें
 master-password-os-auth-dialog-caption = { -brand-full-name }
 autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = इतिहास
@@ -676,6 +751,12 @@ history-remember-option-never =
     .label = इतिहास कभी याद ना रखें
 history-remember-option-custom =
     .label = इतिहास के लिए मनपसंद सेटिंग्स का उपयोग करें
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } द्वारा आपके ब्राउज़िंग, डाउनलोड, फॉर्म तथा खोज इतिहास याद रखा जाएगा.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } बतौर निजी ब्राउज़िंग की तरह समान सेटिंग का उपयोग करेगा, और कोई इतिहास याद नहीं रखेगा जब आप वेब ब्राउज़ करते हैं.
 history-remember-description = { -brand-short-name } द्वारा आपके ब्राउज़िंग, डाउनलोड, फॉर्म तथा खोज इतिहास याद रखा जाएगा.
 history-dontremember-description = { -brand-short-name } बतौर निजी ब्राउज़िंग की तरह समान सेटिंग का उपयोग करेगा, और कोई इतिहास याद नहीं रखेगा जब आप वेब ब्राउज़ करते हैं.
 history-private-browsing-permanent =
@@ -696,6 +777,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = इतिहास हटायें...
     .accesskey = s
+history-group =
+    .label = इतिहास
 
 ## Privacy Section - Site Data
 
@@ -726,14 +809,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = अपवादों को प्रबंधित करें...
     .accesskey = x
+cookies-site-data-group =
+    .label = कुकीज़ और साइट डेटा
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = पता पट्टी
 addressbar-suggest = पता बार का उपयोग करते समय, सुझाव दें
@@ -852,6 +931,8 @@ permissions-notification-link = अधिक जानें
 permissions-notification-pause =
     .label = { -brand-short-name } के पुनः शुरू होने तक अधिसूचना रोकें
     .accesskey = n
+permissions-autoplay2 =
+    .label = ऑटोप्‍ले
 permissions-autoplay = ऑटोप्‍ले
 permissions-autoplay-settings =
     .label = सेटिंग…
@@ -865,6 +946,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = अपवाद…
     .accesskey = E
+permissions-location2 =
+    .label = स्थान
+permissions-xr2 =
+    .label = Virtual Reality
+permissions-camera2 =
+    .label = कैमरा
+permissions-microphone2 =
+    .label = माइक्रोफोन
+permissions-notification2 =
+    .label = अधिसूचना
 
 ## Privacy Section - Data Collection
 
@@ -880,9 +971,8 @@ addon-recommendations-link = और जानें
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = इस निर्मित विन्यास के लिए डेटा रिपोर्टिंग को असक्रिय किया हैं
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = { -brand-short-name } अध्ययन देखें
 
 ## Privacy Section - Security
 ##
@@ -914,6 +1004,7 @@ certs-view =
 certs-devices =
     .label = सुरक्षा उपकरण…
     .accesskey = D
+certs-devices-enable-fips = FIPS सक्रिय करें
 space-alert-over-5gb-settings-button =
     .label = सेटिंग खोलें
     .accesskey = O
@@ -921,9 +1012,6 @@ space-alert-over-5gb-settings-button =
 ## Privacy Section - HTTPS-Only
 
 httpsonly-learn-more = अधिक जानें
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

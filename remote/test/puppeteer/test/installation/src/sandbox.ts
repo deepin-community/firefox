@@ -3,10 +3,10 @@
  * Copyright 2022 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-import crypto from 'crypto';
-import {mkdtemp, rm, writeFile} from 'fs/promises';
-import {tmpdir} from 'os';
-import {join} from 'path';
+import crypto from 'node:crypto';
+import {mkdtemp, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 
 import {
   PUPPETEER_CORE_PACKAGE_PATH,
@@ -30,7 +30,7 @@ export interface ItEvaluatesFn {
   (
     title: string,
     options: ItEvaluatesOptions,
-    getScriptContent: (cwd: string) => Promise<string>
+    getScriptContent: (cwd: string) => Promise<string>,
   ): void;
   (title: string, getScriptContent: (cwd: string) => Promise<string>): void;
 }
@@ -56,11 +56,14 @@ declare module 'mocha' {
     runScript: (
       content: string,
       type: 'cjs' | 'mjs',
-      args?: string[]
+      args?: string[],
     ) => Promise<void>;
   }
 }
 
+const githubActionDebuggingFlags = process.env['RUNNER_DEBUG']
+  ? ['--foreground-scripts']
+  : [];
 /**
  * Configures mocha before/after hooks to create a temp folder and install
  * specified dependencies.
@@ -99,21 +102,30 @@ export const configureSandbox = (options: SandboxOptions): void => {
 
     await options.before?.(sandbox);
     if (dependencies.length > 0) {
-      await execFile(PKG_MANAGER, [ADD_PKG_SUBCOMMAND, ...dependencies], {
-        cwd: sandbox,
-        env,
-        shell: true,
-      });
-    }
-    if (devDependencies.length > 0) {
       await execFile(
         PKG_MANAGER,
-        [ADD_PKG_SUBCOMMAND, '-D', ...devDependencies],
+        [ADD_PKG_SUBCOMMAND, ...githubActionDebuggingFlags, ...dependencies],
         {
           cwd: sandbox,
           env,
           shell: true,
-        }
+        },
+      );
+    }
+    if (devDependencies.length > 0) {
+      await execFile(
+        PKG_MANAGER,
+        [
+          ADD_PKG_SUBCOMMAND,
+          ...githubActionDebuggingFlags,
+          '-D',
+          ...devDependencies,
+        ],
+        {
+          cwd: sandbox,
+          env,
+          shell: true,
+        },
       );
     }
 
@@ -122,11 +134,14 @@ export const configureSandbox = (options: SandboxOptions): void => {
     this.runScript = async (
       content: string,
       type: 'cjs' | 'mjs',
-      args?: string[]
+      args?: string[],
     ) => {
       const script = join(sandbox, `script-${crypto.randomUUID()}.${type}`);
       await writeFile(script, content);
-      await execFile('node', [script, ...(args ?? [])], {cwd: sandbox, env});
+      await execFile('node', [script, ...(args ?? [])], {
+        cwd: sandbox,
+        env,
+      });
     };
     console.timeEnd('before');
   });

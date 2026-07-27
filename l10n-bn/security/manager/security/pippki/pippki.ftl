@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = প্রদর্শন
 download-cert-view-text = CA সার্টিফিকেট পরীক্ষা করুন
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = ইস্যু করেছেন: { $issu
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = জমা হয়েছে: { $storedOn }
-client-auth-cert-remember-box =
-    .label = এই সিদ্ধান্ত মনে রাখা হবে
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = সার্টিফিকেট ব্যাকআপ পাসওয়ার্ড (পুনরায়):
 set-password-reminder = গুরুত্বপূর্ণ: সার্টিফিকেট ব্যাকআপ পাসওয়ার্ড হারিয়ে গেলে আপনি এই ব্যাকআপ পুনরুদ্ধার করতে সক্ষম হবেন না।  অনুগ্রহ করে এই পাসওয়ার্ডটি কোনো সুরক্ষিত স্থানে সংরক্ষণ করুন।
-
-## Protected authentication alert
-

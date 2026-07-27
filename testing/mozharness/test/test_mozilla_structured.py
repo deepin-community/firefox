@@ -1,5 +1,6 @@
 import unittest
 
+import mozunit
 from mozharness.base.log import INFO, WARNING
 from mozharness.mozilla.automation import TBPL_SUCCESS, TBPL_WARNING
 from mozharness.mozilla.mozbase import MozbaseMixin
@@ -25,7 +26,7 @@ failure_summary = RunSummary(
 
 class TestParser(MozbaseMixin, StructuredOutputParser):
     def __init__(self, *args, **kwargs):
-        super(TestParser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.config = {}
 
 
@@ -66,3 +67,7 @@ class TestStructuredOutputParser(unittest.TestCase):
         self.assertEqual(tbpl_status, TBPL_WARNING)
         self.assertEqual(worst_log_level, WARNING)
         self.assertEqual(joined_summary, failure_summary)
+
+
+if __name__ == "__main__":
+    mozunit.main()

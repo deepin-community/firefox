@@ -13,6 +13,7 @@ import base64
 import configparser
 import json
 import os
+import textwrap
 import time
 import webbrowser
 from dataclasses import (
@@ -20,12 +21,8 @@ from dataclasses import (
     field,
 )
 from pathlib import Path
-from typing import (
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from random import random
+from typing import Union
 
 import requests
 from mach.util import get_state_dir
@@ -33,14 +30,17 @@ from mozbuild.base import MozbuildObject
 from mozversioncontrol import (
     GitRepository,
     HgRepository,
+    JujutsuRepository,
 )
 
 TOKEN_FILE = (
     Path(get_state_dir(specific_to_topsrcdir=False)) / "lando_auth0_user_token.json"
 )
 
+LAUNCH_BROWSER = True
+
 # The supported variants of `Repository` for this workflow.
-SupportedVcsRepository = Union[GitRepository, HgRepository]
+SupportedVcsRepository = Union[GitRepository, HgRepository, JujutsuRepository]
 
 here = os.path.abspath(os.path.dirname(__file__))
 build = MozbuildObject.from_environment(cwd=here)
@@ -51,7 +51,7 @@ def convert_bytes_patch_to_base64(patch_bytes: bytes) -> str:
     return base64.b64encode(patch_bytes).decode("ascii")
 
 
-def load_token_from_disk() -> Optional[dict]:
+def load_token_from_disk() -> dict | None:
     """Load and validate an existing Auth0 token from disk.
 
     Return the token as a `dict` if it can be validated, or return `None`
@@ -71,26 +71,33 @@ def load_token_from_disk() -> Optional[dict]:
 
 
 def get_stack_info(
-    vcs: SupportedVcsRepository, head: Optional[str]
-) -> Tuple[str, List[str]]:
+    vcs: SupportedVcsRepository, head: str | None
+) -> tuple[str, str, list[str]]:
     """Retrieve information about the current stack for submission via Lando.
 
     Returns a tuple of the current public base commit as a Mercurial SHA,
     and a list of ordered base64 encoded patches.
     """
-    base_commit = vcs.base_ref_as_hg()
+    # Get the appropriate base commit hash format.
+    # Use `git` for Git-native checkouts of Firefox.
+    # Use `hg` for Mercurial repos and `git-cinnabar` clones.
+    base_commit_vcs = (
+        "git" if vcs.name in ("git", "jj") and not vcs.is_cinnabar_repo() else "hg"
+    )
+
+    base_commit = (
+        vcs.base_ref_as_hg() if base_commit_vcs == "hg" else vcs.base_ref_as_commit()
+    )
     if not base_commit:
-        raise ValueError(
-            "Could not determine base Mercurial commit hash for submission."
-        )
-    print("Using", base_commit, "as the hg base commit.")
+        raise ValueError("Could not determine base commit hash for submission.")
+    print("Using", base_commit, f"as the {base_commit_vcs} base commit.")
 
     # Reuse the base revision when on Mercurial to avoid multiple calls to `hg log`.
-    branch_nodes_kwargs = {}
+    get_commits_kwargs = {}
     if isinstance(vcs, HgRepository):
-        branch_nodes_kwargs["base_ref"] = base_commit
+        get_commits_kwargs["base_ref"] = base_commit
 
-    nodes = vcs.get_branch_nodes(head, **branch_nodes_kwargs)
+    nodes = vcs.get_commits(head, **get_commits_kwargs)
     if not nodes:
         raise ValueError("Could not find any commit hashes for submission.")
     elif len(nodes) == 1:
@@ -104,9 +111,8 @@ def get_stack_info(
     base64_patches = [
         convert_bytes_patch_to_base64(patch_bytes) for patch_bytes in patches
     ]
-    print("Patches gathered for submission.")
 
-    return base_commit, base64_patches
+    return base_commit, base_commit_vcs, base64_patches
 
 
 @dataclass
@@ -163,7 +169,7 @@ class Auth0Config:
 
         return response.json()
 
-    def validate_token(self, user_token: dict) -> Optional[dict]:
+    def validate_token(self, user_token: dict) -> dict | None:
         """Verify the given user token is valid.
 
         Validate the ID token, and validate the access token's expiration claim.
@@ -189,7 +195,16 @@ class Auth0Config:
         try:
             token_verifier.verify(user_token["id_token"])
         except TokenValidationError as e:
-            print("Could not validate existing Auth0 ID token:", str(e))
+            if "Expiration Time (exp) claim error" in str(e):
+                # This is the most common error, and the default one is very technical
+                # and verbose:
+                # Could not validate existing Auth0 ID token: Expiration Time (exp)
+                # claim error in the ID token; current time (1750343040.7194722) is
+                # after expiration time (1699120554)
+                # Instead of that mess, print something clear and concise.
+                print("Your Auth0 token has expired.")
+            else:
+                print("Could not validate existing Auth0 ID token:", str(e))
             return None
 
         decoded_access_token = jwt.decode(
@@ -212,7 +227,6 @@ class Auth0Config:
                 options={"verify_signature": False},
             )
         )
-        print("Auth0 token validated.")
         return user_token
 
     def device_authorization_flow(self) -> dict:
@@ -233,10 +247,11 @@ class Auth0Config:
         auth_msg = f"Auth0 token validation required at: {device_code_data['verification_uri_complete']}"
         build.notify(auth_msg)
 
-        try:
-            webbrowser.open(device_code_data["verification_uri_complete"])
-        except webbrowser.Error:
-            print("Could not automatically open the web browser.")
+        if LAUNCH_BROWSER:
+            try:
+                webbrowser.open(device_code_data["verification_uri_complete"])
+            except webbrowser.Error:
+                print("Could not automatically open the web browser.")
 
         device_code_lifetime_s = device_code_data["expires_in"]
 
@@ -256,7 +271,8 @@ class Auth0Config:
             response_data = response.json()
 
             if response.status_code == 200:
-                print("\nLogin successful.")
+                # Terminate the in-progress "Waiting......" line.
+                print()
                 return response_data
 
             if response_data["error"] not in ("authorization_pending", "slow_down"):
@@ -296,7 +312,7 @@ class Auth0Config:
 class LandoAPIException(Exception):
     """Raised when Lando throws an exception."""
 
-    def __init__(self, detail: Optional[str] = None):
+    def __init__(self, detail: str | None = None):
         super().__init__(detail or "")
 
 
@@ -306,11 +322,21 @@ class LandoAPI:
 
     access_token: str
     api_url: str
+    instance_id: str
+    verify_tls: bool = True
 
     @property
     def lando_try_api_url(self) -> str:
         """URL of the Lando Try endpoint."""
         return f"https://{self.api_url}/try/patches"
+
+    def lando_try_status_api_url(self, job_id: int) -> str:
+        """URL of the Lando Try Job Status JSON endpoint."""
+        return f"https://{self.api_url}/landing_jobs/{job_id}"
+
+    def lando_try_status_url(self, job_id: int) -> str:
+        """URL of the Lando Try Job Status HTML endpoint in new Lando."""
+        return f"https://{self.api_url}/landings/{job_id}"
 
     @property
     def api_headers(self) -> dict[str, str]:
@@ -346,11 +372,15 @@ class LandoAPI:
         return LandoAPI(
             api_url=parser.get(section, "api_domain"),
             access_token=token["access_token"],
+            instance_id=parser.get(section, "instance_id", fallback=section),
+            verify_tls=parser.getboolean(section, "verify_tls", fallback=True),
         )
 
     def post(self, url: str, body: dict) -> dict:
         """Make a POST request to Lando."""
-        response = requests.post(url, headers=self.api_headers, json=body)
+        response = requests.post(
+            url, headers=self.api_headers, json=body, verify=self.verify_tls
+        )
 
         try:
             response_json = response.json()
@@ -372,9 +402,10 @@ class LandoAPI:
 
     def post_try_push_patches(
         self,
-        patches: List[str],
+        patches: list[str],
         patch_format: str,
         base_commit: str,
+        base_commit_vcs: str,
     ) -> dict:
         """Send try push contents to Lando.
 
@@ -383,34 +414,63 @@ class LandoAPI:
         """
         request_json_body = {
             "base_commit": base_commit,
+            "base_commit_vcs": base_commit_vcs,
             "patch_format": patch_format,
             "patches": patches,
         }
 
-        print("Submitting patches to Lando.")
         response_json = self.post(self.lando_try_api_url, request_json_body)
 
         return response_json
 
 
 def push_to_lando_try(
-    vcs: SupportedVcsRepository, commit_message: str, changed_files: dict
+    vcs: SupportedVcsRepository,
+    commit_message: str,
+    changed_files: dict,
+    metrics,
+    *,
+    force_old_lando: bool = False,
 ):
     """Push a set of patches to Lando's try endpoint."""
+
+    OLD_LANDO_ENTRY = "lando-prod"
+    NEW_LANDO_ENTRY = "lando-prod-new"
+
+    metrics.mach_try.vcs_prep.start()
     # Map `Repository` subclasses to the `patch_format` value Lando expects.
     PATCH_FORMAT_STRING_MAPPING = {
         GitRepository: "git-format-patch",
         HgRepository: "hgexport",
+        JujutsuRepository: "git-format-patch",
     }
     patch_format = PATCH_FORMAT_STRING_MAPPING.get(type(vcs))
     if not patch_format:
         # Other VCS types (namely `src`) are unsupported.
         raise ValueError(f"Try push via Lando is not supported for `{vcs.name}`.")
 
-    # Use Lando Prod unless the `LANDO_TRY_USE_DEV` environment variable is defined.
-    lando_config_section = (
-        "lando-prod" if not os.getenv("LANDO_TRY_USE_DEV") else "lando-dev"
-    )
+    # Use LANDO_TRY_CONFIG so select which configuration section from .lando.ini to use.
+    # Default to using `lando-prod`.
+
+    default_lando_config_section = OLD_LANDO_ENTRY
+
+    # Bug 1979252: A/B test use of new lando for some pushes to try.
+    new_lando_probability = 1
+
+    if not force_old_lando and random() < new_lando_probability:
+        default_lando_config_section = NEW_LANDO_ENTRY
+
+    lando_config_section = os.getenv("LANDO_TRY_CONFIG", default_lando_config_section)
+
+    if lando_config_section == NEW_LANDO_ENTRY:
+        notification_message = textwrap.dedent(
+            """
+            This Try push uses the new Lando instance.
+            Please report any issue to https://matrix.to/#/#conduit:mozilla.org.
+            To use the old Lando instance, set the environment variable LANDO_TRY_CONFIG to `lando-prod` (section name from '.lando.ini')"
+            """
+        )
+        print(notification_message)
 
     # Load Auth0 config from `.lando.ini`.
     lando_ini_path = Path(vcs.path) / ".lando.ini"
@@ -419,34 +479,52 @@ def push_to_lando_try(
     # Get the time when the push was initiated, not including Auth0 login time.
     push_start_time = time.perf_counter()
 
-    with vcs.try_commit(commit_message, changed_files) as head:
-        try:
-            base_commit, patches = get_stack_info(vcs, head)
-        except ValueError as exc:
-            error_msg = "abort: error gathering patches for submission."
-            print(error_msg)
-            print(str(exc))
-            build.notify(error_msg)
-            return
+    head, cleanup_fn = vcs.prepare_try_push(commit_message, changed_files)
 
-        try:
-            # Make the try request to Lando.
-            response_json = lando_api.post_try_push_patches(
-                patches, patch_format, base_commit
-            )
-        except LandoAPIException as exc:
-            error_msg = "abort: error submitting patches to Lando."
-            print(error_msg)
-            print(str(exc))
-            build.notify(error_msg)
-            return
+    def cleanup():
+        metrics.mach_try.vcs_cleanup.start()
+        cleanup_fn()
+        metrics.mach_try.vcs_cleanup.stop()
 
-    duration = round(time.perf_counter() - push_start_time, ndigits=2)
+    try:
+        base_commit, base_commit_vcs, patches = get_stack_info(vcs, head)
+    except ValueError as exc:
+        metrics.mach_try.vcs_prep.stop()
+        error_msg = "abort: error gathering patches for submission."
+        print(error_msg)
+        print(str(exc))
+        build.notify(error_msg)
+        cleanup()
+        return
+
+    metrics.mach_try.vcs_prep.stop()
+    try:
+        metrics.mach_try.vcs_push.start()
+        # Make the try request to Lando.
+        response_json = lando_api.post_try_push_patches(
+            patches, patch_format, base_commit, base_commit_vcs
+        )
+    except LandoAPIException as exc:
+        metrics.mach_try.vcs_push.stop()
+        error_msg = "abort: error submitting patches to Lando."
+        print(error_msg)
+        print(str(exc))
+        build.notify(error_msg)
+        cleanup()
+        return
+
+    metrics.mach_try.vcs_push.stop()
+    cleanup()
+    duration = time.perf_counter() - push_start_time
 
     job_id = response_json["id"]
-    success_msg = (
-        f"Lando try submission success, took {duration} seconds. "
-        f"Landing job id: {job_id}."
-    )
-    print(success_msg)
-    build.notify(success_msg)
+
+    # Send a notification only if the push took an unexpectedly long time
+    if duration > 30:
+        build.notify(f"try submission success in {duration:.1f}s")
+
+    return {
+        "lando_instance": lando_api.instance_id,
+        "lando_job_id": job_id,
+        "duration": duration,
+    }

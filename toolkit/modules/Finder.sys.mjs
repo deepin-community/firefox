@@ -1,4 +1,3 @@
-// vim: set ts=2 sw=2 sts=2 tw=80:
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +7,8 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { Rect } from "resource://gre/modules/Geometry.sys.mjs";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
+
+import { playSound } from "resource://gre/modules/FinderSound.sys.mjs";
 
 const lazy = {};
 
@@ -20,7 +21,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "ClipboardHelper",
   "@mozilla.org/widget/clipboardhelper;1",
-  "nsIClipboardHelper"
+  Ci.nsIClipboardHelper
 );
 
 const kSelectionMaxLen = 150;
@@ -204,6 +205,9 @@ Finder.prototype = {
    * @param aDrawOutline Puts an outline around matched links.
    */
   fastFind(aSearchString, aLinksOnly, aDrawOutline) {
+    let searchLengthened =
+      aSearchString.length > this._fastFind.searchString.length;
+
     this._lastFindResult = this._fastFind.find(
       aSearchString,
       aLinksOnly,
@@ -224,6 +228,14 @@ Finder.prototype = {
 
     this._setResults(results);
     this.updateHighlightAndMatchCount(results);
+
+    if (
+      searchLengthened &&
+      this._lastFindResult.result == Ci.nsITypeAheadFind.FIND_NOTFOUND &&
+      !this._fastFind.entireWord
+    ) {
+      playSound("not-found");
+    }
 
     return this._lastFindResult;
   },
@@ -262,6 +274,10 @@ Finder.prototype = {
     };
     this._setResults(results);
     this.updateHighlightAndMatchCount(results);
+
+    if (this._lastFindResult.result == Ci.nsITypeAheadFind.FIND_WRAPPED) {
+      playSound("wrapped");
+    }
 
     return this._lastFindResult;
   },
@@ -355,11 +371,11 @@ Finder.prototype = {
       aArgs,
       aArgs.useSubFrames ? false : aArgs.foundInThisFrame
     );
-    let matchCountPromise = this.requestMatchesCount(
-      aArgs.searchString,
-      aArgs.linksOnly,
-      aArgs.useSubFrames
-    );
+
+    let matchCountPromise = this.requestMatchesCount(aArgs.searchString, {
+      linksOnly: aArgs.linksOnly,
+      useSubFrames: aArgs.useSubFrames,
+    });
 
     let results = await Promise.all([highlightPromise, matchCountPromise]);
 
@@ -525,7 +541,7 @@ Finder.prototype = {
     switch (aEvent.keyCode) {
       case aEvent.DOM_VK_RETURN:
         if (this._fastFind.foundLink) {
-          let view = this._fastFind.foundLink.ownerGlobal;
+          let view = this._fastFind.foundLink.documentGlobal;
           this._fastFind.foundLink.dispatchEvent(
             new view.PointerEvent("click", {
               view,
@@ -539,13 +555,14 @@ Finder.prototype = {
           );
         }
         break;
-      case aEvent.DOM_VK_TAB:
+      case aEvent.DOM_VK_TAB: {
         let direction = Services.focus.MOVEFOCUS_FORWARD;
         if (aEvent.shiftKey) {
           direction = Services.focus.MOVEFOCUS_BACKWARD;
         }
         Services.focus.moveFocus(this._getWindow(), null, direction, 0);
         break;
+      }
       case aEvent.DOM_VK_PAGE_UP:
         controller.scrollPage(false);
         break;
@@ -588,7 +605,7 @@ Finder.prototype = {
     return result;
   },
 
-  async requestMatchesCount(aWord, aLinksOnly, aUseSubFrames = true) {
+  async requestMatchesCount(aWord, optionalArgs) {
     if (
       this._lastFindResult == Ci.nsITypeAheadFind.FIND_NOTFOUND ||
       this.searchString == "" ||
@@ -606,11 +623,15 @@ Finder.prototype = {
     let params = {
       caseSensitive: this._fastFind.caseSensitive,
       entireWord: this._fastFind.entireWord,
-      linksOnly: aLinksOnly,
+      linksOnly: optionalArgs.linksOnly || false,
       matchDiacritics: this._fastFind.matchDiacritics,
       word: aWord,
-      useSubFrames: aUseSubFrames,
+      useSubFrames:
+        optionalArgs.useSubFrames !== undefined
+          ? optionalArgs.useSubFrames
+          : true,
     };
+
     if (!this.iterator.continueRunning(params)) {
       this.iterator.stop();
     }
@@ -621,7 +642,11 @@ Finder.prototype = {
         limit: this.matchesCountLimit,
         listener: this,
         useCache: true,
-        useSubFrames: aUseSubFrames,
+        useSubFrames:
+          optionalArgs.useSubFrames !== undefined
+            ? optionalArgs.useSubFrames
+            : true,
+        contextRange: optionalArgs.contextRange || 0,
       })
     );
 
@@ -636,13 +661,22 @@ Finder.prototype = {
 
   // FinderIterator listener implementation
 
-  onIteratorRangeFound(range) {
+  onIteratorRangeFound(range, extra) {
     let result = this._currentMatchesCountResult;
     if (!result) {
       return;
     }
 
     ++result.total;
+
+    // Pull out the snippet that finderIterator attached
+    if (extra?.context) {
+      if (!result.snippets) {
+        result.snippets = [];
+      }
+      result.snippets.push(extra.context);
+    }
+
     if (!result._currentFound) {
       ++result.current;
       result._currentFound =
@@ -657,7 +691,10 @@ Finder.prototype = {
   onIteratorReset() {},
 
   onIteratorRestart({ word, linksOnly, useSubFrames }) {
-    this.requestMatchesCount(word, linksOnly, useSubFrames);
+    this.requestMatchesCount(word, {
+      linksOnly,
+      useSubFrames,
+    });
   },
 
   onIteratorStart() {

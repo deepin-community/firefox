@@ -18,21 +18,25 @@
   // Editing PDFs is not supported on mobile
   pref("pdfjs.annotationEditorMode", -1);
 
-  // Enable the floating PDF.js toolbar on GeckoView (bug 1829366)
-  pref("pdfjs.enableFloatingToolbar", true);
+  pref("pdfjs.capCanvasAreaFactor", 100);
 
 #else
 
-  // Enable highlighting in a pdf.
-  pref("pdfjs.enableHighlightEditor", true);
-  #if defined(EARLY_BETA_OR_EARLIER)
-    pref("pdfjs.enableHighlightFloatingButton", true);
-  #else
-    pref("pdfjs.enableHighlightFloatingButton", false);
-  #endif
+  pref("pdfjs.enableUpdatedAddImage", true);
+  pref("pdfjs.enableSignatureEditor", true);
+  pref("pdfjs.enableComment", true);
+  pref("pdfjs.enableHighlightFloatingButton", true);
 
-  #if defined(XP_WIN)
-    pref("pdfjs.enableHWA", true);
-  #endif
+  pref("pdfjs.enableAltTextForEnglish", false);
+  pref("pdfjs.enableAltText", true);
+  pref("pdfjs.enableAltTextModelDownload", false);
+  pref("pdfjs.enableGuessAltText", false);
+
+  pref("pdfjs.enableHWA", true);
+
+  pref("pdfjs.enableSplitMerge", true);
+  pref("pdfjs.enableMerge", true);
 
 #endif
+
+pref("pdfjs.enableOptimizedPartialRendering", true);

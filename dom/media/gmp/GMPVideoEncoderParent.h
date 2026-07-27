@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,24 +5,24 @@
 #ifndef GMPVideoEncoderParent_h_
 #define GMPVideoEncoderParent_h_
 
-#include "mozilla/RefPtr.h"
-#include "gmp-video-encode.h"
-#include "mozilla/gmp/PGMPVideoEncoderParent.h"
+#include "GMPCrashHelperHolder.h"
 #include "GMPMessageUtils.h"
 #include "GMPSharedMemManager.h"
 #include "GMPUtils.h"
-#include "GMPVideoHost.h"
 #include "GMPVideoEncoderProxy.h"
-#include "GMPCrashHelperHolder.h"
+#include "GMPVideoHost.h"
+#include "gmp-video-encode.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/gmp/PGMPVideoEncoderParent.h"
 
 namespace mozilla::gmp {
 
 class GMPContentParent;
 
-class GMPVideoEncoderParent : public GMPVideoEncoderProxy,
-                              public PGMPVideoEncoderParent,
-                              public GMPSharedMemManager,
-                              public GMPCrashHelperHolder {
+class GMPVideoEncoderParent final : public GMPVideoEncoderProxy,
+                                    public PGMPVideoEncoderParent,
+                                    public GMPVideoHostImpl,
+                                    public GMPCrashHelperHolder {
   friend class PGMPVideoEncoderParent;
 
  public:
@@ -33,7 +32,6 @@ class GMPVideoEncoderParent : public GMPVideoEncoderProxy,
 
   explicit GMPVideoEncoderParent(GMPContentParent* aPlugin);
 
-  GMPVideoHostImpl& Host();
   void Shutdown();
 
   // GMPVideoEncoderProxy
@@ -51,32 +49,43 @@ class GMPVideoEncoderParent : public GMPVideoEncoderProxy,
   uint32_t GetPluginId() const override { return mPluginId; }
 
   // GMPSharedMemManager
-  bool Alloc(size_t aSize, Shmem* aMem) override {
+  bool MgrAllocShmem(size_t aSize, Shmem* aMem) override {
     return AllocShmem(aSize, aMem);
   }
-  void Dealloc(Shmem&& aMem) override { DeallocShmem(aMem); }
+
+  void MgrDeallocShmem(Shmem& aMem) override {
+    if (CanSend()) {
+      DeallocShmem(aMem);
+    }
+  }
+
+ protected:
+  bool MgrCanSend() const override { return CanSend(); }
+  bool MgrIsOnOwningThread() const override;
 
  private:
   virtual ~GMPVideoEncoderParent() = default;
 
   // PGMPVideoEncoderParent
   void ActorDestroy(ActorDestroyReason aWhy) override;
-  mozilla::ipc::IPCResult RecvEncoded(
-      const GMPVideoEncodedFrameData& aEncodedFrame,
+  mozilla::ipc::IPCResult RecvReturnShmem(ipc::Shmem&& aInputShmem) override;
+  mozilla::ipc::IPCResult RecvEncodedShmem(
+      const GMPVideoEncodedFrameData& aEncodedFrame, ipc::Shmem&& aEncodedShmem,
       nsTArray<uint8_t>&& aCodecSpecificInfo) override;
+  mozilla::ipc::IPCResult RecvEncodedData(
+      const GMPVideoEncodedFrameData& aEncodedFrame,
+      nsTArray<uint8_t>&& aEncodedData,
+      nsTArray<uint8_t>&& aCodecSpecificInfo) override;
+  mozilla::ipc::IPCResult RecvDroppedFrame(const uint64_t& aTimestamp) override;
   mozilla::ipc::IPCResult RecvError(const GMPErr& aError) override;
   mozilla::ipc::IPCResult RecvShutdown() override;
-  mozilla::ipc::IPCResult RecvParentShmemForPool(Shmem&& aFrameBuffer) override;
-  mozilla::ipc::IPCResult RecvNeedShmem(const uint32_t& aEncodedBufferSize,
-                                        Shmem* aMem) override;
-  mozilla::ipc::IPCResult Recv__delete__() override;
 
+  size_t mEncodedShmemSize = 0;
   bool mIsOpen;
   bool mShuttingDown;
   bool mActorDestroyed;
   RefPtr<GMPContentParent> mPlugin;
   RefPtr<GMPVideoEncoderCallbackProxy> mCallback;
-  GMPVideoHostImpl mVideoHost;
   const uint32_t mPluginId;
 };
 

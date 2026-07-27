@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -28,15 +25,6 @@ const LPCWSTR kPropNameDocAccParent = L"MozDocAccessibleParent";
 
 class nsWinUtils {
  public:
-  /**
-   * Return computed styles declaration for the given node.
-   *
-   * @note Please use it carefully since it can shutdown the accessible tree
-   *       you operate on.
-   */
-  static already_AddRefed<nsICSSDeclaration> GetComputedStyleDeclaration(
-      nsIContent* aContent);
-
   /**
    * Start window emulation if presence of specific AT is detected.
    */

@@ -18,6 +18,8 @@ class TabsAdapter internal constructor(
     private val isCurrentSession: (TabSessionState) -> Boolean,
     private val selectSession: (TabSessionState) -> Unit,
     private val closeSession: (TabSessionState) -> Unit,
+    private val closeOtherSessions: () -> Unit,
+    private val addNewTab: () -> Unit,
 ) : RecyclerView.Adapter<TabViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TabViewHolder {
@@ -27,14 +29,27 @@ class TabsAdapter internal constructor(
     }
 
     override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
-        val currentItem = tabList[position]
+        val isAddNewTabItem = position == 0
+        val isCloseAllItem = position == tabList.size + 1
+
+        val tabIndex = position - 1
+        val currentItem = if (!isAddNewTabItem && !isCloseAllItem) {
+            tabList.getOrNull(tabIndex)
+        } else {
+            null
+        }
+
         holder.bind(
             currentItem,
-            isCurrentSession = isCurrentSession.invoke(currentItem),
+            isCurrentSession = if (currentItem != null) isCurrentSession.invoke(currentItem) else false,
             selectSession = selectSession,
             closeSession = closeSession,
+            closeOtherSessions = closeOtherSessions,
+            addNewTab = addNewTab,
+            isCloseAllItem = isCloseAllItem,
+            isAddNewTabItem = isAddNewTabItem,
         )
     }
 
-    override fun getItemCount() = tabList.size
+    override fun getItemCount() = tabList.size + 2
 }

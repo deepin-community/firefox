@@ -1,18 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_PerformanceEventTiming_h___
-#define mozilla_dom_PerformanceEventTiming_h___
+#ifndef mozilla_dom_PerformanceEventTiming_h_
+#define mozilla_dom_PerformanceEventTiming_h_
 
-#include "mozilla/dom/PerformanceEntry.h"
-#include "mozilla/EventForwards.h"
-#include "nsRFPService.h"
 #include "Performance.h"
-#include "nsIWeakReferenceUtils.h"
+#include "mozilla/EventForwards.h"
+#include "mozilla/dom/PerformanceEntry.h"
 #include "nsINode.h"
+#include "nsIWeakReferenceUtils.h"
+#include "nsRFPService.h"
 
 namespace mozilla {
 class WidgetEvent;
@@ -59,21 +57,36 @@ class PerformanceEventTiming final
 
   bool Cancelable() const { return mCancelable; }
 
+  uint64_t InteractionId() const { return mInteractionId.valueOr(0); }
+  bool HasKnownInteractionId() const { return mInteractionId.isSome(); }
+
+  void SetInteractionId(Maybe<uint64_t> aInteractionId) {
+    mInteractionId = std::move(aInteractionId);
+  }
+
+  void SetInteractionId(uint64_t aInteractionId) {
+    mInteractionId = Some(aInteractionId);
+  }
+
   nsINode* GetTarget() const;
 
   void SetDuration(const DOMHighResTimeStamp aDuration) {
-    mDuration = aDuration;
+    mDuration = Some(aDuration);
   }
 
   // nsRFPService::ReduceTimePrecisionAsMSecs might causes
   // some memory overhead, using the raw timestamp internally
   // to avoid calling in unnecessarily.
-  DOMHighResTimeStamp RawDuration() const { return mDuration; }
+  Maybe<DOMHighResTimeStamp> RawDuration() const { return mDuration; }
 
   DOMHighResTimeStamp Duration() const override {
     if (mCachedDuration.isNothing()) {
+      // Round the duration to the nearest 8ms.
+      // https://w3c.github.io/event-timing/#set-event-timing-entry-duration
+      DOMHighResTimeStamp roundedDuration =
+          std::round(mDuration.valueOr(0) / 8) * 8;
       mCachedDuration.emplace(nsRFPService::ReduceTimePrecisionAsMSecs(
-          mDuration, mPerformance->GetRandomTimelineSeed(),
+          roundedDuration, mPerformance->GetRandomTimelineSeed(),
           mPerformance->GetRTPCallerType()));
     }
     return mCachedDuration.value();
@@ -97,13 +110,23 @@ class PerformanceEventTiming final
 
   void BufferEntryIfNeeded() override;
 
-  void FinalizeEventTiming(EventTarget* aTarget);
+  void FinalizeEventTiming(const WidgetEvent* aEvent);
+
+  // Records the time of first modal dialog appearance during event processing.
+  // Only the earliest time is kept to handle sequential or nested dialogs.
+  void SetFallbackTimeIfNotSet(DOMHighResTimeStamp aTime) {
+    if (mFallbackTime.isNothing()) {
+      mFallbackTime = Some(aTime);
+    }
+  }
+
+  Maybe<DOMHighResTimeStamp> GetFallbackTime() const { return mFallbackTime; }
 
   EventMessage GetMessage() const { return mMessage; }
 
  private:
   PerformanceEventTiming(Performance* aPerformance, const nsAString& aName,
-                         const TimeStamp& aStartTime, bool aIsCacelable,
+                         const TimeStamp& aStartTime, bool aIsCancelable,
                          EventMessage aMessage);
 
   PerformanceEventTiming(const PerformanceEventTiming& aEventTimingEntry);
@@ -123,10 +146,14 @@ class PerformanceEventTiming final
   DOMHighResTimeStamp mStartTime;
   mutable Maybe<DOMHighResTimeStamp> mCachedStartTime;
 
-  DOMHighResTimeStamp mDuration;
+  Maybe<DOMHighResTimeStamp> mDuration;
   mutable Maybe<DOMHighResTimeStamp> mCachedDuration;
 
   bool mCancelable;
+
+  Maybe<uint64_t> mInteractionId;
+
+  Maybe<DOMHighResTimeStamp> mFallbackTime;
 
   EventMessage mMessage;
 };

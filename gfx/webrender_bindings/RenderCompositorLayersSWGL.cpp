@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  *
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -132,10 +130,19 @@ void RenderCompositorLayersSWGL::CompositorEndFrame() {
                             it->first.mY * surface->mTileSize.height);
       gfx::Rect drawRect = it->second->mValidRect + tileOffset;
 
+      RefPtr<EffectRoundedClip> clipEffect;
+
+      if (!frameSurface.mRoundedClipRadii.IsEmpty()) {
+        clipEffect = new EffectRoundedClip(frameSurface.mRoundedClipRect,
+                                           frameSurface.mRoundedClipRadii);
+      }
+
       RefPtr<TexturedEffect> texturedEffect =
           new EffectRGB(it->second->GetTextureSource(),
                         /* aPremultiplied */ true, frameSurface.mFilter);
-      if (surface->mIsOpaque) {
+      // TODO(gw): Enable premul copy on tiles that aren't affected
+      //           by the rounded clip.
+      if (surface->mIsOpaque && !clipEffect) {
         texturedEffect->mPremultipliedCopy = true;
       }
 
@@ -147,6 +154,7 @@ void RenderCompositorLayersSWGL::CompositorEndFrame() {
 
       EffectChain effect;
       effect.mPrimaryEffect = texturedEffect;
+      effect.mRoundedClipEffect = clipEffect;
       mCompositor->DrawQuad(drawRect, frameSurface.mClipRect, effect, 1.0,
                             frameSurface.mTransform, drawRect);
     }
@@ -307,7 +315,8 @@ gfx::SamplingFilter RenderCompositorLayersSWGL::ToSamplingFilter(
 
 void RenderCompositorLayersSWGL::AddSurface(
     wr::NativeSurfaceId aId, const wr::CompositorSurfaceTransform& aTransform,
-    wr::DeviceIntRect aClipRect, wr::ImageRendering aImageRendering) {
+    wr::DeviceIntRect aClipRect, wr::ImageRendering aImageRendering,
+    wr::DeviceIntRect aRoundedClipRect, wr::ClipRadius aClipRadius) {
   float sx = aTransform.scale.x;
   float sy = aTransform.scale.y;
   float tx = aTransform.offset.x;
@@ -317,8 +326,15 @@ void RenderCompositorLayersSWGL::AddSurface(
   gfx::IntRect clipRect(aClipRect.min.x, aClipRect.min.y, aClipRect.width(),
                         aClipRect.height());
 
+  gfx::Rect roundedClipRect(aRoundedClipRect.min.x, aRoundedClipRect.min.y,
+                            aRoundedClipRect.width(),
+                            aRoundedClipRect.height());
+  gfx::RectCornerRadii radii(aClipRadius.top_left, aClipRadius.top_right,
+                             aClipRadius.bottom_right, aClipRadius.bottom_left);
+
   mFrameSurfaces.AppendElement(FrameSurface{aId, transform, clipRect,
-                                            ToSamplingFilter(aImageRendering)});
+                                            ToSamplingFilter(aImageRendering),
+                                            roundedClipRect, radii});
 }
 
 void RenderCompositorLayersSWGL::MaybeRequestAllowFrameRecording(
@@ -349,7 +365,7 @@ class RenderSourceLMC : public profiler_screenshots::RenderSource {
   const auto& RenderTarget() { return mRT; }
 
  protected:
-  virtual ~RenderSourceLMC() {}
+  virtual ~RenderSourceLMC() = default;
 
   RefPtr<CompositingRenderTarget> mRT;
 };
@@ -387,7 +403,7 @@ class DownscaleTargetLMC : public profiler_screenshots::DownscaleTarget {
   }
 
  protected:
-  virtual ~DownscaleTargetLMC() {}
+  virtual ~DownscaleTargetLMC() = default;
 
   RefPtr<RenderSourceLMC> mRenderSource;
   Compositor* mCompositor;
@@ -411,7 +427,7 @@ class AsyncReadbackBufferLMC
   }
 
  protected:
-  virtual ~AsyncReadbackBufferLMC() {}
+  virtual ~AsyncReadbackBufferLMC() = default;
 
   RefPtr<mozilla::layers::AsyncReadbackBuffer> mARB;
   Compositor* mCompositor;

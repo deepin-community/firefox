@@ -2,17 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:Suppress("TooManyFunctions")
-
 package org.mozilla.focus.state
 
+import androidx.annotation.VisibleForTesting
 import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.lib.state.Reducer
 
 /**
  * Reducer creating a new [AppState] for dispatched [AppAction]s.
  */
-@Suppress("ComplexMethod")
 object AppReducer : Reducer<AppState, AppAction> {
     override fun invoke(state: AppState, action: AppAction): AppState {
         return when (action) {
@@ -46,8 +44,10 @@ object AppReducer : Reducer<AppState, AppAction> {
             )
             is AppAction.ShowHomeScreen -> showHomeScreen(state)
             is AppAction.ShowOnboardingSecondScreen -> showOnBoardingSecondScreen(state)
+            is AppAction.OpenCrashList -> openCrashlist(state)
             is AppAction.ShowSearchWidgetSnackBar -> showSearchWidgetSnackBarChanged(state, action)
             is AppAction.ShowCookieBannerCfrChange -> showCookieBannerCfrChanged(state, action)
+            is AppAction.UpdateIsPinningSupported -> updateIsPinningSupported(state, action)
         }
     }
 }
@@ -57,6 +57,10 @@ object AppReducer : Reducer<AppState, AppAction> {
  */
 private fun selectionChanged(state: AppState, action: AppAction.SelectionChanged): AppState {
     if (state.screen is Screen.FirstRun || state.screen is Screen.Locked) {
+        return state
+    }
+
+    if (state.screen is Screen.EditUrl) {
         return state
     }
 
@@ -118,25 +122,41 @@ private fun finishFirstRun(state: AppState, action: AppAction.FinishFirstRun): A
 /**
  * Force showing the first run screen (for testing).
  */
-private fun showFirstRun(state: AppState): AppState {
+@VisibleForTesting
+internal fun showFirstRun(state: AppState): AppState {
+    if (state.screen is Screen.FirstRun) {
+        return state
+    }
     return state.copy(screen = Screen.FirstRun)
 }
 
-private fun showOnBoardingSecondScreen(state: AppState): AppState {
+@VisibleForTesting
+internal fun showOnBoardingSecondScreen(state: AppState): AppState {
+    if (state.screen is Screen.OnboardingSecondScreen) {
+        return state
+    }
     return state.copy(screen = Screen.OnboardingSecondScreen)
 }
 
 /**
  * Force showing the home screen.
  */
-private fun showHomeScreen(state: AppState): AppState {
+@VisibleForTesting
+internal fun showHomeScreen(state: AppState): AppState {
+    if (state.screen is Screen.Home) {
+        return state
+    }
     return state.copy(screen = Screen.Home)
 }
 
 /**
  * Lock the application.
  */
-private fun lock(state: AppState, action: AppAction.Lock): AppState {
+@VisibleForTesting
+internal fun lock(state: AppState, action: AppAction.Lock): AppState {
+    if (state.screen is Screen.Locked) {
+        return state
+    }
     return state.copy(screen = Screen.Locked(action.bundle))
 }
 
@@ -159,6 +179,10 @@ private fun openSettings(state: AppState, action: AppAction.OpenSettings): AppSt
     return state.copy(
         screen = Screen.Settings(page = action.page),
     )
+}
+
+private fun openCrashlist(state: AppState): AppState {
+    return state.copy(screen = Screen.CrashListScreen)
 }
 
 private fun openTab(state: AppState, action: AppAction.OpenTab): AppState {
@@ -251,61 +275,59 @@ private fun openSitePermissionOptionsScreen(
     return state.copy(screen = Screen.SitePermissionOptionsScreen(sitePermission = action.sitePermission))
 }
 
-@Suppress("ComplexMethod", "ReturnCount")
-private fun navigateUp(state: AppState, action: AppAction.NavigateUp): AppState {
-    if (state.screen is Screen.Browser) {
-        val screen = if (action.tabId != null) {
-            Screen.Browser(tabId = action.tabId, showTabs = false)
-        } else {
-            Screen.Home
-        }
-        return state.copy(screen = screen)
-    }
-
-    if (state.screen is Screen.SitePermissionOptionsScreen) {
-        return state.copy(screen = Screen.Settings(page = Screen.Settings.Page.SitePermissions))
-    }
-
-    if (state.screen !is Screen.Settings) {
-        return state
-    }
-
-    val screen = when (state.screen.page) {
-        Screen.Settings.Page.Start -> if (action.tabId != null) {
-            Screen.Browser(tabId = action.tabId, showTabs = false)
-        } else {
-            Screen.Home
-        }
-
-        Screen.Settings.Page.General -> Screen.Settings(page = Screen.Settings.Page.Start)
-        Screen.Settings.Page.Privacy -> Screen.Settings(page = Screen.Settings.Page.Start)
-        Screen.Settings.Page.Search -> Screen.Settings(page = Screen.Settings.Page.Start)
-        Screen.Settings.Page.Advanced -> Screen.Settings(page = Screen.Settings.Page.Start)
-        Screen.Settings.Page.Mozilla -> Screen.Settings(page = Screen.Settings.Page.Start)
-
-        Screen.Settings.Page.PrivacyExceptions -> Screen.Settings(page = Screen.Settings.Page.Privacy)
-        Screen.Settings.Page.PrivacyExceptionsRemove -> Screen.Settings(page = Screen.Settings.Page.PrivacyExceptions)
-        Screen.Settings.Page.SitePermissions -> Screen.Settings(page = Screen.Settings.Page.Privacy)
-        Screen.Settings.Page.Studies -> Screen.Settings(page = Screen.Settings.Page.Privacy)
-        Screen.Settings.Page.SecretSettings -> Screen.Settings(page = Screen.Settings.Page.Advanced)
-
-        Screen.Settings.Page.SearchList -> Screen.Settings(page = Screen.Settings.Page.Search)
-        Screen.Settings.Page.SearchRemove -> Screen.Settings(page = Screen.Settings.Page.SearchList)
-        Screen.Settings.Page.SearchAdd -> Screen.Settings(page = Screen.Settings.Page.SearchList)
-        Screen.Settings.Page.SearchAutocomplete -> Screen.Settings(page = Screen.Settings.Page.Search)
-        Screen.Settings.Page.SearchAutocompleteList -> Screen.Settings(page = Screen.Settings.Page.SearchAutocomplete)
-
-        Screen.Settings.Page.SearchAutocompleteAdd -> Screen.Settings(
-            page = Screen.Settings.Page.SearchAutocompleteList,
-        )
-        Screen.Settings.Page.SearchAutocompleteRemove -> Screen.Settings(
-            page = Screen.Settings.Page.SearchAutocompleteList,
-        )
-        Screen.Settings.Page.About -> Screen.Settings(page = Screen.Settings.Page.Mozilla)
-        Screen.Settings.Page.Licenses -> Screen.Settings(page = Screen.Settings.Page.Mozilla)
-        Screen.Settings.Page.Locale -> Screen.Settings(page = Screen.Settings.Page.General)
-        Screen.Settings.Page.CookieBanner -> Screen.Settings(page = Screen.Settings.Page.Privacy)
-    }
-
-    return state.copy(screen = screen)
+private fun updateIsPinningSupported(
+    state: AppState,
+    action: AppAction.UpdateIsPinningSupported,
+): AppState {
+    return state.copy(isPinningSupported = action.value)
 }
+
+private fun navigateUp(state: AppState, action: AppAction.NavigateUp): AppState {
+    val nextScreen = when (val currentScreen = state.screen) {
+        is Screen.Browser -> if (action.tabId != null) {
+            Screen.Browser(action.tabId, false)
+        } else {
+            Screen.Home
+        }
+
+        is Screen.SitePermissionOptionsScreen -> {
+            Screen.Settings(Screen.Settings.Page.SitePermissions)
+        }
+
+        is Screen.Settings -> {
+            if (currentScreen.page == Screen.Settings.Page.Start) {
+                if (action.tabId != null) Screen.Browser(action.tabId, false) else Screen.Home
+            } else {
+                val parentPage = settingsParentMap[currentScreen.page] ?: Screen.Settings.Page.Start
+                Screen.Settings(parentPage)
+            }
+        }
+
+        else -> currentScreen
+    }
+
+    return state.copy(screen = nextScreen)
+}
+private val settingsParentMap = mapOf(
+    Screen.Settings.Page.General to Screen.Settings.Page.Start,
+    Screen.Settings.Page.Privacy to Screen.Settings.Page.Start,
+    Screen.Settings.Page.Search to Screen.Settings.Page.Start,
+    Screen.Settings.Page.Advanced to Screen.Settings.Page.Start,
+    Screen.Settings.Page.Mozilla to Screen.Settings.Page.Start,
+    Screen.Settings.Page.PrivacyExceptions to Screen.Settings.Page.Privacy,
+    Screen.Settings.Page.SitePermissions to Screen.Settings.Page.Privacy,
+    Screen.Settings.Page.CookieBanner to Screen.Settings.Page.Privacy,
+    Screen.Settings.Page.SecretSettings to Screen.Settings.Page.Advanced,
+    Screen.Settings.Page.SearchList to Screen.Settings.Page.Search,
+    Screen.Settings.Page.SearchAutocomplete to Screen.Settings.Page.Search,
+    Screen.Settings.Page.About to Screen.Settings.Page.Mozilla,
+    Screen.Settings.Page.Licenses to Screen.Settings.Page.Mozilla,
+    Screen.Settings.Page.CrashList to Screen.Settings.Page.Mozilla,
+    Screen.Settings.Page.Locale to Screen.Settings.Page.General,
+    Screen.Settings.Page.PrivacyExceptionsRemove to Screen.Settings.Page.PrivacyExceptions,
+    Screen.Settings.Page.SearchRemove to Screen.Settings.Page.SearchList,
+    Screen.Settings.Page.SearchAdd to Screen.Settings.Page.SearchList,
+    Screen.Settings.Page.SearchAutocompleteList to Screen.Settings.Page.SearchAutocomplete,
+    Screen.Settings.Page.SearchAutocompleteAdd to Screen.Settings.Page.SearchAutocompleteList,
+    Screen.Settings.Page.SearchAutocompleteRemove to Screen.Settings.Page.SearchAutocompleteList,
+)

@@ -44,6 +44,8 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
 });
 
 export let WebsiteFilter = {
+  _observerAdded: false,
+
   init(blocklist, exceptionlist) {
     let blockArray = [],
       exceptionArray = [];
@@ -102,30 +104,27 @@ export let WebsiteFilter = {
     }
     // We have to do this to catch 30X redirects.
     // See bug 456957.
-    Services.obs.addObserver(this, "http-on-examine-response", true);
+    if (!this._observerAdded) {
+      this._observerAdded = true;
+      // We rely on weak references, so we never remove this observer.
+      Services.obs.addObserver(this, "http-on-examine-response", true);
+    }
   },
 
   shouldLoad(contentLocation, loadInfo) {
     let contentType = loadInfo.externalContentPolicyType;
-    let url = contentLocation.spec;
+    let url = contentLocation.spec.toLowerCase();
     if (contentLocation.scheme == "view-source") {
       url = contentLocation.pathQueryRef;
-    } else if (url.toLowerCase().startsWith("about:reader")) {
-      url = decodeURIComponent(
-        url.toLowerCase().substr("about:reader?url=".length)
-      );
+    } else if (url.startsWith("about:reader?url=")) {
+      url = decodeURIComponent(url.substr(17));
     }
     if (
       contentType == Ci.nsIContentPolicy.TYPE_DOCUMENT ||
       contentType == Ci.nsIContentPolicy.TYPE_SUBDOCUMENT
     ) {
-      if (this._blockPatterns.matches(url.toLowerCase())) {
-        if (
-          !this._exceptionsPatterns ||
-          !this._exceptionsPatterns.matches(url.toLowerCase())
-        ) {
-          return Ci.nsIContentPolicy.REJECT_POLICY;
-        }
+      if (!this.isAllowed(url)) {
+        return Ci.nsIContentPolicy.REJECT_POLICY;
       }
     }
     return Ci.nsIContentPolicy.ACCEPT;
@@ -145,19 +144,12 @@ export let WebsiteFilter = {
       }
       let location = channel.getResponseHeader("location");
       // location might not be a fully qualified URL
-      let url;
-      try {
-        url = new URL(location);
-      } catch (e) {
-        url = new URL(location, channel.URI.spec);
+      let url = URL.parse(location);
+      if (!url) {
+        url = URL.parse(location, channel.URI.spec);
       }
-      if (this._blockPatterns.matches(url.href.toLowerCase())) {
-        if (
-          !this._exceptionsPatterns ||
-          !this._exceptionsPatterns.matches(url.href.toLowerCase())
-        ) {
-          channel.cancel(Cr.NS_ERROR_BLOCKED_BY_POLICY);
-        }
+      if (url && !this.isAllowed(url.href)) {
+        channel.cancel(Cr.NS_ERROR_BLOCKED_BY_POLICY);
       }
     } catch (e) {}
   },

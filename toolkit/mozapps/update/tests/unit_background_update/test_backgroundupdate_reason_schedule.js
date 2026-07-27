@@ -1,6 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim: sw=4 ts=4 sts=4 et
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -39,7 +37,7 @@ add_setup(function test_setup() {
   do_get_profile();
 
   // We need to initialize it once, otherwise operations will be stuck in the pre-init queue.
-  Services.fog.initializeFOG();
+  Services.fog.initializeFOG(undefined, "firefox.desktop.background.update");
 
   setupProfileService();
 });

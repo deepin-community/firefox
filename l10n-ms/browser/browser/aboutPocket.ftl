@@ -11,7 +11,6 @@
 # Placeholder text for tag input
 pocket-panel-saved-add-tags =
     .placeholder = Tambah Tag
-
 pocket-panel-saved-error-generic = Ada ralat semasa cuba menyimpan ke { -pocket-brand-name }.
 pocket-panel-saved-error-tag-length = Tag dihadkan hanya 25 aksara
 pocket-panel-saved-error-only-links = Hanya pautan boleh disimpan
@@ -37,10 +36,3 @@ pocket-panel-signup-signup-firefox = Daftar dengan { -brand-product-name }
 pocket-panel-signup-tagline = Simpan artikel dan video dari { -brand-product-name } untuk dilihat dalam { -pocket-brand-name } pada apa jua peranti pada bila-bila masa.
 pocket-panel-signup-tagline-story-one = Klik butang { -pocket-brand-name } untuk menyimpan apa jua artikel, video atau halaman daripada { -brand-product-name }.
 pocket-panel-signup-tagline-story-two = Papar dalam { -pocket-brand-name } dalam mana-mana peranti, bila-bila masa saja.
-
-## about:pocket-home panel
-
-## Pocket panel header component
-
-## Pocket panel buttons
-

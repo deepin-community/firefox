@@ -44,6 +44,8 @@ about-logging-preset-media-playback-label = Afspilun margmiðlunar
 about-logging-preset-media-playback-description = Atvikaskráningareiningar til að greina vandamál við spilun myndefnis (ekki vandamál með myndfundi)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Atvikaskráningareiningar til að greina vandamál með WebRTC
+about-logging-preset-webcodecs-label = Vefkóðun (WebCodecs)
+about-logging-preset-webcodecs-description = Skráningareiningar til að greina vandamál með WebCodecs hljóð-/myndskeiðaafkóðara og myndafkóðara
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Atvikaskráningareiningar til að greina vandamál með WebGPU
 about-logging-preset-gfx-label = Myndefni
@@ -56,9 +58,7 @@ about-logging-preset-custom-description = Handvirkt valdar atvikaskráningareini
 # Error handling
 about-logging-error = Villa:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Ógilt gildi „{ $v }“ fyrir lykil „{ $k }“
 about-logging-unknown-logging-preset = Óþekkt skráningarforstilling „{ $v }“

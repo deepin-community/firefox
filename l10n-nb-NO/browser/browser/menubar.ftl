@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Innstillinger
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Innstillinger …
+menu-application-set-as-default =
+    .label = Gjør { -brand-shorter-name } til standardnettleser
 menu-application-services =
     .label = Tjenester
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Del
     .accesskey = e
+menu-file-share-qrcode =
+    .label = Generer QR-kode…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Generer QR-kode
+    .accesskey = G
 menu-file-print-setup =
     .label = Utskriftsformat …
     .accesskey = k
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Historikk
 menu-view-synced-tabs-sidebar =
     .label = Synkroniserte faner
-menu-view-megalist-sidebar =
-    .label = Passord
 menu-view-full-zoom =
     .label = Skalering
     .accesskey = r
@@ -193,11 +190,11 @@ menu-view-full-screen =
 # This should match reader-view-enter-button in browser.ftl
 menu-view-enter-readerview =
     .label = Gå til lesevisning
-    .accesskey = R
+    .accesskey = l
 # This should match reader-view-close-button in browser.ftl
 menu-view-close-readerview =
     .label = Lukk lesevisning
-    .accesskey = R
+    .accesskey = L
 
 ##
 
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobile bokmerker
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiler
+menu-profiles-manage-profiles =
+    .label = Behandle profiler
+menu-profiles-new-profile =
+    .label = Ny profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (gjeldende)
+menu-profiles-menu =
+    .label = Profiler
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Nedlastinger
     .accesskey = N
+menu-tools-extensions-and-themes =
+    .label = Utvidelser og temaer
+    .accesskey = U
 menu-tools-addons-and-themes =
     .label = Tillegg og temaer
     .accesskey = T
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Sideinformasjon
     .accesskey = d
+menu-tools-edit-pdf =
+    .label = Rediger PDF…
+    .accesskey = P
 menu-settings =
     .label = Innstillinger
     .accesskey =

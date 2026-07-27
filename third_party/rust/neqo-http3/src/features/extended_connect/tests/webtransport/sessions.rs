@@ -4,43 +4,36 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::mem;
-
-use neqo_common::{event::Provider, Encoder};
+use neqo_common::{Encoder, event::Provider as _, header::HeadersExt as _};
 use neqo_transport::StreamType;
 use test_fixture::now;
 
 use crate::{
+    Error, Header, Http3ClientEvent, Http3OrWebTransportStream, Http3Server, Http3ServerEvent,
+    Http3State, Priority, SessionAcceptAction, WebTransportEvent, WebTransportServerEvent,
     features::extended_connect::{
+        CloseReason,
         tests::webtransport::{
-            default_http3_client, default_http3_server, wt_default_parameters, WtTest,
+            WtTest, assert_wt, default_http3_client, default_http3_server, wt_default_parameters,
         },
-        SessionCloseReason,
     },
     frames::WebTransportFrame,
-    Error, Header, Http3ClientEvent, Http3OrWebTransportStream, Http3Server, Http3ServerEvent,
-    Http3State, Priority, WebTransportEvent, WebTransportServerEvent,
-    WebTransportSessionAcceptAction,
 };
 
 #[test]
 fn wt_session() {
     let mut wt = WtTest::new();
-    mem::drop(wt.create_wt_session());
+    drop(wt.create_wt_session());
 }
 
 #[test]
 fn wt_session_reject() {
     let mut wt = WtTest::new();
     let headers = vec![Header::new(":status", "404")];
-    let accept_res = WebTransportSessionAcceptAction::Reject(headers.clone());
+    let accept_res = SessionAcceptAction::Reject(headers.clone());
     let (wt_session_id, _wt_session) = wt.negotiate_wt_session(&accept_res);
 
-    wt.check_session_closed_event_client(
-        wt_session_id,
-        &SessionCloseReason::Status(404),
-        &Some(headers),
-    );
+    wt.check_session_closed_event_client(wt_session_id, &CloseReason::Status(404), Some(&headers));
 }
 
 #[test]
@@ -49,10 +42,7 @@ fn wt_session_close_client() {
     let wt_session = wt.create_wt_session();
 
     wt.cancel_session_client(wt_session.stream_id());
-    wt.check_session_closed_event_server(
-        &wt_session,
-        &SessionCloseReason::Error(Error::HttpNoError.code()),
-    );
+    wt.check_session_closed_event_server(&wt_session, &CloseReason::Error(Error::HttpNone.code()));
 }
 
 #[test]
@@ -63,8 +53,8 @@ fn wt_session_close_server() {
     wt.cancel_session_server(&wt_session);
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Error(Error::HttpNoError.code()),
-        &None,
+        &CloseReason::Error(Error::HttpNone.code()),
+        None,
     );
 }
 
@@ -73,15 +63,15 @@ fn wt_session_close_server_close_send() {
     let mut wt = WtTest::new();
     let wt_session = wt.create_wt_session();
 
-    wt_session.stream_close_send().unwrap();
+    wt_session.stream_close_send(now()).unwrap();
     wt.exchange_packets();
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Clean {
+        &CloseReason::Clean {
             error: 0,
             message: String::new(),
         },
-        &None,
+        None,
     );
 }
 
@@ -91,13 +81,13 @@ fn wt_session_close_server_stop_sending() {
     let wt_session = wt.create_wt_session();
 
     wt_session
-        .stream_stop_sending(Error::HttpNoError.code())
+        .stream_stop_sending(Error::HttpNone.code())
         .unwrap();
     wt.exchange_packets();
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Error(Error::HttpNoError.code()),
-        &None,
+        &CloseReason::Error(Error::HttpNone.code()),
+        None,
     );
 }
 
@@ -107,13 +97,13 @@ fn wt_session_close_server_reset() {
     let wt_session = wt.create_wt_session();
 
     wt_session
-        .stream_reset_send(Error::HttpNoError.code())
+        .stream_reset_send(Error::HttpNone.code())
         .unwrap();
     wt.exchange_packets();
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Error(Error::HttpNoError.code()),
-        &None,
+        &CloseReason::Error(Error::HttpNone.code()),
+        None,
     );
 }
 
@@ -123,7 +113,7 @@ fn wt_session_response_with_1xx() {
 
     let wt_session_id = wt
         .client
-        .webtransport_create_session(now(), &("https", "something.com", "/"), &[])
+        .webtransport_create_session(now(), ("https", "something.com", "/"), &[])
         .unwrap();
     wt.exchange_packets();
 
@@ -134,14 +124,7 @@ fn wt_session_response_with_1xx() {
             headers,
         }) = event
         {
-            assert!(
-                headers
-                    .iter()
-                    .any(|h| h.name() == ":method" && h.value() == "CONNECT")
-                    && headers
-                        .iter()
-                        .any(|h| h.name() == ":protocol" && h.value() == "webtransport")
-            );
+            assert_wt(&headers);
             wt_server_session = Some(session);
         }
     }
@@ -153,7 +136,7 @@ fn wt_session_response_with_1xx() {
         .send_headers(&[Header::new(":status", "111")])
         .unwrap();
     wt_server_session
-        .response(&WebTransportSessionAcceptAction::Accept)
+        .response(&SessionAcceptAction::Accept, now())
         .unwrap();
 
     wt.exchange_packets();
@@ -161,14 +144,14 @@ fn wt_session_response_with_1xx() {
     let wt_session_negotiated_event = |e| {
         matches!(
             e,
-            Http3ClientEvent::WebTransport(WebTransportEvent::Session{
+            Http3ClientEvent::WebTransport(WebTransportEvent::NewSession{
                 stream_id,
                 status,
                 headers,
             }) if (
                 stream_id == wt_session_id &&
                 status == 200 &&
-                headers.contains(&Header::new(":status", "200"))
+                headers.contains_header(":status", "200")
             )
         )
     };
@@ -182,15 +165,11 @@ fn wt_session_response_with_redirect() {
     let headers = [Header::new(":status", "302"), Header::new("location", "/")].to_vec();
     let mut wt = WtTest::new();
 
-    let accept_res = WebTransportSessionAcceptAction::Reject(headers.clone());
+    let accept_res = SessionAcceptAction::Reject(headers.clone());
 
     let (wt_session_id, _wt_session) = wt.negotiate_wt_session(&accept_res);
 
-    wt.check_session_closed_event_client(
-        wt_session_id,
-        &SessionCloseReason::Status(302),
-        &Some(headers),
-    );
+    wt.check_session_closed_event_client(wt_session_id, &CloseReason::Status(302), Some(&headers));
 }
 
 #[test]
@@ -199,7 +178,7 @@ fn wt_session_respone_200_with_fin() {
 
     let wt_session_id = wt
         .client
-        .webtransport_create_session(now(), &("https", "something.com", "/"), &[])
+        .webtransport_create_session(now(), ("https", "something.com", "/"), &[])
         .unwrap();
     wt.exchange_packets();
     let mut wt_server_session = None;
@@ -209,23 +188,16 @@ fn wt_session_respone_200_with_fin() {
             headers,
         }) = event
         {
-            assert!(
-                headers
-                    .iter()
-                    .any(|h| h.name() == ":method" && h.value() == "CONNECT")
-                    && headers
-                        .iter()
-                        .any(|h| h.name() == ":protocol" && h.value() == "webtransport")
-            );
+            assert_wt(&headers);
             wt_server_session = Some(session);
         }
     }
 
     let wt_server_session = wt_server_session.unwrap();
     wt_server_session
-        .response(&WebTransportSessionAcceptAction::Accept)
+        .response(&SessionAcceptAction::Accept, now())
         .unwrap();
-    wt_server_session.stream_close_send().unwrap();
+    wt_server_session.stream_close_send(now()).unwrap();
 
     wt.exchange_packets();
 
@@ -239,7 +211,7 @@ fn wt_session_respone_200_with_fin() {
                 ..
             }) if (
                 stream_id == wt_session_id &&
-                reason == SessionCloseReason::Clean{ error: 0, message: String::new()} &&
+                reason == CloseReason::Clean{ error: 0, message: String::new()} &&
                 headers.is_none()
             )
         )
@@ -261,7 +233,7 @@ fn wt_session_close_frame_client() {
 
     wt.check_session_closed_event_server(
         &wt_session,
-        &SessionCloseReason::Clean {
+        &CloseReason::Clean {
             error: ERROR_NUM,
             message: ERROR_MESSAGE.to_string(),
         },
@@ -280,11 +252,11 @@ fn wt_session_close_frame_server() {
 
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Clean {
+        &CloseReason::Clean {
             error: ERROR_NUM,
             message: ERROR_MESSAGE.to_string(),
         },
-        &None,
+        None,
     );
 }
 
@@ -303,7 +275,9 @@ fn wt_unknown_session_frame_client() {
     enc.encode_varint(UNKNOWN_FRAME_LEN as u64);
     let mut buf: Vec<_> = enc.into();
     buf.resize(UNKNOWN_FRAME_LEN + buf.len(), 0);
-    wt.client.send_data(wt_session.stream_id(), &buf).unwrap();
+    wt.client
+        .send_data(wt_session.stream_id(), &buf, now())
+        .unwrap();
     wt.exchange_packets();
 
     // The session is still active
@@ -321,16 +295,16 @@ fn wt_unknown_session_frame_client() {
         &[],
         None,
         false,
-        &None,
+        None,
     );
     wt.check_events_after_closing_session_server(
         &[],
         None,
         &[unidi_server.stream_id()],
         Some(Error::HttpRequestCancelled.code()),
-        &Some((
+        Some(&(
             wt_session.stream_id(),
-            SessionCloseReason::Clean {
+            CloseReason::Clean {
                 error: ERROR_NUM,
                 message: ERROR_MESSAGE.to_string(),
             },
@@ -353,18 +327,20 @@ fn wt_close_session_frame_broken_client() {
     let mut buf: Vec<_> = enc.into();
     // Corrupt the string.
     buf[9] = 0xff;
-    wt.client.send_data(wt_session.stream_id(), &buf).unwrap();
+    wt.client
+        .send_data(wt_session.stream_id(), &buf, now())
+        .unwrap();
     wt.exchange_packets();
 
     // check that the webtransport session is closed.
     wt.check_session_closed_event_client(
         wt_session.stream_id(),
-        &SessionCloseReason::Error(Error::HttpGeneralProtocolStream.code()),
-        &None,
+        &CloseReason::Error(Error::HttpGeneralProtocolStream.code()),
+        None,
     );
     wt.check_session_closed_event_server(
         &wt_session,
-        &SessionCloseReason::Error(Error::HttpGeneralProtocolStream.code()),
+        &CloseReason::Error(Error::HttpGeneralProtocolStream.code()),
     );
 
     // The Http3 session is still working.
@@ -382,9 +358,7 @@ fn receive_request(server: &Http3Server) -> Option<Http3OrWebTransportStream> {
 }
 
 #[test]
-// Ignoring this test as it is panicking at wt.create_wt_stream_client
-// Issue # 1386 is created to track this
-#[ignore]
+#[ignore = "Is panicking at wt.create_wt_stream_client; see issue #1386"]
 fn wt_close_session_cannot_be_sent_at_once() {
     const BUF: &[u8] = &[0; 443];
     const ERROR_NUM: u32 = 23;
@@ -402,7 +376,7 @@ fn wt_close_session_cannot_be_sent_at_once() {
         .fetch(
             now(),
             "GET",
-            &("https", "something.com", "/"),
+            ("https", "something.com", "/"),
             &[],
             Priority::default(),
         )
@@ -415,7 +389,7 @@ fn wt_close_session_cannot_be_sent_at_once() {
         Header::new("content-length", BUF.len().to_string()),
     ])
     .unwrap();
-    req.send_data(BUF).unwrap();
+    req.send_data(BUF, now()).unwrap();
 
     // Now close the session.
     WtTest::session_close_frame_server(&wt_session, ERROR_NUM, ERROR_MESSAGE);
@@ -425,18 +399,18 @@ fn wt_close_session_cannot_be_sent_at_once() {
         Err(Error::InvalidStreamId)
     );
 
-    let out = wt.server.process(None, now());
-    let out = wt.client.process(out.as_dgram_ref(), now());
+    let out = wt.server.process_output(now());
+    let out = wt.client.process(out.dgram(), now());
 
     // Client has not received the full CloseSession frame and it can create more streams.
     let unidi_client = wt.create_wt_stream_client(wt_session.stream_id(), StreamType::UniDi);
 
-    let out = wt.server.process(out.as_dgram_ref(), now());
-    let out = wt.client.process(out.as_dgram_ref(), now());
-    let out = wt.server.process(out.as_dgram_ref(), now());
-    let out = wt.client.process(out.as_dgram_ref(), now());
-    let out = wt.server.process(out.as_dgram_ref(), now());
-    let _out = wt.client.process(out.as_dgram_ref(), now());
+    let out = wt.server.process(out.dgram(), now());
+    let out = wt.client.process(out.dgram(), now());
+    let out = wt.server.process(out.dgram(), now());
+    let out = wt.client.process(out.dgram(), now());
+    let out = wt.server.process(out.dgram(), now());
+    let _out = wt.client.process(out.dgram(), now());
 
     wt.check_events_after_closing_session_client(
         &[],
@@ -444,13 +418,13 @@ fn wt_close_session_cannot_be_sent_at_once() {
         &[unidi_client],
         Some(Error::HttpRequestCancelled.code()),
         false,
-        &Some((
+        Some(&(
             wt_session.stream_id(),
-            SessionCloseReason::Clean {
+            CloseReason::Clean {
                 error: ERROR_NUM,
                 message: ERROR_MESSAGE.to_string(),
             },
         )),
     );
-    wt.check_events_after_closing_session_server(&[], None, &[], None, &None);
+    wt.check_events_after_closing_session_server(&[], None, &[], None, None);
 }

@@ -5,7 +5,11 @@
 url-classifier-title = URL դասակարգչի տեղեկություն
 url-classifier-search-title = Որոնում
 url-classifier-search-result-title = Արդյունքներ
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Աղյուսակների ցուցակ․({ $list })
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = Անվավեր URL
@@ -25,7 +29,7 @@ url-classifier-cache-refresh-btn = Թարմացնել
 url-classifier-cache-clear-btn = Մաքրել
 url-classifier-cache-table-name = Սեղանի անվանումը
 url-classifier-cache-ncache-entries = Շտեմարանի բացասական մուտքերի քանակը։
-url-classifier-cache-pcache-entries = Դեպի պահպանումների դրական մուտքերի քանակը
+url-classifier-cache-pcache-entries = Դեպի պահումների դրական մուտքերի քանակը
 url-classifier-cache-show-entries = Ցուցադրել գրառումներ
 url-classifier-cache-entries = Շտեմարանի գրառումներ
 url-classifier-cache-prefix = Նախածանց
@@ -40,7 +44,6 @@ url-classifier-debug-sb-modules = Անվտանգ դիտարկման մատյան
 url-classifier-debug-modules = Ընթացիկ մատյանի մոդուլները
 url-classifier-debug-sbjs-modules = Անվտանգ դիտարկման JS մատյան
 url-classifier-debug-file = Ընթացիկ մատյանի ֆայլ
-
 url-classifier-trigger-update = Ձգան թարմացում
 url-classifier-not-available = Ա/Ո
 url-classifier-disable-sbjs-log = Անջատել Անվտանգ դիտարկման JS մատյանը

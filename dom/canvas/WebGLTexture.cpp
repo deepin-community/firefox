@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,14 +5,9 @@
 #include "WebGLTexture.h"
 
 #include <algorithm>
+#include <bit>
+
 #include "GLContext.h"
-#include "mozilla/Casting.h"
-#include "mozilla/dom/WebGLRenderingContextBinding.h"
-#include "mozilla/gfx/Logging.h"
-#include "mozilla/IntegerRange.h"
-#include "mozilla/MathAlgorithms.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/Unused.h"
 #include "ScopedGLHelpers.h"
 #include "WebGLContext.h"
 #include "WebGLContextUtils.h"
@@ -21,11 +15,16 @@
 #include "WebGLFramebuffer.h"
 #include "WebGLSampler.h"
 #include "WebGLTexelConversions.h"
+#include "mozilla/IntegerRange.h"
+#include "mozilla/MathAlgorithms.h"
+#include "mozilla/ScopeExit.h"
+#include "mozilla/dom/WebGLRenderingContextBinding.h"
+#include "mozilla/gfx/Logging.h"
 
 namespace mozilla {
 namespace webgl {
 
-/*static*/ const ImageInfo ImageInfo::kUndefined;
+constinit /*static*/ const ImageInfo ImageInfo::kUndefined;
 
 size_t ImageInfo::MemoryUsage() const {
   if (!IsDefined()) return 0;
@@ -58,7 +57,7 @@ Maybe<ImageInfo> ImageInfo::NextMip(const GLenum target) const {
     }
   }
   if (next.mUninitializedSlices) {
-    next.mUninitializedSlices = Some(std::vector<bool>(next.mDepth, true));
+    next.mUninitializedSlices.emplace(next.mDepth, true);
   }
 
   next.mWidth = std::max(uint32_t(1), next.mWidth / 2);
@@ -157,7 +156,7 @@ bool WebGLTexture::IsMipAndCubeComplete(const uint32_t maxLevel,
         return false;
       }
 
-      if (MOZ_UNLIKELY(ensureInit && cur.mUninitializedSlices)) {
+      if (ensureInit && cur.mUninitializedSlices) [[unlikely]] {
         auto imageTarget = mTarget.get();
         if (imageTarget == LOCAL_GL_TEXTURE_CUBE_MAP) {
           imageTarget = LOCAL_GL_TEXTURE_CUBE_MAP_POSITIVE_X + face;
@@ -167,7 +166,7 @@ bool WebGLTexture::IsMipAndCubeComplete(const uint32_t maxLevel,
           *out_initFailed = true;
           return false;
         }
-        cur.mUninitializedSlices = Nothing();
+        cur.mUninitializedSlices.reset();
       }
     }
 
@@ -224,10 +223,10 @@ Maybe<const WebGLTexture::CompletenessInfo> WebGLTexture::CalcCompletenessInfo(
   ret->usage = baseImageInfo.mFormat;
   RefreshSwizzle();
 
-  ret->powerOfTwo = mozilla::IsPowerOfTwo(baseImageInfo.mWidth) &&
-                    mozilla::IsPowerOfTwo(baseImageInfo.mHeight);
+  ret->powerOfTwo = std::has_single_bit(baseImageInfo.mWidth) &&
+                    std::has_single_bit(baseImageInfo.mHeight);
   if (mTarget == LOCAL_GL_TEXTURE_3D) {
-    ret->powerOfTwo &= mozilla::IsPowerOfTwo(baseImageInfo.mDepth);
+    ret->powerOfTwo &= std::has_single_bit(baseImageInfo.mDepth);
   }
 
   // -
@@ -471,7 +470,7 @@ bool WebGLTexture::EnsureImageDataInitialized(const TexImageTarget target,
   if (!ZeroTextureData(mContext, mGLName, target, level, imageInfo)) {
     return false;
   }
-  imageInfo.mUninitializedSlices = Nothing();
+  imageInfo.mUninitializedSlices.reset();
   return true;
 }
 
@@ -662,13 +661,6 @@ static bool ZeroTextureData(const WebGLContext* webgl, GLuint tex,
   return !error;
 }
 
-template <typename T, typename R>
-static constexpr R Clamp(const T val, const R min, const R max) {
-  if (val < min) return min;
-  if (val > max) return max;
-  return static_cast<R>(val);
-}
-
 void WebGLTexture::ClampLevelBaseAndMax() {
   if (!mImmutable) return;
 
@@ -680,9 +672,10 @@ void WebGLTexture::ClampLevelBaseAndMax() {
   MOZ_ASSERT(mImmutableLevelCount > 0);
   const auto oldBase = mBaseMipmapLevel;
   const auto oldMax = mMaxMipmapLevel;
-  mBaseMipmapLevel = Clamp(mBaseMipmapLevel, 0u, mImmutableLevelCount - 1u);
+  mBaseMipmapLevel =
+      std::clamp(mBaseMipmapLevel, 0u, mImmutableLevelCount - 1u);
   mMaxMipmapLevel =
-      Clamp(mMaxMipmapLevel, mBaseMipmapLevel, mImmutableLevelCount - 1u);
+      std::clamp(mMaxMipmapLevel, mBaseMipmapLevel, mImmutableLevelCount - 1u);
   if (oldBase != mBaseMipmapLevel &&
       mBaseMipmapLevelState != MIPMAP_LEVEL_DEFAULT) {
     mBaseMipmapLevelState = MIPMAP_LEVEL_DIRTY;
@@ -732,7 +725,8 @@ bool WebGLTexture::BindTexture(TexTarget texTarget) {
 }
 
 static constexpr GLint ClampMipmapLevelForDriver(uint32_t level) {
-  return Clamp(level, uint8_t{0}, WebGLTexture::kMaxLevelCount);
+  return static_cast<GLint>(
+      std::clamp(level, 0u, (uint32_t)WebGLTexture::kMaxLevelCount));
 }
 
 void WebGLTexture::GenerateMipmap() {

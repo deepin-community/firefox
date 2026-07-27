@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/Document.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
@@ -128,7 +126,8 @@ void nsSecureBrowserUI::RecomputeSecurityFlags() {
     nsDocShell* nativeDocShell = nsDocShell::Cast(ctx->GetDocShell());
     nativeDocShell->nsDocLoader::OnSecurityChange(nullptr, mState);
   } else if (ctx->GetWebProgress()) {
-    ctx->GetWebProgress()->OnSecurityChange(nullptr, nullptr, mState);
+    ctx->GetWebProgress()->OnSecurityChange(ctx->GetWebProgress(), nullptr,
+                                            mState);
   }
 }
 

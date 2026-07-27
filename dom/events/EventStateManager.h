@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,21 +5,20 @@
 #ifndef mozilla_EventStateManager_h_
 #define mozilla_EventStateManager_h_
 
-#include "mozilla/EventForwards.h"
-
-#include "nsIObserver.h"
-#include "nsWeakReference.h"
-#include "nsCOMPtr.h"
-#include "nsCOMArray.h"
-#include "nsCycleCollectionParticipant.h"
-#include "nsIWeakReferenceUtils.h"
-#include "nsRefPtrHashtable.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/TimeStamp.h"
-#include "mozilla/layers/APZPublicUtils.h"
-#include "mozilla/dom/Record.h"
 #include "Units.h"
 #include "WheelHandlingHelper.h"  // for WheelDeltaAdjustmentStrategy
+#include "mozilla/Attributes.h"
+#include "mozilla/EventForwards.h"
+#include "mozilla/TimeStamp.h"
+#include "mozilla/dom/Record.h"
+#include "mozilla/layers/APZPublicUtils.h"
+#include "nsCOMArray.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsIObserver.h"
+#include "nsIWeakReferenceUtils.h"
+#include "nsRefPtrHashtable.h"
+#include "nsWeakReference.h"
 
 class nsFrameLoader;
 class nsIContent;
@@ -42,9 +39,9 @@ namespace mozilla {
 class EditorBase;
 class EnterLeaveDispatcher;
 class IMEContentObserver;
+class LazyLogModule;
 class ScrollbarsForWheel;
 class ScrollContainerFrame;
-class TextControlElement;
 class WheelTransaction;
 
 namespace dom {
@@ -54,6 +51,7 @@ class Element;
 class Selection;
 class BrowserParent;
 class RemoteDragStartData;
+struct InteractionData;
 
 }  // namespace dom
 
@@ -223,8 +221,10 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_NSIOBSERVER
 
-  nsresult Init();
-  nsresult Shutdown();
+  void Init();
+  void Shutdown();
+
+  static LazyLogModule& MouseCursorUpdateLogRef();
 
   /* The PreHandleEvent method is called before event dispatch to either
    * the DOM or frames.  Any processing which must not be prevented or
@@ -297,22 +297,15 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
 
   nsIContent* GetActiveContent() const { return mActiveContent; }
 
+  void SetLinkOverFrame(nsIFrame* aFrame) { mLinkOverFrame = aFrame; }
+
   void NativeAnonymousContentRemoved(nsIContent* aAnonContent);
-  MOZ_CAN_RUN_SCRIPT_BOUNDARY void ContentRemoved(dom::Document* aDocument,
-                                                  nsIContent* aContent);
-
-  /**
-   * Called when a native anonymous <div> element which is root element of
-   * text editor will be removed.
-   */
-  void TextControlRootWillBeRemoved(TextControlElement& aTextControlElement);
-
-  /**
-   * Called when a native anonymous <div> element which is root element of
-   * text editor is created.
-   */
-  void TextControlRootAdded(dom::Element& aAnonymousDivElement,
-                            TextControlElement& aTextControlElement);
+  void ContentInserted(nsIContent* aChild, const ContentInsertInfo& aInfo);
+  void ContentAppended(nsIContent* aFirstNewContent,
+                       const ContentAppendInfo& aInfo);
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY void ContentRemoved(
+      dom::Document* aDocument, nsIContent* aContent,
+      const ContentRemoveInfo& aInfo);
 
   bool EventStatusOK(WidgetGUIEvent* aEvent);
 
@@ -416,7 +409,17 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
    */
   void RecomputeMouseEnterStateForRemoteFrame(dom::Element& aElement);
 
-  nsPresContext* GetPresContext() { return mPresContext; }
+  nsPresContext* GetPresContext() const { return mPresContext; }
+
+  PresShell* GetPresShell() const {
+    return mPresContext ? mPresContext->GetPresShell() : nullptr;
+  }
+
+  /**
+   * Return the in-process root PresShell which is associated with the root
+   * nsPresContext of mPresContext.
+   */
+  PresShell* GetRootPresShell() const;
 
   NS_DECL_CYCLE_COLLECTION_CLASS_AMBIGUOUS(EventStateManager, nsIObserver)
 
@@ -496,17 +499,18 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
    *
    * @param aPresShell              The PresShell for the ESM.  This lifetime
    *                                should be guaranteed by the caller.
-   * @param aMouseEvent             The ePointerClick event which caused the
-   *                                paste.
-   * @param aStatus                 The event status of aMouseEvent.
+   * @param aMouseOrPointerEvent    The eAuxPointerClick event which caused the
+   *                                paste or eMouseUp event which causes an
+   *                                ePointerAuxClick event.
+   * @param aStatus                 The event status of aMouseOrPointerEvent.
    * @param aEditorBase             EditorBase which may be pasted the
    *                                clipboard text by the middle click.
-   *                                If there is no editor for aMouseEvent,
-   *                                set nullptr.
+   *                                If there is no editor for
+   *                                aMouseOrPointerEvent, set nullptr.
    */
   MOZ_CAN_RUN_SCRIPT
   nsresult HandleMiddleClickPaste(PresShell* aPresShell,
-                                  WidgetMouseEvent* aMouseEvent,
+                                  WidgetMouseEvent* aMouseOrPointerEvent,
                                   nsEventStatus* aStatus,
                                   EditorBase* aEditorBase);
 
@@ -517,6 +521,33 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   // a notification to any child processes that are in the drag service that
   // tried to start a drag.
   void StopTrackingDragGesture(bool aClearInChildProcesses);
+
+  /**
+   * Return the last "mouseover" (or next "mouseout"), the last deepest
+   * "mouseenter" (or next deepest "mouseleave") targets.
+   */
+  const OverOutElementsWrapper* GetExtantMouseBoundaryEventTarget() const {
+    return mMouseEnterLeaveHelper;
+  }
+
+  /**
+   * Return the content node which is the explicit target of the drag gesture
+   * start event (typically a "mousedown"). I.e., the result may be a `Text`
+   * even though the event target should be an `Element`. Or if the original
+   * target was once removed, this returns the connected node which contained
+   * the origin target.
+   */
+  nsIContent* GetTrackingDragGestureContent() const {
+    return mGestureDownContent;
+  }
+
+  // Update the tracked gesture content to the parent of its frame when it's
+  // removed, so that the gesture can be continued.
+  void NotifyContentWillBeRemovedForGesture(nsIContent& aContent);
+
+  bool IsTrackingDragGesture() const { return mGestureDownContent != nullptr; }
+
+  nsIContent* GetURLTargetContent() const { return mURLTargetContent; }
 
  protected:
   /*
@@ -629,8 +660,12 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
       AutoWeakFrame aCurrentTarget, bool aNoContentDispatch,
       nsIContent* aOverrideClickTarget);
 
-  nsresult SetClickCount(WidgetMouseEvent* aEvent, nsEventStatus* aStatus,
-                         nsIContent* aOverrideClickTarget = nullptr);
+  /**
+   * Prepare aEvent and corresponding LastMouseDownInfo for dispatching
+   * ePointerClick, ePointerAuxClick or eContextMenu later.
+   */
+  void PrepareForFollowingClickEvent(
+      WidgetMouseEvent& aEvent, nsIContent* aOverrideClickTarget = nullptr);
 
   /**
    * EventCausesClickEvents() returns true when aMouseEvent is an eMouseUp
@@ -979,6 +1014,11 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
         (PREFER_MOUSE_WHEEL_TRANSACTION |
          PREFER_ACTUAL_SCROLLABLE_TARGET_ALONG_X_AXIS |
          PREFER_ACTUAL_SCROLLABLE_TARGET_ALONG_Y_AXIS),
+    // Compute the default action target without considering the current wheel
+    // transaction.
+    COMPUTE_DEFAULT_ACTION_TARGET_WITHOUT_WHEEL_TRANSACTION =
+        (PREFER_ACTUAL_SCROLLABLE_TARGET_ALONG_X_AXIS |
+         PREFER_ACTUAL_SCROLLABLE_TARGET_ALONG_Y_AXIS),
     COMPUTE_DEFAULT_ACTION_TARGET_WITH_AUTO_DIR =
         (COMPUTE_DEFAULT_ACTION_TARGET | MAY_BE_ADJUSTED_BY_AUTO_DIR),
     // Look for the nearest scrollable ancestor which can be scrollable with
@@ -1048,6 +1088,7 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   void DoScrollText(ScrollContainerFrame* aScrollContainerFrame,
                     WidgetWheelEvent* aEvent);
 
+  MOZ_CAN_RUN_SCRIPT
   void DoScrollHistory(int32_t direction);
   void DoScrollZoom(nsIFrame* aTargetFrame, int32_t adjustment);
   void ChangeZoom(bool aIncrease);
@@ -1151,11 +1192,10 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
                            WidgetInputEvent* aEvent);
 
   /**
-   * When starting a dnd session, UA must fire a pointercancel event and stop
-   * firing the subsequent pointer events.
+   * Try to dispatch ePointerCancel for aSourceEvent to aTargetContent.
    */
-  MOZ_CAN_RUN_SCRIPT
-  void MaybeFirePointerCancel(WidgetInputEvent* aEvent);
+  MOZ_CAN_RUN_SCRIPT void MaybeDispatchPointerCancel(
+      const WidgetInputEvent& aSourceEvent, nsIContent& aTargetContent);
 
   /**
    * Determine which node the drag should be targeted at.
@@ -1178,7 +1218,7 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
       dom::DataTransfer* aDataTransfer, bool* aAllowEmptyDataTransfer,
       dom::Selection** aSelection,
       dom::RemoteDragStartData** aRemoteDragStartData, nsIContent** aTargetNode,
-      nsIPrincipal** aPrincipal, nsIContentSecurityPolicy** aCsp,
+      nsIPrincipal** aPrincipal, nsIPolicyContainer** aPolicyContainer,
       nsICookieJarSettings** aCookieJarSettings);
 
   /*
@@ -1199,14 +1239,16 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
    *                      from browser chrome or OS.
    */
   MOZ_CAN_RUN_SCRIPT
-  bool DoDefaultDragStart(
-      nsPresContext* aPresContext, WidgetDragEvent* aDragEvent,
-      dom::DataTransfer* aDataTransfer, bool aAllowEmptyDataTransfer,
-      nsIContent* aDragTarget, dom::Selection* aSelection,
-      dom::RemoteDragStartData* aDragStartData, nsIPrincipal* aPrincipal,
-      nsIContentSecurityPolicy* aCsp, nsICookieJarSettings* aCookieJarSettings);
+  bool DoDefaultDragStart(nsPresContext* aPresContext,
+                          WidgetDragEvent* aDragEvent,
+                          dom::DataTransfer* aDataTransfer,
+                          bool aAllowEmptyDataTransfer, nsIContent* aDragTarget,
+                          dom::Selection* aSelection,
+                          dom::RemoteDragStartData* aDragStartData,
+                          nsIPrincipal* aPrincipal,
+                          nsIPolicyContainer* aPolicyContainer,
+                          nsICookieJarSettings* aCookieJarSettings);
 
-  bool IsTrackingDragGesture() const { return mGestureDownContent != nullptr; }
   /**
    * Set the fields of aEvent to reflect the mouse position and modifier keys
    * that were set when the user first pressed the mouse button (stored by
@@ -1282,6 +1324,8 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   // Update the last known ref point to the current event's mRefPoint.
   static void UpdateLastPointerPosition(WidgetMouseEvent* aMouseEvent);
 
+  void UpdateGestureContent(nsIContent* aContent);
+
   /**
    * Notify target when user has been interaction with some speicific user
    * gestures which are eKeyUp, eMouseUp, eTouchEnd.
@@ -1294,6 +1338,12 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
    */
   MOZ_CAN_RUN_SCRIPT void LightDismissOpenPopovers(WidgetEvent* aEvent,
                                                    nsIContent* aTargetContent);
+
+  /**
+   * https://html.spec.whatwg.org/multipage/interactive-elements.html#light-dismiss-open-dialogs
+   */
+  MOZ_CAN_RUN_SCRIPT void LightDismissOpenDialogs(WidgetEvent* aEvent,
+                                                  nsIContent* aTargetContent);
 
   already_AddRefed<EventStateManager> ESMFromContentOrThis(
       nsIContent* aContent);
@@ -1328,10 +1378,14 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   // Stores the mRefPoint (the offset from the widget's origin in device
   // pixels) of the last mouse event.
   static LayoutDeviceIntPoint sLastRefPoint;
+  static LayoutDeviceIntPoint sLastRefPointOfRawUpdate;
 
   // member variables for the d&d gesture state machine
   LayoutDeviceIntPoint mGestureDownPoint;  // screen coordinates
-  // The content to use as target if we start a d&d (what we drag).
+  // The content node which the preceding event (typically a "mousedown) starts
+  // the dragging gesture. So, this may be a `Text` even though the event target
+  // should be an `Element`. If the origin node is removed, this is set to the
+  // connected node which contained the original node.
   RefPtr<nsIContent> mGestureDownContent;
   // The content of the frame where the mouse-down event occurred. It's the same
   // as the target in most cases but not always - for example when dragging
@@ -1354,6 +1408,10 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   nsCOMPtr<nsIContent> mURLTargetContent;
   nsCOMPtr<nsINode> mPopoverPointerDownTarget;
 
+  // The primary frame of the link currently shown in the status bar.
+  // Checked in ClearFrameRefs to avoid stalling link status bar.
+  WeakFrame mLinkOverFrame;
+
   nsPresContext* mPresContext;      // Not refcnted
   RefPtr<dom::Document> mDocument;  // Doesn't necessarily need to be owner
 
@@ -1361,8 +1419,6 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
 
   bool mShouldAlwaysUseLineDeltas : 1;
   bool mShouldAlwaysUseLineDeltasInitialized : 1;
-
-  bool mGestureDownInTextControl : 1;
 
   bool mInTouchDrag;
 
@@ -1395,7 +1451,8 @@ class EventStateManager : public nsSupportsWeakReference, public nsIObserver {
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void FireContextClick();
 
   MOZ_CAN_RUN_SCRIPT static void SetPointerLock(nsIWidget* aWidget,
-                                                nsPresContext* aPresContext);
+                                                nsPresContext* aPresContext,
+                                                bool aUnadjustedMovement);
   static void sClickHoldCallback(nsITimer* aTimer, void* aESM);
 };
 

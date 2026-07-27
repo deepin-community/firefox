@@ -7,10 +7,6 @@
 
 "use strict";
 
-const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
-  "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
-);
-
 const CONFIG = [
   {
     identifier: "appDefault",
@@ -19,13 +15,13 @@ const CONFIG = [
 ];
 
 add_setup(async function () {
-  useHttpServer("opensearch");
+  useHttpServer();
   SearchTestUtils.setRemoteSettingsConfig(CONFIG);
-  await Services.search.init();
+  await SearchService.init();
 });
 
 add_task(async function test_app_provided_engine_id() {
-  let appDefault = Services.search.defaultEngine;
+  let appDefault = SearchService.defaultEngine;
 
   Assert.equal(
     appDefault.name,
@@ -45,7 +41,7 @@ add_task(async function test_addon_engine_id() {
     id: "addon@tests.mozilla.org",
   });
 
-  let addonEngine = Services.search.getEngineByName("AddonEngine");
+  let addonEngine = SearchService.getEngineByName("AddonEngine");
   Assert.equal(
     addonEngine.id,
     "addon@tests.mozilla.orgdefault",
@@ -59,14 +55,14 @@ add_task(async function test_user_engine_id() {
     SearchUtils.TOPIC_ENGINE_MODIFIED
   );
 
-  await Services.search.addUserEngine(
-    "user",
-    "https://example.com/user?q={searchTerms}",
-    "u"
-  );
+  await SearchService.addUserEngine({
+    name: "user",
+    url: "https://example.com/user?q={searchTerms}",
+    alias: "u",
+  });
 
   await promiseEngineAdded;
-  let userEngine = Services.search.getEngineByName("user");
+  let userEngine = SearchService.getEngineByName("user");
 
   Assert.ok(userEngine, "Should have installed the User Search Engine.");
   Assert.ok(userEngine.id, "The User Search Engine should have an id.");
@@ -79,7 +75,7 @@ add_task(async function test_user_engine_id() {
 
 add_task(async function test_open_search_engine_id() {
   let openSearchEngine = await SearchTestUtils.installOpenSearchEngine({
-    url: gDataUrl + "simple.xml",
+    url: `${gHttpURL}/opensearch/simple.xml`,
   });
 
   Assert.ok(openSearchEngine, "Should have installed the Open Search Engine.");
@@ -109,7 +105,7 @@ add_task(async function test_enterprise_policy_engine_id() {
     },
   });
 
-  let policyEngine = Services.search.getEngineByName("policy");
+  let policyEngine = SearchService.getEngineByName("policy");
 
   Assert.ok(policyEngine, "Should have installed the Policy Engine.");
   Assert.ok(policyEngine.id, "The Policy Engine should have an id.");
@@ -119,23 +115,3 @@ add_task(async function test_enterprise_policy_engine_id() {
     "The Policy Engine id should be 'policy-' + 'the name of the policy engine'."
   );
 });
-
-/**
- * Loads a new enterprise policy, and re-initialise the search service
- * with the new policy. Also waits for the search service to write the settings
- * file to disk.
- *
- * @param {object} policy
- *   The enterprise policy to use.
- */
-async function setupPolicyEngineWithJson(policy) {
-  Services.search.wrappedJSObject.reset();
-
-  await EnterprisePolicyTesting.setupPolicyEngineWithJson(policy);
-
-  let settingsWritten = SearchTestUtils.promiseSearchNotification(
-    "write-settings-to-disk-complete"
-  );
-  await Services.search.init();
-  await settingsWritten;
-}

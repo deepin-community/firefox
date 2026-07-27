@@ -12,6 +12,13 @@ about-networking-dns-trr-url = Spletni naslov DoH
 about-networking-dns-trr-mode = Način DoH
 about-networking-dns-suffix = Pripona DNS
 about-networking-websockets = WebSockets
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Izvor
+about-networking-alt-svc-alternate = Nadomestno
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Potrjeno
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Izolacijski ključ
 about-networking-refresh = Osveži
 about-networking-auto-refresh = Samodejno osveži vsake 3 sekunde
 about-networking-hostname = Ime gostitelja
@@ -39,6 +46,7 @@ about-networking-dns-lookup = Iskanje DNS
 about-networking-dns-lookup-button = Razreši
 about-networking-dns-domain = Domena:
 about-networking-dns-lookup-table-column = IP-ji
+about-networking-dns-https-rrs-lookup-table-column = RR-ji HTTP
 about-networking-dns-https-rr-lookup-table-column = RR HTTP
 about-networking-rcwn = Statistika RCWN
 about-networking-rcwn-status = Stanje RCWN
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Ta stran se je preselila na <a data-l10n-
 
 about-networking-networkid-is-up = Povezava je vzpostavljena
 about-networking-networkid-status-known = Stanje povezave je znano
-
-##
-

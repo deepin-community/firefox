@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2017 Jordan Harband. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -19,8 +18,8 @@ includes: [testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([42, 43, 44, 45, 46]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([42, 43, 44, 45, 46]));
 
   assert.throws(TypeError, function() {
     sample.sort(null);

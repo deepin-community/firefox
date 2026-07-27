@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,8 @@
 #include "mozilla/JSONWriter.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/nsMemoryInfoDumper.h"
-#include "mozilla/DebugOnly.h"
 #include "nsDumpUtils.h"
 
-#include "mozilla/Unused.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/ContentChild.h"
 #include "nsIConsoleService.h"
@@ -33,7 +29,7 @@
 #  include <unistd.h>
 #endif
 
-#ifdef XP_UNIX
+#if defined(XP_UNIX) && !defined(XP_IOS)
 #  define MOZ_SUPPORTS_FIFO 1
 #endif
 
@@ -142,10 +138,6 @@ namespace {
  * This scheme is similar to using signalfd(), except it's portable and it
  * doesn't require the use of sigprocmask, which is problematic because it
  * masks signals received by child processes.
- *
- * In theory, we could use Chromium's MessageLoopForIO::CatchSignal() for this.
- * But that uses libevent, which does not handle the realtime signals (bug
- * 794074).
  */
 
 // It turns out that at least on some systems, SIGRTMIN is not a compile-time
@@ -301,7 +293,7 @@ class nsDumpGCAndCCLogsCallbackHolder final
   }
 
  private:
-  ~nsDumpGCAndCCLogsCallbackHolder() { Unused << mCallback->OnFinish(); }
+  ~nsDumpGCAndCCLogsCallbackHolder() { (void)mCallback->OnFinish(); }
 
   nsCOMPtr<nsIDumpGCAndCCLogsCallback> mCallback;
 };
@@ -328,8 +320,7 @@ nsMemoryInfoDumper::DumpGCAndCCLogsToFile(
       logSink->SetFilenameIdentifier(identifier);
       logSink->SetProcessIdentifier(cp->Pid());
 
-      Unused << cp->CycleCollectWithLogs(aDumpAllTraces, logSink,
-                                         callbackHolder);
+      (void)cp->CycleCollectWithLogs(aDumpAllTraces, logSink, callbackHolder);
     }
   }
 
@@ -338,7 +329,7 @@ nsMemoryInfoDumper::DumpGCAndCCLogsToFile(
   if (aDumpAllTraces) {
     nsCOMPtr<nsICycleCollectorListener> allTracesLogger;
     logger->AllTraces(getter_AddRefs(allTracesLogger));
-    logger = allTracesLogger;
+    logger = std::move(allTracesLogger);
   }
 
   nsCOMPtr<nsICycleCollectorLogSink> logSink;
@@ -364,7 +355,7 @@ nsMemoryInfoDumper::DumpGCAndCCLogsToSink(bool aDumpAllTraces,
   if (aDumpAllTraces) {
     nsCOMPtr<nsICycleCollectorListener> allTracesLogger;
     logger->AllTraces(getter_AddRefs(allTracesLogger));
-    logger = allTracesLogger;
+    logger = std::move(allTracesLogger);
   }
 
   logger->SetLogSink(aSink);
@@ -392,7 +383,7 @@ class GZWriterWrapper final : public JSONWriteFunc {
   void Write(const Span<const char>& aStr) final {
     // Ignore any failure because JSONWriteFunc doesn't have a mechanism for
     // handling errors.
-    Unused << mGZWriter->Write(aStr.data(), aStr.size());
+    (void)mGZWriter->Write(aStr.data(), aStr.size());
   }
 
   nsresult Finish() { return mGZWriter->Finish(); }
@@ -615,12 +606,7 @@ nsMemoryInfoDumper::DumpMemoryReportsToNamedFile(
   // Create the file.
 
   nsCOMPtr<nsIFile> reportsFile;
-  nsresult rv = NS_NewLocalFile(aFilename, false, getter_AddRefs(reportsFile));
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return rv;
-  }
-
-  reportsFile->InitWithPath(aFilename);
+  nsresult rv = NS_NewLocalFile(aFilename, getter_AddRefs(reportsFile));
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -690,7 +676,7 @@ nsMemoryInfoDumper::DumpMemoryInfoToTempDir(const nsAString& aIdentifier,
 }
 
 #ifdef MOZ_DMD
-dmd::DMDFuncs::Singleton dmd::DMDFuncs::sSingleton;
+MOZ_RUNINIT dmd::DMDFuncs::Singleton dmd::DMDFuncs::sSingleton;
 
 nsresult nsMemoryInfoDumper::OpenDMDFile(const nsAString& aIdentifier, int aPid,
                                          FILE** aOutFile) {

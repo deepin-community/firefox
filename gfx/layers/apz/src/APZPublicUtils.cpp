@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,7 @@
 #include "mozilla/layers/APZPublicUtils.h"
 
 #include "AsyncPanZoomController.h"
-#include "mozilla/HelperMacros.h"
+#include "nsLayoutUtils.h"
 #include "mozilla/StaticPrefs_general.h"
 
 namespace mozilla {
@@ -26,7 +24,7 @@ namespace apz {
       aFrameMetrics, aVelocity, AsyncPanZoomController::ZoomInProgress::No);
 }
 
-/*static*/ gfx::IntSize GetDisplayportAlignmentMultiplier(
+/*static*/ gfx::Size GetDisplayportAlignmentMultiplier(
     const ScreenSize& aBaseSize) {
   return AsyncPanZoomController::GetDisplayportAlignmentMultiplier(aBaseSize);
 }
@@ -36,9 +34,10 @@ ScrollAnimationBezierPhysicsSettings ComputeBezierAnimationSettingsForOrigin(
   int32_t minMS = 0;
   int32_t maxMS = 0;
   bool isOriginSmoothnessEnabled = false;
+  bool isGeneralSmoothnessEnabled = nsLayoutUtils::IsSmoothScrollingEnabled();
 
 #define READ_DURATIONS(prefbase)                                              \
-  isOriginSmoothnessEnabled = StaticPrefs::general_smoothScroll() &&          \
+  isOriginSmoothnessEnabled = isGeneralSmoothnessEnabled &&                   \
                               StaticPrefs::general_smoothScroll_##prefbase(); \
   if (isOriginSmoothnessEnabled) {                                            \
     minMS = StaticPrefs::general_smoothScroll_##prefbase##_durationMinMS();   \
@@ -70,8 +69,8 @@ ScrollAnimationBezierPhysicsSettings ComputeBezierAnimationSettingsForOrigin(
 
   if (isOriginSmoothnessEnabled) {
     static const int32_t kSmoothScrollMaxAllowedAnimationDurationMS = 10000;
-    maxMS = clamped(maxMS, 0, kSmoothScrollMaxAllowedAnimationDurationMS);
-    minMS = clamped(minMS, 0, maxMS);
+    maxMS = std::clamp(maxMS, 0, kSmoothScrollMaxAllowedAnimationDurationMS);
+    minMS = std::clamp(minMS, 0, maxMS);
   }
 
   // Keep the animation duration longer than the average event intervals
@@ -88,7 +87,8 @@ ScrollAnimationBezierPhysicsSettings ComputeBezierAnimationSettingsForOrigin(
 }
 
 ScrollMode GetScrollModeForOrigin(ScrollOrigin origin) {
-  if (!StaticPrefs::general_smoothScroll()) return ScrollMode::Instant;
+  bool isSmoothScrollingEnabled = nsLayoutUtils::IsSmoothScrollingEnabled();
+  if (!isSmoothScrollingEnabled) return ScrollMode::Instant;
   switch (origin) {
     case ScrollOrigin::Lines:
       return StaticPrefs::general_smoothScroll_lines() ? ScrollMode::Smooth
@@ -101,8 +101,8 @@ ScrollMode GetScrollModeForOrigin(ScrollOrigin origin) {
                                                        : ScrollMode::Instant;
     default:
       MOZ_ASSERT(false, "Unknown keyboard scroll origin");
-      return StaticPrefs::general_smoothScroll() ? ScrollMode::Smooth
-                                                 : ScrollMode::Instant;
+      return isSmoothScrollingEnabled ? ScrollMode::Smooth
+                                      : ScrollMode::Instant;
   }
 }
 

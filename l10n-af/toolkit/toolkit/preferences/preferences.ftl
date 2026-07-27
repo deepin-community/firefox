@@ -4,19 +4,27 @@
 
 password-not-set =
     .value = (nie opgestel)
-
 pw-change-success-title = Wagwoordverandering was suksesvol
 pw-change-failed-title = Kon nie wagwoord verander nie
 pw-remove-button =
     .label = Verwyder
-
+set-password-old =
+    .label = Huidige wagwoord:
+set-password-new =
+    .label = Tik nuwe wagwoord in:
+set-password-reenter =
+    .label = Tik nuwe wagwoord weer in:
 set-password-old-password = Huidige wagwoord:
 set-password-new-password = Tik nuwe wagwoord in:
 set-password-reenter-password = Tik nuwe wagwoord weer in:
 set-password-meter = Wagwoord-gehaltemeter
 set-password-meter-loading = Laai
-
 remove-info =
     .value = U moet u huidige wagwoord intik om voort te gaan:
+remove-password-old =
+    .label = Huidige wagwoord:
 remove-password-old-password =
     .value = Huidige wagwoord:
+set-password-not-set =
+    .label = Huidige wagwoord:
+    .placeholder = (nie opgestel)

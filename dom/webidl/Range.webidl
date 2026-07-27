@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -75,13 +74,14 @@ interface Range : AbstractRange {
 
 // http://domparsing.spec.whatwg.org/#dom-range-createcontextualfragment
 partial interface Range {
-  [CEReactions, Throws, UseCounter]
-  DocumentFragment createContextualFragment(DOMString fragment);
+  [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws, UseCounter]
+  DocumentFragment createContextualFragment((TrustedHTML or DOMString) fragment);
 };
 
 // http://dvcs.w3.org/hg/csswg/raw-file/tip/cssom-view/Overview.html#extensions-to-the-range-interface
 partial interface Range {
   DOMRectList? getClientRects();
+  [ChromeOnly] DOMRectList? getAllowCrossShadowBoundaryClientRects();
   DOMRect getBoundingClientRect();
 };
 

@@ -2,11 +2,10 @@
 
 To improve translator performance and reduce memory usage, most structures are
 stored in an [`Arena`]. An `Arena<T>` stores a series of `T` values, indexed by
-[`Handle<T>`](Handle) values, which are just wrappers around integer indexes.
+[`Handle<T>`] values, which are just wrappers around integer indexes.
 For example, a `Function`'s expressions are stored in an `Arena<Expression>`,
 and compound expressions refer to their sub-expressions via `Handle<Expression>`
-values. (When examining the serialized form of a `Module`, note that the first
-element of an `Arena` has an index of 1, not 0.)
+values.
 
 A [`UniqueArena`] is just like an `Arena`, except that it stores only a single
 instance of each value. The value type must implement `Eq` and `Hash`. Like an
@@ -32,11 +31,12 @@ pub(crate) use handlevec::HandleVec;
 pub use range::{BadRangeError, Range};
 pub use unique_arena::UniqueArena;
 
+use alloc::vec::Vec;
+use core::{fmt, ops};
+
 use crate::Span;
 
 use handle::Index;
-
-use std::{fmt, ops};
 
 /// An arena holding some kind of component (e.g., type, constant,
 /// instruction, etc.) that can be referenced.
@@ -78,39 +78,50 @@ impl<T> Arena<T> {
     }
 
     /// Extracts the inner vector.
-    #[allow(clippy::missing_const_for_fn)] // ignore due to requirement of #![feature(const_precise_live_drops)]
     pub fn into_inner(self) -> Vec<T> {
         self.data
     }
 
     /// Returns the current number of items stored in this arena.
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.data.len()
     }
 
     /// Returns `true` if the arena contains no elements.
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 
     /// Returns an iterator over the items stored in this arena, returning both
     /// the item's handle and a reference to it.
-    pub fn iter(&self) -> impl DoubleEndedIterator<Item = (Handle<T>, &T)> {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = (Handle<T>, &T)> + ExactSizeIterator {
         self.data
             .iter()
             .enumerate()
-            .map(|(i, v)| unsafe { (Handle::from_usize_unchecked(i), v) })
+            .map(|(i, v)| (Handle::from_usize(i), v))
+    }
+
+    /// Returns an iterator over the items stored in this arena, returning both
+    /// the item's handle and a reference to it.
+    pub fn iter_mut_span(
+        &mut self,
+    ) -> impl DoubleEndedIterator<Item = (Handle<T>, &mut T, &Span)> + ExactSizeIterator {
+        self.data
+            .iter_mut()
+            .zip(self.span_info.iter())
+            .enumerate()
+            .map(|(i, (v, span))| (Handle::from_usize(i), v, span))
     }
 
     /// Drains the arena, returning an iterator over the items stored.
     pub fn drain(&mut self) -> impl DoubleEndedIterator<Item = (Handle<T>, T, Span)> {
-        let arena = std::mem::take(self);
+        let arena = core::mem::take(self);
         arena
             .data
             .into_iter()
             .zip(arena.span_info)
             .enumerate()
-            .map(|(i, (v, span))| unsafe { (Handle::from_usize_unchecked(i), v, span) })
+            .map(|(i, (v, span))| (Handle::from_usize(i), v, span))
     }
 
     /// Returns a iterator over the items stored in this arena,
@@ -119,7 +130,7 @@ impl<T> Arena<T> {
         self.data
             .iter_mut()
             .enumerate()
-            .map(|(i, v)| unsafe { (Handle::from_usize_unchecked(i), v) })
+            .map(|(i, v)| (Handle::from_usize(i), v))
     }
 
     /// Adds a new value to the arena, returning a typed handle.
@@ -135,7 +146,7 @@ impl<T> Arena<T> {
         self.data
             .iter()
             .position(fun)
-            .map(|index| unsafe { Handle::from_usize_unchecked(index) })
+            .map(|index| Handle::from_usize(index))
     }
 
     /// Adds a value with a custom check for uniqueness:
@@ -149,7 +160,7 @@ impl<T> Arena<T> {
         fun: F,
     ) -> Handle<T> {
         if let Some(index) = self.data.iter().position(|d| fun(d, &value)) {
-            unsafe { Handle::from_usize_unchecked(index) }
+            Handle::from_usize(index)
         } else {
             self.append(value, span)
         }
@@ -222,7 +233,6 @@ impl<T> Arena<T> {
         Ok(())
     }
 
-    #[cfg(feature = "compact")]
     pub(crate) fn retain_mut<P>(&mut self, mut predicate: P)
     where
         P: FnMut(Handle<T>, &mut T) -> bool,
@@ -259,9 +269,7 @@ where
         D: serde::Deserializer<'de>,
     {
         let data = Vec::deserialize(deserializer)?;
-        let span_info = std::iter::repeat(Span::default())
-            .take(data.len())
-            .collect();
+        let span_info = core::iter::repeat_n(Span::default(), data.len()).collect();
 
         Ok(Self { data, span_info })
     }

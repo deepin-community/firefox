@@ -10,25 +10,44 @@
 
 #include "pc/sctp_data_channel.h"
 
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
-#include "media/sctp/sctp_transport_internal.h"
+#include "absl/functional/any_invocable.h"
+#include "absl/strings/string_view.h"
+#include "api/data_channel_interface.h"
+#include "api/make_ref_counted.h"
+#include "api/priority.h"
+#include "api/rtc_error.h"
+#include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
+#include "api/task_queue/pending_task_safety_flag.h"
+#include "api/transport/data_channel_transport_interface.h"
+#include "pc/data_channel_utils.h"
 #include "pc/proxy.h"
+#include "pc/sctp_utils.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/system/unused.h"
 #include "rtc_base/thread.h"
+#include "rtc_base/thread_annotations.h"
+#include "rtc_base/weak_ptr.h"
 
 namespace webrtc {
 
 namespace {
 
-static size_t kMaxQueuedReceivedDataBytes = 16 * 1024 * 1024;
+size_t kMaxQueuedReceivedDataBytes = 16 * 1024 * 1024;
 
-static std::atomic<int> g_unique_id{0};
+std::atomic<int> g_unique_id{0};
 
 int GenerateUniqueId() {
   return ++g_unique_id;
@@ -42,15 +61,13 @@ BYPASS_PROXY_METHOD0(void, UnregisterObserver)
 BYPASS_PROXY_CONSTMETHOD0(std::string, label)
 BYPASS_PROXY_CONSTMETHOD0(bool, reliable)
 BYPASS_PROXY_CONSTMETHOD0(bool, ordered)
-BYPASS_PROXY_CONSTMETHOD0(uint16_t, maxRetransmitTime)
-BYPASS_PROXY_CONSTMETHOD0(uint16_t, maxRetransmits)
-BYPASS_PROXY_CONSTMETHOD0(absl::optional<int>, maxRetransmitsOpt)
-BYPASS_PROXY_CONSTMETHOD0(absl::optional<int>, maxPacketLifeTime)
+BYPASS_PROXY_CONSTMETHOD0(std::optional<int>, maxRetransmitsOpt)
+BYPASS_PROXY_CONSTMETHOD0(std::optional<int>, maxPacketLifeTime)
 BYPASS_PROXY_CONSTMETHOD0(std::string, protocol)
 BYPASS_PROXY_CONSTMETHOD0(bool, negotiated)
 // Can't bypass the proxy since the id may change.
 PROXY_SECONDARY_CONSTMETHOD0(int, id)
-BYPASS_PROXY_CONSTMETHOD0(Priority, priority)
+BYPASS_PROXY_CONSTMETHOD0(PriorityValue, priority)
 BYPASS_PROXY_CONSTMETHOD0(DataState, state)
 BYPASS_PROXY_CONSTMETHOD0(RTCError, error)
 PROXY_SECONDARY_CONSTMETHOD0(uint32_t, messages_sent)
@@ -67,8 +84,15 @@ BYPASS_PROXY_METHOD2(void,
 END_PROXY_MAP(DataChannel)
 }  // namespace
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
 InternalDataChannelInit::InternalDataChannelInit(const DataChannelInit& base)
     : DataChannelInit(base), open_handshake_role(kOpener) {
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
   // If the channel is externally negotiated, do not send the OPEN message.
   if (base.negotiated) {
     open_handshake_role = kNone;
@@ -84,7 +108,7 @@ InternalDataChannelInit::InternalDataChannelInit(const DataChannelInit& base)
     if (*maxRetransmits < 0) {
       RTC_LOG(LS_ERROR)
           << "Accepting maxRetransmits < 0 for backwards compatibility";
-      maxRetransmits = absl::nullopt;
+      maxRetransmits = std::nullopt;
     } else if (*maxRetransmits > std::numeric_limits<uint16_t>::max()) {
       maxRetransmits = std::numeric_limits<uint16_t>::max();
     }
@@ -94,7 +118,7 @@ InternalDataChannelInit::InternalDataChannelInit(const DataChannelInit& base)
     if (*maxRetransmitTime < 0) {
       RTC_LOG(LS_ERROR)
           << "Accepting maxRetransmitTime < 0 for backwards compatibility";
-      maxRetransmitTime = absl::nullopt;
+      maxRetransmitTime = std::nullopt;
     } else if (*maxRetransmitTime > std::numeric_limits<uint16_t>::max()) {
       maxRetransmitTime = std::numeric_limits<uint16_t>::max();
     }
@@ -118,17 +142,17 @@ bool InternalDataChannelInit::IsValid() const {
   return true;
 }
 
-absl::optional<StreamId> SctpSidAllocator::AllocateSid(rtc::SSLRole role) {
+std::optional<StreamId> SctpSidAllocator::AllocateSid(SSLRole role) {
   RTC_DCHECK_RUN_ON(&sequence_checker_);
-  int potential_sid = (role == rtc::SSL_CLIENT) ? 0 : 1;
-  while (potential_sid <= static_cast<int>(cricket::kMaxSctpSid)) {
+  int potential_sid = (role == SSL_CLIENT) ? 0 : 1;
+  while (potential_sid <= max_sid_) {
     StreamId sid(potential_sid);
     if (used_sids_.insert(sid).second)
       return sid;
     potential_sid += 2;
   }
   RTC_LOG(LS_ERROR) << "SCTP sid allocation pool exhausted.";
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool SctpSidAllocator::ReserveSid(StreamId sid) {
@@ -161,7 +185,7 @@ class SctpDataChannel::ObserverAdapter : public DataChannelObserver {
  public:
   explicit ObserverAdapter(
       SctpDataChannel* channel,
-      rtc::scoped_refptr<PendingTaskSafetyFlag> signaling_safety)
+      scoped_refptr<PendingTaskSafetyFlag> signaling_safety)
       : channel_(channel), signaling_safety_(std::move(signaling_safety)) {}
 
   bool IsInsideCallback() const {
@@ -265,37 +289,37 @@ class SctpDataChannel::ObserverAdapter : public DataChannelObserver {
 
   bool IsOkToCallOnTheNetworkThread() override { return true; }
 
-  rtc::Thread* signaling_thread() const { return signaling_thread_; }
-  rtc::Thread* network_thread() const { return channel_->network_thread_; }
+  Thread* signaling_thread() const { return signaling_thread_; }
+  Thread* network_thread() const { return channel_->network_thread_; }
 
   DataChannelObserver* delegate_ RTC_GUARDED_BY(signaling_thread()) = nullptr;
   SctpDataChannel* const channel_;
   // Make sure to keep our own signaling_thread_ pointer to avoid dereferencing
   // `channel_` in the `RTC_DCHECK_RUN_ON` checks on the signaling thread.
-  rtc::Thread* const signaling_thread_{channel_->signaling_thread_};
+  Thread* const signaling_thread_{channel_->signaling_thread_};
   ScopedTaskSafety safety_;
-  rtc::scoped_refptr<PendingTaskSafetyFlag> signaling_safety_;
+  scoped_refptr<PendingTaskSafetyFlag> signaling_safety_;
   CachedGetters* cached_getters_ RTC_GUARDED_BY(signaling_thread()) = nullptr;
 };
 
 // static
-rtc::scoped_refptr<SctpDataChannel> SctpDataChannel::Create(
-    rtc::WeakPtr<SctpDataChannelControllerInterface> controller,
-    const std::string& label,
+scoped_refptr<SctpDataChannel> SctpDataChannel::Create(
+    WeakPtr<SctpDataChannelControllerInterface> controller,
+    absl::string_view label,
     bool connected_to_transport,
     const InternalDataChannelInit& config,
-    rtc::Thread* signaling_thread,
-    rtc::Thread* network_thread) {
+    Thread* signaling_thread,
+    Thread* network_thread) {
   RTC_DCHECK(config.IsValid());
-  return rtc::make_ref_counted<SctpDataChannel>(
-      config, std::move(controller), label, connected_to_transport,
-      signaling_thread, network_thread);
+  return make_ref_counted<SctpDataChannel>(config, std::move(controller), label,
+                                           connected_to_transport,
+                                           signaling_thread, network_thread);
 }
 
 // static
-rtc::scoped_refptr<DataChannelInterface> SctpDataChannel::CreateProxy(
-    rtc::scoped_refptr<SctpDataChannel> channel,
-    rtc::scoped_refptr<PendingTaskSafetyFlag> signaling_safety) {
+scoped_refptr<DataChannelInterface> SctpDataChannel::CreateProxy(
+    scoped_refptr<SctpDataChannel> channel,
+    scoped_refptr<PendingTaskSafetyFlag> signaling_safety) {
   // Copy thread params to local variables before `std::move()`.
   auto* signaling_thread = channel->signaling_thread_;
   auto* network_thread = channel->network_thread_;
@@ -307,14 +331,14 @@ rtc::scoped_refptr<DataChannelInterface> SctpDataChannel::CreateProxy(
 
 SctpDataChannel::SctpDataChannel(
     const InternalDataChannelInit& config,
-    rtc::WeakPtr<SctpDataChannelControllerInterface> controller,
-    const std::string& label,
+    WeakPtr<SctpDataChannelControllerInterface> controller,
+    absl::string_view label,
     bool connected_to_transport,
-    rtc::Thread* signaling_thread,
-    rtc::Thread* network_thread)
+    Thread* signaling_thread,
+    Thread* network_thread)
     : signaling_thread_(signaling_thread),
       network_thread_(network_thread),
-      id_n_(config.id == -1 ? absl::nullopt : absl::make_optional(config.id)),
+      id_n_(config.id == -1 ? std::nullopt : std::make_optional(config.id)),
       internal_id_(GenerateUniqueId()),
       label_(label),
       protocol_(config.protocol),
@@ -360,7 +384,7 @@ void SctpDataChannel::RegisterObserver(DataChannelObserver* observer) {
   // Check if we should set up an observer adapter that will make sure that
   // callbacks are delivered on the signaling thread rather than directly
   // on the network thread.
-  const auto* current_thread = rtc::Thread::Current();
+  const auto* current_thread = Thread::Current();
   // TODO(webrtc:11547): Eventually all DataChannelObserver implementations
   // should be called on the network thread and IsOkToCallOnTheNetworkThread().
   if (!observer->IsOkToCallOnTheNetworkThread()) {
@@ -384,7 +408,7 @@ void SctpDataChannel::RegisterObserver(DataChannelObserver* observer) {
   // a reference to ourselves while the task is in flight. We can't use
   // `SafeTask(network_safety_, ...)` for this since we can't assume that we
   // have a transport (network_safety_ represents the transport connection).
-  rtc::scoped_refptr<SctpDataChannel> me(this);
+  scoped_refptr<SctpDataChannel> me(this);
   auto register_observer = [me = std::move(me), observer = observer] {
     RTC_DCHECK_RUN_ON(me->network_thread_);
     me->observer_ = observer;
@@ -400,7 +424,7 @@ void SctpDataChannel::RegisterObserver(DataChannelObserver* observer) {
 
 void SctpDataChannel::UnregisterObserver() {
   // Note: As with `RegisterObserver`, the proxy is being bypassed.
-  const auto* current_thread = rtc::Thread::Current();
+  const auto* current_thread = Thread::Current();
   // Callers must not be invoking the unregistration from the network thread
   // (assuming a multi-threaded environment where we have a dedicated network
   // thread). That would indicate non-network related work happening on the
@@ -449,20 +473,11 @@ bool SctpDataChannel::ordered() const {
   return ordered_;
 }
 
-uint16_t SctpDataChannel::maxRetransmitTime() const {
-  return max_retransmit_time_ ? *max_retransmit_time_
-                              : static_cast<uint16_t>(-1);
-}
-
-uint16_t SctpDataChannel::maxRetransmits() const {
-  return max_retransmits_ ? *max_retransmits_ : static_cast<uint16_t>(-1);
-}
-
-absl::optional<int> SctpDataChannel::maxPacketLifeTime() const {
+std::optional<int> SctpDataChannel::maxPacketLifeTime() const {
   return max_retransmit_time_;
 }
 
-absl::optional<int> SctpDataChannel::maxRetransmitsOpt() const {
+std::optional<int> SctpDataChannel::maxRetransmitsOpt() const {
   return max_retransmits_;
 }
 
@@ -479,8 +494,8 @@ int SctpDataChannel::id() const {
   return id_n_.has_value() ? id_n_->stream_id_int() : -1;
 }
 
-Priority SctpDataChannel::priority() const {
-  return priority_ ? *priority_ : Priority::kLow;
+PriorityValue SctpDataChannel::priority() const {
+  return priority_.value_or(PriorityValue(Priority::kLow));
 }
 
 uint64_t SctpDataChannel::buffered_amount() const {
@@ -510,7 +525,7 @@ SctpDataChannel::DataState SctpDataChannel::state() const {
   // getting put behind other messages on the network thread and eventually
   // fetch a different state value (since pending messages might cause the
   // state to change in the meantime).
-  const auto* current_thread = rtc::Thread::Current();
+  const auto* current_thread = Thread::Current();
   if (current_thread == signaling_thread_ && observer_adapter_ &&
       observer_adapter_->IsInsideCallback()) {
     return observer_adapter_->cached_state();
@@ -527,7 +542,7 @@ SctpDataChannel::DataState SctpDataChannel::state() const {
 }
 
 RTCError SctpDataChannel::error() const {
-  const auto* current_thread = rtc::Thread::Current();
+  const auto* current_thread = Thread::Current();
   if (current_thread == signaling_thread_ && observer_adapter_ &&
       observer_adapter_->IsInsideCallback()) {
     return observer_adapter_->cached_error();
@@ -566,13 +581,12 @@ uint64_t SctpDataChannel::bytes_received() const {
 bool SctpDataChannel::Send(const DataBuffer& buffer) {
   RTC_DCHECK_RUN_ON(network_thread_);
   RTCError err = SendImpl(buffer);
-  if (err.type() == RTCErrorType::INVALID_STATE ||
-      err.type() == RTCErrorType::RESOURCE_EXHAUSTED) {
-    return false;
+  if (!err.ok() && err.type() != RTCErrorType::INVALID_STATE &&
+      err.type() != RTCErrorType::RESOURCE_EXHAUSTED &&
+      err.type() != RTCErrorType::NETWORK_ERROR) {
+    RTC_LOG(LS_INFO) << "Unexpected error code: " << err;
   }
-
-  // Always return true for SCTP DataChannel per the spec.
-  return true;
+  return err.ok();
 }
 
 // RTC_RUN_ON(network_thread_);
@@ -673,14 +687,20 @@ void SctpDataChannel::OnBufferedAmountLow() {
 
 DataChannelStats SctpDataChannel::GetStats() const {
   RTC_DCHECK_RUN_ON(network_thread_);
-  DataChannelStats stats{internal_id_,        id(),         label(),
-                         protocol(),          state(),      messages_sent(),
-                         messages_received(), bytes_sent(), bytes_received()};
+  DataChannelStats stats{.internal_id = internal_id_,
+                         .id = id(),
+                         .label = label(),
+                         .protocol = protocol(),
+                         .state = state(),
+                         .messages_sent = messages_sent(),
+                         .messages_received = messages_received(),
+                         .bytes_sent = bytes_sent(),
+                         .bytes_received = bytes_received()};
   return stats;
 }
 
 void SctpDataChannel::OnDataReceived(DataMessageType type,
-                                     const rtc::CopyOnWriteBuffer& payload) {
+                                     const CopyOnWriteBuffer& payload) {
   RTC_DCHECK_RUN_ON(network_thread_);
   RTC_DCHECK(id_n_.has_value());
 
@@ -722,7 +742,7 @@ void SctpDataChannel::OnDataReceived(DataMessageType type,
   if (state_ == kOpen && observer_) {
     ++messages_received_;
     bytes_received_ += buffer->size();
-    observer_->OnMessage(*buffer.get());
+    observer_->OnMessage(*buffer);
   } else {
     if (queued_received_data_.byte_count() + payload.size() >
         kMaxQueuedReceivedDataBytes) {
@@ -782,13 +802,13 @@ void SctpDataChannel::UpdateState() {
     case kConnecting: {
       if (connected_to_transport() && controller_) {
         if (handshake_state_ == kHandshakeShouldSendOpen) {
-          rtc::CopyOnWriteBuffer payload;
+          CopyOnWriteBuffer payload;
           WriteDataChannelOpenMessage(label_, protocol_, priority_, ordered_,
                                       max_retransmits_, max_retransmit_time_,
                                       &payload);
           SendControlMessage(payload);
         } else if (handshake_state_ == kHandshakeShouldSendAck) {
-          rtc::CopyOnWriteBuffer payload;
+          CopyOnWriteBuffer payload;
           WriteDataChannelOpenAckMessage(&payload);
           SendControlMessage(payload);
         }
@@ -951,7 +971,7 @@ RTCError SctpDataChannel::SendDataMessage(const DataBuffer& buffer,
 }
 
 // RTC_RUN_ON(network_thread_).
-bool SctpDataChannel::SendControlMessage(const rtc::CopyOnWriteBuffer& buffer) {
+bool SctpDataChannel::SendControlMessage(const CopyOnWriteBuffer& buffer) {
   RTC_DCHECK(connected_to_transport());
   RTC_DCHECK(id_n_.has_value());
   RTC_DCHECK(controller_);

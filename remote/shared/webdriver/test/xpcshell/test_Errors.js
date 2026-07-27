@@ -19,6 +19,7 @@ const errors = [
   error.InvalidElementStateError,
   error.InvalidSelectorError,
   error.InvalidSessionIDError,
+  error.InvalidWebExtensionError,
   error.JavaScriptError,
   error.MoveTargetOutOfBoundsError,
   error.NoSuchAlertError,
@@ -26,6 +27,8 @@ const errors = [
   error.NoSuchFrameError,
   error.NoSuchHandleError,
   error.NoSuchInterceptError,
+  error.NoSuchNetworkCollectorError,
+  error.NoSuchNetworkDataError,
   error.NoSuchNodeError,
   error.NoSuchRequestError,
   error.NoSuchScriptError,
@@ -37,20 +40,24 @@ const errors = [
   error.TimeoutError,
   error.UnableToSetCookieError,
   error.UnableToSetFileInputError,
+  error.UnavailableNetworkDataError,
   error.UnexpectedAlertOpenError,
   error.UnknownCommandError,
   error.UnknownError,
   error.UnsupportedOperationError,
 ];
 
+const noErrors = [undefined, null, "foo", 42, {}, [], new Date()];
+
 function notok(condition) {
   ok(!condition);
 }
 
 add_task(function test_isError() {
-  notok(error.isError(null));
-  notok(error.isError([]));
-  notok(error.isError(new Date()));
+  for (const noError in noErrors) {
+    info(`Checking ${noError}`);
+    notok(error.isError(noError));
+  }
 
   ok(error.isError(new Components.Exception()));
   ok(error.isError(new Error()));
@@ -62,10 +69,18 @@ add_task(function test_isError() {
   ok(error.isError(new TypeError()));
   ok(error.isError(new URIError()));
 
-  errors.forEach(err => ok(error.isError(new err())));
+  for (const err of errors) {
+    info(`Checking ${err}`);
+    ok(error.isError(new err()));
+  }
 });
 
 add_task(function test_isWebDriverError() {
+  for (const noError in noErrors) {
+    info(`Checking ${noError}`);
+    notok(error.isError(noError));
+  }
+
   notok(error.isWebDriverError(new Components.Exception()));
   notok(error.isWebDriverError(new Error()));
   notok(error.isWebDriverError(new EvalError()));
@@ -75,8 +90,13 @@ add_task(function test_isWebDriverError() {
   notok(error.isWebDriverError(new SyntaxError()));
   notok(error.isWebDriverError(new TypeError()));
   notok(error.isWebDriverError(new URIError()));
+  // A DOMException whose name matches a WebDriverError class
+  notok(error.isWebDriverError(new DOMException("foo", "UnknownError")));
 
-  errors.forEach(err => ok(error.isWebDriverError(new err())));
+  for (const err of errors) {
+    info(`Checking ${err}`);
+    ok(error.isError(new err()));
+  }
 });
 
 add_task(function test_wrap() {
@@ -360,6 +380,14 @@ add_task(function test_InvalidSessionIDError() {
   ok(err instanceof error.WebDriverError);
 });
 
+add_task(function test_InvalidWebExtensionError() {
+  let err = new error.InvalidWebExtensionError("foo");
+  equal("InvalidWebExtensionError", err.name);
+  equal("foo", err.message);
+  equal("invalid web extension", err.status);
+  ok(err instanceof error.WebDriverError);
+});
+
 add_task(function test_JavaScriptError() {
   let err = new error.JavaScriptError("foo");
   equal("JavaScriptError", err.name);
@@ -373,6 +401,8 @@ add_task(function test_JavaScriptError() {
   let inheritedErr = new error.JavaScriptError(superErr);
   equal("RangeError: foo", inheritedErr.message);
   equal(superErr.stack, inheritedErr.stack);
+  equal(superErr.lineNumber, inheritedErr.lineNumber);
+  equal(superErr.columnNumber, inheritedErr.columnNumber);
 });
 
 add_task(function test_MoveTargetOutOfBoundsError() {
@@ -423,6 +453,22 @@ add_task(function test_NoSuchInterceptError() {
   ok(err instanceof error.WebDriverError);
 });
 
+add_task(function test_NoSuchNetworkCollectorError() {
+  let err = new error.NoSuchNetworkCollectorError("foo");
+  equal("NoSuchNetworkCollectorError", err.name);
+  equal("foo", err.message);
+  equal("no such network collector", err.status);
+  ok(err instanceof error.WebDriverError);
+});
+
+add_task(function test_NoSuchNetworkDataError() {
+  let err = new error.NoSuchNetworkDataError("foo");
+  equal("NoSuchNetworkDataError", err.name);
+  equal("foo", err.message);
+  equal("no such network data", err.status);
+  ok(err instanceof error.WebDriverError);
+});
+
 add_task(function test_NoSuchNodeError() {
   let err = new error.NoSuchNodeError("foo");
   equal("NoSuchNodeError", err.name);
@@ -460,6 +506,14 @@ add_task(function test_NoSuchUserContextError() {
   equal("NoSuchUserContextError", err.name);
   equal("foo", err.message);
   equal("no such user context", err.status);
+  ok(err instanceof error.WebDriverError);
+});
+
+add_task(function test_NoSuchWebExtensionError() {
+  let err = new error.NoSuchWebExtensionError("foo");
+  equal("NoSuchWebExtensionError", err.name);
+  equal("foo", err.message);
+  equal("no such web extension", err.status);
   ok(err instanceof error.WebDriverError);
 });
 
@@ -516,6 +570,14 @@ add_task(function test_UnableToSetFileInputError() {
   equal("UnableToSetFileInputError", err.name);
   equal("foo", err.message);
   equal("unable to set file input", err.status);
+  ok(err instanceof error.WebDriverError);
+});
+
+add_task(function test_UnavailableNetworkDataError() {
+  let err = new error.UnavailableNetworkDataError("foo");
+  equal("UnavailableNetworkDataError", err.name);
+  equal("foo", err.message);
+  equal("unavailable network data", err.status);
   ok(err instanceof error.WebDriverError);
 });
 

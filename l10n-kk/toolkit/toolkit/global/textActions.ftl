@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = К
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Сайт бақылаусыз көшіру
-    .accesskey = з
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Таза сілтемені көшіру
+    .accesskey = с
 text-action-paste =
     .label = Кірістіру
     .accesskey = р
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Өшіру
     .accesskey = ш
+text-action-reveal-password =
+    .label = Парольді көрсету
+    .accesskey = т
 text-action-select-all =
     .label = Барлығын ерекшелеу
     .accesskey = е
@@ -64,3 +68,26 @@ text-action-search-text-box-clear =
     .title = Тазарту
 text-action-highlight-selection =
     .label = Таңдалғанды ерекшелеу
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Таңдауға түсініктеме қосу
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Сілтемені Ерекшеленген ішіне көшіру
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Тазаланған сілтемені Ерекшеленген ішіне көшіру
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Ерекшеленгенді өшіру
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Барлық Ерекшеленгенді өшіру
+profile-window-menu-edit =
+    .label = Түзету
+    .accesskey = е

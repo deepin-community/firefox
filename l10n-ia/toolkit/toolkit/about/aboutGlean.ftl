@@ -15,6 +15,12 @@ about-glean-interface-description =
     <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>
     es un bibliotheca pro collection de datos usate in projectos { -vendor-short-name }.
     Iste interfacie es designate pro esser usate per disveloppatores e probatores pro <a data-l10n-name="fog-link">testar instrumentation</a> manualmente.
+about-glean-category-about-glean = Re { -glean-brand-name }
+about-glean-category-manual-testing = Test manual
+about-glean-category-adhoc-testing = Test ad hoc
+about-glean-category-profiler = Usar le Profilator
+about-glean-category-about-data = Re datos
+about-glean-category-metrics-table = Tabella statistic
 about-glean-upload-enabled = Le cargamento datos es activate.
 about-glean-upload-disabled = Le cargamento datos es disactivate.
 about-glean-upload-enabled-local = Datos carga es activate solo pro invio a un servitor local.
@@ -42,6 +48,7 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links = Pro un explication de altere manieras pro registrar e trovar datos, per favor refere te al scheda <strong>Re datos</strong>.
 about-glean-about-testing-header = Re testes
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -96,6 +103,99 @@ about-glean-adhoc-explanation2 =
     pro un metrica denominate <code>metric.category.metric_name</code>.
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-note = Nota que que on usa le API de Glean JS per le consola del utensiles de disveloppamento. Isto significa que le categoria e le nomine metric es formattate in <code>camelCase</code> diversemente del APIs in le Rust e C++.
+about-glean-profiler-explanation =
+    Pro haber un vision plen de tote le indicatores registrate, tu pote usar le { -profiler-brand-name }.
+    Primo tu debe <a data-l10n-name="firefox-profiler-link">capturar un profilo de prestation</a>.
+    Un vice que tu captura le profilo, selige <q>Diagramma a marcator</q> e reguarda le marcatores sub <q>Telemetria</q>.
+about-glean-profiler-explanation-profiler =
+    In le profilo de prestation tu pote vider tote le indicatores colligite, quando illos era
+    colligite, e exactemente que valores era colligite. Per passage sur cata marcatores,
+    tu pote verificar que valor correcte era colligite e que collection eveniva al momento juste.
 controls-button-label-verbose = Applicar parametros e inviar ping
+about-glean-feedback-settings-only =
+    .message = Parametros applicate!
+about-glean-feedback-settings-and-ping =
+    .message = Parametros applicate e ping inviate!
 about-glean-about-data-header = Re datos
+about-glean-about-data-description =
+    Il ha poc differente utensiles que tu pote usar pro vider tu datos, secundo
+    lo que tu cerca.
+about-glean-about-data-description-list-intro =
+    Refere te al lista infra pro casos de uso
+    specific pro cata utensile:
+about-glean-about-data-list-item-dictionary =
+    Pro navigar per le lista de datos colligite per { -glean-brand-name } per application, consulta le
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dictionario</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Pro navigar per le lista de datos colligite per telemetria de legato, consulta
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer = Pro navigar per le placas de depuration, vide le pings de diffusion directe del evento, o vide le visualisationes de indicator, consulta le <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Pro registrar un profilo de prestationes e vider tote le metricas registrate, usa
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Tote le statistica
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Categoria
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Nomine
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Typo
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Valor
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Actiones
+about-glean-metrics-table-settings-button = Parametros
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Parametros del tabella de statisticas
+about-glean-metrics-table-settings-category-general = General
+about-glean-metrics-table-settings-hide-empty-value-rows = Celar le lineas con valores vacue
+about-glean-metrics-table-settings-category-visualizations = Virtualisation
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Exemplo
+about-glean-metrics-table-settings-category-visualizations-histogram = Histogramma
+about-glean-metrics-table-settings-histograms-chart-max = Altor maxime de diagrammas
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Altor maxime redimensionate
+about-glean-metrics-table-settings-histograms-box-padding = Margine del quadro
+about-glean-metrics-table-settings-histograms-chart-padding = Margine del diagramma
+about-glean-metrics-table-settings-histograms-left-padding = Margine additional a sinistra
+about-glean-metrics-table-settings-category-visualizations-timeline = Chronologia
+about-glean-metrics-table-settings-timelines-height = Altor
+about-glean-metrics-table-settings-timelines-width = Largor
+about-glean-metrics-table-settings-timelines-chart-padding = Margine del diagramma
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Radio del circulo
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Offset X del axe Y
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Offset Y del axe Y
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Filtro
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Isto filtrara le tabella infra in base a categoria, nomine, typo, e valor (si le valor es un typo simple).
+about-glean-button-load-all = Cargar tote le valores
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Exportar datos
+about-glean-button-load-value = Cargar
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Documentos
+about-glean-button-watch = Observar
+# Meaning "to stop watching"
+about-glean-button-unwatch = Non plus spectar
+about-glean-no-data-to-display = Necun dato a monstrar
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Le indicatores de <code>DualLabeledCounter</code> non es ancora supportate in le vista de <code>re:glean</code>.
+about-glean-unknown-metric-type-warning = Typo de indicator incognite.
 about-glean-about-data-explanation = Pro navigar per le lista de datos colligite, per favor consultar le <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dictionario</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Pings integrate
+about-glean-ping-list-optgroup-custom =
+    .label = Pings personalisate

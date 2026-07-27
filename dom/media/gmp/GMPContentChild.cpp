@@ -1,24 +1,21 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "GMPContentChild.h"
+
+#include "ChromiumCDMChild.h"
+#include "ChromiumCDMCompat.h"
 #include "GMPChild.h"
+#include "GMPUtils.h"
 #include "GMPVideoDecoderChild.h"
 #include "GMPVideoEncoderChild.h"
-#include "ChromiumCDMChild.h"
 #include "base/task.h"
-#include "GMPUtils.h"
 
 namespace mozilla::gmp {
 
 MessageLoop* GMPContentChild::GMPMessageLoop() {
   return mGMPChild->GMPMessageLoop();
-}
-
-void GMPContentChild::CheckThread() {
-  MOZ_ASSERT(mGMPChild->mGMPMessageLoop == MessageLoop::current());
 }
 
 #if defined(MOZ_SANDBOX) && defined(MOZ_DEBUG) && defined(ENABLE_TESTS)
@@ -60,7 +57,8 @@ mozilla::ipc::IPCResult GMPContentChild::RecvPGMPVideoDecoderConstructor(
   auto vdc = static_cast<GMPVideoDecoderChild*>(aActor);
 
   void* vd = nullptr;
-  GMPErr err = mGMPChild->GetAPI(GMP_API_VIDEO_DECODER, &vdc->Host(), &vd);
+  GMPErr err = mGMPChild->GetAPI(GMP_API_VIDEO_DECODER,
+                                 static_cast<GMPVideoHost*>(vdc), &vd);
   if (err != GMPNoErr || !vd) {
     return IPC_FAIL(this, "GMPGetAPI call failed trying to construct decoder.");
   }
@@ -75,7 +73,8 @@ mozilla::ipc::IPCResult GMPContentChild::RecvPGMPVideoEncoderConstructor(
   auto vec = static_cast<GMPVideoEncoderChild*>(aActor);
 
   void* ve = nullptr;
-  GMPErr err = mGMPChild->GetAPI(GMP_API_VIDEO_ENCODER, &vec->Host(), &ve);
+  GMPErr err = mGMPChild->GetAPI(GMP_API_VIDEO_ENCODER,
+                                 static_cast<GMPVideoHost*>(vec), &ve);
   if (err != GMPNoErr || !ve) {
     return IPC_FAIL(this, "GMPGetAPI call failed trying to construct encoder.");
   }
@@ -88,15 +87,23 @@ mozilla::ipc::IPCResult GMPContentChild::RecvPGMPVideoEncoderConstructor(
 mozilla::ipc::IPCResult GMPContentChild::RecvPChromiumCDMConstructor(
     PChromiumCDMChild* aActor, const nsACString& aKeySystem) {
   ChromiumCDMChild* child = static_cast<ChromiumCDMChild*>(aActor);
-  cdm::Host_10* host10 = child;
 
   void* cdm = nullptr;
-  GMPErr err = mGMPChild->GetAPI(CHROMIUM_CDM_API, host10, &cdm, aKeySystem);
+  GMPErr err = mGMPChild->GetAPI(
+      CHROMIUM_CDM_API, static_cast<cdm::Host_11*>(child), &cdm, aKeySystem);
   if (err != GMPNoErr || !cdm) {
-    return IPC_FAIL(this, "GMPGetAPI call failed trying to get CDM.");
+    err =
+        mGMPChild->GetAPI(CHROMIUM_CDM_API_BACKWARD_COMPAT,
+                          static_cast<cdm::Host_10*>(child), &cdm, aKeySystem);
+    if (err != GMPNoErr || !cdm) {
+      return IPC_FAIL(this, "GMPGetAPI call failed trying to get CDM.");
+    }
+
+    cdm = new ChromiumCDMCompat(
+        static_cast<cdm::ContentDecryptionModule_10*>(cdm));
   }
 
-  child->Init(static_cast<cdm::ContentDecryptionModule_10*>(cdm),
+  child->Init(static_cast<cdm::ContentDecryptionModule_11*>(cdm),
               mGMPChild->mStorageId);
 
   return IPC_OK();

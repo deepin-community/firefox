@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +11,7 @@
 #include "mozilla/Atomics.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/layers/LayersSurfaces.h"
+#include "mozilla/layers/OverlayInfo.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/webrender/webrender_ffi.h"
 #include "mozilla/webrender/WebRenderTypes.h"
@@ -40,6 +39,7 @@ class RenderMacIOSurfaceTextureHost;
 class RenderBufferTextureHost;
 class RenderTextureHostSWGL;
 class RenderTextureHostWrapper;
+class RenderDMABUFTextureHost;
 
 void ActivateBindAndTexParameteri(gl::GLContext* aGL, GLenum aActiveTexture,
                                   GLenum aBindTarget, GLuint aBindTexture);
@@ -56,6 +56,9 @@ class RenderTextureHostUsageInfo final {
   bool VideoOverlayDisabled() { return mVideoOverlayDisabled; }
   void DisableVideoOverlay() { mVideoOverlayDisabled = true; }
 
+  void OnVideoPresent(int aFrameId, uint32_t aDurationMs);
+  void OnCompositorEndFrame(int aFrameId, uint32_t aDurationMs);
+
   const TimeStamp mCreationTimeStamp;
 
  protected:
@@ -63,6 +66,10 @@ class RenderTextureHostUsageInfo final {
 
   // RenderTextureHost prefers to disable video overlay.
   Atomic<bool> mVideoOverlayDisabled{false};
+
+  int mVideoPresentFrameId = 0;
+  int mSlowPresentCount = 0;
+  int mSlowCommitCount = 0;
 };
 
 class RenderTextureHost {
@@ -88,10 +95,13 @@ class RenderTextureHost {
 
   virtual void UnlockSWGL() {}
 
-  virtual RefPtr<layers::TextureSource> CreateTextureSource(
-      layers::TextureSourceProvider* aProvider) {
-    return nullptr;
+  virtual bool LockSWGLCompositeSurface(void* aContext,
+                                        wr::SWGLCompositeSurfaceInfo* aInfo) {
+    return false;
   }
+
+  virtual RefPtr<layers::TextureSource> CreateTextureSource(
+      layers::TextureSourceProvider* aProvider);
 
   virtual void ClearCachedResources() {}
 
@@ -146,6 +156,10 @@ class RenderTextureHost {
     return nullptr;
   }
 
+  virtual RenderDMABUFTextureHost* AsRenderDMABUFTextureHost() {
+    return nullptr;
+  }
+
   virtual void Destroy();
 
   virtual void SetIsSoftwareDecodedVideo() {
@@ -166,20 +180,19 @@ class RenderTextureHost {
   virtual RefPtr<RenderTextureHostUsageInfo> GetTextureHostUsageInfo(
       const MutexAutoLock& aProofOfMapLock);
 
+  void SetDestroyedCallback(std::function<void()>&& aDestroyedCallback) {
+    MOZ_ASSERT(!mDestroyedCallback);
+    mDestroyedCallback = std::move(aDestroyedCallback);
+  }
+
  protected:
   virtual ~RenderTextureHost();
-
-  // Returns the UV coordinates to be used when sampling the texture, in pixels.
-  // For most implementations these will be (0, 0) and (size.x, size.y), but
-  // some texture types (such as RenderAndroidSurfaceTextureHost) require an
-  // additional transform to be applied to the coordinates.
-  virtual std::pair<gfx::Point, gfx::Point> GetUvCoords(
-      gfx::IntSize aTextureSize) const;
 
   bool mIsFromDRMSource;
 
   // protected by RenderThread::mRenderTextureMapLock
   RefPtr<RenderTextureHostUsageInfo> mRenderTextureHostUsageInfo;
+  std::function<void()> mDestroyedCallback;
 
   friend class RenderTextureHostWrapper;
 };

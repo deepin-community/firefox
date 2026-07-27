@@ -7,6 +7,7 @@ package org.mozilla.focus.settings
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.Preference
 import androidx.preference.PreferenceManager
@@ -20,7 +21,9 @@ import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.state.Screen
 import org.mozilla.focus.widget.DefaultBrowserPreference
 
-@Suppress("TooManyFunctions") // code is split into multiple functions with their own purpose.
+/**
+ * Settings fragment for general application settings like theme and language.
+ */
 class GeneralSettingsFragment :
     BaseSettingsFragment() {
 
@@ -95,20 +98,27 @@ class GeneralSettingsFragment :
         }
     }
 
-    private fun getLocaleSummary(): CharSequence? {
+    @VisibleForTesting
+    internal fun getLocaleSummary(): CharSequence {
         val sharedConfig: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         val value: String? =
             sharedConfig.getString(
                 resources.getString(R.string.pref_key_locale),
-                resources.getString(R.string.preference_language_systemdefault),
+                LOCALE_SYSTEM_DEFAULT,
             )
-        return value?.let {
-            if (value.isEmpty() || value == LOCALE_SYSTEM_DEFAULT) {
-                return resources.getString(R.string.preference_language_systemdefault)
-            }
-            LocaleDescriptor(it).getNativeName()
+
+        val defaultLocaleSummary = getString(R.string.preference_language_systemdefault)
+
+        return when {
+            value.isNullOrEmpty() || value == LOCALE_SYSTEM_DEFAULT -> defaultLocaleSummary
+
+            else -> getLocaleDescriptorNativeName(value) ?: defaultLocaleSummary
         }
     }
+
+    @VisibleForTesting
+    internal fun getLocaleDescriptorNativeName(localeTag: String): String? =
+        LocaleDescriptor(localeTag).getNativeName()
 
     private fun setupRadioGroups() {
         addToRadioGroup(

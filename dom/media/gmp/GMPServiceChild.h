@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +8,10 @@
 #include "GMPService.h"
 #include "MediaResult.h"
 #include "base/process.h"
+#include "mozilla/MozPromise.h"
 #include "mozilla/dom/PContent.h"
 #include "mozilla/gmp/PGMPServiceChild.h"
-#include "mozilla/MozPromise.h"
-#include "nsIAsyncShutdown.h"
+#include "mozilla/media/MediaUtils.h"
 #include "nsRefPtrHashtable.h"
 
 namespace mozilla::gmp {
@@ -21,8 +20,7 @@ class GMPContentParent;
 class GMPContentParentCloseBlocker;
 class GMPServiceChild;
 
-class GeckoMediaPluginServiceChild : public GeckoMediaPluginService,
-                                     public nsIAsyncShutdownBlocker {
+class GeckoMediaPluginServiceChild : public GeckoMediaPluginService {
   friend class GMPServiceChild;
 
  public:
@@ -30,7 +28,6 @@ class GeckoMediaPluginServiceChild : public GeckoMediaPluginService,
   nsresult Init() override;
 
   NS_DECL_ISUPPORTS_INHERITED
-  NS_DECL_NSIASYNCSHUTDOWNBLOCKER
 
   NS_IMETHOD HasPluginForAPI(const nsACString& aAPI,
                              const nsTArray<nsCString>& aTags,
@@ -124,11 +121,8 @@ class GeckoMediaPluginServiceChild : public GeckoMediaPluginService,
   // - mShutdownBlockerHasBeenAdded.
   void RemoveShutdownBlockerIfNeeded();
 
-#ifdef DEBUG
-  // Track if we've added a shutdown blocker for sanity checking. Main thread
-  // only.
-  bool mShutdownBlockerAdded = false;
-#endif  // DEBUG
+  // Ticket that controls the shutdown blocker.
+  UniquePtr<media::ShutdownBlockingTicket> mShutdownBlocker;
   // The number of GetContentParent calls that have not yet been resolved or
   // rejected. We use this value to help determine if we need to block
   // shutdown. Should only be used on GMP thread to avoid races.
@@ -146,7 +140,8 @@ class GMPServiceChild : public PGMPServiceChild {
   // implementations in PGMPServiceChild.
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(GMPServiceChild, final)
 
-  explicit GMPServiceChild() = default;
+  explicit GMPServiceChild(GeckoMediaPluginServiceChild* aService)
+      : mService(aService) {}
 
   already_AddRefed<GMPContentParent> GetBridgedGMPContentParent(
       ProcessId aOtherPid, ipc::Endpoint<PGMPContentParent>&& endpoint);
@@ -165,10 +160,16 @@ class GMPServiceChild : public PGMPServiceChild {
 
   bool HaveContentParents() const;
 
+  GeckoMediaPluginServiceChild* Service() const { return mService; }
+
  private:
   ~GMPServiceChild() = default;
 
   nsRefPtrHashtable<nsUint64HashKey, GMPContentParent> mContentParents;
+
+  // Raw pointer to our owning service. The service owns us via a RefPtr in
+  // mServiceChild, so it strictly outlives us.
+  GeckoMediaPluginServiceChild* const mService;
 };
 
 }  // namespace mozilla::gmp

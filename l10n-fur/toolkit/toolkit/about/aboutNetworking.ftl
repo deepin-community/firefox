@@ -39,6 +39,7 @@ about-networking-dns-lookup = Ricercje DNS
 about-networking-dns-lookup-button = Risolf
 about-networking-dns-domain = Domini:
 about-networking-dns-lookup-table-column = IPs
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = Statistichis RCWN
 about-networking-rcwn-status = Stât RCWN
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Cheste pagjine e je stade spostade su <a 
 
 about-networking-networkid-is-up = Il colegament al è atîf
 about-networking-networkid-status-known = Il stât dal colegament al è cognossût
-
-##
-

@@ -88,7 +88,7 @@ nsresult CacheFileChunkBuffer::FillInvalidRanges(
 
   const uint32_t minBufSize = kMinBufSize;
   const uint32_t maxBufSize = kChunkSize;
-  aBufSize = clamped(aBufSize, minBufSize, maxBufSize);
+  aBufSize = std::clamp(aBufSize, minBufSize, maxBufSize);
 
   if (!mChunk->CanAllocate(aBufSize - mBufSize)) {
     return NS_ERROR_OUT_OF_MEMORY;
@@ -606,9 +606,9 @@ nsresult CacheFileChunk::OnDataRead(CacheFileHandle* aHandle, char* aBuf,
   {
     CacheFileAutoLock lock(mFile);
 
-    MOZ_ASSERT(mState == READING);
-    MOZ_ASSERT(mListener);
-    MOZ_ASSERT(mReadingStateBuf);
+    MOZ_DIAGNOSTIC_ASSERT(mState == READING);
+    MOZ_DIAGNOSTIC_ASSERT(mListener);
+    MOZ_DIAGNOSTIC_ASSERT(mReadingStateBuf);
     MOZ_RELEASE_ASSERT(mBuf->ReadHandlesCount() == 0);
     MOZ_RELEASE_ASSERT(!mBuf->WriteHandleExists());
 

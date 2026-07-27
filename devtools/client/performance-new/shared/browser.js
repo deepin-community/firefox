@@ -14,12 +14,14 @@
  * @typedef {import("../@types/perf").PreferenceFront} PreferenceFront
  * @typedef {import("../@types/perf").PerformancePref} PerformancePref
  * @typedef {import("../@types/perf").RecordingSettings} RecordingSettings
- * @typedef {import("../@types/perf").RestartBrowserWithEnvironmentVariable} RestartBrowserWithEnvironmentVariable
  * @typedef {import("../@types/perf").GetActiveBrowserID} GetActiveBrowserID
- * @typedef {import("../@types/perf").MinimallyTypedGeckoProfile} MinimallyTypedGeckoProfile
  * @typedef {import("../@types/perf").ProfilerViewMode} ProfilerViewMode
  * @typedef {import("../@types/perf").ProfilerPanel} ProfilerPanel
  */
+
+const {
+  gDevTools,
+} = require("resource://devtools/client/framework/devtools.js");
 
 /** @type {PerformancePref["UIBaseUrl"]} */
 const UI_BASE_URL_PREF = "devtools.performance.recording.ui-base-url";
@@ -45,7 +47,7 @@ const UI_BASE_URL_PATH_DEFAULT = "/from-browser";
  * profiler.firefox.com to be analyzed. This function opens up profiler.firefox.com
  * into a new browser tab.
  *
- * @typedef {Object} OpenProfilerOptions
+ * @typedef {object} OpenProfilerOptions
  * @property {ProfilerViewMode | undefined} [profilerViewMode] - View mode for the Firefox Profiler
  *   front-end timeline. While opening the url, we should append a query string
  *   if a view other than "full" needs to be displayed.
@@ -96,7 +98,7 @@ async function openProfilerTab({ profilerViewMode, defaultPanel }) {
   // Note that when running from the browser toolbox, there won't be the browser window,
   // but only the browser toolbox document.
   const win =
-    Services.wm.getMostRecentWindow("navigator:browser") ||
+    Services.wm.getMostRecentBrowserWindow() ||
     Services.wm.getMostRecentWindow("devtools:toolbox");
   if (!win) {
     throw new Error("No browser window");
@@ -119,32 +121,14 @@ async function openProfilerTab({ profilerViewMode, defaultPanel }) {
 }
 
 /**
- * Flatten all the sharedLibraries of the different processes in the profile
- * into one list of libraries.
- * @param {MinimallyTypedGeckoProfile} profile - The profile JSON object
- * @returns {Library[]}
- */
-function sharedLibrariesFromProfile(profile) {
-  /**
-   * @param {MinimallyTypedGeckoProfile} processProfile
-   * @returns {Library[]}
-   */
-  function getLibsRecursive(processProfile) {
-    return processProfile.libs.concat(
-      ...processProfile.processes.map(getLibsRecursive)
-    );
-  }
-
-  return getLibsRecursive(profile);
-}
-
-/**
  * Restarts the browser with a given environment variable set to a value.
  *
- * @type {RestartBrowserWithEnvironmentVariable}
+ * @param {Record<string, string>} env
  */
-function restartBrowserWithEnvironmentVariable(envName, value) {
-  Services.env.set(envName, value);
+function restartBrowserWithEnvironmentVariable(env) {
+  for (const [envName, envValue] of Object.entries(env)) {
+    Services.env.set(envName, envValue);
+  }
 
   Services.startup.quit(
     Services.startup.eForceQuit | Services.startup.eRestart
@@ -153,16 +137,17 @@ function restartBrowserWithEnvironmentVariable(envName, value) {
 
 /**
  * @param {Window} window
+ * @param {string} pickerTitle
  * @param {string[]} objdirs
  * @param {(objdirs: string[]) => unknown} changeObjdirs
  */
-function openFilePickerForObjdir(window, objdirs, changeObjdirs) {
+function openFilePickerForObjdir(window, pickerTitle, objdirs, changeObjdirs) {
   const FilePicker = Cc["@mozilla.org/filepicker;1"].createInstance(
     Ci.nsIFilePicker
   );
   FilePicker.init(
     window.browsingContext,
-    "Pick build directory",
+    pickerTitle,
     FilePicker.modeGetFolder
   );
   FilePicker.open(rv => {
@@ -176,9 +161,53 @@ function openFilePickerForObjdir(window, objdirs, changeObjdirs) {
   });
 }
 
+/**
+ * Try to open the given script with line and column in the tab.
+ *
+ * If the profiled tab is not alive anymore, returns without doing anything.
+ *
+ * @param {number} tabId
+ * @param {string} scriptUrl
+ * @param {number} line
+ * @param {number} columnOneBased
+ */
+async function openScriptInDebugger(tabId, scriptUrl, line, columnOneBased) {
+  const win = Services.wm.getMostRecentBrowserWindow();
+
+  // Iterate through all tabs in the current window and find the tab that we want.
+  const foundTab = win.gBrowser.tabs.find(
+    tab => tab.linkedBrowser.browserId === tabId
+  );
+
+  if (!foundTab) {
+    console.log(`No tab found with the tab id: ${tabId}`);
+    return;
+  }
+
+  // If a matching tab was found, switch to it.
+  win.gBrowser.selectedTab = foundTab;
+
+  // And open the devtools debugger with script.
+  const toolbox = await gDevTools.showToolboxForTab(foundTab, {
+    toolId: "jsdebugger",
+  });
+
+  toolbox.win.focus();
+
+  // In case profiler backend can't retrieve the column number, it can return zero.
+  const columnZeroBased = columnOneBased > 0 ? columnOneBased - 1 : 0;
+  await toolbox.viewSourceInDebugger(
+    scriptUrl,
+    line,
+    columnZeroBased,
+    /* sourceId = */ null,
+    "ProfilerOpenScript"
+  );
+}
+
 module.exports = {
   openProfilerTab,
-  sharedLibrariesFromProfile,
   restartBrowserWithEnvironmentVariable,
   openFilePickerForObjdir,
+  openScriptInDebugger,
 };

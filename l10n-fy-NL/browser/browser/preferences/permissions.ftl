@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Tastean
     .accesskey = T
+permissions-add =
+    .label = Tafoegje
+    .accesskey = T
 permissions-button-off =
     .label = Utskeakelje
     .accesskey = U
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Alle websites fuortsmite
     .accesskey = s
+permissions-save-changes-2 =
+    .buttonlabelaccept = Wizigingen bewarje
+    .buttonaccesskeyaccept = i
 permission-dialog =
     .buttonlabelaccept = Wizigingen bewarje
     .buttonaccesskeyaccept = i
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Jo kinne opjaan hokker websites altyd of nea tastimming hawwe om cookies en websitegegevens te brûken. Typ it eksakte adres fan de website dy’t jo beheare wolle en klik dêrnei op Blokkearje, Tastean foar sesje of Tastean.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Utsûnderingen - Skiednis wiskje by ôfsluten
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Jo kinne opjaan hokker websites harren gegevens behâlde wannear’t { -brand-short-name } skiednis by ôfsluten wisket. Typ it eksakte adres fan de website dy’t jo beheare wolle en klik dernei op Tastean.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Jo kinne de Allinnich-HTTPS-modus foar spesifike websites útskeakelje. { -brand-short-name } sil foar dy websites net probearje de ferbining nei feilige HTTPS te fernijen. Utsûnderingen binne net fan tapassing op priveefinsters.
 permissions-exceptions-https-only-desc2 = Jo kinne de Allinnich-HTTPS-modus foar spesifike websites útskeakelje. { -brand-short-name } sil foar dy websites net probearje de ferbining nei feilige HTTPS te fernijen.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Tastiene websites - pop-ups en trochferwizingen fan tredden
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Jo kinne opjaan hokker websites pop-upfinsters iepenje meie en troch frames fan tredden trochferwiisd wurde meie.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = De folgjende websites hawwe om tagong ta jo kamer
 permissions-site-camera-disable-label =
     .label = Nije fersiken om tagong ta jo kamera blokkearje
 permissions-site-camera-disable-desc = Dit soarget derfoar dat websites dy’t hjirboppe net fermeld wurde om tastimming foar tagong ta jo kamera freegje. It blokkearjen fan tagong ta jo kamera kin bepaalde funksjes fan websites fersteure.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Ynstellingen - Apparaatapps en -services
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Dizze websites hawwe op dit apparaat tagong ta apps en services frege. Jo kinne kieze om dit foar websites ta te stean of te blokkearjen.
+permissions-site-localhost-disable-label =
+    .label = Nije oanfragen foar tagong ta apps en services op dit apparaat blokkearje
+permissions-site-localhost-disable-desc = Dit foarkomt dat websites, dy’t hjirboppe net fermeld wurde, om tagong ta apps en services op dit apparaat freegje. As jo dit dogge, kinne guon websitefunksjes net wurkje.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Ynstellingen - Lokale netwurkapparaten
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Dizze websites hawwe om tagong frege ta apps en services op apparaten dy’t ferbûn binne mei jo wifi- of lokale netwurk. Jo kinne derfoar kieze om dit foar websites ta te stean of te blokkearjen.
+permissions-site-local-network-disable-label =
+    .label = Nije fersiken foar tagong ta apps en services blokkearje op apparaten dy’t ferbûn binne mei jo wifi- of lokale netwurk.
+permissions-site-local-network-disable-desc = Dit foarkomt dat websites, dy’t hjirboppe net fermeld wurde, om tagong ta apps en services freegje op apparaten dy’t ferbûn binne mei jo wifi- of lokale netwurk. As jo dit dogge, kinne guon websitefunksjes net wurkje.
 
 ## Site Permissions - Microphone
 

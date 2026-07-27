@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +7,6 @@ const obsvc = PlacesUtils.observers;
 const tagssvc = PlacesUtils.tagging;
 const PT = PlacesTransactions;
 const menuGuid = PlacesUtils.bookmarks.menuGuid;
-
-ChromeUtils.defineESModuleGetters(this, {
-  Preferences: "resource://gre/modules/Preferences.sys.mjs",
-});
 
 // Create and add bookmarks observer.
 var observer = {
@@ -134,7 +128,7 @@ function run_test() {
 }
 
 function sanityCheckTransactionHistory() {
-  Assert.ok(PT.undoPosition <= PT.length);
+  Assert.lessOrEqual(PT.undoPosition, PT.length);
 
   let check_entry_throws = f => {
     try {
@@ -1800,11 +1794,10 @@ add_task(async function test_copy() {
     await PT.clearTransactionsHistory();
   }
 
-  let timerPrecision = Preferences.get("privacy.reduceTimerPrecision");
-  Preferences.set("privacy.reduceTimerPrecision", false);
+  Services.prefs.setBoolPref("privacy.reduceTimerPrecision", false);
 
   registerCleanupFunction(function () {
-    Preferences.set("privacy.reduceTimerPrecision", timerPrecision);
+    Services.prefs.clearUserPref("privacy.reduceTimerPrecision");
   });
 
   // Test duplicating leafs (bookmark, separator, empty folder)
@@ -2107,9 +2100,8 @@ add_task(async function test_remove_invalid_url() {
     );
   });
 
-  let guids = [folderGuid, guid];
-  await PT.Remove(guids).transact();
-  await ensureNonExistent(...guids, folderedGuid);
+  await PT.Remove([folderGuid, guid]).transact();
+  await ensureNonExistent(folderGuid, guid, folderedGuid);
   // Shouldn't throw, should restore the folder but not the bookmarks.
   await PT.undo();
   await ensureNonExistent(guid, folderedGuid);
@@ -2118,7 +2110,7 @@ add_task(async function test_remove_invalid_url() {
     "The folder should have been re-created"
   );
   await PT.redo();
-  await ensureNonExistent(guids, folderedGuid);
+  await ensureNonExistent(folderGuid, guid, folderedGuid);
   // Cleanup
   await PT.clearTransactionsHistory();
   observer.reset();

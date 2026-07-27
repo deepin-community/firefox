@@ -5,9 +5,18 @@
 import { GeckoViewUtils } from "resource://gre/modules/GeckoViewUtils.sys.mjs";
 import { EventEmitter } from "resource://gre/modules/EventEmitter.sys.mjs";
 
-const PRIVATE_BROWSING_PERMISSION = {
-  permissions: ["internal:privateBrowsingAllowed"],
+const PRIVATE_BROWSING_PERM_NAME = "internal:privateBrowsingAllowed";
+const PRIVATE_BROWSING_PERMS = {
+  permissions: [PRIVATE_BROWSING_PERM_NAME],
   origins: [],
+  data_collection: [],
+};
+
+const TECHNICAL_AND_INTERACTION_DATA_PERM_NAME = "technicalAndInteraction";
+const TECHNICAL_AND_INTERACTION_DATA_PERMS = {
+  permissions: [],
+  origins: [],
+  data_collection: [TECHNICAL_AND_INTERACTION_DATA_PERM_NAME],
 };
 
 const lazy = {};
@@ -88,6 +97,15 @@ export class ExtensionActionHelper {
     this.extension = extension;
   }
 
+  static isShowingAnyExtensionActionPopup() {
+    // On desktop we query the popup state for a window, but on mobile the
+    // implementation does not track the relation between the popup and the
+    // "window" for which it is opened, so we cannot meaningfully query the
+    // status of the current popup. Since we only support one popup at a time,
+    // just query the global state.
+    return Services.wm.getEnumerator("navigator:popup").hasMoreElements();
+  }
+
   getTab(aTabId) {
     if (aTabId !== null) {
       return this.tabTracker.getTab(aTabId);
@@ -120,8 +138,8 @@ export class ExtensionActionHelper {
     return window.WindowEventDispatcher;
   }
 
-  sendRequest(aTabId, aData) {
-    return this.eventDispatcherFor(aTabId).sendRequest({
+  sendRequest(aTabId, aType, aData) {
+    return this.eventDispatcherFor(aTabId).sendRequest(aType, {
       ...aData,
       aTabId,
       extensionId: this.extension.id,
@@ -146,15 +164,13 @@ class EmbedderPort {
     ]);
   }
   onPortDisconnect() {
-    this.dispatcher.sendRequest({
-      type: "GeckoView:WebExtension:Disconnect",
+    this.dispatcher.sendRequest("GeckoView:WebExtension:Disconnect", {
       sender: this.sender,
     });
     this.close();
   }
   onPortMessage(holder) {
-    this.dispatcher.sendRequest({
-      type: "GeckoView:WebExtension:PortMessage",
+    this.dispatcher.sendRequest("GeckoView:WebExtension:PortMessage", {
       data: holder.deserialize({}),
     });
   }
@@ -198,7 +214,7 @@ export class GeckoViewConnection {
       // If this is a WebExtension Page we will have a GeckoSession associated
       // to it and thus a dispatcher.
       const dispatcher = GeckoViewUtils.getDispatcherForWindow(
-        this.target.ownerGlobal
+        this.target.documentGlobal
       );
       if (dispatcher) {
         return dispatcher;
@@ -214,15 +230,14 @@ export class GeckoViewConnection {
       // If this message came from a content script, send the message to
       // the corresponding tab messenger so that GeckoSession can pick it
       // up.
-      return GeckoViewUtils.getDispatcherForWindow(this.target.ownerGlobal);
+      return GeckoViewUtils.getDispatcherForWindow(this.target.documentGlobal);
     }
 
     throw new Error(`Uknown sender envType: ${this.sender.envType}`);
   }
 
-  _sendMessage({ type, portId, data }) {
+  _sendMessage(type, { portId, data }) {
     const message = {
-      type,
       sender: this.sender,
       data,
       portId,
@@ -230,12 +245,11 @@ export class GeckoViewConnection {
       nativeApp: this.nativeApp,
     };
 
-    return this.dispatcher.sendRequestForResult(message);
+    return this.dispatcher.sendRequestForResult(type, message);
   }
 
   sendMessage(data) {
-    return this._sendMessage({
-      type: "GeckoView:WebExtension:Message",
+    return this._sendMessage("GeckoView:WebExtension:Message", {
       data: data.deserialize({}),
     });
   }
@@ -243,8 +257,7 @@ export class GeckoViewConnection {
   onConnect(portId, messenger) {
     const port = new EmbedderPort(portId, messenger);
 
-    this._sendMessage({
-      type: "GeckoView:WebExtension:Connect",
+    this._sendMessage("GeckoView:WebExtension:Connect", {
       data: {},
       portId: port.id,
     });
@@ -339,8 +352,10 @@ async function exportExtension(aAddon, aSourceURI) {
   if (userDisabled) {
     disabledFlags.push("userDisabled");
   }
-  if (blocklistState !== Ci.nsIBlocklistService.STATE_NOT_BLOCKED) {
+  if (blocklistState === Ci.nsIBlocklistService.STATE_BLOCKED) {
     disabledFlags.push("blocklistDisabled");
+  } else if (blocklistState === Ci.nsIBlocklistService.STATE_SOFTBLOCKED) {
+    disabledFlags.push("softBlocklistDisabled");
   }
   if (embedderDisabled) {
     disabledFlags.push("appDisabled");
@@ -354,7 +369,13 @@ async function exportExtension(aAddon, aSourceURI) {
     disabledFlags.push("appVersionDisabled");
   }
   const baseURL = policy ? policy.getURL() : "";
-  const privateBrowsingAllowed = policy ? policy.privateBrowsingAllowed : false;
+  let privateBrowsingAllowed;
+  if (policy) {
+    privateBrowsingAllowed = policy.privateBrowsingAllowed;
+  } else {
+    const { permissions } = await lazy.ExtensionPermissions.get(aAddon.id);
+    privateBrowsingAllowed = permissions.includes(PRIVATE_BROWSING_PERM_NAME);
+  }
 
   let updateDate;
   try {
@@ -369,13 +390,19 @@ async function exportExtension(aAddon, aSourceURI) {
 
   const requiredPermissions = aAddon.userPermissions?.permissions ?? [];
   const requiredOrigins = aAddon.userPermissions?.origins ?? [];
+  const requiredDataCollectionPermissions =
+    aAddon.userPermissions?.data_collection ?? [];
   const optionalPermissions = aAddon.optionalPermissions?.permissions ?? [];
   const optionalOrigins = aAddon.optionalOriginsNormalized;
+  const optionalDataCollectionPermissions =
+    aAddon.optionalPermissions?.data_collection ?? [];
   const grantedPermissions = normalizePermissions(
     await lazy.ExtensionPermissions.get(id)
   );
   const grantedOptionalPermissions = grantedPermissions?.permissions ?? [];
   const grantedOptionalOrigins = grantedPermissions?.origins ?? [];
+  const grantedOptionalDataCollectionPermissions =
+    grantedPermissions?.data_collection ?? [];
 
   return {
     webExtensionId: id,
@@ -410,10 +437,13 @@ async function exportExtension(aAddon, aSourceURI) {
       version,
       requiredPermissions,
       requiredOrigins,
+      requiredDataCollectionPermissions,
       optionalPermissions,
       optionalOrigins,
+      optionalDataCollectionPermissions,
       grantedOptionalPermissions,
       grantedOptionalOrigins,
+      grantedOptionalDataCollectionPermissions,
     },
   };
 }
@@ -518,21 +548,53 @@ class ExtensionPromptObserver {
   constructor() {
     Services.obs.addObserver(this, "webextension-permission-prompt");
     Services.obs.addObserver(this, "webextension-optional-permission-prompt");
+    Services.obs.addObserver(this, "webextension-update-permission-prompt");
   }
 
-  async permissionPrompt(aInstall, aAddon, aInfo) {
+  async permissionPromptRequest(aInstall, aAddon, aInfo) {
     const { sourceURI } = aInstall;
     const { permissions } = aInfo;
 
+    const hasTechnicalAndInteractionDataPerm =
+      permissions.data_collection.includes(
+        TECHNICAL_AND_INTERACTION_DATA_PERM_NAME
+      );
+
     const extension = await exportExtension(aAddon, sourceURI);
-    const response = await lazy.EventDispatcher.instance.sendRequestForResult({
-      type: "GeckoView:WebExtension:InstallPrompt",
-      extension,
-      permissions: await filterPromptPermissions(permissions.permissions),
-      origins: permissions.origins,
-    });
+    const response = await lazy.EventDispatcher.instance.sendRequestForResult(
+      "GeckoView:WebExtension:InstallPrompt",
+      {
+        extension,
+        permissions: await filterPromptPermissions(permissions.permissions),
+        origins: permissions.origins,
+        dataCollectionPermissions: permissions.data_collection,
+      }
+    );
 
     if (response.allow) {
+      if (response.privateBrowsingAllowed) {
+        await lazy.ExtensionPermissions.add(aAddon.id, PRIVATE_BROWSING_PERMS);
+      } else {
+        await lazy.ExtensionPermissions.remove(
+          aAddon.id,
+          PRIVATE_BROWSING_PERMS
+        );
+      }
+
+      if (hasTechnicalAndInteractionDataPerm) {
+        if (response.isTechnicalAndInteractionDataGranted) {
+          await lazy.ExtensionPermissions.add(
+            aAddon.id,
+            TECHNICAL_AND_INTERACTION_DATA_PERMS
+          );
+        } else {
+          await lazy.ExtensionPermissions.remove(
+            aAddon.id,
+            TECHNICAL_AND_INTERACTION_DATA_PERMS
+          );
+        }
+      }
+
       aInfo.resolve();
     } else {
       aInfo.reject();
@@ -540,12 +602,32 @@ class ExtensionPromptObserver {
   }
 
   async optionalPermissionPrompt(aExtensionId, aPermissions, resolve) {
-    const response = await lazy.EventDispatcher.instance.sendRequestForResult({
-      type: "GeckoView:WebExtension:OptionalPrompt",
-      extensionId: aExtensionId,
-      permissions: aPermissions,
-    });
+    const response = await lazy.EventDispatcher.instance.sendRequestForResult(
+      "GeckoView:WebExtension:OptionalPrompt",
+      {
+        extensionId: aExtensionId,
+        permissions: aPermissions,
+      }
+    );
     resolve(response.allow);
+  }
+
+  async updatePermissionPrompt({ addon, permissions, resolve, reject }) {
+    const response = await lazy.EventDispatcher.instance.sendRequestForResult(
+      "GeckoView:WebExtension:UpdatePrompt",
+      {
+        extension: await exportExtension(addon, /* aSourceURI */ null),
+        newPermissions: await filterPromptPermissions(permissions.permissions),
+        newOrigins: permissions.origins,
+        newDataCollectionPermissions: permissions.data_collection,
+      }
+    );
+
+    if (response.allow) {
+      resolve();
+    } else {
+      reject();
+    }
   }
 
   observe(aSubject, aTopic) {
@@ -555,12 +637,16 @@ class ExtensionPromptObserver {
       case "webextension-permission-prompt": {
         const { info } = aSubject.wrappedJSObject;
         const { addon, install } = info;
-        this.permissionPrompt(install, addon, info);
+        this.permissionPromptRequest(install, addon, info);
         break;
       }
       case "webextension-optional-permission-prompt": {
         const { id, permissions, resolve } = aSubject.wrappedJSObject;
         this.optionalPermissionPrompt(id, permissions, resolve);
+        break;
+      }
+      case "webextension-update-permission-prompt": {
+        this.updatePermissionPrompt(aSubject.wrappedJSObject);
         break;
       }
     }
@@ -580,12 +666,16 @@ class AddonInstallObserver {
       extension = await exportExtension(aAddon, /* aSourceURI */ null);
     }
 
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnInstallationFailed",
-      extension,
-      addonName: aAddonName,
-      error: aError,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnInstallationFailed",
+      {
+        extension,
+        addonId: aAddon?.id,
+        addonName: aAddonName,
+        addonVersion: aAddon?.version,
+        error: aError,
+      }
+    );
   }
 
   observe(aSubject, aTopic) {
@@ -636,10 +726,10 @@ class AddonManagerListener {
       return;
     }
     const extension = await exportExtension(addon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnOptionalPermissionsChanged",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnOptionalPermissionsChanged",
+      { extension }
+    );
   }
 
   async onExtensionReady(name, extInstance) {
@@ -663,90 +753,90 @@ class AddonManagerListener {
       addonWrapper,
       /* aSourceURI */ null
     );
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnReady",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnReady",
+      { extension }
+    );
   }
 
   async onDisabling(aAddon) {
     debug`onDisabling ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnDisabling",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnDisabling",
+      { extension }
+    );
   }
 
   async onDisabled(aAddon) {
     debug`onDisabled ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnDisabled",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnDisabled",
+      { extension }
+    );
   }
 
   async onEnabling(aAddon) {
     debug`onEnabling ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnEnabling",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnEnabling",
+      { extension }
+    );
   }
 
   async onEnabled(aAddon) {
     debug`onEnabled ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnEnabled",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnEnabled",
+      { extension }
+    );
   }
 
   async onUninstalling(aAddon) {
     debug`onUninstalling ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnUninstalling",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnUninstalling",
+      { extension }
+    );
   }
 
   async onUninstalled(aAddon) {
     debug`onUninstalled ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnUninstalled",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnUninstalled",
+      { extension }
+    );
   }
 
   async onInstalling(aAddon) {
     debug`onInstalling ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnInstalling",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnInstalling",
+      { extension }
+    );
   }
 
   async onInstalled(aAddon) {
     debug`onInstalled ${aAddon.id}`;
 
     const extension = await exportExtension(aAddon, /* aSourceURI */ null);
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnInstalled",
-      extension,
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnInstalled",
+      { extension }
+    );
   }
 }
 
@@ -787,9 +877,9 @@ class ExtensionProcessListener {
       return;
     }
 
-    lazy.EventDispatcher.instance.sendRequest({
-      type: "GeckoView:WebExtension:OnDisabledProcessSpawning",
-    });
+    lazy.EventDispatcher.instance.sendRequest(
+      "GeckoView:WebExtension:OnDisabledProcessSpawning"
+    );
   }
 }
 
@@ -838,48 +928,6 @@ class MobileWindowTracker extends EventEmitter {
 
 export var mobileWindowTracker = new MobileWindowTracker();
 
-async function updatePromptHandler(aInfo) {
-  const oldPerms = aInfo.existingAddon.userPermissions;
-  if (!oldPerms) {
-    // Updating from a legacy add-on, let it proceed
-    return;
-  }
-
-  const newPerms = aInfo.addon.userPermissions;
-
-  const difference = lazy.Extension.comparePermissions(oldPerms, newPerms);
-
-  // We only care about permissions that we can prompt the user for
-  const newPermissions = await filterPromptPermissions(difference.permissions);
-  const { origins: newOrigins } = difference;
-
-  // If there are no new permissions, just proceed
-  if (!newOrigins.length && !newPermissions.length) {
-    return;
-  }
-
-  const currentlyInstalled = await exportExtension(
-    aInfo.existingAddon,
-    /* aSourceURI */ null
-  );
-  const updatedExtension = await exportExtension(
-    aInfo.addon,
-    /* aSourceURI */ null
-  );
-
-  const response = await lazy.EventDispatcher.instance.sendRequestForResult({
-    type: "GeckoView:WebExtension:UpdatePrompt",
-    currentlyInstalled,
-    updatedExtension,
-    newPermissions,
-    newOrigins,
-  });
-
-  if (!response.allow) {
-    throw new Error("Extension update rejected.");
-  }
-}
-
 export var GeckoViewWebExtension = {
   observe(aSubject, aTopic) {
     debug`observe ${aTopic}`;
@@ -890,16 +938,16 @@ export var GeckoViewWebExtension = {
         // We pretend devtools installed/uninstalled this addon so we don't
         // have to add an API just for internal testing.
         // TODO: assert this is under a test
-        lazy.EventDispatcher.instance.sendRequest({
-          type: "GeckoView:WebExtension:DebuggerListUpdated",
-        });
+        lazy.EventDispatcher.instance.sendRequest(
+          "GeckoView:WebExtension:DebuggerListUpdated"
+        );
         break;
       }
 
       case "devtools-installed-addon": {
-        lazy.EventDispatcher.instance.sendRequest({
-          type: "GeckoView:WebExtension:DebuggerListUpdated",
-        });
+        lazy.EventDispatcher.instance.sendRequest(
+          "GeckoView:WebExtension:DebuggerListUpdated"
+        );
         break;
       }
     }
@@ -960,9 +1008,9 @@ export var GeckoViewWebExtension = {
 
   async setPrivateBrowsingAllowed(aId, aAllowed) {
     if (aAllowed) {
-      await lazy.ExtensionPermissions.add(aId, PRIVATE_BROWSING_PERMISSION);
+      await lazy.ExtensionPermissions.add(aId, PRIVATE_BROWSING_PERMS);
     } else {
-      await lazy.ExtensionPermissions.remove(aId, PRIVATE_BROWSING_PERMISSION);
+      await lazy.ExtensionPermissions.remove(aId, PRIVATE_BROWSING_PERMS);
     }
 
     // Reload the extension if it is already enabled.  This ensures any change
@@ -1060,8 +1108,9 @@ export var GeckoViewWebExtension = {
   checkForUpdate(aAddon) {
     return new Promise(resolve => {
       const listener = {
-        onUpdateAvailable(aAddon, install) {
-          install.promptHandler = updatePromptHandler;
+        onUpdateAvailable(_aAddon, install) {
+          install.promptHandler = aInfo =>
+            lazy.AddonManager.updatePromptHandler(aInfo);
           resolve(install);
         },
         onNoUpdateAvailable() {
@@ -1070,7 +1119,7 @@ export var GeckoViewWebExtension = {
       };
       aAddon.findUpdates(
         listener,
-        lazy.AddonManager.UPDATE_WHEN_USER_REQUESTED
+        lazy.AddonManager.UPDATE_WHEN_PERIODIC_UPDATE
       );
     });
   },
@@ -1195,14 +1244,16 @@ export var GeckoViewWebExtension = {
       }
 
       case "GeckoView:WebExtension:AddOptionalPermissions": {
-        const { extensionId, permissions, origins } = aData;
+        const {
+          extensionId,
+          permissions,
+          origins,
+          dataCollectionPermissions: data_collection,
+        } = aData;
         try {
           const addon = await this.extensionById(extensionId);
           const normalized = lazy.ExtensionPermissions.normalizeOptional(
-            {
-              permissions,
-              origins,
-            },
+            { permissions, origins, data_collection },
             addon.optionalPermissions
           );
           const policy = WebExtensionPolicy.getByID(addon.id);
@@ -1220,11 +1271,16 @@ export var GeckoViewWebExtension = {
       }
 
       case "GeckoView:WebExtension:RemoveOptionalPermissions": {
-        const { extensionId, permissions, origins } = aData;
+        const {
+          extensionId,
+          permissions,
+          origins,
+          dataCollectionPermissions: data_collection,
+        } = aData;
         try {
           const addon = await this.extensionById(extensionId);
           const normalized = lazy.ExtensionPermissions.normalizeOptional(
-            { permissions, origins },
+            { permissions, origins, data_collection },
             addon.optionalPermissions
           );
           const policy = WebExtensionPolicy.getByID(addon.id);

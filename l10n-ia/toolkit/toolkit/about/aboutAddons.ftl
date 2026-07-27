@@ -115,6 +115,8 @@ legacy-extensions =
     .value = Extensiones obsolete
 legacy-extensions-description = Iste extensiones non satisface le normas actual de { -brand-short-name } e ha essite disactivate. <label data-l10n-name="legacy-learn-more">Saper lo que cambiava al additivos</label>
 private-browsing-description2 = { -brand-short-name } cambia le functionamento del extensiones in le navigation private. Omne nove extensiones que tu adde a { -brand-short-name } normalmente non se executara in le fenestras private. Si tu non lo permitte in le configuration, le extension non functionara in le navigation private e non habera accesso a tu activitates in linea illac. Nos ha facite iste cambio pro mantener private tu navigation private. <label data-l10n-name="private-browsing-learn-more">Discoperi como configurar le extensiones.</label>
+aboutaddons-sidebar =
+    .heading = Additivos
 addon-category-discover = Recommendationes
 addon-category-discover-title =
     .title = Recommendationes
@@ -145,7 +147,7 @@ addon-category-sitepermission-title =
 # String displayed in about:addons in the Site Permissions section
 # Variables:
 #  $host (string) - DNS host name for which the webextension enables permissions
-addon-sitepermission-host = Permissos de sito pro { $host }
+addon-sitepermission-host = Permissiones de sito pro { $host }
 
 ## These are global warnings
 
@@ -165,6 +167,8 @@ extensions-warning-update-security-button = Activar
 extensions-warning-imported-addons2 =
     .message = Completa le installation de extensiones que era importate a { -brand-short-name }.
 extensions-warning-imported-addons-button = Installar le extensiones
+extensions-warning-safe-mode3 =
+    .message = Tote le additivos ha essite disactivate per le modo diagnostic.
 
 ## Strings connected to add-on updates
 
@@ -201,6 +205,10 @@ addon-updates-manual-updates-found = Vider le actualisationes disponibile
 
 addon-install-from-file = Installar additivo ab un file…
     .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Installar o actualisar additivos desde un file…
+    .accesskey = I
 addon-install-from-file-dialog-title = Selige le additivo a installar
 addon-install-from-file-filter-name = Additivos
 addon-open-about-debugging = Depurar le additivos
@@ -217,7 +225,7 @@ shortcuts-input =
     .placeholder = Insere un accesso directe
 # Accessible name for a trashcan icon button that removes an existent shortcut
 shortcuts-remove-button =
-    .aria-label = Remover via-breve
+    .aria-label = Remover accesso directe
 shortcuts-browserAction2 = Activar le button del barra de utensiles
 shortcuts-pageAction = Activar le action del pagina
 shortcuts-sidebarAction = Monstrar/celar le barra lateral
@@ -263,6 +271,19 @@ discopane-notice-recommendations = Parte de iste recommendationes es personalisa
 discopane-notice-recommendations2 =
     .message = Parte de iste recommendationes es personalisate. Illos basate sur preferentias de profilo e statistica de uso de altere extensiones que tu ha installate.
 discopane-notice-learn-more = Saper plus
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Tu thema(s) de combination de colores ha essite removite.
+    .message =
+        { -brand-product-name } ha actualisate su collection de combinationes de colores.
+        Nos ha removite le version(es) ancian de tu lista de “Themas salvate”.
+        Obtene nove versiones sur le sito de additivos.
+colorway-removal-notice-learn-more = Pro saper plus
+colorway-removal-notice-button = Obtene themas de combination de colores actualisate
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Le parametros de contrasto de Windows substitue le themas de { -brand-short-name }. Disactiva iste parametros pro usar le themas in { -brand-short-name }.
 privacy-policy = Politica de confidentialitate
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -283,6 +304,16 @@ find-more-themes = Cercar plus themas
 # used for screen readers.
 addon-options-button =
     .aria-label = Altere optiones
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Extensiones e themas te permitte de personalisar { -brand-product-name }. Illos pote reinfortiar le confidentialitate,
+    augmentar le productivitate, meliorar le experientia multimedial, cambiar le apparentia de { -brand-product-name }, e
+    tanto plus. Iste micre programmas software es sovente disveloppate per un tertie parte. Ecce
+    un selection que { -brand-product-name } <a data-l10n-name="learn-more-trigger">recommenda</a> pro
+    securitate, prestation, e functionalitate exceptional.
 
 ## Add-on actions
 
@@ -324,10 +355,10 @@ addon-detail-last-updated-label = Ultime actualisation
 addon-detail-homepage-label = Pagina initial
 addon-detail-rating-label = Evalutation
 # Message for add-ons with a staged pending update.
-install-postponed-message = Iste extension essera actualisate quando { -brand-short-name } reinitia.
+install-postponed-message = Iste extension essera actualisate quando { -brand-short-name } se reinitia.
 # Message for add-ons with a staged pending update.
 install-postponed-message2 =
-    .message = Iste extension essera actualisate quando { -brand-short-name } reinitia.
+    .message = Iste extension essera actualisate quando { -brand-short-name } se reinitia.
 install-postponed-button = Actualisar ora
 # The average rating that the add-on has received.
 # Variables:
@@ -369,6 +400,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permittite in fenestras private
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permittite in fenestras private
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +443,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Iste extension ha essite revidite pro satisfacer nostre standards de securitate e rendimento
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Extension official producite per Mozilla. Satisface le standards de securitate e rendimento
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Iste extension ha essite revidite pro satisfacer le standards de securitate e prestation
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox recommenda solmente le extensiones que satisface le standards de securitate e prestation
 
 ##
 
@@ -415,10 +468,18 @@ available-updates-heading = Actualisationes disponibile
 recent-updates-heading = Actualisationes recente
 release-notes-loading = Cargamento…
 release-notes-error = Un error ha occurrite durante le cargamento del notas de version.
+addon-permissions-heading = Permissiones
+addon-permissions-empty2 = Iste extension non require alcun permission.
+addon-permissions-required-label = Necessari:
+addon-permissions-optional-label = Optional:
 addon-permissions-empty = Iste extension non require alcun permission
 addon-permissions-required = Permissiones necessari pro functionalitate essential:
 addon-permissions-optional = Permissiones facultative pro functionalitate additional:
 addon-permissions-learnmore = Saper plus sur le permissiones
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Alcun permissos debe esser gerite per tu organisation.
 recommended-extensions-heading = Extensiones recommendate
 recommended-themes-heading = Themas recommendate
 # Variables:
@@ -442,6 +503,9 @@ shortcuts-heading = Gerer le accessos directe al extensiones
 default-heading-search-label = Cercar altere additivos
 addons-heading-search-input =
     .placeholder = Cercar sur addons.mozilla.org
+addons-heading-search-button =
+    .title = Cercar sur addons.mozilla.org
+    .aria-label = Cercar sur addons.mozilla.org
 addon-page-options-button =
     .title = Instrumentos pro tote le additivos
 
@@ -464,14 +528,32 @@ details-notification-unsigned-and-disabled-link = Plus de informationes
 details-notification-unsigned = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name }. Procede con prudentia.
 details-notification-unsigned2 =
     .message = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name }. Procede con prudentia.
+details-notification-hard-blocked-extension =
+    .message = Iste extension es blocate perque viola le directivas de Mozilla e ha essite disactivate.
+details-notification-hard-blocked-other =
+    .message = Iste additivo es blocate perque viola le directivas de Mozilla e ha essite disactivate.
 details-notification-unsigned-link = Plus de informationes
 details-notification-blocked = { $name } ha essite disactivate a causa de problemas de securitate o de stabilitate.
-details-notification-blocked2 =
-    .message = { $name } ha essite disactivate a causa de problemas de securitate o de stabilitate.
+details-notification-blocked-link2 = Vider detalios
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Iste extension es limitate e ha essite disactivate. Tu pote activar lo, ma isto pote esser riscose.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Iste extension es limitate. Usar lo pote esser riscose.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Iste additivo es limitate e ha essite disactivate. Tu pote activar lo, ma isto pote esser riscose.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Iste additivo es limitate. Usar lo pote esser riscose.
+details-notification-soft-blocked-extension-disabled =
+    .message = Iste extension es limitate perque viola le directivas de Mozilla e ha essite disactivate. Tu pote activar illo, ma isto pote esser riscose.
+details-notification-soft-blocked-extension-enabled =
+    .message = Iste extension viola le directivas de Mozilla. Usar lo pote esser riscose.
+details-notification-soft-blocked-other-disabled =
+    .message = Iste additivo es limitate perque viola le directivas de Mozilla e ha essite disactivate. Tu pote activar illo, ma isto pote esser riscose.
+details-notification-soft-blocked-other-enabled =
+    .message = Iste additivo viola le directivas de Mozilla. Usar lo pote esser riscose.
+details-notification-softblocked-link2 = Vider detalios
 details-notification-blocked-link = Plus de informationes
 details-notification-softblocked = { $name } es cognoscite pro causar problemas de securitate o de stabilitate.
-details-notification-softblocked2 =
-    .message = { $name } es cognoscite pro causar problemas de securitate o de stabilitate.
 details-notification-softblocked-link = Plus de informationes
 details-notification-gmp-pending = { $name } essera installate tosto.
 details-notification-gmp-pending2 =
@@ -485,3 +567,46 @@ plugins-openh264-name = Video Codec OpenH264 providite per Cisco Systems, Inc.
 plugins-openh264-description = Iste plugin es automaticamente installate per Mozilla pro conformar se con le specification WebRTC e pro activar appellos WebRTC con apparatos que require le codec video H.264. Visita http://www.openh264.org/ pro vider le codice fonte del codec e pro saper plus super le implementation.
 plugins-widevine-name = Modulo de decryptation de contento Widevine fornite per Google Inc.
 plugins-widevine-description = Iste plugin permitte le lectura de multimedia cryptate secundo le specification Encrypted Media Extensions. Le multimedia cryptate es normalmente usate per sitos pro proteger se contra le copia de lor contento multimedial exclusive. Visita https://www.w3.org/TR/encrypted-media/ pro plus informationes sur Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Collection de datos necessari:
+addon-permissions-optional-data-collection = Collection de datos optional:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Permissiones e datos
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Usate per le extension { $extensionName }
+addon-permissions-data-collection-heading = Collection de datos
+addon-permissions-data-collection-empty = Le disveloppator dice que iste extension non require collection de datos.
+addon-data-collection-provided = Info fornite per le disveloppator del extension
+addon-data-collection-learnmore = Saper plus re le collection de datos
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } usa isto in about:inference
+mlmodel-link-preview = { -brand-short-name } usa isto pro generar punctos clave quando tu previsualisa ligamines
+mlmodel-pdfjs = { -brand-short-name } usa isto pro crear texto alternative pro imagines addite a files PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } usa isto pro suggerer nomines pro tu gruppos de schedas
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } usa isto pro suggerer schedas pro tu gruppos de schedas
+mlmodel-formfill-engine = { -brand-short-name } lo usa pro adjutar a compilar formularios de adresses
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = IA sur apparato
+addon-category-mlmodel-title =
+    .title = IA sur apparato
+mlmodel-heading = Gerer modellos de IA sur apparato
+mlmodel-description = Alcun functiones e extensiones in { -brand-short-name } es supportate per modellos de IA que functiona localmente sur tu apparato. Iste approche protege tu confidentialitate e, in multe casos, accelera le prestationes. <a data-l10n-name="learn-more">Pro saper plus</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Remover
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Dimension de file
+mlmodel-addon-detail-last-used-label = Ultime uso
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Usate per
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Carta de modello
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Vider sur Hugging Face

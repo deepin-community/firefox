@@ -68,11 +68,17 @@ let gContainersManager = {
     const colorWrapper = document.getElementById("colorWrapper");
     colorWrapper.appendChild(this.createColorSwatches());
 
+    const name = document.getElementById("name");
+    name.addEventListener("input", () => this.checkForm());
+
     if (this.identity.name) {
-      const name = document.getElementById("name");
       name.value = this.identity.name;
       this.checkForm();
     }
+
+    document
+      .getElementById("key_close")
+      .addEventListener("command", () => window.close());
 
     document.addEventListener("dialogaccept", () => this.onApplyChanges());
 
@@ -80,12 +86,10 @@ let gContainersManager = {
     document.getElementById("containers-content").removeAttribute("hidden");
   },
 
-  uninit() {},
-
   // Check if name is provided to determine if the form can be submitted
   checkForm() {
     const name = document.getElementById("name");
-    this._dialog.setAttribute("buttondisabledaccept", !name.value.trim());
+    this._dialog.toggleAttribute("buttondisabledaccept", !name.value.trim());
   },
 
   createIconButtons() {
@@ -165,3 +169,5 @@ let gContainersManager = {
     window.parent.location.reload();
   },
 };
+
+window.addEventListener("load", () => gContainersManager.onLoad());

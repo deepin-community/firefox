@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 'use strict';
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
@@ -65,6 +64,6 @@ testWithTypedArrayConstructors(function(TA) {
 
     delete TypedArray.prototype[key];
   });
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Salli
     .accesskey = a
+permissions-add =
+    .label = Lisää
+    .accesskey = L
 permissions-button-off =
     .label = Poista käytöstä
     .accesskey = P
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Poista kaikki sivustot
     .accesskey = k
+permissions-save-changes-2 =
+    .buttonlabelaccept = Tallenna muutokset
+    .buttonaccesskeyaccept = T
 permission-dialog =
     .buttonlabelaccept = Tallenna muutokset
     .buttonaccesskeyaccept = T
@@ -92,6 +98,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Voit poistaa Vain HTTPS -tilan käytöstä haluamiesi sivustojen kohdalla. { -brand-short-name } ei näin ollen yritä päivittää yhteyttä suojattuun HTTPS-tilaan kyseisten sivustojen kohdalla. Poikkeukset eivät päde yksityisiin ikkunoihin.
 permissions-exceptions-https-only-desc2 = Voit poistaa Vain HTTPS -tilan käytöstä haluamiesi sivustojen kohdalla. { -brand-short-name } ei näin ollen yritä päivittää yhteyttä suojattuun HTTPS-tilaan kyseisten sivustojen kohdalla.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Sallitut verkkosivustot - Ponnahdusikkunat ja kolmannen osapuolen uudelleenohjaukset
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Voit määrittää, mitkä verkkosivustot saavat avata ponnahdusikkunoita ja mitkä kolmannen osapuolen kehykset voivat ohjata uudelleen.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +180,26 @@ permissions-site-camera-desc = Seuraavat sivustot ovat pyytäneet lupaa käyttä
 permissions-site-camera-disable-label =
     .label = Estä uudet lupapyynnöt kameran käyttämiseksi
 permissions-site-camera-disable-desc = Tämä estää kaikki yllä mainitsemattomat sivustot pyytämästä lupaa käyttää kameraa. Kameran käytön estäminen voi rikkoa joitain sivuston ominaisuuksia.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Asetukset - Laitesovellukset ja -palvelut
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Nämä verkkosivustot ovat pyytäneet pääsyä tämän laitteen sovelluksiin ja palveluihin. Voit sallia tai estää sivustoja tekemästä tätä.
+permissions-site-localhost-disable-label =
+    .label = Estä uudet pyynnöt käyttää sovelluksia ja palveluita tällä laitteella
+permissions-site-localhost-disable-desc = Tämä estää kaikkia yllä mainitsemattomia verkkosivustoja pyytämästä pääsyä tämän laitteen sovelluksiin ja palveluihin. Tämä voi rikkoa joitakin verkkosivustojen ominaisuuksia.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Asetukset - Paikallisverkon laitteet
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Nämä verkkosivustot ovat pyytäneet pääsyä sovelluksiin ja palveluihin laitteilla, jotka on yhdistetty Wi-Fi-verkkoosi tai lähiverkkoosi. Voit sallia tai estää sivustoja tekemästä tätä.
+permissions-site-local-network-disable-label =
+    .label = Estä uudet pyynnöt käyttää sovelluksia ja palveluita laitteilla, jotka on yhdistetty Wi-Fi- tai lähiverkkoon.
+permissions-site-local-network-disable-desc = Tämä estää kaikkia yllä mainitsemattomia verkkosivustoja pyytämästä pääsyä sovelluksiin ja palveluihin laitteilla, jotka on yhdistetty Wi-Fi-verkkoon tai lähiverkkoon. Tämä voi rikkoa joitakin verkkosivustojen ominaisuuksia.
 
 ## Site Permissions - Microphone
 

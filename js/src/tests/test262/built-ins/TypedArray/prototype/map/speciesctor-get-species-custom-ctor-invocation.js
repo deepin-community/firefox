@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2018 Peter Wong. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -37,8 +36,8 @@ includes: [testTypedArray.js]
 features: [Symbol.species, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([40, 42, 42]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([40, 42, 42]));
   var result, ctorThis;
 
   sample.constructor = {};

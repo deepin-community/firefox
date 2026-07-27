@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "mozilla/dom/MediaStreamTrackBinding.h"
+
 namespace mozilla {
 
 /**
@@ -17,20 +17,21 @@ namespace mozilla {
  */
 class MediaEnginePrefs {
  public:
-  static const int DEFAULT_VIDEO_FPS = 30;
-  static const int DEFAULT_43_VIDEO_WIDTH = 640;
-  static const int DEFAULT_43_VIDEO_HEIGHT = 480;
-  static const int DEFAULT_169_VIDEO_WIDTH = 1280;
-  static const int DEFAULT_169_VIDEO_HEIGHT = 720;
+  static constexpr int DEFAULT_VIDEO_FPS = 30;
+  static constexpr int DEFAULT_43_VIDEO_WIDTH = 640;
+  static constexpr int DEFAULT_43_VIDEO_HEIGHT = 480;
+  static constexpr int DEFAULT_169_VIDEO_WIDTH = 1280;
+  static constexpr int DEFAULT_169_VIDEO_HEIGHT = 720;
 
   MediaEnginePrefs()
       : mWidth(0),
         mHeight(0),
+        mResizeModeEnabled(false),
+        mResizeMode(dom::VideoResizeModeEnum::None),
         mFPS(0),
         mFreq(0),
         mUsePlatformProcessing(false),
         mAecOn(false),
-        mUseAecMobile(false),
         mAgcOn(false),
         mHPFOn(false),
         mNoiseOn(false),
@@ -43,11 +44,12 @@ class MediaEnginePrefs {
 
   int32_t mWidth;
   int32_t mHeight;
+  bool mResizeModeEnabled;
+  dom::VideoResizeModeEnum mResizeMode;
   int32_t mFPS;
   int32_t mFreq;  // for test tones (fake:true)
   bool mUsePlatformProcessing;
   bool mAecOn;
-  bool mUseAecMobile;
   bool mAgcOn;
   bool mHPFOn;
   bool mNoiseOn;

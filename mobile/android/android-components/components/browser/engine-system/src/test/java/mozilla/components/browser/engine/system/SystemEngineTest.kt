@@ -16,6 +16,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.test.assertIs
 
 @RunWith(AndroidJUnit4::class)
 class SystemEngineTest {
@@ -30,25 +31,29 @@ class SystemEngineTest {
     @Test
     fun createView() {
         val engine = SystemEngine(testContext)
-        assertTrue(engine.createView(testContext) is SystemEngineView)
+        assertIs<SystemEngineView>(engine.createView(testContext))
     }
 
     @Test
     fun createSession() {
         val engine = SystemEngine(testContext)
-        assertTrue(engine.createSession() is SystemEngineSession)
+        assertIs<SystemEngineSession>(engine.createSession())
 
         try {
             engine.createSession(true)
             // Private browsing not yet supported
             fail("Expected UnsupportedOperationException")
-        } catch (e: UnsupportedOperationException) { }
+        } catch (e: UnsupportedOperationException) {
+            // Ignore exception
+        }
 
         try {
             engine.createSession(false, "1")
             // Contextual identities not yet supported
             fail("Expected UnsupportedOperationException")
-        } catch (e: UnsupportedOperationException) { }
+        } catch (e: UnsupportedOperationException) {
+            // Ignore exception
+        }
     }
 
     @Test

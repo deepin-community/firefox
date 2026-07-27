@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -232,4 +232,4 @@ webrtc-remember-allow-checkbox-camera-and-microphone = Запам'ятати д�
 webrtc-mute-notifications-checkbox = Вимкнути сповіщення вебсайту під час спільного доступу
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } не може дозволити постійний доступ до вашого екрана.
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name } не може дозволити постійний доступ до аудіо вашої вкладки без запиту.
-webrtc-reason-for-no-permanent-allow-insecure = Ваше з'єднання з цим сайтом незахищене. Для вашого захисту { -brand-short-name } дозволить доступ лише для цього сеансу.
+webrtc-reason-for-no-permanent-allow-insecure = Ваше з'єднання з цим сайтом не захищене. Для вашої безпеки { -brand-short-name } дозволить доступ лише для цього сеансу.

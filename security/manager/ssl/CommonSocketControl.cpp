@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -43,7 +42,7 @@ CommonSocketControl::CommonSocketControl(const nsCString& aHostName,
       mServerCert(nullptr),
       mCertificateTransparencyStatus(0),
       mMadeOCSPRequests(false),
-      mUsedPrivateDNS(false),
+      mUsedPrivateDNS(aProviderFlags & nsISocketProvider::USED_PRIVATE_DNS),
       mNPNCompleted(false),
       mResumed(false),
       mIsBuiltCertChainRootBuiltInRoot(false) {
@@ -53,11 +52,9 @@ CommonSocketControl::CommonSocketControl(const nsCString& aHostName,
 }
 
 void CommonSocketControl::SetStatusErrorBits(
-    const nsCOMPtr<nsIX509Cert>& cert,
     nsITransportSecurityInfo::OverridableErrorCategory
         overridableErrorCategory) {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
-  SetServerCert(cert, mozilla::psm::EVStatus::NotEV);
   mOverridableErrorCategory = Some(overridableErrorCategory);
 }
 
@@ -85,10 +82,10 @@ void CommonSocketControl::SetSucceededCertChain(
   return CreateCertChain(mSucceededCertChain, std::move(aCertList));
 }
 
-void CommonSocketControl::SetFailedCertChain(
+void CommonSocketControl::SetHandshakeCertificates(
     nsTArray<nsTArray<uint8_t>>&& aCertList) {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
-  return CreateCertChain(mFailedCertChain, std::move(aCertList));
+  return CreateCertChain(mHandshakeCertificates, std::move(aCertList));
 }
 
 void CommonSocketControl::SetCanceled(PRErrorCode errorCode) {
@@ -143,6 +140,13 @@ CommonSocketControl::GetAlpnEarlySelection(nsACString& _retval) {
 NS_IMETHODIMP
 CommonSocketControl::GetEarlyDataAccepted(bool* aEarlyDataAccepted) {
   return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+CommonSocketControl::GetResumptionTokenPresent(bool* aPresent) {
+  COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
+  *aPresent = mSessionCacheInfo.isSome();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -279,7 +283,7 @@ CommonSocketControl::IsAcceptableForHost(const nsACString& hostname,
   }
   bool chainHasValidPins;
   nsresult nsrv = mozilla::psm::PublicKeyPinningService::ChainHasValidPins(
-      derCertSpanList, PromiseFlatCString(hostname).BeginReading(), pkix::Now(),
+      derCertSpanList, PromiseFlatCString(hostname).get(), pkix::Now(),
       mIsBuiltCertChainRootBuiltInRoot, chainHasValidPins, nullptr);
   if (NS_FAILED(nsrv)) {
     return NS_OK;
@@ -307,11 +311,10 @@ void CommonSocketControl::RebuildCertificateInfoFromSSLTokenCache() {
   mozilla::net::SessionCacheInfo& info = *mSessionCacheInfo;
   nsCOMPtr<nsIX509Cert> cert(
       new nsNSSCertificate(std::move(info.mServerCertBytes)));
-  if (info.mOverridableErrorCategory ==
+  SetServerCert(cert, info.mEVStatus);
+  if (info.mOverridableErrorCategory !=
       nsITransportSecurityInfo::OverridableErrorCategory::ERROR_UNSET) {
-    SetServerCert(cert, info.mEVStatus);
-  } else {
-    SetStatusErrorBits(cert, info.mOverridableErrorCategory);
+    SetStatusErrorBits(info.mOverridableErrorCategory);
   }
   SetCertificateTransparencyStatus(info.mCertificateTransparencyStatus);
   if (info.mSucceededCertChainBytes) {
@@ -322,8 +325,8 @@ void CommonSocketControl::RebuildCertificateInfoFromSSLTokenCache() {
     SetIsBuiltCertChainRootBuiltInRoot(*info.mIsBuiltCertChainRootBuiltInRoot);
   }
 
-  if (info.mFailedCertChainBytes) {
-    SetFailedCertChain(std::move(*info.mFailedCertChainBytes));
+  if (info.mHandshakeCertificatesBytes) {
+    SetHandshakeCertificates(std::move(*info.mHandshakeCertificatesBytes));
   }
 }
 
@@ -454,8 +457,8 @@ CommonSocketControl::GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) {
   }
   nsCOMPtr<nsITransportSecurityInfo> securityInfo(
       new psm::TransportSecurityInfo(
-          mSecurityState, mErrorCode, mFailedCertChain.Clone(), mServerCert,
-          mSucceededCertChain.Clone(), mCipherSuite, mKeaGroupName,
+          mSecurityState, mErrorCode, mHandshakeCertificates.Clone(),
+          mServerCert, mSucceededCertChain.Clone(), mCipherSuite, mKeaGroupName,
           mSignatureSchemeName, mProtocolVersion,
           mCertificateTransparencyStatus, mIsAcceptedEch,
           mIsDelegatedCredential, mOverridableErrorCategory, mMadeOCSPRequests,

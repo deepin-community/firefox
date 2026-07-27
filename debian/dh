@@ -9,7 +9,7 @@ case "$MAKEFLAGS" in
     ;;
 *)
     parallel=
-    for opt in "$DEB_BUILD_OPTIONS"; do
+    for opt in $DEB_BUILD_OPTIONS; do
         case "$opt" in
         parallel=*)
             parallel=${opt#parallel=}

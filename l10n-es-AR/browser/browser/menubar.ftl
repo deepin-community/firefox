@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Preferencias
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Configuración…
+menu-application-set-as-default =
+    .label = Hacer que { -brand-shorter-name } sea el navegador predeterminado
 menu-application-services =
     .label = Servicios
 menu-application-hide-this =
@@ -98,6 +91,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Compartir
     .accesskey = t
+menu-file-share-qrcode =
+    .label = Generar código QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Generar código QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = Configuración de página…
     .accesskey = u
@@ -146,8 +145,6 @@ menu-view-history-button =
     .label = Historial
 menu-view-synced-tabs-sidebar =
     .label = Pestañas sincronizadas
-menu-view-megalist-sidebar =
-    .label = Contraseñas
 menu-view-full-zoom =
     .label = Zoom
     .accesskey = Z
@@ -161,7 +158,7 @@ menu-view-full-zoom-actual-size =
     .label = Tamaño real
     .accesskey = a
 menu-view-full-zoom-toggle =
-    .label = Solamente zoom en el texto
+    .label = Zoom solo en texto
     .accesskey = t
 menu-view-page-style-menu =
     .label = Estilo de la página
@@ -255,6 +252,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Marcadores de celular
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Perfiles
+menu-profiles-manage-profiles =
+    .label = Administrar perfiles
+menu-profiles-new-profile =
+    .label = Nuevo perfil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (actual)
+menu-profiles-menu =
+    .label = Perfiles
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +276,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Descargas
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Extensiones y temas
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Complementos y temas
     .accesskey = A
@@ -290,6 +306,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Información de la página
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = Editar PDF…
+    .accesskey = P
 menu-settings =
     .label = Preferencias
     .accesskey =

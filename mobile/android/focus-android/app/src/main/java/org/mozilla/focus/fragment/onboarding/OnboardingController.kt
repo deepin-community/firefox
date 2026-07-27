@@ -14,18 +14,40 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.utils.Browsers
+import mozilla.components.support.utils.BuildManufacturerChecker
 import mozilla.components.support.utils.ext.navigateToDefaultBrowserAppsSettings
 import org.mozilla.focus.ext.settings
 import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.state.AppStore
 
+/**
+ * Controller for the onboarding flow.
+ */
 interface OnboardingController {
+    /**
+     * Finishes the onboarding flow.
+     */
     fun handleFinishOnBoarding()
+
+    /**
+     * Handles clicking the "Get Started" button.
+     */
     fun handleGetStartedButtonClicked()
+
+    /**
+     * Handles clicking the button to make Focus the default browser.
+     */
     fun handleMakeFocusDefaultBrowserButtonClicked(activityResultLauncher: ActivityResultLauncher<Intent>)
+
+    /**
+     * Handles the [activityResult] from the default browser request.
+     */
     fun handleActivityResultImplementation(activityResult: ActivityResult)
 }
 
+/**
+ * Default implementation of the [OnboardingController].
+ */
 class DefaultOnboardingController(
     private val onboardingStorage: OnboardingStorage,
     val appStore: AppStore,
@@ -39,7 +61,7 @@ class DefaultOnboardingController(
     }
 
     override fun handleGetStartedButtonClicked() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M || Browsers.all(context).isDefaultBrowser) {
+        if (Browsers.isDefaultBrowser(context)) {
             handleFinishOnBoarding()
         } else {
             navigateToOnBoardingSecondScreen()
@@ -47,7 +69,7 @@ class DefaultOnboardingController(
     }
 
     override fun handleMakeFocusDefaultBrowserButtonClicked(activityResultLauncher: ActivityResultLauncher<Intent>) {
-        val isDefault = Browsers.all(context).isDefaultBrowser
+        val isDefault = Browsers.isDefaultBrowser(context)
         if (isDefault) {
             handleFinishOnBoarding()
         } else {
@@ -56,7 +78,7 @@ class DefaultOnboardingController(
     }
 
     override fun handleActivityResultImplementation(activityResult: ActivityResult) {
-        if (activityResult.resultCode == Activity.RESULT_OK && Browsers.all(context).isDefaultBrowser) {
+        if (activityResult.resultCode == Activity.RESULT_OK && Browsers.isDefaultBrowser(context)) {
             handleFinishOnBoarding()
         }
     }
@@ -67,30 +89,24 @@ class DefaultOnboardingController(
     }
 
     private fun makeFocusDefaultBrowser(activityResultLauncher: ActivityResultLauncher<Intent>) {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                context.getSystemService(RoleManager::class.java).also {
-                    if (
-                        it.isRoleAvailable(RoleManager.ROLE_BROWSER) &&
-                        !it.isRoleHeld(RoleManager.ROLE_BROWSER)
-                    ) {
-                        try {
-                            activityResultLauncher.launch(it.createRequestRoleIntent(RoleManager.ROLE_BROWSER))
-                        } catch (e: ActivityNotFoundException) {
-                            Logger(TAG).error(
-                                "ActivityNotFoundException " +
-                                    e.message.toString(),
-                            )
-                            handleFinishOnBoarding()
-                        }
-                    } else {
-                        context.navigateToDefaultBrowserAppsSettings()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.getSystemService(RoleManager::class.java).also {
+                if (
+                    it.isRoleAvailable(RoleManager.ROLE_BROWSER) &&
+                    !it.isRoleHeld(RoleManager.ROLE_BROWSER)
+                ) {
+                    try {
+                        activityResultLauncher.launch(it.createRequestRoleIntent(RoleManager.ROLE_BROWSER))
+                    } catch (e: ActivityNotFoundException) {
+                        Logger(TAG).error("ActivityNotFoundException ${e.message}")
+                        handleFinishOnBoarding()
                     }
+                } else {
+                    context.navigateToDefaultBrowserAppsSettings(BuildManufacturerChecker())
                 }
             }
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
-                context.navigateToDefaultBrowserAppsSettings()
-            }
+        } else {
+            context.navigateToDefaultBrowserAppsSettings(BuildManufacturerChecker())
         }
     }
 

@@ -1,4 +1,3 @@
-/* -*- Mode: Javascript; indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -58,7 +57,7 @@ add_test(function test_udp_send_stream() {
   let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stream.setData(HELLO_WORLD, HELLO_WORLD.length);
+  stream.setByteStringData(HELLO_WORLD);
   socket.sendBinaryStream("127.0.0.1", socket.port, stream);
 });
 

@@ -1,18 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* rendering object for CSS "display: grid | inline-grid" */
 
-#ifndef nsGridContainerFrame_h___
-#define nsGridContainerFrame_h___
+#ifndef nsGridContainerFrame_h_
+#define nsGridContainerFrame_h_
 
 #include "mozilla/CSSOrderAwareFrameIterator.h"
-#include "mozilla/MathAlgorithms.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/HashTable.h"
+#include "mozilla/IntrinsicISizesCache.h"
+#include "mozilla/Maybe.h"
 #include "nsAtomHashKeys.h"
 #include "nsContainerFrame.h"
 #include "nsILineIterator.h"
@@ -119,7 +117,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
             nsIFrame* aPrevInFlow) override;
   void DidSetComputedStyle(ComputedStyle* aOldStyle) override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   void MarkIntrinsicISizesDirty() override;
@@ -139,7 +137,8 @@ class nsGridContainerFrame final : public nsContainerFrame,
 
 #ifdef DEBUG_FRAME_DUMP
   nsresult GetFrameName(nsAString& aResult) const override;
-  void ExtraContainerFrameInfo(nsACString& aTo) const override;
+  void ExtraContainerFrameInfo(nsACString& aTo,
+                               bool aListOnlyDeterministic) const override;
 #endif
 
   // nsContainerFrame overrides
@@ -149,13 +148,25 @@ class nsGridContainerFrame final : public nsContainerFrame,
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aFrameList) override;
   void RemoveFrame(DestroyContext&, ChildListID, nsIFrame*) override;
-  mozilla::StyleAlignFlags CSSAlignmentForAbsPosChild(
-      const ReflowInput& aChildRI, LogicalAxis aLogicalAxis) const override;
 
 #ifdef DEBUG
   void SetInitialChildList(ChildListID aListID,
                            nsFrameList&& aChildList) override;
 #endif
+
+  bool CanProvideLineIterator() const final { return true; }
+  nsILineIterator* GetLineIterator() final { return this; }
+  int32_t GetNumLines() const final;
+  bool IsLineIteratorFlowRTL() final;
+  mozilla::Result<LineInfo, nsresult> GetLine(int32_t aLineNumber) final;
+  int32_t FindLineContaining(const nsIFrame* aFrame,
+                             int32_t aStartLine = 0) final;
+  NS_IMETHOD FindFrameAt(int32_t aLineNumber, nsPoint aPos,
+                         nsIFrame** aFrameFound, bool* aPosIsBeforeFirstFrame,
+                         bool* aPosIsAfterLastFrame) final;
+  NS_IMETHOD CheckLineOrder(int32_t aLine, bool* aIsReordered,
+                            nsIFrame** aFirstVisual,
+                            nsIFrame** aLastVisual) final;
 
   /**
    * Return the containing block for aChild which MUST be an abs.pos. child
@@ -227,6 +238,18 @@ class nsGridContainerFrame final : public nsContainerFrame,
 
   using nsContainerFrame::IsMasonry;
 
+  /**
+   * Return true if this frame has masonry layout in aAxis (in this frame's own
+   * writing mode).
+   */
+  bool IsMasonry(mozilla::LogicalAxis aAxis) const;
+  bool IsColMasonry() const {
+    return HasAnyStateBits(NS_STATE_GRID_IS_COL_MASONRY);
+  }
+  bool IsRowMasonry() const {
+    return HasAnyStateBits(NS_STATE_GRID_IS_ROW_MASONRY);
+  }
+
   /** Return true if this frame has masonry layout in any axis. */
   bool IsMasonry() const {
     return HasAnyStateBits(NS_STATE_GRID_IS_ROW_MASONRY |
@@ -295,6 +318,12 @@ class nsGridContainerFrame final : public nsContainerFrame,
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
   static nsGridContainerFrame* GetGridFrameWithComputedInfo(nsIFrame* aFrame);
 
+  /**
+   * Callback for nsIFrame::MarkIntrinsicISizesDirty() on a grid item.
+   */
+  static void MarkCachedGridMeasurementsDirty(nsIFrame* aItemFrame);
+
+  class CachedBAxisMeasurement;
   struct Subgrid;
   struct UsedTrackSizes;
   struct TrackSize;
@@ -306,6 +335,8 @@ class nsGridContainerFrame final : public nsContainerFrame,
     // Does the above item span the first(last) track?
     bool mIsInEdgeTrack;
   };
+  class TrackPlan;
+  class ItemPlan;
 
   /** Return our parent grid container; |this| MUST be a subgrid. */
   nsGridContainerFrame* ParentGridContainerForSubgrid() const;
@@ -318,9 +349,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
   };
 
  protected:
-  typedef mozilla::LogicalPoint LogicalPoint;
   typedef mozilla::LogicalRect LogicalRect;
-  typedef mozilla::LogicalSize LogicalSize;
   typedef mozilla::WritingMode WritingMode;
   struct Grid;
   struct GridArea;
@@ -335,9 +364,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
       mozilla::PresShell* aPresShell, ComputedStyle* aStyle);
   explicit nsGridContainerFrame(ComputedStyle* aStyle,
                                 nsPresContext* aPresContext)
-      : nsContainerFrame(aStyle, aPresContext, kClassID),
-        mCachedMinISize(NS_INTRINSIC_ISIZE_UNKNOWN),
-        mCachedPrefISize(NS_INTRINSIC_ISIZE_UNKNOWN) {
+      : nsContainerFrame(aStyle, aPresContext, kClassID) {
     for (auto& perAxisBaseline : mBaseline) {
       for (auto& baseline : perAxisBaseline) {
         baseline = NS_INTRINSIC_ISIZE_UNKNOWN;
@@ -365,15 +392,19 @@ class nsGridContainerFrame final : public nsContainerFrame,
    * @return the consumed size of all of this grid container's continuations
    *         so far including this frame
    */
-  nscoord ReflowChildren(GridReflowInput& aState,
+  nscoord ReflowChildren(GridReflowInput& aGridRI,
                          const LogicalRect& aContentArea,
                          const nsSize& aContainerSize,
                          ReflowOutput& aDesiredSize, nsReflowStatus& aStatus);
+  void ReflowAbsoluteChildren(GridReflowInput& aGridRI,
+                              const LogicalRect& aContentArea,
+                              nscoord aContentBSize, ReflowOutput& aDesiredSize,
+                              nsReflowStatus& aStatus);
 
   /**
    * Helper to implement IntrinsicISize().
    */
-  nscoord ComputeIntrinsicISize(gfxContext* aContext,
+  nscoord ComputeIntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                                 mozilla::IntrinsicISizeType aType);
 
   nscoord GetBBaseline(BaselineSharingGroup aBaselineGroup) const {
@@ -423,8 +454,8 @@ class nsGridContainerFrame final : public nsContainerFrame,
    */
   static FindItemInGridOrderResult FindFirstItemInGridOrder(
       mozilla::CSSOrderAwareFrameIterator& aIter,
-      const nsTArray<GridItemInfo>& aGridItems, LineRange GridArea::*aMajor,
-      LineRange GridArea::*aMinor, uint32_t aFragmentStartTrack);
+      const nsTArray<GridItemInfo>& aGridItems, LineRange GridArea::* aMajor,
+      LineRange GridArea::* aMinor, uint32_t aFragmentStartTrack);
   /**
    * Find the last item in Grid Order in this fragment.
    * @param aFragmentStartTrack is the first track in this fragment in the same
@@ -435,8 +466,8 @@ class nsGridContainerFrame final : public nsContainerFrame,
    */
   static FindItemInGridOrderResult FindLastItemInGridOrder(
       mozilla::ReverseCSSOrderAwareFrameIterator& aIter,
-      const nsTArray<GridItemInfo>& aGridItems, LineRange GridArea::*aMajor,
-      LineRange GridArea::*aMinor, uint32_t aFragmentStartTrack,
+      const nsTArray<GridItemInfo>& aGridItems, LineRange GridArea::* aMajor,
+      LineRange GridArea::* aMinor, uint32_t aFragmentStartTrack,
       uint32_t aFirstExcludedTrack);
 
   /**
@@ -480,10 +511,10 @@ class nsGridContainerFrame final : public nsContainerFrame,
   };
 
   mozilla::Maybe<nsGridContainerFrame::Fragmentainer> GetNearestFragmentainer(
-      const GridReflowInput& aState) const;
+      const GridReflowInput& aGridRI) const;
 
   // @return the consumed size of all continuations so far including this frame
-  nscoord ReflowInFragmentainer(GridReflowInput& aState,
+  nscoord ReflowInFragmentainer(GridReflowInput& aGridRI,
                                 const LogicalRect& aContentArea,
                                 ReflowOutput& aDesiredSize,
                                 nsReflowStatus& aStatus,
@@ -493,7 +524,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
   // Helper for ReflowInFragmentainer
   // @return the consumed size of all continuations so far including this frame
   nscoord ReflowRowsInFragmentainer(
-      GridReflowInput& aState, const LogicalRect& aContentArea,
+      GridReflowInput& aGridRI, const LogicalRect& aContentArea,
       ReflowOutput& aDesiredSize, nsReflowStatus& aStatus,
       Fragmentainer& aFragmentainer, const nsSize& aContainerSize,
       const nsTArray<const GridItemInfo*>& aItems, uint32_t aStartRow,
@@ -504,9 +535,31 @@ class nsGridContainerFrame final : public nsContainerFrame,
                          nsSize aContainerSize,
                          const mozilla::Maybe<nscoord>& aStretchBSize,
                          const Fragmentainer* aFragmentainer,
-                         const GridReflowInput& aState,
+                         const GridReflowInput& aGridRI,
                          const LogicalRect& aContentArea,
                          ReflowOutput& aDesiredSize, nsReflowStatus& aStatus);
+
+  // Helper for Reflow. This is intended to be called *before* the first pass of
+  // CalculateTrackSizesForAxis() for the block-axis.
+  //
+  // @return The block-size that can be used to resolve row sizes in the first
+  // pass.
+  nscoord ComputeBSizeForResolvingRowSizes(
+      GridReflowInput& aGridRI, nscoord aComputedBSize,
+      const Maybe<nscoord>& aContainIntrinsicBSize) const;
+
+  // Helper for Reflow. This is intended to be called *after* the final call to
+  // CalculateTrackSizesForAxis() for the block-axis.
+  //
+  // @param aBSizeForResolvingRowSizes the definite block-size determined by
+  // ComputeBSizeForResolvingRowSizes() or after resolving row sizes in the
+  // first pass.
+  // @return The intrinsic content block-size that can be used with other
+  // logic in Reflow() to determine the content block-size.
+  nscoord ComputeIntrinsicContentBSize(
+      const GridReflowInput& aGridRI, nscoord aComputedBSize,
+      nscoord aBSizeForResolvingRowSizes,
+      const Maybe<nscoord>& aContainIntrinsicBSize) const;
 
   /**
    * Places and reflows items when we have masonry layout.
@@ -516,7 +569,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
    * in the column axis in that case.
    * @return the intrinsic size in the masonry axis
    */
-  nscoord MasonryLayout(GridReflowInput& aState,
+  nscoord MasonryLayout(GridReflowInput& aGridRI,
                         const LogicalRect& aContentArea,
                         SizingConstraint aConstraint,
                         ReflowOutput& aDesiredSize, nsReflowStatus& aStatus,
@@ -527,131 +580,16 @@ class nsGridContainerFrame final : public nsContainerFrame,
   UsedTrackSizes* GetUsedTrackSizes() const;
 
   // Store the given TrackSizes in aAxis on a UsedTrackSizes frame property.
-  void StoreUsedTrackSizes(LogicalAxis aAxis,
-                           const nsTArray<TrackSize>& aSizes);
+  void StoreUsedTrackSizes(LogicalAxis aAxis, const TrackPlan& aSizes);
 
   // The internal implementation for AddImplicitNamedAreas().
   void AddImplicitNamedAreasInternal(LineNameList& aNameList,
                                      ImplicitNamedAreas*& aAreas);
 
-  /**
-   * Cached values to optimize IntrinsicISize().
-   */
-  nscoord mCachedMinISize;
-  nscoord mCachedPrefISize;
+  mozilla::IntrinsicISizesCache mCachedIntrinsicSizes;
 
   // Our baselines, one per BaselineSharingGroup per axis.
   PerLogicalAxis<PerBaseline<nscoord>> mBaseline;
-
- public:
-  // A cached result for a grid item's block-axis measuring reflow. This
-  // cache prevents us from doing exponential reflows in cases of deeply
-  // nested grid frames.
-  //
-  // We store the cached value in the grid item's frame property table.
-  //
-  // We cache the following as a "key"
-  //   - The size of the grid area in the item's inline axis
-  //   - The item's block axis baseline padding
-  // ...and we cache the following as the "value",
-  //   - The item's border-box BSize
-  class CachedBAxisMeasurement {
-   public:
-    NS_DECLARE_FRAME_PROPERTY_SMALL_VALUE(Prop, CachedBAxisMeasurement)
-    CachedBAxisMeasurement(const nsIFrame* aFrame, const LogicalSize& aCBSize,
-                           const nscoord aBSize)
-        : mKey(aFrame, aCBSize), mBSize(aBSize) {}
-
-    CachedBAxisMeasurement() = default;
-
-    bool IsValidFor(const nsIFrame* aFrame, const LogicalSize& aCBSize) const {
-      if (aFrame->IsSubtreeDirty()) {
-        return false;
-      }
-      const mozilla::Maybe<Key> maybeKey = Key::TryHash(aFrame, aCBSize);
-      return maybeKey.isSome() && mKey == *maybeKey;
-    }
-
-    static bool CanCacheMeasurement(const nsIFrame* aFrame,
-                                    const LogicalSize& aCBSize) {
-      return Key::CanHash(aFrame, aCBSize);
-    }
-
-    nscoord BSize() const { return mBSize; }
-
-    void Update(const nsIFrame* aFrame, const LogicalSize& aCBSize,
-                const nscoord aBSize) {
-      mKey.UpdateHash(aFrame, aCBSize);
-      mBSize = aBSize;
-    }
-
-   private:
-    class Key {
-      // mHashKey is generated by combining these 2 variables together
-      //   1. The containing block size in the item's inline axis used
-      //   for measuring reflow
-      //   2. The item's baseline padding property
-      uint32_t mHashKey;
-
-      explicit Key(uint32_t aHashKey) : mHashKey(aHashKey) {}
-
-     public:
-      Key() = default;
-
-      Key(const nsIFrame* aFrame, const LogicalSize& aCBSize) {
-        UpdateHash(aFrame, aCBSize);
-      }
-
-      void UpdateHash(const nsIFrame* aFrame, const LogicalSize& aCBSize) {
-        const mozilla::Maybe<Key> maybeKey = TryHash(aFrame, aCBSize);
-        MOZ_ASSERT(maybeKey.isSome());
-        mHashKey = maybeKey->mHashKey;
-      }
-
-      static mozilla::Maybe<Key> TryHash(const nsIFrame* aFrame,
-                                         const LogicalSize& aCBSize) {
-        const nscoord gridAreaISize = aCBSize.ISize(aFrame->GetWritingMode());
-        const nscoord bBaselinePaddingProperty =
-            abs(aFrame->GetProperty(nsIFrame::BBaselinePadProperty()));
-
-        const uint_fast8_t bitsNeededForISize =
-            mozilla::FloorLog2(gridAreaISize) + 1;
-
-        const uint_fast8_t bitsNeededForBBaselinePadding =
-            mozilla::FloorLog2(bBaselinePaddingProperty) + 1;
-        if (bitsNeededForISize + bitsNeededForBBaselinePadding > 32) {
-          return mozilla::Nothing();
-        }
-        const uint32_t hashKey = (gridAreaISize << (32 - bitsNeededForISize)) |
-                                 bBaselinePaddingProperty;
-        return mozilla::Some(Key(hashKey));
-      }
-
-      static bool CanHash(const nsIFrame* aFrame, const LogicalSize& aCBSize) {
-        return TryHash(aFrame, aCBSize).isSome();
-      }
-
-      bool operator==(const Key& aOther) const {
-        return mHashKey == aOther.mHashKey;
-      }
-    };
-
-    Key mKey;
-    nscoord mBSize;
-  };
-
-  bool CanProvideLineIterator() const final { return true; }
-  nsILineIterator* GetLineIterator() final { return this; }
-  int32_t GetNumLines() const final;
-  bool IsLineIteratorFlowRTL() final;
-  mozilla::Result<LineInfo, nsresult> GetLine(int32_t aLineNumber) final;
-  int32_t FindLineContaining(nsIFrame* aFrame, int32_t aStartLine = 0) final;
-  NS_IMETHOD FindFrameAt(int32_t aLineNumber, nsPoint aPos,
-                         nsIFrame** aFrameFound, bool* aPosIsBeforeFirstFrame,
-                         bool* aPosIsAfterLastFrame) final;
-  NS_IMETHOD CheckLineOrder(int32_t aLine, bool* aIsReordered,
-                            nsIFrame** aFirstVisual,
-                            nsIFrame** aLastVisual) final;
 };
 
-#endif /* nsGridContainerFrame_h___ */
+#endif /* nsGridContainerFrame_h_ */

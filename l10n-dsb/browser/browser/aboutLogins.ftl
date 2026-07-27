@@ -320,11 +320,11 @@ about-logins-confirm-remove-all-sync-dialog-title2 =
 # Message for modal to confirm the removal of saved passwords when user IS synced.
 about-logins-confirm-remove-all-sync-dialog-message3 =
     { $count ->
-        [1] To gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
-        [one] To { $count } gronidło wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
-        [two] To { $count } gronidle wótwónoźijo, kótarejž sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
-        [few] To { $count } gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
-       *[other] To { $count } gronidłow wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [1] To gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych rědach. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [one] To { $count } gronidło wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych rědach. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [two] To { $count } gronidle wótwónoźijo, kótarejž sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych rědach. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [few] To { $count } gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych rědach. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+       *[other] To { $count } gronidłow wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych rědach. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
     }
 
 ##
@@ -334,7 +334,7 @@ about-logins-confirm-export-dialog-message = Wašo gronidła budu se ako cytajob
 about-logins-confirm-export-dialog-confirm-button = Eksportěrowaś…
 about-logins-confirm-export-dialog-title2 = Notica wó eksportěrowanju gronidłow
 about-logins-confirm-export-dialog-message2 =
-    Gaž eksportěrujośo, se waše gronidło do dataje z cytajobnym tekstom składuju.
+    Gaž eksportěrujośo, se waše gronidła do dataje z cytajobnym tekstom składuju.
     Gaž sćo wužył dataju, pórucamy ju wulašowaś, až druge, kótarež toś ten rěd wužywaju, njeby wiźeli waše gronidła.
 about-logins-confirm-export-dialog-confirm-button2 = Z eksportom pókšacowaś
 about-logins-alert-import-title = Importěrowanje dokóńćone
@@ -355,7 +355,7 @@ about-logins-breach-alert-link = K { $hostname }
 ## Vulnerable Password notification
 
 about-logins-vulnerable-alert-title = Napadojte gronidło
-about-logins-vulnerable-alert-text2 = Toś tp gronidło jo se wužyło pśez druge konto, kótarež jo nejskerjej było w datowej źěrje. Pśez wóspjetowane wužywanje pśizjawjeńskich datow se wšykne waše konta rizikoju wustajaju. Změńśo toś to gronidło.
+about-logins-vulnerable-alert-text2 = Toś to gronidło jo se wužyło pśez druge konto, kótarež jo nejskerjej było w datowej źěrje. Pśez wóspjetowane wužywanje pśizjawjeńskich datow se wšykne waše konta rizikoju wustajaju. Změńśo toś to gronidło.
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-vulnerable-alert-link = K { $hostname }

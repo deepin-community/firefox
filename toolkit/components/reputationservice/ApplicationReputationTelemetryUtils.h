@@ -1,11 +1,11 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ApplicationReputationTelemetryUtils_h__
-#define ApplicationReputationTelemetryUtils_h__
+#ifndef ApplicationReputationTelemetryUtils_h_
+#define ApplicationReputationTelemetryUtils_h_
 
+#include "mozilla/glean/ReputationserviceMetrics.h"
 #include "mozilla/Telemetry.h"
 
 /**
@@ -27,19 +27,18 @@
  * NS_ERROR_DNS_LOOKUP_QUEUE_FULL
  * NS_ERROR_UNKNOWN_PROXY_HOST
  */
-mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_2 NSErrorToLabel(
+mozilla::glean::application_reputation::Server2Label NSErrorToLabel(
     nsresult aRv);
 
 /**
  * Convert http response status to telemetry labels
  */
-mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_2 HTTPStatusToLabel(
+mozilla::glean::application_reputation::Server2Label HTTPStatusToLabel(
     uint32_t aStatus);
 
 /**
  * Convert verdict type to telemetry labels
  */
-mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_VERDICT_2
-VerdictToLabel(uint32_t aVerdict);
+nsLiteralCString VerdictToLabel(uint32_t aVerdict);
 
-#endif  // ApplicationReputationTelemetryUtils_h__
+#endif  // ApplicationReputationTelemetryUtils_h_

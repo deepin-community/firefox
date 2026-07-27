@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Aḥric seg usebter-a yerreẓ.</strong> I wakken ad iẓer { -brand-product-name } ɣef wugur-a, ad t-iṣeggem s zzerb, ttxil-k·m azen aneqqis.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,6 @@ pending-crash-reports-send =
     .label = Azen
 pending-crash-reports-always-send =
     .label = Azen yal tikelt
+requested-crash-reports-dont-show-again =
+    .label = Ur d-skan ara tikkelt niḍen
+    .accesskey = U

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -45,7 +43,7 @@ class nsAtom {
   }
 
   bool Equals(const nsAString& aString) const {
-    return Equals(aString.BeginReading(), aString.Length());
+    return Equals(aString.Data(), aString.Length());
   }
 
   bool IsStatic() const { return mIsStatic; }
@@ -55,7 +53,7 @@ class nsAtom {
   inline const nsDynamicAtom* AsDynamic() const;
   inline nsDynamicAtom* AsDynamic();
 
-  char16ptr_t GetUTF16String() const;
+  inline char16ptr_t GetUTF16String() const;
 
   uint32_t GetLength() const { return mLength; }
 
@@ -170,7 +168,7 @@ class nsDynamicAtom : public nsAtom {
     nsrefcnt count = --mRefCnt;
     if (count == 0) {
       if (++gUnusedAtomCount >= kAtomGCThreshold) {
-        GCAtomTable();
+        ScheduleAtomTableGC();
       }
     }
 
@@ -189,7 +187,7 @@ class nsDynamicAtom : public nsAtom {
   friend int32_t NS_GetUnusedAtomCount();
 
   static mozilla::Atomic<int32_t, mozilla::ReleaseAcquire> gUnusedAtomCount;
-  static void GCAtomTable();
+  static void ScheduleAtomTableGC();
 
   // These shouldn't be used directly, even by friend classes. The
   // Create()/Destroy() methods use them.
@@ -225,6 +223,10 @@ MozExternalRefCountType nsAtom::AddRef() {
 
 MozExternalRefCountType nsAtom::Release() {
   return IsStatic() ? 1 : AsDynamic()->Release();
+}
+
+char16ptr_t nsAtom::GetUTF16String() const {
+  return IsStatic() ? AsStatic()->String() : AsDynamic()->String();
 }
 
 // The four forms of NS_Atomize (for use with |RefPtr<nsAtom>|) return the
@@ -287,7 +289,9 @@ class nsAutoAtomCString : public nsAutoCString {
 class nsDependentAtomString : public nsDependentString {
  public:
   explicit nsDependentAtomString(const nsAtom* aAtom)
-      : nsDependentString(aAtom->GetUTF16String(), aAtom->GetLength()) {}
+      : nsDependentString(
+            aAtom->GetUTF16String(), aAtom->GetLength(),
+            aAtom->IsStatic() ? DataFlags::LITERAL : DataFlags::STRINGBUFFER) {}
 };
 
 // Checks if the ascii chars in a given atom are already lowercase.
@@ -295,5 +299,11 @@ class nsDependentAtomString : public nsDependentString {
 // chars to lowercase and atomizes, storing the result in the inout
 // param.
 void ToLowerCaseASCII(RefPtr<nsAtom>& aAtom);
+
+// MOZ_DBG support
+inline std::ostream& operator<<(std::ostream& aStream, const nsAtom& aAtom) {
+  return aStream << (aAtom.IsDynamic() ? "nsDynamicAtom" : "nsStaticAtom")
+                 << " { " << nsAtomCString(&aAtom) << " }";
+}
 
 #endif  // nsAtom_h

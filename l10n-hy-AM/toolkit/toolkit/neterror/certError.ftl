@@ -67,6 +67,29 @@ open-in-new-window-for-csp-or-xfo-error = Բացել կայքը նոր պատո�
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Ձեր անվտանգությունը պաշտպանելու համար { $hostname }-ը թույլ չի տա, որ { -brand-short-name }-ը ցուցադրի էջը, եթե մեկ այլ կայք ներկառուցել է այն: Այս էջը տեսնելու համար հարկավոր է այն բացել նոր պատուհանում:
+fp-certerror-view-certificate-link = Դիտեք կայքի վկայականը
+fp-certerror-return-to-previous-page-recommended-button-2 = Գնալ ետ (խորհուրդ է տրվում)
+    .accesskey = G
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Կայքերը օգտագործում են վկայագրման մարմնի կողմից տրված վկայագրեր՝ ապացուցելու համար, որ իրենք իրականում այն են, ինչ ներկայացնում են։ { -brand-short-name }-ը չի վստահում այս կայքին, քանի որ, կարծես թե, վկայագրի ժամկետը լրացել է { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }:
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Կայքերը օգտագործում են վկայագրման մարմնի կողմից տրված վկայագրեր՝ ապացուցելու համար, որ իրենք իրականում այն են, ինչ ներկայացնում են։ { -brand-short-name }-ը չի վստահում այս կայքին, քանի որ, կարծես թե, վկայագիրը վավեր չի լինի մինչև { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }:
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Ձեր սարքի ժամացույցը կարգավորված է { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }: Եթե սա ճիշտ է, անվտանգության խնդիրը, հավանաբար, կայքի մեջ է: Եթե այն սխալ է, կարող եք այն փոխել ձեր սարքի համակարգի կարգավորումներում:
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Սխալի կոդ՝ { $error }
+fp-learn-more-about-time-related-errors = Իմացեք ավելին ժամանակի հետ կապված սխալների լուծման մասին
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Device's clock date.
+fp-certerror-pkix-not-yet-valid-what-can-you-do-body = Ձեր սարքի ժամացույցը կարգավորված է { DATETIME($date, timeStyle: "short") }{ DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }: Եթե սա ճիշտ է, անվտանգության խնդիրը, հավանաբար, կայքի մեջ է: Եթե այն սխալ է, կարող եք այն փոխել ձեր սարքի համակարգի կարգավորումներում:
 
 ## Messages used for certificate error titles
 
@@ -75,8 +98,8 @@ deniedPortAccess-title = Այս հասցեն արգելափակված է
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 dnsNotFound-title = Հնարավոր չէ գտնել այս կայքը:
-fileNotFound-title = Նիշքը չի գտնվել
-fileAccessDenied-title = Նիշքի մուտքը մերժված է
+fileNotFound-title = Ֆայլը չի գտնվել
+fileAccessDenied-title = Ֆայլի մատչումը մերժված է
 generic-title = Վայ։
 captivePortal-title = Մուտք գործել ցանց
 # "Hmm" is a sound made when considering or puzzling over something.
@@ -89,6 +112,8 @@ contentEncodingError-title = Բովանդակության Կոդավորման �
 unsafeContentType-title = Ոչ անվտանգ ֆայլի տեսակ
 netReset-title = Կապը խզվեց
 netTimeout-title = Կապի հաստատման ժամանակը սպառվեց
+httpErrorPage-title = Կարծես թե այս կայքի հետ կապված խնդիր կա
+serverError-title = Կարծես թե այս կայքի հետ կապված խնդիր կա
 unknownProtocolFound-title = Հասցեն անհասկանալի էր
 proxyConnectFailure-title = Պրոքսի սպասարկիչը մերժել է հրաժարվելով կապերից
 proxyResolveFailure-title = Չի ստացվում գտնել պրոքսի սպասարկիչը
@@ -102,6 +127,25 @@ inadequateSecurityError-title = Կապակցումն անվտանգ չէ
 blockedByPolicy-title = Արգելափակված էջ
 clockSkewError-title = Ձեր համակարգչի ժամացույցը սխալ է
 networkProtocolError-title = Ցանցի հաղորդակարգի սխալ
-nssBadCert-title = Զգուշացում․ հնարավոր է ապահովության վտանգ
+nssBadCert-title = Զգուշացում․ Հավանական ավտանգության վտանգ է առկա
 nssBadCert-sts-title = Չկապակցվեց․ հնարավոր անվտանգության թողարկող
 certerror-mitm-title = Ծրագիրը կանխում է { -brand-short-name } Անվտանգորեն կապվելով այս կայքի հետ։
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Զգուշացում․ Ավտանգության վտանգ է առկա
+fp-certerror-body-title = Զգույշ եղեք։ Ինչ-որ բան այն չէ։
+fp-certerror-why-site-dangerous = Ի՞նչն է կայքը վտանգավոր դարձնում։
+fp-certerror-what-can-you-do = Ի՞նչ կարող եք անել։
+fp-certerror-advanced-title = Ընդլայնված
+fp-certerror-advanced-button = Ընդլայնված
+fp-certerror-hide-advanced-button = Թաքցնել ընդլայնվածը
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Շարունակել { $hostname }-ում (վտանգավոր)
+fp-certerror-intro = { -brand-short-name }-ը հայտնաբերել է հավանական լուրջ անվտանգության խնդիր <strong>{ $hostname } </strong>-ի հետ։  Կայքի անունից ներկայացող որևէ մեկը կարող է փորձել գողանալ այնպիսի բաներ, ինչպիսիք են վարկային քարտի տվյալները, գաղտնաբառերը կամ էլեկտրոնային փոստը։
+fp-certerror-expired-into = { -brand-short-name }-ն անվտանգության խնդիր է հայտնաբերել <strong>{ $hostname } </strong>-ի հետ։ Կամ կայքը ճիշտ չի կարգավորված, կամ ձեր սարքի ժամացույցը սխալ ամսաթիվ/ժամ է սահմանված։
+fp-certerror-override-exception-button-2 = Շարունակել { $hostname }-ում (վտանգավոր)
+    .accesskey = P

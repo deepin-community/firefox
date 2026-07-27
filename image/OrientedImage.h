@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +7,6 @@
 
 #include "ImageWrapper.h"
 #include "mozilla/gfx/2D.h"
-#include "mozilla/RefPtr.h"
 #include "Orientation.h"
 
 namespace mozilla {
@@ -30,8 +28,8 @@ class OrientedImage : public ImageWrapper {
   NS_IMETHOD GetWidth(int32_t* aWidth) override;
   NS_IMETHOD GetHeight(int32_t* aHeight) override;
   nsresult GetNativeSizes(nsTArray<gfx::IntSize>& aNativeSizes) override;
-  NS_IMETHOD GetIntrinsicSize(nsSize* aSize) override;
-  Maybe<AspectRatio> GetIntrinsicRatio() override;
+  NS_IMETHOD GetIntrinsicSizeInAppUnits(nsSize* aSize) override;
+  AspectRatio GetIntrinsicRatio() override;
   NS_IMETHOD_(already_AddRefed<SourceSurface>)
   GetFrame(uint32_t aWhichFrame, uint32_t aFlags) override;
   NS_IMETHOD_(already_AddRefed<SourceSurface>)
@@ -84,7 +82,7 @@ class OrientedImage : public ImageWrapper {
   OrientedImage(Image* aImage, Orientation aOrientation)
       : ImageWrapper(aImage), mOrientation(aOrientation) {}
 
-  virtual ~OrientedImage() {}
+  virtual ~OrientedImage() = default;
 
   gfxMatrix OrientationMatrix(const nsIntSize& aSize, bool aInvert = false) {
     return OrientationMatrix(mOrientation, aSize, aInvert);

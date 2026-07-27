@@ -1,16 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGTransformListSMILType.h"
 
+#include <math.h>
+
+#include "SVGTransform.h"
+#include "SVGTransformList.h"
 #include "mozilla/SMILValue.h"
 #include "nsCRT.h"
-#include "SVGTransformList.h"
-#include "SVGTransform.h"
-#include <math.h>
+#include "nsMathUtils.h"
 
 using namespace mozilla::dom::SVGTransform_Binding;
 
@@ -21,14 +21,14 @@ using TransformArray = FallibleTArray<SVGTransformSMILData>;
 //----------------------------------------------------------------------
 // nsISMILType implementation
 
-void SVGTransformListSMILType::Init(SMILValue& aValue) const {
+void SVGTransformListSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
 
   aValue.mU.mPtr = new TransformArray(1);
   aValue.mType = this;
 }
 
-void SVGTransformListSMILType::Destroy(SMILValue& aValue) const {
+void SVGTransformListSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value type");
   TransformArray* params = static_cast<TransformArray*>(aValue.mU.mPtr);
   delete params;
@@ -199,7 +199,7 @@ nsresult SVGTransformListSMILType::ComputeDistance(const SMILValue& aFrom,
       const float& a_ty = fromTransform.mParams[1];
       const float& b_tx = toTransform.mParams[0];
       const float& b_ty = toTransform.mParams[1];
-      aDistance = sqrt(pow(a_tx - b_tx, 2) + (pow(a_ty - b_ty, 2)));
+      aDistance = NS_hypot(a_tx - b_tx, a_ty - b_ty);
     } break;
 
     case SVG_TRANSFORM_ROTATE:

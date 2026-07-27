@@ -1,23 +1,19 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorker.h"
 
-#include "mozilla/dom/Document.h"
-#include "nsGlobalWindowInner.h"
-#include "nsPIDOMWindow.h"
 #include "ServiceWorkerChild.h"
-#include "ServiceWorkerCloneData.h"
 #include "ServiceWorkerManager.h"
 #include "ServiceWorkerPrivate.h"
 #include "ServiceWorkerRegistration.h"
 #include "ServiceWorkerUtils.h"
-
+#include "mozilla/BasePrincipal.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/ClientIPCTypes.h"
 #include "mozilla/dom/ClientState.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/MessagePortBinding.h"
 #include "mozilla/dom/Navigator.h"
 #include "mozilla/dom/Promise.h"
@@ -25,9 +21,8 @@
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/BasePrincipal.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/StorageAccess.h"
+#include "nsGlobalWindowInner.h"
+#include "nsPIDOMWindow.h"
 
 #ifdef XP_WIN
 #  undef PostMessage
@@ -40,8 +35,8 @@ namespace mozilla::dom {
 
 // static
 already_AddRefed<ServiceWorker> ServiceWorker::Create(
-    nsIGlobalObject* aOwner, const ServiceWorkerDescriptor& aDescriptor) {
-  RefPtr<ServiceWorker> ref = new ServiceWorker(aOwner, aDescriptor);
+    nsIGlobalObject* aGlobal, const ServiceWorkerDescriptor& aDescriptor) {
+  RefPtr<ServiceWorker> ref = new ServiceWorker(aGlobal, aDescriptor);
   return ref.forget();
 }
 
@@ -51,7 +46,6 @@ ServiceWorker::ServiceWorker(nsIGlobalObject* aGlobal,
       mDescriptor(aDescriptor),
       mShutdown(false),
       mLastNotifiedState(ServiceWorkerState::Installing) {
-  MOZ_ASSERT(NS_IsMainThread());
   MOZ_DIAGNOSTIC_ASSERT(aGlobal);
 
   PBackgroundChild* parentActor =
@@ -88,7 +82,7 @@ ServiceWorker::ServiceWorker(nsIGlobalObject* aGlobal,
   RefPtr<ServiceWorkerRegistration> reg =
       aGlobal->GetServiceWorkerRegistration(ServiceWorkerRegistrationDescriptor(
           mDescriptor.RegistrationId(), mDescriptor.RegistrationVersion(),
-          mDescriptor.PrincipalInfo(), mDescriptor.Scope(),
+          mDescriptor.PrincipalInfo(), mDescriptor.Scope(), mDescriptor.Type(),
           ServiceWorkerUpdateViaCache::Imports));
 
   if (reg) {
@@ -118,10 +112,7 @@ ServiceWorker::ServiceWorker(nsIGlobalObject* aGlobal,
   }
 }
 
-ServiceWorker::~ServiceWorker() {
-  MOZ_ASSERT(NS_IsMainThread());
-  Shutdown();
-}
+ServiceWorker::~ServiceWorker() { Shutdown(); }
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(ServiceWorker, DOMEventTargetHelper,
                                    mRegistration);
@@ -135,8 +126,6 @@ NS_INTERFACE_MAP_END_INHERITING(DOMEventTargetHelper)
 
 JSObject* ServiceWorker::WrapObject(JSContext* aCx,
                                     JS::Handle<JSObject*> aGivenProto) {
-  MOZ_ASSERT(NS_IsMainThread());
-
   return ServiceWorker_Binding::Wrap(aCx, this, aGivenProto);
 }
 
@@ -181,28 +170,17 @@ void ServiceWorker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
     return;
   }
 
-  nsPIDOMWindowInner* window = GetOwnerWindow();
-  if (NS_WARN_IF(!window || !window->GetExtantDoc())) {
+  nsIGlobalObject* global = GetRelevantGlobal();
+  if (NS_WARN_IF(!global)) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
 
-  auto storageAllowed = StorageAllowedForWindow(window);
-  if (storageAllowed != StorageAccess::eAllow &&
-      (!StaticPrefs::privacy_partition_serviceWorkers() ||
-       !StoragePartitioningEnabled(
-           storageAllowed, window->GetExtantDoc()->CookieJarSettings()))) {
+  if (!ServiceWorkersStorageAllowedForGlobal(global)) {
     ServiceWorkerManager::LocalizeAndReportToAllClients(
         mDescriptor.Scope(), "ServiceWorkerPostMessageStorageError",
         nsTArray<nsString>{NS_ConvertUTF8toUTF16(mDescriptor.Scope())});
     aRv.Throw(NS_ERROR_DOM_SECURITY_ERR);
-    return;
-  }
-
-  Maybe<ClientInfo> clientInfo = window->GetClientInfo();
-  Maybe<ClientState> clientState = window->GetClientState();
-  if (NS_WARN_IF(clientInfo.isNothing() || clientState.isNothing())) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
 
@@ -215,47 +193,61 @@ void ServiceWorker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
 
   // Window-to-SW messages do not allow memory sharing since they are not in the
   // same agent cluster group, but we do not want to throw an error during the
-  // serialization. Because of this, ServiceWorkerCloneData will propagate an
-  // error message data if the SameProcess serialization is required. So that
-  // the receiver (service worker) knows that it needs to throw while
-  // deserialization and sharing memory objects are not propagated to the other
-  // process.
+  // serialization. Because of this, we will propagate an error message data if
+  // the SameProcess serialization is required. So that the receiver (service
+  // worker) knows that it needs to throw while deserialization and sharing
+  // memory objects are not propagated to the other process.
   JS::CloneDataPolicy clonePolicy;
-  if (nsGlobalWindowInner::Cast(window)->IsSharedMemoryAllowed()) {
+  if (global->IsSharedMemoryAllowed()) {
     clonePolicy.allowSharedMemoryObjects();
   }
 
-  RefPtr<ServiceWorkerCloneData> data = new ServiceWorkerCloneData();
+  auto data = MakeRefPtr<ipc::StructuredCloneData>(
+      JS::StructuredCloneScope::UnknownDestination,
+      StructuredCloneHolder::TransferringSupported);
   data->Write(aCx, aMessage, transferable, clonePolicy, aRv);
   if (aRv.Failed()) {
     return;
   }
 
-  // The value of CloneScope() is set while StructuredCloneData::Write(). If the
-  // aValue contiains a shared memory object, then the scope will be restricted
-  // and thus return SameProcess. If not, it will return DifferentProcess.
-  //
-  // When we postMessage a shared memory object from a window to a service
-  // worker, the object must be sent from a cross-origin isolated process to
-  // another one. So, we mark mark this data as an error message data if the
-  // scope is limited to same process.
-  if (data->CloneScope() ==
-      StructuredCloneHolder::StructuredCloneScope::SameProcess) {
-    data->SetAsErrorMessageData();
+  // If StructuredCloneData::Write() ended up deciding on a scope of SameProcess
+  // then we must convert this to an error on deserialization.  This is because
+  // such payloads fundamentally can't be sent cross-process (they involve
+  // pointers / local resources).  However, this will also correlate with the
+  // spec for situations like SharedArrayBuffer which are limited to being sent
+  // within the same agent cluster and where ServiceWorkers are always spawned
+  // in their own agent cluster.
+  if (data->CloneScope() != JS::StructuredCloneScope::DifferentProcess) {
+    data = nullptr;
   }
 
   if (!mActor) {
     return;
   }
 
-  ClonedOrErrorMessageData clonedData;
-  if (!data->BuildClonedMessageData(clonedData)) {
-    return;
+  // ServiceWorkersStorageAllowedForGlobal will have already validated these as
+  // both being isSome().
+  Maybe<ClientInfo> clientInfo = global->GetClientInfo();
+  Maybe<ClientState> clientState = global->GetClientState();
+
+  // If this global is a ServiceWorker, we need this global's
+  // ServiceWorkerDescriptor.  While we normally try and normalize things
+  // through nsIGlobalObject, this is fairly one-off right now, so starting from
+  // worker-specific logic.
+  PostMessageSource source;
+  if (WorkerPrivate* wp = GetCurrentThreadWorkerPrivate()) {
+    if (wp->IsServiceWorker()) {
+      source = wp->GetServiceWorkerDescriptor().ToIPC();
+    } else {
+      source = ClientInfoAndState(clientInfo.ref().ToIPC(),
+                                  clientState.ref().ToIPC());
+    }
+  } else {
+    source =
+        ClientInfoAndState(clientInfo.ref().ToIPC(), clientState.ref().ToIPC());
   }
 
-  mActor->SendPostMessage(
-      clonedData,
-      ClientInfoAndState(clientInfo.ref().ToIPC(), clientState.ref().ToIPC()));
+  mActor->SendPostMessage(data, source);
 }
 
 void ServiceWorker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,

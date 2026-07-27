@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=4 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -36,6 +34,7 @@
 #  include <stdio.h>
 #endif
 
+class FontVisibilityProvider;
 class gfxContext;
 class gfxFontGroup;
 class nsAtom;
@@ -154,14 +153,18 @@ class gfxTextRun : public gfxShapedText {
   // Describe range [start, end) of a text run. The range is
   // restricted to grapheme cluster boundaries.
   struct Range {
-    uint32_t start;
-    uint32_t end;
+    uint32_t start = 0;
+    uint32_t end = 0;
     uint32_t Length() const { return end - start; }
 
-    Range() : start(0), end(0) {}
+    Range() = default;
     Range(uint32_t aStart, uint32_t aEnd) : start(aStart), end(aEnd) {}
     explicit Range(const gfxTextRun* aTextRun)
-        : start(0), end(aTextRun->GetLength()) {}
+        : Range(0, aTextRun->GetLength()) {}
+
+    bool Intersects(const Range& aOther) const {
+      return start < aOther.end && end > aOther.start;
+    }
   };
 
   // All coordinates are in layout/app units
@@ -237,8 +240,10 @@ class gfxTextRun : public gfxShapedText {
      * inside clusters. In other words, if character i is not
      * CLUSTER_START, then character i-1 must have zero after-spacing and
      * character i must have zero before-spacing.
+     * Returns true if there is (or may be) any custom spacing; false if we
+     * are sure that aSpacing contains only zero values.
      */
-    virtual void GetSpacing(Range aRange, Spacing* aSpacing) const = 0;
+    virtual bool GetSpacing(Range aRange, Spacing* aSpacing) const = 0;
 
     // Returns a gfxContext that can be used to measure the hyphen glyph.
     // Only called if the hyphen width is requested.
@@ -545,6 +550,7 @@ class gfxTextRun : public gfxShapedText {
       case Script::KATAKANA_OR_HIRAGANA:
       case Script::SIMPLIFIED_HAN:
       case Script::TRADITIONAL_HAN:
+      case Script::TRADITIONAL_HAN_WITH_LATIN:
       case Script::JAPANESE:
       case Script::KOREAN:
       case Script::HAN_WITH_BOPOMOFO:
@@ -890,10 +896,6 @@ class gfxTextRun : public gfxShapedText {
   bool mDontSkipDrawing;  // true if the text run must not skip drawing, even if
                           // waiting for a user font download, e.g. because we
                           // are using it to draw canvas text
-  bool mReleasedFontGroup;                // we already called NS_RELEASE on
-                                          // mFontGroup, so don't do it again
-  bool mReleasedFontGroupSkippedDrawing;  // whether our old mFontGroup value
-                                          // was set to skip drawing
 
   // shaping state for handling variant fallback features
   // such as subscript/superscript variant glyphs
@@ -904,11 +906,14 @@ class gfxFontGroup final : public gfxTextRunFactory {
  public:
   typedef mozilla::intl::Script Script;
   typedef gfxShapedText::CompressedGlyph CompressedGlyph;
+  friend class MathMLTextRunFactory;
+  friend class nsCaseTransformTextRunFactory;
+  friend class gfxPlatformFontList;
 
   static void
   Shutdown();  // platform must call this to release the languageAtomService
 
-  gfxFontGroup(nsPresContext* aPresContext,
+  gfxFontGroup(FontVisibilityProvider* aFontVisibilityProvider,
                const mozilla::StyleFontFamilyList& aFontFamilyList,
                const gfxFontStyle* aStyle, nsAtom* aLanguage,
                bool aExplicitLanguage, gfxTextPerfMetrics* aTextPerf,
@@ -943,7 +948,9 @@ class gfxFontGroup final : public gfxTextRunFactory {
 
   // Get the presContext for which this fontGroup was constructed. This may be
   // null! (In the case of canvas not connected to a document.)
-  nsPresContext* GetPresContext() const { return mPresContext; }
+  FontVisibilityProvider* GetFontVisibilityProvider() const {
+    return mFontVisibilityProvider;
+  }
 
   /**
    * The listed characters should be treated as invisible and zero-width
@@ -1037,7 +1044,6 @@ class gfxFontGroup final : public gfxTextRunFactory {
     mUnderlineOffset = UNDERLINE_OFFSET_NOT_SET;
     mSkipDrawing = false;
     mHyphenWidth = -1;
-    mCachedEllipsisTextRun = nullptr;
   }
 
   // If there is a user font set, check to see whether the font list or any
@@ -1049,30 +1055,11 @@ class gfxFontGroup final : public gfxTextRunFactory {
 
   bool ShouldSkipDrawing() const { return mSkipDrawing; }
 
-  class LazyReferenceDrawTargetGetter {
-   public:
-    virtual already_AddRefed<DrawTarget> GetRefDrawTarget() = 0;
-  };
-  // The gfxFontGroup keeps ownership of this textrun.
-  // It is only guaranteed to exist until the next call to GetEllipsisTextRun
-  // (which might use a different appUnitsPerDev value or flags) for the font
-  // group, or until UpdateUserFonts is called, or the fontgroup is destroyed.
-  // Get it/use it/forget it :) - don't keep a reference that might go stale.
-  gfxTextRun* GetEllipsisTextRun(
+  // Make a textrun for the ellipsis character (with fallback to "..." if
+  // ellipsis is not supported by the font).
+  already_AddRefed<gfxTextRun> MakeEllipsisTextRun(
       int32_t aAppUnitsPerDevPixel, mozilla::gfx::ShapedTextFlags aFlags,
-      LazyReferenceDrawTargetGetter& aRefDrawTargetGetter);
-
-  void CheckForUpdatedPlatformList() {
-    auto* pfl = gfxPlatformFontList::PlatformFontList();
-    if (mFontListGeneration != pfl->GetGeneration()) {
-      // Forget cached fonts that may no longer be valid.
-      mLastPrefFamily = FontFamily();
-      mLastPrefFont = nullptr;
-      mDefaultFont = nullptr;
-      mFonts.Clear();
-      BuildFontList();
-    }
-  }
+      DrawTarget* aRefDrawTarget);
 
   nsAtom* Language() const { return mLanguage.get(); }
 
@@ -1082,10 +1069,15 @@ class gfxFontGroup final : public gfxTextRunFactory {
   // to render specific characters, not simply the "first available" font.
   // https://drafts.csswg.org/css-values-4/#ch
   // https://drafts.csswg.org/css-values-4/#ic
-  gfxFont::Metrics GetMetricsForCSSUnits(gfxFont::Orientation aOrientation);
+  // Whether extra font resources may be loaded to resolve 'ch' and 'ic'
+  // depends on the corresponding flags passed by the caller.
+  gfxFont::Metrics GetMetricsForCSSUnits(
+      gfxFont::Orientation aOrientation,
+      mozilla::StyleQueryFontMetricsFlags aFlags);
 
  protected:
   friend class mozilla::PostTraversalTask;
+  friend class DeferredClearResolvedFonts;
 
   struct TextRange {
     TextRange(uint32_t aStart, uint32_t aEnd, gfxFont* aFont,
@@ -1106,11 +1098,11 @@ class gfxFontGroup final : public gfxTextRunFactory {
   // search through pref fonts for a character, return nullptr if no matching
   // pref font
   already_AddRefed<gfxFont> WhichPrefFontSupportsChar(
-      uint32_t aCh, uint32_t aNextCh, eFontPresentation aPresentation);
+      uint32_t aCh, uint32_t aNextCh, FontPresentation aPresentation);
 
   already_AddRefed<gfxFont> WhichSystemFontSupportsChar(
       uint32_t aCh, uint32_t aNextCh, Script aRunScript,
-      eFontPresentation aPresentation);
+      FontPresentation aPresentation);
 
   template <typename T>
   void ComputeRanges(nsTArray<TextRange>& aRanges, const T* aString,
@@ -1357,7 +1349,7 @@ class gfxFontGroup final : public gfxTextRunFactory {
     bool mHasFontEntry : 1;
   };
 
-  nsPresContext* mPresContext = nullptr;
+  FontVisibilityProvider* mFontVisibilityProvider = nullptr;
 
   // List of font families, either named or generic.
   // Generic names map to system pref fonts based on language.
@@ -1373,35 +1365,34 @@ class gfxFontGroup final : public gfxTextRunFactory {
 
   RefPtr<nsAtom> mLanguage;
 
-  gfxFloat mUnderlineOffset;
-  gfxFloat mHyphenWidth;
+  gfxFloat mUnderlineOffset = UNDERLINE_OFFSET_NOT_SET;
+  gfxFloat mHyphenWidth = -1.0;  // negative indicates not yet measured
   gfxFloat mDevToCssSize;
 
   RefPtr<gfxUserFontSet> mUserFontSet;
-  uint64_t mCurrGeneration;  // track the current user font set generation,
-                             // rebuild font list if needed
+  uint64_t mCurrGeneration = 0;  // track the current user font set generation,
+                                 // rebuild font list if needed
 
   gfxTextPerfMetrics* mTextPerf;
-
-  // Cache a textrun representing an ellipsis (useful for CSS text-overflow)
-  // at a specific appUnitsPerDevPixel size and orientation
-  RefPtr<gfxTextRun> mCachedEllipsisTextRun;
 
   // cache the most recent pref font to avoid general pref font lookup
   FontFamily mLastPrefFamily;
   RefPtr<gfxFont> mLastPrefFont;
-  eFontPrefLang mLastPrefLang;  // lang group for last pref font
+  eFontPrefLang mLastPrefLang = eFontPrefLang_Western;  // lang group for last
+                                                        // pref font
   eFontPrefLang mPageLang;
-  bool mLastPrefFirstFont;  // is this the first font in the list of pref fonts
-                            // for this lang group?
+  bool mLastPrefFirstFont = false;  // is this the first font in the list of
+                                    // pref fonts for this lang group?
 
-  bool mSkipDrawing;  // hide text while waiting for a font
-                      // download to complete (or fallback
-                      // timer to fire)
+  bool mSkipDrawing = false;  // hide text while waiting for a font
+                              // download to complete (or fallback
+                              // timer to fire)
 
-  bool mExplicitLanguage;  // Does mLanguage come from an explicit attribute?
+  bool mExplicitLanguage = false;  // Is mLanguage from an explicit attribute?
 
-  eFontPresentation mEmojiPresentation = eFontPresentation::Any;
+  bool mResolvedFonts = false;  // Whether the mFonts array has been set up.
+
+  StyleFontVariantEmoji mFontVariantEmoji = StyleFontVariantEmoji::Normal;
 
   // Generic font family used to select among font prefs during fallback.
   mozilla::StyleGenericFontFamily mFallbackGeneric =
@@ -1427,8 +1418,9 @@ class gfxFontGroup final : public gfxTextRunFactory {
       const T* aString, uint32_t aLength, const Parameters* aParams,
       mozilla::gfx::ShapedTextFlags aFlags, nsTextFrameUtils::Flags aFlags2);
 
-  // Initialize the list of fonts
-  void BuildFontList();
+  // Ensure the font-family list & style properties from CSS/prefs/defaults is
+  // resolved to the array of available font faces we'll actually use.
+  void EnsureFontList();
 
   // Get the font at index i within the fontlist, for character aCh (in case
   // of fonts with multiple resources and unicode-range partitioning).
@@ -1474,15 +1466,15 @@ class gfxFontGroup final : public gfxTextRunFactory {
   // whether the family might have a font for a given character
   already_AddRefed<gfxFont> FindFallbackFaceForChar(
       const FamilyFace& aFamily, uint32_t aCh, uint32_t aNextCh,
-      eFontPresentation aPresentation);
+      FontPresentation aPresentation);
 
   already_AddRefed<gfxFont> FindFallbackFaceForChar(
       mozilla::fontlist::Family* aFamily, uint32_t aCh, uint32_t aNextCh,
-      eFontPresentation aPresentation);
+      FontPresentation aPresentation);
 
   already_AddRefed<gfxFont> FindFallbackFaceForChar(
       gfxFontFamily* aFamily, uint32_t aCh, uint32_t aNextCh,
-      eFontPresentation aPresentation);
+      FontPresentation aPresentation);
 
   // helper methods for looking up fonts
 
@@ -1513,8 +1505,8 @@ class gfxMissingFontRecorder {
 
   ~gfxMissingFontRecorder() {
 #ifdef DEBUG
-    for (uint32_t i = 0; i < kNumScriptBitsWords; i++) {
-      NS_ASSERTION(mMissingFonts[i] == 0,
+    for (uint32_t mMissingFont : mMissingFonts) {
+      NS_ASSERTION(mMissingFont == 0,
                    "failed to flush the missing-font recorder");
     }
 #endif

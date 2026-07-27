@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsTArray.h"
 #include "gtest/gtest.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/RefPtr.h"
 #include "nsTHashMap.h"
 
@@ -64,7 +61,7 @@ constexpr int dummyArrayData[] = {4, 1, 2, 8};
 static const nsTArray<int>& DummyArray() {
   static nsTArray<int> sArray;
   if (sArray.IsEmpty()) {
-    sArray.AppendElements(dummyArrayData, ArrayLength(dummyArrayData));
+    sArray.AppendElements(dummyArrayData, std::size(dummyArrayData));
   }
   return sArray;
 }
@@ -86,11 +83,11 @@ TEST(TArray, int_AppendElements_PlainArray)
 {
   nsTArray<int> array;
 
-  int* ptr = array.AppendElements(dummyArrayData, ArrayLength(dummyArrayData));
+  int* ptr = array.AppendElements(dummyArrayData, std::size(dummyArrayData));
   ASSERT_EQ(&array[0], ptr);
   ASSERT_EQ(DummyArray(), array);
 
-  ptr = array.AppendElements(dummyArrayData, ArrayLength(dummyArrayData));
+  ptr = array.AppendElements(dummyArrayData, std::size(dummyArrayData));
   ASSERT_EQ(&array[DummyArray().Length()], ptr);
   nsTArray<int> expected;
   expected.AppendElements(DummyArray());
@@ -102,13 +99,13 @@ TEST(TArray, int_AppendElements_PlainArray_Fallible)
 {
   nsTArray<int> array;
 
-  int* ptr = array.AppendElements(dummyArrayData, ArrayLength(dummyArrayData),
-                                  fallible);
+  int* ptr =
+      array.AppendElements(dummyArrayData, std::size(dummyArrayData), fallible);
   ASSERT_EQ(&array[0], ptr);
   ASSERT_EQ(DummyArray(), array);
 
-  ptr = array.AppendElements(dummyArrayData, ArrayLength(dummyArrayData),
-                             fallible);
+  ptr =
+      array.AppendElements(dummyArrayData, std::size(dummyArrayData), fallible);
   ASSERT_EQ(&array[DummyArray().Length()], ptr);
   nsTArray<int> expected;
   expected.AppendElements(DummyArray());

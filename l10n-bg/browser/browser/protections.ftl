@@ -22,8 +22,8 @@ graph-total-tracker-summary =
 graph-private-window = { -brand-short-name } продължава да спира проследяванията и в поверителни прозорци, но не ги отчита в статистиката.
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = Проследявания, спрени от { -brand-short-name } тази седмица
-protection-report-webpage-title = Табло със защити
-protection-report-page-content-title = Табло със защити
+protection-report-webpage-title = Табло за управление на защитата
+protection-report-page-content-title = Табло за управление на защитата
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
 protection-report-page-summary = Докато ползвате и разглеждате интернет, { -brand-short-name } може да защитава вашата поверителност без вашата намеса. Това е персонализирано обобщение на тези защити, включително инструментите за поемане на контрол върху вашата онлайн сигурност.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
@@ -57,6 +57,8 @@ mobile-app-card-content = Използвайте мобилния четец с 
 mobile-app-links = { -brand-product-name } четец за <a data-l10n-name="android-mobile-inline-link">Android</a> и <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 lockwise-title = Никога не забравяйте парола отново
 lockwise-header-content-logged-in = Сигурно съхранявайте и синхронизирайте паролите си между всичките си устройства.
+protection-report-passwords-save-passwords-button = Запазване на пароли
+    .title = Запазване на пароли
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
 lockwise-scanned-text-breached-logins =
@@ -89,6 +91,7 @@ info-monitored-emails =
         [one] Наблюдаван адрес на електронна поща
        *[other] Наблюдавани адреси на електронна поща
     }
+monitor-partial-breaches-motivation-title-end = Почти е готово! Продължавайте.
 
 ## The title attribute is used to display the type of protection.
 ## The aria-label is spoken by screen readers to make the visual graph accessible to blind users.
@@ -132,3 +135,7 @@ bar-tooltip-cryptominer =
             [one] { $count } добиване на криптовалути ({ $percentage }%)
            *[other] { $count } добиване на криптовалути ({ $percentage }%)
         }
+
+## VPN promo card and banner
+
+protections-vpn-banner-link = Вземете { -mozilla-vpn-brand-name }

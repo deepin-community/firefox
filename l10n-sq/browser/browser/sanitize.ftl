@@ -59,10 +59,7 @@ history-section-label = Historik
 item-history-and-downloads =
     .label = Historik Shfletimesh dhe Shkarkimesh
     .accesskey = H
-item-history-form-data-downloads =
-    .label = Historik
-    .accesskey = H
-item-history-form-data-downloads-description = Spastron historik sajtesh dhe shkarkimesh, hollësi të ruajtura për formularë dhe kërkime
+item-history-and-downloads-description2 = Spastron historik sajtesh dhe shkarkimesh
 item-cookies =
     .label = “Cookies”
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Rregullime sajti
     .accesskey = i
+item-formdata-prefs =
+    .label = Hollësi formulari të ruajtura
+    .accesskey = o
+item-formdata-description = Spastron gjëra të tilla si emra, email-e dhe objekte të tjerë që jepni në formularë
 item-site-prefs-description = Rikthen lejet dhe parapëlqime sajtesh tuajat te rregullimet origjinale
 data-section-label = Të dhëna
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Do të spastrohet krejt historiku.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Do të spastrohen krejt objektet e përzgjedhur.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Po njehsohet…

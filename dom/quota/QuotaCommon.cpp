@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,14 +10,13 @@
 #include "mozIStorageConnection.h"
 #include "mozIStorageStatement.h"
 #include "mozilla/ErrorNames.h"
-#include "mozilla/MozPromise.h"
 #include "mozilla/Logging.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/TelemetryComms.h"
-#include "mozilla/TelemetryEventEnums.h"
+#include "mozilla/MozPromise.h"
+#include "mozilla/SourcePathLiteral.h"
 #include "mozilla/TextUtils.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
 #include "mozilla/dom/quota/ScopedLogExtraInfo.h"
+#include "mozilla/glean/DomQuotaMetrics.h"
 #include "nsIConsoleService.h"
 #include "nsIFile.h"
 #include "nsServiceManagerUtils.h"
@@ -31,8 +28,8 @@
 
 #ifdef XP_WIN
 #  include "mozilla/Atomics.h"
-#  include "mozilla/ipc/BackgroundParent.h"
 #  include "mozilla/StaticPrefs_dom.h"
+#  include "mozilla/ipc/BackgroundParent.h"
 #  include "nsILocalFileWin.h"
 #endif
 
@@ -54,8 +51,6 @@ RefPtr<BoolPromise> CreateAndRejectBoolPromiseFromQMResult(
 }
 
 namespace dom::quota {
-
-using namespace mozilla::Telemetry;
 
 namespace {
 
@@ -139,8 +134,7 @@ void CacheUseDOSDevicePathSyntaxPrefValue() {
 Result<nsCOMPtr<nsIFile>, nsresult> QM_NewLocalFile(const nsAString& aPath) {
   QM_TRY_UNWRAP(
       auto file,
-      MOZ_TO_RESULT_INVOKE_TYPED(nsCOMPtr<nsIFile>, NS_NewLocalFile, aPath,
-                                 /* aFollowLinks */ false),
+      MOZ_TO_RESULT_INVOKE_TYPED(nsCOMPtr<nsIFile>, NS_NewLocalFile, aPath),
       QM_PROPAGATE, [&aPath](const nsresult rv) {
         QM_WARNING("Failed to construct a file for path (%s)",
                    NS_ConvertUTF16toUTF8(aPath).get());
@@ -274,7 +268,7 @@ nsDependentCSubstring GetTreeBase(const nsLiteralCString& aPath,
 
 nsDependentCSubstring GetSourceTreeBase() {
   static constexpr auto thisSourceFileRelativePath =
-      "/dom/quota/QuotaCommon.cpp"_ns;
+      "/dom/quota/QuotaCommon.cpp"_sp;
 
   return GetTreeBase(nsLiteralCString(__FILE__), thisSourceFileRelativePath);
 }
@@ -282,20 +276,79 @@ nsDependentCSubstring GetSourceTreeBase() {
 nsDependentCSubstring GetObjdirDistIncludeTreeBase(
     const nsLiteralCString& aQuotaCommonHPath) {
   static constexpr auto quotaCommonHSourceFileRelativePath =
-      "/mozilla/dom/quota/QuotaCommon.h"_ns;
+      "/mozilla/dom/quota/QuotaCommon.h"_sp;
 
   return GetTreeBase(aQuotaCommonHPath, quotaCommonHSourceFileRelativePath);
 }
 
 static constexpr auto kSourceFileRelativePathMap =
     std::array<std::pair<nsLiteralCString, nsLiteralCString>, 1>{
-        {{"mozilla/dom/LocalStorageCommon.h"_ns,
-          "dom/localstorage/LocalStorageCommon.h"_ns}}};
+        {{"mozilla/dom/LocalStorageCommon.h"_sp,
+          "dom/localstorage/LocalStorageCommon.h"_sp}}};
+
+static nsDependentCSubstring StripRelativeComponents(
+    const nsACString& aSourceFilePath) {
+  // Find the first non-dot, non-path-separator param. Note that this
+  // technically would remove a leading dot from ../.foo.h or so, but we don't
+  // expect such filenames here.
+  size_t index = 0;
+  for (char c : Span(aSourceFilePath)) {
+    if (c == '.' || c == '/' || c == '\\') {
+      index++;
+    } else {
+      break;
+    }
+  }
+  return Substring(aSourceFilePath, index);
+}
+
+static nsDependentCSubstring MapDistIncludePathToSource(
+    const nsACString& aDistIncludePath) {
+  // Exported source files don't have to use the same directory structure as
+  // original source files. Check if we have a mapping for the exported
+  // source file.
+  const auto foundIt = std::find_if(kSourceFileRelativePathMap.cbegin(),
+                                    kSourceFileRelativePathMap.cend(),
+                                    [&aDistIncludePath](const auto& entry) {
+                                      return entry.first == aDistIncludePath;
+                                    });
+
+  if (MOZ_UNLIKELY(foundIt != kSourceFileRelativePathMap.cend())) {
+    return Substring(foundIt->second, 0);
+  }
+
+  static constexpr auto mozillaRelativeBase = "mozilla/"_sp;
+  // If we don't have a mapping for it, just remove the mozilla/ prefix
+  // (if there's any).
+  if (StringBeginsWith(aDistIncludePath, mozillaRelativeBase)) [[likely]] {
+    return Substring(aDistIncludePath, mozillaRelativeBase.Length());
+  }
+
+  // At this point, we don't know how to transform the relative path of the
+  // exported source file back to the relative path of the original source
+  // file. This can happen when QM_TRY is used in an exported nsIFoo.h file.
+  // If you really need to use QM_TRY there, consider adding a new mapping
+  // for the exported source file.
+  return nsDependentCSubstring(aDistIncludePath);
+}
 
 nsDependentCSubstring MakeSourceFileRelativePath(
     const nsACString& aSourceFilePath) {
   static constexpr auto error = "ERROR"_ns;
-  static constexpr auto mozillaRelativeBase = "mozilla/"_ns;
+  static constexpr auto kDistInclude = "dist/include/"_sp;
+  static constexpr auto kCheckoutsGecko = "checkouts/gecko/"_sp;
+
+  if (StringBeginsWith(aSourceFilePath, "."_ns)) {
+    nsDependentCSubstring stripped = StripRelativeComponents(aSourceFilePath);
+    if (StringBeginsWith(stripped, kDistInclude)) {
+      return MapDistIncludePathToSource(
+          Substring(stripped, kDistInclude.Length()));
+    }
+    if (StringBeginsWith(stripped, kCheckoutsGecko)) {
+      return Substring(stripped, kCheckoutsGecko.Length());
+    }
+    return stripped;
+  }
 
   static const auto sourceTreeBase = GetSourceTreeBase();
 
@@ -309,39 +362,12 @@ nsDependentCSubstring MakeSourceFileRelativePath(
 
   if (MOZ_LIKELY(
           StringBeginsWith(aSourceFilePath, objdirDistIncludeTreeBase))) {
-    const auto sourceFileRelativePath =
-        Substring(aSourceFilePath, objdirDistIncludeTreeBase.Length() + 1);
-
-    // Exported source files don't have to use the same directory structure as
-    // original source files. Check if we have a mapping for the exported
-    // source file.
-    const auto foundIt = std::find_if(
-        kSourceFileRelativePathMap.cbegin(), kSourceFileRelativePathMap.cend(),
-        [&sourceFileRelativePath](const auto& entry) {
-          return entry.first == sourceFileRelativePath;
-        });
-
-    if (MOZ_UNLIKELY(foundIt != kSourceFileRelativePathMap.cend())) {
-      return Substring(foundIt->second, 0);
-    }
-
-    // If we don't have a mapping for it, just remove the mozilla/ prefix
-    // (if there's any).
-    if (MOZ_LIKELY(
-            StringBeginsWith(sourceFileRelativePath, mozillaRelativeBase))) {
-      return Substring(sourceFileRelativePath, mozillaRelativeBase.Length());
-    }
-
-    // At this point, we don't know how to transform the relative path of the
-    // exported source file back to the relative path of the original source
-    // file. This can happen when QM_TRY is used in an exported nsIFoo.h file.
-    // If you really need to use QM_TRY there, consider adding a new mapping
-    // for the exported source file.
-    return sourceFileRelativePath;
+    return MapDistIncludePathToSource(
+        Substring(aSourceFilePath, objdirDistIncludeTreeBase.Length() + 1));
   }
 
   nsCString::const_iterator begin, end;
-  if (RFindInReadable("/"_ns, aSourceFilePath.BeginReading(begin),
+  if (RFindInReadable("/"_sp, aSourceFilePath.BeginReading(begin),
                       aSourceFilePath.EndReading(end))) {
     // Use the basename as a fallback, to avoid exposing any user parts of the
     // path.
@@ -349,8 +375,7 @@ nsDependentCSubstring MakeSourceFileRelativePath(
     return Substring(begin, aSourceFilePath.EndReading(end));
   }
 
-  return nsDependentCSubstring{static_cast<mozilla::Span<const char>>(
-      static_cast<const nsCString&>(error))};
+  return nsDependentCSubstring{Span(static_cast<const nsCString&>(error))};
 }
 
 }  // namespace detail
@@ -417,6 +442,17 @@ void LogError(const nsACString& aExpr, const Maybe<nsresult> aMaybeRv,
 
   if (maybeRv) {
     nsresult rv = *maybeRv;
+
+    // Ignore this special error code, as it's an expected failure in certain
+    // cases, especially preloading of datastores for LSNG. See the related
+    // comment in InitializeTemporaryClientOp::DoDirectoryWork.
+    //
+    // Note: For now, this simple check is sufficient. However, if more cases
+    // like this are added in the future, it may be worth introducing a more
+    // structured system for handling expected errors.
+    if (rv == NS_ERROR_DOM_QM_CLIENT_INIT_ORIGIN_UNINITIALIZED) {
+      return;
+    }
 
     rvCode = nsPrintfCString("0x%" PRIX32, static_cast<uint32_t>(rv));
 
@@ -554,75 +590,67 @@ void LogError(const nsACString& aExpr, const Maybe<nsresult> aMaybeRv,
     // (accidentally) added because they would have to be added to Events.yaml
     // under "dom.quota.try" which would require a data review.
 
-    auto extra = Some([&] {
-      auto res = CopyableTArray<EventExtraEntry>{};
-      res.SetCapacity(9);
+    mozilla::glean::dom_quota_try::ErrorStepExtra extra;
+    extra.context = Some(MOZ_NO_VALIDATE(
+        contextTainted,
+        "Context has been data-reviewed for telemetry transmission."));
 
-      res.AppendElement(EventExtraEntry{
-          "context"_ns,
-          MOZ_NO_VALIDATE(
-              contextTainted,
-              "Context has been data-reviewed for telemetry transmission.")});
+    mozilla::gecko_trace::events::DomQuotaTryEvent try_event;
 
 #    ifdef QM_ERROR_STACKS_ENABLED
-      if (!frameIdString.IsEmpty()) {
-        res.AppendElement(
-            EventExtraEntry{"frame_id"_ns, nsCString{frameIdString}});
-      }
+    if (!frameIdString.IsEmpty()) {
+      extra.frameId = Some(frameIdString);
+      try_event.WithFrameId(frameIdString);
+    }
 
-      if (!processIdString.IsEmpty()) {
-        res.AppendElement(
-            EventExtraEntry{"process_id"_ns, nsCString{processIdString}});
-      }
+    if (!processIdString.IsEmpty()) {
+      extra.processId = Some(processIdString);
+    }
 #    endif
 
-      if (!rvName.IsEmpty()) {
-        res.AppendElement(EventExtraEntry{"result"_ns, nsCString{rvName}});
-      }
+    if (!rvName.IsEmpty()) {
+      extra.result = Some(rvName);
+      try_event.WithResult(rvName);
+    }
 
-      // Here, we are generating thread local sequence number and thread Id
-      // information which could be useful for summarizing and categorizing
-      // log statistics in QM_TRY stack propagation scripts. Since, this is
-      // a thread local object, we do not need to worry about data races.
-      static MOZ_THREAD_LOCAL(uint32_t) sSequenceNumber;
+    // Here, we are generating thread local sequence number and thread Id
+    // information which could be useful for summarizing and categorizing
+    // log statistics in QM_TRY stack propagation scripts. Since, this is
+    // a thread local object, we do not need to worry about data races.
+    static MOZ_THREAD_LOCAL(uint32_t) sSequenceNumber;
 
-      // This would be initialized once, all subsequent calls would be a no-op.
-      MOZ_ALWAYS_TRUE(sSequenceNumber.init());
+    // This would be initialized once, all subsequent calls would be a no-op.
+    MOZ_ALWAYS_TRUE(sSequenceNumber.init());
 
-      // sequence number should always starts at number 1.
-      // `sSequenceNumber` gets initialized to 0; so we have to increment here.
-      const auto newSeqNum = sSequenceNumber.get() + 1;
-      const auto threadId =
-          mozilla::baseprofiler::profiler_current_thread_id().ToNumber();
+    // sequence number should always starts at number 1.
+    // `sSequenceNumber` gets initialized to 0; so we have to increment here.
+    const auto newSeqNum = sSequenceNumber.get() + 1;
+    const auto threadId = baseprofiler::profiler_current_thread_id().ToNumber();
 
-      const auto threadIdAndSequence =
-          (static_cast<uint64_t>(threadId) << 32) | (newSeqNum & 0xFFFFFFFF);
+    const auto threadIdAndSequence =
+        (static_cast<uint64_t>(threadId) << 32) | (newSeqNum & 0xFFFFFFFF);
 
-      res.AppendElement(
-          EventExtraEntry{"seq"_ns, IntToCString(threadIdAndSequence)});
+    extra.seq = Some(threadIdAndSequence);
 
-      sSequenceNumber.set(newSeqNum);
+    sSequenceNumber.set(newSeqNum);
 
-      res.AppendElement(EventExtraEntry{"severity"_ns, severityString});
+    extra.severity = Some(severityString);
+    try_event.WithSeverity(severityString);
 
-      res.AppendElement(
-          EventExtraEntry{"source_file"_ns, nsCString(sourceFileRelativePath)});
+    extra.sourceFile = Some(sourceFileRelativePath);
+    try_event.WithSourceFile(sourceFileRelativePath);
 
-      res.AppendElement(
-          EventExtraEntry{"source_line"_ns, IntToCString(aSourceFileLine)});
+    extra.sourceLine = Some(aSourceFileLine);
+    try_event.WithSourceLine(aSourceFileLine);
 
 #    ifdef QM_ERROR_STACKS_ENABLED
-      if (!stackIdString.IsEmpty()) {
-        res.AppendElement(
-            EventExtraEntry{"stack_id"_ns, nsCString{stackIdString}});
-      }
+    if (!stackIdString.IsEmpty()) {
+      extra.stackId = Some(stackIdString);
+    }
 #    endif
 
-      return res;
-    }());
-
-    Telemetry::RecordEvent(Telemetry::EventID::DomQuotaTry_Error_Step,
-                           Nothing(), extra);
+    glean::dom_quota_try::error_step.Record(Some(extra));
+    try_event.Emit();
   }
 #  endif
 }

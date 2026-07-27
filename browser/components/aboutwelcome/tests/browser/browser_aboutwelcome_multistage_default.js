@@ -159,6 +159,10 @@ async function openAboutWelcome() {
     "about:welcome",
     true
   );
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
+    // Mark the first entry as having been interacted with.
+    content.document.notifyUserGestureActivation();
+  });
   registerCleanupFunction(() => {
     BrowserTestUtils.removeTab(tab);
   });
@@ -213,8 +217,9 @@ add_task(async function test_multistage_aboutwelcome_default() {
     }
   }
 
-  Assert.ok(
-    clickCall.args[1].message_id === "MR_WELCOME_DEFAULT_0_AW_STEP1",
+  Assert.strictEqual(
+    clickCall.args[1].message_id,
+    "MR_WELCOME_DEFAULT_0_AW_STEP1",
     "AboutWelcome MR message id joined with screen id"
   );
 
@@ -249,7 +254,7 @@ add_task(async function test_multistage_aboutwelcome_default() {
       "main.AW_STEP3",
       "div.onboardingContainer",
       "div.section-main",
-      "div.tiles-theme-container",
+      "div.tiles-single-select-container",
       "div.steps",
       "div.indicator.current",
     ],
@@ -293,7 +298,7 @@ add_task(async function test_multistage_aboutwelcome_default() {
  * Test navigating back/forward between screens
  */
 add_task(async function test_Multistage_About_Welcome_navigation() {
-  let browser = await openAboutWelcome();
+  let browser = await openAboutWelcome(TEST_DEFAULT_JSON);
 
   await onButtonClick(browser, "button.primary");
   await TestUtils.waitForCondition(() => browser.canGoBack);
@@ -496,12 +501,12 @@ add_task(async function test_AWMultistage_Themes() {
   );
   await onButtonClick(browser, "button.primary");
 
-  await ContentTask.spawn(browser, "Themes", async () => {
+  await SpecialPowers.spawn(browser, ["Themes"], async () => {
     await ContentTaskUtils.waitForCondition(
-      () => content.document.querySelector("label.theme"),
+      () => content.document.querySelector("label.select-item"),
       "Theme Icons"
     );
-    let themes = content.document.querySelectorAll("label.theme");
+    let themes = content.document.querySelectorAll("label.select-item");
     Assert.equal(themes.length, 2, "Two themes displayed");
   });
 
@@ -719,7 +724,7 @@ add_setup(async function () {
 add_task(async function test_FxA_metricsFlowURI() {
   let browser = await openAboutWelcome();
 
-  await ContentTask.spawn(browser, {}, async () => {
+  await SpecialPowers.spawn(browser, [], async () => {
     Assert.ok(
       await ContentTaskUtils.waitForCondition(
         () => content.document.querySelector("div.onboardingContainer"),

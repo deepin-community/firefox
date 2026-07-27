@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -515,9 +514,36 @@ uint32_t HashUTF8AsUTF16(const char* aUTF8, size_t aLength, bool* aErr) {
   return hash;
 }
 
+// The Korean Won currency sign has East Asian Width = HALFWIDTH, and
+// Script = COMMON (rather than HANGUL), but we don't want to treat it like
+// Chinese/Japanese half-width characters for segment break transformation,
+// so we exclude it individually in the two functions here.
+static constexpr uint32_t kWonCurrencySign = 0x20A9;
+
 bool IsSegmentBreakSkipChar(uint32_t u) {
   return intl::UnicodeProperties::IsEastAsianWidthFHWexcludingEmoji(u) &&
-         intl::UnicodeProperties::GetScriptCode(u) != intl::Script::HANGUL;
+         intl::UnicodeProperties::GetScriptCode(u) != intl::Script::HANGUL &&
+         u != kWonCurrencySign;
+}
+
+bool IsEastAsianPunctuation(uint32_t u) {
+  // U+FF5E FULLWIDTH TILDE has General Category = Symbol (not Punctuation),
+  // but is used similarly to U+301C WAVE DASH (which does have category
+  // Punctuation). So we treat FULLWIDTH TILDE as punctuation here to give the
+  // two characters consistent behavior.
+  constexpr uint32_t kFullwidthTilde = 0xFF5E;
+  // U+3000 IDEOGRAPHIC SPACE has General Category = Zs (not Punctuation),
+  // but it conflicts with a JLReq rule that space added after
+  // question or exclamation mark is stipulated to be full-width if line is
+  // broken after full-width space following such a punctuation mark but
+  // line break is replaced by a space. So we treat IDEOGRAPHIC SPACE as
+  // punctuation here to allow line breaks after it while maintaining
+  // compatibility with JLReq.
+  constexpr uint32_t kIdeographicSpace = 0x3000;
+  return intl::UnicodeProperties::IsEastAsianWidthFHW(u) &&
+         ((intl::UnicodeProperties::IsPunctuation(u) &&
+           u != kWonCurrencySign) ||
+          u == kFullwidthTilde || u == kIdeographicSpace);
 }
 
 bool IsPunctuationForWordSelect(char16_t aCh) {

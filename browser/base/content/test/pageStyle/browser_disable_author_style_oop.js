@@ -75,13 +75,15 @@ add_task(async function test_disable_style() {
     "second child color after disabling style"
   );
 
-  await BrowserTestUtils.reloadTab(tab, true);
+  await BrowserTestUtils.reloadTab(tab, {
+    includeSubFrames: true,
+  });
 
   // Check the menu:
   let { menupopup } = document.getElementById("pageStyleMenu");
   gPageStyleMenu.fillPopup(menupopup);
   Assert.equal(
-    menupopup.querySelector("menuitem[checked='true']").dataset.l10nId,
+    menupopup.querySelector("menuitem[checked]").dataset.l10nId,
     "menu-view-page-style-no-style",
     "No style menu should be checked."
   );

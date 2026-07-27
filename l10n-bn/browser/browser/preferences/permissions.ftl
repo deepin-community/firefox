@@ -5,62 +5,50 @@
 permissions-window2 =
     .title = ব্যতিক্রম
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = ওয়েবসাইটের ঠিকানা
     .accesskey = d
-
 permissions-block =
     .label = প্রতিরোধ করা হবে
     .accesskey = B
-
 permissions-session =
     .label = সেশনের জন্য অনুমোদন করা হবে
     .accesskey = S
-
 permissions-allow =
     .label = অনুমোদন
     .accesskey = A
-
 permissions-site-name =
     .label = ওয়েবসাইট
-
 permissions-status =
     .label = অবস্থা
-
 permissions-remove =
     .label = ওয়েবসাইট অপসারণ
     .accesskey = R
-
 permissions-remove-all =
     .label = সব ওয়েবসাইট অপসারণ কর
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = পরিবর্তন সংরক্ষণ
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = পরিবর্তন সংরক্ষণ
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = সব ওয়েবসাইটের জন্য ডিফল্ট:
-
 permissions-searchbox =
     .placeholder = ওয়েবসাইট খুঁজুন
-
 permissions-capabilities-autoplay-allow =
     .label = অডিও ও ভিডিও অনুমোদন দিন
 permissions-capabilities-autoplay-block =
     .label = অডিও ব্লক
 permissions-capabilities-autoplay-blockall =
     .label = অডিও ও ভিডিও ব্লক
-
 permissions-capabilities-allow =
     .label = অনুমোদন করা হবে
 permissions-capabilities-block =
     .label = প্রতিরোধ করা হবে
 permissions-capabilities-prompt =
     .label = সর্বদা জিজ্ঞাসা কর
-
 permissions-capabilities-listitem-allow =
     .value = অনুমোদন করা হবে
 permissions-capabilities-listitem-block =
@@ -85,9 +73,6 @@ permissions-exceptions-cookie-window2 =
     .title = ব্যতিক্রম - কুকিজ এবং সাইট ডাটা
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = কোন ওয়েবসাইট সবসময় সাইট ডেটা এবং কুকিজ ব্যবহার করবে অথবা কোনটি কখনই করবে না তা আপনি নির্দিষ্ট করতে পারেন। ওয়েব সাইটের সঠিক ঠিকানা টাইপ করুন এবং তারপরে ব্লক করুন, সেশনের জন্য অনুমতি দিন, বা অনুমতি দিন।
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -166,8 +151,3 @@ permissions-site-microphone-desc = নিচের ওয়েবসাইট �
 permissions-site-microphone-disable-label =
     .label = আপনার মাইক্রোফোন ব্যবহারের নতুন অনুরোধ ব্লক করুন
 permissions-site-microphone-disable-desc = এতে করে, উপরের তালিকায় না থাকা ওয়েবসাইট, আপনার মাইক্রোফোন ব্যবহার করতে চেয়ে অনুরোধ করতে পারবে না। তবে মাইক্রোফোন ব্যবহার করতে না দিলে ওয়েবসাইটের কিছু বৈশিষ্ট্যে ব্যাঘাত ঘটতে পারে।
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

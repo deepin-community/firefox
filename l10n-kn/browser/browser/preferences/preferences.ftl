@@ -10,17 +10,27 @@ pane-general-title = ಸಾಮಾನ್ಯ
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = ಮನೆ
+pane-search-title2 = ಹುಡುಕು
+    .title = ಹುಡುಕು
+pane-privacy-title3 = ಗೋಪ್ಯತೆ & ಸುರಕ್ಷತೆ
+    .title = ಗೋಪ್ಯತೆ & ಸುರಕ್ಷತೆ
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = ಹುಡುಕು
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = ಗೋಪ್ಯತೆ & ಸುರಕ್ಷತೆ
 pane-privacy-title = ಗೋಪ್ಯತೆ & ಸುರಕ್ಷತೆ
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } ಸಹಾಯ
+    .title = { -brand-short-name } ಸಹಾಯ
 help-button-label = { -brand-short-name } ಸಹಾಯ
 focus-search =
     .key = f
@@ -35,17 +45,6 @@ should-restart-title = { -brand-short-name } ಅನ್ನು ಮರು ಆರಂ
 should-restart-ok = ಈಗ { -brand-short-name } ಮರಳಿ ಆರಂಭಿಸು
 cancel-no-restart-button = ರದ್ದು ಮಾಡು
 restart-later = ಆಮೇಲೆ ಮರು ಆರಂಭಿಸು
-
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
 
 ## Preferences UI Search Results
 
@@ -65,6 +64,8 @@ set-as-my-default-browser =
     .accesskey = D
 disable-extension =
     .label = ಎಕ್ಸ್‌ಟೆನ್ಶನ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು
+tabs-group-header2 =
+    .label = ಟ್ಯಾಬ್‌ಗಳು
 tabs-group-header = ಟ್ಯಾಬ್‌ಗಳು
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab ಇತ್ತೀಚೆಗೆ ಬಳಸಿದ ಟ್ಯಾಬ್‍ಗಳನ್ನು ತಿರುಗಿಕೊಡುತ್ತದೆ
@@ -85,10 +86,8 @@ browser-containers-learn-more = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರ�
 browser-containers-settings =
     .label = ಸಿದ್ಧತೆಗಳು…‍
     .accesskey = i
-
-## Variables:
-##   $tabCount (number) - Number of tabs
-
+startup-group =
+    .label = ಆರಂಭಿಕ
 
 ##
 
@@ -128,6 +127,10 @@ translate-exceptions =
 ## General Section - Files and Applications
 
 files-and-applications-title = ಕಡತಗಳು ಮತ್ತು ಅನ್ವಯಕಗಳು
+download-save-files-header =
+    .label = ಕಡತಗಳನ್ನು ಇಲ್ಲಿ ಉಳಿಸು
+download-save-where-3 =
+    .aria-label = ಕಡತಗಳನ್ನು ಇಲ್ಲಿ ಉಳಿಸು
 download-header = ಡೌನ್‍ಲೋಡ್‍ಗಳು
 download-save-where = ಕಡತಗಳನ್ನು ಇಲ್ಲಿ ಉಳಿಸು
     .accesskey = v
@@ -151,9 +154,11 @@ applications-filter =
 applications-type-column =
     .label = ವಿಷಯದ ಬಗೆ
     .accesskey = T
+applications-type-heading = ವಿಷಯದ ಬಗೆ
 applications-action-column =
     .label = ಕಾರ್ಯ
     .accesskey = A
+applications-action-heading = ಕಾರ್ಯ
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } ಕಡತ
@@ -175,11 +180,11 @@ applications-manage-app =
 applications-always-ask =
     .label = ಪ್ರತಿ ಬಾರಿಯೂ ಕೇಳು
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } ಅನ್ನು ಬಳಸು ({ -brand-short-name } ನಲ್ಲಿ)
 
@@ -200,11 +205,16 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
 play-drm-content-learn-more = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
 update-application-title = { -brand-short-name } ನವೀಕರಣಗಳು
+# Variables:
+# $version (string) - Firefox version
 update-application-version = ಆವೃತ್ತಿ{ $version } <a data-l10n-name="learn-more">ಹೊಸತೇನಿದೆ</a>
+update-history-2 =
+    .label = ಅಪ್ಡೇಟ್ ಇತಿಹಾಸವನ್ನು ತೋರಿಸು
+    .accesskey = p
 update-history =
     .label = ಅಪ್ಡೇಟ್ ಇತಿಹಾಸವನ್ನು ತೋರಿಸು…
     .accesskey = p
@@ -226,11 +236,13 @@ performance-allow-hw-accel =
 performance-limit-content-process-option = ಪರಿವಿಡಿ ಪ್ರಕ್ರೀಯೆ ಮಟ್ಟ
     .accesskey = L
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (ಪೂರ್ವನಿಯೋಜಿತ)
+performance-group =
+    .label = ಕಾರ್ಯಕ್ಷಮತೆ
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = ವೀಕ್ಷಣೆ
 browsing-use-autoscroll =
@@ -246,6 +258,8 @@ browsing-use-cursor-navigation =
     .label = ಪುಟದಲ್ಲಿ ಸಂಚರಿಸಲು ಎಲ್ಲಾ ಸಮಯದಲ್ಲೂ ತೆರೆಸೂಚಕ ಕೀಲಿಗಳನ್ನು ಬಳಸು
     .accesskey = c
 browsing-cfr-recommendations-learn-more = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
+browsing-group =
+    .label = ವೀಕ್ಷಣೆ
 
 ## General Section - Proxy
 
@@ -255,12 +269,17 @@ network-proxy-connection-settings =
     .label = ಸಿದ್ಧತೆಗಳು...
     .accesskey = e
 
-## Home Section
+## Home Section - Default Browser
 
+set-as-my-default-browser-2 =
+    .label = ಪೂರ್ವನಿಯೋಜಿತವನ್ನಾಗಿ ಮಾಡು
+    .accesskey = D
 
-## Home Section - Home Page Customization
+## Custom Homepage subpage
 
 home-newtabs-mode-label = ಹೊಸ ಟ್ಯಾಬ್ ಗಳು
+home-homepage-new-tabs =
+    .label = ಹೊಸ ಟ್ಯಾಬ್ ಗಳು
 home-mode-choice-blank =
     .label = ಖಾಲಿ ಪುಟ
 home-homepage-custom-url =
@@ -285,11 +304,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = ಜಾಲದ ಹುಡುಕಾಟ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = { $provider } ರಿಂದ ಶಿಫಾರಸುಮಾಡುಲಾಗಿದೆ
 
@@ -320,6 +336,8 @@ search-engine-default-header = ಪೂರ್ವನಿಯೋಜಿತ ಹುಡು
 search-suggestions-option =
     .label = search ಸಲಹೆಗಳನ್ನು ತೋರಿಸು
     .accesskey = s
+search-suggestions-cant-show-2 =
+    .message = ಎಂದಿಗೂ ಸಹ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಡ ಎಂದು ನೀವು { -brand-short-name } ಅನ್ನು ಸಂರಚಿಸಿರುವುದರಿಂದ ಹುಡುಕುವಾಗ ಸ್ಥಳದ ಪಟ್ಟಿಯ ಫಲಿತಾಂಶಗಳಲ್ಲಿ ಯಾವುದೆ ಸಲಹೆಗಳನ್ನು ತೋರಿಸಲಾಗುವುದಿಲ್ಲ.
 search-suggestions-cant-show = ಎಂದಿಗೂ ಸಹ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಡ ಎಂದು ನೀವು { -brand-short-name } ಅನ್ನು ಸಂರಚಿಸಿರುವುದರಿಂದ ಹುಡುಕುವಾಗ ಸ್ಥಳದ ಪಟ್ಟಿಯ ಫಲಿತಾಂಶಗಳಲ್ಲಿ ಯಾವುದೆ ಸಲಹೆಗಳನ್ನು ತೋರಿಸಲಾಗುವುದಿಲ್ಲ.
 search-choose-engine-column =
     .label = ಹುಡುಕು ಎಂಜಿನ್‌
@@ -336,13 +354,19 @@ search-find-more-link = ಇನ್ನಷ್ಟು ಹುಡುಕು ಎಂಜಿ
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = ಬಳಸಲ್ಪಟ್ಟ ಕೀಲಿಪದ
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = "{ $name }" ನಿಂದ ಈಗಾಗಲೆ ಬಳಸಲ್ಪಡುತ್ತಿರುವ ಒಂದು ಕೀಲಿಪದವನ್ನು ಆಯ್ಕೆ ಮಾಡಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಬೇರೆಯದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.
 search-keyword-warning-bookmark = ಒಂದು ಬುಕ್‌ಮಾರ್ಕಿನಿಂದ ಈಗಾಗಲೆ ಬಳಸಲ್ಪಡುತ್ತಿರುವ ಒಂದು ಕೀಲಿಪದವನ್ನು ಆಯ್ಕೆ ಮಾಡಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಬೇರೆಯದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.
+search-engine-group =
+    .label = ಪೂರ್ವನಿಯೋಜಿತ ಹುಡುಕು ಎಂಜಿನ್
+search-default-engine =
+    .aria-label = ಪೂರ್ವನಿಯೋಜಿತ ಹುಡುಕು ಎಂಜಿನ್
 
 ## Containers Section
 
 containers-header = ಕಂಟೈನರ್ ಟ್ಯಾಬ್‍‍ಗಳು‍
+containers-section-header =
+    .heading = ಕಂಟೈನರ್ ಟ್ಯಾಬ್‍‍ಗಳು‍
 containers-add-button =
     .label = ಹೊಸ ಕಂಟೈನರ್ ಸೇರಿಸಿ
     .accesskey = A
@@ -372,9 +396,13 @@ sync-profile-picture-with-alt =
     .alt = ಪ್ರೊಫೈಲ್ ಚಿತ್ರವನ್ನು ಬದಲಾಯಿಸು
 sync-manage-account = ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸು
     .accesskey = o
+sync-manage-account2 =
+    .label = ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸು
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } ಪರಿಶೀಲಿಸಲಾಗಿಲ್ಲ.
 sync-signedin-login-failure = ಮರಳಿ ಸಂಪರ್ಕಿತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಸೈನ್‌ ಇನ್ ಆಗಿ { $email }
@@ -387,12 +415,6 @@ sync-remove-account =
 sync-sign-in =
     .label = ಒಳಗೆ ಪ್ರವೇಶಿಸು‍
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -410,6 +432,16 @@ sync-engine-tabs =
 ## The device name controls.
 
 sync-device-name-header = ಸಾಧನದ ಹೆಸರು
+sync-device-name-header-2 =
+    .label = ಸಾಧನದ ಹೆಸರು
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ಸಾಧನದ ಹೆಸರು
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ಸಾಧನದ ಹೆಸರನ್ನು ಬದಲಿಸಿ
+    .accesskey = h
 sync-device-name-change =
     .label = ಸಾಧನದ ಹೆಸರನ್ನು ಬದಲಿಸಿ…
     .accesskey = h
@@ -434,10 +466,7 @@ sync-verification-not-sent-body = ನಾವು ಈ ಸಮಯದಲ್ಲಿ ಒ�
 
 privacy-header = ವೀಕ್ಷಕದ ಗೌಪ್ಯತೆ
 
-## Privacy Section - Logins and Passwords
-
-
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = ವಿನಾಯಿತಿಗಳು...
@@ -445,16 +474,13 @@ forms-exceptions =
 forms-saved-logins =
     .label = ಉಳಿಸಿದ ಲಾಗಿನ್‌ಗಳು...
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = ಮಾಸ್ಟರ್ ಗುಪ್ತಪದವನ್ನು ಬದಲಾಯಿಸು...
     .accesskey = M
 forms-master-pw-fips-desc = ಗುಪ್ತಪದವನ್ನು ಬದಲಾಯಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -476,6 +502,9 @@ history-remember-option-never =
     .label = ಎಂದಿಗೂ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಡ
 history-remember-option-custom =
     .label = ಇತಿಹಾಸಕ್ಕಾಗಿ ನಿಮ್ಮ ಇಚ್ಛೆಯ ಸಿದ್ಧತೆಗಳನ್ನು ಬಳಸಿ
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ಖಾಸಗಿ ಜಾಲ ವೀಕ್ಷಣದ ರೀತಿಯದ್ದೆ ಆದ ಸಿದ್ಧತೆಗಳನ್ನು ಬಳಸುತ್ತದೆ, ಹಾಗು ನೀವು ಜಾಲವನ್ನು ವೀಕ್ಷಿಸುವಾಗ ಯಾವುದೆ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳುವುದಿಲ್ಲ.
 history-dontremember-description = { -brand-short-name } ಖಾಸಗಿ ಜಾಲ ವೀಕ್ಷಣದ ರೀತಿಯದ್ದೆ ಆದ ಸಿದ್ಧತೆಗಳನ್ನು ಬಳಸುತ್ತದೆ, ಹಾಗು ನೀವು ಜಾಲವನ್ನು ವೀಕ್ಷಿಸುವಾಗ ಯಾವುದೆ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳುವುದಿಲ್ಲ.
 history-private-browsing-permanent =
     .label = ಯಾವಾಗಲೂ ಖಾಸಗಿ ವೀಕ್ಷಣೆ ಕ್ರಮವನ್ನು ಬಳಸು
@@ -489,6 +518,8 @@ history-clear-on-close-option =
 history-clear-on-close-settings =
     .label = ಸಿದ್ಧತೆಗಳು…
     .accesskey = t
+history-group =
+    .label = ಇತಿಹಾಸ
 
 ## Privacy Section - Site Data
 
@@ -500,14 +531,10 @@ sitedata-clear =
 sitedata-settings =
     .label = ದತ್ತಾಂಶವನ್ನು ನಿರ್ವಹಿಸು…
     .accesskey = M
+cookies-site-data-group =
+    .label = ಕುಕ್ಕಿಗಳು ಮತ್ತು ತಾಣ ದತ್ತಾಂಶ
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = ವಿಳಾಸ ಪಟ್ಟಿ
 addressbar-suggest = ವಿಳಾಸ ಪಟ್ಟಿಯನ್ನು ಬಳಸುವಾಗ, ಇದನ್ನು ಸಲಹೆ ಮಾಡು
@@ -525,19 +552,6 @@ addressbar-suggestions-settings = ಹುಡುಕು ಯಂತ್ರಗಳ ಸ�
 ## Privacy Section - Content Blocking
 
 content-blocking-learn-more = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
-
-# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
-
-
-## Privacy Section - Tracking
-
 
 ## Privacy Section - Permissions
 
@@ -565,15 +579,20 @@ permissions-block-popups =
 permissions-addon-exceptions =
     .label = ವಿನಾಯಿತಿಗಳು...
     .accesskey = E
+permissions-location2 =
+    .label = ಸ್ಥಳ
+permissions-camera2 =
+    .label = ಕ್ಯಾಮೆರಾ
+permissions-microphone2 =
+    .label = ಮೈಕ್ರೊಫೋನ್
+permissions-notification2 =
+    .label = ಸೂಚನೆಗಳು
 
 ## Privacy Section - Data Collection
 
 collection-header = { -brand-short-name } ದತ್ತಾಂಶ ಸಂಗ್ರಹಣೆ ಮತ್ತು ಬಳಕೆ
 collection-privacy-notice = ಗೌಪ್ಯತಾ ಸೂಚನೆ
 collection-health-report-link = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -604,12 +623,7 @@ certs-view =
 certs-devices =
     .label = ಸುರಕ್ಷತಾ ಸಾಧನಗಳು…
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS ಅನ್ನು ಶಕ್ತಗೊಳಿಸಿ
 
 ## The following strings are used in the Download section of settings
 

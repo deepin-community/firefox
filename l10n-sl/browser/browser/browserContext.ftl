@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Odpri povezavo v novem zavihku
     .accesskey = Z
+main-context-menu-open-link-split-view =
+    .label = Odpri povezavo v razdeljenem pogledu
+    .accesskey = z
 main-context-menu-open-link-container-tab =
     .label = Odpri povezavo v novem zavihku vsebnika
     .accesskey = O
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Shrani povezavo v { -pocket-brand-name }
     .accesskey = e
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiraj e-poštni naslov
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiraj povezavo
     .accesskey = i
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopiraj povezavo brez sledilnih parametrov
-    .accesskey = z
+main-context-menu-preview-link =
+    .label = Predogled povezave
+    .accesskey = e
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiraj očiščeno povezavo
+    .accesskey = č
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Skrij gradnike
     .accesskey = g
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Celoten zaslon
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Pokaži opis
     .accesskey = S
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Išči sliko z { $engine }
+    .accesskey = č
 main-context-menu-video-save-as =
     .label = Shrani video kot …
     .accesskey = v
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Pošlji zvok po e-pošti …
     .accesskey = o
+main-context-menu-send-to-device-2 =
+    .label = Pošlji na napravo
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Pošlji na mobilno napravo
+    .accesskey = n
+main-context-menu-send-to-mobile-sign-in = Za pošiljanje zavihkov se prijavite
+main-context-menu-send-to-mobile-enable-sync2 = Za pošiljanje zavihka omogočite sinhronizacijo
+main-context-menu-send-to-mobile-connect-phone2 = Poveži telefon
+main-context-menu-send-to-mobile-device-missing2 = Ne vidite svoje naprave?
+main-context-menu-send-to-mobile-sign-in-from-link = Za pošiljanje povezave se prijavite
+main-context-menu-send-to-mobile-sign-in-from-page = Za pošiljanje strani se prijavite
+main-context-menu-send-to-mobile-enable-sync3 = Za pošiljanje zavihkov vklopite sinhronizacijo
+main-context-menu-send-to-mobile-enable-sync-from-link = Za pošiljanje povezave vklopite sinhronizacijo
+main-context-menu-send-to-mobile-enable-sync-from-page = Za pošiljanje strani vklopite sinhronizacijo
+main-context-menu-send-to-mobile-connect-phone3 = Za pošiljanje zavihkov povežite drugo napravo
+main-context-menu-send-to-mobile-connect-phone-from-link = Za pošiljanje povezave povežite drugo napravo
+main-context-menu-send-to-mobile-connect-phone-from-page = Za pošiljanje strani povežite drugo napravo
 main-context-menu-save-to-pocket =
     .label = Shrani stran v { -pocket-brand-name }
     .accesskey = s
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Pošlji stran na napravo
     .accesskey = N
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Uporabi shranjeno prijavo
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Dodaj ključno besedo k iskanju …
     .accesskey = K
+main-context-menu-add-engine =
+    .label = Dodaj iskalnik
+    .accesskey = D
 main-context-menu-link-send-to-device =
     .label = Pošlji povezavo na napravo
     .accesskey = N
+main-context-menu-link-send-to-mobile =
+    .label = Pošlji povezavo na mobilno napravo
+    .accesskey = n
 main-context-menu-frame =
     .label = Ta okvir
     .accesskey = a
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Razkrij geslo
     .accesskey = k
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Novo
+main-context-menu-pdfjs-copy-page =
+    .label = Kopiraj stran
+main-context-menu-pdfjs-cut-page =
+    .label = Izreži stran
+main-context-menu-pdfjs-delete-page =
+    .label = Izbriši stran
+main-context-menu-pdfjs-save-page =
+    .label = Shrani izbor kot …

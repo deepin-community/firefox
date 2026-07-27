@@ -15,7 +15,25 @@ webext-perms-header-with-perms = Të shtohet { $extension }? Ky zgjerim do të k
 webext-perms-header-unsigned = Të shtohet { $extension }? Ky zgjerim është i paverifikuar. Zgjerimet keqdashëse mund të vjedhin të dhëna tuajat private ose të komprometojnë kompjuterin tuaj. Shtojeni vetëm nëse e besoni burimin.
 webext-perms-header-unsigned-with-perms = Të shtohet { $extension }? Ky zgjerim është i paverifikuar. Zgjerimet keqdashëse mund të vjedhin të dhëna tuajat private ose të komprometojnë kompjuterin tuaj. Shtojeni vetëm nëse e besoni burimin. Kjo shtesë do të ketë leje të:
 webext-perms-sideload-header = { $extension } u shtua
+webext-perms-optional-perms-header2 = { $extension } lyp leje shtesë
 webext-perms-optional-perms-header = { $extension } lyp leje shtesë.
+webext-perms-header2 = Shtoni { $extension }
+webext-perms-list-intro-unsigned = Ky zgjerim i paverifikuar mund ta vërë në rrezik privatësinë tuaj, ose të komprometojë pajisjen tuaj/ Shtojeni vetëm nëse i zini besë burimit.
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = Leje të domosdoshme:
+webext-perms-header-optional-settings = Rregullime opsionale:
+webext-perms-header-update-required-perms = Leje të reja të domosdoshme:
+webext-perms-header-optional-required-perms = Leje e re:
+webext-perms-header-data-collection-perms = Grumbullim i domosdoshëm të dhënash:
+webext-perms-header-data-collection-is-none = Grumbullim të dhënash:
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = Grumbullim i ri i domosdoshëm të dhënash:
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = Grumbullim i ri të dhënash:
 
 ##
 
@@ -33,6 +51,9 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Anuloje
     .accesskey = A
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = { $extension } është përditësuar. Duhet të miratoni lejet e reja përpara se të instalohet versioni i përditësuar. Zgjedhja e “Anuloje” do të mbajë versionin e tanishëm të zgjerimit.
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = { $extension } është përditësuar. Duhet të miratoni lejet e reja përpara se të instalohet versioni i përditësuar. Zgjedhja e “Anuloje” do të mbajë versionin e tanishëm të zgjerimit. Ky zgjerim do të ketë leje të:
@@ -69,6 +90,44 @@ webext-perms-host-description-too-many-sites =
         [one] Të hyjë në të dhënat tuaja te { $domainCount } sajt tjetër
        *[other] Të hyjë në të dhënat tuaja te { $domainCount } sajte të tjerë
     }
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = Të hyjë në të dhënat tuaja për sajte në përkatësi { $domain }
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains =
+    { $domainCount ->
+        [one] Të hyjë në të dhënat tuaja për sajte në përkatësi { $domainCount }
+       *[other] Të hyjë në të dhënat tuaja për sajte në përkatësi { $domainCount }
+    }
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = Zhvilluesi thotë se ky zgjerim s’lyp mbledhje të dhënash.
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = Zhvilluesi thotë se ky zgjerim grumbullon: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = Zhvilluesi thotë se zgjerimi do të grumbullojë: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = Zhvilluesi thotë se zgjerimi dëshiron të grumbullojë: { $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text-with-data-collection = { $extension } lyp rregullim të ri për t’u përditësuar
+webext-perms-update-list-intro-with-data-collection = Anulojeni, që të mbahet versioni juaj i tanishëm dhe rregullimet e tanishme, ose përditësojeni, për të marrë versionin dhe ri dhe miratuar ndryshimet.
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } lyp rregullime shtesë
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = { $extension } lyp grumbullim shtesë të dhënash
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -103,3 +162,8 @@ webext-site-perms-header-unsigned-with-perms = Të shtohet { $extension }? Ky zg
 
 webext-site-perms-midi = Të përdorë pajisje MIDI
 webext-site-perms-midi-sysex = Të përdorë pajisje MIDI me Mbulim për SysEx
+
+## Colorway theme migration
+
+webext-colorway-theme-migration-notification-message = <b>Tema juaj e ngjyrimit u hoq.</b> { -brand-shorter-name }-i përditësoi koleksionin e vet të ngjyrimeve. Versionet më të reja i gjeni te saji i shtesave.
+webext-colorway-theme-migration-notification-button = Merrni ngjyrime të përditësuara

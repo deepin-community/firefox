@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,11 @@
 #ifndef mozilla_JSEventHandler_h_
 #define mozilla_JSEventHandler_h_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/dom/EventHandlerBinding.h"
+#include "nsAtom.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsAtom.h"
 #include "nsIDOMEventListener.h"
 #include "nsIScriptContext.h"
 
@@ -144,16 +141,12 @@ class TypedEventHandler {
  * is expected to call Disconnect()!
  */
 
-#define NS_JSEVENTHANDLER_IID                        \
-  {                                                  \
-    0x4f486881, 0x1956, 0x4079, {                    \
-      0x8c, 0xa0, 0xf3, 0xbd, 0x60, 0x5c, 0xc2, 0x79 \
-    }                                                \
-  }
+#define NS_JSEVENTHANDLER_IID \
+  {0x4f486881, 0x1956, 0x4079, {0x8c, 0xa0, 0xf3, 0xbd, 0x60, 0x5c, 0xc2, 0x79}}
 
 class JSEventHandler : public nsIDOMEventListener {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_JSEVENTHANDLER_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_JSEVENTHANDLER_IID)
 
   JSEventHandler(dom::EventTarget* aTarget, nsAtom* aType,
                  const TypedEventHandler& aTypedHandler);
@@ -215,8 +208,6 @@ class JSEventHandler : public nsIDOMEventListener {
   RefPtr<nsAtom> mEventName;
   TypedEventHandler mTypedHandler;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(JSEventHandler, NS_JSEVENTHANDLER_IID)
 
 }  // namespace mozilla
 

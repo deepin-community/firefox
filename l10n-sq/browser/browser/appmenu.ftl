@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Shkarkime
 appmenuitem-passwords =
     .label = Fjalëkalime
+appmenuitem-extensions-and-themes =
+    .label = Zgjerime dhe tema
+appmenuitem-extensions =
+    .label = Zgjerime
 appmenuitem-addons-and-themes =
     .label = Shtesa dhe Tema
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Njëkohësoni dhe ruani të dhëna
 appmenu-fxa-signed-in-label = Hyni
 appmenu-fxa-setup-sync =
     .label = Aktivizoni Sync-un…
+appmenu-fxa-setup-sync-new = Aktivizoje
 appmenuitem-save-page =
     .label = Ruajeni Faqen Si…
+appmenuitem-fxa-sync-off-title = Njëkohësimi është i çaktivizuar
+appmenuitem-fxa-sync-off-description = Mbroni dhe përdorni faqerojtësit, fjalëkalimet tuaja dhe të tjera gjëra, prej ngado.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Hap panelin e profilizuesit
+    .tooltiptext = Hapni panelin e profilizuesit
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Model për hetim të metash audio dhe video nën { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Model për hetim të metash në nxënie nga makinat në { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Nxënie Nga Makinat
 profiler-popup-presets-networking-description = Model për hetim të metash punimi në rrjet në { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Punim në rrjet
@@ -199,6 +212,7 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Paracaktim për diagnostikim në { -brand-shorter-name }. Ngarkesë e madhe, mos e përdorni për punë funksionimi, por përdoreni për t’u përqendruar te të kuptuarit e sjelljes së shfletuesit.
 profiler-popup-presets-debug-label =
     .label = Diagnostikoje
+profiler-popup-presets-web-compat-description = Paracaktim i rekomanduar për diagnostikim problemesh përputhjeje web, në vend se ndjekjeje funksionimi.
 profiler-popup-presets-custom-label =
     .label = Vetjak
 
@@ -230,7 +244,7 @@ appmenu-get-help =
     .label = Merrni ndihmë
     .accesskey = M
 appmenu-help-more-troubleshooting-info =
-    .label = Më Tepër të Dhëna Diagnostikimi
+    .label = Më tepër hollësi diagnostikimi
     .accesskey = D
 appmenu-help-report-site-issue =
     .label = Njoftoni Problem Sajti…
@@ -277,5 +291,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Merrni sinjalizime cenimesh të dhënash
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskoni email-in dhe telefonin tuaj të njëmendtë
+appmenuitem-services-relay-description = Hap pultin e maskave të email-eve
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Merrni mbrojtje të tërë pajisjes
 appmenuitem-vpn-description = Mbroni veprimtari tuaj internetore
+appmenu-services-header = Shërbimet e mia
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Provoni mjete të tjera mbrojtjeje nga Mozilla:
+appmenu-other-protection-header = Provoni mjete të tjera mbrojtjeje nga { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Profile të tjerë
+appmenu-manage-profiles =
+    .label = Administroni profile
+appmenu-copy-profile =
+    .label = Kopjoje këtë profil
+appmenu-create-profile =
+    .label = Profil i ri
+appmenu-edit-profile =
+    .aria-label = Përpunoni profil
+appmenu-profiles-2 =
+    .label = Profile

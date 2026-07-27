@@ -10,18 +10,18 @@ Simulates a COLD MAIN (app icon launch) launch to report FullyDrawn, e.g when th
 * COLD VIEW Nav start:
 An app link launch to load a page. It measures until "navigation starts" which is an internal Gecko event that indicates we're starting to load a page.
 
-### What to do after a performance regression is reported.
+## What to do after a performance regression is reported.
 
 Weekly after, the performance team runs the tests, if there is any regression, they will open a ticket, providing the dates between when was the last non-regressing and regressing version (an [example](https://github.com/mozilla-mobile/fenix/issues/25253) ticket). **These dates are important** for us to discover which commit introduced the regression. As we would like to identify which commit is the offending one, we need to bitset the commit range from non-regressing to regressing version. Fortunately for us, the performance team has a tool that can help us with that it’s called [backfil](https://github.com/mozilla-mobile/perf-tools/blob/main/backfill.py).
 
 The tool can take a commit range start/end, build all the APKs, run the performance tests and provide the same data that it’s plotted [here](https://earthangel-b40313e5.influxcloud.net/d/s3AT6t7nk/fenix-startup-nightly-via-backfill-py?orgId=1). With it we can identify the offending commit.
 
-### Install the required dependencies.
+## Install the required dependencies.
 
 * Pull the [perf-tools](https://github.com/mozilla-mobile/perf-tools) repository, and on it follow the [configuration instructions](https://github.com/mozilla-mobile/perf-tools#configuration).
 * Make you can run `adb` on the terminal, as the performance tools we use it through the scripts.
 
-### Finding the regressing commit.
+## Finding the regressing commit.
 
 Now that you have all the dependencies installed, we will need to find the commit hash, where there the regression was reported and when the regression was not present, as [backfill](https://github.com/mozilla-mobile/perf-tools/blob/main/backfill.py), need them as parameters.
 
@@ -55,7 +55,7 @@ https://github.com/mozilla-mobile/fenix/compare/98455c01eeba7c63775f18817cd079f5
 
 With it we can see each commit that could introduced the regression.
 
-### Using backfill.py
+## Using backfill.py
 
 With the info that we found above, execute `backfill.py`
 
@@ -70,7 +70,7 @@ Where:
 *  **--repository_to_test_path** is the path where your local Fenix repository is.
 
 
-**Note**: Make sure your repository includes all the tokens (Sentry, Nimbus, … etc) that we include in our release builds, as not adding them could affect the test results, as we want the APKs to be the same [experience as normal users will have](https://wiki.mozilla.org/Performance/Fenix#How_to_measure_what_users_experience). Part of this is making sure you have [autosignReleaseWithDebugKey in your local.properties](https://github.com/mozilla-mobile/fenix#automatically-sign-release-builds).
+**Note**: Make sure your repository includes all the tokens (Sentry, Nimbus, … etc) that we include in our release builds, as not adding them could affect the test results, as we want the APKs to be the same [experience as normal users will have](https://wiki.mozilla.org/Performance/Fenix#How_to_measure_what_users_experience).
 
 
 🕐 Be patient, as we will have to build an APK for each possible commit in the range and for this range there [are 19 commits](https://github.com/mozilla-mobile/fenix/compare/98455c01eeba7c63775f18817cd079f5d08b4513...2f7f5988fccad2cf2043eed4b6849b32a4c76048) then we will build 19 APKs, and run the performance test for each one.

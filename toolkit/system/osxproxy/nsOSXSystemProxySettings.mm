@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -75,7 +73,7 @@ nsOSXSystemProxySettings::GetSystemWPADSetting(bool* aSystemWPADSetting) {
 }
 
 // Mapping of URI schemes to SystemConfiguration keys
-const nsOSXSystemProxySettings::SchemeMapping
+MOZ_RUNINIT const nsOSXSystemProxySettings::SchemeMapping
     nsOSXSystemProxySettings::gSchemeMappingList[] = {
         {"http", kSCPropNetProxiesHTTPEnable, kSCPropNetProxiesHTTPProxy,
          kSCPropNetProxiesHTTPPort, false},
@@ -281,11 +279,56 @@ nsresult nsOSXSystemProxySettings::GetPACURI(nsACString& aResult) {
   NS_OBJC_END_TRY_BLOCK_RETURN(NS_ERROR_FAILURE);
 }
 
+NS_IMETHODIMP nsOSXSystemProxySettings::SetSystemProxyInfo(
+    const nsACString& aHost, int32_t aPort, const nsACString& aPacFileUrl,
+    const nsTArray<nsCString>& aExclusionList) {
+  MOZ_ASSERT(false, "Did not expect to be called on this platform");
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP nsOSXSystemProxySettings::GetSystemProxyDirect(bool* aResult) {
+  NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
+
+  if (mozilla::toolkit::system::HasProxyEnvVars()) {
+    *aResult = false;
+    return NS_OK;
+  }
+
+  if (!mProxyDict) {
+    *aResult = true;
+    return NS_OK;
+  }
+
+  if (IsAutoconfigEnabled()) {
+    *aResult = false;
+    return NS_OK;
+  }
+
+  for (const SchemeMapping* keys = gSchemeMappingList; keys->mScheme; keys++) {
+    NSNumber* enabled = [mProxyDict objectForKey:(NSString*)keys->mEnabled];
+    if (enabled && [enabled intValue] != 0) {
+      *aResult = false;
+      return NS_OK;
+    }
+  }
+
+  *aResult = true;
+  return NS_OK;
+
+  NS_OBJC_END_TRY_BLOCK_RETURN(NS_ERROR_FAILURE);
+}
+
 nsresult nsOSXSystemProxySettings::GetProxyForURI(const nsACString& aSpec,
                                                   const nsACString& aScheme,
                                                   const nsACString& aHost,
                                                   const int32_t aPort,
                                                   nsACString& aResult) {
+  nsresult rv = mozilla::toolkit::system::GetProxyFromEnvironment(
+      aScheme, aHost, aPort, aResult);
+  if (NS_SUCCEEDED(rv)) {
+    return rv;
+  }
+
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   int32_t proxyPort;
@@ -408,6 +451,23 @@ OSXSystemProxySettingsAsync::GetPACURI(nsACString& aResult) {
 NS_IMETHODIMP
 OSXSystemProxySettingsAsync::GetSystemWPADSetting(bool* aSystemWPADSetting) {
   return nsOSXSystemProxySettings::GetSystemWPADSetting(aSystemWPADSetting);
+}
+
+NS_IMETHODIMP OSXSystemProxySettingsAsync::SetSystemProxyInfo(
+    const nsACString& aHost, int32_t aPort, const nsACString& aPacFileUrl,
+    const nsTArray<nsCString>& aExclusionList) {
+  MOZ_ASSERT(false, "Did not expect to be called on this platform");
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP OSXSystemProxySettingsAsync::GetSystemProxyDirect(bool* aResult) {
+  // mConfig is written only in OnProxyConfigChangedInternal(), which runs on
+  // the main thread (GetMainThreadOnly() returns true for this class), so this
+  // read is safe without a mutex.
+  *aResult = !mozilla::toolkit::system::HasProxyEnvVars() &&
+             mConfig.PACUrl().IsEmpty() &&
+             mConfig.Rules().mProxyServers.empty();
+  return NS_OK;
 }
 
 NS_IMETHODIMP

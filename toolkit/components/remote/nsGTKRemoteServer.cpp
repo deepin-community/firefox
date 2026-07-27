@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=8:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,9 +15,7 @@
 
 #include "nsGTKToolkit.h"
 
-#ifdef MOZ_WAYLAND
-#  include "mozilla/WidgetUtilsGtk.h"
-#endif
+#include "mozilla/X11Util.h"
 
 nsresult nsGTKRemoteServer::Startup(const char* aAppName,
                                     const char* aProfileName) {
@@ -30,11 +25,9 @@ nsresult nsGTKRemoteServer::Startup(const char* aAppName,
     return NS_ERROR_ALREADY_INITIALIZED;
   }
 
-#ifdef MOZ_WAYLAND
-  if (mozilla::widget::GdkIsWaylandDisplay()) {
+  if (!mozilla::DefaultXDisplay()) {
     return NS_ERROR_FAILURE;
   }
-#endif
 
   XRemoteBaseStartup(aAppName, aProfileName);
 

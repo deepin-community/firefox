@@ -1,5 +1,4 @@
-/* vim: sw=2 ts=2 et lcs=trail\:.,tab\:>~ :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -46,7 +45,7 @@ NS_IMPL_ISUPPORTS(AsyncStatementCallback, mozIStorageStatementCallback)
 
 NS_IMETHODIMP
 WeakAsyncStatementCallback::HandleResult(mozIStorageResultSet* aResultSet) {
-  MOZ_ASSERT(false, "Was not expecting a resultset, but got it.");
+  MOZ_DIAGNOSTIC_CRASH("Was not expecting a resultset, but got it.");
   return NS_OK;
 }
 
@@ -72,6 +71,11 @@ WeakAsyncStatementCallback::HandleError(mozIStorageError* aError) {
   NS_WARNING(warnMsg.get());
 #endif
 
+  return NS_OK;
+}
+
+nsresult PendingStatementCallback::BindParams(mozIStorageBindingParamsArray*) {
+  MOZ_DIAGNOSTIC_CRASH("Must override");
   return NS_OK;
 }
 

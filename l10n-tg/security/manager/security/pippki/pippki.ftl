@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Намоиш додан
 download-cert-view-text = Тафтиш кардани гувоҳномаи маркази иҷозатномадиҳӣ
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Дода шуд аз: «{ $issuedBy }»
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Захирагоҳ: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ин қарор дар хотир нигоҳ дошта шавад
+client-auth-cert-remember-label = Ин қарор дар хотир нигоҳ дошта шавад:
+client-auth-cert-remember-never =
+    .label = Як маротиба
+client-auth-cert-remember-always =
+    .label = Ба таври доимӣ
+client-auth-cert-remember-temporarily =
+    .label = Барои ин ҷаласа
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Ниҳонвожаи нусхаи эҳтиётии гувоҳнома (такроран):
 set-password-reminder = Диққат: Агар шумо ниҳонвожаи нусхаи эҳтиётии гувоҳномаи худро фаромӯш кунед, шумо дигар наметавонед, ки ин нусхаи эҳтиётиро барқарор созед. Лутфан, онро сабт карда, дар ҷойи бехатар нигоҳ доред.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Санҷиши ҳаққонияти маҳфуз
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Лутфан, санҷиши ҳаққониятро бо дастгоҳи амният ({ $tokenName }) иҷро намоед. Тазри иҷрокунии ин амал аз дастгоҳ вобаста аст (барои мисол, ба воситаи хонандаи нақши ангуштон ё воридкунии рамз ба воситаи клавиатураи рақамӣ).
 
 ## Protected authentication alert
 

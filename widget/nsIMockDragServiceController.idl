@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,7 +20,7 @@ interface nsIMockDragServiceController : nsISupports
   cenum EventType : 8 {
     eDragEnter = 0,
     eDragOver = 1,
-    eDragLeave = 2,
+    eDragExit = 2,
     eDrop = 3,
     eMouseDown = 4,
     eMouseMove = 5,

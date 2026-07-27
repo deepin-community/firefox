@@ -147,7 +147,7 @@ add_task(async function testHideAndShowBlackBoxedFiles() {
   await waitForDispatch(dbg.store, "BLACKBOX_WHOLE_SOURCES");
 
   info("Assert and click the hide ignored files button in the settings menu");
-  await toggleDebbuggerSettingsMenuItem(dbg, {
+  await toggleSourcesTreeSettingsMenuItem(dbg, {
     className: ".debugger-settings-menu-item-hide-ignored-sources",
     isChecked: false,
   });
@@ -208,7 +208,7 @@ function assertSourceNodeIsBlackBoxed(dbg, sourceFilename, shouldBeBlackBoxed) {
   const treeItem = findSourceNodeWithText(dbg, sourceFilename);
   ok(treeItem, `Found tree item for ${sourceFilename}`);
   is(
-    !!treeItem.querySelector(".img.blackBox"),
+    !!treeItem.querySelector(".dbg-img-blackBox"),
     shouldBeBlackBoxed,
     `${sourceFilename} is ${shouldBeBlackBoxed ? "" : "not"} blackboxed`
   );

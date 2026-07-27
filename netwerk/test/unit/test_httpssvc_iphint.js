@@ -15,20 +15,26 @@ const { TestUtils } = ChromeUtils.importESModule(
 );
 
 add_setup(async function setup() {
-  h2Port = Services.env.get("MOZHTTP2_PORT");
-  Assert.notEqual(h2Port, null);
-  Assert.notEqual(h2Port, "");
-
+  trrServer = new TRRServer();
+  await trrServer.start();
+  h2Port = trrServer.port();
   trr_test_setup();
 
   Services.prefs.setBoolPref("network.dns.upgrade_with_https_rr", true);
   Services.prefs.setBoolPref("network.dns.use_https_rr_as_altsvc", true);
+  Services.prefs.setBoolPref(
+    "network.dns.https_rr.check_record_with_cname",
+    false
+  );
 
   registerCleanupFunction(async () => {
     trr_clear_prefs();
     Services.prefs.clearUserPref("network.dns.upgrade_with_https_rr");
     Services.prefs.clearUserPref("network.dns.use_https_rr_as_altsvc");
     Services.prefs.clearUserPref("network.dns.disablePrefetch");
+    Services.prefs.clearUserPref(
+      "network.dns.https_rr.check_record_with_cname"
+    );
     await trrServer.stop();
   });
 
@@ -40,12 +46,6 @@ add_setup(async function setup() {
 
 // Test if IP hint addresses can be accessed as regular A/AAAA records.
 add_task(async function testStoreiphint() {
-  trrServer = new TRRServer();
-  registerCleanupFunction(async () => {
-    await trrServer.stop();
-  });
-  await trrServer.start();
-
   Services.prefs.setIntPref("network.trr.mode", 3);
   Services.prefs.setCharPref(
     "network.trr.uri",
@@ -190,8 +190,6 @@ add_task(async function testStoreiphint() {
     Ci.nsIDNSService.RESOLVE_IP_HINT | Ci.nsIDNSService.RESOLVE_DISABLE_IPV6,
     ["1.2.3.4", "5.6.7.8"]
   );
-
-  await trrServer.stop();
 });
 
 function makeChan(url) {
@@ -215,11 +213,11 @@ function channelOpenPromise(chan, flags) {
 // Test if we can connect to the server with the IP hint address.
 add_task(async function testConnectionWithiphint() {
   Services.dns.clearCache(true);
-  Services.prefs.setIntPref("network.trr.mode", 3);
   Services.prefs.setCharPref(
     "network.trr.uri",
-    "https://127.0.0.1:" + h2Port + "/httpssvc_use_iphint"
+    "https://127.0.0.1:" + h2Port + "/doh?httpssvc_use_iphint=1"
   );
+  Services.prefs.setIntPref("network.trr.mode", 3);
 
   // Resolving test.iphint.com should be failed.
   let { inStatus } = await new TRRDNSListener("test.iphint.com", {
@@ -248,101 +246,104 @@ add_task(async function testConnectionWithiphint() {
   certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyData(
     false
   );
-
-  await trrServer.stop();
 });
 
 // Test the case that we failed to use IP Hint address because DNS cache
 // is bypassed.
-add_task(async function testiphintWithFreshDNS() {
-  trrServer = new TRRServer();
-  await trrServer.start();
-  Services.prefs.setIntPref("network.trr.mode", 3);
-  Services.prefs.setCharPref(
-    "network.trr.uri",
-    `https://foo.example.com:${trrServer.port()}/dns-query`
-  );
-  // To make sure NS_HTTP_REFRESH_DNS not be cleared.
-  Services.prefs.setBoolPref("network.dns.disablePrefetch", true);
+// Happy Eyeballs state machine stores the IP hint address from HTTPS RR,
+// so NS_HTTP_REFRESH_DNS has no effect here.
+add_task(
+  {
+    skip_if: () =>
+      Services.prefs.getBoolPref("network.http.happy_eyeballs_enabled", false),
+  },
+  async function testiphintWithFreshDNS() {
+    Services.prefs.setIntPref("network.trr.mode", 3);
+    Services.prefs.setCharPref(
+      "network.trr.uri",
+      `https://foo.example.com:${trrServer.port()}/dns-query`
+    );
+    // To make sure NS_HTTP_REFRESH_DNS not be cleared.
+    Services.prefs.setBoolPref("network.dns.disablePrefetch", true);
 
-  await trrServer.registerDoHAnswers("test.iphint.org", "HTTPS", {
-    answers: [
-      {
-        name: "test.iphint.org",
-        ttl: 55,
-        type: "HTTPS",
-        flush: false,
-        data: {
-          priority: 0,
-          name: "svc.iphint.net",
-          values: [],
+    await trrServer.registerDoHAnswers("test.iphint.org", "HTTPS", {
+      answers: [
+        {
+          name: "test.iphint.org",
+          ttl: 55,
+          type: "HTTPS",
+          flush: false,
+          data: {
+            priority: 0,
+            name: "svc.iphint.net",
+            values: [],
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
 
-  await trrServer.registerDoHAnswers("svc.iphint.net", "HTTPS", {
-    answers: [
-      {
-        name: "svc.iphint.net",
-        ttl: 55,
-        type: "HTTPS",
-        flush: false,
-        data: {
-          priority: 1,
+    await trrServer.registerDoHAnswers("svc.iphint.net", "HTTPS", {
+      answers: [
+        {
           name: "svc.iphint.net",
-          values: [
-            { key: "alpn", value: "h2" },
-            { key: "port", value: h2Port },
-            { key: "ipv4hint", value: "127.0.0.1" },
-          ],
+          ttl: 55,
+          type: "HTTPS",
+          flush: false,
+          data: {
+            priority: 1,
+            name: "svc.iphint.net",
+            values: [
+              { key: "alpn", value: "h2" },
+              { key: "port", value: h2Port },
+              { key: "ipv4hint", value: "127.0.0.1" },
+            ],
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
 
-  let { inRecord } = await new TRRDNSListener("test.iphint.org", {
-    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
-  });
+    let { inRecord } = await new TRRDNSListener("test.iphint.org", {
+      type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+    });
 
-  let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
-  Assert.equal(answer[0].priority, 1);
-  Assert.equal(answer[0].name, "svc.iphint.net");
+    let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
+    Assert.equal(answer[0].priority, 1);
+    Assert.equal(answer[0].name, "svc.iphint.net");
 
-  certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyData(
-    true
-  );
+    certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyData(
+      true
+    );
 
-  let chan = makeChan(`https://test.iphint.org/server-timing`);
-  chan.loadFlags |= Ci.nsIRequest.LOAD_FRESH_CONNECTION;
-  let [req] = await channelOpenPromise(
-    chan,
-    CL_EXPECT_FAILURE | CL_ALLOW_UNKNOWN_CL
-  );
-  // Failed because there no A record for "svc.iphint.net".
-  Assert.equal(req.status, Cr.NS_ERROR_UNKNOWN_HOST);
+    let chan = makeChan(`https://test.iphint.org/server-timing`);
+    chan.loadFlags |= Ci.nsIRequest.LOAD_FRESH_CONNECTION;
+    let [req] = await channelOpenPromise(
+      chan,
+      CL_EXPECT_FAILURE | CL_ALLOW_UNKNOWN_CL
+    );
+    // Failed because there no A record for "svc.iphint.net".
+    Assert.equal(req.status, Cr.NS_ERROR_UNKNOWN_HOST);
 
-  await trrServer.registerDoHAnswers("svc.iphint.net", "A", {
-    answers: [
-      {
-        name: "svc.iphint.net",
-        ttl: 55,
-        type: "A",
-        flush: false,
-        data: "127.0.0.1",
-      },
-    ],
-  });
+    await trrServer.registerDoHAnswers("svc.iphint.net", "A", {
+      answers: [
+        {
+          name: "svc.iphint.net",
+          ttl: 55,
+          type: "A",
+          flush: false,
+          data: "127.0.0.1",
+        },
+      ],
+    });
 
-  chan = makeChan(`https://test.iphint.org/server-timing`);
-  chan.loadFlags |= Ci.nsIRequest.LOAD_FRESH_CONNECTION;
-  [req] = await channelOpenPromise(chan);
-  Assert.equal(req.protocolVersion, "h2");
-  let internal = req.QueryInterface(Ci.nsIHttpChannelInternal);
-  Assert.equal(internal.remotePort, h2Port);
+    chan = makeChan(`https://test.iphint.org/server-timing`);
+    chan.loadFlags |= Ci.nsIRequest.LOAD_FRESH_CONNECTION;
+    [req] = await channelOpenPromise(chan);
+    Assert.equal(req.protocolVersion, "h2");
+    let internal = req.QueryInterface(Ci.nsIHttpChannelInternal);
+    Assert.equal(internal.remotePort, h2Port);
 
-  certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyData(
-    false
-  );
-  await trrServer.stop();
-});
+    certOverrideService.setDisableAllSecurityChecksAndLetAttackersInterceptMyData(
+      false
+    );
+  }
+);

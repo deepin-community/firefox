@@ -81,6 +81,8 @@ addon-removal-title = Allontanar { $name }?
 addon-removal-message = Allontanar { $name } da { -brand-shorter-name }?
 addon-removal-button = Allontanar
 addon-removal-abuse-report-checkbox = Rapportar questa extensiun a { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Sche ti utiliseschas las funcziunalitads u extensiuns che utiliseschan quest model, vegn el puspè agiuntà.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Impussibel dad installar il supplement telech
 addon-install-error-file-access = Impussibel dad installar { $addonName } perquai che { -brand-short-name } na po betg modifitgar la datoteca necessaria.
 addon-install-error-not-signed = { -brand-short-name } ha impedì che questa pagina installeschia in supplement betg verifitgà.
 addon-install-error-invalid-domain = Impussibel dad installar il supplement { $addonName } da quest lieu.
+addon-install-error-no-addon-name-file-access = I n’è betg reussì d’installar il supplement perquai che { -brand-short-name } na po betg modifitgar la datoteca necessaria.
 addon-local-install-error-network-failure = Impussibel dad installar quest supplement pervia d'ina errur en il sistem da datotecas.
 addon-local-install-error-incorrect-hash = Impussibel dad installar quest supplement perquai ch'el na correspunda betg al supplement che { -brand-short-name } ha spetgà.
 addon-local-install-error-corrupt-file = Impussibel dad installar quest supplement. El para dad esser donnegià.
 addon-local-install-error-file-access = Impussibel dad installar { $addonName } perquai che { -brand-short-name } na po betg modifitgar la datoteca necessaria.
 addon-local-install-error-not-signed = Impussibel dad installar quest supplement perquai ch'el n'è betg verifitgà.
+addon-local-install-no-addon-name-error-file-access = I n’è betg reussì d’installar il supplement perquai che { -brand-short-name } na po betg modifitgar la datoteca necessaria.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Impussibel dad installar { $addonName }. Il supplement n'è betg cumpatibel cun { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } violescha las directivas da Mozilla e na po betg vegnir installà en { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } è suttamess a restricziuns e na po betg vegnir installà en { -brand-short-name }.
 addon-install-error-blocklisted = Impussibel dad installar { $addonName }. Quest supplement chaschuna probablamain problems da segirezza u da stabilitad.
+addon-install-error-soft-blocked = { $addonName } violescha las directivas da Mozilla e na po betg vegnir installà en { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Ti na pos betg installar { $addonName } sco utilisader final, quai po mo far in’organisaziun cun agid dad enterprise policies.

@@ -5,7 +5,8 @@
 package mozilla.components.service.pocket
 
 import android.annotation.SuppressLint
-import mozilla.components.service.pocket.spocs.SpocsUseCases
+import mozilla.components.service.pocket.mars.SponsoredContentsUseCases
+import mozilla.components.service.pocket.recommendations.ContentRecommendationsUseCases
 import mozilla.components.service.pocket.stories.PocketStoriesUseCases
 
 /**
@@ -40,30 +41,63 @@ internal object GlobalDependencyProvider {
         }
     }
 
-    internal object SponsoredStories {
+    internal object ContentRecommendations {
         /**
-         * Possible actions regarding the list of sponsored stories.
+         * Possible actions regarding the list of content recommendations.
          */
         @SuppressLint("StaticFieldLeak")
-        internal var useCases: SpocsUseCases? = null
+        internal var useCases: ContentRecommendationsUseCases? = null
             private set
 
         /**
-         * Convenience method for setting all details used when communicating with the Pocket server.
+         * Convenience method for setting all details used when communicating with the
+         * Merino server.
          *
-         * @param useCases [SpocsUseCases] containing all possible actions regarding the list of sponsored stories.
+         * @param useCases [ContentRecommendationsUseCases] containing all possible actions
+         * regarding the list of content recommendations.
          */
         internal fun initialize(
-            useCases: SpocsUseCases,
+            useCases: ContentRecommendationsUseCases,
         ) {
             this.useCases = useCases
         }
 
         /**
-         * Convenience method for cleaning up any resources held for communicating with the Pocket server.
+         * Convenience method for cleaning up any resources held for communicating
+         * with the Merino server.
          */
         internal fun reset() {
-            useCases = null
+            this.useCases = null
+        }
+    }
+
+    internal object SponsoredContents {
+        /**
+         * Use cases for sponsored contents actions.
+         */
+        @SuppressLint("StaticFieldLeak")
+        internal var useCases: SponsoredContentsUseCases? = null
+            private set
+
+        /**
+         * Convenience method for setting all details used when communicating with the
+         * sponsored content provider.
+         *
+         * @param useCases [SponsoredContentsUseCases] containing all possible actions regarding
+         * sponsored content.
+         */
+        internal fun initialize(
+            useCases: SponsoredContentsUseCases,
+        ) {
+            this.useCases = useCases
+        }
+
+        /**
+         * Convenience method for cleaning up any resources held for communicating
+         * with the sponsored content provider.
+         */
+        internal fun reset() {
+            this.useCases = null
         }
     }
 }

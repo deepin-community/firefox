@@ -12,6 +12,13 @@ about-networking-dns-trr-url = DoH URL
 about-networking-dns-trr-mode = DoH Ayvu
 about-networking-dns-suffix = Ñe’ẽpehẽ upeigua DNS
 about-networking-websockets = WebSockets
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Ñepyrũha
+about-networking-alt-svc-alternate = Moambuepyrã
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Moneĩmbyre
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Mba’eñemi momombyryha
 about-networking-refresh = Mbopiro’y
 about-networking-auto-refresh = Embopiro’y ijehegui 3 aravo’ive og̃uahẽvo
 about-networking-hostname = Mohendahavusu réra
@@ -39,6 +46,7 @@ about-networking-dns-lookup = DNS jeheka
 about-networking-dns-lookup-button = Japopa
 about-networking-dns-domain = Tendatee:
 about-networking-dns-lookup-table-column = IPs
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN Papapy’atygua
 about-networking-rcwn-status = RCWN rekotee
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Ko kuatiarogue oñemongu’e <a data-l10n
 
 about-networking-networkid-is-up = Juajuha oĩ yvate
 about-networking-networkid-status-known = Pe juajuha reko ojekuaa
-
-##
-

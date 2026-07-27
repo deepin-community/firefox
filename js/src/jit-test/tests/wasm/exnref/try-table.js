@@ -79,9 +79,9 @@
     (func $doNothing)
 
     (func (export "test") (param i32) (result i32)
-      block $handleA (result i32 exnref)
-        block $handleB (result i32 exnref)
-          block $handleUnknown (result exnref)
+      block $handleA (result i32 (ref exn))
+        block $handleB (result i32 (ref exn))
+          block $handleUnknown (result (ref exn))
             try_table
               (catch_ref $A $handleA)
               (catch_ref $B $handleB)
@@ -277,8 +277,8 @@
       )
     )
     (func (export "testCatchRef")
-      (block $good (result exnref)
-        (block $bad (result exnref)
+      (block $good (result (ref exn))
+        (block $bad (result (ref exn))
           try_table (catch_ref $E $good) (catch_ref $E $bad) (catch_all_ref $bad)
             throw $E
           end
@@ -289,8 +289,8 @@
       drop
     )
     (func (export "testCatchAllRef")
-      (block $good (result exnref)
-        (block $bad (result exnref)
+      (block $good (result (ref exn))
+        (block $bad (result (ref exn))
           try_table (catch_all_ref $good) (catch_ref $E $bad) (catch_ref $E $bad)
             throw $E
           end
@@ -394,30 +394,6 @@ assertEq(WebAssembly.propertyIsEnumerable('JSTag'), true);
   let values = [...WasmExternrefValues];
   function throwJS(value) {
     throw value;
-  }
-  let {test} = wasmEvalText(`(module
-    (import "" "tag" (tag $tag (param externref)))
-    (import "" "throwJS" (func $throwJS (param externref)))
-    (func (export "test") (param externref) (result externref)
-      try_table (catch $tag 0)
-        local.get 0
-        call $throwJS
-      end
-      unreachable
-    )
-  )`, {"": {tag, throwJS}}).exports;
-
-  for (let value of values) {
-    assertEq(value, test(value));
-  }
-}
-
-// Test try_table catching JS exceptions using JSTag and unpacking them using JSTag
-{
-  let tag = WebAssembly.JSTag;
-  let values = [...WasmExternrefValues];
-  function throwJS(value) {
-    throw new WebAssembly.Exception(tag, [value]);
   }
   let {test} = wasmEvalText(`(module
     (import "" "tag" (tag $tag (param externref)))

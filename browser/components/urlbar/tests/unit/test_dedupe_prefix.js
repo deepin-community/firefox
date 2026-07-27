@@ -3,6 +3,10 @@
 
 "use strict";
 
+add_setup(() => {
+  UrlbarPrefs.set("suggest.quickactions", false);
+});
+
 // Testing that we dedupe results that have the same URL and title as another
 // except for their prefix (e.g. http://www.).
 add_task(async function dedupe_prefix() {
@@ -14,19 +18,23 @@ add_task(async function dedupe_prefix() {
     {
       uri: "http://example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "http://www.example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "https://example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     // Note that we add https://www.example.com/foo/ twice here.
     {
       uri: "https://www.example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "https://www.example.com/foo/",
@@ -151,19 +159,23 @@ add_task(async function hideHeuristic() {
     {
       uri: "http://example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "http://www.example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "https://example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     // Note that we add https://www.example.com/foo/ twice here.
     {
       uri: "https://www.example.com/foo/",
       title: "Example Page",
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       uri: "https://www.example.com/foo/",

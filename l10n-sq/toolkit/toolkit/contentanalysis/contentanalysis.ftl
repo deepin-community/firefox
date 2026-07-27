@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Kontroll në kryerje e sipër
 contentanalysis-slow-agent-dialog-body-file = { $agent } po shqyrton “{ $filename }” kundrejt rregullave të entit tuaj për të dhënat. Kjo mund të dojë një çast.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } po shqyrton “{ $filename }” dhe { $count } objekt tjetër kundrejt rregullave të entit tuaj mbi të dhënat. Kjo mund të dojë një çast.
+       *[other] { $agent } po shqyrton “{ $filename }” dhe { $count } objekte të tjerë kundrejt rregullave të entit tuaj mbi të dhënat. Kjo mund të dojë një çast.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } po shqyrton ç’ngjitët kundrejt rregullave të entit tuaj për të dhënat. Kjo mund të dojë një çast.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = e papastër
 contentanalysis-operationtype-dropped-text = tekst i sjellë
 contentanalysis-operationtype-print = shtypje
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = ngarkim i “{ $filename }”
+contentanalysis-upload-description = ngarkim i “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = shkarkim i “{ $filename }”
 contentanalysis-warndialogtitle = Kjo lëndë mund të jetë jo e parrezik
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Analiza e Lëndës u përgjigj me { $r
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Enti juaj përdor software parandalimi humbjesh të dhënash, i cili e ka bllokuar këtë lëndë: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Ndodhi një gabim në komunikimin me software-in e parandalimit të humbjeve të të dhënave. U mohua shpërngulje për burimin: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Ndodhi një gabim në komunikimin me { $agent }. Shpërngulje që s’u lejua për burimin: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = S’arrihet të lidhet te { $agent }. Shpërngulje që s’u lejuar për burimin: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Dështoi verifikim nënshkrimi për { $agent }. Shpërngulje që s’u lejuar për burimin: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Ngarkimi i “{ $filename }” s’u
 contentanalysis-error-message-dropped-text = “Merrni dhe vëreni” s’u lejua.
 contentanalysis-error-message-clipboard = Ngjitja s’u lejua.
 contentanalysis-error-message-print = Shtypja s’u lejua.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Lidhjes me { $agent } i mbaroi koha. { $contentName } është bllokuar.
 contentanalysis-block-dialog-title-upload-file = S’keni leje të ngarkoni këtë kartelë
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Sipas rregullave të entit tuaj për mbrojtje të dhënash, s’keni leje të ngarkoni kartelën “{ $filename }”. Për më tepër hollësi, lidhuni me përgjegjësin tuaj.
+contentanalysis-block-dialog-title-download-file = S’keni leje të shkarkoni këtë kartelë
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Sipas rregullave të entit tuaj për mbrojtje të dhënash, s’keni leje të shkarkoni kartelën “{ $filename }”. Për më tepër hollësi, lidhuni me përgjegjësin tuaj.
 contentanalysis-block-dialog-title-clipboard = S’keni leje të lini ngjitni këtë lëndë
 contentanalysis-block-dialog-body-clipboard = Sipas rregullave të entit tuaj për mbrojtje të dhënash, s’keni leje të ngjitni këtë lëndë. Për më tepër hollësi, lidhuni me përgjegjësin tuaj.
 contentanalysis-block-dialog-title-dropped-text = S’keni leje të lini këtë lëndë

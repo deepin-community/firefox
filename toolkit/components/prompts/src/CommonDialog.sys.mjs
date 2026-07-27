@@ -37,7 +37,8 @@ export class CommonDialog {
    * @param [commonDialogEl] - Dialog element from commonDialog.xhtml.
    */
   async onLoad(commonDialogEl) {
-    let isEmbedded = !!commonDialogEl.ownerGlobal.docShell.chromeEventHandler;
+    let isEmbedded =
+      !!commonDialogEl.documentGlobal.docShell.chromeEventHandler;
 
     switch (this.args.promptType) {
       case "alert":
@@ -68,8 +69,10 @@ export class CommonDialog {
         if (this.args.button3Label) {
           numButtons++;
         }
-        if (numButtons == 0) {
-          throw new Error("A dialog with no buttons? Can not haz.");
+        if (numButtons == 0 && !this.args.allowNoButtons) {
+          throw new Error(
+            "A dialog with no buttons requires the allowNoButtons argument"
+          );
         }
         this.numButtons = numButtons;
         this.hasInputField = false;
@@ -143,7 +146,9 @@ export class CommonDialog {
           this.setLabelForNode(this.ui.button1, this.args.button1Label);
         }
         break;
-
+      case 0:
+        this.ui.button0.hidden = true;
+      // fall through
       case 1:
         this.ui.button1.hidden = true;
         break;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,11 +18,10 @@
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkProtocolWebsocketMetrics.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Utf8.h"
 #include "mozilla/net/WebSocketEventService.h"
-#include "nsAlgorithm.h"
 #include "nsCRT.h"
 #include "nsCharSeparatedTokenizer.h"
 #include "nsComponentManagerUtils.h"
@@ -458,7 +455,7 @@ class nsWSAdmissionManager {
           "websocket closed while connecting w/o failing?");
     }
 #endif
-    Unused << aReason;
+    (void)aReason;
 
     sManager->RemoveFromQueue(aChannel);
 
@@ -545,10 +542,8 @@ class nsWSAdmissionManager {
 
   int32_t IndexOf(nsCString& aAddress, nsCString& aOriginSuffix) {
     for (uint32_t i = 0; i < mQueue.Length(); i++) {
-      bool isPartitioned = StaticPrefs::privacy_partition_network_state() ||
-                           StaticPrefs::privacy_firstparty_isolate();
-      if (aAddress == (mQueue[i])->mAddress &&
-          (!isPartitioned || aOriginSuffix == (mQueue[i])->mOriginSuffix)) {
+      if (aAddress == mQueue[i]->mAddress &&
+          aOriginSuffix == mQueue[i]->mOriginSuffix) {
         return i;
       }
     }
@@ -557,7 +552,9 @@ class nsWSAdmissionManager {
 
   int32_t IndexOf(WebSocketChannel* aChannel) {
     for (uint32_t i = 0; i < mQueue.Length(); i++) {
-      if (aChannel == (mQueue[i])->mChannel) return i;
+      if (aChannel == mQueue[i]->mChannel) {
+        return i;
+      }
     }
     return -1;
   }
@@ -599,11 +596,13 @@ StaticMutex nsWSAdmissionManager::sLock;
 
 class CallOnMessageAvailable final : public Runnable {
  public:
-  CallOnMessageAvailable(WebSocketChannel* aChannel, nsACString& aData,
-                         int32_t aLen)
+  CallOnMessageAvailable(
+      WebSocketChannel* aChannel,
+      RefPtr<BaseWebSocketChannel::ListenerAndContextContainer>&& aListenerMT,
+      nsACString& aData, int32_t aLen)
       : Runnable("net::CallOnMessageAvailable"),
         mChannel(aChannel),
-        mListenerMT(aChannel->mListenerMT),
+        mListenerMT(std::move(aListenerMT)),
         mData(aData),
         mLen(aLen) {}
 
@@ -645,10 +644,13 @@ class CallOnMessageAvailable final : public Runnable {
 
 class CallOnStop final : public Runnable {
  public:
-  CallOnStop(WebSocketChannel* aChannel, nsresult aReason)
+  CallOnStop(
+      WebSocketChannel* aChannel,
+      RefPtr<BaseWebSocketChannel::ListenerAndContextContainer>&& aListenerMT,
+      nsresult aReason)
       : Runnable("net::CallOnStop"),
         mChannel(aChannel),
-        mListenerMT(mChannel->mListenerMT),
+        mListenerMT(std::move(aListenerMT)),
         mReason(aReason) {}
 
   NS_IMETHOD Run() override {
@@ -663,7 +665,6 @@ class CallOnStop final : public Runnable {
              "OnStop failed (%08" PRIx32 ")\n",
              static_cast<uint32_t>(rv)));
       }
-      mChannel->mListenerMT = nullptr;
     }
 
     return NS_OK;
@@ -683,11 +684,13 @@ class CallOnStop final : public Runnable {
 
 class CallOnServerClose final : public Runnable {
  public:
-  CallOnServerClose(WebSocketChannel* aChannel, uint16_t aCode,
-                    nsACString& aReason)
+  CallOnServerClose(
+      WebSocketChannel* aChannel,
+      RefPtr<BaseWebSocketChannel::ListenerAndContextContainer>&& aListenerMT,
+      uint16_t aCode, nsACString& aReason)
       : Runnable("net::CallOnServerClose"),
         mChannel(aChannel),
-        mListenerMT(mChannel->mListenerMT),
+        mListenerMT(std::move(aListenerMT)),
         mCode(aCode),
         mReason(aReason) {}
 
@@ -722,10 +725,13 @@ class CallOnServerClose final : public Runnable {
 
 class CallAcknowledge final : public Runnable {
  public:
-  CallAcknowledge(WebSocketChannel* aChannel, uint32_t aSize)
+  CallAcknowledge(
+      WebSocketChannel* aChannel,
+      RefPtr<BaseWebSocketChannel::ListenerAndContextContainer>&& aListenerMT,
+      uint32_t aSize)
       : Runnable("net::CallAcknowledge"),
         mChannel(aChannel),
-        mListenerMT(mChannel->mListenerMT),
+        mListenerMT(std::move(aListenerMT)),
         mSize(aSize) {}
 
   NS_IMETHOD Run() override {
@@ -1185,7 +1191,6 @@ WebSocketChannel::WebSocketChannel()
       mInnerWindowID(0),
       mGotUpgradeOK(0),
       mRecvdHttpUpgradeTransport(0),
-      mAllowPMCE(1),
       mPingOutstanding(0),
       mReleaseOnTransmit(0),
       mDataStarted(false),
@@ -1404,7 +1409,7 @@ void WebSocketChannel::BeginOpenInternal() {
 }
 
 bool WebSocketChannel::IsPersistentFramePtr() {
-  return (mFramePtr >= mBuffer && mFramePtr < mBuffer + mBufferSize);
+  return (mFramePtr >= mBuffer && mFramePtr <= mBuffer + mBufferSize);
 }
 
 // Extends the internal buffer by count and returns the total
@@ -1438,23 +1443,41 @@ bool WebSocketChannel::UpdateReadBuffer(uint8_t* buffer, uint32_t count,
     mFramePtr = mBuffer + accumulatedFragments;
   } else {
     // existing buffer is not sufficient, extend it
-    mBufferSize += count + 8192 + mBufferSize / 3;
-    LOG(("WebSocketChannel: update read buffer extended to %u\n", mBufferSize));
-    uint8_t* old = mBuffer;
-    mBuffer = (uint8_t*)realloc(mBuffer, mBufferSize);
-    if (!mBuffer) {
-      mBuffer = old;
+    uint32_t newBufferSize = mBufferSize;
+    newBufferSize += count + 8192 + mBufferSize / 3;
+    ptrdiff_t frameIndex = mFramePtr - mBuffer;
+    LOG(("WebSocketChannel: update read buffer extended to %u\n",
+         newBufferSize));
+    uint8_t* newBuffer = (uint8_t*)realloc(mBuffer, newBufferSize);
+    if (!newBuffer) {
+      // Reallocation failed.
       return false;
     }
-    mFramePtr = mBuffer + (mFramePtr - old);
+    mBuffer = newBuffer;
+    mBufferSize = newBufferSize;
+
+    // mBuffer was reallocated, so we need to update mFramePtr
+    mFramePtr = mBuffer + frameIndex;
   }
 
-  ::memcpy(mBuffer + mBuffered, buffer, count);
+  ::memmove(mBuffer + mBuffered, buffer, count);
   mBuffered += count;
 
   if (available) *available = mBuffered - (mFramePtr - mBuffer);
 
   return true;
+}
+
+already_AddRefed<BaseWebSocketChannel::ListenerAndContextContainer>
+WebSocketChannel::GetListenerMT() {
+  MutexAutoLock lock(mMutex);
+  return do_AddRef(mStopped ? nullptr : mListenerMT.get());
+}
+
+already_AddRefed<BaseWebSocketChannel::ListenerAndContextContainer>
+WebSocketChannel::TakeListenerMT() {
+  MutexAutoLock lock(mMutex);
+  return mListenerMT.forget();
 }
 
 nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
@@ -1668,7 +1691,8 @@ nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
       LOG(("WebSocketChannel:: ignoring read frame code %d after completion\n",
            opcode));
     } else if (opcode == nsIWebSocketFrame::OPCODE_TEXT) {
-      if (mListenerMT) {
+      if (RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+              GetListenerMT()) {
         nsCString utf8Data;
         {
           MutexAutoLock lock(mCompressorMutex);
@@ -1708,7 +1732,8 @@ nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
         }
 
         if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
-          target->Dispatch(new CallOnMessageAvailable(this, utf8Data, -1),
+          target->Dispatch(new CallOnMessageAvailable(this, std::move(listener),
+                                                      utf8Data, -1),
                            NS_DISPATCH_NORMAL);
         } else {
           return NS_ERROR_UNEXPECTED;
@@ -1770,11 +1795,13 @@ nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
           frame = nullptr;
         }
 
-        if (mListenerMT) {
+        if (RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+                GetListenerMT()) {
           if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
-            target->Dispatch(new CallOnServerClose(this, mServerCloseCode,
-                                                   mServerCloseReason),
-                             NS_DISPATCH_NORMAL);
+            target->Dispatch(
+                new CallOnServerClose(this, std::move(listener),
+                                      mServerCloseCode, mServerCloseReason),
+                NS_DISPATCH_NORMAL);
           } else {
             return NS_ERROR_UNEXPECTED;
           }
@@ -1811,7 +1838,8 @@ nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
         mService->FrameReceived(mSerial, mInnerWindowID, frame.forget());
       }
     } else if (opcode == nsIWebSocketFrame::OPCODE_BINARY) {
-      if (mListenerMT) {
+      if (RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+              GetListenerMT()) {
         nsCString binaryData;
         {
           MutexAutoLock lock(mCompressorMutex);
@@ -1846,7 +1874,8 @@ nsresult WebSocketChannel::ProcessInput(uint8_t* buffer, uint32_t count) {
 
         if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
           target->Dispatch(
-              new CallOnMessageAvailable(this, binaryData, binaryData.Length()),
+              new CallOnMessageAvailable(this, std::move(listener), binaryData,
+                                         binaryData.Length()),
               NS_DISPATCH_NORMAL);
         } else {
           return NS_ERROR_UNEXPECTED;
@@ -2457,7 +2486,8 @@ void WebSocketChannel::DoStopSession(nsresult reason) {
 
     nsWSAdmissionManager::OnStopSession(this, reason);
 
-    RefPtr<CallOnStop> runnable = new CallOnStop(this, reason);
+    RefPtr<CallOnStop> runnable =
+        new CallOnStop(this, TakeListenerMT(), reason);
     if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
       target->Dispatch(runnable, NS_DISPATCH_NORMAL);
     }
@@ -2700,14 +2730,6 @@ nsresult WebSocketChannel::HandleExtensions() {
     return rv;
   }
 
-  if (!mAllowPMCE) {
-    LOG(
-        ("WebSocketChannel::HandleExtensions: "
-         "Recvd permessage-deflate which wasn't offered\n"));
-    AbortSession(NS_ERROR_ILLEGAL_VALUE);
-    return NS_ERROR_ILLEGAL_VALUE;
-  }
-
   if (clientMaxWindowBits == -1) {
     clientMaxWindowBits = 15;
   }
@@ -2742,17 +2764,6 @@ nsresult WebSocketChannel::HandleExtensions() {
 void ProcessServerWebSocketExtensions(const nsACString& aExtensions,
                                       nsACString& aNegotiatedExtensions) {
   aNegotiatedExtensions.Truncate();
-
-  nsCOMPtr<nsIPrefBranch> prefService;
-  prefService = mozilla::components::Preferences::Service();
-  if (prefService) {
-    bool boolpref;
-    nsresult rv = prefService->GetBoolPref(
-        "network.websocket.extensions.permessage-deflate", &boolpref);
-    if (NS_SUCCEEDED(rv) && !boolpref) {
-      return;
-    }
-  }
 
   for (const auto& ext :
        nsCCharSeparatedTokenizer(aExtensions, ',').ToRange()) {
@@ -2847,11 +2858,9 @@ nsresult WebSocketChannel::SetupRequest() {
     MOZ_ASSERT(NS_SUCCEEDED(rv));
   }
 
-  if (mAllowPMCE) {
-    rv = mHttpChannel->SetRequestHeader("Sec-WebSocket-Extensions"_ns,
-                                        "permessage-deflate"_ns, false);
-    MOZ_ASSERT(NS_SUCCEEDED(rv));
-  }
+  rv = mHttpChannel->SetRequestHeader("Sec-WebSocket-Extensions"_ns,
+                                      "permessage-deflate"_ns, false);
+  MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   uint8_t* secKey;
   nsAutoCString secKeyString;
@@ -3017,15 +3026,17 @@ nsresult WebSocketChannel::StartWebsocketData() {
 }
 
 void WebSocketChannel::NotifyOnStart() {
+  RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+      GetListenerMT();
   LOG(("WebSocketChannel::NotifyOnStart Notifying Listener %p",
-       mListenerMT ? mListenerMT->mListener.get() : nullptr));
+       listener ? listener->mListener.get() : nullptr));
   mDataStarted = true;
-  if (mListenerMT) {
-    nsresult rv = mListenerMT->mListener->OnStart(mListenerMT->mContext);
+  if (listener) {
+    nsresult rv = listener->mListener->OnStart(listener->mContext);
     if (NS_FAILED(rv)) {
       LOG(
           ("WebSocketChannel::NotifyOnStart "
-           "mListenerMT->mListener->OnStart() failed with error 0x%08" PRIx32,
+           "listener->mListener->OnStart() failed with error 0x%08" PRIx32,
            static_cast<uint32_t>(rv)));
     }
   }
@@ -3075,7 +3086,7 @@ void WebSocketChannel::ReportConnectionTelemetry(nsresult aStatusCode) {
       (didProxy ? (1 << 0) : 0);
 
   LOG(("WebSocketChannel::ReportConnectionTelemetry() %p %d", this, value));
-  Telemetry::Accumulate(Telemetry::WEBSOCKETS_HANDSHAKE_TYPE, value);
+  glean::websockets::handshake_type.AccumulateSingleSample(value);
 }
 
 // nsIDNSListener
@@ -3155,11 +3166,16 @@ WebSocketChannel::OnProxyAvailable(nsICancelable* aRequest,
   }
 
   // notify listener of OnProxyAvailable
+  RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+      GetListenerMT();
   LOG(("WebSocketChannel::OnProxyAvailable Notifying Listener %p",
-       mListenerMT ? mListenerMT->mListener.get() : nullptr));
+       listener ? listener->mListener.get() : nullptr));
+  if (!listener) {
+    return NS_OK;
+  }
   nsresult rv;
   nsCOMPtr<nsIProtocolProxyCallback> ppc(
-      do_QueryInterface(mListenerMT->mListener, &rv));
+      do_QueryInterface(listener->mListener, &rv));
   if (NS_SUCCEEDED(rv)) {
     rv = ppc->OnProxyAvailable(aRequest, aChannel, pi, status);
     if (NS_FAILED(rv)) {
@@ -3439,7 +3455,10 @@ WebSocketChannel::AsyncOpenNative(nsIURI* aURI, const nsACString& aOrigin,
     return NS_ERROR_UNEXPECTED;
   }
 
-  if (mListenerMT || mWasOpened) return NS_ERROR_ALREADY_OPENED;
+  {
+    MutexAutoLock lock(mMutex);
+    if (mWasOpened || mListenerMT) return NS_ERROR_ALREADY_OPENED;
+  }
 
   nsresult rv;
 
@@ -3462,38 +3481,32 @@ WebSocketChannel::AsyncOpenNative(nsIURI* aURI, const nsACString& aOrigin,
 
   if (prefService) {
     int32_t intpref;
-    bool boolpref;
     rv =
         prefService->GetIntPref("network.websocket.max-message-size", &intpref);
     if (NS_SUCCEEDED(rv)) {
-      mMaxMessageSize = clamped(intpref, 1024, INT32_MAX);
+      mMaxMessageSize = std::clamp(intpref, 1024, INT32_MAX);
     }
     rv = prefService->GetIntPref("network.websocket.timeout.close", &intpref);
     if (NS_SUCCEEDED(rv)) {
-      mCloseTimeout = clamped(intpref, 1, 1800) * 1000;
+      mCloseTimeout = std::clamp(intpref, 1, 1800) * 1000;
     }
     rv = prefService->GetIntPref("network.websocket.timeout.open", &intpref);
     if (NS_SUCCEEDED(rv)) {
-      mOpenTimeout = clamped(intpref, 1, 1800) * 1000;
+      mOpenTimeout = std::clamp(intpref, 1, 1800) * 1000;
     }
     rv = prefService->GetIntPref("network.websocket.timeout.ping.request",
                                  &intpref);
     if (NS_SUCCEEDED(rv) && !mClientSetPingInterval) {
-      mPingInterval = clamped(intpref, 0, 86400) * 1000;
+      mPingInterval = std::clamp(intpref, 0, 86400) * 1000;
     }
     rv = prefService->GetIntPref("network.websocket.timeout.ping.response",
                                  &intpref);
     if (NS_SUCCEEDED(rv) && !mClientSetPingTimeout) {
-      mPingResponseTimeout = clamped(intpref, 1, 3600) * 1000;
-    }
-    rv = prefService->GetBoolPref(
-        "network.websocket.extensions.permessage-deflate", &boolpref);
-    if (NS_SUCCEEDED(rv)) {
-      mAllowPMCE = boolpref ? 1 : 0;
+      mPingResponseTimeout = std::clamp(intpref, 1, 3600) * 1000;
     }
     rv = prefService->GetIntPref("network.websocket.max-connections", &intpref);
     if (NS_SUCCEEDED(rv)) {
-      mMaxConcurrentConnections = clamped(intpref, 1, 0xffff);
+      mMaxConcurrentConnections = std::clamp(intpref, 1, 0xffff);
     }
   }
 
@@ -3521,7 +3534,10 @@ WebSocketChannel::AsyncOpenNative(nsIURI* aURI, const nsACString& aOrigin,
   if (mIsServerSide) {
     // IncrementSessionCount();
     mWasOpened = 1;
-    mListenerMT = new ListenerAndContextContainer(aListener, aContext);
+    {
+      MutexAutoLock lock(mMutex);
+      mListenerMT = new ListenerAndContextContainer(aListener, aContext);
+    }
     rv = mServerTransportProvider->SetListener(this);
     MOZ_ASSERT(NS_SUCCEEDED(rv));
     mServerTransportProvider = nullptr;
@@ -3539,6 +3555,8 @@ WebSocketChannel::AsyncOpenNative(nsIURI* aURI, const nsACString& aOrigin,
 
   nsCOMPtr<nsIURI> localURI;
   nsCOMPtr<nsIChannel> localChannel;
+
+  LOG(("WebSocketChannel::AsyncOpen uri=%s", mURI->GetSpecOrDefault().get()));
 
   rv = NS_MutateURI(mURI)
            .SetScheme(mEncrypted ? "https"_ns : "http"_ns)
@@ -3625,7 +3643,10 @@ WebSocketChannel::AsyncOpenNative(nsIURI* aURI, const nsACString& aOrigin,
   // Only set these if the open was successful:
   //
   mWasOpened = 1;
-  mListenerMT = new ListenerAndContextContainer(aListener, aContext);
+  {
+    MutexAutoLock lock(mMutex);
+    mListenerMT = new ListenerAndContextContainer(aListener, aContext);
+  }
   IncrementSessionCount();
 
   return rv;
@@ -3768,9 +3789,9 @@ WebSocketChannel::OnTransportAvailable(nsISocketTransport* aTransport,
 
   nsresult rv;
   rv = mTransport->SetEventSink(nullptr, nullptr);
-  if (NS_FAILED(rv)) return rv;
+  if (NS_WARN_IF(NS_FAILED(rv))) return rv;
   rv = mTransport->SetSecurityCallbacks(this);
-  if (NS_FAILED(rv)) return rv;
+  if (NS_WARN_IF(NS_FAILED(rv))) return rv;
 
   return OnTransportAvailableInternal();
 }
@@ -4226,11 +4247,12 @@ WebSocketChannel::OnOutputStreamReady(nsIAsyncOutputStream* aStream) {
       }
     } else {
       if (amtSent == toSend) {
-        if (!mStopped) {
+        if (RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+                GetListenerMT()) {
           if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
-            target->Dispatch(
-                new CallAcknowledge(this, mCurrentOut->OrigLength()),
-                NS_DISPATCH_NORMAL);
+            target->Dispatch(new CallAcknowledge(this, std::move(listener),
+                                                 mCurrentOut->OrigLength()),
+                             NS_DISPATCH_NORMAL);
           } else {
             return NS_ERROR_UNEXPECTED;
           }
@@ -4301,13 +4323,15 @@ void WebSocketChannel::DoEnqueueOutgoingMessage() {
       return;
     }
 
-    if (!mStopped) {
+    if (RefPtr<BaseWebSocketChannel::ListenerAndContextContainer> listener =
+            GetListenerMT()) {
       // TODO: Currently, we assume that data is completely written to the
       // socket after sending it to socket process, but it's not true. The data
       // could be queued in socket process and waiting for the socket to be able
       // to write. We should implement flow control for this in bug 1726552.
       if (nsCOMPtr<nsIEventTarget> target = GetTargetThread()) {
-        target->Dispatch(new CallAcknowledge(this, mCurrentOut->OrigLength()),
+        target->Dispatch(new CallAcknowledge(this, std::move(listener),
+                                             mCurrentOut->OrigLength()),
                          NS_DISPATCH_NORMAL);
       } else {
         AbortSession(NS_ERROR_UNEXPECTED);
@@ -4328,7 +4352,13 @@ void WebSocketChannel::OnError(nsresult aStatus) { AbortSession(aStatus); }
 void WebSocketChannel::OnTCPClosed() { mTCPClosed = true; }
 
 nsresult WebSocketChannel::OnDataReceived(uint8_t* aData, uint32_t aCount) {
-  return ProcessInput(aData, aCount);
+  nsresult rv = ProcessInput(aData, aCount);
+  if (NS_FAILED(rv)) {
+    mFragmentAccumulator = 0;
+    mFragmentOpcode = nsIWebSocketFrame::OPCODE_CONTINUATION;
+    mBuffered = 0;
+  }
+  return rv;
 }
 
 }  // namespace mozilla::net

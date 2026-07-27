@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,16 +22,12 @@ class Link;
 }  // namespace dom
 
 // 0057c9d3-b98e-4933-bdc5-0275d06705e1
-#define IHISTORY_IID                                 \
-  {                                                  \
-    0x0057c9d3, 0xb98e, 0x4933, {                    \
-      0xbd, 0xc5, 0x02, 0x75, 0xd0, 0x67, 0x05, 0xe1 \
-    }                                                \
-  }
+#define IHISTORY_IID \
+  {0x0057c9d3, 0xb98e, 0x4933, {0xbd, 0xc5, 0x02, 0x75, 0xd0, 0x67, 0x05, 0xe1}}
 
 class IHistory : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(IHISTORY_IID)
+  NS_INLINE_DECL_STATIC_IID(IHISTORY_IID)
 
   using ContentParentSet = nsTHashSet<RefPtr<dom::ContentParent>>;
 
@@ -167,8 +161,6 @@ class IHistory : public nsISupports {
    */
   NS_IMETHOD SetURITitle(nsIURI* aURI, const nsAString& aTitle) = 0;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(IHistory, IHISTORY_IID)
 
 }  // namespace mozilla
 

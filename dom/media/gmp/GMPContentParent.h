@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,9 +5,8 @@
 #ifndef GMPContentParent_h_
 #define GMPContentParent_h_
 
-#include "mozilla/gmp/PGMPContentParent.h"
-#include "GMPSharedMemManager.h"
 #include "GMPNativeTypes.h"
+#include "mozilla/gmp/PGMPContentParent.h"
 #include "nsISupportsImpl.h"
 
 namespace mozilla::gmp {
@@ -23,7 +21,7 @@ class ChromiumCDMParent;
  * This class allows the parent/content processes to create GMP decoder/encoder
  * objects in the GMP process.
  */
-class GMPContentParent final : public PGMPContentParent, public GMPSharedMem {
+class GMPContentParent final : public PGMPContentParent {
   friend class PGMPContentParent;
 
  public:
@@ -44,9 +42,6 @@ class GMPContentParent final : public PGMPContentParent, public GMPSharedMem {
   void ChromiumCDMDestroyed(ChromiumCDMParent* aCDM);
 
   nsCOMPtr<nsISerialEventTarget> GMPEventTarget();
-
-  // GMPSharedMem
-  void CheckThread() override;
 
   void SetDisplayName(const nsCString& aDisplayName) {
     mDisplayName = aDisplayName;

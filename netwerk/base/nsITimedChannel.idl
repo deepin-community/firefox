@@ -9,30 +9,28 @@ interface nsIPrincipal;
 namespace mozilla {
 class TimeStamp;
 }
+#include "mozilla/MemoryReporting.h"
 #include "nsTArrayForwardDeclare.h"
 #include "nsCOMPtr.h"
-#include "mozilla/Unused.h"
 %}
 
 native TimeStamp(mozilla::TimeStamp);
+native MallocSizeOf(mozilla::MallocSizeOf);
 
-[scriptable, uuid(c2d9e95b-9cc9-4f47-9ef6-1de0cf7ebc75)]
+[scriptable, builtinclass, uuid(c2d9e95b-9cc9-4f47-9ef6-1de0cf7ebc75)]
 interface nsIServerTiming : nsISupports {
   [must_use] readonly attribute ACString name;
   [must_use] readonly attribute double duration;
   [must_use] readonly attribute ACString description;
+
+  [notxpcom, nostdcall] size_t sizeOfIncludingThis(in MallocSizeOf aMallocSizeOf);
 };
 
 [ref] native nsServerTimingArrayRef(nsTArray<nsCOMPtr<nsIServerTiming>>);
 
 // All properties return zero if the value is not available
-[scriptable, builtinclass, uuid(ca63784d-959c-4c3a-9a59-234a2a520de0)]
+[scriptable, builtinclass, uuid(8f2c89e7-d654-4b9a-b8f1-3c7e6a9d2f4e)]
 interface nsITimedChannel : nsISupports {
-  // Set this attribute to true to enable collection of timing data.
-  // channelCreationTime will be available even with this attribute set to
-  // false.
-  attribute boolean timingEnabled;
-
   // The number of redirects
   attribute uint8_t redirectCount;
   attribute uint8_t internalRedirectCount;
@@ -63,6 +61,8 @@ interface nsITimedChannel : nsISupports {
   [noscript] readonly attribute TimeStamp connectEnd;
   [noscript] readonly attribute TimeStamp requestStart;
   [noscript] readonly attribute TimeStamp responseStart;
+  [noscript] readonly attribute TimeStamp firstInterimResponseStart;
+  [noscript] readonly attribute TimeStamp finalResponseHeadersStart;
   [noscript] readonly attribute TimeStamp responseEnd;
 
   // The redirect attributes timings must be writeble, se we can transfer
@@ -71,7 +71,7 @@ interface nsITimedChannel : nsISupports {
   [noscript] attribute TimeStamp redirectEnd;
 
   // The initiator type
-  [noscript] attribute AString initiatorType;
+  attribute AString initiatorType;
 
   // This flag should be set to false only if a cross-domain redirect occurred
   [noscript] attribute boolean allRedirectsSameOrigin;
@@ -96,7 +96,7 @@ interface nsITimedChannel : nsISupports {
   %{C++
   inline BodyInfoAccess BodyInfoAccessAllowedCheck(nsIPrincipal* aOrigin) {
     BodyInfoAccess allowed = BodyInfoAccess::DISALLOWED;
-    mozilla::Unused << BodyInfoAccessAllowedCheck(aOrigin, &allowed);
+    (void)BodyInfoAccessAllowedCheck(aOrigin, &allowed);
     return allowed;
   }
   %}
@@ -131,6 +131,8 @@ interface nsITimedChannel : nsISupports {
   readonly attribute PRTime connectEndTime;
   readonly attribute PRTime requestStartTime;
   readonly attribute PRTime responseStartTime;
+  readonly attribute PRTime firstInterimResponseStartTime;
+  readonly attribute PRTime finalResponseHeadersStartTime;
   readonly attribute PRTime responseEndTime;
   readonly attribute PRTime cacheReadStartTime;
   readonly attribute PRTime cacheReadEndTime;

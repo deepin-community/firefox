@@ -1,12 +1,12 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsCopySupport_h__
-#define nsCopySupport_h__
+#ifndef nsCopySupport_h_
+#define nsCopySupport_h_
 
 #include <cstdint>
+
 #include "ErrorList.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Attributes.h"
@@ -23,6 +23,7 @@ class nsILoadContext;
 namespace mozilla {
 class PresShell;
 namespace dom {
+class DataTransfer;
 class Document;
 class Selection;
 class WindowContext;
@@ -34,12 +35,14 @@ class nsCopySupport {
  public:
   static nsresult ClearSelectionCache();
 
+  enum class UpdateClipboard : bool { No, Yes };
   /**
    * @param aDoc Needs to be not nullptr.
    */
   static nsresult EncodeDocumentWithContextAndPutToClipboard(
       mozilla::dom::Selection* aSel, mozilla::dom::Document* aDoc,
-      nsIClipboard::ClipboardType aClipboardID, bool aWithRubyAnnotation);
+      nsIClipboard::ClipboardType aClipboardID, bool aWithRubyAnnotation,
+      UpdateClipboard = UpdateClipboard::Yes);
 
   // Get the selection, or entire document, in the format specified by the mime
   // type (text/html or text/plain). If aSel is non-null, use it, otherwise get
@@ -104,6 +107,10 @@ class nsCopySupport {
    *
    * aClipboardType specifies which clipboard to use, from nsIClipboard.
    *
+   * If aDataTransfer is non-NULL, that data will be used to fire the clipboard
+   * event, and the caller is responsible for calling Disconnect(). (and
+   * possibly ClearAll())
+   *
    * If aActionTaken is non-NULL, it will be set to true if an action was
    * taken, whether it be the default action or the default being prevented.
    *
@@ -114,7 +121,7 @@ class nsCopySupport {
       mozilla::EventMessage aEventMessage,
       mozilla::Maybe<nsIClipboard::ClipboardType> aClipboardType,
       mozilla::PresShell* aPresShell, mozilla::dom::Selection* aSelection,
-      bool* aActionTaken = nullptr);
+      mozilla::dom::DataTransfer* aDataTransfer, bool* aActionTaken = nullptr);
 };
 
 #endif

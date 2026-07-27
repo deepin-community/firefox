@@ -82,11 +82,9 @@ impl ShaderSourceParser {
         output: &mut F,
     ) {
         for line in source.lines() {
-            if line.starts_with(SHADER_IMPORT) {
-                let imports = line[SHADER_IMPORT.len() ..].split(',');
-
+            if let Some(imports) = line.strip_prefix(SHADER_IMPORT) {
                 // For each import, get the source, and recurse.
-                for import in imports {
+                for import in imports.split(',') {
                     if self.included.insert(import.into()) {
                         let include = get_source(import);
                         self.parse(include, get_source, output);
@@ -106,7 +104,7 @@ impl ShaderSourceParser {
 pub fn shader_source_from_file(shader_path: &Path) -> String {
     assert!(shader_path.exists(), "Shader not found {:?}", shader_path);
     let mut source = String::new();
-    File::open(&shader_path)
+    File::open(shader_path)
         .expect("Shader not found")
         .read_to_string(&mut source)
         .unwrap();
@@ -197,8 +195,8 @@ pub fn build_shader_prefix_string<F: FnMut(&str)>(
     // detect which platform we're targeting
     let is_macos = match std::env::var("CARGO_CFG_TARGET_OS") {
         Ok(os) => os == "macos",
-        // if this is not called from build.rs (e.g. the gpu_cache_update shader or
-        // if the optimized shader pref is disabled) we want to use the runtime value
+        // if this is not called from build.rs (e.g. if the optimized shader
+        // pref is disabled) we want to use the runtime value
         Err(_) => cfg!(target_os = "macos"),
     };
     let is_android = match std::env::var("CARGO_CFG_TARGET_OS") {

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -126,7 +124,7 @@ class HTMLButtonElement final : public nsGenericHTMLFormControlElementWithState,
   void SetType(const nsAString& aType, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::type, aType, aRv);
   }
-  void GetValue(DOMString& aValue) { GetHTMLAttr(nsGkAtoms::value, aValue); }
+  void GetValue(nsAString& aValue) { GetHTMLAttr(nsGkAtoms::value, aValue); }
   void SetValue(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::value, aValue, aRv);
   }
@@ -135,8 +133,21 @@ class HTMLButtonElement final : public nsGenericHTMLFormControlElementWithState,
   // via bindings.
   void SetCustomValidity(const nsAString& aError);
 
+  // Command & CommandFor
+  Element* GetCommandForElementForBindings() const;
+  Element* GetCommandForElementInternal() const;
+  void SetCommandForElementForBindings(Element*);
+  void GetCommand(nsAString& aCommand) const;
+  Element::Command GetCommand() const;
+  void SetCommand(const nsAString& aValue) {
+    SetHTMLAttr(nsGkAtoms::command, aValue);
+  }
+
  protected:
   virtual ~HTMLButtonElement();
+
+  bool InAutoState() const;
+  const nsAttrValue::EnumTableEntry* ResolveAutoState() const;
 
   bool mDisabledChanged : 1;
   bool mInInternalActivate : 1;

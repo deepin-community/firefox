@@ -1,21 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/dom/HTMLObjectElement.h"
+
 #include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/Document.h"
-#include "mozilla/dom/HTMLObjectElement.h"
-#include "mozilla/dom/HTMLObjectElementBinding.h"
 #include "mozilla/dom/ElementInlines.h"
+#include "mozilla/dom/HTMLObjectElementBinding.h"
 #include "mozilla/dom/WindowProxyHolder.h"
 #include "nsAttrValueInlines.h"
-#include "nsGkAtoms.h"
+#include "nsContentUtils.h"
 #include "nsError.h"
+#include "nsGkAtoms.h"
 #include "nsIContentInlines.h"
 #include "nsIWidget.h"
-#include "nsContentUtils.h"
 #ifdef XP_MACOSX
 #  include "mozilla/EventDispatcher.h"
 #  include "mozilla/dom/Event.h"
@@ -100,6 +99,11 @@ void HTMLObjectElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
                                      nsIPrincipal* aSubjectPrincipal,
                                      bool aNotify) {
   AfterMaybeChangeAttr(aNamespaceID, aName, aNotify);
+
+  if (aName == nsGkAtoms::data) {
+    RefreshFeaturePolicy();
+  }
+
   return nsGenericHTMLFormControlElement::AfterSetAttr(
       aNamespaceID, aName, aValue, aOldValue, aSubjectPrincipal, aNotify);
 }
@@ -126,6 +130,7 @@ void HTMLObjectElement::AfterMaybeChangeAttr(int32_t aNamespaceID,
       BlockEmbedOrObjectContentLoading()) {
     return;
   }
+
   nsContentUtils::AddScriptRunner(NS_NewRunnableFunction(
       "HTMLObjectElement::LoadObject",
       [self = RefPtr<HTMLObjectElement>(this), aNotify]() {

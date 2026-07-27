@@ -90,14 +90,8 @@ add_task(async function () {
 
   // Calculate offsets to click in the value line which is below the property name line .
   const rect = gridRuleProperty.getBoundingClientRect();
-  const previousProperty = await getRuleViewProperty(
-    view,
-    "#testid",
-    "display"
-  ).nameSpan.getBoundingClientRect();
-
   const x = rect.width / 2;
-  const y = rect.y - previousProperty.y + 1;
+  const y = rect.height / 2;
 
   info("Focusing the css property editable value");
   await focusEditableField(view, gridRuleProperty, x, y);
@@ -148,8 +142,8 @@ add_task(async function () {
     "the quotes strings values are all displayed on the same single line"
   );
 
-  // test that when invalid strings values do not get formatted
-  info("testing it does not try to format invalid values");
+  // test that invalid string values are now formatted to help with debugging
+  info("testing that it DOES try to format invalid values");
   await selectNode("#testid-invalid-strings", inspector);
   const invalidGridRuleProperty = await getRuleViewProperty(
     view,
@@ -158,8 +152,8 @@ add_task(async function () {
   ).valueSpan;
   is(
     invalidGridRuleProperty.innerText,
-    '"a a b" "a a"',
-    "the invalid strings values do not get formatted"
+    '\n"a a b" \n"a a"',
+    "the invalid strings values are now formatted to help debugging"
   );
 
   // test that when a valid value without quotes such as `inherit` it does not get formatted

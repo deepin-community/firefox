@@ -35,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minutos
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Diminuir tamanho da fonte
@@ -74,19 +74,24 @@ about-reader-customtheme-tab = Personalizado
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Texto
-    .title = Editar cor
-about-reader-custom-colors-background = Fundo
-    .title = Editar cor
-about-reader-custom-colors-unvisited-links = Links não visitados
-    .title = Editar cor
-about-reader-custom-colors-visited-links = Links visitados
-    .title = Editar cor
-about-reader-custom-colors-selection-highlight = Destacador para ler em voz alta
-    .title = Editar cor
 about-reader-reset-button = Restaurar padrão
+about-reader-custom-colors-foreground2 =
+    .label = Texto
+    .title = Editar cor
+about-reader-custom-colors-background2 =
+    .label = Fundo
+    .title = Editar cor
+about-reader-custom-colors-unvisited-links2 =
+    .label = Links não visitados
+    .title = Editar cor
+about-reader-custom-colors-visited-links2 =
+    .label = Links visitados
+    .title = Editar cor
+about-reader-custom-colors-selection-highlight2 =
+    .label = Destacador para ler em voz alta
+    .title = Editar cor
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Texto
 about-reader-text-size-label = Tamanho do texto
@@ -114,3 +119,5 @@ about-reader-text-alignment-center =
     .title = Centralizar texto
 about-reader-text-alignment-right =
     .title = Alinhar texto à direita
+about-reader-text-alignment-justify =
+    .title = Justificar texto

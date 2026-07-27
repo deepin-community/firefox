@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsProtocolProxyService_h__
-#define nsProtocolProxyService_h__
+#ifndef nsProtocolProxyService_h_
+#define nsProtocolProxyService_h_
 
 #include "nsString.h"
 #include "nsCOMPtr.h"
@@ -17,7 +16,6 @@
 #include "nsHashKeys.h"
 #include "nsITimer.h"
 #include "prio.h"
-#include "mozilla/Attributes.h"
 
 class nsIPrefBranch;
 class nsISystemProxySettings;
@@ -33,12 +31,8 @@ struct nsProtocolInfo;
 
 // CID for the nsProtocolProxyService class
 // 091eedd8-8bae-4fe3-ad62-0c87351e640d
-#define NS_PROTOCOL_PROXY_SERVICE_IMPL_CID           \
-  {                                                  \
-    0x091eedd8, 0x8bae, 0x4fe3, {                    \
-      0xad, 0x62, 0x0c, 0x87, 0x35, 0x1e, 0x64, 0x0d \
-    }                                                \
-  }
+#define NS_PROTOCOL_PROXY_SERVICE_IMPL_CID \
+  {0x091eedd8, 0x8bae, 0x4fe3, {0xad, 0x62, 0x0c, 0x87, 0x35, 0x1e, 0x64, 0x0d}}
 
 class nsProtocolProxyService final : public nsIProtocolProxyService2,
                                      public nsIObserver,
@@ -52,7 +46,7 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
   NS_DECL_NSITIMERCALLBACK
   NS_DECL_NSINAMED
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_PROTOCOL_PROXY_SERVICE_IMPL_CID)
+  NS_INLINE_DECL_STATIC_IID(NS_PROTOCOL_PROXY_SERVICE_IMPL_CID)
 
   nsProtocolProxyService();
 
@@ -79,6 +73,7 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
  protected:
   friend class nsAsyncResolveRequest;
   friend class TestProtocolProxyService_LoadHostFilters_Test;  // for gtest
+  friend class AsyncApplyFilters;
 
   ~nsProtocolProxyService();
 
@@ -201,6 +196,8 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
    *        The proxy host name (UTF-8 ok).
    * @param port
    *        The proxy port number.
+   * @param masqueTemplate
+   *        The MasqueTemplate.
    * @param username
    *        The username for the proxy (ASCII). May be "", but not null.
    * @param password
@@ -217,7 +214,8 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
    *        The resulting nsIProxyInfo object.
    */
   nsresult NewProxyInfo_Internal(const char* type, const nsACString& host,
-                                 int32_t port, const nsACString& username,
+                                 int32_t port, const nsACString& masqueTemplate,
+                                 const nsACString& username,
                                  const nsACString& password,
                                  const nsACString& aProxyAuthorizationHeader,
                                  const nsACString& aConnectionIsolationKey,
@@ -328,6 +326,13 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
                                                const nsACString& aUri,
                                                bool aSystemWPADSetting);
 
+  static void CallOnProxyAvailableCallback(nsProtocolProxyService* aService,
+                                           nsIProtocolProxyCallback* aCallback,
+                                           nsICancelable* aRequest,
+                                           nsIChannel* aChannel,
+                                           nsIProxyInfo* aProxyInfo,
+                                           nsresult aStatus);
+
  public:
   // The Sun Forte compiler and others implement older versions of the
   // C++ standard's rules on access and nested classes.  These structs
@@ -421,10 +426,7 @@ class nsProtocolProxyService final : public nsIProtocolProxyService2,
   nsCOMPtr<nsITimer> mReloadPACTimer;
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsProtocolProxyService,
-                              NS_PROTOCOL_PROXY_SERVICE_IMPL_CID)
-
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // !nsProtocolProxyService_h__
+#endif  // !nsProtocolProxyService_h_

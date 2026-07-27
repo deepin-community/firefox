@@ -1,32 +1,36 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <string.h>
-#include "libavutil/dict.h"
+
 #include "libavcodec/avcodec.h"
+#include "libavutil/dict.h"
 #ifdef __GNUC__
 #  include <unistd.h>
 #endif
 
 #include "FFmpegDataDecoder.h"
+#include "FFmpegLibs.h"
 #include "FFmpegLog.h"
+#include "FFmpegUtils.h"
+#include "VideoUtils.h"
+#include "mozilla/CheckedInt.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/TaskQueue.h"
 #include "prsystem.h"
-#include "VideoUtils.h"
-#include "FFmpegUtils.h"
 
-#include "FFmpegLibs.h"
+#if defined(MOZ_WIDGET_ANDROID) && defined(FFVPX_VERSION)
+#  include "mozilla/MediaDrmRemoteCDMParent.h"
+#endif
 
 namespace mozilla {
 
 StaticMutex FFmpegDataDecoder<LIBAV_VER>::sMutex;
 
-FFmpegDataDecoder<LIBAV_VER>::FFmpegDataDecoder(FFmpegLibWrapper* aLib,
-                                                AVCodecID aCodecID)
+FFmpegDataDecoder<LIBAV_VER>::FFmpegDataDecoder(const FFmpegLibWrapper* aLib,
+                                                AVCodecID aCodecID,
+                                                PRemoteCDMActor* aCDM)
     : mLib(aLib),
       mCodecContext(nullptr),
       mCodecParser(nullptr),
@@ -40,6 +44,18 @@ FFmpegDataDecoder<LIBAV_VER>::FFmpegDataDecoder(FFmpegLibWrapper* aLib,
       mLastInputDts(media::TimeUnit::FromNegativeInfinity()) {
   MOZ_ASSERT(aLib);
   MOZ_COUNT_CTOR(FFmpegDataDecoder);
+
+#if defined(MOZ_WIDGET_ANDROID) && defined(FFVPX_VERSION)
+  if (aCDM) {
+    if (PRemoteCDMParent* parentCDM = aCDM->AsPRemoteCDMParent()) {
+      mCDM = static_cast<MediaDrmRemoteCDMParent*>(parentCDM);
+    }
+  }
+#elif defined(DEBUG)
+  MOZ_ASSERT(!aCDM);
+#else
+  (void)aCDM;
+#endif
 }
 
 FFmpegDataDecoder<LIBAV_VER>::~FFmpegDataDecoder() {
@@ -50,60 +66,153 @@ FFmpegDataDecoder<LIBAV_VER>::~FFmpegDataDecoder() {
   }
 }
 
+MediaResult FFmpegDataDecoder<LIBAV_VER>::AssignCodecContextExtraData(
+    const MediaByteBuffer* aBuffer) {
+  MOZ_ASSERT(mCodecContext);
+  MOZ_ASSERT(aBuffer);
+
+  CheckedInt<int> extradataSize(aBuffer->Length());
+  if (!extradataSize.isValid()) {
+    return MediaResult(
+        NS_ERROR_DOM_MEDIA_OVERFLOW_ERR,
+        RESULT_DETAIL("ffmpeg extradata size %zu exceeds INT_MAX",
+                      aBuffer->Length()));
+  }
+  // FFmpeg may use SIMD instructions to access the data which reads the
+  // data in 32 bytes block. Must ensure we have enough data to read.
+  const uint32_t padding_size =
+#if LIBAVCODEC_VERSION_MAJOR >= 58
+      AV_INPUT_BUFFER_PADDING_SIZE;
+#else
+      FF_INPUT_BUFFER_PADDING_SIZE;
+#endif
+  mCodecContext->extradata =
+      static_cast<uint8_t*>(mLib->av_mallocz(aBuffer->Length() + padding_size));
+  if (!mCodecContext->extradata) {
+    return MediaResult(NS_ERROR_OUT_OF_MEMORY,
+                       RESULT_DETAIL("Couldn't init ffmpeg extradata"));
+  }
+  mCodecContext->extradata_size = extradataSize.value();
+  memcpy(mCodecContext->extradata, aBuffer->Elements(), aBuffer->Length());
+  return NS_OK;
+}
+
 MediaResult FFmpegDataDecoder<LIBAV_VER>::AllocateExtraData() {
   if (mExtraData) {
-    mCodecContext->extradata_size = mExtraData->Length();
-    // FFmpeg may use SIMD instructions to access the data which reads the
-    // data in 32 bytes block. Must ensure we have enough data to read.
-    uint32_t padding_size =
-#if LIBAVCODEC_VERSION_MAJOR >= 58
-        AV_INPUT_BUFFER_PADDING_SIZE;
-#else
-        FF_INPUT_BUFFER_PADDING_SIZE;
-#endif
-    mCodecContext->extradata = static_cast<uint8_t*>(
-        mLib->av_malloc(mExtraData->Length() + padding_size));
-    if (!mCodecContext->extradata) {
-      return MediaResult(NS_ERROR_OUT_OF_MEMORY,
-                         RESULT_DETAIL("Couldn't init ffmpeg extradata"));
-    }
-    memcpy(mCodecContext->extradata, mExtraData->Elements(),
-           mExtraData->Length());
-  } else {
-    mCodecContext->extradata_size = 0;
+    return AssignCodecContextExtraData(mExtraData);
   }
-
+  mCodecContext->extradata_size = 0;
   return NS_OK;
 }
 
 // Note: This doesn't run on the ffmpeg TaskQueue, it runs on some other media
 // taskqueue
-MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder(AVDictionary** aOptions) {
+MediaResult FFmpegDataDecoder<LIBAV_VER>::InitSWDecoder(
+    AVDictionary** aOptions) {
   FFMPEG_LOG("Initialising FFmpeg decoder");
 
-  AVCodec* codec = FindAVCodec(mLib, mCodecID);
+  AVCodec* codec = FindSoftwareAVCodec(mLib, mCodecID);
   if (!codec) {
     FFMPEG_LOG("  couldn't find ffmpeg decoder for codec id %d", mCodecID);
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
                        RESULT_DETAIL("unable to find codec"));
   }
-  // This logic is mirrored in FFmpegDecoderModule::Supports. We prefer to use
-  // our own OpenH264 decoder through the plugin over ffmpeg by default due to
-  // broken decoding with some versions. openh264 has broken decoding of some
-  // h264 videos so don't use it unless explicitly allowed for now.
-  if (!strcmp(codec->name, "libopenh264") &&
-      !StaticPrefs::media_ffmpeg_allow_openh264()) {
-    FFMPEG_LOG("  unable to find codec (openh264 disabled by pref)");
+
+  return InitDecoder(codec, aOptions);
+}
+
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+/* static */
+void FFmpegDataDecoder<LIBAV_VER>::CryptoInfoAddRef(void* aCryptoInfo) {
+  reinterpret_cast<MediaDrmCryptoInfo*>(aCryptoInfo)->AddRef();
+}
+
+/* static */
+void FFmpegDataDecoder<LIBAV_VER>::CryptoInfoRelease(void* aCryptoInfo) {
+  reinterpret_cast<MediaDrmCryptoInfo*>(aCryptoInfo)->Release();
+}
+
+MediaResult FFmpegDataDecoder<LIBAV_VER>::MaybeAttachCryptoInfo(
+    MediaRawData* aSample, AVPacket* aPacket) {
+  if (!aSample->mCrypto.IsEncrypted()) {
+    return NS_OK;
+  }
+
+  if (NS_WARN_IF(!mCDM)) {
+    return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                       RESULT_DETAIL("missing CDM for encrypted sample"));
+  }
+
+  RefPtr<MediaDrmCryptoInfo> cryptoInfo = mCDM->CreateCryptoInfo(aSample);
+  if (NS_WARN_IF(!cryptoInfo)) {
     return MediaResult(
         NS_ERROR_DOM_MEDIA_FATAL_ERR,
-        RESULT_DETAIL("unable to find codec (openh264 disabled by pref)"));
+        RESULT_DETAIL("missing MediaDrmCryptoInfo for encrypted sample"));
   }
-  FFMPEG_LOG("  codec %s : %s", codec->name, codec->long_name);
+
+  aPacket->moz_ndk_crypto_info = cryptoInfo->GetNdkCryptoInfo();
+  if (NS_WARN_IF(!aPacket->moz_ndk_crypto_info)) {
+    return MediaResult(
+        NS_ERROR_DOM_MEDIA_FATAL_ERR,
+        RESULT_DETAIL("missing AMediaCodecCryptoInfo for encrypted sample"));
+  }
+
+  aPacket->moz_crypto_info = cryptoInfo.forget().take();
+  aPacket->moz_crypto_info_addref = CryptoInfoAddRef;
+  aPacket->moz_crypto_info_release = CryptoInfoRelease;
+
+  FFMPEG_LOG("  encrypted packet, ndk_crypto_info=%p",
+             aPacket->moz_ndk_crypto_info);
+  return NS_OK;
+}
+
+MediaResult FFmpegDataDecoder<LIBAV_VER>::MaybeAttachCDM() {
+  MOZ_ASSERT(mCodecContext);
+
+  if (!mCDM) {
+    return NS_OK;
+  }
+
+  if (!(mCodecContext->codec->capabilities & AV_CODEC_CAP_HARDWARE)) {
+    return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                       RESULT_DETAIL("CDM requires MediaCodec decoder"));
+  }
+
+  mCrypto = mCDM->GetCrypto();
+  if (NS_WARN_IF(!mCrypto)) {
+    return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                       RESULT_DETAIL("missing MediaDrmCrypto from CDM"));
+  }
+
+  mCodecContext->moz_ndk_crypto = mCrypto->GetNdkCrypto();
+  if (NS_WARN_IF(!mCodecContext->moz_ndk_crypto)) {
+    return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                       RESULT_DETAIL("missing AMediaCrypto from CDM"));
+  }
+
+  FFMPEG_LOG("  attached CDM, ndk_crypto=%p", mCodecContext->moz_ndk_crypto);
+  return NS_OK;
+}
+
+void FFmpegDataDecoder<LIBAV_VER>::MaybeDetachCDM() {
+  if (mCodecContext) {
+    mCodecContext->moz_ndk_crypto = nullptr;
+  }
+
+  if (mCDM) {
+    mCDM = nullptr;
+  }
+}
+#endif
+
+MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder(AVCodec* aCodec,
+                                                      AVDictionary** aOptions) {
+  FFMPEG_LOG("  codec %s : %s", aCodec->name, aCodec->long_name);
 
   StaticMutexAutoLock mon(sMutex);
 
-  if (!(mCodecContext = mLib->avcodec_alloc_context3(codec))) {
-    FFMPEG_LOG("  couldn't allocate ffmpeg context for codec %s", codec->name);
+  if (!(mCodecContext = mLib->avcodec_alloc_context3(aCodec))) {
+    FFMPEG_LOG("  couldn't allocate ffmpeg context for codec %s", aCodec->name);
     return MediaResult(NS_ERROR_OUT_OF_MEMORY,
                        RESULT_DETAIL("Couldn't init ffmpeg context"));
   }
@@ -118,32 +227,63 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder(AVDictionary** aOptions) {
   mCodecContext->opaque = this;
 
   InitCodecContext();
+  // Mirror Firefox's existing video dimension policy (IsValidVideoRegion,
+  // applied at WebMDemuxer and the WMF wrappers) into ffvpx via the
+  // documented max_pixels AVOption. Bitstream-driven dimension changes
+  // are otherwise gated only by max_pixels' INT_MAX default and would
+  // accept the VP8 14-bit field maximum (16383x16383).
+#if LIBAVCODEC_VERSION_MAJOR >= 58
+  if (mCodecContext->codec_type == AVMEDIA_TYPE_VIDEO) {
+    mCodecContext->max_pixels = MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT;
+  }
+#endif
   MediaResult ret = AllocateExtraData();
   if (NS_FAILED(ret)) {
     FFMPEG_LOG("  couldn't allocate ffmpeg extra data for codec %s",
-               codec->name);
-    mLib->av_freep(&mCodecContext);
+               aCodec->name);
+    ReleaseCodecContext();
     return ret;
   }
 
 #if LIBAVCODEC_VERSION_MAJOR < 57
-  if (codec->capabilities & CODEC_CAP_DR1) {
+  if (aCodec->capabilities & CODEC_CAP_DR1) {
     mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
   }
 #endif
 
-  if (mLib->avcodec_open2(mCodecContext, codec, aOptions) < 0) {
-    if (mCodecContext->extradata) {
-      mLib->av_freep(&mCodecContext->extradata);
-    }
-    mLib->av_freep(&mCodecContext);
-    FFMPEG_LOG("  Couldn't open avcodec");
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  ret = MaybeAttachCDM();
+  if (NS_FAILED(ret)) {
+    ReleaseCodecContext();
+    return ret;
+  }
+#endif
+
+  if (mLib->avcodec_open2(mCodecContext, aCodec, aOptions) < 0) {
+    ReleaseCodecContext();
+    FFMPEG_LOG("  Couldn't open avcodec for %s", aCodec->name);
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
                        RESULT_DETAIL("Couldn't open avcodec"));
   }
 
   FFMPEG_LOG("  FFmpeg decoder init successful.");
   return NS_OK;
+}
+
+void FFmpegDataDecoder<LIBAV_VER>::ReleaseCodecContext() {
+  if (!mCodecContext) {
+    return;
+  }
+#if LIBAVCODEC_VERSION_MAJOR < 57
+  mLib->avcodec_close(mCodecContext);
+  // avcodec_close only frees the extradata for encoders.
+  if (mCodecContext->extradata) {
+    mLib->av_freep(&mCodecContext->extradata);
+  }
+  mLib->av_freep(&mCodecContext);
+#else
+  mLib->avcodec_free_context(&mCodecContext);
+#endif
 }
 
 RefPtr<ShutdownPromise> FFmpegDataDecoder<LIBAV_VER>::Shutdown() {
@@ -162,6 +302,7 @@ RefPtr<MediaDataDecoder::DecodePromise> FFmpegDataDecoder<LIBAV_VER>::Decode(
 
 RefPtr<MediaDataDecoder::DecodePromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessDecode(MediaRawData* aSample) {
+  AUTO_PROFILER_LABEL("FFmpegDataDecoder::ProcessDecode", MEDIA_PLAYBACK);
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
   PROCESS_DECODE_LOG(aSample);
   bool gotFrame = false;
@@ -179,7 +320,7 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::DoDecode(
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
 
   uint8_t* inputData = const_cast<uint8_t*>(aSample->Data());
-  size_t inputSize = aSample->Size();
+  int inputSize = AssertedCast<int>(aSample->Size());
 
   mLastInputDts = aSample->mTimecode;
 
@@ -194,7 +335,7 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::DoDecode(
           mCodecParser, mCodecContext, &data, &size, inputData, inputSize,
           aSample->mTime.ToMicroseconds(), aSample->mTimecode.ToMicroseconds(),
           aSample->mOffset);
-      if (size_t(len) > inputSize) {
+      if (len > inputSize) {
         return NS_ERROR_DOM_MEDIA_DECODE_ERR;
       }
       if (size) {
@@ -227,6 +368,7 @@ RefPtr<MediaDataDecoder::DecodePromise> FFmpegDataDecoder<LIBAV_VER>::Drain() {
 
 RefPtr<MediaDataDecoder::DecodePromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessDrain() {
+  AUTO_PROFILER_LABEL("FFmpegDataDecoder::ProcessDrain", MEDIA_PLAYBACK);
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
   FFMPEG_LOG("FFmpegDataDecoder: draining buffers");
   RefPtr<MediaRawData> empty(new MediaRawData());
@@ -240,23 +382,34 @@ FFmpegDataDecoder<LIBAV_VER>::ProcessDrain() {
   // as pending data in the pipeline being corrupt or invalid, non-EOS errors
   // like NS_ERROR_DOM_MEDIA_DECODE_ERR will be returned and must be handled
   // accordingly.
+  RefPtr<MediaDataDecoder::DecodePromise> p = mDrainPromise.Ensure(__func__);
   do {
     MediaResult r = DoDecode(empty, &gotFrame, results);
     if (NS_FAILED(r)) {
       if (r.Code() == NS_ERROR_DOM_MEDIA_END_OF_STREAM) {
         break;
       }
-      return DecodePromise::CreateAndReject(r, __func__);
+      if (r.Code() == NS_ERROR_NOT_AVAILABLE) {
+        if (results.IsEmpty()) {
+          return p;
+        }
+        break;
+      }
+      mDrainPromise.Reject(r, __func__);
+      return p;
     }
   } while (gotFrame);
-  return DecodePromise::CreateAndResolve(std::move(results), __func__);
+  mDrainPromise.Resolve(std::move(results), __func__);
+  return p;
 }
 
 RefPtr<MediaDataDecoder::FlushPromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessFlush() {
+  AUTO_PROFILER_LABEL("FFmpegDataDecoder::ProcessFlush", MEDIA_PLAYBACK);
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
   if (mCodecContext) {
     FFMPEG_LOG("FFmpegDataDecoder: flushing buffers");
+    ReleaseFrame();
     mLib->avcodec_flush_buffers(mCodecContext);
   }
   if (mCodecParser) {
@@ -268,23 +421,14 @@ FFmpegDataDecoder<LIBAV_VER>::ProcessFlush() {
 }
 
 void FFmpegDataDecoder<LIBAV_VER>::ProcessShutdown() {
+  AUTO_PROFILER_LABEL("FFmpegDataDecoder::ProcessShutdown", MEDIA_PLAYBACK);
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
   StaticMutexAutoLock mon(sMutex);
 
   if (mCodecContext) {
     FFMPEG_LOG("FFmpegDataDecoder: shutdown");
-    if (mCodecContext->extradata) {
-      mLib->av_freep(&mCodecContext->extradata);
-    }
-    mLib->avcodec_close(mCodecContext);
-    mLib->av_freep(&mCodecContext);
-#if LIBAVCODEC_VERSION_MAJOR >= 55
-    mLib->av_frame_free(&mFrame);
-#elif LIBAVCODEC_VERSION_MAJOR == 54
-    mLib->avcodec_free_frame(&mFrame);
-#else
-    mLib->av_freep(&mFrame);
-#endif
+    ReleaseFrame();
+    ReleaseCodecContext();
   }
 }
 
@@ -309,20 +453,125 @@ AVFrame* FFmpegDataDecoder<LIBAV_VER>::PrepareFrame() {
   return mFrame;
 }
 
-/* static */ AVCodec* FFmpegDataDecoder<LIBAV_VER>::FindAVCodec(
-    FFmpegLibWrapper* aLib, AVCodecID aCodec) {
-  return aLib->avcodec_find_decoder(aCodec);
+void FFmpegDataDecoder<LIBAV_VER>::ReleaseFrame() {
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+  mLib->av_frame_free(&mFrame);
+#elif LIBAVCODEC_VERSION_MAJOR == 54
+  mLib->avcodec_free_frame(&mFrame);
+#else
+  mLib->av_freep(&mFrame);
+#endif
 }
 
-#ifdef MOZ_WIDGET_GTK
-/* static */ AVCodec* FFmpegDataDecoder<LIBAV_VER>::FindHardwareAVCodec(
-    FFmpegLibWrapper* aLib, AVCodecID aCodec) {
+/* static */ AVCodec* FFmpegDataDecoder<LIBAV_VER>::FindSoftwareAVCodec(
+    const FFmpegLibWrapper* aLib, AVCodecID aCodec) {
+  MOZ_ASSERT(aLib);
+
+  // We use this instead of MOZ_USE_HWDECODE because it is possible to disable
+  // support for hardware decoding in Firefox, while the system ffmpeg library
+  // still exposes the hardware codecs.
+#if LIBAVCODEC_VERSION_MAJOR >= 58
+  AVCodec* fallbackCodec = nullptr;
   void* opaque = nullptr;
   while (AVCodec* codec = aLib->av_codec_iterate(&opaque)) {
-    if (codec->id == aCodec && aLib->av_codec_is_decoder(codec) &&
-        aLib->avcodec_get_hw_config(codec, 0)) {
-      return codec;
+    if (codec->id != aCodec || !aLib->av_codec_is_decoder(codec)) {
+      continue;
     }
+
+    if (codec->capabilities & AV_CODEC_CAP_HARDWARE) {
+      continue;
+    }
+
+    // We prefer to use our own OpenH264 decoder through the plugin over ffmpeg
+    // by default due to broken decoding with some versions. openh264 has broken
+    // decoding of some h264 videos so don't use it unless explicitly allowed
+    // for now.
+    if (strcmp(codec->name, "libopenh264") == 0) {
+      if (!StaticPrefs::media_ffmpeg_allow_openh264()) {
+        FFMPEGV_LOG("libopenh264 available but disabled by pref");
+      } else if (!fallbackCodec) {
+        fallbackCodec = codec;
+      }
+      continue;
+    }
+
+    if (codec->capabilities & AV_CODEC_CAP_EXPERIMENTAL) {
+      if (!fallbackCodec) {
+        fallbackCodec = codec;
+      }
+      continue;
+    }
+
+    FFMPEGV_LOG("Using preferred software codec %s", codec->name);
+    return codec;
+  }
+
+  if (fallbackCodec) {
+    FFMPEGV_LOG("Using fallback software codec %s", fallbackCodec->name);
+  }
+  return fallbackCodec;
+#else
+  AVCodec* codec = aLib->avcodec_find_decoder(aCodec);
+  if (codec) {
+    // We prefer to use our own OpenH264 decoder through the plugin over ffmpeg
+    // by default due to broken decoding with some versions. openh264 has broken
+    // decoding of some h264 videos so don't use it unless explicitly allowed
+    // for now.
+    if (strcmp(codec->name, "libopenh264") == 0 &&
+        !StaticPrefs::media_ffmpeg_allow_openh264()) {
+      FFMPEGV_LOG("libopenh264 selected but disabled by pref");
+      return nullptr;
+    }
+
+    FFMPEGV_LOG("Using preferred software codec %s", codec->name);
+  }
+  return codec;
+#endif
+}
+
+#ifdef MOZ_USE_HWDECODE
+/* static */ AVCodec* FFmpegDataDecoder<LIBAV_VER>::FindHardwareAVCodec(
+    const FFmpegLibWrapper* aLib, AVCodecID aCodec,
+    AVHWDeviceType aDeviceType) {
+  AVCodec* fallbackCodec = nullptr;
+  void* opaque = nullptr;
+  const bool ignoreDeviceType = aDeviceType == AV_HWDEVICE_TYPE_NONE;
+  while (AVCodec* codec = aLib->av_codec_iterate(&opaque)) {
+    if (codec->id != aCodec || !aLib->av_codec_is_decoder(codec)) {
+      continue;
+    }
+
+    bool hasHwConfig =
+        codec->capabilities & AV_CODEC_CAP_HARDWARE && ignoreDeviceType;
+    if (!hasHwConfig) {
+      for (int i = 0; const AVCodecHWConfig* config =
+                          aLib->avcodec_get_hw_config(codec, i);
+           ++i) {
+        if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+            (ignoreDeviceType || config->device_type == aDeviceType)) {
+          hasHwConfig = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasHwConfig) {
+      continue;
+    }
+
+    if (codec->capabilities & AV_CODEC_CAP_EXPERIMENTAL) {
+      if (!fallbackCodec) {
+        fallbackCodec = codec;
+      }
+      continue;
+    }
+
+    FFMPEGV_LOG("Using preferred hardware codec %s", codec->name);
+    return codec;
+  }
+
+  if (fallbackCodec) {
+    FFMPEGV_LOG("Using fallback hardware codec %s", fallbackCodec->name);
   }
   return nullptr;
 }

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2018 Peter Wong. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -27,8 +26,8 @@ includes: [testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([40, 41, 42, 43]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([40, 41, 42, 43]));
   var callCount = 0;
 
   Object.defineProperty(sample, "constructor", {
@@ -43,6 +42,6 @@ testWithTypedArrayConstructors(function(TA) {
     });
   });
   assert.sameValue(callCount, 0, "callback should not be called");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

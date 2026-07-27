@@ -1,11 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.focus.settings.permissions.permissionoptions
 
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import mozilla.components.feature.sitepermissions.SitePermissionsRules
 import mozilla.components.support.ktx.android.content.isPermissionGranted
@@ -13,7 +15,9 @@ import org.mozilla.focus.R
 import org.mozilla.focus.settings.permissions.AutoplayOption
 import org.mozilla.focus.settings.permissions.SitePermissionOption
 
-@Suppress("TooManyFunctions")
+/**
+ * Storage for site permission options.
+ */
 class SitePermissionOptionsStorage(private val context: Context) {
 
     /**
@@ -28,22 +32,18 @@ class SitePermissionOptionsStorage(private val context: Context) {
         }
     }
 
+    /**
+     * Checks if the Android permission for the given [sitePermission] is granted.
+     */
     fun isAndroidPermissionGranted(sitePermission: SitePermission): Boolean {
         return context.isPermissionGranted(sitePermission.androidPermissionsList.asIterable())
     }
 
+    /**
+     * Returns the localized label for the given [sitePermission].
+     */
     fun getSitePermissionLabel(sitePermission: SitePermission): String {
-        return when (sitePermission) {
-            SitePermission.CAMERA -> context.getString(R.string.preference_phone_feature_camera)
-            SitePermission.LOCATION -> context.getString(R.string.preference_phone_feature_location)
-            SitePermission.MICROPHONE -> context.getString(R.string.preference_phone_feature_microphone)
-            SitePermission.NOTIFICATION -> context.getString(R.string.preference_phone_feature_notification)
-            SitePermission.MEDIA_KEY_SYSTEM_ACCESS -> context.getString(
-                R.string.preference_phone_feature_media_key_system_access,
-            )
-            SitePermission.AUTOPLAY, SitePermission.AUTOPLAY_AUDIBLE, SitePermission.AUTOPLAY_INAUDIBLE ->
-                context.getString(R.string.preference_autoplay)
-        }
+        return context.getString(sitePermission.labelRes)
     }
 
     /**
@@ -142,12 +142,11 @@ class SitePermissionOptionsStorage(private val context: Context) {
         sitePermission: SitePermission,
     ) {
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
-        with(sharedPref.edit()) {
+        sharedPref.edit {
             putString(
                 context.getString(getSitePermissionPreferenceId(sitePermission)),
                 context.getString(sitePermissionOption.prefKeyId),
             )
-            apply()
         }
     }
 
@@ -178,6 +177,9 @@ class SitePermissionOptionsStorage(private val context: Context) {
         }
     }
 
+    /**
+     * Returns the [SitePermissionsRules] based on the current user settings.
+     */
     fun getSitePermissionsSettingsRules() = SitePermissionsRules(
         notification = getSitePermissionRules(SitePermission.NOTIFICATION),
         microphone = getSitePermissionRules(SitePermission.MICROPHONE),
@@ -188,6 +190,8 @@ class SitePermissionOptionsStorage(private val context: Context) {
         persistentStorage = SitePermissionsRules.Action.BLOCKED,
         mediaKeySystemAccess = getSitePermissionRules(SitePermission.MEDIA_KEY_SYSTEM_ACCESS),
         crossOriginStorageAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
+        localDeviceAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
+        localNetworkAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
     )
 
     private fun getSitePermissionRules(sitePermission: SitePermission): SitePermissionsRules.Action {
@@ -201,6 +205,9 @@ class SitePermissionOptionsStorage(private val context: Context) {
         }
     }
 
+    /**
+     * Checks if at least one of the site permissions in [permissionsList] is not blocked.
+     */
     fun isSitePermissionNotBlocked(permissionsList: Array<String>): Boolean {
         SitePermission.entries.forEach { sitePermission ->
             if (

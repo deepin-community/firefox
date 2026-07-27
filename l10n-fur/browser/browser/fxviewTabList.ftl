@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Sposte ae fin
     .accesskey = e
 fxviewtabrow-move-tab-window = Sposte suntun gnûf barcon
     .accesskey = u
+fxviewtabrow-send-to-device = Mande a dispositîf
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Mande a dispositîf mobil
+    .accesskey = M
 fxviewtabrow-send-tab = Invie schede a dispositîf
     .accesskey = n
 fxviewtabrow-pin-tab = Fisse la schede
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Ative audio de schede
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opzions par { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Cidine { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Ative audio su { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Cidine la schede
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Ative audio de schede
+fxviewtabrow-send-to-mobile-connect-device = Conet un dispositîf par mandâ schedis
+fxviewtabrow-send-to-mobile-device-missing2 = No tu cjatis il to dispositîf?
+fxviewtabrow-send-to-mobile-not-verified = Account no verificât
+fxviewtabrow-send-to-mobile-verify-account = Verifiche il to account
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Jentre par mandâ schedis
+fxviewtabrow-send-to-mobile-turn-on-sync = Ative la sincronizazion par mandâ schedis

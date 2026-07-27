@@ -1,14 +1,28 @@
-use std::num::NonZeroU32;
+use alloc::{boxed::Box, vec, vec::Vec};
+use core::num::NonZeroU32;
 
+use crate::common::wgsl::{TryToWgsl, TypeContext};
+use crate::front::wgsl::lower::{ExpressionContext, Lowerer};
 use crate::front::wgsl::parse::ast;
+use crate::front::wgsl::{Error, Result};
 use crate::{Handle, Span};
 
-use crate::front::wgsl::error::Error;
-use crate::front::wgsl::lower::{ExpressionContext, Lowerer};
-
-/// A cooked form of `ast::ConstructorType` that uses Naga types whenever
-/// possible.
-enum Constructor<T> {
+/// A [`constructor built-in function`].
+///
+/// WGSL has two types of such functions:
+///
+/// - Those that fully specify the type being constructed, like
+///   `vec3<f32>(x,y,z)`, which obviously constructs a `vec3<f32>`.
+///
+/// - Those that leave the component type of the composite being constructed
+///   implicit, to be inferred from the argument types, like `vec3(x,y,z)`,
+///   which constructs a `vec3<T>` where `T` is the type of `x`, `y`, and `z`.
+///
+/// This enum represents both cases. The `PartialFoo` variants
+/// represent the second case, where the component type is implicit.
+///
+/// [`constructor built-in function`]: https://gpuweb.github.io/gpuweb/wgsl/#constructor-builtin-function
+pub enum Constructor<T> {
     /// A vector construction whose component type is inferred from the
     /// argument: `vec3(1.0)`.
     PartialVector { size: crate::VectorSize },
@@ -55,21 +69,6 @@ impl Constructor<Handle<crate::Type>> {
     }
 }
 
-impl Constructor<(Handle<crate::Type>, &crate::TypeInner)> {
-    fn to_error_string(&self, ctx: &ExpressionContext) -> String {
-        match *self {
-            Self::PartialVector { size } => {
-                format!("vec{}<?>", size as u32,)
-            }
-            Self::PartialMatrix { columns, rows } => {
-                format!("mat{}x{}<?>", columns as u32, rows as u32,)
-            }
-            Self::PartialArray => "array<?, ?>".to_string(),
-            Self::Type((handle, _inner)) => handle.to_wgsl(&ctx.module.to_ctx()),
-        }
-    }
-}
-
 enum Components<'a> {
     None,
     One {
@@ -93,7 +92,7 @@ impl Components<'_> {
     }
 }
 
-impl<'source, 'temp> Lowerer<'source, 'temp> {
+impl<'source> Lowerer<'source, '_> {
     /// Generate Naga IR for a type constructor expression.
     ///
     /// The `constructor` value represents the head of the constructor
@@ -101,23 +100,19 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
     /// it's one of the `Partial` variants, we need to consider the argument
     /// types as well.
     ///
-    /// This is used for [`Construct`] expressions, but also for [`Call`]
-    /// expressions, once we've determined that the "callable" (in WGSL spec
-    /// terms) is actually a type.
+    /// This is used for [`Call`] expressions, once we've determined that
+    /// the "callable" (in WGSL spec terms) is actually a type.
     ///
-    /// [`Construct`]: ast::Expression::Construct
     /// [`Call`]: ast::Expression::Call
     pub fn construct(
         &mut self,
         span: Span,
-        constructor: &ast::ConstructorType<'source>,
+        constructor: Constructor<Handle<crate::Type>>,
         ty_span: Span,
         components: &[Handle<ast::Expression<'source>>],
         ctx: &mut ExpressionContext<'source, '_, '_>,
-    ) -> Result<Handle<crate::Expression>, Error<'source>> {
+    ) -> Result<'source, Handle<crate::Expression>> {
         use crate::proc::TypeResolution as Tr;
-
-        let constructor_h = self.constructor(constructor, ctx)?;
 
         let components = match *components {
             [] => Components::None,
@@ -136,7 +131,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 let components = ast_components
                     .iter()
                     .map(|&expr| self.expression_for_abstract(expr, ctx))
-                    .collect::<Result<_, _>>()?;
+                    .collect::<Result<_>>()?;
                 let spans = ast_components
                     .iter()
                     .map(|&expr| ctx.ast_expressions.get_span(expr))
@@ -153,23 +148,39 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
         // Even though we computed `constructor` above, wait until now to borrow
         // a reference to the `TypeInner`, so that the component-handling code
         // above can have mutable access to the type arena.
-        let constructor = constructor_h.borrow_inner(ctx.module);
+        let constructor = constructor.borrow_inner(ctx.module);
 
         let expr;
         match (components, constructor) {
-            // Empty constructor
-            (Components::None, dst_ty) => match dst_ty {
-                Constructor::Type((result_ty, _)) => {
-                    return ctx.append_expression(crate::Expression::ZeroValue(result_ty), span)
-                }
-                Constructor::PartialVector { .. }
-                | Constructor::PartialMatrix { .. }
-                | Constructor::PartialArray => {
-                    // We have no arguments from which to infer the result type, so
-                    // partial constructors aren't acceptable here.
-                    return Err(Error::TypeNotInferable(ty_span));
-                }
-            },
+            // Zero-value constructor with explicit type.
+            (Components::None, Constructor::Type((result_ty, inner)))
+                if inner.is_constructible(&ctx.module.types) =>
+            {
+                expr = crate::Expression::ZeroValue(result_ty);
+            }
+            // Zero-value constructor, vector with type inference
+            (Components::None, Constructor::PartialVector { size }) => {
+                // vec2(), vec3(), vec4() return vectors of abstractInts; the same
+                // is not true of the similar constructors for matrices or arrays.
+                // See https://www.w3.org/TR/WGSL/#vec2-builtin et seq.
+                let result_ty = ctx.module.types.insert(
+                    crate::Type {
+                        name: None,
+                        inner: crate::TypeInner::Vector {
+                            size,
+                            scalar: crate::Scalar::ABSTRACT_INT,
+                        },
+                    },
+                    span,
+                );
+                expr = crate::Expression::ZeroValue(result_ty);
+            }
+            // Zero-value constructor, matrix or array with type inference
+            (Components::None, Constructor::PartialMatrix { .. } | Constructor::PartialArray) => {
+                // We have no arguments from which to infer the result type, so
+                // partial constructors aren't acceptable here.
+                return Err(Box::new(Error::TypeNotInferable(ty_span)));
+            }
 
             // Scalar constructor & conversion (scalar -> scalar)
             (
@@ -294,14 +305,33 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             (
                 Components::One {
                     mut component,
-                    ty_inner: &crate::TypeInner::Scalar(_),
-                    ..
+                    ty_inner: &crate::TypeInner::Scalar(component_scalar),
+                    span,
                 },
-                Constructor::Type((_, &crate::TypeInner::Vector { size, scalar })),
+                Constructor::Type((
+                    type_handle,
+                    &crate::TypeInner::Vector {
+                        size,
+                        scalar: vec_scalar,
+                    },
+                )),
             ) => {
+                // Splat only allows automatic conversions of the component's scalar.
+                if !component_scalar.automatically_converts_to(vec_scalar) {
+                    let component_ty = &ctx.typifier()[component];
+                    let arg_ty = ctx.type_resolution_to_string(component_ty);
+                    return Err(Box::new(Error::WrongArgumentType {
+                        function: ctx.type_to_string(type_handle),
+                        call_span: ty_span,
+                        arg_span: span,
+                        arg_index: 0,
+                        arg_ty,
+                        allowed: vec![vec_scalar.to_wgsl_for_diagnostics()],
+                    }));
+                }
                 ctx.convert_slice_to_common_leaf_scalar(
-                    std::slice::from_mut(&mut component),
-                    scalar,
+                    core::slice::from_mut(&mut component),
+                    vec_scalar,
                 )?;
                 expr = crate::Expression::Splat {
                     size,
@@ -317,11 +347,11 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 },
                 Constructor::PartialVector { size },
             ) => {
-                let consensus_scalar =
-                    ctx.automatic_conversion_consensus(&components)
-                        .map_err(|index| {
-                            Error::InvalidConstructorComponentType(spans[index], index as i32)
-                        })?;
+                let consensus_scalar = ctx
+                    .automatic_conversion_consensus(None, &components)
+                    .map_err(|index| {
+                        Error::InvalidConstructorComponentType(spans[index], index as i32)
+                    })?;
                 ctx.convert_slice_to_common_leaf_scalar(&mut components, consensus_scalar)?;
                 let inner = consensus_scalar.to_inner_vector(size);
                 let ty = ctx.ensure_type_exists(inner);
@@ -345,15 +375,14 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 },
                 Constructor::PartialMatrix { columns, rows },
             ) if components.len() == columns as usize * rows as usize => {
-                let consensus_scalar =
-                    ctx.automatic_conversion_consensus(&components)
-                        .map_err(|index| {
-                            Error::InvalidConstructorComponentType(spans[index], index as i32)
-                        })?;
-                // We actually only accept floating-point elements.
-                let consensus_scalar = consensus_scalar
-                    .automatic_conversion_combine(crate::Scalar::ABSTRACT_FLOAT)
-                    .unwrap_or(consensus_scalar);
+                let consensus_scalar = ctx
+                    .automatic_conversion_consensus(
+                        Some(crate::Scalar::ABSTRACT_FLOAT),
+                        &components,
+                    )
+                    .map_err(|index| {
+                        Error::InvalidConstructorComponentType(spans[index], index as i32)
+                    })?;
                 ctx.convert_slice_to_common_leaf_scalar(&mut components, consensus_scalar)?;
                 let vec_ty = ctx.ensure_type_exists(consensus_scalar.to_inner_vector(rows));
 
@@ -368,7 +397,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                             Default::default(),
                         )
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>>>()?;
 
                 let ty = ctx.ensure_type_exists(crate::TypeInner::Matrix {
                     columns,
@@ -405,7 +434,7 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                             Default::default(),
                         )
                     })
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>>>()?;
 
                 let ty = ctx.ensure_type_exists(crate::TypeInner::Matrix {
                     columns,
@@ -422,13 +451,26 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                     spans,
                 },
                 Constructor::PartialMatrix { columns, rows },
-            ) => {
-                let consensus_scalar =
-                    ctx.automatic_conversion_consensus(&components)
-                        .map_err(|index| {
-                            Error::InvalidConstructorComponentType(spans[index], index as i32)
-                        })?;
-                ctx.convert_slice_to_common_leaf_scalar(&mut components, consensus_scalar)?;
+            ) if components.len() == columns as usize => {
+                let consensus_scalar = ctx
+                    .automatic_conversion_consensus(
+                        Some(crate::Scalar::ABSTRACT_FLOAT),
+                        &components,
+                    )
+                    .map_err(|index| {
+                        Error::InvalidConstructorComponentType(spans[index], index as i32)
+                    })?;
+
+                let component_ty = crate::TypeInner::Vector {
+                    size: rows,
+                    scalar: consensus_scalar,
+                };
+                ctx.try_automatic_conversions_slice(
+                    &mut components,
+                    &Tr::Value(component_ty),
+                    ty_span,
+                )?;
+
                 let ty = ctx.ensure_type_exists(crate::TypeInner::Matrix {
                     columns,
                     rows,
@@ -443,12 +485,12 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 Constructor::Type((
                     ty,
                     &crate::TypeInner::Matrix {
-                        columns: _,
+                        columns,
                         rows,
                         scalar,
                     },
                 )),
-            ) => {
+            ) if components.len() == columns as usize => {
                 let component_ty = crate::TypeInner::Vector { size: rows, scalar };
                 ctx.try_automatic_conversions_slice(
                     &mut components,
@@ -461,7 +503,8 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             // Array constructor - infer type
             (components, Constructor::PartialArray) => {
                 let mut components = components.into_components_vec();
-                if let Ok(consensus_scalar) = ctx.automatic_conversion_consensus(&components) {
+                if let Ok(consensus_scalar) = ctx.automatic_conversion_consensus(None, &components)
+                {
                     // Note that this will *not* necessarily convert all the
                     // components to the same type! The `automatic_conversion_consensus`
                     // method only considers the parameters' leaf scalar
@@ -490,8 +533,8 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                         NonZeroU32::new(u32::try_from(components.len()).unwrap()).unwrap(),
                     ),
                     stride: {
-                        self.layouter.update(ctx.module.to_ctx()).unwrap();
-                        self.layouter[base].to_stride()
+                        ctx.layouter.update(ctx.module.to_ctx()).unwrap();
+                        ctx.layouter[base].to_stride()
                     },
                 };
                 let ty = ctx.ensure_type_exists(inner);
@@ -499,8 +542,11 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 expr = crate::Expression::Compose { ty, components };
             }
 
-            // Array constructor, explicit type
-            (components, Constructor::Type((ty, &crate::TypeInner::Array { base, .. }))) => {
+            // Array constructor, explicit type.
+            (
+                components,
+                Constructor::Type((ty, inner @ &crate::TypeInner::Array { base, .. })),
+            ) if inner.is_constructible(&ctx.module.types) => {
                 let mut components = components.into_components_vec();
                 ctx.try_automatic_conversions_slice(&mut components, &Tr::Handle(base), ty_span)?;
                 expr = crate::Expression::Compose { ty, components };
@@ -509,8 +555,8 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             // Struct constructor
             (
                 components,
-                Constructor::Type((ty, &crate::TypeInner::Struct { ref members, .. })),
-            ) => {
+                Constructor::Type((ty, inner @ &crate::TypeInner::Struct { ref members, .. })),
+            ) if inner.is_constructible(&ctx.module.types) => {
                 let mut components = components.into_components_vec();
                 let struct_ty_span = ctx.module.types.get_span(ty);
 
@@ -529,13 +575,24 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
             // ERRORS
 
             // Bad conversion (type cast)
-            (Components::One { span, ty_inner, .. }, constructor) => {
-                let from_type = ty_inner.to_wgsl(&ctx.module.to_ctx()).into();
-                return Err(Error::BadTypeCast {
+            (
+                Components::One {
+                    span, component, ..
+                },
+                Constructor::Type((
+                    ty,
+                    &(crate::TypeInner::Scalar { .. }
+                    | crate::TypeInner::Vector { .. }
+                    | crate::TypeInner::Matrix { .. }),
+                )),
+            ) => {
+                let component_ty = &ctx.typifier()[component];
+                let from_type = ctx.type_resolution_to_string(component_ty);
+                return Err(Box::new(Error::BadTypeCast {
                     span,
                     from_type,
-                    to_type: constructor.to_error_string(ctx).into(),
-                });
+                    to_type: ctx.type_to_string(ty),
+                }));
             }
 
             // Too many parameters for scalar constructor
@@ -544,73 +601,14 @@ impl<'source, 'temp> Lowerer<'source, 'temp> {
                 Constructor::Type((_, &crate::TypeInner::Scalar { .. })),
             ) => {
                 let span = spans[1].until(spans.last().unwrap());
-                return Err(Error::UnexpectedComponents(span));
+                return Err(Box::new(Error::UnexpectedComponents(span)));
             }
 
             // Other types can't be constructed
-            _ => return Err(Error::TypeNotConstructible(ty_span)),
+            _ => return Err(Box::new(Error::TypeNotConstructible(ty_span))),
         }
 
         let expr = ctx.append_expression(expr, span)?;
         Ok(expr)
-    }
-
-    /// Build a [`Constructor`] for a WGSL construction expression.
-    ///
-    /// If `constructor` conveys enough information to determine which Naga [`Type`]
-    /// we're actually building (i.e., it's not a partial constructor), then
-    /// ensure the `Type` exists in [`ctx.module`], and return
-    /// [`Constructor::Type`].
-    ///
-    /// Otherwise, return the [`Constructor`] partial variant corresponding to
-    /// `constructor`.
-    ///
-    /// [`Type`]: crate::Type
-    /// [`ctx.module`]: ExpressionContext::module
-    fn constructor<'out>(
-        &mut self,
-        constructor: &ast::ConstructorType<'source>,
-        ctx: &mut ExpressionContext<'source, '_, 'out>,
-    ) -> Result<Constructor<Handle<crate::Type>>, Error<'source>> {
-        let handle = match *constructor {
-            ast::ConstructorType::Scalar(scalar) => {
-                let ty = ctx.ensure_type_exists(scalar.to_inner_scalar());
-                Constructor::Type(ty)
-            }
-            ast::ConstructorType::PartialVector { size } => Constructor::PartialVector { size },
-            ast::ConstructorType::Vector { size, scalar } => {
-                let ty = ctx.ensure_type_exists(scalar.to_inner_vector(size));
-                Constructor::Type(ty)
-            }
-            ast::ConstructorType::PartialMatrix { columns, rows } => {
-                Constructor::PartialMatrix { columns, rows }
-            }
-            ast::ConstructorType::Matrix {
-                rows,
-                columns,
-                width,
-            } => {
-                let ty = ctx.ensure_type_exists(crate::TypeInner::Matrix {
-                    columns,
-                    rows,
-                    scalar: crate::Scalar::float(width),
-                });
-                Constructor::Type(ty)
-            }
-            ast::ConstructorType::PartialArray => Constructor::PartialArray,
-            ast::ConstructorType::Array { base, size } => {
-                let base = self.resolve_ast_type(base, &mut ctx.as_global())?;
-                let size = self.array_size(size, &mut ctx.as_global())?;
-
-                self.layouter.update(ctx.module.to_ctx()).unwrap();
-                let stride = self.layouter[base].to_stride();
-
-                let ty = ctx.ensure_type_exists(crate::TypeInner::Array { base, size, stride });
-                Constructor::Type(ty)
-            }
-            ast::ConstructorType::Type(ty) => Constructor::Type(ty),
-        };
-
-        Ok(handle)
     }
 }

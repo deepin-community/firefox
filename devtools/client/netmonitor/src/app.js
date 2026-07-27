@@ -6,17 +6,28 @@
 
 const {
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
+  createElement,
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const {
   render,
   unmountComponentAtNode,
-} = require("resource://devtools/client/shared/vendor/react-dom.js");
-const Provider = createFactory(
-  require("resource://devtools/client/shared/vendor/react-redux.js").Provider
-);
-const App = createFactory(
-  require("resource://devtools/client/netmonitor/src/components/App.js")
-);
+} = require("resource://devtools/client/shared/vendor/react-dom.mjs");
+const Provider =
+  require("resource://devtools/client/shared/vendor/react-redux.js").Provider;
+const ToolboxProvider = require("resource://devtools/client/framework/store-provider.js");
+const {
+  visibilityHandlerStore,
+} = require("resource://devtools/client/shared/redux/visibilityHandlerStore.js");
+const {
+  START_IGNORE_ACTION,
+} = require("resource://devtools/client/shared/redux/middleware/ignore.js");
+
+const FluentReact = require("resource://devtools/client/shared/vendor/fluent-react.js");
+const App = require("resource://devtools/client/netmonitor/src/components/App.js");
+const {
+  FluentL10n,
+} = require("resource://devtools/client/shared/fluent-l10n/fluent-l10n.js");
+const LocalizationProvider = createFactory(FluentReact.LocalizationProvider);
 const {
   EVENTS,
 } = require("resource://devtools/client/netmonitor/src/constants.js");
@@ -32,15 +43,16 @@ const SearchDispatcher = require("resource://devtools/client/netmonitor/src/work
  * on the UI and can't be created independently.
  *
  * This object can be consumed by other panels (e.g. Console
- * is using inspectRequest), by the Launchpad (bootstrap), etc.
- *
- * @param {Object} api An existing API object to be reused.
+ * is using inspectRequest).
  */
-function NetMonitorApp(api) {
-  this.api = api;
-}
+class NetMonitorApp {
+  /**
+   * @param {object} api An existing API object to be reused.
+   */
+  constructor(api) {
+    this.api = api;
+  }
 
-NetMonitorApp.prototype = {
   async bootstrap({ toolbox, document }) {
     // Get the root element for mounting.
     this.mount = document.querySelector("#mount");
@@ -63,18 +75,37 @@ NetMonitorApp.prototype = {
     const { actions, connector, store } = this.api;
 
     const sourceMapURLService = toolbox.sourceMapURLService;
-    const app = App({
-      actions,
-      connector,
-      openLink,
-      openSplitConsole,
-      sourceMapURLService,
-      toolboxDoc: toolbox.doc,
-    });
+
+    const fluentL10n = new FluentL10n();
+    await fluentL10n.init(["devtools/client/netmonitor.ftl"]);
 
     // Render the root Application component.
-    render(Provider({ store }, app), this.mount);
-  },
+    render(
+      createElement(
+        Provider,
+        // Also wrap the store in order to pause store update notifications while the panel is hidden.
+        // (this can't be done from create-store as it is loaded from the toolbox, without the browser loader
+        //  and isn't bound to the netmonitor document)
+        { store: visibilityHandlerStore(store) },
+        LocalizationProvider(
+          { bundles: fluentL10n.getBundles() },
+          createElement(
+            ToolboxProvider,
+            { store: toolbox.store },
+            createElement(App, {
+              actions,
+              connector,
+              openLink,
+              openSplitConsole,
+              sourceMapURLService,
+              toolboxDoc: toolbox.doc,
+            })
+          )
+        )
+      ),
+      this.mount
+    );
+  }
 
   /**
    * Clean up (unmount from DOM, remove listeners, disconnect).
@@ -89,7 +120,10 @@ NetMonitorApp.prototype = {
     // where the Network panel is initialized without the toolbox
     // and running in a tab (see initialize.js for details).
     this.api.destroy();
-  },
+
+    // Prevents any further action from being dispatched
+    this.api.store.dispatch(START_IGNORE_ACTION);
+  }
 
   /**
    * Selects the specified request in the waterfall and opens the details view.
@@ -129,7 +163,7 @@ NetMonitorApp.prototype = {
         this.api.on(EVENTS.REQUEST_ADDED, inspector);
       }
     });
-  },
-};
+  }
+}
 
 exports.NetMonitorApp = NetMonitorApp;

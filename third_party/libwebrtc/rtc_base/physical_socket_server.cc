@@ -9,12 +9,34 @@
  */
 #include "rtc_base/physical_socket_server.h"
 
+#include <stdio.h>
+
+#include <algorithm>
+#include <array>
+#include <cerrno>
 #include <cstdint>
+#include <cstring>
+#include <memory>
+#include <span>
 #include <utility>
 
-#if defined(_MSC_VER) && _MSC_VER < 1300
-#pragma warning(disable : 4786)
-#endif
+#include "api/async_dns_resolver.h"
+#include "api/transport/ecn_marking.h"
+#include "api/units/time_delta.h"
+#include "api/units/timestamp.h"
+#include "rtc_base/async_dns_resolver.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/deprecated/recursive_critical_section.h"
+#include "rtc_base/event.h"
+#include "rtc_base/ip_address.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/net_helpers.h"
+#include "rtc_base/network_monitor.h"
+#include "rtc_base/socket.h"
+#include "rtc_base/socket_address.h"
+#include "rtc_base/synchronization/mutex.h"
+#include "rtc_base/thread_annotations.h"
+#include "rtc_base/time_utils.h"
 
 #ifdef MEMORY_SANITIZER
 #include <sanitizer/msan_interface.h>
@@ -22,9 +44,11 @@
 
 #if defined(WEBRTC_POSIX)
 #include <fcntl.h>
+#include <netinet/tcp.h>  // for TCP_NODELAY
 #if defined(WEBRTC_USE_EPOLL)
 // "poll" will be used to wait for the signal dispatcher.
 #include <poll.h>
+#include <sys/poll.h>
 #elif defined(WEBRTC_USE_POLL)
 #include <poll.h>
 #endif
@@ -41,58 +65,40 @@
 #undef SetPort
 #endif
 
-#include <errno.h>
-
-#include "rtc_base/async_dns_resolver.h"
-#include "rtc_base/checks.h"
-#include "rtc_base/event.h"
-#include "rtc_base/ip_address.h"
-#include "rtc_base/logging.h"
-#include "rtc_base/network/ecn_marking.h"
-#include "rtc_base/network_monitor.h"
-#include "rtc_base/synchronization/mutex.h"
-#include "rtc_base/time_utils.h"
-#include "system_wrappers/include/field_trial.h"
-
 #if defined(WEBRTC_LINUX)
+#include <asm-generic/socket.h>
 #include <linux/sockios.h>
+#include <sys/epoll.h>
 #endif
 
 #if defined(WEBRTC_WIN)
 #define LAST_SYSTEM_ERROR (::GetLastError())
-#elif defined(__native_client__) && __native_client__
-#define LAST_SYSTEM_ERROR (0)
 #elif defined(WEBRTC_POSIX)
 #define LAST_SYSTEM_ERROR (errno)
 #endif  // WEBRTC_WIN
 
 #if defined(WEBRTC_POSIX)
-#include <netinet/tcp.h>  // for TCP_NODELAY
-
 #define IP_MTU 14  // Until this is integrated from linux/in.h to netinet/in.h
 typedef void* SockOptArg;
-
 #endif  // WEBRTC_POSIX
 
-#if defined(WEBRTC_POSIX) && !defined(WEBRTC_MAC) && !defined(WEBRTC_BSD) && !defined(__native_client__)
+#if defined(WEBRTC_POSIX) && !defined(WEBRTC_MAC) && !defined(WEBRTC_BSD)
 #if defined(WEBRTC_LINUX)
 #include <linux/sockios.h>
 #endif
-
 int64_t GetSocketRecvTimestamp(int socket) {
   struct timeval tv_ioctl;
   int ret = ioctl(socket, SIOCGSTAMP, &tv_ioctl);
   if (ret != 0)
     return -1;
   int64_t timestamp =
-      rtc::kNumMicrosecsPerSec * static_cast<int64_t>(tv_ioctl.tv_sec) +
+      webrtc::kNumMicrosecsPerSec * static_cast<int64_t>(tv_ioctl.tv_sec) +
       static_cast<int64_t>(tv_ioctl.tv_usec);
   return timestamp;
 }
 
 #else
-
-int64_t GetSocketRecvTimestamp(int socket) {
+int64_t GetSocketRecvTimestamp(int /* socket */) {
   return -1;
 }
 #endif
@@ -111,14 +117,16 @@ typedef char* SockOptArg;
 #endif  // !defined(EPOLLRDHUP)
 #endif  // defined(WEBRTC_LINUX)
 
+namespace webrtc {
+
 namespace {
 
 // RFC-3168, Section 5. ECN is the two least significant bits.
-static constexpr uint8_t kEcnMask = 0x03;
+constexpr uint8_t kEcnMask = 0x03;
 
 #if defined(WEBRTC_POSIX)
 
-rtc::EcnMarking EcnFromDs(uint8_t ds) {
+EcnMarking EcnFromDs(uint8_t ds) {
   // RFC-3168, Section 5.
   constexpr uint8_t ECN_ECT1 = 0x01;
   constexpr uint8_t ECN_ECT0 = 0x02;
@@ -126,15 +134,15 @@ rtc::EcnMarking EcnFromDs(uint8_t ds) {
   const uint8_t ecn = ds & kEcnMask;
 
   if (ecn == ECN_ECT1) {
-    return rtc::EcnMarking::kEct1;
+    return EcnMarking::kEct1;
   }
   if (ecn == ECN_ECT0) {
-    return rtc::EcnMarking::kEct0;
+    return EcnMarking::kEct0;
   }
   if (ecn == ECN_CE) {
-    return rtc::EcnMarking::kCe;
+    return EcnMarking::kCe;
   }
-  return rtc::EcnMarking::kNotEct;
+  return EcnMarking::kNotEct;
 }
 
 #endif
@@ -153,7 +161,6 @@ class ScopedSetTrue {
 
 }  // namespace
 
-namespace rtc {
 
 PhysicalSocket::PhysicalSocket(PhysicalSocketServer* ss, SOCKET s)
     : ss_(ss),
@@ -257,7 +264,7 @@ int PhysicalSocket::Bind(const SocketAddress& bind_addr) {
   sockaddr* addr = reinterpret_cast<sockaddr*>(&addr_storage);
   int err = ::bind(s_, addr, static_cast<int>(len));
   UpdateLastError();
-#if !defined(NDEBUG)
+#if RTC_DCHECK_IS_ON
   if (0 == err) {
     dbg_addr_ = "Bound @ ";
     dbg_addr_.append(GetLocalAddress().ToString());
@@ -275,7 +282,7 @@ int PhysicalSocket::Connect(const SocketAddress& addr) {
   }
   if (addr.IsUnresolvedIP()) {
     RTC_LOG(LS_VERBOSE) << "Resolving addr in PhysicalSocket::Connect";
-    resolver_ = std::make_unique<webrtc::AsyncDnsResolver>();
+    resolver_ = std::make_unique<AsyncDnsResolver>();
     resolver_->Start(addr, [this] { OnResolveResult(resolver_->result()); });
     state_ = CS_CONNECTING;
     return 0;
@@ -308,12 +315,12 @@ int PhysicalSocket::DoConnect(const SocketAddress& connect_addr) {
 }
 
 int PhysicalSocket::GetError() const {
-  webrtc::MutexLock lock(&mutex_);
+  MutexLock lock(&mutex_);
   return error_;
 }
 
 void PhysicalSocket::SetError(int error) {
-  webrtc::MutexLock lock(&mutex_);
+  MutexLock lock(&mutex_);
   error_ = error;
 }
 
@@ -488,13 +495,16 @@ int PhysicalSocket::RecvFrom(ReceiveBuffer& buffer) {
   int64_t timestamp = -1;
   static constexpr int BUF_SIZE = 64 * 1024;
   buffer.payload.EnsureCapacity(BUF_SIZE);
-
-  int received = DoReadFromSocket(
-      buffer.payload.data(), buffer.payload.capacity(), &buffer.source_address,
-      &timestamp, ecn_ ? &buffer.ecn : nullptr);
-  buffer.payload.SetSize(received > 0 ? received : 0);
+  int received;
+  buffer.payload.SetData(BUF_SIZE, [&](std::span<uint8_t> payload) {
+    received =
+        DoReadFromSocket(payload.data(), payload.size(), &buffer.source_address,
+                         &timestamp, ecn_ ? &buffer.ecn : nullptr);
+    // return 0 if received is -1, indicating error.
+    return std::max(received, 0);
+  });
   if (received > 0 && timestamp != -1) {
-    buffer.arrival_time = webrtc::Timestamp::Micros(timestamp);
+    buffer.arrival_time = Timestamp::Micros(timestamp);
   }
   UpdateLastError();
   int error = GetError();
@@ -520,48 +530,48 @@ int PhysicalSocket::DoReadFromSocket(void* buffer,
 #if defined(WEBRTC_POSIX)
   int received = 0;
   iovec iov = {.iov_base = buffer, .iov_len = length};
-  msghdr msg = {.msg_name = nullptr, .msg_namelen = 0, .msg_iov = &iov, .msg_iovlen = 1};
+  msghdr msg = {.msg_iov = &iov, .msg_iovlen = 1};
   if (out_addr) {
     out_addr->Clear();
     msg.msg_name = addr;
     msg.msg_namelen = addr_len;
   }
-    // TODO(bugs.webrtc.org/15368): What size is needed? IPV6_TCLASS is supposed
-    // to be an int. Why is a larger size needed?
-    char control[CMSG_SPACE(sizeof(struct timeval) + 5 * sizeof(int))] = {};
-    if (timestamp || ecn) {
-      *timestamp = -1;
-      msg.msg_control = &control;
-      msg.msg_controllen = sizeof(control);
-    }
-    received = ::recvmsg(s_, &msg, 0);
-    if (received <= 0) {
-      // An error occured or shut down.
-      return received;
-    }
-    if (timestamp || ecn) {
-      struct cmsghdr* cmsg;
-      for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-        if (ecn) {
-          if ((cmsg->cmsg_type == IPV6_TCLASS &&
-               cmsg->cmsg_level == IPPROTO_IPV6) ||
-              (cmsg->cmsg_type == IP_TOS && cmsg->cmsg_level == IPPROTO_IP)) {
-            *ecn = EcnFromDs(CMSG_DATA(cmsg)[0]);
-          }
-        }
-        if (cmsg->cmsg_level != SOL_SOCKET)
-          continue;
-        if (timestamp && cmsg->cmsg_type == SCM_TIMESTAMP) {
-          timeval* ts = reinterpret_cast<timeval*>(CMSG_DATA(cmsg));
-          *timestamp =
-              rtc::kNumMicrosecsPerSec * static_cast<int64_t>(ts->tv_sec) +
-              static_cast<int64_t>(ts->tv_usec);
+  // TODO(bugs.webrtc.org/15368): What size is needed? IPV6_TCLASS is supposed
+  // to be an int. Why is a larger size needed?
+  char control[CMSG_SPACE(sizeof(struct timeval) + 5 * sizeof(int))] = {};
+  if (timestamp || ecn) {
+    *timestamp = -1;
+    msg.msg_control = &control;
+    msg.msg_controllen = sizeof(control);
+  }
+  received = ::recvmsg(s_, &msg, 0);
+  if (received <= 0) {
+    // An error occured or shut down.
+    return received;
+  }
+  if (timestamp || ecn) {
+    struct cmsghdr* cmsg;
+    for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+      if (ecn) {
+        if ((cmsg->cmsg_type == IPV6_TCLASS &&
+             cmsg->cmsg_level == IPPROTO_IPV6) ||
+            (cmsg->cmsg_type == IP_TOS && cmsg->cmsg_level == IPPROTO_IP)) {
+          *ecn = EcnFromDs(CMSG_DATA(cmsg)[0]);
         }
       }
+      if (cmsg->cmsg_level != SOL_SOCKET)
+        continue;
+      if (timestamp && cmsg->cmsg_type == SCM_TIMESTAMP) {
+        timeval ts;
+        std::memcpy(static_cast<void*>(&ts), CMSG_DATA(cmsg), sizeof(ts));
+        *timestamp = kNumMicrosecsPerSec * static_cast<int64_t>(ts.tv_sec) +
+                     static_cast<int64_t>(ts.tv_usec);
+      }
     }
-    if (out_addr) {
-      SocketAddressFromSockAddrStorage(addr_storage, out_addr);
-    }
+  }
+  if (out_addr) {
+    SocketAddressFromSockAddrStorage(addr_storage, out_addr);
+  }
   return received;
 
 #else
@@ -587,7 +597,7 @@ int PhysicalSocket::Listen(int backlog) {
   if (err == 0) {
     state_ = CS_CONNECTING;
     EnableEvents(DE_ACCEPT);
-#if !defined(NDEBUG)
+#if RTC_DCHECK_IS_ON
     dbg_addr_ = "Listening @ ";
     dbg_addr_.append(GetLocalAddress().ToString());
 #endif
@@ -644,8 +654,7 @@ int PhysicalSocket::DoSendTo(SOCKET socket,
   return ::sendto(socket, buf, len, flags, dest_addr, addrlen);
 }
 
-void PhysicalSocket::OnResolveResult(
-    const webrtc::AsyncDnsResolverResult& result) {
+void PhysicalSocket::OnResolveResult(const AsyncDnsResolverResult& result) {
   int error = result.GetError();
   if (error == 0) {
     SocketAddress address;
@@ -660,7 +669,7 @@ void PhysicalSocket::OnResolveResult(
 
   if (error) {
     SetError(error);
-    SignalCloseEvent(this, error);
+    NotifyCloseEvent(this, error);
   }
 }
 
@@ -700,7 +709,7 @@ int PhysicalSocket::TranslateOption(Option opt, int* slevel, int* sopt) {
       *slevel = IPPROTO_IP;
       *sopt = IP_DONTFRAGMENT;
       break;
-#elif defined(WEBRTC_MAC) || defined(WEBRTC_BSD) || defined(__native_client__)
+#elif defined(WEBRTC_MAC) || defined(WEBRTC_BSD)
       RTC_LOG(LS_WARNING) << "Socket::OPT_DONTFRAGMENT not supported.";
       return -1;
 #elif defined(WEBRTC_POSIX)
@@ -897,7 +906,7 @@ bool SocketDispatcher::CheckSignalClose() {
 
   state_ = CS_CLOSED;
   signal_close_ = false;
-  SignalCloseEvent(this, signal_err_);
+  NotifyCloseEvent(this, signal_err_);
   return true;
 }
 
@@ -988,23 +997,23 @@ void SocketDispatcher::OnEvent(uint32_t ff, int err) {
     if (ff != DE_CONNECT)
       RTC_LOG(LS_VERBOSE) << "Signalled with DE_CONNECT: " << ff;
     DisableEvents(DE_CONNECT);
-#if !defined(NDEBUG)
+#if RTC_DCHECK_IS_ON
     dbg_addr_ = "Connected @ ";
     dbg_addr_.append(GetRemoteAddress().ToString());
 #endif
-    SignalConnectEvent(this);
+    NotifyConnectEvent(this);
   }
   if (((ff & DE_ACCEPT) != 0) && (id_ == cache_id)) {
     DisableEvents(DE_ACCEPT);
-    SignalReadEvent(this);
+    NotifyReadEvent(this);
   }
   if ((ff & DE_READ) != 0) {
     DisableEvents(DE_READ);
-    SignalReadEvent(this);
+    NotifyReadEvent(this);
   }
   if (((ff & DE_WRITE) != 0) && (id_ == cache_id)) {
     DisableEvents(DE_WRITE);
-    SignalWriteEvent(this);
+    NotifyWriteEvent(this);
   }
   if (((ff & DE_CLOSE) != 0) && (id_ == cache_id)) {
     signal_close_ = true;
@@ -1033,24 +1042,24 @@ void SocketDispatcher::OnEvent(uint32_t ff, int err) {
   // something like a READ followed by a CONNECT, which would be odd.
   if ((ff & DE_CONNECT) != 0) {
     DisableEvents(DE_CONNECT);
-    SignalConnectEvent(this);
+    NotifyConnectEvent(this);
   }
   if ((ff & DE_ACCEPT) != 0) {
     DisableEvents(DE_ACCEPT);
-    SignalReadEvent(this);
+    NotifyReadEvent(this);
   }
   if ((ff & DE_READ) != 0) {
     DisableEvents(DE_READ);
-    SignalReadEvent(this);
+    NotifyReadEvent(this);
   }
   if ((ff & DE_WRITE) != 0) {
     DisableEvents(DE_WRITE);
-    SignalWriteEvent(this);
+    NotifyWriteEvent(this);
   }
   if ((ff & DE_CLOSE) != 0) {
     // The socket is now dead to us, so stop checking it.
     SetEnabledEvents(0);
-    SignalCloseEvent(this, err);
+    NotifyCloseEvent(this, err);
   }
 #if defined(WEBRTC_USE_EPOLL)
   FinishBatchedEventUpdates();
@@ -1157,7 +1166,7 @@ class Signaler : public Dispatcher {
   }
 
   virtual void Signal() {
-    webrtc::MutexLock lock(&mutex_);
+    MutexLock lock(&mutex_);
     if (!fSignaled_) {
       const uint8_t b[1] = {0};
       const ssize_t res = write(afd_[1], b, sizeof(b));
@@ -1168,11 +1177,11 @@ class Signaler : public Dispatcher {
 
   uint32_t GetRequestedEvents() override { return DE_READ; }
 
-  void OnEvent(uint32_t ff, int err) override {
+  void OnEvent(uint32_t /* ff */, int /* err */) override {
     // It is not possible to perfectly emulate an auto-resetting event with
     // pipes.  This simulates it by resetting before the event is handled.
 
-    webrtc::MutexLock lock(&mutex_);
+    MutexLock lock(&mutex_);
     if (fSignaled_) {
       uint8_t b[4];  // Allow for reading more than 1 byte, but expect 1.
       const ssize_t res = read(afd_[0], b, sizeof(b));
@@ -1190,7 +1199,7 @@ class Signaler : public Dispatcher {
   PhysicalSocketServer* const ss_;
   const std::array<int, 2> afd_;
   bool fSignaled_ RTC_GUARDED_BY(mutex_);
-  webrtc::Mutex mutex_;
+  Mutex mutex_;
   bool& flag_to_clear_;
 };
 
@@ -1350,7 +1359,7 @@ void PhysicalSocketServer::Remove(Dispatcher* pdispatcher) {
 #endif  // WEBRTC_USE_EPOLL
 }
 
-void PhysicalSocketServer::Update(Dispatcher* pdispatcher) {
+void PhysicalSocketServer::Update([[maybe_unused]] Dispatcher* pdispatcher) {
 #if defined(WEBRTC_USE_EPOLL)
   if (epoll_fd_ == INVALID_SOCKET) {
     return;
@@ -1366,16 +1375,15 @@ void PhysicalSocketServer::Update(Dispatcher* pdispatcher) {
 #endif
 }
 
-int PhysicalSocketServer::ToCmsWait(webrtc::TimeDelta max_wait_duration) {
+int PhysicalSocketServer::ToCmsWait(TimeDelta max_wait_duration) {
   return max_wait_duration == Event::kForever
              ? kForeverMs
-             : max_wait_duration.RoundUpTo(webrtc::TimeDelta::Millis(1)).ms();
+             : max_wait_duration.RoundUpTo(TimeDelta::Millis(1)).ms();
 }
 
 #if defined(WEBRTC_POSIX)
 
-bool PhysicalSocketServer::Wait(webrtc::TimeDelta max_wait_duration,
-                                bool process_io) {
+bool PhysicalSocketServer::Wait(TimeDelta max_wait_duration, bool process_io) {
   // We don't support reentrant waiting.
   RTC_DCHECK(!waiting_);
   ScopedSetTrue s(&waiting_);
@@ -1514,7 +1522,7 @@ bool PhysicalSocketServer::WaitSelect(int cmsWait, bool process_io) {
     ptvWait = &tvWait;
 
     // Calculate when to return
-    stop_us = rtc::TimeMicros() + cmsWait * 1000;
+    stop_us = TimeMicros() + cmsWait * 1000;
   }
 
   fd_set fdsRead;
@@ -1613,10 +1621,10 @@ bool PhysicalSocketServer::WaitSelect(int cmsWait, bool process_io) {
     if (ptvWait) {
       ptvWait->tv_sec = 0;
       ptvWait->tv_usec = 0;
-      int64_t time_left_us = stop_us - rtc::TimeMicros();
+      int64_t time_left_us = stop_us - TimeMicros();
       if (time_left_us > 0) {
-        ptvWait->tv_sec = time_left_us / rtc::kNumMicrosecsPerSec;
-        ptvWait->tv_usec = time_left_us % rtc::kNumMicrosecsPerSec;
+        ptvWait->tv_sec = time_left_us / kNumMicrosecsPerSec;
+        ptvWait->tv_usec = time_left_us % kNumMicrosecsPerSec;
       }
     }
   }
@@ -1634,7 +1642,7 @@ void PhysicalSocketServer::AddEpoll(Dispatcher* pdispatcher, uint64_t key) {
     return;
   }
 
-  struct epoll_event event = {0};
+  struct epoll_event event = {};
   event.events = GetEpollEvents(pdispatcher->GetRequestedEvents());
   if (event.events == 0u) {
     // Don't add at all if we don't have any requested events. Could indicate a
@@ -1657,7 +1665,7 @@ void PhysicalSocketServer::RemoveEpoll(Dispatcher* pdispatcher) {
     return;
   }
 
-  struct epoll_event event = {0};
+  struct epoll_event event = {};
   int err = epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &event);
   RTC_DCHECK(err == 0 || errno == ENOENT);
   // Ignore ENOENT, which could occur if this descriptor wasn't added due to
@@ -1675,7 +1683,7 @@ void PhysicalSocketServer::UpdateEpoll(Dispatcher* pdispatcher, uint64_t key) {
     return;
   }
 
-  struct epoll_event event = {0};
+  struct epoll_event event = {};
   event.events = GetEpollEvents(pdispatcher->GetRequestedEvents());
   event.data.u64 = key;
   // Remove if we don't have any requested events. Could indicate a closed
@@ -1890,11 +1898,10 @@ bool PhysicalSocketServer::WaitPoll(int cmsWait, bool process_io) {
 #endif  // WEBRTC_POSIX
 
 #if defined(WEBRTC_WIN)
-bool PhysicalSocketServer::Wait(webrtc::TimeDelta max_wait_duration,
-                                bool process_io) {
+bool PhysicalSocketServer::Wait(TimeDelta max_wait_duration, bool process_io) {
   // We don't support reentrant waiting.
   RTC_DCHECK(!waiting_);
-  ScopedSetTrue s(&waiting_);
+  ScopedSetTrue set(&waiting_);
 
   int cmsWait = ToCmsWait(max_wait_duration);
   int64_t cmsTotal = cmsWait;
@@ -2069,4 +2076,4 @@ bool PhysicalSocketServer::Wait(webrtc::TimeDelta max_wait_duration,
 }
 #endif  // WEBRTC_WIN
 
-}  // namespace rtc
+}  // namespace webrtc

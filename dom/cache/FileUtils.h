@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,10 @@
 #ifndef mozilla_dom_cache_FileUtils_h
 #define mozilla_dom_cache_FileUtils_h
 
-#include "CacheCommon.h"
 #include "CacheCipherKeyManager.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/dom/cache/Types.h"
+#include "CacheCommon.h"
 #include "mozIStorageConnection.h"
+#include "mozilla/dom/cache/Types.h"
 #include "nsStreamUtils.h"
 #include "nsTArrayForwardDeclare.h"
 
@@ -57,29 +54,18 @@ nsresult BodyMaybeUpdatePaddingSize(
 nsresult BodyDeleteFiles(const CacheDirectoryMetadata& aDirectoryMetadata,
                          nsIFile& aBaseDir, const nsTArray<nsID>& aIdList);
 
+// Traverse all cache directorys and do a cleanup, leaving only files that
+// belong to known body ids behind.
 nsresult BodyDeleteOrphanedFiles(
     const CacheDirectoryMetadata& aDirectoryMetadata, nsIFile& aBaseDir,
-    const nsTArray<nsID>& aKnownBodyIdList);
+    nsTHashSet<nsID>& aKnownBodyIds);
 
-// If aCanRemoveFiles is true, that means we are safe to touch the files which
-// can be accessed in other threads.
-// If it's not, that means we cannot remove the files which are possible to
-// created by other threads. Note that if the files are not expected, we should
-// be safe to remove them in any case.
+// Helper for BodyDeleteOrphanedFiles that must only be used on the cache
+// thread.
 template <typename Func>
-nsresult BodyTraverseFiles(
+nsresult BodyTraverseFilesForCleanup(
     const Maybe<CacheDirectoryMetadata>& aDirectoryMetadata, nsIFile& aBodyDir,
-    const Func& aHandleFileFunc, bool aCanRemoveFiles, bool aTrackQuota = true);
-
-// XXX Remove this method when all callers properly wrap aClientMetadata with
-// Some/Nothing
-template <typename Func>
-nsresult BodyTraverseFiles(const CacheDirectoryMetadata& aDirectoryMetadata,
-                           nsIFile& aBodyDir, const Func& aHandleFileFunc,
-                           bool aCanRemoveFiles, bool aTrackQuota = true) {
-  return BodyTraverseFiles(Some(aDirectoryMetadata), aBodyDir, aHandleFileFunc,
-                           aCanRemoveFiles, aTrackQuota);
-}
+    const Func& aHandleFileFunc);
 
 nsresult CreateMarkerFile(const CacheDirectoryMetadata& aDirectoryMetadata);
 

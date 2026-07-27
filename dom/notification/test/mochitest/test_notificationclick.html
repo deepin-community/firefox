@@ -6,8 +6,8 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=916893
 <head>
   <title>Bug 1114554 - Test ServiceWorkerGlobalScope.notificationclick event.</title>
   <script src="/tests/SimpleTest/SimpleTest.js"></script>
-  <script type="text/javascript" src="/tests/dom/notification/test/mochitest/MockAlertsService.js"></script>
-  <script type="text/javascript" src="/tests/dom/notification/test/mochitest/NotificationTest.js"></script>
+  <script src="/tests/dom/notification/test/mochitest/MockAlertsService.js"></script>
+  <script src="/tests/dom/notification/test/mochitest/NotificationTest.js"></script>
   <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css" />
 </head>
 <body>
@@ -18,49 +18,29 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=916893
 <pre id="test">
 </pre>
 <script src="/tests/dom/serviceworkers/test/utils.js"></script>
-<script type="text/javascript">
+<script>
   SimpleTest.requestFlakyTimeout("Mock alert service dispatches show and click events.");
 
-  function testFrame(src) {
-    var iframe = document.createElement("iframe");
-    iframe.src = src;
-    window.callback = async function(result) {
-      window.callback = null;
-      document.body.removeChild(iframe);
-      iframe = null;
-      ok(result, "Got notificationclick event with correct data.");
-      await registration.unregister();
-      SimpleTest.finish();
-    };
-    document.body.appendChild(iframe);
-  }
+  add_task(() => setupServiceWorker("notificationclick.serviceworker.js", "notificationclick.html"));
 
-  var registration;
+  add_task(async function click() {
+    await MockAlertsService.enableAutoClick();
 
-  async function runTest() {
-    try {
-      await NotificationTest.allowNotifications();
-      await MockAlertsService.register();
-      await MockAlertsService.enableAutoClick();
-      registration = await navigator.serviceWorker.register(
-        "notificationclick.js",
-        { scope: "notificationclick.html" }
-      );
-      await waitForState(registration.installing, 'activated');
-    } catch (e) {
-      ok(false, "registration should have passed!");
-      SimpleTest.finish();
-    }
-    // Now that we know the document will be controlled, create the frame.
-    testFrame('notificationclick.html');
-  };
+    const args = { data: { complex: ["jsval", 5] } };
+    const event = await testFrame("notificationclick.html", args);
+    isDeeply(event.notification.data, args.data, "Got notificationclick event with the correct data.")
+    is(event.action, "", "Got notificationclick event with an empty action.");
+    is(event.notification.actions.length, 0, "Got notificationclick event with an empty action list.");
+  });
 
-  SimpleTest.waitForExplicitFinish();
-  SpecialPowers.pushPrefEnv({"set": [
-    ["dom.serviceWorkers.exemptFromPerDomainMax", true],
-    ["dom.serviceWorkers.enabled", true],
-    ["dom.serviceWorkers.testing.enabled", true],
-  ]}, runTest);
+  add_task(async function clickWithAction() {
+    await MockAlertsService.enableAutoClick("foo");
+
+    const args = { actions: [{ action: "foo", title: "bar" }] };
+    const event = await testFrame("notificationclick.html", args);
+    is(event.action, "foo", "Got notificationclick event with the correct action.");
+    isDeeply(event.notification.actions, args.actions, "Got notificationclick event with a correct action list");
+  });
 </script>
 </body>
 </html>

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,17 +7,17 @@
 
 #include "MediaSegment.h"
 #include "MediaTrackConstraints.h"
+#include "PerformanceRecorder.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/dom/MediaStreamTrackBinding.h"
 #include "mozilla/media/MediaUtils.h"
-#include "mozilla/RefPtr.h"
-#include "mozilla/ThreadSafeWeakPtr.h"
 #include "nsStringFwd.h"
-#include "PerformanceRecorder.h"
 
 namespace mozilla {
 
 namespace dom {
 class Blob;
+struct MediaTrackCapabilities;
 struct MediaTrackSettings;
 }  // namespace dom
 
@@ -176,8 +174,8 @@ class MediaEngineSourceInterface {
    * calculate this device's ranking as a choice.
    */
   virtual uint32_t GetBestFitnessDistance(
-      const nsTArray<const NormalizedConstraintSet*>& aConstraintSets)
-      const = 0;
+      const nsTArray<const NormalizedConstraintSet*>& aConstraintSets,
+      const MediaEnginePrefs& aPrefs) const = 0;
 
   /**
    * Returns the current settings of the underlying device.
@@ -189,6 +187,9 @@ class MediaEngineSourceInterface {
    * device settings as seen by js.
    */
   virtual void GetSettings(dom::MediaTrackSettings& aOutSettings) const = 0;
+
+  virtual void GetCapabilities(
+      dom::MediaTrackCapabilities& aOutCapabilities) const = 0;
 };
 
 /**
@@ -241,8 +242,8 @@ class MediaEngineSource : public MediaEngineSourceInterface {
 
   // Returns a default distance of 0 for devices that don't have capabilities.
   uint32_t GetBestFitnessDistance(
-      const nsTArray<const NormalizedConstraintSet*>& aConstraintSets)
-      const override {
+      const nsTArray<const NormalizedConstraintSet*>& aConstraintSets,
+      const MediaEnginePrefs& aPrefs) const override {
     return 0;
   }
 

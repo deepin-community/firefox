@@ -40,11 +40,11 @@ about-private-browsing-focus-promo-text-c = { -focus-brand-name } siempre elimin
 # in a private window.
 # Variables:
 #   $engineName (String) - The engine name that will currently be used for the private window.
-about-private-browsing-search-banner-title = { $engineName } es su motor de búsqueda predeterminado en ventanas privadas
+about-private-browsing-search-banner-title = { $engineName } es su buscador predeterminado en ventanas privadas
 about-private-browsing-search-banner-description =
     { PLATFORM() ->
-        [windows] Para seleccionar un motor de búsqueda diferente, vaya a <a data-l10n-name="link-options">Opciones</a>
-       *[other] Para seleccionar un motor de búsqueda diferente, vaya a <a data-l10n-name="link-options">Preferencias</a>
+        [windows] Para seleccionar un buscador diferente, vaya a <a data-l10n-name="link-options">Opciones</a>
+       *[other] Para seleccionar un buscador diferente, vaya a <a data-l10n-name="link-options">Preferencias</a>
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Cerrar
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Dejar que { -brand-short-n
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } se encarga de los mensajes de cookies por usted
 about-private-browsing-cookie-banners-promo-body = Ahora rechazamos automáticamente muchos mensajes de cookies para que pueda ser menos rastreado y volver a navegar sin distracciones.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = No dejar rastros en este dispositivo
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } borra cookies, historial y datos del sitio al cerrar todas las ventanas privadas.
 about-private-browsing-felt-privacy-v1-info-link = ¿Quién podría ver mi actividad?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Cerrar todas las ventanas privadas borra las cookies, el historial y los datos del sitio.
+about-private-browsing-nova-info-link = ¿Quién podría seguir viendo mi actividad?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = El historial de navegación se borrará.
+about-private-browsing-nova-info-subheader = Borraremos todas las búsquedas e inicios de sesión al cerrar esta ventana. Las protecciones integradas de { -brand-short-name } también están acá, como bloquear rastreadores.

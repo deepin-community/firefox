@@ -16,29 +16,35 @@ appmenuitem-banner-update-unsupported =
 appmenuitem-banner-update-restart =
     .label = Update available — restart now
 appmenuitem-new-tab =
-    .label = New tab
+    .label = New Tab
 appmenuitem-new-window =
-    .label = New window
+    .label = New Window
 appmenuitem-new-private-window =
-    .label = New private window
+    .label = New Private Window
 appmenuitem-history =
     .label = History
+appmenuitem-tab-groups =
+    .label = Tab groups
 appmenuitem-downloads =
     .label = Downloads
 appmenuitem-passwords =
     .label = Passwords
+appmenuitem-extensions-and-themes =
+    .label = Extensions and Themes
+appmenuitem-extensions =
+    .label = Extensions
 appmenuitem-addons-and-themes =
     .label = Add-ons and themes
 appmenuitem-print =
     .label = Print…
 appmenuitem-find-in-page =
-    .label = Find in page…
+    .label = Find in Page…
 appmenuitem-translate =
-    .label = Translate page…
+    .label = Translate Page…
 appmenuitem-zoom =
     .value = Zoom
 appmenuitem-more-tools =
-    .label = More tools
+    .label = More Tools
 appmenuitem-help =
     .label = Help
 appmenuitem-exit2 =
@@ -61,11 +67,11 @@ appmenuitem-settings =
 ## Zoom and Fullscreen Controls
 
 appmenuitem-zoom-enlarge =
-    .label = Zoom in
+    .label = Zoom In
 appmenuitem-zoom-reduce =
-    .label = Zoom out
+    .label = Zoom Out
 appmenuitem-fullscreen =
-    .label = Full screen
+    .label = Full Screen
 
 ## Firefox Account toolbar button and Sync panel in App menu.
 
@@ -108,8 +114,11 @@ appmenu-fxa-sync-and-save-data2 = Sync and save data
 appmenu-fxa-signed-in-label = Sign In
 appmenu-fxa-setup-sync =
     .label = Turn On Syncing…
+appmenu-fxa-setup-sync-new = Turn On
 appmenuitem-save-page =
-    .label = Save page as…
+    .label = Save Page As…
+appmenuitem-fxa-sync-off-title = Sync is off
+appmenuitem-fxa-sync-off-description = Protect and access your bookmarks, passwords, and more anywhere.
 
 ## What's New panel in App menu.
 
@@ -163,6 +172,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Open the profiler panel
+    .tooltiptext = Open the profiler panel
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +201,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Preset for investigating machine learning bugs in { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Machine Learning
 profiler-popup-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Networking
@@ -199,6 +214,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Preset for debugging in { -brand-shorter-name }. High overhead, do not use for performance work but use for focusing on understanding browser behaviour.
 profiler-popup-presets-debug-label =
     .label = Debug
+profiler-popup-presets-web-compat-description = Recommended preset for debugging web compatibility issues in websites, rather than tracking performance.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Custom
 
@@ -264,11 +282,13 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Customize toolbar…
+appmenu-abouttranslations =
+    .label = Translate…
 appmenu-developer-tools-subheader = Browser tools
 appmenu-developer-tools-extensions =
     .label = Extensions for developers
 appmenuitem-report-broken-site =
-    .label = Report broken site
+    .label = Report Broken Site
 
 ## Panel for privacy and security products
 
@@ -277,5 +297,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Get data breach alerts
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mask your real email and phone
+appmenuitem-services-relay-description = Launch email masks dashboard
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Get whole-device protection
 appmenuitem-vpn-description = Protect your online activity
+appmenu-services-header = My services
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Try other protection tools from Mozilla:
+appmenu-other-protection-header = Try other protection tools from { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Other profiles
+appmenu-manage-profiles =
+    .label = Manage profiles
+appmenu-copy-profile =
+    .label = Copy this profile
+appmenu-create-profile =
+    .label = New profile
+appmenu-edit-profile =
+    .aria-label = Edit profile
+appmenu-profiles-2 =
+    .label = Profiles

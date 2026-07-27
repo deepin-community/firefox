@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,8 @@
 
 namespace mozilla::dom {
 
-class WebAuthnManager;
+class DigitalCredentialHandler;
+class WebAuthnHandler;
 
 class CredentialsContainer final : public nsISupports, public nsWrapperCache {
  public:
@@ -22,15 +21,17 @@ class CredentialsContainer final : public nsISupports, public nsWrapperCache {
 
   nsPIDOMWindowInner* GetParentObject() const { return mParent; }
 
-  already_AddRefed<WebAuthnManager> GetWebAuthnManager();
+  already_AddRefed<WebAuthnHandler> GetWebAuthnHandler();
 
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  already_AddRefed<Promise> Get(const CredentialRequestOptions& aOptions,
+  already_AddRefed<Promise> Get(JSContext* cx,
+                                const CredentialRequestOptions& aOptions,
                                 ErrorResult& aRv);
 
-  already_AddRefed<Promise> Create(const CredentialCreationOptions& aOptions,
+  already_AddRefed<Promise> Create(JSContext* cx,
+                                   const CredentialCreationOptions& aOptions,
                                    ErrorResult& aRv);
 
   already_AddRefed<Promise> Store(const Credential& aCredential,
@@ -38,14 +39,17 @@ class CredentialsContainer final : public nsISupports, public nsWrapperCache {
 
   already_AddRefed<Promise> PreventSilentAccess(ErrorResult& aRv);
 
+  static bool IsSameOriginWithAncestors(nsPIDOMWindowInner* aParent);
+
  private:
   ~CredentialsContainer();
 
-  void EnsureWebAuthnManager();
+  void EnsureWebAuthnHandler();
+  void EnsureDigitalCredentialHandler();
 
   nsCOMPtr<nsPIDOMWindowInner> mParent;
-  RefPtr<WebAuthnManager> mManager;
-  bool mActiveIdentityRequest;
+  RefPtr<WebAuthnHandler> mWebAuthnHandler;
+  RefPtr<DigitalCredentialHandler> mDigitalCredentialHandler;
 };
 
 }  // namespace mozilla::dom

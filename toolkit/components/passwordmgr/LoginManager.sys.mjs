@@ -11,14 +11,13 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
+  AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let logger = lazy.LoginHelper.createLogger("LoginManager");
   return logger;
 });
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 if (Services.appinfo.processType !== Services.appinfo.PROCESS_TYPE_DEFAULT) {
   throw new Error("LoginManager.sys.mjs should only run in the parent process");
@@ -66,13 +65,34 @@ LoginManager.prototype = {
     // Cache references to current |this| in utility objects
     this._observer._pwmgr = this;
 
-    Services.obs.addObserver(this._observer, "xpcom-shutdown");
-    Services.obs.addObserver(this._observer, "passwordmgr-storage-replace");
+    this._shutdownBlocker = async () => {
+      return this.uninit();
+    };
+    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
+      "LoginManager",
+      this._shutdownBlocker
+    );
+    this._observer._init();
 
     // Initialize storage so that asynchronous data loading can start.
     this._initStorage();
+    this._initialized = true;
+  },
 
-    Services.obs.addObserver(this._observer, "gather-telemetry");
+  async uninit() {
+    if (this._shutdownBlocker) {
+      lazy.AsyncShutdown.profileChangeTeardown.removeBlocker(
+        this._shutdownBlocker
+      );
+      delete this._shutdownBlocker;
+    }
+
+    // Note that this._storage has its own shutdown observer, so we do not
+    // need to finalize it here but can unlink it.
+    this._storage = null;
+    this._observer._uninit();
+    this._observer._pwmgr = null;
+    this._initialized = false;
   },
 
   _initStorage() {
@@ -99,6 +119,23 @@ LoginManager.prototype = {
    */
   _observer: {
     _pwmgr: null,
+    _initialized: false,
+
+    _init() {
+      if (this._initialized) {
+        return;
+      }
+      Services.obs.addObserver(this, "passwordmgr-storage-replace");
+      this._initialized = true;
+    },
+
+    _uninit() {
+      if (!this._initialized) {
+        return;
+      }
+      Services.obs.removeObserver(this, "passwordmgr-storage-replace");
+      this._initialized = false;
+    },
 
     QueryInterface: ChromeUtils.generateQI([
       "nsIObserver",
@@ -106,13 +143,11 @@ LoginManager.prototype = {
     ]),
 
     // nsIObserver
-    observe(subject, topic, data) {
-      if (topic == "xpcom-shutdown") {
-        delete this._pwmgr._storage;
-        this._pwmgr = null;
-      } else if (topic == "passwordmgr-storage-replace") {
+    observe(subject, topic, _data) {
+      if (topic == "passwordmgr-storage-replace") {
+        // This notification is only issued via LoginTestUtils.reloadData().
         (async () => {
-          await this._pwmgr._storage.terminate();
+          await this._pwmgr._storage.testSaveForReplace();
           this._pwmgr._initStorage();
           await this._pwmgr.initializationPromise;
           Services.obs.notifyObservers(
@@ -120,114 +155,10 @@ LoginManager.prototype = {
             "passwordmgr-storage-replace-complete"
           );
         })();
-      } else if (topic == "gather-telemetry") {
-        // When testing, the "data" parameter is a string containing the
-        // reference time in milliseconds for time-based statistics.
-        this._pwmgr._gatherTelemetry(
-          data ? parseInt(data) : new Date().getTime()
-        );
       } else {
         lazy.log.debug(`Unexpected notification: ${topic}.`);
       }
     },
-  },
-
-  /**
-   * Collects statistics about the current logins and settings. The telemetry
-   * histograms used here are not accumulated, but are reset each time this
-   * function is called, since it can be called multiple times in a session.
-   *
-   * This function might also not be called at all in the current session.
-   *
-   * @param referenceTimeMs
-   *        Current time used to calculate time-based statistics, expressed as
-   *        the number of milliseconds since January 1, 1970, 00:00:00 UTC.
-   *        This is set to a fake value during unit testing.
-   */
-  async _gatherTelemetry(referenceTimeMs) {
-    function clearAndGetHistogram(histogramId) {
-      let histogram = Services.telemetry.getHistogramById(histogramId);
-      histogram.clear();
-      return histogram;
-    }
-
-    clearAndGetHistogram("PWMGR_BLOCKLIST_NUM_SITES").add(
-      this.getAllDisabledHosts().length
-    );
-    clearAndGetHistogram("PWMGR_NUM_SAVED_PASSWORDS").add(
-      this.countLogins("", "", "")
-    );
-    clearAndGetHistogram("PWMGR_NUM_HTTPAUTH_PASSWORDS").add(
-      this.countLogins("", null, "")
-    );
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "PWMGR_BLOCKLIST_NUM_SITES"
-    );
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "PWMGR_NUM_SAVED_PASSWORDS"
-    );
-
-    // This is a boolean histogram, and not a flag, because we don't want to
-    // record any value if _gatherTelemetry is not called.
-    clearAndGetHistogram("PWMGR_SAVING_ENABLED").add(lazy.LoginHelper.enabled);
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "PWMGR_SAVING_ENABLED"
-    );
-
-    // Don't try to get logins if MP is enabled, since we don't want to show a MP prompt.
-    if (!this.isLoggedIn) {
-      return;
-    }
-
-    let logins = await this.getAllLogins();
-
-    let usernamePresentHistogram = clearAndGetHistogram(
-      "PWMGR_USERNAME_PRESENT"
-    );
-    let loginLastUsedDaysHistogram = clearAndGetHistogram(
-      "PWMGR_LOGIN_LAST_USED_DAYS"
-    );
-
-    let originCount = new Map();
-    for (let login of logins) {
-      usernamePresentHistogram.add(!!login.username);
-
-      let origin = login.origin;
-      originCount.set(origin, (originCount.get(origin) || 0) + 1);
-
-      login.QueryInterface(Ci.nsILoginMetaInfo);
-      let timeLastUsedAgeMs = referenceTimeMs - login.timeLastUsed;
-      if (timeLastUsedAgeMs > 0) {
-        loginLastUsedDaysHistogram.add(
-          Math.floor(timeLastUsedAgeMs / MS_PER_DAY)
-        );
-      }
-    }
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "PWMGR_LOGIN_LAST_USED_DAYS"
-    );
-
-    let passwordsCountHistogram = clearAndGetHistogram(
-      "PWMGR_NUM_PASSWORDS_PER_HOSTNAME"
-    );
-    for (let count of originCount.values()) {
-      passwordsCountHistogram.add(count);
-    }
-    Services.obs.notifyObservers(
-      null,
-      "weave:telemetry:histogram",
-      "PWMGR_NUM_PASSWORDS_PER_HOSTNAME"
-    );
-
-    Services.obs.notifyObservers(null, "passwordmgr-gather-telemetry-complete");
   },
 
   /**
@@ -336,6 +267,7 @@ LoginManager.prototype = {
 
   /**
    * Remove the specified login from the stored logins.
+   * Deprecated: use removeLoginAsync instead
    */
   removeLogin(login) {
     lazy.log.debug(
@@ -346,7 +278,19 @@ LoginManager.prototype = {
   },
 
   /**
+   * Remove the specified login from the stored logins.
+   */
+  async removeLoginAsync(login) {
+    lazy.log.debug(
+      "Removing login",
+      login.QueryInterface(Ci.nsILoginMetaInfo).guid
+    );
+    return this._storage.removeLoginAsync(login);
+  },
+
+  /**
    * Change the specified login to match the new login or new properties.
+   * Deprecated: use modifyLoginAsync instead.
    */
   modifyLogin(oldLogin, newLogin) {
     lazy.log.debug(
@@ -354,6 +298,17 @@ LoginManager.prototype = {
       oldLogin.QueryInterface(Ci.nsILoginMetaInfo).guid
     );
     return this._storage.modifyLogin(oldLogin, newLogin);
+  },
+
+  /**
+   * Async: Change the specified login to match the new login or new properties.
+   */
+  async modifyLoginAsync(oldLogin, newLogin) {
+    lazy.log.debug(
+      "Modifying login",
+      oldLogin.QueryInterface(Ci.nsILoginMetaInfo).guid
+    );
+    await this._storage.modifyLoginAsync(oldLogin, newLogin);
   },
 
   /**
@@ -375,15 +330,26 @@ LoginManager.prototype = {
       this._storage.recordPasswordUse(login);
     }
 
-    Services.telemetry.recordEvent(
-      "pwmgr",
-      "saved_login_used",
+    Glean.pwmgr["savedLoginUsed" + loginType].record({ filled });
+  },
+
+  async recordPasswordUseAsync(
+    login,
+    privateContextWithoutExplicitConsent,
+    loginType,
+    filled
+  ) {
+    lazy.log.debug(
+      "Recording password use",
       loginType,
-      null,
-      {
-        filled: "" + filled,
-      }
+      login.QueryInterface(Ci.nsILoginMetaInfo).guid
     );
+    if (!privateContextWithoutExplicitConsent) {
+      // don't record non-interactive use in private browsing
+      await this._storage.recordPasswordUseAsync(login);
+    }
+
+    Glean.pwmgr["savedLoginUsed" + loginType].record({ filled });
   },
 
   /**
@@ -408,7 +374,7 @@ LoginManager.prototype = {
 
   /**
    * Remove all user facing stored logins.
-   *
+   * Deprecated: Use removeAllUserFacingLoginsAsync() instead.
    * This will not remove the FxA Sync key, which is stored with the rest of a user's logins.
    */
   removeAllUserFacingLogins() {
@@ -417,7 +383,18 @@ LoginManager.prototype = {
   },
 
   /**
+   * Remove all user facing stored logins.
+   *
+   * This will not remove the FxA Sync key, which is stored with the rest of a user's logins.
+   */
+  async removeAllUserFacingLoginsAsync() {
+    lazy.log.debug("Removing all user facing logins.");
+    await this._storage.removeAllUserFacingLoginsAsync();
+  },
+
+  /**
    * Remove all logins from data store, including the FxA Sync key.
+   * Deprecated: Use removeAllLoginsAsync() instead.
    *
    * NOTE: You probably want `removeAllUserFacingLogins()` instead of this function.
    * This function will remove the FxA Sync key, which will break syncing of saved user data
@@ -429,11 +406,23 @@ LoginManager.prototype = {
   },
 
   /**
+   * Remove all logins from data store, including the FxA Sync key.
+   *
+   * NOTE: You probably want `removeAllUserFacingLogins()` instead of this function.
+   * This function will remove the FxA Sync key, which will break syncing of saved user data
+   * e.g. bookmarks, history, open tabs, logins and passwords, add-ons, and options
+   */
+  async removeAllLoginsAsync() {
+    lazy.log.debug("Removing all logins from local store, including FxA key.");
+    await this._storage.removeAllLoginsAsync();
+  },
+
+  /**
    * Get a list of all origins for which logins are disabled.
    *
-   * @param {Number} count - only needed for XPCOM.
+   * @param {number} count - only needed for XPCOM.
    *
-   * @return {String[]} of disabled origins. If there are no disabled origins,
+   * @return {string[]} of disabled origins. If there are no disabled origins,
    *                    the array is empty.
    */
   getAllDisabledHosts() {
@@ -474,8 +463,10 @@ LoginManager.prototype = {
       `Searching for matching logins for origin: ${matchData.origin}`
     );
 
-    if (!matchData.origin) {
-      throw new Error("searchLoginsAsync: An `origin` is required");
+    if (!matchData.guid && !matchData.origin) {
+      lazy.log.warn(
+        "A `guid` or `origin` field is recommended for searchLoginsAsync matchData."
+      );
     }
 
     return this._storage.searchLoginsAsync(matchData);
@@ -483,6 +474,7 @@ LoginManager.prototype = {
 
   /**
    * @return {nsILoginInfo[]} which are decrypted.
+   * Deprecated: use searchLoginsAsync instead
    */
   searchLogins(matchData) {
     lazy.log.debug(
@@ -505,6 +497,20 @@ LoginManager.prototype = {
    */
   countLogins(origin, formActionOrigin, httpRealm) {
     const loginsCount = this._storage.countLogins(
+      origin,
+      formActionOrigin,
+      httpRealm
+    );
+
+    lazy.log.debug(
+      `Found ${loginsCount} matching origin: ${origin}, formActionOrigin: ${formActionOrigin} and realm: ${httpRealm}`
+    );
+
+    return loginsCount;
+  },
+
+  async countLoginsAsync(origin, formActionOrigin, httpRealm) {
+    const loginsCount = await this._storage.countLoginsAsync(
       origin,
       formActionOrigin,
       httpRealm
@@ -546,6 +552,30 @@ LoginManager.prototype = {
     await this.setSyncID(newSyncID);
     await this.setLastSync(0);
     return newSyncID;
+  },
+
+  async addPotentiallyVulnerablePassword(login) {
+    return this._storage.addPotentiallyVulnerablePassword(login);
+  },
+
+  async isPotentiallyVulnerablePassword(login) {
+    return this._storage.isPotentiallyVulnerablePassword(login);
+  },
+
+  async recordBreachAlertDismissal(loginGUID) {
+    return this._storage.recordBreachAlertDismissal(loginGUID);
+  },
+
+  async getBreachAlertDismissalsByLoginGUID() {
+    return this._storage.getBreachAlertDismissalsByLoginGUID();
+  },
+
+  async arePotentiallyVulnerablePasswords(logins) {
+    return this._storage.arePotentiallyVulnerablePasswords(logins);
+  },
+
+  async clearAllPotentiallyVulnerablePasswords() {
+    return this._storage.clearAllPotentiallyVulnerablePasswords();
   },
 
   get uiBusy() {
@@ -614,5 +644,37 @@ LoginManager.prototype = {
       enabled ? "hostSavingEnabled" : "hostSavingDisabled",
       origin
     );
+  },
+
+  /**
+   * For migration purposes, asynchronously reencrypt all logins in the
+   * background.
+   */
+  reencryptAllLogins() {
+    return this._storage.reencryptAllLogins();
+  },
+
+  /**
+   * Debug helper to identify logins with invalid origin/formActionOrigin URLs.
+   * Used to diagnose login storage incompatibilities with the Application Services
+   * Rust component, which has stricter URL validation requirements.
+   *
+   * @return {Promise<Array<object>>} Array of objects containing origin,
+   * timeCreated, and timeLastUsed for logins that failed URL validation.
+   */
+  async listInvalidOrigins() {
+    const logins = await this.getAllLogins();
+    const invalidOrigins = [];
+    for (const login of logins) {
+      const origin = login.origin || login.formActionOrigin;
+      if (!URL.canParse(origin)) {
+        invalidOrigins.push({
+          origin,
+          timeCreated: new Date(login.timeCreated),
+          timeLastUsed: new Date(login.timeLastUsed),
+        });
+      }
+    }
+    return invalidOrigins;
   },
 }; // end of LoginManager implementation

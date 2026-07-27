@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Inställningar
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Inställningar…
+menu-application-set-as-default =
+    .label = Ange { -brand-shorter-name } som standardwebbläsare
 menu-application-services =
     .label = Tjänster
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Dela
     .accesskey = D
+menu-file-share-qrcode =
+    .label = Skapa QR-kod…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Skapa QR-kod
+    .accesskey = S
 menu-file-print-setup =
     .label = Utskriftsformat…
     .accesskey = o
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Historik
 menu-view-synced-tabs-sidebar =
     .label = Synkade flikar
-menu-view-megalist-sidebar =
-    .label = Lösenord
 menu-view-full-zoom =
     .label = Zoom
     .accesskey = Z
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobila bokmärken
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiler
+menu-profiles-manage-profiles =
+    .label = Hantera profiler
+menu-profiles-new-profile =
+    .label = Ny profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (nuvarande)
+menu-profiles-menu =
+    .label = Profiler
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Filhämtaren
     .accesskey = F
+menu-tools-extensions-and-themes =
+    .label = Tillägg och teman
+    .accesskey = T
 menu-tools-addons-and-themes =
     .label = Tillägg och teman
     .accesskey = T
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Sidinfo
     .accesskey = d
+menu-tools-edit-pdf =
+    .label = Redigera PDF…
+    .accesskey = R
 menu-settings =
     .label = Inställningar
     .accesskey =

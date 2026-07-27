@@ -11,6 +11,8 @@ subsuite = "try"
 
 ["test_mozharness_integration.py"]
 
+["test_lando_api.py"]
+
 ["test_perf.py"]
 
 ["test_perfcomparators.py"]
@@ -25,6 +27,8 @@ sequential = true
 ["test_release.py"]
 
 ["test_scriptworker.py"]
+
+["test_selectors.py"]
 
 ["test_task_configs.py"]
 

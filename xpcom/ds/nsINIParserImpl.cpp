@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #include "nsINIParser.h"
 #include "nsStringEnumerator.h"
 #include "nsTArray.h"
-#include "mozilla/Attributes.h"
 
 class nsINIParserImpl final : public nsIINIParser, public nsIINIParserWriter {
   ~nsINIParserImpl() = default;
@@ -19,7 +16,9 @@ class nsINIParserImpl final : public nsIINIParser, public nsIINIParserWriter {
   NS_DECL_NSIINIPARSER
   NS_DECL_NSIINIPARSERWRITER
 
-  nsresult Init(nsIFile* aINIFile) { return mParser.Init(aINIFile); }
+  nsresult Init(nsIFile* aINIFile, bool* aContainedErrors) {
+    return mParser.Init(aINIFile, aContainedErrors);
+  }
 
  private:
   nsINIParser mParser;
@@ -29,13 +28,14 @@ class nsINIParserImpl final : public nsIINIParser, public nsIINIParserWriter {
 NS_IMPL_ISUPPORTS(nsINIParserFactory, nsIINIParserFactory)
 
 NS_IMETHODIMP
-nsINIParserFactory::CreateINIParser(nsIFile* aINIFile, nsIINIParser** aResult) {
+nsINIParserFactory::CreateINIParser(nsIFile* aINIFile, bool* aContainedErrors,
+                                    nsIINIParser** aResult) {
   *aResult = nullptr;
 
   RefPtr<nsINIParserImpl> p(new nsINIParserImpl());
 
   if (aINIFile) {
-    nsresult rv = p->Init(aINIFile);
+    nsresult rv = p->Init(aINIFile, aContainedErrors);
     if (NS_FAILED(rv)) {
       return rv;
     }
@@ -51,17 +51,15 @@ bool nsINIParserImpl::ContainsNull(const nsACString& aStr) {
   return aStr.CountChar('\0') > 0;
 }
 
-static bool SectionCB(const char* aSection, void* aClosure) {
-  nsTArray<nsCString>* strings = static_cast<nsTArray<nsCString>*>(aClosure);
-  strings->AppendElement()->Assign(aSection);
-  return true;
-}
-
 NS_IMETHODIMP
 nsINIParserImpl::GetSections(nsIUTF8StringEnumerator** aResult) {
   nsTArray<nsCString>* strings = new nsTArray<nsCString>;
 
-  nsresult rv = mParser.GetSections(SectionCB, strings);
+  nsresult rv = mParser.GetSections([&strings](const char* aSection) {
+    strings->AppendElement()->Assign(aSection);
+    return true;
+  });
+
   if (NS_SUCCEEDED(rv)) {
     rv = NS_NewAdoptingUTF8StringEnumerator(aResult, strings);
   }
@@ -71,12 +69,6 @@ nsINIParserImpl::GetSections(nsIUTF8StringEnumerator** aResult) {
   }
 
   return rv;
-}
-
-static bool KeyCB(const char* aKey, const char* aValue, void* aClosure) {
-  nsTArray<nsCString>* strings = static_cast<nsTArray<nsCString>*>(aClosure);
-  strings->AppendElement()->Assign(aKey);
-  return true;
 }
 
 NS_IMETHODIMP
@@ -89,7 +81,12 @@ nsINIParserImpl::GetKeys(const nsACString& aSection,
   nsTArray<nsCString>* strings = new nsTArray<nsCString>;
 
   nsresult rv =
-      mParser.GetStrings(PromiseFlatCString(aSection).get(), KeyCB, strings);
+      mParser.GetStrings(PromiseFlatCString(aSection).get(),
+                         [&strings](const char* aKey, const char* aValue) {
+                           strings->AppendElement()->Assign(aKey);
+                           return true;
+                         });
+
   if (NS_SUCCEEDED(rv)) {
     rv = NS_NewAdoptingUTF8StringEnumerator(aResult, strings);
   }
@@ -113,8 +110,20 @@ nsINIParserImpl::GetString(const nsACString& aSection, const nsACString& aKey,
 }
 
 NS_IMETHODIMP
-nsINIParserImpl::InitFromString(const nsACString& aData) {
-  return mParser.InitFromString(nsCString(aData));
+nsINIParserImpl::InitFromString(const nsACString& aData,
+                                bool* aContainedErrors) {
+  return mParser.InitFromString(nsCString(aData), aContainedErrors);
+}
+
+NS_IMETHODIMP
+nsINIParserImpl::DeleteString(const nsACString& aSection,
+                              const nsACString& aKey) {
+  if (ContainsNull(aSection) || ContainsNull(aKey)) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  return mParser.DeleteString(PromiseFlatCString(aSection).get(),
+                              PromiseFlatCString(aKey).get());
 }
 
 NS_IMETHODIMP

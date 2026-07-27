@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "nsHTTPSOnlyStreamListener.h"
+
 #include "NSSErrorsService.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/dom/WindowGlobalParent.h"
+#include "mozilla/glean/DomSecurityMetrics.h"
 #include "mozpkix/pkixnss.h"
 #include "nsCOMPtr.h"
-#include "nsHTTPSOnlyStreamListener.h"
 #include "nsHTTPSOnlyUtils.h"
 #include "nsIChannel.h"
 #include "nsIRequest.h"
@@ -42,12 +41,14 @@ NS_IMETHODIMP
 nsHTTPSOnlyStreamListener::OnDataAvailable(nsIRequest* aRequest,
                                            nsIInputStream* aInputStream,
                                            uint64_t aOffset, uint32_t aCount) {
-  return mListener->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
 }
 
 NS_IMETHODIMP
 nsHTTPSOnlyStreamListener::OnStartRequest(nsIRequest* request) {
-  return mListener->OnStartRequest(request);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnStartRequest(request);
 }
 
 NS_IMETHODIMP
@@ -78,14 +79,14 @@ nsHTTPSOnlyStreamListener::OnStopRequest(nsIRequest* request,
     }
   }
 
-  return mListener->OnStopRequest(request, aStatus);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnStopRequest(request, aStatus);
 }
 
 void nsHTTPSOnlyStreamListener::RecordUpgradeTelemetry(nsIRequest* request,
                                                        nsresult aStatus) {
   // 1. Get time between now and when the initial upgrade request started
-  int64_t duration =
-      (mozilla::TimeStamp::Now() - mCreationStart).ToMilliseconds();
+  mozilla::TimeDuration duration = mozilla::TimeStamp::Now() - mCreationStart;
 
   // 2. Assemble the category string
   // [!] All strings have to be present in Histograms.json
@@ -138,8 +139,8 @@ void nsHTTPSOnlyStreamListener::RecordUpgradeTelemetry(nsIRequest* request,
       category.AppendLiteral("f_other");
     }
   }
-  mozilla::Telemetry::Accumulate(
-      mozilla::Telemetry::HTTPS_ONLY_MODE_UPGRADE_TIME_MS, category, duration);
+  mozilla::glean::security::https_only_mode_upgrade_time.Get(category)
+      .AccumulateRawDuration(duration);
 
   bool success = NS_SUCCEEDED(aStatus);
   ExtContentPolicyType externalType = loadInfo->GetExternalContentPolicyType();
@@ -167,7 +168,6 @@ void nsHTTPSOnlyStreamListener::RecordUpgradeTelemetry(nsIRequest* request,
         break;
 
       case ExtContentPolicy::TYPE_OBJECT:
-      case ExtContentPolicy::TYPE_OBJECT_SUBREQUEST:
         typeKey = "object"_ns;
         break;
 
@@ -237,13 +237,18 @@ void nsHTTPSOnlyStreamListener::RecordUpgradeTelemetry(nsIRequest* request,
       case ExtContentPolicy::TYPE_SPECULATIVE:
       case ExtContentPolicy::TYPE_WEB_TRANSPORT:
       case ExtContentPolicy::TYPE_WEB_IDENTITY:
+      case ExtContentPolicy::TYPE_JSON:
+      case ExtContentPolicy::TYPE_TEXT:
         break;
         // Do not add default: so that compilers can catch the missing case.
     }
   }
 
-  mozilla::Telemetry::Accumulate(
-      mozilla::Telemetry::HTTPS_ONLY_MODE_UPGRADE_TYPE, typeKey, success);
+  // Needs bug 1657470 (New Metric Type: "Keyed Categorical") before
+  // this can be migrated to Glean.
+  mozilla::glean::security::https_only_mode_upgrade_type
+      .Get(typeKey, success ? "true"_ns : "false"_ns)
+      .Add();
 }
 
 void nsHTTPSOnlyStreamListener::LogUpgradeFailure(nsIRequest* request,

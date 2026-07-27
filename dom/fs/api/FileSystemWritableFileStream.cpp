@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #include "fs/FileSystemAsyncCopy.h"
 #include "fs/FileSystemShutdownBlocker.h"
 #include "fs/FileSystemThreadSafeStreamOwner.h"
-#include "mozilla/Buffer.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/InputStreamLengthHelper.h"
 #include "mozilla/MozPromise.h"
@@ -27,9 +24,9 @@
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WritableStreamDefaultController.h"
-#include "mozilla/dom/fs/TargetPtrHolder.h"
 #include "mozilla/dom/quota/QuotaCommon.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
+#include "mozilla/dom/quota/TargetPtrHolder.h"
 #include "mozilla/ipc/RandomAccessStreamUtils.h"
 #include "nsAsyncStreamCopier.h"
 #include "nsIInputStream.h"
@@ -301,7 +298,7 @@ FileSystemWritableFileStream::Create(
               if (stream->IsOpen()) {
                 // We don't need the promise, we just
                 // begin the closing process.
-                Unused << stream->BeginAbort();
+                (void)stream->BeginAbort();
               }
             });
         QM_TRY(MOZ_TO_RESULT(workerRef));
@@ -340,7 +337,7 @@ FileSystemWritableFileStream::Create(
   stream->mCloseHandler->Open([stream]() {
     if (stream->IsOpen()) {
       // We don't need the promise, we just begin the closing process.
-      Unused << stream->BeginAbort();
+      (void)stream->BeginAbort();
     }
   });
 
@@ -356,7 +353,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(FileSystemWritableFileStream,
                                                 WritableStream)
   // Per the comment for the FileSystemManager class, don't unlink mManager!
   if (tmp->IsOpen()) {
-    Unused << tmp->BeginAbort();
+    (void)tmp->BeginAbort();
   }
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(FileSystemWritableFileStream,
@@ -418,7 +415,7 @@ RefPtr<BoolPromise> FileSystemWritableFileStream::BeginFinishing(
   if (mCloseHandler->SetClosing()) {
     Finish()
         ->Then(mTaskQueue, __func__,
-               [selfHolder = fs::TargetPtrHolder(this)]() mutable {
+               [selfHolder = quota::TargetPtrHolder(this)]() mutable {
                  if (selfHolder->mStreamOwner) {
                    selfHolder->mStreamOwner->Close();
                  } else {
@@ -857,7 +854,7 @@ RefPtr<Int64Promise> FileSystemWritableFileStream::WriteImpl(
     nsCOMPtr<nsIInputStream> aInputStream, const Maybe<uint64_t> aPosition) {
   return InvokeAsync(
       mTaskQueue, __func__,
-      [selfHolder = fs::TargetPtrHolder(this),
+      [selfHolder = quota::TargetPtrHolder(this),
        inputStream = std::move(aInputStream), aPosition]() {
         QM_TRY(MOZ_TO_RESULT(selfHolder->EnsureStream()),
                CreateAndRejectInt64Promise);
@@ -911,7 +908,7 @@ RefPtr<BoolPromise> FileSystemWritableFileStream::Seek(uint64_t aPosition) {
 
   return InvokeAsync(
       mTaskQueue, __func__,
-      [selfHolder = fs::TargetPtrHolder(this), aPosition]() mutable {
+      [selfHolder = quota::TargetPtrHolder(this), aPosition]() mutable {
         QM_TRY(MOZ_TO_RESULT(selfHolder->EnsureStream()),
                CreateAndRejectBoolPromise);
 
@@ -927,7 +924,7 @@ RefPtr<BoolPromise> FileSystemWritableFileStream::Truncate(uint64_t aSize) {
 
   return InvokeAsync(
       mTaskQueue, __func__,
-      [selfHolder = fs::TargetPtrHolder(this), aSize]() mutable {
+      [selfHolder = quota::TargetPtrHolder(this), aSize]() mutable {
         QM_TRY(MOZ_TO_RESULT(selfHolder->EnsureStream()),
                CreateAndRejectBoolPromise);
 

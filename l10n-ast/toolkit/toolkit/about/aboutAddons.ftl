@@ -113,13 +113,6 @@ addon-updates-view-updates = Ver los anovamientos de recién
 addon-updates-update-addons-automatically = Anovar automáticamente los complementos
     .accesskey = A
 
-## Specific add-ons can have custom update checking behaviors ("Manually",
-## "Automatically", "Use default global behavior"). These menu items reset the
-## update checking behavior for all add-ons to the default global behavior
-## (which itself is either "Automatically" or "Manually", controlled by the
-## extensions-updates-update-addons-automatically.label menu item).
-
-
 ## Status messages displayed when updating add-ons
 
 addon-updates-updating = Anovando los complementos
@@ -260,10 +253,6 @@ addon-detail-private-browsing-help = Al permitilo, la estensión va tener accesu
 addon-detail-private-browsing-allow = Permitir
 addon-detail-private-browsing-disallow = Nun permitir
 
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -278,6 +267,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Esta estensión revisóse pa cumplir colos nuesos estándares de seguranza y rindimientu
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Estensión oficial fecha por Mozilla. Cumple colos estándares de seguranza y rindimientu
 
 ##
 
@@ -314,7 +307,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = «{ $name }» ye incompatible con { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -329,12 +322,8 @@ details-notification-unsigned2 =
     .message = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name }. Sigui con curiáu.
 details-notification-unsigned-link = Más información
 details-notification-blocked = Desactivóse «{ $name }» pola mor de problemes de seguranza o estabilidá.
-details-notification-blocked2 =
-    .message = Desactivóse «{ $name }» pola mor de problemes de seguranza o estabilidá.
 details-notification-blocked-link = Más información
 details-notification-softblocked = Sábese que «{ $name }» causa problemes de seguranza o estabilidá.
-details-notification-softblocked2 =
-    .message = Sábese que «{ $name }» causa problemes de seguranza o estabilidá.
 details-notification-softblocked-link = Más información
 details-notification-gmp-pending = «{ $name }» va instalase de secute.
 details-notification-gmp-pending2 =

@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Сілтемені жаңа бетте ашу
     .accesskey = б
+main-context-menu-open-link-split-view =
+    .label = Сілтемені бөлінген көріністе ашу
+    .accesskey = M
 main-context-menu-open-link-container-tab =
     .label = Сілтемені жаңа контейнер бетінде ашу
     .accesskey = к
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Сілтемені { -pocket-brand-name }-ке сақтау
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Электронды пошта адресін көшіріп алу
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Сілтемені көшіріп алу
     .accesskey = л
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Сайт бақылаусыз сілтемені көшіру
+main-context-menu-preview-link =
+    .label = Сілтемені алдын ала қарау
     .accesskey = р
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Таза сілтемені көшіру
+    .accesskey = у
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Басқару батырмаларын көрсету
     .accesskey = Б
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Толық экран режимі
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Анықтамасын қарау
     .accesskey = н
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Суретті { $engine } көмегімен іздеу
+    .accesskey = е
 main-context-menu-video-save-as =
     .label = Видеоны қалайша сақтау…
     .accesskey = В
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Аудионы эл. поштамен жіберу…
     .accesskey = А
+main-context-menu-send-to-device-2 =
+    .label = Құрылғыға жіберу
+    .accesskey = б
+main-context-menu-send-to-mobile-2 =
+    .label = Мобильді құрылғыға жіберу
+    .accesskey = ж
+main-context-menu-send-to-mobile-sign-in = Беттерді жіберу үшін жүйеге кіріңіз
+main-context-menu-send-to-mobile-enable-sync2 = Бетті жіберу үшін синхрондауды іске қосыңыз
+main-context-menu-send-to-mobile-connect-phone2 = Телефоныңызды байланыстырыңыз
+main-context-menu-send-to-mobile-device-missing2 = Құрылғыңыз көрінбей ме?
+main-context-menu-send-to-mobile-sign-in-from-link = Сілтеме жіберу үшін жүйеге кіріңіз
+main-context-menu-send-to-mobile-sign-in-from-page = Бетті жіберу үшін жүйеге кіріңіз
+main-context-menu-send-to-mobile-enable-sync3 = Беттерді жіберу үшін синхронизацияны іске қосыңыз
+main-context-menu-send-to-mobile-enable-sync-from-link = Сілтемені жіберу үшін синхронизацияны іске қосыңыз
+main-context-menu-send-to-mobile-enable-sync-from-page = Бетті жіберу үшін синхронизацияны іске қосыңыз
+main-context-menu-send-to-mobile-connect-phone3 = Беттерді жіберу үшін құрылғыны қосыңыз
+main-context-menu-send-to-mobile-connect-phone-from-link = Сілтемені жіберу үшін құрылғыны қосыңыз
+main-context-menu-send-to-mobile-connect-phone-from-page = Бетті жіберу үшін құрылғыны қосыңыз
 main-context-menu-save-to-pocket =
     .label = Бетті { -pocket-brand-name }-ке сақтау
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Парақты құрылғыға жіберу
     .accesskey = ы
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Сақталған логинді қолдану
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Осы ізденісті белгілейтін кілт сөзін енгізу…
     .accesskey = к
+main-context-menu-add-engine =
+    .label = Іздеу жүйесін қосу
+    .accesskey = с
 main-context-menu-link-send-to-device =
     .label = Сілтемені құрылғыға жіберу
     .accesskey = ы
+main-context-menu-link-send-to-mobile =
+    .label = Сілтемені мобильді құрылғыға жіберу
+    .accesskey = ж
 main-context-menu-frame =
     .label = Осы фреймде
     .accesskey = м
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Парольді көрсету
     .accesskey = с
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Жаңа
+main-context-menu-pdfjs-copy-page =
+    .label = Бетті көшіру
+main-context-menu-pdfjs-cut-page =
+    .label = Бетті қиып алу
+main-context-menu-pdfjs-delete-page =
+    .label = Бетті өшіру
+main-context-menu-pdfjs-save-page =
+    .label = Таңдауды қалайша сақтау…

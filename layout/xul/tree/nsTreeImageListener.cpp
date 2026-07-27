@@ -1,13 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsTreeImageListener.h"
+
 #include "XULTreeElement.h"
-#include "imgIRequest.h"
 #include "imgIContainer.h"
+#include "imgIRequest.h"
 #include "nsIContent.h"
 #include "nsTreeColumns.h"
 
@@ -75,18 +74,19 @@ void nsTreeImageListener::AddCell(int32_t aIndex, nsTreeColumn* aCol) {
 }
 
 void nsTreeImageListener::Invalidate() {
-  if (!mInvalidationSuppressed) {
-    for (InvalidationArea* currArea = mInvalidationArea; currArea;
-         currArea = currArea->GetNext()) {
-      // Loop from min to max, invalidating each cell that was listening for
-      // this image.
-      for (int32_t i = currArea->GetMin(); i <= currArea->GetMax(); ++i) {
-        if (mTreeFrame) {
-          RefPtr<XULTreeElement> tree =
-              XULTreeElement::FromNodeOrNull(mTreeFrame->GetBaseElement());
-          if (tree) {
-            tree->InvalidateCell(i, currArea->GetCol());
-          }
+  if (mInvalidationSuppressed) {
+    return;
+  }
+  for (InvalidationArea* currArea = mInvalidationArea; currArea;
+       currArea = currArea->GetNext()) {
+    // Loop from min to max, invalidating each cell that was listening for
+    // this image.
+    for (int32_t i = currArea->GetMin(); i <= currArea->GetMax(); ++i) {
+      if (mTreeFrame) {
+        RefPtr<XULTreeElement> tree =
+            XULTreeElement::FromNodeOrNull(mTreeFrame->GetBaseElement());
+        if (tree) {
+          tree->InvalidateCell(i, currArea->GetCol());
         }
       }
     }
@@ -100,16 +100,11 @@ nsTreeImageListener::InvalidationArea::InvalidationArea(nsTreeColumn* aCol)
       mNext(nullptr) {}
 
 void nsTreeImageListener::InvalidationArea::AddRow(int32_t aIndex) {
-  if (mMin == -1)
+  if (mMin == -1) {
     mMin = mMax = aIndex;
-  else if (aIndex < mMin)
+  } else if (aIndex < mMin) {
     mMin = aIndex;
-  else if (aIndex > mMax)
+  } else if (aIndex > mMax) {
     mMax = aIndex;
-}
-
-NS_IMETHODIMP
-nsTreeImageListener::ClearFrame() {
-  mTreeFrame = nullptr;
-  return NS_OK;
+  }
 }

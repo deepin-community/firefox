@@ -12,23 +12,37 @@ update-updateButton =
     .label = Перезапустити для оновлення { -brand-shorter-name }
     .accesskey = о
 update-checkingForUpdates = Перевірка оновлень…
+settings-update-checking-for-updates =
+    .label = Перевірка оновлень…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>Оновлення завантажується – <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Оновлення завантажується – <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Оновлення завантажується – { $transfer }
 
 ##
 
 update-applying = Оновлення застосовується…
+settings-update-applying =
+    .label = Оновлення застосовується…
 update-failed = Не вдалося оновити. <label data-l10n-name="failed-link">Завантажити останню версію</label>
 update-failed-main = Не вдалося оновити. <a data-l10n-name="failed-link-main">Завантажити останню версію</a>
 update-adminDisabled = Оновлення вимкнені системним адміністратором
 update-policy-disabled = Оновлення вимкнено вашою організацією
+settings-update-policy-disabled =
+    .label = Оновлення вимкнено вашою організацією
 update-noUpdatesFound = { -brand-short-name } не потребує оновлення
+settings-update-no-updates-found =
+    .label = { -brand-short-name } не потребує оновлення
 aboutdialog-update-checking-failed = Не вдалося перевірити наявність оновлень.
+settings-update-checking-failed =
+    .label = Не вдалося перевірити наявність оновлень.
 update-otherInstanceHandlingUpdates = Оновлення { -brand-short-name } проводиться іншим процесом
+settings-update-other-instance-handling-updates =
+    .label = Оновлення { -brand-short-name } проводиться іншим процесом
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = Оновлення { -brand-short-name } �
 aboutdialog-update-manual-with-link = Оновлення доступне на <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Оновлення доступне на <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = Ви не можете виконувати подальші оновлення на цій системі. <label data-l10n-name="unsupported-link">Докладніше</label>
+settings-update-unsupported = Ви не можете виконувати подальші оновлення на цій системі. <a data-l10n-name="unsupported-link">Докладніше</a>
 update-restarting = Перезапуск…
+settings-update-restarting =
+    .label = Перезапуск…
 update-internal-error2 = Не вдалося перевірити наявність оновлень через внутрішню помилку. Оновлення доступні за посиланням <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-internal-error = Не вдалося перевірити наявність оновлень через внутрішню помилку. Оновлення доступні за посиланням <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } був розроблений в <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> - <label data-l10n-name="community-creditsLink">глобальній спільноті</label>, яка працює над тим, щоб зберегти Інтернет відкритим, громадським та доступним для всіх.
 helpus = Хочете допомогти? <label data-l10n-name="helpus-donateLink">Зробіть внесок</label> або <label data-l10n-name="helpus-getInvolvedLink">долучайтесь!</label>
 bottomLinks-license = Ліцензійна інформація
+bottom-links-terms = Умови користування
+bottom-links-privacy = Положення про приватність
 bottomLinks-rights = Права кінцевого користувача
 bottomLinks-privacy = Політика приватності
 # Example of resulting string: 66.0.1 (64-bit)

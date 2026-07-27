@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -30,6 +28,7 @@ class gfxConfigManager {
         mFeatureD3D11HwAngle(nullptr),
         mFeatureD3D11Compositing(nullptr),
         mFeatureGPUProcess(nullptr),
+        mFeatureGLNorm16Textures(nullptr),
         mWrForceEnabled(false),
         mWrSoftwareForceEnabled(false),
         mWrCompositorForceEnabled(false),
@@ -42,14 +41,12 @@ class gfxConfigManager {
         mWrOptimizedShaders(false),
         mWrScissoredCacheClearsEnabled(false),
         mWrScissoredCacheClearsForceEnabled(false),
-        mGPUProcessAllowSoftware(false),
         mWrEnvForceEnabled(false),
         mScaledResolution(false),
         mDisableHwCompositingNoWr(false),
         mIsNightly(false),
         mIsEarlyBetaOrEarlier(false),
-        mSafeMode(false),
-        mIsWin11OrLater(false) {}
+        mSafeMode(false) {}
 
   void Init();
 
@@ -75,6 +72,7 @@ class gfxConfigManager {
   FeatureState* mFeatureD3D11HwAngle;
   FeatureState* mFeatureD3D11Compositing;
   FeatureState* mFeatureGPUProcess;
+  FeatureState* mFeatureGLNorm16Textures;
 
   /**
    * Prefs
@@ -93,7 +91,6 @@ class gfxConfigManager {
   bool mWrOptimizedShaders;
   bool mWrScissoredCacheClearsEnabled;
   bool mWrScissoredCacheClearsForceEnabled;
-  bool mGPUProcessAllowSoftware;
 
   /**
    * Environment variables
@@ -109,7 +106,6 @@ class gfxConfigManager {
   bool mIsNightly;
   bool mIsEarlyBetaOrEarlier;
   bool mSafeMode;
-  bool mIsWin11OrLater;
 };
 
 }  // namespace gfx

@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Endre kjeldespråk
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Beklagar, vi støttar ikkje omsettingar frå { $language } enno.
+translations-panel-error-unsupported-hint-unknown-2 = Beklagar, vi støttar ikkje omsettingar frå dette språket enno.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,14 +134,7 @@ translations-manage-description = Last ned språk for fråkopla-omsetting.
 translations-manage-all-language = Alle språk
 translations-manage-download-button = Last ned
 translations-manage-delete-button = Slett
-translations-manage-intro = Vel innstillingane for språk og nettstadomsetjing og behandle språk som er installert for fråkopla omsetjing.
-translations-manage-install-description = Installer språk for fråkopla-omsetjing.
-translations-manage-language-install-button =
-    .label = Installer
-translations-manage-language-install-all-button =
-    .label = Installer alle
-    .accesskey = a
-translations-manage-intro-2 = Angje innstillingar for språk og nettstadomsetting og behandle språk som er lasta ned for fråkopla omsetting.
+translations-manage-intro-2 = Angje innstillingar for språk og nettstadomsetting og handsame språk som er lasta ned for fråkopla omsetting.
 translations-manage-download-description = Last ned språk for fråkopla omsetting
 translations-manage-language-download-button =
     .label = Last ned
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Fjern alle
     .accesskey = F
-translations-manage-error-install = Klarte ikkje å installere språkfilene. Prøv på nytt.
 translations-manage-error-download = Klarte ikkje å laste ned språkfilene. Prøv på nytt.
 translations-manage-error-delete = Det oppstod ein feil ved sletting av språkfilene. Prøv på nytt.
 translations-manage-error-remove = Det oppstod ein feil ved sletting av språkfilene. Prøv på nytt.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Det oppstod eit problem med å omsetje. Prøv på nytt.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Beklagar, vi støttar ikkje omsettingar frå { $language } enno.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Beklagar, vi støttar ikkje omsettingar frå dette språket enno.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

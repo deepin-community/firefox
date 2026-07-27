@@ -1,14 +1,11 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   Schemas: "resource://gre/modules/Schemas.sys.mjs",
   WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
 });
@@ -81,6 +78,12 @@ export var NativeManifests = {
     if (!path) {
       return null;
     }
+    if (typeof path !== "string") {
+      Cu.reportError(
+        `Native manifest registry entry ${regPath} must be a string path`
+      );
+      return null;
+    }
 
     // Normalize in case the extension used / instead of \.
     path = path.replaceAll("/", "\\");
@@ -89,26 +92,20 @@ export var NativeManifests = {
     return manifest ? { path, manifest } : null;
   },
 
-  async _tryPath(type, path, name, context, logIfNotFound) {
-    let manifest;
-    try {
-      manifest = await IOUtils.readJSON(path);
-    } catch (ex) {
-      if (ex instanceof SyntaxError && ex.message.startsWith("JSON.parse:")) {
-        Cu.reportError(`Error parsing native manifest ${path}: ${ex.message}`);
-        return null;
-      }
-      if (DOMException.isInstance(ex) && ex.name == "NotFoundError") {
-        if (logIfNotFound) {
-          Cu.reportError(
-            `Error reading native manifest file ${path}: file is referenced in the registry but does not exist`
-          );
-        }
-        return null;
-      }
-      Cu.reportError(ex);
-      return null;
-    }
+  /**
+   * Parse a native manifest of the given type and name.
+   *
+   * @param {string} type The type, one of: "pkcs11", "stdio" or "storage".
+   * @param {string} path The path to the manifest file.
+   * @param {string} name The name of the application.
+   * @param {object} context A context object as expected by Schemas.normalize.
+   * @param {object} data The JSON object of the manifest.
+   * @returns {Promise<object>} The contents of the validated manifest, or null if
+   *                   the manifest is not valid.
+   */
+  async parseManifest(type, path, name, context, data) {
+    await this.init();
+    let manifest = data;
     let normalized = lazy.Schemas.normalize(
       manifest,
       "manifest.NativeManifest",
@@ -155,6 +152,30 @@ export var NativeManifests = {
       return null;
     }
 
+    return manifest;
+  },
+
+  async _tryPath(type, path, name, context, logIfNotFound) {
+    let manifest;
+    try {
+      manifest = await IOUtils.readJSON(path);
+    } catch (ex) {
+      if (ex instanceof SyntaxError && ex.message.startsWith("JSON.parse:")) {
+        Cu.reportError(`Error parsing native manifest ${path}: ${ex.message}`);
+        return null;
+      }
+      if (DOMException.isInstance(ex) && ex.name == "NotFoundError") {
+        if (logIfNotFound) {
+          Cu.reportError(
+            `Error reading native manifest file ${path}: file is referenced in the registry but does not exist`
+          );
+        }
+        return null;
+      }
+      Cu.reportError(ex);
+      return null;
+    }
+    manifest = await this.parseManifest(type, path, name, context, manifest);
     return manifest;
   },
 

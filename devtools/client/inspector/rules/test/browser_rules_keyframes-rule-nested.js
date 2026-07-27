@@ -52,22 +52,16 @@ const TEST_URI = `data:text/html,${encodeURIComponent(`
 
 add_task(async function () {
   await pushPref("layout.css.starting-style-at-rules.enabled", true);
-  await pushPref("devtools.inspector.rule-view.starting-style", true);
   await addTab(TEST_URI);
   const { inspector, view } = await openRuleView();
 
   await selectNode("body", inspector);
-  const headers = Array.from(view.element.querySelectorAll(".ruleview-header"));
-  Assert.deepEqual(
-    headers.map(el => el.textContent),
-    [
-      "Keyframes in-layer",
-      "Keyframes in-starting-style",
-      "Keyframes in-media",
-      "Keyframes in-container",
-    ],
-    "Got expected keyframes sections"
-  );
+  const headers = assertRuleViewHeaders(view, [
+    "Keyframes in-layer",
+    "Keyframes in-starting-style",
+    "Keyframes in-media",
+    "Keyframes in-container",
+  ]);
 
   info("Check that keyframes' keyframe ancestor rules are not displayed");
   for (const headerEl of headers) {

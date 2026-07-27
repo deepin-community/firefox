@@ -19,7 +19,6 @@ open-location = Leita eða slá inn vistfang
 share = Deila
 close-window = Loka glugga
 open-sidebar = Hliðarstikur
-
 # This string describes shortcuts for search.
 search-popover = Leita að flýtivísum
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = Vafurferli
 search-opentabs = Opnum flipum
 search-tags = Merki
 search-titles = Titlum
-
-##
-

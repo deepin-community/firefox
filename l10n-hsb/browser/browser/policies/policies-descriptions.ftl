@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Prawidła nastajić, na kotrež WebExtensions přez chrome.storage.managed přistup maja.
+policy-AIControls = Wodźenske elementy KI konfigurować.
 policy-AllowedDomainsForApps = Definujće domeny, kotrež smědźa přistup k Google Workspace měć.
 policy-AllowFileSelectionDialogs = Dialogi za wuběranje datajow dowolić.
 policy-AppAutoUpdate = Awtomatiske aktualizacije nałoženjow zmóžnić abo znjemóžnić.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = Awtomatiske wupjelnjenje za adresy zmóžnić.
 policy-AutofillCreditCardEnabled = Awtomatiske wupjelnjenje za płaćenske metody zmóžnić.
 policy-AutoLaunchProtocolsFromOrigins = Definujće lisćinu protokolow, kotrež dadźa so z nalistowanych žórłow wužiwać, bjeztoho zo by so dyrbjało wužiwarja prašeć.
 policy-BackgroundAppUpdate2 = Pozadkowe aktualizowanje zmóžnić abo znjemóžnić.
+policy-Backup = Znjemóžńće zawěsćenje abo wobnowjenje profilowych datow.
 policy-BlockAboutAddons = Přistup k zrjadowakej přidatkow (about:addons) blokować.
 policy-BlockAboutConfig = Přistup k stronje about:config blokować.
 policy-BlockAboutProfiles = Přistup k stronje about:profiles blokować.
@@ -35,6 +37,7 @@ policy-Containers = Prawidła nastupajo kontejnery postajić
 policy-DisableAccounts = Słužby znjemóžnić, kotrež na konće bazuja, mjez nimi synchronizaciju.
 policy-DisabledCiphers = Šifry znjemóžnić.
 policy-DefaultDownloadDirectory = Nastajće standardny sćehnjenski zapis.
+policy-DefaultSerialGuardSetting = Wužiwanje serijoweho API kontrolować.
 policy-DisableAppUpdate = Wobhladowakej aktualizowanje zakazać.
 policy-DisableBuiltinPDFViewer = PDF.js znjemóžnić, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Haćće standardny agent wobhladowaka při wuwjedźenju akcijow. To je jenoz za Windows k dispoziciji; druhe platformy agent nimaja.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Funkciju składowanja webstronow do { -pocket-brand-name
 policy-DisablePrivateBrowsing = Priwatny modus znjemóžnić.
 policy-DisableProfileImport = Menijowy přikaz za importowanje datow z druheho wobhladowaka znjemóžnić.
 policy-DisableProfileRefresh = Tłóčatko { -brand-short-name } wobnowić na stronje about:support znjemóžnić.
+policy-DisableRemoteImprovements = Zadźěwajće tomu, zo { -brand-short-name } změny wukona, stabilnosće a funkcijow mjez aktualizacijemi nałožuje.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Eksterne nastajenja znjemóžnić.
 policy-DisableSafeMode = Funkciju za znowastartowanje we wěstym modusu znjemóžnić. Kedźbu: Tasta Umsch, z kotrejž k wěstemu modusej přeńdźeće, da so jenož pod Windowsom z pomocu skupinskich prawidłow znjemóžnić.
 policy-DisableSecurityBypass = Wužiwarjej zakazać, wěste wěstotne warnowanja wobeńć.
 policy-DisableSetAsDesktopBackground = Menijowy přikaz Jako desktopowy pozadk za wobrazy nastajić znjemóžnić.
@@ -79,6 +84,7 @@ policy-ExtensionSettings = Wšě aspekty instalacije rozšěrjenjow rjadować.
 policy-ExtensionUpdate = Awtomatiske aktualizacije rozšěrjenjow zmóžnić abo znjemóžnić.
 policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurować.
 policy-FirefoxSuggest = { -firefox-suggest-brand-name } konfigurować.
+policy-GenerativeAI = Konfigurujće generatiwne funkcije KI.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Wunuzujće direktnu nawigaciju do intranetneho sydła, město toho zo byšće pytał, hdyž jednotliwe słowne zapiski do adresoweho pola zapodawaće.
 policy-Handlers = Standardne nałoženske předźěłaki konfigurować
 policy-HardwareAcceleration = Jeli njewěrno, hardwarowe pospěšenje znjemóžnić.
@@ -87,6 +93,7 @@ policy-Homepage = Startowu stronu nastajić a na přeće zawrěć.
 policy-HttpAllowlist = Pochady, kotrež njebudu so na HTTPS aktualizować.
 policy-HttpsOnlyMode = Zmóžnjenje modusa Jenož-HTTPS dowolić.
 policy-InstallAddonsPermission = Wěstym websydłam dowolić, přidatki instalować.
+policy-IPProtectionAvailable = Tomu zadźěwać, zo je zatwarjeny VPN za wužiwarjow k dispoziciji.
 policy-LegacyProfiles = Funkciju znjemóžnić, kotraž separatny profil za kóždu instalaciju wunuzuje
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -97,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Zestarjene zadźeržen
 ##
 
 policy-LocalFileLinks = Wěstym websydłam dowolić, na lokalne dataje wotkazać.
+policy-LocalNetworkAccess = Zmóžńće abo znjemóžńće lokalne kontrole syćoweho přistupa.
 policy-ManagedBookmarks = Konfiguruje lisćinu zapołožkow, kotrež administrator rjaduje a kotrež wužiwar njemóže změnić.
 policy-ManualAppUpdateOnly = Jenož manuelne aktualizacije dowolić a wužiwarja wo aktualizacijach njeinformować.
 policy-PrimaryPassword = Hłowne hesło požadać abo jeho wužiwanju zadźěwać
@@ -117,11 +125,13 @@ policy-PostQuantumKeyAgreementEnabled = Dojednanje wo postkwantowym kluču za TL
 policy-PDFjs = PDF.js znjemóžnić abo konfigurować, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 policy-Permissions2 = Prawa za kameru, mikrofon, adresu, zdźělenki a awtomatiske wothraće konfigurować.
 policy-PictureInPicture = Wobraz-we-wobrazu zmóžnić abo znjemóžnić.
+policy-PopupBlocking2 = Wěstym websydłam dowolić, wuskakowace wokna pokazać a so přez wobłuki třećich poskićowarjow dale posrědkuja.
 policy-PopupBlocking = Wěstym websydłam dowolić, wuskakowace wokna po standardźe pokazać.
 policy-Preferences = Hódnotu za podsadźbu nastajenjow stajić a zawrěć
 policy-PrivateBrowsingModeAvailability = Nastajće disponujomnosć priwatneho modusa.
 policy-PromptForDownloadLocation = Prašeć so, hdźež maja so dataje při sćehnjenju składować.
 policy-Proxy = Nastajenja proksy konfigurować.
+policy-RelaunchRequired = Nowy start { -brand-short-name } za podatu dobu požadać a wužiwarja wo přichodnym nowym starće informować.
 policy-RequestedLocales = Podajće lisćinu požadanych rěčow za nałoženje w preferowanym porjedźe.
 policy-SanitizeOnShutdown2 = Nawigaciske daty při kónčenju zhašeć.
 policy-SearchBar = Standardne městno pytanskeho pola nastajić. Wužiwar móže jo hišće přiměrić.
@@ -130,6 +140,9 @@ policy-SearchSuggestEnabled = Pytanske namjety zmóžnić abo znjemóžnić.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Přidajće abo zhašejće module PKCS #11.
 policy-ShowHomeButton = Tłóčatko startoweje strony na symbolowej lajsće pokazać.
+policy-SitePolicies = Za sydło specifiske prawidła.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Njepokazujće wužiwanske wuměnjenja a zdźělenku priwatnosće při startowanju. Deklarujeće, zo wužiwanske wuměnjenja akceptujeće a maće awtoritu je akceptować, w mjenje wšěch wosobow, kotrymž přistup k tutomu wobhladowakej dawaće.
 policy-SSLVersionMax = Nastajće maksimalnu SSL-wersiju.
 policy-SSLVersionMin = Nastajće minimalnu SSL-wersiju.
 policy-StartDownloadsInTempDirectory = Sćehnjenja nućić, zo bychu w lokalnym, nachwilnym městnje město w standardnym zapisu sćehnjenjow započeli.
@@ -137,6 +150,11 @@ policy-SupportMenu = Swójski menijowy zapisk pomocy menijej pomocy přidać.
 policy-TranslateEnabled = Přełožowanje webstronow zmóžnić abo znjemóžnić.
 policy-UserMessaging = Wužiwarjej wěste powěsće njepokazać
 policy-UseSystemPrintDialog = Z pomocu systemoweho ćišćerskeho dialoga ćišćeć.
+policy-VisualSearchEnabled = Zmóžńće abo znjemóžńće wizuelne pytanje.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Wopytowanju websydłow zadźěwać. Hlejće dokumentaciju za dalše podrobnosće wo formaće.
 policy-Windows10SSO = Jednotne přizjewjenje za konta Microsoft, dźěłowe konta a šulske konta zmóžnić
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Jednotliwe přizjewjenje za konta Microsoft Entra dowolić.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Zmóžńće abo znjemóžńće za API JavaScript XSLTProcessor a předźěłansku instrukciju XSLT.

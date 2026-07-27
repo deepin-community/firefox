@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = ბმულის გახსნა ახალ ჩანართში
     .accesskey = ჩ
+main-context-menu-open-link-split-view =
+    .label = ბმულის გახსნა გაყოფილი ხედით
+    .accesskey = უ
 main-context-menu-open-link-container-tab =
     .label = ბმულის გახსნა ახალ სათავს ჩანართში
     .accesskey = ვ
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = ბმულის შენახვა { -pocket-brand-name }-ში
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = ელფოსტის მისამართის ასლი
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = ბმულის ასლი
     .accesskey = ბ
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = ბმულის ასლი თვალის დევნების არიდებით
-    .accesskey = უ
+main-context-menu-preview-link =
+    .label = ბმულის შეთვალიერება
+    .accesskey = ვ
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = ბმულის სუფთა ასლი
+    .accesskey = ფ
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = სამართავი ზოლის დამალვა
     .accesskey = ზ
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = სრულ ეკრანზე
@@ -260,14 +265,19 @@ main-context-menu-image-set-image-as-background =
     .label = სამუშაო ეკრანის ფონად გამოყენება…
     .accesskey = ე
 main-context-menu-image-copy-text =
-    .label = ტექსტის ამოღება სურათიდან
-    .accesskey = ტ
+    .label = ნაწერის ამოღება სურათიდან
+    .accesskey = წ
 main-context-menu-image-info =
     .label = სურათის მონაცემები
     .accesskey = მ
 main-context-menu-image-desc =
     .label = აღწერილობის ნახვა
     .accesskey = ა
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = სურათით ძიებისთვის { $engine }
+    .accesskey = ბ
 main-context-menu-video-save-as =
     .label = ვიდეოს შენახვა როგორც...
     .accesskey = ნ
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = ხმოვანი ფაილის გაგზავნა ელფოსტით…
     .accesskey = ე
+main-context-menu-send-to-device-2 =
+    .label = მოწყობილობაზე გაგზავნა
+    .accesskey = ზ
+main-context-menu-send-to-mobile-2 =
+    .label = გაგზავნა მობილურზე
+    .accesskey = ზ
+main-context-menu-send-to-mobile-sign-in = შედით ჩანართების გასაგზავნად
+main-context-menu-send-to-mobile-enable-sync2 = ჩართეთ დასინქ. ჩანართის გასაგზავნად
+main-context-menu-send-to-mobile-connect-phone2 = დააკავშირეთ თქვენი ტელეფონი
+main-context-menu-send-to-mobile-device-missing2 = არ ჩანს თქვენი მოწყობილობა?
+main-context-menu-send-to-mobile-sign-in-from-link = შედით ბმულის გასაგზავნად
+main-context-menu-send-to-mobile-sign-in-from-page = შედით გვერდის გასაგზავნად
+main-context-menu-send-to-mobile-enable-sync3 = ჩართეთ სინქრონიზაცია ჩანართების გასაგზავნად
+main-context-menu-send-to-mobile-enable-sync-from-link = ჩართეთ სინქრონიზაცია ბმულის გასაგზავნად
+main-context-menu-send-to-mobile-enable-sync-from-page = ჩართეთ სინქრონიზაცია გვერდის გასაგზავნად
+main-context-menu-send-to-mobile-connect-phone3 = დააკავშირეთ მოწყობილობა ჩანართების გასაგზავნად
+main-context-menu-send-to-mobile-connect-phone-from-link = დააკავშირეთ მოწყობილობა ბმულის გასაგზავნად
+main-context-menu-send-to-mobile-connect-phone-from-page = დააკავშირეთ მოწყობილობა გვერდის გასაგზავნად
 main-context-menu-save-to-pocket =
     .label = გვერდის შენახვა { -pocket-brand-name }-ში
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = გვერდის გაგზავნა მოწყობილობაზე
     .accesskey = გ
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = შენახული ანგარიშის გამოყენება
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = საკვანძო სიტყვის მინიჭება საძიებოდ…
     .accesskey = ო
+main-context-menu-add-engine =
+    .label = საძიებოს დამატება
+    .accesskey = ძ
 main-context-menu-link-send-to-device =
     .label = ბმულის გაგზავნა მოწყობილობაზე
     .accesskey = წ
+main-context-menu-link-send-to-mobile =
+    .label = ბმულის გაგზავნა მობილურზე
+    .accesskey = ზ
 main-context-menu-frame =
     .label = ჩარჩო
     .accesskey = ჩ
@@ -368,8 +400,8 @@ main-context-menu-view-page-source =
     .label = გვერდის წყაროს ჩვენება
     .accesskey = წ
 main-context-menu-bidi-switch-text =
-    .label = ტექსტის მიმართულების შეცვლა
-    .accesskey = ტ
+    .label = ნაწერის მიმართულების შეცვლა
+    .accesskey = წ
 main-context-menu-bidi-switch-page =
     .label = გვერდის მიმართულების შეცვლა
     .accesskey = მ
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = პაროლის გამოჩენა
     .accesskey = მ
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = სიახლე
+main-context-menu-pdfjs-copy-page =
+    .label = გვერდის ასლი
+main-context-menu-pdfjs-cut-page =
+    .label = გვერდის ამოჭრა
+main-context-menu-pdfjs-delete-page =
+    .label = გვერდის წაშლა
+main-context-menu-pdfjs-save-page =
+    .label = შერჩეულების შენახვა…

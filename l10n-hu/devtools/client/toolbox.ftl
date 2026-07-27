@@ -15,41 +15,42 @@ toolbox-meatball-menu-dock-bottom-label = Dokkolás az aljára
 toolbox-meatball-menu-dock-left-label = Dokkolás balra
 toolbox-meatball-menu-dock-right-label = Dokkolás jobbra
 toolbox-meatball-menu-dock-separate-window-label = Külön ablak
-
 toolbox-meatball-menu-splitconsole-label = Osztott konzol megjelenítése
 toolbox-meatball-menu-hideconsole-label = Osztott konzol elrejtése
-
 toolbox-meatball-menu-settings-label = Beállítások
 toolbox-meatball-menu-documentation-label = Dokumentáció…
 toolbox-meatball-menu-community-label = Közösség…
-
 # This menu item is only available in the browser toolbox. It forces the popups/panels
 # to stay visible on blur, which is primarily useful for addon developers and Firefox
 # contributors.
 toolbox-meatball-menu-noautohide-label = Felugrók automatikus elrejtése ki
-
 toolbox-meatball-menu-pseudo-locale-accented = Az „ékezetes” területi beállítás engedélyezése
 toolbox-meatball-menu-pseudo-locale-bidi = A „kétirányú” területi beállítás engedélyezése
-
-##
-
 
 ## These labels are shown in the top-toolbar in the Browser Toolbox and Browser Console
 
 toolbox-mode-browser-toolbox-label = Böngésző eszköztár módja
 toolbox-mode-browser-console-label = Böngészőkonzol mód
-
 toolbox-mode-everything-label = Többfolyamatos
 toolbox-mode-everything-sub-label = (Lassabb)
 toolbox-mode-everything-container =
     .title = Hibakeresés az összes folyamatban
-
 toolbox-mode-parent-process-label = Csak a szülőfolyamatban
 toolbox-mode-parent-process-sub-label = (Gyors)
 toolbox-mode-parent-process-container =
     .title = Csak a szülőfolyamat erőforrásaira összpontosítson.
-
 toolbox-always-on-top-enabled2 = „Mindig felül” letiltása
     .title = Ez újraindítja a fejlesztői eszközöket
 toolbox-always-on-top-disabled2 = „Mindig felül” engedélyezése
     .title = Ez újraindítja a fejlesztői eszközöket
+
+## These two labels are shown when navigating to a file:// URL while having DevTools opened,
+## in order to suggest enabling the Local Mode and load them from https instead.
+
+# Variables:
+#   $url (String): The local mode URL
+toolbox-local-mode-notice = Ez a dokumentum a „{ $url }” címről is betölthető a fejlesztői eszközök „Helyi mód” lehetőségének használatával, melyet a beállítások panelen engedélyezhet.
+toolbox-local-mode-notice-add-to-settings-button = Hozzáadás a beállításokhoz
+toolbox-local-mode-notice-try-it-button = Kipróbálás
+toolbox-local-mode-notice-navigate-to-existing-mapping = Navigálás a meglévő hozzárendeléshez
+toolbox-local-mode-notice-always-hide = Ne jelenjen meg ez újra

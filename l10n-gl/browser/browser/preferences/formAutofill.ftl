@@ -17,7 +17,9 @@ autofill-manage-remove-button = Retirar
 autofill-manage-add-button = Engadir…
 autofill-manage-edit-button = Editar…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Gardar o enderezo?
 address-capture-save-doorhanger-description = Gardar a información en { -brand-short-name } para poder cubrir os formularios rapidamente.
@@ -39,78 +41,88 @@ address-capture-manage-address-button =
     .label = Configuración do enderezo
 address-capture-learn-more-button =
     .label = Máis información
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Engadir novo enderezo
 address-capture-open-menu-button =
     .aria-label = Abrir menú
+address-capture-edit-address-link = Editar enderezo
+    .aria-label = Editar enderezo
 address-capture-edit-address-button =
     .aria-label = Editar enderezo
 # The dialog title for creating addresses in browser preferences.
 autofill-add-address-title = Engadir enderezo
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Editar enderezo
-autofill-address-name = Nome
 autofill-address-given-name = Nome
 autofill-address-additional-name = Segundo nome
 autofill-address-family-name = Apelidos
+autofill-address-name = Nome
 autofill-address-organization = Organización
 autofill-address-street-address = Domicilio
 autofill-address-street = Domicilio
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Barrio
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Pobo ou municipio
 autofill-address-island = Illa
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Townland
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Cidade
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Distrito
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Post town
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Suburb
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Provincia
 autofill-address-state = Estado
 autofill-address-county = País
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Parroquia
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefectura
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Área
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Departamento
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirato
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Rexión
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Código postal
+# Postal code field.
 autofill-address-zip = Código ZIP
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Engadir novo enderezo
 autofill-address-country = País ou rexión
 autofill-address-country-only = País
 autofill-address-tel = Teléfono
@@ -135,8 +147,14 @@ autofill-message-tooltip = Ver mensaxe sobre autocompletar
 autofill-add-card-title = Engadir a tarxeta
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title2 = Editar a tarxeta
+autofill-card-number-2 =
+    .label = Número da tarxeta
 autofill-card-number = Número da tarxeta
 autofill-card-invalid-number = Introduza un número de tarxeta válido
+autofill-card-name-on-card-2 =
+    .label = Nome do titular
+autofill-card-billing-address-2 =
+    .label = Enderezo de facturación
 autofill-card-name-on-card = Nome do titular
 autofill-card-expires-month = Mes de caducidade
 autofill-card-expires-year = Ano de caducidade

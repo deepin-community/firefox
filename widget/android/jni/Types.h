@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_jni_Types_h__
-#define mozilla_jni_Types_h__
+#ifndef mozilla_jni_Types_h_
+#define mozilla_jni_Types_h_
 
 #include <jni.h>
 
@@ -71,16 +69,17 @@ class CallArgs {
 };
 
 template <class Cls>
-constexpr jobject (JNIEnv::*TypeAdapter<LocalRef<Cls>>::Call)(
+constexpr jobject (JNIEnv::* TypeAdapter<LocalRef<Cls>>::Call)(
     jobject, jmethodID, CallArgs::JValueType) MOZ_JNICALL_ABI;
 template <class Cls>
-constexpr jobject (JNIEnv::*TypeAdapter<LocalRef<Cls>>::StaticCall)(
+constexpr jobject (JNIEnv::* TypeAdapter<LocalRef<Cls>>::StaticCall)(
     jclass, jmethodID, CallArgs::JValueType) MOZ_JNICALL_ABI;
 template <class Cls>
-constexpr jobject (JNIEnv::*TypeAdapter<LocalRef<Cls>>::Get)(jobject, jfieldID);
+constexpr jobject (JNIEnv::* TypeAdapter<LocalRef<Cls>>::Get)(jobject,
+                                                              jfieldID);
 template <class Cls>
-constexpr jobject (JNIEnv::*TypeAdapter<LocalRef<Cls>>::StaticGet)(jclass,
-                                                                   jfieldID);
+constexpr jobject (JNIEnv::* TypeAdapter<LocalRef<Cls>>::StaticGet)(jclass,
+                                                                    jfieldID);
 
 // TypeAdapter<Ref<Cls>> applies when jobject is a parameter value.
 template <class Cls, typename T>
@@ -100,11 +99,11 @@ struct TypeAdapter<Ref<Cls, T>> {
 };
 
 template <class Cls, typename T>
-constexpr void (JNIEnv::*TypeAdapter<Ref<Cls, T>>::Set)(jobject, jfieldID,
-                                                        jobject);
+constexpr void (JNIEnv::* TypeAdapter<Ref<Cls, T>>::Set)(jobject, jfieldID,
+                                                         jobject);
 template <class Cls, typename T>
-constexpr void (JNIEnv::*TypeAdapter<Ref<Cls, T>>::StaticSet)(jclass, jfieldID,
-                                                              jobject);
+constexpr void (JNIEnv::* TypeAdapter<Ref<Cls, T>>::StaticSet)(jclass, jfieldID,
+                                                               jobject);
 
 // jstring has its own Param type.
 template <>
@@ -120,4 +119,4 @@ using namespace detail;
 }  // namespace jni
 }  // namespace mozilla
 
-#endif  // mozilla_jni_Types_h__
+#endif  // mozilla_jni_Types_h_

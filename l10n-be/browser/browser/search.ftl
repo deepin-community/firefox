@@ -33,3 +33,71 @@ searchbar-icon =
 removed-search-engine-message = <strong>Ваша прадвызначаная пошукавая сістэма была змененая.</strong> { $oldEngine } болей недасяжна як прадвызначаная пошукавая сістэма ў { -brand-short-name }. Цяпер ваш прадвызначаны пашукавік — { $newEngine }. Каб змяніць яго на іншую тыповую пошукавую сістэму, перайдзіце ў налады. <label data-l10n-name="remove-search-engine-article">Падрабязней</label>
 removed-search-engine-message2 = <strong>Ваша прадвызначаная пошукавая сістэма была змененая.</strong> { $oldEngine } болей недасяжна як прадвызначаная пошукавая сістэма ў { -brand-short-name }. Цяпер ваш прадвызначаны пашукавік — { $newEngine }. Каб змяніць яго на іншую тыповую пошукавую сістэму, перайдзіце ў налады.
 remove-search-engine-button = Добра
+
+## Infobar shown when default search engine is reset due to an issue reading the settings file.
+## Variables
+## $newEngine (String) - the name of the new default search engine.
+
+reset-search-settings-message = З-за тэхнічнай праблемы ваша прадвызначаная пошукавая сістэма была вернута назад на { $newEngine }. Каб змяніць прадвызначаны пашукавік, перайдзіце ў налады.
+reset-search-settings-button = Добра
+
+## Infobar shown when user is prompted to install search engine.
+## Variables
+## $engineName (String) - the name of the search engine to install.
+
+install-search-engine = Дадаць { $engineName } як пошукавую сістэму?
+install-search-engine-add = Дадаць
+install-search-engine-no = Не
+
+## The following strings are used as input labels.
+
+add-engine-window =
+    .title = Дадаць пашукавік
+    .style = min-width: 32em;
+edit-engine-window =
+    .title = Змяніць пашукавік
+    .style = min-width: 32em;
+add-engine-button = Дадаць уласны пашукавік
+add-engine-name = Назва пашукавіка
+add-engine-url2 = URL-адрас з %s на месцы пошукавага тэрміна
+add-engine-keyword2 = Ключавое слова (неабавязкова)
+# POST and GET refer to the HTTP methods.
+add-engine-post-data = POST-дадзеныя з %s замест пошукавага тэрміна (пакіньце пустым для GET)
+add-engine-suggest-url = URL-адрас прапаноў з %s замест пошукавага тэрміна (неабавязкова)
+
+## The following placeholders are shown in the inputs when adding a new engine.
+
+add-engine-name-placeholder =
+    .placeholder = напр., Сетка распрацоўшчыкаў Mozilla
+add-engine-url-placeholder =
+    .placeholder = напр., https://developer.mozilla.com/search?q=%s
+add-engine-keyword-placeholder =
+    .placeholder = напр., @mdn
+
+## The following strings are used as error messages.
+
+add-engine-keyword-exists = Гэта ключавое слова ўжо ўжываецца. Паспрабуйце іншае.
+add-engine-name-exists = Гэта назва ўжо выкарыстоўваецца. Калі ласка, выберыце іншую.
+add-engine-no-name = Калі ласка, дадайце назву.
+add-engine-no-url = Увядзіце, калі ласка, URL.
+add-engine-invalid-url = Гэты URL-адрас выглядае няправільным. Праверце яго і паспрабуйце яшчэ раз.
+add-engine-invalid-protocol = Гэты URL выглядае няправільным. Выкарыстайце URL, які пачынаецца з http або https.
+# This error is shown when the user typed URL is missing %s.
+add-engine-missing-terms-url = Паспрабуйце замест пошукавага тэрміна ўключыць %s.
+# This error is shown when the user typed post data is missing %s.
+add-engine-missing-terms-post-data = Паспрабуйце замест пошукавага тэрміна ўключыць %s.
+
+## The following strings are used as labels for the dialog's buttons.
+
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+add-engine-dialog2 =
+    .buttonlabelaccept = Дадаць сістэму
+    .buttonaccesskeyaccept = Д
+    .buttonlabelextra1 = Адмыслова
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+edit-engine-dialog =
+    .buttonlabelaccept = Захаваць сістэму
+    .buttonaccesskeyaccept = З
+    .buttonlabelextra1 = Адмыслова

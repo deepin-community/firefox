@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,75 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Navegacion privada de { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } navegacion privada
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Navegacion privada { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Navegacion privada { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navegacion privada { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Navegacion privada
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Navegacion privada { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Navegacion privada
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navegacion privada
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Navegacion privada
+       *[other] { -brand-full-name } navegacion privada
+    }
 
 ##
 
@@ -114,6 +180,12 @@ urlbar-result-menu-button =
     .title = Dobrir lo menú
 urlbar-result-menu-button-feedback = Comentaris
     .title = Dobrir lo menú
+urlbar-result-menu-learn-more2 = Ne saber mai
+    .accesskey = N
+urlbar-result-menu-remove-from-history2 = Tirar de l’istoric
+    .accesskey = T
+urlbar-result-menu-tip-get-help2 = Obténer d’ajuda
+    .accesskey = a
 urlbar-result-menu-learn-more =
     .label = Ne saber mai
     .accesskey = N
@@ -178,6 +250,12 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Marcar aquesta pagina ({ $shortcut })
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Voidar l'istoric de recèrca
+    .accesskey = E
 
 ## Page Action Context Menu
 
@@ -250,7 +328,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Veire los moduls
@@ -281,7 +359,6 @@ quickactions-print2 = Imprimir la pagina
 quickactions-cmd-print = imprimir
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Enregistrar la pagina al format PDF
-quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Dobrir una fenèstra privada
 quickactions-cmd-private = navegacion privada
@@ -546,15 +623,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Extension :
+urlbar-go-button2 =
+    .title = Anar a la pagina indicada dins la barra d'adreça
 urlbar-go-button =
     .tooltiptext = Anar a la pagina indicada dins la barra d'adreça
 urlbar-page-action-button =
     .tooltiptext = Accions de la pagina
-urlbar-show-page-actions-button =
-    .tooltiptext = Afichar totas las accions de la pagina
+urlbar-revert-button =
+    .tooltiptext = Mostrar l’adreça a la barra d’adreça
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -572,6 +652,13 @@ urlbar-result-action-search-w-engine = Recercar amb { $engine }
 urlbar-result-action-sponsored = Esponsorizat
 urlbar-result-action-switch-tab = Anar a l'onglet
 urlbar-result-action-visit = Visitar
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Anar a l’onglet · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grop sens nom
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Dobrir l’adreça del quichapapièrs
 # Directs a user to press the Tab key to perform a search with the specified
@@ -602,11 +689,71 @@ urlbar-result-action-copy-to-clipboard = Copiar
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Pas ara
+
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Recercar amb { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Recercar dins { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Recercar amb { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Causir un motor de recèrca
+urlbar-searchmode-bookmarks =
+    .label = Marcapaginas
+urlbar-searchmode-tabs =
+    .label = Onglets
+urlbar-searchmode-history =
+    .label = Istoric
+urlbar-searchmode-actions =
+    .label = Accions
+urlbar-searchmode-exit-button =
+    .tooltiptext = Tampar
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Aqueste còp, recercar amb :
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Paramètres de recèrca
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, seleccionar un motor de recèrca
+    .tooltiptext = { $engine }, seleccionar un motor de recèrca
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, seleccionar un motor de recèrca
+urlbar-searchmode-dropmarker2 =
+    .title = Causir un motor de recèrca
+urlbar-searchmode-bookmarks2 = Marcapaginas
+urlbar-searchmode-tabs2 = Onglets
+urlbar-searchmode-history2 = Istoric
+urlbar-searchmode-actions2 = Accions
+urlbar-searchmode-exit-button2 =
+    .title = Tampar
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Apondre « { $engineName } »
+    .title = Apondre lo motor de recèrca « { $engineName } »
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Aqueste còp, recercar amb :
+urlbar-searchmode-popup-search-settings-panelitem = Paramètres de recèrca
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +763,9 @@ urlbar-result-action-search-bookmarks = Cercar dins los marcapaginas
 urlbar-result-action-search-history = Cercar dins l’istoric
 urlbar-result-action-search-tabs = Cercar pels onglets
 urlbar-result-action-search-actions = Accions de recèrca
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Dobrir { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -637,6 +787,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Recèrcas recentas
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Tendéncias sus { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = Mostrar pas las recèrcas popularas
+    .accesskey = M
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Mostrar pas las recèrcas popularas
+    .accesskey = M
+urlbar-result-menu-trending-why =
+    .label = Perqué vesi aquò ?
+    .accesskey = P
 
 ## Reader View toolbar buttons
 
@@ -766,7 +931,7 @@ repair-text-encoding-button =
     .label = Reparar l’encodatge del tèxte
     .tooltiptext = Devinar l’encodatge de tèxte corrècte amb lo contengut de la pagina
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -817,12 +982,19 @@ eme-notifications-drm-content-playing-dismiss-accesskey = I
 
 panel-save-update-username = Nom d’utilizaire
 panel-save-update-password = Senhal
+panel-save-update-username-2 =
+    .label = Nom d’utilizaire
+panel-save-update-password-2 =
+    .label = Senhal
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Mai…
+menu-share-copy-link =
+    .label = Copiar lo ligam
+    .accesskey = l
 ui-tour-info-panel-close =
     .tooltiptext = Tampar
 
@@ -902,9 +1074,6 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Tornar dobrir los onglets precedents ?</strong> Podètz restablir vòstra session precedenta del menú d’aplicacion de { -brand-short-name } <img data-l10n-name="icon"/> estant jos Istoric.
 restore-session-startup-suggestion-button = Cossí far
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } manda automaticament d'unas informacions a { -vendor-short-name } per tal que poscam melhorar vòstra experiéncia.
@@ -913,6 +1082,9 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navegacion privada
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Navegacion privada
 content-analysis-panel-title = Proteccion de donadas
 
 ## Unified extensions (toolbar) button
@@ -938,6 +1110,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensions
         D’unas son pas premesas
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensions
+    .tooltiptext =
+        Extensions,
+        d’unas extensions son desactivadas
 
 ## Private browsing reset button
 
@@ -978,6 +1159,11 @@ firefox-relay-offer-legal-notice = En clicant « Utilizar los aliàs de messatj
 popup-notification-addon-install-unsigned =
     .value = (Pas verificat)
 popup-notification-xpinstall-prompt-learn-more = Ne saber mai sus l’installacion de moduls de fòrma segura
+popup-notification-xpinstall-prompt-block-url = Afichar los detalhs
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Permetre a l’extension de s’executar en fenèstras privadas
+    .accesskey = P
 
 ## Pop-up warning
 

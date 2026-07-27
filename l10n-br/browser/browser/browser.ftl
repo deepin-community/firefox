@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,75 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } Merdeiñ prevez
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Merdeiñ prevez
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Merdeiñ prevez
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Merdeiñ prevez
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Merdeiñ prevez
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Merdeiñ prevez
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Merdeiñ prevez
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Merdeiñ prevez
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Merdeiñ prevez
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Merdeiñ prevez
+       *[other] { -brand-full-name } Merdeiñ prevez
+    }
 
 ##
 
@@ -114,6 +180,14 @@ urlbar-result-menu-button =
     .title = Digeriñ al lañser
 urlbar-result-menu-button-feedback = Evezhiadennoù
     .title = Digeriñ al lañser
+urlbar-result-menu-learn-more2 = Gouzout hiroc’h
+    .accesskey = G
+urlbar-result-menu-remove-from-history2 = Dilemel eus ar roll-istor
+    .accesskey = i
+urlbar-result-menu-tip-get-help2 = Skoazell
+    .accesskey = S
+urlbar-result-menu-manage-firefox-suggest2 = Merañ { -firefox-suggest-brand-name }
+    .accesskey = M
 urlbar-result-menu-learn-more =
     .label = Gouzout hiroc’h
     .accesskey = G
@@ -123,6 +197,15 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Skoazell
     .accesskey = S
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Gouzout muioc’h diwar-benn { -firefox-suggest-brand-name }
+    .accesskey = G
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Merañ { -firefox-suggest-brand-name }
+    .accesskey = M
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Trugarez da vezañ roet hoc’h ali!
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -178,6 +261,12 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Lakaat ur sined war ar bajenn-mañ ({ $shortcut })
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Skarzhañ ar roll istor
+    .accesskey = k
 
 ## Page Action Context Menu
 
@@ -250,7 +339,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Gwelout an askouezhioù
@@ -258,6 +347,8 @@ quickactions-cmd-addons2 = askouezhioù
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Merañ ar sinedoù
 quickactions-cmd-bookmarks = sinedoù
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Skarzhañ ar roll istor nevesañ
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Skarzhañ ar roll istor
 quickactions-cmd-clearhistory = skarzhañ ar roll istor
@@ -267,6 +358,11 @@ quickactions-cmd-downloads = pellgargadurioù
 # Opens about:addons page in the extensions section
 quickactions-extensions = Merañ an askouezhioù
 quickactions-cmd-extensions = askouezhioù
+# Opens Firefox View
+quickactions-firefoxview = Digeriñ { -firefoxview-brand-name }
+# Opens SUMO home page
+quickactions-help = Skoazell { -brand-product-name }
+quickactions-cmd-help = skoazell, sikour, skor
 # Opens the devtools web inspector
 quickactions-inspector2 = Digeriñ Developer Tools
 quickactions-cmd-inspector = inspector, devtools
@@ -281,7 +377,7 @@ quickactions-print2 = Moullañ ar bajenn
 quickactions-cmd-print = moullañ
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Enrollañ ar bajenn evel PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, enrollañ ar bajenn
 # Opens a new private browsing window
 quickactions-private2 = Digeriñ ur prenestr prevez
 quickactions-cmd-private = Merdeiñ prevez
@@ -510,6 +606,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Bizskrivit un termen da glask pe ur chomlec'h
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Skrivañ ar chomlec’h
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -558,13 +658,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Askouezh:
+urlbar-go-button2 =
+    .title = Mont d'ar chomlec'h er varrenn lec'hiañ
 urlbar-go-button =
     .tooltiptext = Mont d'ar chomlec'h er varrenn lec'hiañ
 urlbar-page-action-button =
     .tooltiptext = Gweredoù ar bajenn
+urlbar-revert-button =
+    .tooltiptext = Diskouez ar chomlec’h er varrenn chomlec’h
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -587,6 +692,8 @@ urlbar-result-action-visit = Gweladenniñ
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Mont d’an ivinell · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Strollad dizanv
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Gweladenniñ adalek ho kolver
 # Directs a user to press the Tab key to perform a search with the specified
@@ -616,12 +723,120 @@ urlbar-result-action-copy-to-clipboard = Eilañ
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> e { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> e { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Paeroniet
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Klask gant { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Klask e-barzh { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Klask gant { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Dibab ul lusker enklask
+urlbar-searchmode-bookmarks =
+    .label = Sinedoù
+urlbar-searchmode-tabs =
+    .label = Ivinelloù
+urlbar-searchmode-history =
+    .label = Roll istor
+urlbar-searchmode-actions =
+    .label = Oberoù
+urlbar-searchmode-exit-button =
+    .tooltiptext = Serriñ
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Ar wech-mañ, klask gant:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Arventennoù enklask
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, dibab ul lusker enklask
+    .tooltiptext = { $engine }, dibab ul lusker enklask
+urlbar-searchmode-button-no-engine =
+    .label = Berradenn ebet diuzet, dibabit ur varradenn
+    .tooltiptext = Berradenn ebet diuzet, dibabit ur varradenn
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, dibab ul lusker enklask
+urlbar-searchmode-button-no-engine2 =
+    .title = Berradenn ebet diuzet, dibabit ur varradenn
+urlbar-searchmode-dropmarker2 =
+    .title = Dibab ul lusker enklask
+urlbar-searchmode-bookmarks2 = Sinedoù
+urlbar-searchmode-tabs2 = Ivinelloù
+urlbar-searchmode-history2 = Roll istor
+urlbar-searchmode-actions2 = Oberoù
+urlbar-searchmode-exit-button2 =
+    .title = Serriñ
+urlbar-searchmode-default2 =
+    .title = Lusker enklask dre ziouer
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Ouzhpennañ “{ $engineName }”
+    .title = Ouzhpennañ al lusker enklask { $engineName }”
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Ar wech-mañ, klask gant:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = Klask gant:
+urlbar-searchmode-popup-search-settings-panelitem = Arventennoù enklask
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -631,6 +846,9 @@ urlbar-result-action-search-bookmarks = Klask er sinedoù
 urlbar-result-action-search-history = Klask er roll istor
 urlbar-result-action-search-tabs = Klask ivinelloù
 urlbar-result-action-search-actions = Klask
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Digeriñ { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -657,6 +875,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Diouzh ar c’hiz war { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Paeroniet
 urlbar-result-menu-trending-why =
     .label = Perak e welan kement-mañ?
     .accesskey = P
@@ -789,7 +1010,7 @@ repair-text-encoding-button =
     .label = Ratreañ bonegañ an destenn
     .tooltiptext = Divinout bonegañ an destenn reizh eus ar bajennad
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -840,12 +1061,19 @@ eme-notifications-drm-content-playing-dismiss-accesskey = A
 
 panel-save-update-username = Anv implijer
 panel-save-update-password = Ger-tremen
+panel-save-update-username-2 =
+    .label = Anv implijer
+panel-save-update-password-2 =
+    .label = Ger-tremen
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Muioc'h…
+menu-share-copy-link =
+    .label = Eilañ an ere
+    .accesskey = E
 ui-tour-info-panel-close =
     .tooltiptext = Serriñ
 
@@ -893,6 +1121,8 @@ navbar-accessible =
     .aria-label = Merdeiñ
 navbar-downloads =
     .label = Pellgargadurioù
+navbar-overflow-2 =
+    .tooltiptext = Muioc'h a ostilhoù
 navbar-overflow =
     .tooltiptext = Muioc'h a ostilhoù…
 # Variables:
@@ -925,9 +1155,6 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Digeriñ an ivinelloù kent?</strong> Gallout a rit assav hoc'h estez kent adalek al lañser arload { -brand-short-name } <img data-l10n-name="icon"/>, dindan Roll istor
 restore-session-startup-suggestion-button = Diskouez din penaos ober
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } a dreuzkas roadennoù ent emgefreek da { -vendor-short-name } evit gwellaat ho skiant-prenet.
@@ -936,6 +1163,9 @@ data-reporting-notification-button =
     .accesskey = D
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Merdeiñ prevez
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Merdeiñ prevez
 content-analysis-panel-title = Gwarez ar roadennoù
 
 ## Unified extensions (toolbar) button
@@ -1001,9 +1231,10 @@ firefox-relay-offer-legal-notice = En ur glikañ war “Implij an aliaz postel�
 popup-notification-addon-install-unsigned =
     .value = (Nann-gwiriet)
 popup-notification-xpinstall-prompt-learn-more = Gouzout hiroc’h a-zivout staliañ askouezhioù en un doare diogel
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Lañsañ en ur prenestr prevez
+popup-notification-xpinstall-prompt-block-url = Gwelet ar munudoù
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Aotren an askouezhioù da vezañ lañset er prenestroù merdeiñ prevez
     .accesskey = p
 
 ## Pop-up warning
@@ -1057,3 +1288,10 @@ popup-show-popup-menuitem =
 file-picker-crashed-show-in-folder =
     .label = Diskouez en teuliad
     .accessKey = t
+
+## The urlbar trust icon & panel
+
+trustpanel-clear-cookies-subview-button-clear = Skarzhañ
+trustpanel-clear-cookies-subview-button-cancel = Nullañ
+trustpanel-siteinformation-morelink = Muioc’h a ditouroù diwar-benn al lec’hienn
+trustpanel-blocker-see-all = Gwelet pep tra

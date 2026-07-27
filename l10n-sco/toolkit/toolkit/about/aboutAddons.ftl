@@ -233,6 +233,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Awready bein yaised by { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Kythe { $numberToShow } Mair
@@ -361,16 +363,16 @@ addon-detail-update-check-label = Check fur Updates
 install-update-button = Update
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Allooed in private windaes
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Allooed in private windaes
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-help = When allooed, the extension will hae ingang tae yer online ongauns while private stravaigin. <a data-l10n-name="learn-more">Lairn mair</a>
 addon-detail-private-browsing-allow = Alloo
 addon-detail-private-browsing-disallow = Dinnae Alloo
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -386,6 +388,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = This extension has been pruived tae meet oor staunarts fur siccarness and performance
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Offeecial extension pit thegither by Mozilla. Meets security and performance staunarts
 
 ##
 
@@ -424,7 +430,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } isnae compatible wi { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -439,12 +445,8 @@ details-notification-unsigned2 =
     .message = { $name } couldnae be trystmakkit fur yaise in { -brand-short-name }. Gang forrit wi tent.
 details-notification-unsigned-link = Mair Information
 details-notification-blocked = { $name } has been disabled acause o siccarness or stieveness issues.
-details-notification-blocked2 =
-    .message = { $name } has been disabled acause o siccarness or stieveness issues.
 details-notification-blocked-link = Mair Information
 details-notification-softblocked = { $name } is kent tae cause siccarness or stieveness issues.
-details-notification-softblocked2 =
-    .message = { $name } is kent tae cause siccarness or stieveness issues.
 details-notification-softblocked-link = Mair Information
 details-notification-gmp-pending = { $name } will be instawed jist the noo.
 details-notification-gmp-pending2 =

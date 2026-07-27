@@ -9,6 +9,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
   TestUtils: "resource://testing-common/TestUtils.sys.mjs",
 });
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function test_basic() {
   // Make sure places visit chains are saved correctly with a redirect
   // transitions.
@@ -16,10 +22,10 @@ add_task(async function test_basic() {
   // Part 1: observe history events that fire when a visit occurs.
   // Make sure visits appear in order, and that the visit chain is correct.
   const expectedUrls = [
-    "http://example.com/tests/toolkit/components/places/tests/browser/begin.html",
-    "http://example.com/tests/toolkit/components/places/tests/browser/redirect_twice.sjs",
-    "http://example.com/tests/toolkit/components/places/tests/browser/redirect_once.sjs",
-    "http://test1.example.com/tests/toolkit/components/places/tests/browser/final.html",
+    "https://example.com/tests/toolkit/components/places/tests/browser/begin.html",
+    "https://example.com/tests/toolkit/components/places/tests/browser/redirect_twice.sjs",
+    "https://example.com/tests/toolkit/components/places/tests/browser/redirect_once.sjs",
+    "https://test1.example.com/tests/toolkit/components/places/tests/browser/final.html",
   ];
 
   let currentIndex = 0;
@@ -75,7 +81,7 @@ add_task(async function test_basic() {
   );
 
   const testUrl =
-    "http://example.com/tests/toolkit/components/places/tests/browser/begin.html";
+    "https://example.com/tests/toolkit/components/places/tests/browser/begin.html";
   await BrowserTestUtils.openNewForegroundTab(gBrowser, testUrl);
 
   // Load begin page, click link on page to record visits.
@@ -92,11 +98,6 @@ add_task(async function test_basic() {
 });
 
 add_task(async function test_userpass() {
-  // Avoid showing the auth prompt.
-  await SpecialPowers.pushPrefEnv({
-    set: [["network.auth.confirmAuth.enabled", false]],
-  });
-
   // Open a html having test links.
   await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
@@ -139,7 +140,7 @@ add_task(async function test_userpass() {
   );
 
   // Open the target link as background.
-  await ContentTask.spawn(gBrowser.selectedBrowser, null, async () => {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async () => {
     let link = content.document.getElementById("target-userpass");
     EventUtils.synthesizeMouseAtCenter(
       link,
@@ -176,10 +177,10 @@ add_task(async function test_userpass() {
   };
 
   for (const [key, value] of Object.entries(expectedResults)) {
-    await ContentTask.spawn(
+    await SpecialPowers.spawn(
       gBrowser.selectedBrowser,
       [key, value],
-      async ([k, v]) => {
+      async (k, v) => {
         // ElementState::VISITED
         const VISITED_STATE = 1 << 18;
         await ContentTaskUtils.waitForCondition(() => {

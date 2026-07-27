@@ -7,3 +7,7 @@ experimental-features-css-masonry-description = Միացնում է փորձար
 # by various online articles and is technical in nature.
 experimental-features-web-gpu2 =
     .label = Web API. WebGPU
+# Search during IME
+experimental-features-ime-search =
+    .label = Հասցեագոտի. ցոււցադրել արդյունքները IME-ի կազմման ընթացքում
+experimental-features-ime-search-description = IME-ը (Input Method Editor) գործիք է, որը թույլ է տալիս ստանդարտ ստեղնաշարի միջոցով մուտքագրել բարդ նշաններ, ինչպիսիք են արևելյան ասիական կամ հնդկական գրավոր լեզուներով: Այս փորձի ակտիվացումը կպահի հասցեագոտի վահանակը բաց՝ ցուցադրելով որոնման արդյունքներն ու առաջարկները՝ միաժամանակ օգտագործելով IME տեքստը մուտքագրելու համար: Նկատի ունեցեք, որ IME-ը կարող է ցուցադրել վահանակ, որը ծածկում է հասցեագոտու արդյունքները, հետևաբար այս նախապատվությունը առաջարկվում է միայն IME-ի համար, որը չի օգտագործում այս տեսակի վահանակ:

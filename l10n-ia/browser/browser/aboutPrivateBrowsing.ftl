@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Lassa que { -brand-short-n
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } cura bandieras pro cookies pro te
 about-private-browsing-cookie-banners-promo-body = Ora nos refusa automaticamente multe bandieras pro cookie assi tu pote esser minus traciate e retornar a navigar sin distraction.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Non lassa tracias sur iste apparato
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } dele tu cookies, chronologia e le datos del sitos web quando tu claude tote le fenestras private.
 about-private-browsing-felt-privacy-v1-info-link = Qui pote vider mi activitate?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Claudente tote tu fenestras private tu delera tu cookies, chronologia e datos de sito.
+about-private-browsing-nova-info-link = Qui pote ancora vider mi activitate?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Tu navigation non sera registrate
+about-private-browsing-nova-info-subheader = Nos cancellara cata recerca e accesso quando tu claudera iste fenestra. Le protectiones integrate de { -brand-short-name }, como le blocada del traciatores, es ancota attive ci.

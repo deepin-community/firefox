@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsServiceManagerUtils_h__
-#define nsServiceManagerUtils_h__
+#ifndef nsServiceManagerUtils_h_
+#define nsServiceManagerUtils_h_
 
 #include "nsCOMPtr.h"
 #include "nsString.h"
@@ -39,7 +37,7 @@ inline nsresult CallGetService(const nsCID& aClass,
                                DestinationType** aDestination) {
   MOZ_ASSERT(aDestination, "null parameter");
 
-  return CallGetService(aClass, NS_GET_TEMPLATE_IID(DestinationType),
+  return CallGetService(aClass, NS_GET_IID(DestinationType),
                         reinterpret_cast<void**>(aDestination));
 }
 
@@ -49,7 +47,7 @@ inline nsresult CallGetService(const char* aContractID,
   MOZ_ASSERT(aContractID, "null parameter");
   MOZ_ASSERT(aDestination, "null parameter");
 
-  return CallGetService(aContractID, NS_GET_TEMPLATE_IID(DestinationType),
+  return CallGetService(aContractID, NS_GET_IID(DestinationType),
                         reinterpret_cast<void**>(aDestination));
 }
 

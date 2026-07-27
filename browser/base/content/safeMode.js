@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,15 +9,6 @@ const { ResetProfile } = ChromeUtils.importESModule(
 );
 
 var defaultToReset = false;
-
-function restartApp() {
-  appStartup.quit(appStartup.eForceQuit | appStartup.eRestart);
-}
-
-function resetProfile() {
-  // Set the reset profile environment variable.
-  Services.env.set("MOZ_RESET_PROFILE_RESTART", "1");
-}
 
 function showResetDialog() {
   // Prompt the user to confirm the reset.
@@ -34,8 +24,8 @@ function showResetDialog() {
   if (!retVals.reset) {
     return;
   }
-  resetProfile();
-  restartApp();
+
+  ResetProfile.doReset();
 }
 
 function onDefaultButton(event) {
@@ -43,8 +33,7 @@ function onDefaultButton(event) {
     // Prevent starting into safe mode while restarting.
     event.preventDefault();
     // Restart to reset the profile.
-    resetProfile();
-    restartApp();
+    ResetProfile.doReset();
   }
   // Dialog will be closed by default Event handler.
   // Continue in safe mode. No restart needed.
@@ -63,7 +52,7 @@ function onExtra1() {
   showResetDialog();
 }
 
-function onLoad() {
+window.addEventListener("load", () => {
   const dialog = document.getElementById("safeModeDialog");
   if (appStartup.automaticSafeModeNecessary) {
     document.getElementById("autoSafeMode").hidden = false;
@@ -82,4 +71,4 @@ function onLoad() {
   document.addEventListener("dialogaccept", onDefaultButton);
   document.addEventListener("dialogcancel", onCancel);
   document.addEventListener("dialogextra1", onExtra1);
-}
+});

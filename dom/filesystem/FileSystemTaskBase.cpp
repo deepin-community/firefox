@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/FileSystemTaskBase.h"
 
-#include "nsNetCID.h"
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/FileSystemBase.h"
 #include "mozilla/dom/FileSystemRequestParent.h"
@@ -15,7 +12,7 @@
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/Unused.h"
+#include "nsNetCID.h"
 #include "nsProxyRelease.h"
 
 namespace mozilla::dom {
@@ -218,13 +215,42 @@ NS_IMETHODIMP
 FileSystemTaskParentBase::Run() {
   // This method can run in 2 different threads. Here why:
   // 1. We are are on the I/O thread and we call IOWork().
-  // 2. After step 1, it returns back to the PBackground thread.
+  // 2. After step 1, if we need to run some code in the main-thread, we
+  //    dispatch a runnable to this thread.
+  // 3. The final step happens in the PBackground thread.
+
+  // If we are here, it's because the I/O work has been done, but we have
+  // something to do on the main-thread.
+  if (NS_IsMainThread()) {
+    MOZ_ASSERT(MainThreadNeeded());
+
+    nsresult rv = MainThreadWork();
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      SetError(rv);
+    }
+
+    // Let's go back to PBackground thread to finish the work.
+    rv = mBackgroundEventTarget->Dispatch(this, NS_DISPATCH_NORMAL);
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return rv;
+    }
+
+    return NS_OK;
+  }
 
   // Run I/O thread tasks
   if (!mozilla::ipc::IsOnBackgroundThread()) {
     nsresult rv = IOWork();
     if (NS_WARN_IF(NS_FAILED(rv))) {
       SetError(rv);
+    }
+
+    if (MainThreadNeeded()) {
+      rv = GetMainThreadSerialEventTarget()->Dispatch(this, NS_DISPATCH_NORMAL);
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        return rv;
+      }
+      return NS_OK;
     }
 
     // Let's go back to PBackground thread to finish the work.

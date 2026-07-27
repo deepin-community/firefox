@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef mozilla_dom_DragEvent_h_
 #define mozilla_dom_DragEvent_h_
 
-#include "mozilla/dom/MouseEvent.h"
-#include "mozilla/dom/DragEventBinding.h"
 #include "mozilla/EventForwards.h"
+#include "mozilla/dom/DragEventBinding.h"
+#include "mozilla/dom/MouseEvent.h"
 
 namespace mozilla::dom {
 
@@ -36,7 +34,12 @@ class DragEvent : public MouseEvent {
                      int32_t aScreenX, int32_t aScreenY, int32_t aClientX,
                      int32_t aClientY, bool aCtrlKey, bool aAltKey,
                      bool aShiftKey, bool aMetaKey, uint16_t aButton,
-                     EventTarget* aRelatedTarget, DataTransfer* aDataTransfer);
+                     EventTarget* aRelatedTarget, DataTransfer* aDataTransfer) {
+    InitDragEventInternal(aType, aCanBubble, aCancelable, aView, aDetail,
+                          aScreenX, aScreenY, aClientX, aClientY, aCtrlKey,
+                          aAltKey, aShiftKey, aMetaKey, aButton, aRelatedTarget,
+                          aDataTransfer);
+  }
 
   static already_AddRefed<DragEvent> Constructor(const GlobalObject& aGlobal,
                                                  const nsAString& aType,
@@ -44,6 +47,14 @@ class DragEvent : public MouseEvent {
 
  protected:
   ~DragEvent() = default;
+
+  void InitDragEventInternal(const nsAString& aType, bool aCanBubble,
+                             bool aCancelable, nsGlobalWindowInner* aView,
+                             int32_t aDetail, double aScreenX, double aScreenY,
+                             double aClientX, double aClientY, bool aCtrlKey,
+                             bool aAltKey, bool aShiftKey, bool aMetaKey,
+                             uint16_t aButton, EventTarget* aRelatedTarget,
+                             DataTransfer* aDataTransfer);
 };
 
 }  // namespace mozilla::dom

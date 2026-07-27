@@ -5,8 +5,7 @@
 
 ### These strings are used inside the Application panel which is available
 ### by setting the preference `devtools-application-enabled` to true.
-
-
+###
 ### The correct localization of this file might be to keep it in English, or another
 ### language commonly spoken among web developers. You want to make that choice consistent
 ### across the developer tools. A good criteria is the language in which you'd find the
@@ -111,6 +110,17 @@ sidebar-item-manifest = Manifest
 sidebar-item-service-workers = Service Worker’lar
     .alt = Service Worker’lar simgesi
     .title = Service Worker’lar
+# Sidebar navigation item for Session History sidebar item section
+sidebar-item-session-history = Oturum geçmişi
+    .alt = Oturum geçmişi simgesi
+    .title = Oturum geçmişi
+# Entry in the Session History diagram
+session-history-entry-info-button-title =
+    .title = Oturum geçmişi verilerini göster
+# Header for the Session History page when session history diagrams are unavailable
+session-history-unavailable = Oturum geçmişi diyagramı kullanılamıyor
+# Text displayed for when the target does not support showing session history diagrams
+session-history-target-unsupported = Hedef, oturum geçmişi diyagramlarının gösterilmesini desteklemiyor
 # Text for the ALT and TITLE attributes of the warning icon
 icon-warning =
     .alt = Uyarı simgesi

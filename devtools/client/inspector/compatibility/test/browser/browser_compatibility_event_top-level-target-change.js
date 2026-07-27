@@ -9,10 +9,10 @@ const TEST_DATA_ISSUES = {
   uri: `
     <style>
     body {
-      ruby-align: center;
+      overflow-anchor: auto;
     }
     div {
-      scrollbar-width: thin;
+      user-select: auto;
     }
     </style>
     <body>
@@ -21,18 +21,18 @@ const TEST_DATA_ISSUES = {
   `,
   expectedIssuesOnSelected: [
     {
-      property: "ruby-align",
-      url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+      property: "overflow-anchor",
+      url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
     },
   ],
   expectedIssuesOnAll: [
     {
-      property: "ruby-align",
-      url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+      property: "overflow-anchor",
+      url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
     },
     {
-      property: "scrollbar-width",
-      url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+      property: "user-select",
+      url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
     },
   ],
 };

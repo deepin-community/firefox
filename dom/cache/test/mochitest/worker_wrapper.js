@@ -1,5 +1,3 @@
-/* eslint-env worker */
-
 // Any copyright is dedicated to the Public Domain.
 // http://creativecommons.org/publicdomain/zero/1.0/
 //
@@ -110,7 +108,7 @@ addEventListener("message", function workerWrapperOnMessage(e) {
       });
     }
   }
-  if ("ServiceWorker" in self) {
+  if ("ServiceWorkerGlobalScope" in self) {
     self.clients
       .matchAll({ includeUncontrolled: true })
       .then(function (clients) {

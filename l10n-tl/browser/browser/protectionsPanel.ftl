@@ -23,28 +23,36 @@ protections-panel-etp-more-info =
     .aria-label = Karagdagang impormasyon tungkol sa Enhanced Tracking Protection
 protections-panel-etp-on-header = Nakabukas ang Enhanced Tracking Protection para sa site na ito
 protections-panel-etp-off-header = Sarado ang Enhanced Tracking Protection para sa site na ito
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Hindi gumagana ang site?
 # The heading/title of the sub-panel view
 protections-panel-site-not-working-view =
     .title = Hindi Gumagana ang Site?
 
+## Text for the toggles shown when ETP is enabled/disabled for a given site.
+## .description is transferred into a separate paragraph by the moz-toggle
+## custom element code.
+##   $host (String): the hostname of the site that is being displayed.
+
+protections-panel-etp-toggle-on =
+    .label = Enhanced Tracking Protection
+    .description = Nakabukas sa site na ito
+    .aria-label = Enhanced Tracking Protection: Nakabukas para sa { $host }
+protections-panel-etp-toggle-off =
+    .label = Enhanced Tracking Protection
+    .description = Sarado para sa site na ito
+    .aria-label = Enhanced Tracking Protection: Sarado para sa { $host }
+
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
 
 protections-panel-not-blocking-why-label = Bakit?
 protections-panel-not-blocking-why-etp-on-tooltip = Maaaring masira ang ilang parte ng ilang website kapag hinarang ang mga ito. Kapag walang mga tracker, may mga button, form, at login field na maaaring hindi gumana.
-protections-panel-not-blocking-why-etp-off-tooltip = Lahat ng mga tracker sa site na ito ay nag-load dahil nakasara ang mga protection.
+protections-panel-not-blocking-why-etp-off-tooltip = Lahat ng mga tracker sa site na ito ay nag-load dahil nakasara ang mga proteksyon.
 protections-panel-not-blocking-why-etp-on-tooltip-label =
     .label = Maaaring masira ang ilang parte ng ilang website kapag hinarang ang mga ito. Kapag walang mga tracker, may mga button, form, at login field na maaaring hindi gumana.
 protections-panel-not-blocking-why-etp-off-tooltip-label =
-    .label = Lahat ng mga tracker sa site na ito ay nag-load dahil nakasara ang mga protection.
+    .label = Lahat ng mga tracker sa site na ito ay nag-load dahil nakasara ang mga proteksyon.
 
 ##
 
@@ -67,7 +75,6 @@ protections-panel-not-found-label = Walang Nakita
 ##
 
 protections-panel-settings-label = Mga Protection Setting
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Protections Dashboard
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -96,7 +103,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Mag-ulat ng Sirang Site
 protections-panel-content-blocking-breakage-report-view-description = Ang pagharang ng ilang mga tracker ay maaaring maging dahilan ng problema sa ilang mga website. Ang pag-ulat ng mga problemang ito ay nakatutulong pahusayin ang { -brand-short-name } para sa lahat. Ang pagpapadala ng ulat na ito ay magpapadala ng URL at impormasyon tungkol sa iyong mga browser setting sa Mozilla. <label data-l10n-name="learn-more">Alamin</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Ang pagharang ng ilang mga tracker ay maaaring maging dahilan ng problema sa ilang mga website. Ang pag-ulat ng mga problemang ito ay nakatutulong pahusayin ang { -brand-short-name } para sa lahat. Ang pagpapadala ng ulat na ito ay magpapadala ng URL at impormasyon tungkol sa iyong mga browser setting sa { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -110,6 +116,12 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-handling-enabled = Nakabukas para sa site na ito
+protections-panel-cookie-banner-handling-disabled = Nakasara para sa site na ito
+protections-panel-cookie-banner-handling-undetected = Hindi suportado ang site sa ngayon.
+protections-panel-cookie-banner-view-cancel = Ikansela
+protections-panel-cookie-banner-view-turn-off = Isara
+protections-panel-cookie-banner-view-turn-on = Buksan
 
 ## Protections panel info message
 

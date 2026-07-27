@@ -6,9 +6,9 @@
 
 const {
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const {
   editableItem,
 } = require("resource://devtools/client/shared/inplace-editor.js");
@@ -55,11 +55,11 @@ class BoxModelEditable extends PureComponent {
     );
   }
 
-  onMouseOver(event) {
+  async onMouseOver(event) {
     const { onShowRulePreviewTooltip, property } = this.props;
 
     if (event.shiftKey && HIGHLIGHT_RULE_PREF) {
-      onShowRulePreviewTooltip(event.target, property);
+      await onShowRulePreviewTooltip(event.target, property);
     }
   }
 

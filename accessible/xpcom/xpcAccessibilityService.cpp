@@ -90,7 +90,7 @@ xpcAccessibilityService::Release(void) {
   if (count == 1 && !mShutdownTimer) {
     NS_NewTimerWithFuncCallback(
         getter_AddRefs(mShutdownTimer), ShutdownCallback, this, 100,
-        nsITimer::TYPE_ONE_SHOT, "xpcAccessibilityService::Release");
+        nsITimer::TYPE_ONE_SHOT, "xpcAccessibilityService::Release"_ns);
   }
 
   return count;
@@ -230,6 +230,17 @@ xpcAccessibilityService::GetAccessibleFromCache(nsINode* aNode,
 }
 
 NS_IMETHODIMP
+xpcAccessibilityService::SetCacheDomains(uint64_t aCacheDomains) {
+  nsAccessibilityService* accService = GetAccService();
+  if (!accService) {
+    return NS_ERROR_SERVICE_NOT_AVAILABLE;
+  }
+
+  accService->SetCacheDomains(aCacheDomains);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 xpcAccessibilityService::CreateAccessiblePivot(nsIAccessible* aRoot,
                                                nsIAccessiblePivot** aPivot) {
   NS_ENSURE_ARG_POINTER(aPivot);
@@ -250,8 +261,7 @@ xpcAccessibilityService::CreateTextLeafPoint(
   NS_ENSURE_ARG(aAccessible);
   *aPoint = nullptr;
 
-  RefPtr<xpcAccessibleTextLeafPoint> point =
-      new xpcAccessibleTextLeafPoint(aAccessible, aOffset);
+  auto point = MakeRefPtr<xpcAccessibleTextLeafPoint>(aAccessible, aOffset);
   point.forget(aPoint);
 
   return NS_OK;

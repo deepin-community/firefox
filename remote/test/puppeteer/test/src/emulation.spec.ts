@@ -30,19 +30,19 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return window.innerWidth;
-        })
+        }),
       ).toBe(800);
       await page.setViewport(iPhone.viewport);
       expect(
         await page.evaluate(() => {
           return window.innerWidth;
-        })
+        }),
       ).toBe(375);
       await page.setViewport({width: 400, height: 300});
       expect(
         await page.evaluate(() => {
           return window.innerWidth;
-        })
+        }),
       ).toBe(400);
     });
     it('should support touch emulation', async () => {
@@ -52,20 +52,20 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return 'ontouchstart' in window;
-        })
+        }),
       ).toBe(false);
       await page.setViewport(iPhone.viewport);
       expect(
         await page.evaluate(() => {
           return 'ontouchstart' in window;
-        })
+        }),
       ).toBe(true);
       expect(await page.evaluate(dispatchTouch)).toBe('Received touch');
       await page.setViewport({width: 100, height: 100});
       expect(
         await page.evaluate(() => {
           return 'ontouchstart' in window;
-        })
+        }),
       ).toBe(false);
 
       function dispatchTouch() {
@@ -90,14 +90,14 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return document.body.textContent!.trim();
-        })
+        }),
       ).toBe('NO');
       await page.setViewport(iPhone.viewport);
       await page.goto(server.PREFIX + '/detect-touch.html');
       expect(
         await page.evaluate(() => {
           return document.body.textContent!.trim();
-        })
+        }),
       ).toBe('YES');
     });
     it('should detect touch when applying viewport with touches', async () => {
@@ -108,7 +108,7 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).Modernizr.touchevents;
-        })
+        }),
       ).toBe(true);
     });
     it('should support landscape emulation', async () => {
@@ -118,19 +118,19 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return screen.orientation.type;
-        })
+        }),
       ).toBe('portrait-primary');
       await page.setViewport(iPhoneLandscape.viewport);
       expect(
         await page.evaluate(() => {
           return screen.orientation.type;
-        })
+        }),
       ).toBe('landscape-primary');
       await page.setViewport({width: 100, height: 100});
       expect(
         await page.evaluate(() => {
           return screen.orientation.type;
-        })
+        }),
       ).toBe('portrait-primary');
     });
     it('should update media queries when resoltion changes', async () => {
@@ -140,7 +140,7 @@ describe('Emulation', () => {
         return await page.evaluate(() => {
           return parseInt(
             window.getComputedStyle(document.querySelector('p')!).fontSize,
-            10
+            10,
           );
         });
       }
@@ -181,7 +181,7 @@ describe('Emulation', () => {
         await page.goto(server.PREFIX + '/picture.html');
 
         await expect(getCurrentSrc()).resolves.toMatch(
-          new RegExp(`logo-${dpr}x.png`)
+          new RegExp(`logo-${dpr}x.png`),
         );
       }
     });
@@ -196,14 +196,23 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return window.innerWidth;
-        })
+        }),
       ).toBe(375);
       expect(
         await page.evaluate(() => {
           return navigator.userAgent;
-        })
+        }),
       ).toContain('iPhone');
     });
+
+    it('should work twice on about:blank', async () => {
+      const {page} = await getTestState();
+
+      await page.goto('about:blank');
+      await page.emulate(KnownDevices['iPhone 13']);
+      await page.emulate(KnownDevices['iPad Pro landscape']);
+    });
+
     it('should support clicking', async () => {
       const {page, server} = await getTestState();
 
@@ -217,7 +226,7 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).result;
-        })
+        }),
       ).toBe('Clicked');
     });
   });
@@ -229,34 +238,34 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('screen').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('print').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaType('print');
       expect(
         await page.evaluate(() => {
           return matchMedia('screen').matches;
-        })
+        }),
       ).toBe(false);
       expect(
         await page.evaluate(() => {
           return matchMedia('print').matches;
-        })
+        }),
       ).toBe(true);
       await page.emulateMediaType();
       expect(
         await page.evaluate(() => {
           return matchMedia('screen').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('print').matches;
-        })
+        }),
       ).toBe(false);
     });
     it('should throw in case of bad argument', async () => {
@@ -280,12 +289,12 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-reduced-motion: reduce)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-reduced-motion: no-preference)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([
         {name: 'prefers-color-scheme', value: 'light'},
@@ -293,12 +302,12 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: light)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: dark)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([
         {name: 'prefers-color-scheme', value: 'dark'},
@@ -306,12 +315,12 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: dark)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: light)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([
         {name: 'prefers-reduced-motion', value: 'reduce'},
@@ -320,54 +329,54 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-reduced-motion: reduce)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-reduced-motion: no-preference)').matches;
-        })
+        }),
       ).toBe(false);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: light)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(prefers-color-scheme: dark)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([{name: 'color-gamut', value: 'srgb'}]);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: p3)').matches;
-        })
+        }),
       ).toBe(false);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: srgb)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: rec2020)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([{name: 'color-gamut', value: 'p3'}]);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: p3)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: srgb)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: rec2020)').matches;
-        })
+        }),
       ).toBe(false);
       await page.emulateMediaFeatures([
         {name: 'color-gamut', value: 'rec2020'},
@@ -375,17 +384,17 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: p3)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: srgb)').matches;
-        })
+        }),
       ).toBe(true);
       expect(
         await page.evaluate(() => {
           return matchMedia('(color-gamut: rec2020)').matches;
-        })
+        }),
       ).toBe(true);
     });
     it('should throw in case of bad argument', async () => {
@@ -412,33 +421,54 @@ describe('Emulation', () => {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).date.toString();
-        })
+        }),
       ).toBe('Sat Nov 19 2016 13:12:34 GMT-0500 (Eastern Standard Time)');
 
       await page.emulateTimezone('Pacific/Honolulu');
       expect(
         await page.evaluate(() => {
           return (globalThis as any).date.toString();
-        })
+        }),
       ).toBe(
-        'Sat Nov 19 2016 08:12:34 GMT-1000 (Hawaii-Aleutian Standard Time)'
+        'Sat Nov 19 2016 08:12:34 GMT-1000 (Hawaii-Aleutian Standard Time)',
       );
 
       await page.emulateTimezone('America/Buenos_Aires');
       expect(
         await page.evaluate(() => {
           return (globalThis as any).date.toString();
-        })
+        }),
       ).toBe('Sat Nov 19 2016 15:12:34 GMT-0300 (Argentina Standard Time)');
 
       await page.emulateTimezone('Europe/Berlin');
       expect(
         await page.evaluate(() => {
           return (globalThis as any).date.toString();
-        })
+        }),
       ).toBe(
-        'Sat Nov 19 2016 19:12:34 GMT+0100 (Central European Standard Time)'
+        'Sat Nov 19 2016 19:12:34 GMT+0100 (Central European Standard Time)',
       );
+    });
+
+    it('should support timezone offset', async () => {
+      const {page} = await getTestState();
+
+      await page.evaluate(() => {
+        (globalThis as any).date = new Date(1479579154987);
+      });
+      await page.emulateTimezone('GMT+10:00');
+      expect(
+        await page.evaluate(() => {
+          return (globalThis as any).date.toString();
+        }),
+      ).toBe('Sun Nov 20 2016 04:12:34 GMT+1000 (GMT+10:00)');
+
+      await page.emulateTimezone('GMT-12:34');
+      expect(
+        await page.evaluate(() => {
+          return (globalThis as any).date.toString();
+        }),
+      ).toBe('Sat Nov 19 2016 05:38:34 GMT-1234 (GMT-12:34)');
     });
 
     it('should throw for invalid timezone IDs', async () => {
@@ -448,11 +478,21 @@ describe('Emulation', () => {
       await page.emulateTimezone('Foo/Bar').catch(error_ => {
         return (error = error_);
       });
-      expect(error.message).toBe('Invalid timezone ID: Foo/Bar');
+      expect(error.message).atLeastOneToContain([
+        'Invalid timezone ID: Foo/Bar', // CDP
+        'invalid argument', // BiDi.
+      ]);
+      // Assert the error message is informative.
+      expect(error.message).toContain('Foo/Bar');
       await page.emulateTimezone('Baz/Qux').catch(error_ => {
         return (error = error_);
       });
-      expect(error.message).toBe('Invalid timezone ID: Baz/Qux');
+      expect(error.message).atLeastOneToContain([
+        'Invalid timezone ID: Baz/Qux', // CDP
+        'invalid argument', // BiDi.
+      ]);
+      // Assert the error message is informative.
+      expect(error.message).toContain('Baz/Qux');
     });
   });
 
@@ -504,6 +544,12 @@ describe('Emulation', () => {
         const screenshot = await page.screenshot();
         expect(screenshot).toBeGolden('screenshot-sanity.png');
       }
+
+      {
+        await page.emulateVisionDeficiency('reducedContrast');
+        const screenshot = await page.screenshot();
+        expect(screenshot).toBeGolden('vision-deficiency-reducedContrast.png');
+      }
     });
 
     it('should throw for invalid vision deficiencies', async () => {
@@ -521,6 +567,30 @@ describe('Emulation', () => {
   });
 
   describe('Page.emulateNetworkConditions', function () {
+    it('should support offline', async () => {
+      const {isFirefox, page, server} = await getTestState();
+
+      await page.emulateNetworkConditions({
+        offline: true,
+        download: 0,
+        upload: 0,
+        latency: 0,
+      });
+
+      try {
+        await page.goto(server.EMPTY_PAGE);
+        throw new Error('not reached');
+      } catch (err) {
+        let expectedError;
+        if (isFirefox) {
+          expectedError = /NS_ERROR_OFFLINE/;
+        } else {
+          expectedError = /ERR_INTERNET_DISCONNECTED/;
+        }
+        expect((err as Error).message).toMatch(expectedError);
+      }
+    });
+
     it('should change navigator.connection.effectiveType', async () => {
       const {page} = await getTestState();
 
@@ -528,15 +598,15 @@ describe('Emulation', () => {
       const fast3G = PredefinedNetworkConditions['Fast 3G']!;
 
       expect(
-        await page.evaluate('window.navigator.connection.effectiveType')
+        await page.evaluate('window.navigator.connection.effectiveType'),
       ).toBe('4g');
       await page.emulateNetworkConditions(fast3G);
       expect(
-        await page.evaluate('window.navigator.connection.effectiveType')
+        await page.evaluate('window.navigator.connection.effectiveType'),
       ).toBe('3g');
       await page.emulateNetworkConditions(slow3G);
       expect(
-        await page.evaluate('window.navigator.connection.effectiveType')
+        await page.evaluate('window.navigator.connection.effectiveType'),
       ).toBe('2g');
       await page.emulateNetworkConditions(null);
     });
@@ -548,6 +618,52 @@ describe('Emulation', () => {
 
       await page.emulateCPUThrottling(100);
       await page.emulateCPUThrottling(null);
+    });
+  });
+
+  describe('Page.emulateFocusedPage', function () {
+    it('should emulate focus', async () => {
+      const {page, context} = await getTestState();
+
+      await page.emulateFocusedPage(true);
+      expect(
+        await page.evaluate(() => {
+          return document.hasFocus();
+        }),
+      ).toBe(true);
+
+      const page2 = await context.newPage();
+      // Move page into background by focusing page2.
+      await page2.bringToFront();
+
+      expect(
+        await page.evaluate(() => {
+          return document.hasFocus();
+        }),
+      ).toBe(true);
+    });
+
+    it('should reset focus', async () => {
+      const {page, context} = await getTestState();
+
+      await page.emulateFocusedPage(true);
+
+      const page2 = await context.newPage();
+      // Move page into background by focusing page2.
+      await page2.bringToFront();
+
+      expect(
+        await page.evaluate(() => {
+          return document.hasFocus();
+        }),
+      ).toBe(true);
+
+      await page.emulateFocusedPage(false);
+      expect(
+        await page.evaluate(() => {
+          return document.hasFocus();
+        }),
+      ).toBe(false);
     });
   });
 });

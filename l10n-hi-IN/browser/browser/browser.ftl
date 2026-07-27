@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -66,6 +63,12 @@ urlbar-tip-icon-description =
     .alt = सुझाव:
 urlbar-result-menu-button =
     .title = मेन्यू खोलें
+urlbar-result-menu-learn-more2 = अधिक जानें
+    .accesskey = L
+urlbar-result-menu-remove-from-history2 = इतिहास से हटाएं
+    .accesskey = R
+urlbar-result-menu-tip-get-help2 = मदद लें
+    .accesskey = h
 urlbar-result-menu-learn-more =
     .label = अधिक जानें
     .accesskey = L
@@ -125,6 +128,12 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = यह पृष्ठ बुकमार्कित करें ({ $shortcut })
 
+## Searchbar context menu
+
+clear-search-history =
+    .label = खोज इतिहास साफ करें
+    .accesskey = H
+
 ## Page Action Context Menu
 
 page-action-remove-extension2 =
@@ -183,12 +192,11 @@ search-one-offs-history =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 quickactions-cmd-addons2 = ऐड-ऑन
 quickactions-cmd-bookmarks = बुकमार्क
 quickactions-cmd-print = प्रिंट करें
-quickactions-cmd-savepdf = pdf
 # Opens the screenshot tool
 quickactions-screenshot3 = स्क्रीनशॉट लें
 quickactions-cmd-screenshot = स्क्रीनशॉट
@@ -297,14 +305,6 @@ browser-window-close-button =
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-blocked = ब्लॉक किया गया
 
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-select-camera-device =
@@ -326,9 +326,6 @@ sharing-warning-screen = आप पूरी स्क्रीन साझा 
 sharing-warning-disable-for-session =
     .label = इस सत्र के लिए साझाकरण सुरक्षा अक्षम करें
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -347,13 +344,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = विस्तारक:
+urlbar-go-button2 =
+    .title = स्थान पट्टी पर पता में जाएँ
 urlbar-go-button =
     .tooltiptext = स्थान पट्टी पर पता में जाएँ
 urlbar-page-action-button =
     .tooltiptext = पृष्ठ क्रियाएँ
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -378,6 +378,15 @@ urlbar-result-action-calculator-result = = { $result }
 
 ## Strings used for buttons in the urlbar
 
+urlbar-searchmode-bookmarks =
+    .label = बुकमार्क
+urlbar-searchmode-tabs =
+    .label = टैब
+urlbar-searchmode-history =
+    .label = इतिहास
+urlbar-searchmode-bookmarks2 = बुकमार्क
+urlbar-searchmode-tabs2 = टैब
+urlbar-searchmode-history2 = इतिहास
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -402,11 +411,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = रीडर दृश्य बंद करे|
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -491,10 +495,7 @@ save-to-pocket-button =
     .label = { -pocket-brand-name } में सहेजें
     .tooltiptext = { -pocket-brand-name } में सहेजें
 
-## Repair text encoding toolbar button
-
-
-## Customize Toolbar Buttons
+##
 
 toolbar-overflow-customize-button =
     .label = औज़ारपट्टी अनुकूलित करें...
@@ -530,6 +531,8 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 ## Password save/update panel
 
 panel-save-update-password = पासवर्ड
+panel-save-update-password-2 =
+    .label = पासवर्ड
 
 ##
 
@@ -551,10 +554,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = इस संदेश को मत दिखाएँ जब पॉप-अप रोके जाते हैं
     .accesskey = डी
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -594,32 +593,12 @@ tabs-toolbar-list-all-tabs =
     .label = सभी टैब सूचीबद्ध करें
     .tooltiptext = सभी टैब सूचीबद्ध करें
 
-## Infobar shown at startup to suggest session-restore
-
-
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } स्वतः कुछ आँकड़ों को { -vendor-short-name } में भेजता है ताकि हम आपके अनुभव को बढ़ा सकें.
 data-reporting-notification-button =
     .label = चुनें जिसे मैंने साझा किया
     .accesskey = C
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -628,9 +607,6 @@ refresh-blocked-redirect-label = { -brand-short-name } ने इस पृष�
 refresh-blocked-allow =
     .label = अनुमति दें
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

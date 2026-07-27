@@ -8,9 +8,9 @@
 # Variables:
 #   $addon-name (string) - Name of the add-on being reported
 abuse-report-dialog-title = Prijava za { $addon-name }
-abuse-report-title-extension = Prijavi ovaj dodatak prodavaču { -vendor-short-name }
-abuse-report-title-sitepermission = Prijavite dodatak s dozvolama stranice prema { -vendor-short-name }
-abuse-report-title-theme = Prijavi ovu temu prodavaču { -vendor-short-name }
+abuse-report-title-extension = Prijavi ovaj dodatak proizvođaču { -vendor-short-name }
+abuse-report-title-sitepermission = Prijavi dodatak s dozvolama stranice proizvođaču { -vendor-short-name }
+abuse-report-title-theme = Prijavi ovu temu proizvođaču { -vendor-short-name }
 abuse-report-subtitle = Što je problem?
 # Variables:
 #   $author-name (string) - Name of the add-on author
@@ -22,7 +22,7 @@ abuse-report-submit-description = Opišite problem (opcionalno)
 abuse-report-textarea =
     .placeholder = Lakše nam je ispraviti pogrešku ukoliko znamo detalje problema. Opiši događaj. Hvala, što nam pomažeš održati web zdravim.
 abuse-report-submit-note =
-    Napomena: Nemojte unositi osobne podatke (kao što su ime, adresa e-pošte, broj telefona, adresa).
+    Napomena: Nemoj unositi osobne podatke (kao što su ime, e-mail adresa, broj telefona, adresa).
     { -vendor-short-name } trajno čuva zapise ovih izvještaja.
 
 ## Panel buttons.
@@ -70,22 +70,22 @@ abuse-report-settings-suggestions-search = Promijeni svoje standardne postavke z
 abuse-report-settings-suggestions-homepage = Izmijenite svoju početnu stranicu ili novu karticu
 abuse-report-deceptive-reason-v2 = Tvrdi da je nešto što nije
 abuse-report-deceptive-example = Primjer: Obmanjujući opis ili slike
-abuse-report-broken-reason-extension-v2 = Ne radi, slama web-stranice ili usporava { -brand-product-name }
-abuse-report-broken-reason-sitepermission-v2 = Ne radi, ne prikazuje web-stranice ispravno ili usporava { -brand-product-name }
+abuse-report-broken-reason-extension-v2 = Ne radi, ne prikazuje web stranice ispravno ili usporava { -brand-product-name }
+abuse-report-broken-reason-sitepermission-v2 = Ne radi, ne prikazuje web stranice ispravno ili usporava { -brand-product-name }
 abuse-report-broken-reason-theme-v2 = Ne radi ili slama prikaz preglednika
 abuse-report-broken-example = Primjer: Funkcije su spore, teško ih je koristiti ili ne rade, dijelovi web stranica se ne mogu učitati ili čudno izgledaju
 abuse-report-broken-suggestions-extension =
     Čini se da se radi o grešci. Pored slanja prijave ovdje, najbolji način za
     rješavanje funkcionalnih problema je, da kontaktiraš programera proširenja.
-    Podatke o programeru potraži na <a data-l10n-name="support-link">web-stranici dodatka</a>.
+    Podatke o programeru potraži na <a data-l10n-name="support-link">web stranici dodatka</a>.
 abuse-report-broken-suggestions-sitepermission =
     Čini se da se radi o grešci. Pored slanja prijave ovdje, najbolji način za
     rješavanje funkcionalnih problema je da kontaktirate programera web stranice.
-    Podatke o programeru potražite na <a data-l10n-name="support-link">web-stranici dodatka</a>.
+    Podatke o programeru potražite na <a data-l10n-name="support-link">web stranici dodatka</a>.
 abuse-report-broken-suggestions-theme =
     Čini se da se radi o grešci. Pored slanja prijave ovdje, najbolji način za
     rješavanje funkcionalnih problema je da kontaktiraš programera teme.
-    Podatke o programeru potraži na <a data-l10n-name="support-link">web-stranici dodatka</a>.
+    Podatke o programeru potraži na <a data-l10n-name="support-link">web stranici dodatka</a>.
 abuse-report-policy-reason-v2 = Sadrži mržnju, nasilan ili ilegalan sadržaj
 abuse-report-policy-suggestions =
     Napomena: Problemi s autorskim pravima i zaštitnim znakovima moraju se prijaviti u

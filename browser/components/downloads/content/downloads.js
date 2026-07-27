@@ -1,9 +1,6 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* eslint-env mozilla/browser-window */
 
 /**
  * Handles the Downloads panel user interface for each browser window.
@@ -36,10 +33,12 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
-  DownloadsViewUI: "resource:///modules/DownloadsViewUI.sys.mjs",
+  DownloadsViewUI:
+    "moz-src:///browser/components/downloads/DownloadsViewUI.sys.mjs",
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
 
 const { Integration } = ChromeUtils.importESModule(
@@ -96,9 +95,13 @@ var DownloadsPanel = {
     this._initialized = true;
 
     window.addEventListener("unload", this.onWindowUnload);
-    document
-      .getElementById("downloadPanelCommands")
-      .addEventListener("command", this);
+    const downloadPanelCommands = document.getElementById(
+      "downloadPanelCommands"
+    );
+    downloadPanelCommands.addEventListener("command", this);
+    downloadPanelCommands.addEventListener("commandupdate", () => {
+      goUpdateCommand("cmd_delete");
+    });
 
     // Load and resume active downloads if required.  If there are downloads to
     // be shown in the panel, they will be loaded asynchronously.
@@ -180,7 +183,8 @@ var DownloadsPanel = {
    * only when data is ready.
    */
   showPanel(openedManually = false, isKeyPress = false) {
-    Services.telemetry.scalarAdd("downloads.panel_shown", 1);
+    Glean.downloads.panelShown.add(1);
+
     DownloadsCommon.log("Opening the downloads panel.");
 
     this._openedManually = openedManually;
@@ -224,7 +228,8 @@ var DownloadsPanel = {
 
   /**
    * Indicates whether the panel is showing.
-   * @note this includes the hiding state.
+   *
+   * Note: this includes the hiding state.
    */
   get isPanelShowing() {
     return this._waitingDataForOpen || this.panel.state != "closed";
@@ -232,7 +237,22 @@ var DownloadsPanel = {
 
   handleEvent(aEvent) {
     switch (aEvent.type) {
+      case "click":
+        DownloadsPanel.showDownloadsHistory();
+        break;
       case "command":
+        if (aEvent.currentTarget == DownloadsView.downloadsHistory) {
+          DownloadsPanel.showDownloadsHistory();
+          return;
+        }
+
+        if (
+          aEvent.currentTarget == DownloadsBlockedSubview.elements.deleteButton
+        ) {
+          DownloadsBlockedSubview.confirmBlock();
+          return;
+        }
+
         // Handle the commands defined in downloadsPanel.inc.xhtml.
         // Every command "id" is also its corresponding command.
         goDoCommand(aEvent.target.id);
@@ -251,7 +271,30 @@ var DownloadsPanel = {
           this._focusPanel();
         }
         break;
+      case "mouseover":
+        DownloadsView._onDownloadMouseOver(aEvent);
+        break;
+      case "mouseout":
+        DownloadsView._onDownloadMouseOut(aEvent);
+        break;
+      case "contextmenu":
+        DownloadsView._onDownloadContextMenu(aEvent);
+        break;
+      case "dragstart":
+        DownloadsView._onDownloadDragStart(aEvent);
+        break;
+      case "mousedown":
+        if (DownloadsView.richListBox.hasAttribute("disabled")) {
+          this._handlePotentiallySpammyDownloadActivation(aEvent);
+        }
+        break;
+
       case "keydown":
+        if (aEvent.currentTarget == DownloadsSummary._summaryNode) {
+          DownloadsSummary._onKeyDown(aEvent);
+          return;
+        }
+
         this._onKeyDown(aEvent);
         break;
       case "keypress":
@@ -260,6 +303,12 @@ var DownloadsPanel = {
       case "focus":
       case "select":
         this._onSelect(aEvent);
+        break;
+      case "popupshown":
+        this._onPopupShown(aEvent);
+        break;
+      case "popuphidden":
+        this._onPopupHidden(aEvent);
         break;
     }
   },
@@ -280,9 +329,9 @@ var DownloadsPanel = {
     DownloadsPanel.terminate();
   },
 
-  onPopupShown(aEvent) {
+  _onPopupShown(aEvent) {
     // Ignore events raised by nested popups.
-    if (aEvent.target != aEvent.currentTarget) {
+    if (aEvent.target != this.panel) {
       return;
     }
 
@@ -300,9 +349,9 @@ var DownloadsPanel = {
     this._focusPanel();
   },
 
-  onPopupHidden(aEvent) {
+  _onPopupHidden(aEvent) {
     // Ignore events raised by nested popups.
-    if (aEvent.target != aEvent.currentTarget) {
+    if (aEvent.target != this.panel) {
       return;
     }
 
@@ -352,9 +401,25 @@ var DownloadsPanel = {
     // Handle keypress to be able to preventDefault() events before they reach
     // the richlistbox, for keyboard navigation.
     this.panel.addEventListener("keypress", this);
+    // Handle mousedown to be able to notice clicks on disabled items.
+    this.panel.addEventListener("mousedown", this);
     this.panel.addEventListener("mousemove", this);
+    this.panel.addEventListener("popupshown", this);
+    this.panel.addEventListener("popuphidden", this);
     DownloadsView.richListBox.addEventListener("focus", this);
     DownloadsView.richListBox.addEventListener("select", this);
+    DownloadsView.richListBox.addEventListener("mouseover", this);
+    DownloadsView.richListBox.addEventListener("mouseout", this);
+    DownloadsView.richListBox.addEventListener("contextmenu", this);
+    DownloadsView.richListBox.addEventListener("dragstart", this);
+
+    DownloadsView.downloadsHistory.addEventListener("command", this);
+    DownloadsBlockedSubview.elements.deleteButton.addEventListener(
+      "command",
+      this
+    );
+    DownloadsSummary._summaryNode.addEventListener("click", this);
+    DownloadsSummary._summaryNode.addEventListener("keydown", this);
   },
 
   /**
@@ -364,9 +429,23 @@ var DownloadsPanel = {
   _unattachEventListeners() {
     this.panel.removeEventListener("keydown", this);
     this.panel.removeEventListener("keypress", this);
+    this.panel.removeEventListener("mousedown", this);
     this.panel.removeEventListener("mousemove", this);
+    this.panel.removeEventListener("popupshown", this);
+    this.panel.removeEventListener("popuphidden", this);
     DownloadsView.richListBox.removeEventListener("focus", this);
     DownloadsView.richListBox.removeEventListener("select", this);
+    DownloadsView.richListBox.removeEventListener("mouseover", this);
+    DownloadsView.richListBox.removeEventListener("mouseout", this);
+    DownloadsView.richListBox.removeEventListener("contextmenu", this);
+    DownloadsView.richListBox.removeEventListener("dragstart", this);
+    DownloadsView.downloadsHistory.removeEventListener("command", this);
+    DownloadsBlockedSubview.elements.deleteButton.removeEventListener(
+      "command",
+      this
+    );
+    DownloadsSummary._summaryNode.removeEventListener("click", this);
+    DownloadsSummary._summaryNode.removeEventListener("keydown", this);
   },
 
   _onKeyPress(aEvent) {
@@ -545,7 +624,11 @@ var DownloadsPanel = {
 
   _lastBeepTime: 0,
   _handlePotentiallySpammyDownloadActivation(aEvent) {
-    if (aEvent.key == "Enter" || aEvent.key == " ") {
+    let isSpammyKey =
+      aEvent.type.startsWith("key") &&
+      (aEvent.key == "Enter" || aEvent.key == " ");
+    let isSpammyMouse = aEvent.type.startsWith("mouse") && aEvent.button == 0;
+    if (isSpammyKey || isSpammyMouse) {
       // Throttle our beeping to a maximum of once per second, otherwise it
       // appears on Win10 that beeps never make it through at all.
       if (Date.now() - this._lastBeepTime > 1000) {
@@ -621,6 +704,24 @@ var DownloadsPanel = {
       ).then(() => {
         if (!this._openedManually) {
           this._delayPopupItems();
+        }
+
+        let isPrivate =
+          window && PrivateBrowsingUtils.isContentWindowPrivate(window);
+
+        if (
+          // If private, show message asking whether to delete files at end of session
+          isPrivate &&
+          Services.prefs.getBoolPref(
+            "browser.download.enableDeletePrivate",
+            false
+          ) &&
+          !Services.prefs.getBoolPref(
+            "browser.download.deletePrivate.chosen",
+            false
+          )
+        ) {
+          PrivateDownloadsSubview.openWhenReady();
         }
       }, console.error);
     }, 0);
@@ -863,9 +964,10 @@ var DownloadsView = {
   onDownloadClick(aEvent) {
     // Handle primary clicks in the main area only:
     if (aEvent.button == 0 && aEvent.target.closest(".downloadMainArea")) {
-      let target = aEvent.target;
-      while (target.nodeName != "richlistitem") {
-        target = target.parentNode;
+      let target = aEvent.target.closest("richlistitem");
+      // Ignore clicks if the box is disabled.
+      if (target.closest("richlistbox").hasAttribute("disabled")) {
+        return;
       }
       let download = DownloadsView.itemForElement(target).download;
       if (download.succeeded) {
@@ -953,7 +1055,7 @@ var DownloadsView = {
   /**
    * Mouse listeners to handle selection on hover.
    */
-  onDownloadMouseOver(aEvent) {
+  _onDownloadMouseOver(aEvent) {
     let item = aEvent.target.closest("richlistitem,richlistbox");
     if (item.localName != "richlistitem") {
       return;
@@ -973,7 +1075,7 @@ var DownloadsView = {
     }
   },
 
-  onDownloadMouseOut(aEvent) {
+  _onDownloadMouseOut(aEvent) {
     let item = aEvent.target.closest("richlistitem,richlistbox");
     if (item.localName != "richlistitem") {
       return;
@@ -990,7 +1092,7 @@ var DownloadsView = {
     }
   },
 
-  onDownloadContextMenu(aEvent) {
+  _onDownloadContextMenu(aEvent) {
     let element = aEvent.originalTarget.closest("richlistitem");
     if (!element) {
       aEvent.preventDefault();
@@ -1010,7 +1112,7 @@ var DownloadsView = {
       !element._shell.download.source?.url;
   },
 
-  onDownloadDragStart(aEvent) {
+  _onDownloadDragStart(aEvent) {
     let element = aEvent.target.closest("richlistitem");
     if (!element) {
       return;
@@ -1029,7 +1131,6 @@ var DownloadsView = {
     dataTransfer.effectAllowed = "copyMove";
     let spec = NetUtil.newURI(file).spec;
     dataTransfer.setData("text/uri-list", spec);
-    dataTransfer.setData("text/plain", spec);
     dataTransfer.addElement(element);
 
     aEvent.stopPropagation();
@@ -1254,7 +1355,11 @@ var DownloadsViewController = {
   // nsIController
 
   supportsCommand(aCommand) {
-    if (aCommand === "downloadsCmd_clearList") {
+    if (
+      aCommand === "downloadsCmd_clearList" ||
+      aCommand === "downloadsCmd_deletePrivate" ||
+      aCommand === "downloadsCmd_dismissDeletePrivate"
+    ) {
       return true;
     }
     // Firstly, determine if this is a command that we can handle.
@@ -1290,16 +1395,22 @@ var DownloadsViewController = {
 
   isCommandEnabled(aCommand) {
     // Handle commands that are not selection-specific.
-    if (aCommand == "downloadsCmd_clearList") {
-      return DownloadsCommon.getData(window).canRemoveFinished;
+    switch (aCommand) {
+      case "downloadsCmd_clearList": {
+        return DownloadsCommon.getData(window).canRemoveFinished;
+      }
+      case "downloadsCmd_deletePrivate":
+      case "downloadsCmd_dismissDeletePrivate":
+        return true;
+      default: {
+        // Other commands are selection-specific.
+        let element = DownloadsView.richListBox.selectedItem;
+        return (
+          element &&
+          DownloadsView.itemForElement(element).isCommandEnabled(aCommand)
+        );
+      }
     }
-
-    // Other commands are selection-specific.
-    let element = DownloadsView.richListBox.selectedItem;
-    return (
-      element &&
-      DownloadsView.itemForElement(element).isCommandEnabled(aCommand)
-    );
   },
 
   doCommand(aCommand) {
@@ -1337,6 +1448,14 @@ var DownloadsViewController = {
 
   downloadsCmd_clearList() {
     DownloadsCommon.getData(window).removeFinished();
+  },
+
+  downloadsCmd_deletePrivate() {
+    PrivateDownloadsSubview.choose(true /* deletePrivate */);
+  },
+
+  downloadsCmd_dismissDeletePrivate() {
+    PrivateDownloadsSubview.choose(false /* deletePrivate */);
   },
 };
 
@@ -1458,23 +1577,13 @@ var DownloadsSummary = {
    * @param aEvent
    *        The keydown event being handled.
    */
-  onKeyDown(aEvent) {
+  _onKeyDown(aEvent) {
     if (
       aEvent.charCode == " ".charCodeAt(0) ||
       aEvent.keyCode == KeyEvent.DOM_VK_RETURN
     ) {
       DownloadsPanel.showDownloadsHistory();
     }
-  },
-
-  /**
-   * Respond to click events on the Downloads Summary node.
-   *
-   * @param aEvent
-   *        The click event being handled.
-   */
-  onClick() {
-    DownloadsPanel.showDownloadsHistory();
   },
 
   /**
@@ -1631,6 +1740,14 @@ var DownloadsBlockedSubview = {
     let e = this.elements;
     let s = DownloadsCommon.strings;
 
+    e.deleteButton.hidden =
+      download.error?.becauseBlockedByContentAnalysis &&
+      download.error?.reputationCheckVerdict === "Malware";
+
+    e.unblockButton.hidden =
+      download.error?.becauseBlockedByContentAnalysis &&
+      download.error?.reputationCheckVerdict === "Malware";
+
     title.l10n
       ? document.l10n.setAttributes(e.title, title.l10n.id, title.l10n.args)
       : (e.title.textContent = title);
@@ -1701,4 +1818,67 @@ XPCOMUtils.defineConstant(
   this,
   "DownloadsBlockedSubview",
   DownloadsBlockedSubview
+);
+
+/**
+ * Manages the private browsing downloads subview that appears when you download a file in private browsing mode
+ */
+var PrivateDownloadsSubview = {
+  /**
+   * Slides in the private downloads subview.
+   *
+   * @param element
+   *        The download richlistitem element that was clicked.
+   */
+  openWhenReady() {
+    DownloadsView.subViewOpen = true;
+    DownloadsViewController.updateCommands();
+
+    this.mainView.addEventListener("ViewShown", this, { once: true });
+    this.mainView.toggleAttribute("showing-private-browsing-choice", true);
+  },
+
+  handleEvent(event) {
+    // This is called when the main view is shown or the panel is hidden.
+
+    // Focus the proper element if we're going back to the main panel.
+    if (event.type == "ViewShown") {
+      this.panelMultiView.showSubView(this.subview);
+    }
+  },
+
+  /**
+   * Sets whether to delete files at the end of private download session
+   * Based on user response to download notification prompt
+   *
+   * @param deletePrivate
+   *        True if the user chose to delete files at the end of the session
+   */
+  choose(deletePrivate) {
+    if (deletePrivate) {
+      Services.prefs.setBoolPref("browser.download.deletePrivate", true);
+    }
+    Services.prefs.setBoolPref("browser.download.deletePrivate.chosen", true);
+    DownloadsView.subViewOpen = false;
+    this.mainView.toggleAttribute("showing-private-browsing-choice", false);
+    this.panelMultiView.goBack();
+  },
+};
+
+ChromeUtils.defineLazyGetter(PrivateDownloadsSubview, "panelMultiView", () =>
+  document.getElementById("downloadsPanel-multiView")
+);
+
+ChromeUtils.defineLazyGetter(PrivateDownloadsSubview, "mainView", () =>
+  document.getElementById("downloadsPanel-mainView")
+);
+
+ChromeUtils.defineLazyGetter(PrivateDownloadsSubview, "subview", () =>
+  document.getElementById("downloadsPanel-privateBrowsing")
+);
+
+XPCOMUtils.defineConstant(
+  this,
+  "PrivateDownloadsSubview",
+  PrivateDownloadsSubview
 );

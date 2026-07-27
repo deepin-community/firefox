@@ -4,10 +4,6 @@
 
 pictureinpicture-player-title = Slika-u-slici
 
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
-
 ## Note that this uses .tooltip rather than the standard '.title'
 ## or '.tooltiptext' -  but it has the same effect. Code in the
 ## picture-in-picture window will read and copy this to an in-document
@@ -38,11 +34,11 @@ pictureinpicture-subtitles-btn =
     .aria-label = Titlovi
     .tooltip = Titlovi
 pictureinpicture-fullscreen-btn2 =
-    .aria-label = Cijeli zaslon
-    .tooltip = Cijeli zaslon (dvostruki klik ili { $shortcut })
+    .aria-label = Cjeloekranski prikaz
+    .tooltip = Cjeloekranski prikaz (dvostruki klik ili { $shortcut })
 pictureinpicture-exit-fullscreen-btn2 =
-    .aria-label = Napusti prikaz preko cijelog zaslona
-    .tooltip = Napusti prikaz preko cijelog zaslona (dvostruki klik ili { $shortcut })
+    .aria-label = Napusti cjeloekranski prikaz
+    .tooltip = Napusti cjeloekranski prikaz (dvostruki klik ili { $shortcut })
 
 ##
 

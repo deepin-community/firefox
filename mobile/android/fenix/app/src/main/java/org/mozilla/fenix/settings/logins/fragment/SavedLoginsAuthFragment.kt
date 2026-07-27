@@ -4,57 +4,39 @@
 
 package org.mozilla.fenix.settings.logins.fragment
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreference
+import androidx.preference.SwitchPreferenceCompat
 import mozilla.components.feature.autofill.preference.AutofillPreference
 import mozilla.components.service.fxa.SyncEngine
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Logins
 import org.mozilla.fenix.R
+import org.mozilla.fenix.biometricauthentication.AuthenticationStatus
+import org.mozilla.fenix.biometricauthentication.BiometricAuthenticationManager
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
+import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.navigateWithBreadcrumb
-import org.mozilla.fenix.ext.registerForActivityResult
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.settings.SharedPreferenceUpdater
 import org.mozilla.fenix.settings.SyncPreferenceView
-import org.mozilla.fenix.settings.biometric.bindBiometricsCredentialsPromptOrShowWarning
 import org.mozilla.fenix.settings.requirePreference
 
+/**
+ * Settings screen allowing users to configure the passwords manager functionality of the application.
+ */
 @Suppress("TooManyFunctions")
-class SavedLoginsAuthFragment : PreferenceFragmentCompat() {
-    private lateinit var savedLoginsFragmentLauncher: ActivityResultLauncher<Intent>
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        savedLoginsFragmentLauncher = registerForActivityResult {
-            navigateToSavedLoginsFragment()
-        }
-    }
+class SavedLoginsAuthFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.logins_preferences, rootKey)
     }
 
-    /**
-     * There is a bug where while the biometric prompt is showing, you were able to quickly navigate
-     * so we are disabling the settings that navigate while authenticating.
-     * https://github.com/mozilla-mobile/fenix/issues/12312
-     */
-    private fun togglePrefsEnabledWhileAuthenticating(enabled: Boolean) {
-        requirePreference<Preference>(R.string.pref_key_sync_logins).isEnabled = enabled
-        requirePreference<Preference>(R.string.pref_key_save_logins_settings).isEnabled = enabled
-        requirePreference<Preference>(R.string.pref_key_saved_logins).isEnabled = enabled
-    }
-
-    @Suppress("LongMethod")
     override fun onResume() {
         super.onResume()
         showToolbar(getString(R.string.preferences_passwords_logins_and_passwords_2))
@@ -84,7 +66,7 @@ class SavedLoginsAuthFragment : PreferenceFragmentCompat() {
             }
         }
 
-        requirePreference<SwitchPreference>(R.string.pref_key_autofill_logins).apply {
+        requirePreference<SwitchPreferenceCompat>(R.string.pref_key_autofill_logins).apply {
             title = context.getString(
                 R.string.preferences_passwords_autofill2,
                 getString(R.string.app_name),
@@ -104,17 +86,7 @@ class SavedLoginsAuthFragment : PreferenceFragmentCompat() {
         }
 
         requirePreference<Preference>(R.string.pref_key_saved_logins).setOnPreferenceClickListener {
-            view?.let { view ->
-                bindBiometricsCredentialsPromptOrShowWarning(
-                    view = view,
-                    onShowPinVerification = { intent ->
-                        savedLoginsFragmentLauncher.launch(intent)
-                    },
-                    onAuthSuccess = ::navigateToSavedLoginsFragment,
-                    onAuthFailure = { togglePrefsEnabledWhileAuthenticating(true) },
-                    doWhileAuthenticating = { togglePrefsEnabledWhileAuthenticating(false) },
-                )
-            }
+            navigateToSavedLoginsFragment()
             true
         }
 
@@ -143,12 +115,12 @@ class SavedLoginsAuthFragment : PreferenceFragmentCompat() {
             },
         )
 
-        togglePrefsEnabledWhileAuthenticating(true)
+        BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+            true
+        BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+            AuthenticationStatus.NOT_AUTHENTICATED
     }
 
-    /**
-     * Called when authentication succeeds.
-     */
     private fun navigateToSavedLoginsFragment() {
         if (findNavController().currentDestination?.id == R.id.savedLoginsAuthFragment) {
             Logins.openLogins.record(NoExtras())

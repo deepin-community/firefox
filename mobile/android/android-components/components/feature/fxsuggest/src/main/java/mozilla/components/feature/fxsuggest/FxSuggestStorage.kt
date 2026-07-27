@@ -17,7 +17,12 @@ import mozilla.appservices.suggest.SuggestStore
 import mozilla.appservices.suggest.SuggestStoreBuilder
 import mozilla.appservices.suggest.Suggestion
 import mozilla.appservices.suggest.SuggestionQuery
+import mozilla.components.concept.base.crash.CrashReporting
+import mozilla.components.feature.fxsuggest.facts.emitSuggestionQueryCountFact
 import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.remotesettings.RemoteSettingsService
+import mozilla.components.support.rusterrors.reportRustError
+import mozilla.appservices.suggest.InternalException as UniffiInternalException
 
 /**
  * A coroutine-aware wrapper around the synchronous [SuggestStore] interface.
@@ -26,14 +31,18 @@ import mozilla.components.support.base.log.logger.Logger
  * @param remoteSettingsServer The [RemoteSettingsServer] from which to ingest
  * suggestions.
  */
-class FxSuggestStorage(context: Context, remoteSettingsServer: RemoteSettingsServer = RemoteSettingsServer.Prod) {
+class FxSuggestStorage(
+    context: Context,
+    remoteSettingsService: RemoteSettingsService,
+    private val crashReporter: CrashReporting? = null,
+) {
     // Lazily initializes the store on first use. `cacheDir` and using the `File` constructor
     // does I/O, so `store.value` should only be accessed from the read or write scope.
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val store: Lazy<SuggestStore> = lazy {
         SuggestStoreBuilder()
             .dataPath(context.getDatabasePath(DATABASE_NAME).absolutePath)
-            .remoteSettingsServer(remoteSettingsServer)
+            .remoteSettingsService(remoteSettingsService.remoteSettingsService)
             .build()
     }
 
@@ -54,7 +63,11 @@ class FxSuggestStorage(context: Context, remoteSettingsServer: RemoteSettingsSer
     suspend fun query(query: SuggestionQuery): List<Suggestion> =
         withContext(readScope.coroutineContext) {
             handleSuggestExceptions("query", emptyList()) {
-                store.value.query(query)
+                val result = store.value.query(query)
+                if (result.isNotEmpty()) {
+                    emitSuggestionQueryCountFact(queryCount = result.size)
+                }
+                result
             }
         }
 
@@ -112,6 +125,11 @@ class FxSuggestStorage(context: Context, remoteSettingsServer: RemoteSettingsSer
             operation()
         } catch (e: SuggestApiException) {
             logger.warn("Ignoring exception from `$name`", e)
+            crashReporter?.submitCaughtException(e)
+            default
+        } catch (e: UniffiInternalException) {
+            Logger.error("Ignoring internal exception from `$name`", e)
+            reportRustError("suggest-internal-error", e)
             default
         }
     }

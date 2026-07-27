@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Vaihda lähdekieltä
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Valitettavasti käännökset kielestä { $language } eivät ole vielä tuettuja.
+translations-panel-error-unsupported-hint-unknown-2 = Valitettavasti käännökset tästä kielestä eivät ole vielä tuettuja.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Lataa kieliä yhteydettömän tilan käännök
 translations-manage-all-language = Kaikki kielet
 translations-manage-download-button = Lataa
 translations-manage-delete-button = Poista
-translations-manage-intro = Aseta kieli- ja sivustokäännösasetukset ja hallitse yhteydettömän tilan käännöksiä varten asennettuja kieliä.
-translations-manage-install-description = Lataa kieliä yhteydettömän tilan käännöksiä varten
-translations-manage-language-install-button =
-    .label = Asenna
-translations-manage-language-install-all-button =
-    .label = Asenna kaikki
-    .accesskey = A
 translations-manage-intro-2 = Aseta kieli- ja sivustokäännösasetukset ja hallitse yhteydettömän tilan käännöksiä varten ladattuja kieliä.
 translations-manage-download-description = Lataa kieliä yhteydettömän tilan käännöksiä varten
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Poista kaikki
     .accesskey = P
-translations-manage-error-install = Kielitiedostoja asentaessa ilmeni ongelma. Yritä uudelleen.
 translations-manage-error-download = Kielitiedostoja ladattaessa ilmeni ongelma. Yritä uudelleen.
 translations-manage-error-delete = Kielitiedostoja poistettaessa tapahtui virhe. Yritä uudelleen.
 translations-manage-error-remove = Kielitiedostoja poistaessa tapahtui virhe. Yritä uudelleen.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Käännettäessä ilmeni ongelma. Yritä uudelleen.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Valitettavasti käännökset kielestä { $language } eivät ole vielä tuettuja.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Valitettavasti käännökset tästä kielestä eivät ole vielä tuettuja.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

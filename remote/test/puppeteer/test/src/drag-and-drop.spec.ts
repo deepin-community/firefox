@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 import expect from 'expect';
 
@@ -16,7 +16,7 @@ async function getDragState() {
     await page.$eval('#drag-state', element => {
       return element.innerHTML;
     }),
-    10
+    10,
   );
 }
 

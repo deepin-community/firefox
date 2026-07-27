@@ -656,16 +656,15 @@ ClientEngine.prototype = {
     // successfully synced the first time after startup.
     let deviceTypeCounts = this.deviceTypes;
     for (let [deviceType, count] of deviceTypeCounts) {
-      let hid;
       let prefName = this.name + ".devices.";
       switch (deviceType) {
         case DEVICE_TYPE_DESKTOP:
-          hid = "WEAVE_DEVICE_COUNT_DESKTOP";
+          Glean.sync.deviceCountDesktop.accumulateSingleSample(count);
           prefName += "desktop";
           break;
         case DEVICE_TYPE_MOBILE:
         case DEVICE_TYPE_TABLET:
-          hid = "WEAVE_DEVICE_COUNT_MOBILE";
+          Glean.sync.deviceCountMobile.accumulateSingleSample(count);
           prefName += "mobile";
           break;
         default:
@@ -674,7 +673,6 @@ ClientEngine.prototype = {
           );
           continue;
       }
-      Services.telemetry.getHistogramById(hid).add(count);
       // Optimization: only write the pref if it changed since our last sync.
       if (
         this._lastDeviceCounts == null ||
@@ -812,12 +810,11 @@ ClientEngine.prototype = {
           this.service.identity.hashedDeviceID(clientId);
       } catch (_) {}
 
-      this.service.recordTelemetryEvent(
-        "sendcommand",
+      Glean.syncClient.sendcommand.record({
         command,
-        undefined,
-        telemetryExtra
-      );
+        flow_id: telemetryExtra.flowID,
+        reason: telemetryExtra.reason,
+      });
     } else {
       this._log.trace(`Client ${clientId} got a duplicate action`, [
         command,
@@ -853,13 +850,10 @@ ClientEngine.prototype = {
         let { command, args, flowID } = rawCommand;
         this._log.debug("Processing command " + command, args);
 
-        this.service.recordTelemetryEvent(
-          "processcommand",
+        Glean.syncClient.processcommand.record({
           command,
-          undefined,
-          { flowID }
-        );
-
+          flow_id: flowID,
+        });
         let engines = [args[0]];
         switch (command) {
           case "resetAll":

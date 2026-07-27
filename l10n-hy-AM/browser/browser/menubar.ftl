@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Նախապատվություններ
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Կարգավորումներ...
+menu-application-set-as-default =
+    .label = Սահմանել { -brand-shorter-name }-ը որպես սկզբնադիր դիտարկիչ
 menu-application-services =
     .label = Ծառայություններ
 menu-application-hide-this =
@@ -98,6 +91,9 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Համօգտագործել
     .accesskey = h
+menu-file-share-qrcode =
+    .label = QR կոդի ստեղծում…
+    .accesskey = Q
 menu-file-print-setup =
     .label = Էջի կարգավորումներ…
     .accesskey = գ
@@ -123,8 +119,8 @@ menu-edit-find-again =
     .label = Կրկին Որոնել
     .accesskey = Ո
 menu-edit-bidi-switch-text-direction =
-    .label = Փոխել գրույթի ուղղությունը
-    .accesskey = w
+    .label = Փոխարկել տեքստի ուղղությունը
+    .accesskey = ո
 
 ## View Menu
 
@@ -138,7 +134,7 @@ menu-view-customize-toolbar2 =
     .label = Հարմարեցնել Գործիքագոտին…
     .accesskey = C
 menu-view-sidebar =
-    .label = Կողային վահանակ
+    .label = Կողագոտի
     .accesskey = վ
 menu-view-bookmarks =
     .label = Էջանիշեր
@@ -146,8 +142,6 @@ menu-view-history-button =
     .label = Պատմություն
 menu-view-synced-tabs-sidebar =
     .label = Համաժամեցված ներդիրներ
-menu-view-megalist-sidebar =
-    .label = Գաղտնաբառեր
 menu-view-full-zoom =
     .label = Դիտափոխում
     .accesskey = Մ
@@ -206,8 +200,8 @@ menu-view-show-all-tabs =
     .label = Ցուցադրել բոլոր ներդիրները
     .accesskey = բ
 menu-view-bidi-switch-page-direction =
-    .label = Փոխել Էջի Ուղղությունը
-    .accesskey = Ո
+    .label = Փոխարկել էջի ուղղությունը
+    .accesskey = Ւ
 
 ## History Menu
 
@@ -247,13 +241,29 @@ menu-edit-bookmark =
 menu-bookmarks-search =
     .label = Որոնել էջանիշեր
 menu-bookmarks-all-tabs =
-    .label = Էջանշել Բոլոր Ներդիրները…
+    .label = Էջանշել բոլոր ներդիրները…
 menu-bookmarks-toolbar =
     .label = Էջանիշերի Վահանակ
 menu-bookmarks-other =
     .label = Այլ Էջանիշեր
 menu-bookmarks-mobile =
     .label = Բջջային էջանիշեր
+
+## Profiles Menu
+
+menu-profiles =
+    .label = Պրոֆիլներ
+menu-profiles-manage-profiles =
+    .label = Կառավարել պրոֆիլները
+menu-profiles-new-profile =
+    .label = Նոր պրոֆիլ
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ընթացիկ)
+menu-profiles-menu =
+    .label = Պրոֆիլներ
+    .accesskey = P
 
 ## Tools Menu
 
@@ -263,6 +273,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Ներբեռնումներ
     .accesskey = Ն
+menu-tools-extensions-and-themes =
+    .label = Ընդլայնումներ և ոճեր
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Հավելումներ և ոճեր
     .accesskey = A
@@ -306,7 +319,7 @@ menu-tools-layout-debugger =
 menu-window-menu =
     .label = Պատուհան
 menu-window-bring-all-to-front =
-    .label = Բոլորն Առաջ Բերել
+    .label = Բոլորն առաջ բերել
 
 ## Help Menu
 
@@ -340,8 +353,8 @@ menu-help-exit-troubleshoot-mode =
     .label = Անջատել խափանաշտկումը
     .accesskey = M
 menu-help-switch-device =
-    .label = Անցում նոր սարքի
-    .accesskey = N
+    .label = Փոխարկվում է նոր սարքին
+    .accesskey = Ն
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

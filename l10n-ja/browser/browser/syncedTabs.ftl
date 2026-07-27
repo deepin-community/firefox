@@ -43,7 +43,7 @@ synced-tabs-context-open-in-private-window =
 # string is located in tabContextMenu.ftl. So, this string should be translated
 # consistently with the "Bookmark Tab…" string there.
 synced-tabs-context-bookmark =
-    .label = タブをブックマーク...
+    .label = タブをブックマークに追加...
     .accesskey = B
 synced-tabs-context-copy =
     .label = コピー
@@ -54,6 +54,12 @@ synced-tabs-context-open-all-in-tabs =
 synced-tabs-context-manage-devices =
     .label = 端末の管理...
     .accesskey = D
+synced-tabs-context-manage-this-device =
+    .label = この端末を管理
+    .accesskey = T
+synced-tabs-context-connect-another-device =
+    .label = 別の端末を接続
+    .accesskey = A
 synced-tabs-context-sync-now =
     .label = 今すぐ同期
     .accesskey = S

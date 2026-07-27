@@ -1,13 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_TimeoutManager_h__
-#define mozilla_dom_TimeoutManager_h__
+#ifndef mozilla_dom_TimeoutManager_h_
+#define mozilla_dom_TimeoutManager_h_
 
 #include "mozilla/dom/Timeout.h"
+#include "mozilla/dom/TimeoutBudgetManager.h"
+#include "nsISerialEventTarget.h"
 #include "nsTArray.h"
 
 class nsIEventTarget;
@@ -27,15 +27,33 @@ class TimeoutManager final {
   struct Timeouts;
 
  public:
-  TimeoutManager(nsIGlobalObject& aHandle, uint32_t aMaxIdleDeferMS);
+  TimeoutManager(nsIGlobalObject& aHandle, uint32_t aMaxIdleDeferMS,
+                 nsISerialEventTarget* aEventTarget,
+                 bool aIsChromeWorker = false);
   ~TimeoutManager();
   TimeoutManager(const TimeoutManager& rhs) = delete;
   void operator=(const TimeoutManager& rhs) = delete;
 
   bool IsRunningTimeout() const;
 
-  static uint32_t GetNestingLevel() { return sNestingLevel; }
-  static void SetNestingLevel(uint32_t aLevel) { sNestingLevel = aLevel; }
+  uint32_t GetNestingLevelForWorker() {
+    MOZ_ASSERT(!NS_IsMainThread());
+    return mNestingLevel;
+  }
+  uint32_t GetNestingLevelForWindow() {
+    MOZ_ASSERT(NS_IsMainThread());
+    return sNestingLevel;
+  }
+
+  void SetNestingLevelForWorker(uint32_t aLevel) {
+    MOZ_ASSERT(!NS_IsMainThread());
+    mNestingLevel = aLevel;
+  }
+
+  void SetNestingLevelForWindow(uint32_t aLevel) {
+    MOZ_ASSERT(NS_IsMainThread());
+    sNestingLevel = aLevel;
+  }
 
   bool HasTimeouts() const {
     return !mTimeouts.IsEmpty() || !mIdleTimeouts.IsEmpty();
@@ -55,7 +73,7 @@ class TimeoutManager final {
                   bool aProcessIdle);
 
   void ClearAllTimeouts();
-  uint32_t GetTimeoutId(mozilla::dom::Timeout::Reason aReason);
+  int32_t GetTimeoutId(mozilla::dom::Timeout::Reason aReason);
 
   TimeDuration CalculateDelay(Timeout* aTimeout) const;
 
@@ -107,9 +125,7 @@ class TimeoutManager final {
   // get nsGlobalWindowInner
   // if the method returns nullptr, then we have a worker,
   // which should be handled differently according to TimeoutManager logic
-  nsGlobalWindowInner* GetInnerWindow() const {
-    return nsGlobalWindowInner::Cast(mGlobalObject.GetAsInnerWindow());
-  }
+  nsGlobalWindowInner* GetInnerWindow() const;
 
   // Return true if |aTimeout| needs to be reinserted into the timeout list.
   bool RescheduleTimeout(mozilla::dom::Timeout* aTimeout,
@@ -189,7 +205,7 @@ class TimeoutManager final {
       return false;
     }
 
-    Timeout* GetTimeout(uint32_t aTimeoutId, Timeout::Reason aReason) {
+    Timeout* GetTimeout(int32_t aTimeoutId, Timeout::Reason aReason) {
       Timeout::TimeoutIdAndReason key = {aTimeoutId, aReason};
       return mTimeouts->Get(key);
     }
@@ -222,7 +238,7 @@ class TimeoutManager final {
   RefPtr<TimeoutExecutor> mIdleExecutor;
   // The list of timeouts coming from non-tracking scripts.
   Timeouts mTimeouts;
-  uint32_t mTimeoutIdCounter;
+  int32_t mTimeoutIdCounter;
   uint32_t mNextFiringId;
 #ifdef DEBUG
   int64_t mFiringIndex;
@@ -236,7 +252,7 @@ class TimeoutManager final {
   Timeouts mIdleTimeouts;
 
   // The current idle request callback timeout handle
-  uint32_t mIdleCallbackTimeoutCounter;
+  int32_t mIdleCallbackTimeoutCounter;
 
   nsCOMPtr<nsITimer> mThrottleTimeoutsTimer;
   mozilla::TimeStamp mLastBudgetUpdate;
@@ -247,8 +263,18 @@ class TimeoutManager final {
   bool mBudgetThrottleTimeouts;
 
   bool mIsLoading;
+  nsCOMPtr<nsISerialEventTarget> mEventTarget;
+
+  const bool mIsWindow;
+
+  const bool mIsChromeWorker;
+
+  uint32_t mNestingLevel{0};
 
   static uint32_t sNestingLevel;
+
+  TimeoutBudgetManager mBudgetManager;
+  static TimeoutBudgetManager sBudgetManager;
 };
 
 }  // namespace dom

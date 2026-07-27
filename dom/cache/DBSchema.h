@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef mozilla_dom_cache_DBSchema_h
 #define mozilla_dom_cache_DBSchema_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/cache/Types.h"
 #include "nsError.h"
 #include "nsString.h"
@@ -44,7 +41,8 @@ Result<int64_t, nsresult> FindOverallPaddingSize(mozIStorageConnection& aConn);
 
 Result<int64_t, nsresult> GetTotalDiskUsage(mozIStorageConnection& aConn);
 
-Result<nsTArray<nsID>, nsresult> GetKnownBodyIds(mozIStorageConnection& aConn);
+Result<nsTHashSet<nsID>, nsresult> GetKnownBodyIds(
+    mozIStorageConnection& aConn);
 
 Result<Maybe<SavedResponse>, nsresult> CacheMatch(
     mozIStorageConnection& aConn, CacheId aCacheId,

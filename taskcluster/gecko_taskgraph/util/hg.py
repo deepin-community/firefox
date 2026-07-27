@@ -3,11 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+import functools
 import logging
 import subprocess
 
 import requests
-from mozbuild.util import memoize
 from redo import retry
 
 logger = logging.getLogger(__name__)
@@ -41,9 +41,7 @@ def find_hg_revision_push_info(repository, revision):
 
     if len(pushes) != 1:
         raise RuntimeError(
-            "Found {} pushlog_ids, expected 1, for {} revision {}: {}".format(
-                len(pushes), repository, revision, pushes
-            )
+            f"Found {len(pushes)} pushlog_ids, expected 1, for {repository} revision {revision}: {pushes}"
         )
 
     pushid = list(pushes.keys())[0]
@@ -54,7 +52,7 @@ def find_hg_revision_push_info(repository, revision):
     }
 
 
-@memoize
+@functools.cache
 def get_push_data(repository, project, push_id_start, push_id_end):
     url = PUSHLOG_PUSHES_TMPL.format(
         repository=repository,
@@ -95,13 +93,14 @@ def get_push_data(repository, project, push_id_start, push_id_end):
     return None
 
 
-@memoize
+@functools.cache
 def get_json_pushchangedfiles(repository, revision):
     url = "{}/json-pushchangedfiles/{}".format(repository.rstrip("/"), revision)
     logger.debug("Querying version control for metadata: %s", url)
 
     def get_pushchangedfiles():
         response = requests.get(url, timeout=60)
+        response.raise_for_status()
         return response.json()
 
     return retry(get_pushchangedfiles, attempts=10, sleeptime=10)
@@ -110,12 +109,16 @@ def get_json_pushchangedfiles(repository, revision):
 def get_hg_revision_branch(root, revision):
     """Given the parameters for a revision, find the hg_branch (aka
     relbranch) of the revision."""
+    return get_hg_revision_info(root, revision, "branch")
+
+
+def get_hg_revision_info(root, revision, info):
     return subprocess.check_output(
         [
             "hg",
             "identify",
             "-T",
-            "{branch}",
+            f"{{{info}}}",
             "--rev",
             revision,
         ],

@@ -1,13 +1,15 @@
 [tool.ruff]
-line-length = 99
+line-length = 88
+target-version = "py38"
 # See https://beta.ruff.rs/docs/rules/ for a full list of rules.
-select = [
+lint.select = [
   "E", "W",    # pycodestyle
   "F",         # pyflakes
   "I",         # isort
   "PL",        # pylint
+  "UP",        # pyupgrade
 ]
-ignore = [
+lint.ignore = [
   # These should be triaged and either fixed or moved to the list below.
   "E713", "E714",
 
@@ -15,11 +17,14 @@ ignore = [
   "E741",      # ambiguous-variable-name
   "PLR09",     # too-many-return-statements, too-many-branches, too-many-arguments, too-many-statements
   "PLR2004",   # magic-value-comparison
+  "PLC0206",   # dict-index-missing-items
+  "PLC0415",   # `import` should be at the top-level of a file
 
-  # These are handled by black.
-  "E1", "E4", "E5", "W2", "W5"
+  # These are handled by ruff format.
+  "E1", "E4", "E5", "W1", "W2", "W5",
 ]
 builtins = ["gdb"]
+extend-include = ["*.configure"]
 exclude = [
   # These paths should be triaged and either fixed or moved to the list below.
   "devtools/shared",
@@ -35,7 +40,6 @@ exclude = [
   "layout/reftests/w3c-css",
   "layout/style",
   "media/libdav1d/generate_source.py",
-  "moz.configure",
   "netwerk/dns/prepare_tlds.py",
   "netwerk/protocol/http/make_incoming_tables.py",
   "python/l10n/fluent_migrations",
@@ -59,16 +63,16 @@ exclude = [
   "testing/mozharness/mozprocess",
   "testing/mozharness/setup.py",
   "testing/parse_build_tests_ccov.py",
-  "testing/runtimes/writeruntimes.py",
   "testing/tools/iceserver/iceserver.py",
   "testing/tools/websocketprocessbridge/websocketprocessbridge.py",
-  "toolkit/components/featuregates",
   "toolkit/content/tests/chrome/file_about_networking_wsh.py",
   "toolkit/library/build/dependentlibs.py",
-  "toolkit/locales/generate_update_locale.py",
   "toolkit/mozapps",
   "toolkit/moz.configure",
   "toolkit/nss.configure",
+
+  # Can be removed once remaining CI workers updated past Python 3.8
+  "python/mozbuild/mozbuild/action/tooltool.py",
 
   # mako files are not really python files
   "*.mako.py",
@@ -101,7 +105,7 @@ exclude = [
   ".ycm_extra_conf.py",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # These paths are intentionally excluded.
 "dom/bindings/Configuration.py" = ["PLC3002"]
 "ipc/ipdl/*" = ["F403", "F405"]
@@ -125,9 +129,14 @@ exclude = [
 "config/tests/unitMozZipFile.py" = ["F821"]
 "ipc/pull-chromium.py" = ["F633"]
 "js/src/**" = ["F633", "F821"]
-"python/mozbuild/mozbuild/action/dump_env.py" = ["F821"]
 "python/mozbuild/mozbuild/dotproperties.py" = ["F821"]
 "python/mozbuild/mozbuild/testing.py" = ["F821"]
 "python/mozbuild/mozbuild/util.py" = ["F821"]
 "testing/mozharness/mozharness/mozilla/testing/android.py" = ["F821"]
 "testing/mochitest/runtests.py" = ["F821"]
+
+[tool.ruff.format]
+# Enable preview mode for --output-format=json to get improved line/column reporting.
+# TODO: Remove preview once these features are in the stable release.
+preview = true
+docstring-code-format = true

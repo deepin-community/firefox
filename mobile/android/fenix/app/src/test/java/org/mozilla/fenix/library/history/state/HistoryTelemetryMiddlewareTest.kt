@@ -4,15 +4,12 @@
 
 package org.mozilla.fenix.library.history.state
 
-import mozilla.components.support.test.ext.joinBlocking
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fenix.GleanMetrics.Events
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.library.history.History
 import org.mozilla.fenix.library.history.HistoryFragmentAction
 import org.mozilla.fenix.library.history.HistoryFragmentState
@@ -20,12 +17,13 @@ import org.mozilla.fenix.library.history.HistoryFragmentStore
 import org.mozilla.fenix.library.history.HistoryItemTimeGroup
 import org.mozilla.fenix.library.history.RemoveTimeFrame
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertNotNull
 import org.mozilla.fenix.GleanMetrics.History as GleanHistory
 
 @RunWith(RobolectricTestRunner::class)
 class HistoryTelemetryMiddlewareTest {
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     private val middleware = HistoryTelemetryMiddleware(isInPrivateMode = false)
 
@@ -37,7 +35,7 @@ class HistoryTelemetryMiddlewareTest {
             middleware = listOf(middleware),
         )
 
-        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history))
 
         assertNotNull(GleanHistory.openedItem.testGetValue())
     }
@@ -53,7 +51,7 @@ class HistoryTelemetryMiddlewareTest {
             middleware = listOf(middleware),
         )
 
-        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history))
 
         assertNull(GleanHistory.openedItem.testGetValue())
     }
@@ -64,7 +62,7 @@ class HistoryTelemetryMiddlewareTest {
         val store =
             HistoryFragmentStore(HistoryFragmentState.initial, middleware = listOf(middleware))
 
-        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.HistoryItemClicked(history))
 
         assertNotNull(GleanHistory.searchTermGroupTapped.testGetValue())
     }
@@ -75,7 +73,7 @@ class HistoryTelemetryMiddlewareTest {
         val store =
             HistoryFragmentStore(HistoryFragmentState.initial, middleware = listOf(middleware))
 
-        store.dispatch(HistoryFragmentAction.DeleteItems(setOf(history))).joinBlocking()
+        store.dispatch(HistoryFragmentAction.DeleteItems(setOf(history)))
 
         assertNotNull(GleanHistory.removed.testGetValue())
     }
@@ -85,7 +83,7 @@ class HistoryTelemetryMiddlewareTest {
         val store =
             HistoryFragmentStore(HistoryFragmentState.initial, middleware = listOf(middleware))
 
-        store.dispatch(HistoryFragmentAction.DeleteTimeRange(RemoveTimeFrame.LastHour)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.DeleteTimeRange(RemoveTimeFrame.LastHour))
 
         assertNotNull(GleanHistory.removedLastHour.testGetValue())
     }
@@ -95,7 +93,7 @@ class HistoryTelemetryMiddlewareTest {
         val store =
             HistoryFragmentStore(HistoryFragmentState.initial, middleware = listOf(middleware))
 
-        store.dispatch(HistoryFragmentAction.DeleteTimeRange(RemoveTimeFrame.TodayAndYesterday)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.DeleteTimeRange(RemoveTimeFrame.TodayAndYesterday))
 
         assertNotNull(GleanHistory.removedTodayAndYesterday.testGetValue())
     }
@@ -105,20 +103,8 @@ class HistoryTelemetryMiddlewareTest {
         val store =
             HistoryFragmentStore(HistoryFragmentState.initial, middleware = listOf(middleware))
 
-        store.dispatch(HistoryFragmentAction.DeleteTimeRange(null)).joinBlocking()
+        store.dispatch(HistoryFragmentAction.DeleteTimeRange(null))
 
         assertNotNull(GleanHistory.removedAll.testGetValue())
-    }
-
-    @Test
-    fun `GIVEN recently closed is requested to be entered THEN telemetry recorded`() {
-        val store = HistoryFragmentStore(
-            initialState = HistoryFragmentState.initial,
-            middleware = listOf(middleware),
-        )
-
-        store.dispatch(HistoryFragmentAction.EnterRecentlyClosed).joinBlocking()
-
-        assertNotNull(Events.recentlyClosedTabsOpened.testGetValue())
     }
 }

@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _ACCESSIBLE_HYPERTEXT_H
-#define _ACCESSIBLE_HYPERTEXT_H
+#ifndef ACCESSIBLE_HYPERTEXT_H
+#define ACCESSIBLE_HYPERTEXT_H
 
 #include "nsISupports.h"
 
@@ -16,7 +13,6 @@
 #include "AccessibleHypertext2.h"
 #include "IUnknownImpl.h"
 #include "MsaaAccessible.h"
-#include "UiaText.h"
 
 namespace mozilla {
 namespace a11y {
@@ -26,13 +22,8 @@ class ia2AccessibleHypertext : public ia2AccessibleText,
                                public IAccessibleHypertext2,
                                public ia2AccessibleEditableText,
                                public ia2AccessibleTextSelectionContainer,
-                               public UiaText,
                                public MsaaAccessible {
  public:
-  // UiaText has a private Acc() method. Explicitly specify what
-  // ia2AccessibleHypertext::Acc should use.
-  using MsaaAccessible::Acc;
-
   // IUnknown
   DECL_IUNKNOWN_INHERITED
   IMPL_IUNKNOWN_REFCOUNTING_INHERITED(MsaaAccessible)

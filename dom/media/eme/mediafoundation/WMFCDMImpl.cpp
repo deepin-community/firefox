@@ -1,18 +1,14 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WMFCDMImpl.h"
 
-#include <unordered_map>
-
 #include "mozilla/AppShutdown.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ScopeExit.h"
-#include "mozilla/dom/MediaKeySession.h"
 #include "mozilla/dom/KeySystemNames.h"
+#include "mozilla/dom/MediaKeySession.h"
 
 namespace mozilla {
 
@@ -20,6 +16,7 @@ RefPtr<WMFCDMImpl::InitPromise> WMFCDMImpl::Init(
     const WMFCDMImpl::InitParams& aParams) {
   if (!mCDM) {
     mCDM = MakeRefPtr<MFCDMChild>(mKeySystem);
+    mCDM->EnsureRemote();
   }
   RefPtr<WMFCDMImpl> self = this;
   mCDM->Init(aParams.mOrigin, aParams.mInitDataTypes,
@@ -58,6 +55,7 @@ WMFCDMCapabilites::GetCapabilities(
   nsTArray<RefPtr<CapabilitiesPromise>> promises;
   for (const auto& request : aRequests) {
     RefPtr<MFCDMChild> cdm = new MFCDMChild(request.mKeySystem);
+    cdm->EnsureRemote();
     promises.AppendElement(cdm->GetCapabilities(MFCDMCapabilitiesRequest{
         nsString{request.mKeySystem},
         request.mDecryption == KeySystemConfig::DecryptionInfo::Hardware,

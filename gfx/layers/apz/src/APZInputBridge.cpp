@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include "InputData.h"               // for MouseInput, etc
 #include "InputBlockState.h"         // for InputBlockState
 #include "OverscrollHandoffState.h"  // for OverscrollHandoffState
+#include "nsLayoutUtils.h"           // for IsSmoothScrollingEnabled
 #include "mozilla/EventForwards.h"
 #include "mozilla/dom/WheelEventBinding.h"  // for WheelEvent constants
 #include "mozilla/EventStateManager.h"      // for EventStateManager
@@ -149,6 +148,18 @@ void APZHandledResult::UpdateForTouchEvent(
                                           ? APZHandledPlace::HandledByRoot
                                           : APZHandledPlace::Unhandled,
                                       rootApzc});
+      if (aHandledResult && aHandledResult->IsHandledByRoot() &&
+          !mayTriggerPullToRefresh) {
+        MOZ_ASSERT(
+            !(aTarget->ScrollableDirections() & SideBits::eBottom),
+            "If we allowed moving the dynamic toolbar for the sub scroll "
+            "container, the sub scroll container should NOT be scrollable to "
+            "bottom");
+
+        // In cases we didn't allow pull-to-refresh (!mayTriggerPullToRefresh),
+        // it means the root scroll container is NOT overscrollable at top.
+        aHandledResult->mOverscrollDirections -= ScrollDirection::eVertical;
+      }
     }
   }
 }
@@ -319,7 +330,7 @@ APZEventResult APZInputBridge::ReceiveInputEvent(
       if (Maybe<APZWheelAction> action = ActionForWheelEvent(&wheelEvent)) {
         ScrollWheelInput::ScrollMode scrollMode =
             ScrollWheelInput::SCROLLMODE_INSTANT;
-        if (StaticPrefs::general_smoothScroll() &&
+        if (nsLayoutUtils::IsSmoothScrollingEnabled() &&
             ((wheelEvent.mDeltaMode ==
                   dom::WheelEvent_Binding::DOM_DELTA_LINE &&
               StaticPrefs::general_smoothScroll_mouseWheel()) ||

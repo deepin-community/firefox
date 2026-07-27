@@ -1,20 +1,19 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// vim:cindent:tabstop=4:expandtab:shiftwidth=4:
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsLayoutDebugCLH.h"
+
 #include "mozIDOMWindow.h"
 #include "nsArray.h"
-#include "nsString.h"
-#include "nsComponentManagerUtils.h"
 #include "nsCOMPtr.h"
-#include "nsIWindowWatcher.h"
-#include "nsISupportsPrimitives.h"
+#include "nsComponentManagerUtils.h"
 #include "nsICommandLine.h"
+#include "nsISupportsPrimitives.h"
 #include "nsIURI.h"
+#include "nsIWindowWatcher.h"
 #include "nsServiceManagerUtils.h"
+#include "nsString.h"
 
 nsLayoutDebugCLH::nsLayoutDebugCLH() = default;
 
@@ -35,7 +34,9 @@ static nsresult HandleFlagWithOptionalArgument(nsICommandLine* aCmdLine,
 
   rv = aCmdLine->FindFlag(aName, false, &idx);
   NS_ENSURE_SUCCESS(rv, rv);
-  if (idx < 0) return NS_OK;
+  if (idx < 0) {
+    return NS_OK;
+  }
 
   aFlagPresent = true;
 
@@ -102,6 +103,12 @@ nsLayoutDebugCLH::Handle(nsICommandLine* aCmdLine) {
   bool captureProfile = false;
   nsString profileFilename;
   bool paged = false;
+  bool anonymousSubtreeDumping = false;
+  bool deterministicFrameDumping = false;
+  bool dumpContent = false;
+  bool dumpFrames = false;
+  bool dumpFramesCSSPixels = false;
+  bool dumpRetainedDisplayList = false;
 
   rv = HandleFlagWithOptionalArgument(aCmdLine, u"layoutdebug"_ns,
                                       u"about:blank"_ns, url, flagPresent);
@@ -121,6 +128,28 @@ nsLayoutDebugCLH::Handle(nsICommandLine* aCmdLine) {
   NS_ENSURE_SUCCESS(rv, rv);
 
   rv = aCmdLine->HandleFlag(u"paged"_ns, false, &paged);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"anonymous-subtree-dumping"_ns, false,
+                            &anonymousSubtreeDumping);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"deterministic-frame-dumping"_ns, false,
+                            &deterministicFrameDumping);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"dump-content"_ns, false, &dumpContent);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"dump-frames"_ns, false, &dumpFrames);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"dump-frames-css-pixels"_ns, false,
+                            &dumpFramesCSSPixels);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = aCmdLine->HandleFlag(u"dump-retained-display-list"_ns, false,
+                            &dumpRetainedDisplayList);
   NS_ENSURE_SUCCESS(rv, rv);
 
   nsCOMPtr<nsIMutableArray> argsArray = nsArray::Create();
@@ -159,6 +188,36 @@ nsLayoutDebugCLH::Handle(nsICommandLine* aCmdLine) {
     NS_ENSURE_SUCCESS(rv, rv);
   }
 
+  if (anonymousSubtreeDumping) {
+    rv = AppendArg(argsArray, u"anonymous-subtree-dumping"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  if (deterministicFrameDumping) {
+    rv = AppendArg(argsArray, u"deterministic-frame-dumping"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  if (dumpContent) {
+    rv = AppendArg(argsArray, u"dump-content"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  if (dumpFrames) {
+    rv = AppendArg(argsArray, u"dump-frames"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  if (dumpFramesCSSPixels) {
+    rv = AppendArg(argsArray, u"dump-frames-css-pixels"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  if (dumpRetainedDisplayList) {
+    rv = AppendArg(argsArray, u"dump-retained-display-list"_ns);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
   nsCOMPtr<nsIWindowWatcher> wwatch =
       do_GetService(NS_WINDOWWATCHER_CONTRACTID);
   NS_ENSURE_TRUE(wwatch, NS_ERROR_FAILURE);
@@ -182,6 +241,17 @@ nsLayoutDebugCLH::GetHelpInfo(nsACString& aResult) {
       "                     Debugger using the Gecko Profiler, and save the\n"
       "                     profile to the specified file (which defaults to\n"
       "                     profile.json).\n"
-      "  --paged Layout the page in paginated mode.\n");
+      "  --paged Layout the page in paginated mode.\n"
+      "  --anonymous-subtree-dumping Toggle option to include anonymous\n"
+      "                              subtrees in content dumps.\n"
+      "  --deterministic-frame-dumping Toggle option to only include\n"
+      "                                deterministic information in frame\n"
+      "                                dumps, for ease of diffing.\n"
+      "  --dump-content Dump the content tree after page load.\n"
+      "  --dump-frames Dump the frame tree (in app units) after page load.\n"
+      "  --dump-frames-css-pixels Dump the frame tree (in CSS pixels) after\n"
+      "                           page load.\n"
+      "  --dump-retained-display-list Dump the retained display list after\n"
+      "                               page load.\n");
   return NS_OK;
 }

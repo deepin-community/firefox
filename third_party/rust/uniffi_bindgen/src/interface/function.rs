@@ -33,10 +33,10 @@
 //! ```
 
 use anyhow::Result;
+use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
-use uniffi_meta::Checksum;
+use super::{AsType, ComponentInterface, DefaultValue, ObjectImpl, Type, TypeIterator};
 
 /// Represents a standalone function.
 ///
@@ -71,6 +71,12 @@ pub struct Function {
 impl Function {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    // Note: Don't recalculate the checksum. In order to have consistent checksums,
+    // we use the Rust names as input.
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn is_async(&self) -> bool {
@@ -122,17 +128,12 @@ impl Function {
         Ok(())
     }
 
-    pub fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(
-            self.arguments
-                .iter()
-                .flat_map(Argument::iter_types)
-                .chain(self.return_type.iter().flat_map(Type::iter_types)),
-        )
-    }
-
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
+    }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::FnMetadata) -> u16 {
+        uniffi_meta::checksum(&Self::from(meta))
     }
 }
 
@@ -153,7 +154,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
-        let return_type = meta.return_type.map(Into::into);
+        let return_type = meta.return_type;
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
@@ -186,12 +187,16 @@ pub struct Argument {
     pub(super) type_: Type,
     pub(super) by_ref: bool,
     pub(super) optional: bool,
-    pub(super) default: Option<Literal>,
+    pub(super) default: Option<DefaultValue>,
 }
 
 impl Argument {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn by_ref(&self) -> bool {
@@ -202,7 +207,7 @@ impl Argument {
         matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
 
-    pub fn default_value(&self) -> Option<&Literal> {
+    pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default.as_ref()
     }
 
@@ -228,15 +233,15 @@ impl From<&Argument> for FfiArgument {
 
 /// Combines the return and throws type of a function/method
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq)]
-pub struct ResultType {
-    pub return_type: Option<Type>,
-    pub throws_type: Option<Type>,
+pub struct ResultType<'a> {
+    pub return_type: Option<&'a Type>,
+    pub throws_type: Option<&'a Type>,
 }
 
-impl ResultType {
+impl ResultType<'_> {
     /// Get the `T` parameters for the `FutureCallback<T>` for this ResultType
     pub fn future_callback_param(&self) -> FfiType {
-        match &self.return_type {
+        match self.return_type {
             Some(t) => t.into(),
             None => FfiType::UInt8,
         }
@@ -246,18 +251,35 @@ impl ResultType {
 /// Implemented by function-like types (Function, Method, Constructor)
 pub trait Callable {
     fn arguments(&self) -> Vec<&Argument>;
-    fn return_type(&self) -> Option<Type>;
-    fn throws_type(&self) -> Option<Type>;
+    fn return_type(&self) -> Option<&Type>;
+    fn throws_type(&self) -> Option<&Type>;
     fn is_async(&self) -> bool;
-    fn takes_self(&self) -> bool {
-        false
+    fn docstring(&self) -> Option<&str>;
+
+    fn self_type(&self) -> Option<Type> {
+        None
     }
-    fn result_type(&self) -> ResultType {
+
+    fn result_type(&self) -> ResultType<'_> {
         ResultType {
             return_type: self.return_type(),
             throws_type: self.throws_type(),
         }
     }
+
+    fn iter_types(&self) -> TypeIterator<'_> {
+        let types: Vec<&Type> = self
+            .arguments()
+            .iter()
+            .flat_map(|a| a.iter_types())
+            .chain(self.return_type().iter().flat_map(|t| t.iter_types()))
+            .chain(self.throws_type().iter().flat_map(|t| t.iter_types()))
+            .collect();
+        Box::new(types.into_iter())
+    }
+
+    // Scaffolding function
+    fn ffi_func(&self) -> &FfiFunction;
 
     // Quick way to get the rust future scaffolding function that corresponds to our return type.
 
@@ -291,16 +313,24 @@ impl Callable for Function {
         self.arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
-        self.return_type().cloned()
+    fn return_type(&self) -> Option<&Type> {
+        self.return_type()
     }
 
-    fn throws_type(&self) -> Option<Type> {
-        self.throws_type().cloned()
+    fn throws_type(&self) -> Option<&Type> {
+        self.throws_type()
+    }
+
+    fn docstring(&self) -> Option<&str> {
+        self.docstring()
     }
 
     fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        &self.ffi_func
     }
 }
 
@@ -310,11 +340,11 @@ impl<T: Callable> Callable for &T {
         (*self).arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
+    fn return_type(&self) -> Option<&Type> {
         (*self).return_type()
     }
 
-    fn throws_type(&self) -> Option<Type> {
+    fn throws_type(&self) -> Option<&Type> {
         (*self).throws_type()
     }
 
@@ -322,8 +352,16 @@ impl<T: Callable> Callable for &T {
         (*self).is_async()
     }
 
-    fn takes_self(&self) -> bool {
-        (*self).takes_self()
+    fn docstring(&self) -> Option<&str> {
+        (*self).docstring()
+    }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        (*self).ffi_func()
+    }
+
+    fn self_type(&self) -> Option<Type> {
+        (*self).self_type()
     }
 }
 
@@ -395,5 +433,30 @@ mod test {
                 .unwrap(),
             "informative docstring"
         );
+    }
+
+    #[test]
+    fn test_iter_types() {
+        let f = Function {
+            name: "fn".to_string(),
+            module_path: "fn".to_string(),
+            is_async: false,
+            arguments: vec![Argument {
+                name: "a".to_string(),
+                type_: Type::Int32,
+                by_ref: false,
+                optional: true,
+                default: None,
+            }],
+            return_type: Some(Type::Int64),
+            ffi_func: FfiFunction::default(),
+            docstring: None,
+            throws: Some(Type::Int8),
+            checksum_fn_name: "".to_string(),
+            checksum: None,
+        };
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int32)));
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int64)));
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int8)));
     }
 }

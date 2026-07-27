@@ -1,4 +1,5 @@
-use std::fmt;
+use alloc::vec::Vec;
+use core::fmt;
 
 use bit_set::BitSet;
 use parking_lot::Mutex;
@@ -56,16 +57,18 @@ impl GeneralHeap {
                 .into_device_result("Descriptor heap creation")?
         };
 
+        let start = DualHandle {
+            cpu: unsafe { raw.GetCPUDescriptorHandleForHeapStart() },
+            gpu: unsafe { raw.GetGPUDescriptorHandleForHeapStart() },
+            count: 0,
+        };
+
         Ok(Self {
-            raw: raw.clone(),
+            raw,
             ty,
             handle_size: unsafe { device.GetDescriptorHandleIncrementSize(ty) } as u64,
             total_handles,
-            start: DualHandle {
-                cpu: unsafe { raw.GetCPUDescriptorHandleForHeapStart() },
-                gpu: unsafe { raw.GetGPUDescriptorHandleForHeapStart() },
-                count: 0,
-            },
+            start,
             ranges: Mutex::new(RangeAllocator::new(0..total_handles)),
         })
     }
@@ -93,7 +96,7 @@ impl GeneralHeap {
 
     pub(super) fn allocate_slice(&self, count: u64) -> Result<DescriptorIndex, crate::DeviceError> {
         let range = self.ranges.lock().allocate_range(count).map_err(|err| {
-            log::error!("Unable to allocate descriptors: {:?}", err);
+            log::error!("Unable to allocate descriptors: {err:?}");
             crate::DeviceError::OutOfMemory
         })?;
         Ok(range.start)
@@ -268,18 +271,25 @@ impl CpuHeap {
         let raw = unsafe { device.CreateDescriptorHeap::<Direct3D12::ID3D12DescriptorHeap>(&desc) }
             .into_device_result("CPU descriptor heap creation")?;
 
+        let start = unsafe { raw.GetCPUDescriptorHandleForHeapStart() };
+
         Ok(Self {
             inner: Mutex::new(CpuHeapInner {
-                _raw: raw.clone(),
+                _raw: raw,
                 stage: Vec::new(),
             }),
-            start: unsafe { raw.GetCPUDescriptorHandleForHeapStart() },
+            start,
             handle_size,
             total,
         })
     }
 
     pub(super) fn at(&self, index: u32) -> Direct3D12::D3D12_CPU_DESCRIPTOR_HANDLE {
+        debug_assert!(
+            index < self.total,
+            "Index ({index}) out of bounds {total}",
+            total = self.total
+        );
         Direct3D12::D3D12_CPU_DESCRIPTOR_HANDLE {
             ptr: self.start.ptr + (self.handle_size * index) as usize,
         }
@@ -297,7 +307,7 @@ impl fmt::Debug for CpuHeap {
 }
 
 pub(super) unsafe fn upload(
-    device: Direct3D12::ID3D12Device,
+    device: &Direct3D12::ID3D12Device,
     src: &CpuHeapInner,
     dst: &GeneralHeap,
     dummy_copy_counts: &[u32],

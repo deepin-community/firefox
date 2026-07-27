@@ -14,6 +14,7 @@ url-classifier-search-result-list = Список таблиц: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = Некорректный URL
 url-classifier-search-error-no-features = Возможности не выбраны
+url-classifier-search-error-no-results = Для URL не найдено записей
 url-classifier-search-btn = Начать поиск
 url-classifier-search-features = Возможности
 url-classifier-search-listType = Тип списка
@@ -44,7 +45,6 @@ url-classifier-debug-sb-modules = Модули лога безопасного �
 url-classifier-debug-modules = Текущие модули логирования
 url-classifier-debug-sbjs-modules = Лог JS безопасного веб-сёрфинга
 url-classifier-debug-file = Текущий файл лога
-
 url-classifier-trigger-update = Запустить обновление
 url-classifier-not-available = недоступно
 url-classifier-disable-sbjs-log = Отключить лог JS безопасного веб-сёрфинга

@@ -12,18 +12,18 @@ import android.text.style.URLSpan
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.edit
 import androidx.core.text.HtmlCompat
 import androidx.core.text.getSpans
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.materialswitch.MaterialSwitch
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.service.nimbus.NimbusApi
 import mozilla.components.support.base.log.logger.Logger
-import mozilla.components.ui.widgets.withCenterAlignedButtons
-import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.experiments.nimbus.internal.EnrolledExperiment
 import org.mozilla.fenix.GleanMetrics.Preferences
 import org.mozilla.fenix.R
@@ -33,7 +33,6 @@ import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.SupportUtils.SumoTopic.OPT_OUT_STUDIES
 import org.mozilla.fenix.utils.Settings
-import kotlin.system.exitProcess
 
 @Suppress("LongParameterList")
 class StudiesView(
@@ -43,6 +42,7 @@ class StudiesView(
     private val interactor: StudiesInteractor,
     private val settings: Settings,
     private val experiments: NimbusApi,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val isAttached: () -> Boolean,
 ) : StudiesAdapterDelegate {
     private val logger = Logger("StudiesView")
@@ -56,49 +56,32 @@ class StudiesView(
         provideStudiesSwitch().isChecked = settings.isExperimentationEnabled
         provideStudiesSwitch().setOnClickListener {
             val isChecked = provideStudiesSwitch().isChecked
-            Preferences.studiesPreferenceEnabled.record(NoExtras())
+            Preferences.studiesPreferenceEnabled.record(
+                Preferences.StudiesPreferenceEnabledExtra(isChecked),
+            )
             provideStudiesTitle().text = getSwitchCheckedTitle()
-            val builder = AlertDialog.Builder(context)
-                .setPositiveButton(
-                    R.string.studies_restart_dialog_ok,
-                ) { dialog, _ ->
-                    settings.isExperimentationEnabled = isChecked
-                    val experimentsKey = context.getPreferenceKey(R.string.pref_key_experimentation)
-                    // In this case, we are using commit() on purpose as we want to warranty
-                    // that we are changing the setting before quitting the app.
-                    context.settings().preferences.edit().putBoolean(experimentsKey, isChecked)
-                        .commit()
 
-                    experiments.globalUserParticipation = isChecked
-                    dialog.dismiss()
-                    quitTheApp()
-                }
-                .setNegativeButton(
-                    R.string.studies_restart_dialog_cancel,
-                ) { dialog, _ ->
-                    provideStudiesSwitch().isChecked = !isChecked
-                    provideStudiesTitle().text = getSwitchTitle()
-                    dialog.dismiss()
-                }
-                .setTitle(R.string.preference_experiments_2)
-                .setMessage(R.string.studies_restart_app)
-                .setCancelable(false)
-            val alertDialog: AlertDialog = builder.create().withCenterAlignedButtons()
-            alertDialog.show()
+            settings.isExperimentationEnabled = isChecked
+            settings.hasUserDisabledExperimentation = !isChecked
+            val experimentsKey = context.getPreferenceKey(R.string.pref_key_experimentation_v2)
+            context.settings().preferences.edit(commit = true) { putBoolean(experimentsKey, isChecked) }
+
+            // Use experimentParticipation for studies-specific settings
+            experiments.experimentParticipation = isChecked
         }
         bindDescription()
 
-        scope.launch(Dispatchers.IO) {
+        scope.launch {
             try {
-                val experiments = experiments.getActiveExperiments()
-                scope.launch(Dispatchers.Main) {
-                    if (isAttached()) {
-                        adapter = StudiesAdapter(
-                            this@StudiesView,
-                            experiments,
-                        )
-                        provideStudiesList().adapter = adapter
-                    }
+                val activeExperiments = withContext(ioDispatcher) {
+                    experiments.getActiveExperiments()
+                }
+                if (isAttached()) {
+                    adapter = StudiesAdapter(
+                        this@StudiesView,
+                        activeExperiments,
+                    )
+                    provideStudiesList().adapter = adapter
                 }
             } catch (e: Throwable) {
                 logger.error("Failed to getActiveExperiments()", e)
@@ -114,8 +97,7 @@ class StudiesView(
     @VisibleForTesting
     internal fun bindDescription() {
         val sumoUrl = SupportUtils.getGenericSumoURLForTopic(OPT_OUT_STUDIES)
-        val appName = context.getString(R.string.app_name)
-        val description = context.getString(R.string.studies_description_2, appName)
+        val description = context.getString(R.string.studies_description_4)
         val learnMore = context.getString(R.string.studies_learn_more)
         val rawText = "$description <a href=\"$sumoUrl\">$learnMore</a>"
         val text = HtmlCompat.fromHtml(rawText, HtmlCompat.FROM_HTML_MODE_COMPACT)
@@ -171,13 +153,8 @@ class StudiesView(
     internal fun provideStudiesTitle(): TextView = binding.studiesTitle
 
     @VisibleForTesting
-    internal fun provideStudiesSwitch(): SwitchCompat = binding.studiesSwitch
+    internal fun provideStudiesSwitch(): MaterialSwitch = binding.studiesSwitch
 
     @VisibleForTesting
     internal fun provideStudiesList(): RecyclerView = binding.studiesList
-
-    @VisibleForTesting
-    internal fun quitTheApp() {
-        exitProcess(0)
-    }
 }

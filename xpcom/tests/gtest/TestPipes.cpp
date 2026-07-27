@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -392,13 +390,19 @@ static void TestPipe2(uint32_t aNumBytes,
 }  // namespace
 
 TEST(Pipes, Blocking_32k)
-{ TestPipe2(32 * 1024); }
+{
+  TestPipe2(32 * 1024);
+}
 
 TEST(Pipes, Blocking_64k)
-{ TestPipe2(64 * 1024); }
+{
+  TestPipe2(64 * 1024);
+}
 
 TEST(Pipes, Blocking_128k)
-{ TestPipe2(128 * 1024); }
+{
+  TestPipe2(128 * 1024);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -999,10 +1003,14 @@ void TestCloseDuringRead(uint32_t aSegmentSize, uint32_t aDataSize) {
 }  // namespace
 
 TEST(Pipes, Close_During_Read_Partial_Segment)
-{ TestCloseDuringRead(1024, 512); }
+{
+  TestCloseDuringRead(1024, 512);
+}
 
 TEST(Pipes, Close_During_Read_Full_Segment)
-{ TestCloseDuringRead(1024, 1024); }
+{
+  TestCloseDuringRead(1024, 1024);
+}
 
 TEST(Pipes, Interfaces)
 {
@@ -1017,15 +1025,12 @@ TEST(Pipes, Interfaces)
   nsCOMPtr<nsITellableStream> readerType2 = do_QueryInterface(reader);
   ASSERT_TRUE(readerType2);
 
-  nsCOMPtr<nsISearchableInputStream> readerType3 = do_QueryInterface(reader);
+  nsCOMPtr<nsICloneableInputStream> readerType3 = do_QueryInterface(reader);
   ASSERT_TRUE(readerType3);
 
-  nsCOMPtr<nsICloneableInputStream> readerType4 = do_QueryInterface(reader);
+  nsCOMPtr<nsIClassInfo> readerType4 = do_QueryInterface(reader);
   ASSERT_TRUE(readerType4);
 
-  nsCOMPtr<nsIClassInfo> readerType5 = do_QueryInterface(reader);
+  nsCOMPtr<nsIBufferedInputStream> readerType5 = do_QueryInterface(reader);
   ASSERT_TRUE(readerType5);
-
-  nsCOMPtr<nsIBufferedInputStream> readerType6 = do_QueryInterface(reader);
-  ASSERT_TRUE(readerType6);
 }

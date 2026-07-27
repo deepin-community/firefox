@@ -1,4 +1,3 @@
-/* -*- Mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; tab-width: 4; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -111,8 +110,7 @@ void SharedSurface_AndroidHardwareBuffer::ProducerReleaseImpl() {
   MOZ_ASSERT(mSync);
   int rawFd = egl->fDupNativeFenceFDANDROID(mSync);
   if (rawFd >= 0) {
-    auto fenceFd = ipc::FileDescriptor(UniqueFileHandle(rawFd));
-    mAndroidHardwareBuffer->SetAcquireFence(std::move(fenceFd));
+    mAndroidHardwareBuffer->SetAcquireFence(UniqueFileHandle(rawFd));
   }
 
   gl->fFlush();
@@ -126,18 +124,16 @@ SharedSurface_AndroidHardwareBuffer::ToSurfaceDescriptor() {
 }
 
 void SharedSurface_AndroidHardwareBuffer::WaitForBufferOwnership() {
-  ipc::FileDescriptor fenceFd =
-      mAndroidHardwareBuffer->GetAndResetReleaseFence();
-  if (!fenceFd.IsValid()) {
+  UniqueFileHandle fenceFd = mAndroidHardwareBuffer->GetAndResetReleaseFence();
+  if (!fenceFd) {
     return;
   }
 
   const auto& gle = GLContextEGL::Cast(mDesc.gl);
   const auto& egl = gle->mEgl;
 
-  auto rawFD = fenceFd.TakePlatformHandle();
-  const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID, rawFD.get(),
-                            LOCAL_EGL_NONE};
+  const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
+                            fenceFd.get(), LOCAL_EGL_NONE};
 
   EGLSync sync = egl->fCreateSync(LOCAL_EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
   if (!sync) {
@@ -145,7 +141,7 @@ void SharedSurface_AndroidHardwareBuffer::WaitForBufferOwnership() {
     return;
   }
   // Release fd here, since it is owned by EGLSync
-  Unused << rawFD.release();
+  (void)fenceFd.release();
 
   egl->fClientWaitSync(sync, 0, LOCAL_EGL_FOREVER);
   egl->fDestroySync(sync);

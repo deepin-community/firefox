@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -15,8 +14,8 @@ includes: [testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample1 = new TA(42);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample1 = new TA(makeCtorArg(42));
   var loop = 0;
 
   Object.defineProperty(sample1, "length", {value: 1});
@@ -28,7 +27,7 @@ testWithTypedArrayConstructors(function(TA) {
   assert.sameValue(loop, 42, "data descriptor");
 
   loop = 0;
-  var sample2 = new TA(4);
+  var sample2 = new TA(makeCtorArg(4));
   Object.defineProperty(sample2, "length", {
     get: function() {
       throw new Test262Error(
@@ -42,7 +41,7 @@ testWithTypedArrayConstructors(function(TA) {
     return 0;
   });
   assert.sameValue(loop, 4, "accessor descriptor");
-});
+}, null, ["passthrough"]);
 
 
 reportCompare(0, 0);

@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -34,13 +32,12 @@ ChromeUtils.defineESModuleGetters(this, {
 var timeInMicroseconds = Date.now() * 1000;
 
 add_task(async function test_execute() {
-  info("Initialize browserglue before Places");
-
-  // Avoid default bookmarks import.
-  let glue = Cc["@mozilla.org/browser/browserglue;1"].getService(
-    Ci.nsIObserver
+  info("Avoiding full places initialization importing default bookmarks.");
+  let { PlacesBrowserStartup } = ChromeUtils.importESModule(
+    "moz-src:///browser/components/places/PlacesBrowserStartup.sys.mjs"
   );
-  glue.observe(null, "initial-migration-will-import-default-bookmarks", null);
+  PlacesBrowserStartup.willImportDefaultBookmarks();
+
   Sanitizer.onStartup();
 
   Services.prefs.setBoolPref(Sanitizer.PREF_SHUTDOWN_BRANCH + "cache", true);
@@ -49,9 +46,10 @@ add_task(async function test_execute() {
     true
   );
   Services.prefs.setBoolPref(
-    Sanitizer.PREF_SHUTDOWN_BRANCH + "historyFormDataAndDownloads",
+    Sanitizer.PREF_SHUTDOWN_BRANCH + "browsingHistoryAndDownloads",
     true
   );
+  Services.prefs.setBoolPref(Sanitizer.PREF_SHUTDOWN_BRANCH + "formdata", true);
   Services.prefs.setBoolPref(
     Sanitizer.PREF_SHUTDOWN_BRANCH + "cookiesAndStorage",
     true
@@ -82,19 +80,15 @@ add_task(async function test_execute() {
 
   Assert.equal(await getFormHistoryCount(), 0, "Form history cleared");
 
-  let stmt = DBConn(true).createStatement(
-    "SELECT id FROM moz_places WHERE url = :page_url "
-  );
-
-  try {
-    URIS.forEach(function (aUrl) {
-      stmt.params.page_url = aUrl;
-      Assert.ok(!stmt.executeStep());
-      stmt.reset();
-    });
-  } finally {
-    stmt.finalize();
+  let db = await Sqlite.openConnection({ path: "places.sqlite" });
+  for (let aUrl of URIS) {
+    let rows = await db.execute(
+      "SELECT id FROM moz_places WHERE url = :page_url",
+      { page_url: aUrl }
+    );
+    Assert.ok(!rows.length, `${aUrl} should not be in the database`);
   }
+  await db.close();
 
   info("Check cache");
   // Check cache.

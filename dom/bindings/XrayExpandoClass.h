@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,6 +10,8 @@
 #ifndef mozilla_dom_XrayExpandoClass_h
 #define mozilla_dom_XrayExpandoClass_h
 
+#include "js/Class.h"
+
 /*
  * maybeStatic_ Should be either `static` or nothing (because some Xray expando
  * classes are not static).
@@ -20,13 +20,20 @@
  *
  * extraSlots_ should be how many extra slots to give the class, in addition to
  * the ones Xray expandos want.
+ *
+ * ops_ should be the JSClassOps to use for the class.
  */
-#define DEFINE_XRAY_EXPANDO_CLASS(maybeStatic_, name_, extraSlots_)           \
+#define DEFINE_XRAY_EXPANDO_CLASS_WITH_OPS(maybeStatic_, name_, extraSlots_,  \
+                                           ops_)                              \
   maybeStatic_ const JSClass name_ = {                                        \
       "XrayExpandoObject",                                                    \
       JSCLASS_HAS_RESERVED_SLOTS(xpc::JSSLOT_EXPANDO_COUNT + (extraSlots_)) | \
           JSCLASS_FOREGROUND_FINALIZE,                                        \
-      &xpc::XrayExpandoObjectClassOps}
+      ops_}
+
+#define DEFINE_XRAY_EXPANDO_CLASS(maybeStatic_, name_, extraSlots_)    \
+  DEFINE_XRAY_EXPANDO_CLASS_WITH_OPS(maybeStatic_, name_, extraSlots_, \
+                                     &xpc::XrayExpandoObjectClassOps)
 
 namespace mozilla::dom {
 

@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 PromiseTestUtils.allowMatchingRejectionsGlobally(/packaging errors/);
@@ -53,10 +51,10 @@ let tests = [
   },
 ];
 
-// For some reason about:rights and about:about used to behave differently (maybe
-// because only the latter is privileged?) so both should be tested.  about:about
-// is used in the test as the base tab.
-let urls = ["http://example.com/", "http://mochi.test:8888/", "about:rights"];
+// For some reason about:about used to behave differently (maybe because only
+// the latter is privileged?) so should be tested.  about:about is used in the
+// test as the base tab.
+let urls = ["http://example.com/", "http://mochi.test:8888/"];
 
 function getId(tab) {
   const {

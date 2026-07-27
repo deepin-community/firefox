@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,7 @@
 #include "ErrorList.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
-#include "mozilla/IntegerPrintfMacros.h"
+#include "nsIBounceTrackingProtection.h"
 #include "nsIPrincipal.h"
 
 namespace mozilla {
@@ -38,9 +36,10 @@ nsresult BounceTrackingStateGlobal::RecordUserActivation(
   bool hasRemoved = mBounceTrackers.Remove(aSiteHost);
 
   if (hasRemoved) {
-    MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
-            ("%s: Removed bounce tracking candidate due to user activation: %s",
-             __FUNCTION__, PromiseFlatCString(aSiteHost).get()));
+    MOZ_LOG_FMT(
+        gBounceTrackingProtectionLog, LogLevel::Debug,
+        "{}: Removed bounce tracking candidate due to user activation: {}",
+        __FUNCTION__, aSiteHost);
   }
 
   // Make sure we don't overwrite an existing, more recent user activation. This
@@ -49,10 +48,9 @@ nsresult BounceTrackingStateGlobal::RecordUserActivation(
   Maybe<PRTime> existingUserActivation = mUserActivation.MaybeGet(aSiteHost);
   if (existingUserActivation.isSome() &&
       existingUserActivation.value() >= aTime) {
-    MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
-            ("%s: Skip: A more recent user activation "
-             "already exists for %s",
-             __FUNCTION__, PromiseFlatCString(aSiteHost).get()));
+    MOZ_LOG_FMT(gBounceTrackingProtectionLog, LogLevel::Debug,
+                "{}: Skip: A more recent user activation already exists for {}",
+                __FUNCTION__, aSiteHost);
     return NS_OK;
   }
 
@@ -105,6 +103,8 @@ nsresult BounceTrackingStateGlobal::ClearSiteHost(const nsACString& aSiteHost,
                "A site must only be in one of the maps at a time.");
   }
 
+  mRecentPurges.Remove(aSiteHost);
+
   if (aSkipStorage || !ShouldPersistToDisk()) {
     return NS_OK;
   }
@@ -120,10 +120,9 @@ nsresult BounceTrackingStateGlobal::ClearByTimeRange(
   NS_ENSURE_ARG_MIN(aFrom, 0);
   NS_ENSURE_TRUE(!aTo || aTo.value() > aFrom, NS_ERROR_INVALID_ARG);
 
-  MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
-          ("%s: Clearing user activations by time range from %" PRIu64
-           " to %" PRIu64 " %s",
-           __FUNCTION__, aFrom, aTo.valueOr(0), Describe().get()));
+  MOZ_LOG_FMT(gBounceTrackingProtectionLog, LogLevel::Debug,
+              "{}: Clearing user activations by time range from {} to {} {}",
+              __FUNCTION__, aFrom, aTo.valueOr(0), *this);
 
   // Clear in memory user activation data.
   if (aEntryType.isNothing() ||
@@ -132,9 +131,9 @@ nsresult BounceTrackingStateGlobal::ClearByTimeRange(
     for (auto iter = mUserActivation.Iter(); !iter.Done(); iter.Next()) {
       if (iter.Data() >= aFrom &&
           (aTo.isNothing() || iter.Data() <= aTo.value())) {
-        MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
-                ("%s: Remove user activation for %s", __FUNCTION__,
-                 PromiseFlatCString(iter.Key()).get()));
+        MOZ_LOG_FMT(gBounceTrackingProtectionLog, LogLevel::Debug,
+                    "{}: Remove user activation for {}", __FUNCTION__,
+                    iter.Key());
         iter.Remove();
       }
     }
@@ -145,11 +144,39 @@ nsresult BounceTrackingStateGlobal::ClearByTimeRange(
       aEntryType.value() ==
           BounceTrackingProtectionStorage::EntryType::BounceTracker) {
     for (auto iter = mBounceTrackers.Iter(); !iter.Done(); iter.Next()) {
-      if (iter.Data() >= aFrom &&
-          (aTo.isNothing() || iter.Data() <= aTo.value())) {
-        MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
-                ("%s: Remove bouncer tracker for %s", __FUNCTION__,
-                 PromiseFlatCString(iter.Key()).get()));
+      if (iter.Data().mBounceTime >= aFrom &&
+          (aTo.isNothing() || iter.Data().mBounceTime <= aTo.value())) {
+        MOZ_LOG_FMT(gBounceTrackingProtectionLog, LogLevel::Debug,
+                    "{}: Remove bouncer tracker for {}", __FUNCTION__,
+                    iter.Key());
+        iter.Remove();
+      }
+    }
+  }
+
+  // Clear purge tracker log if there is no type filter. Used for
+  // ClearDataService.
+  if (aEntryType.isNothing()) {
+    for (auto iter = mRecentPurges.Iter(); !iter.Done(); iter.Next()) {
+      auto& purgeArray = iter.Data();
+
+      // Use RemoveElementsBy to safely remove elements from nsTArray while
+      // iterating.
+      purgeArray.RemoveElementsBy([&](const auto& entry) {
+        const PRTime& purgeTime = entry->PurgeTimeRefConst();
+        bool shouldRemove =
+            purgeTime >= aFrom && (aTo.isNothing() || purgeTime <= aTo.value());
+
+        if (shouldRemove) {
+          MOZ_LOG_FMT(gBounceTrackingProtectionLog, LogLevel::Debug,
+                      "{}: Remove purge log entry for site {}", __FUNCTION__,
+                      iter.Key());
+        }
+        return shouldRemove;
+      });
+
+      // If the array is now empty, remove the entire entry from mRecentPurges
+      if (purgeArray.IsEmpty()) {
         iter.Remove();
       }
     }
@@ -171,13 +198,15 @@ bool BounceTrackingStateGlobal::HasBounceTracker(
 }
 
 nsresult BounceTrackingStateGlobal::RecordBounceTracker(
-    const nsACString& aSiteHost, PRTime aTime, bool aSkipStorage) {
+    const nsACString& aSiteHost, PRTime aTime, bool aSkipStorage,
+    BounceTrackingRecord* aRecord) {
   NS_ENSURE_TRUE(aSiteHost.Length(), NS_ERROR_INVALID_ARG);
   NS_ENSURE_TRUE(aTime > 0, NS_ERROR_INVALID_ARG);
 
   // Can not record a bounce tracker if the site has a user activation.
   NS_ENSURE_TRUE(!mUserActivation.Contains(aSiteHost), NS_ERROR_FAILURE);
-  mBounceTrackers.InsertOrUpdate(aSiteHost, aTime);
+  mBounceTrackers.InsertOrUpdate(aSiteHost,
+                                 BounceTrackerCandidate{aTime, aRecord});
 
   if (aSkipStorage || !ShouldPersistToDisk()) {
     return NS_OK;
@@ -188,6 +217,26 @@ nsresult BounceTrackingStateGlobal::RecordBounceTracker(
   return mStorage->UpdateDBEntry(
       mOriginAttributes, aSiteHost,
       BounceTrackingProtectionStorage::EntryType::BounceTracker, aTime);
+}
+
+nsresult BounceTrackingStateGlobal::RecordPurgedTracker(
+    const RefPtr<BounceTrackingPurgeEntry>& aEntry) {
+  MOZ_ASSERT(StaticPrefs::privacy_bounceTrackingProtection_mode() ==
+                 nsIBounceTrackingProtection::MODE_ENABLED,
+             "Should only record purged trackers when the feature is enabled.");
+
+  NS_ENSURE_ARG_POINTER(aEntry);
+  // Ensure that entries unrelated to this state global can not be added.
+  bool entryOAMatchesStateGlobalOA =
+      aEntry->OriginAttributesRef() == mOriginAttributes;
+  MOZ_ASSERT(entryOAMatchesStateGlobalOA);
+  NS_ENSURE_TRUE(entryOAMatchesStateGlobalOA, NS_ERROR_INVALID_ARG);
+
+  nsTArray<RefPtr<BounceTrackingPurgeEntry>>& entriesForSite =
+      mRecentPurges.LookupOrInsert(aEntry->SiteHostRef());
+  entriesForSite.AppendElement(aEntry);
+
+  return NS_OK;
 }
 
 nsresult BounceTrackingStateGlobal::RemoveBounceTrackers(
@@ -224,29 +273,6 @@ nsresult BounceTrackingStateGlobal::ClearByType(
   return mStorage->DeleteDBEntriesByType(
       &mOriginAttributes,
       BounceTrackingProtectionStorage::EntryType::BounceTracker);
-}
-
-// static
-nsCString BounceTrackingStateGlobal::DescribeMap(
-    const nsTHashMap<nsCStringHashKey, PRTime>& aMap) {
-  nsAutoCString mapStr;
-
-  for (auto iter = aMap.ConstIter(); !iter.Done(); iter.Next()) {
-    mapStr.Append(nsPrintfCString("{ %s: %" PRIu64 " }, ",
-                                  PromiseFlatCString(iter.Key()).get(),
-                                  iter.Data()));
-  }
-
-  return std::move(mapStr);
-}
-
-nsCString BounceTrackingStateGlobal::Describe() {
-  nsAutoCString originAttributeSuffix;
-  mOriginAttributes.CreateSuffix(originAttributeSuffix);
-  return nsPrintfCString(
-      "{ mOriginAttributes: %s, mUserActivation: %s, mBounceTrackers: %s }",
-      originAttributeSuffix.get(), DescribeMap(mUserActivation).get(),
-      DescribeMap(mBounceTrackers).get());
 }
 
 }  // namespace mozilla

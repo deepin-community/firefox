@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,14 +6,15 @@
 
 #include <new>
 #include <utility>
+
 #include "AttrArray.h"
 #include "MainThreadUtils.h"
 #include "ReferrerInfo.h"
 #include "Units.h"
 #include "XULButtonElement.h"
 #include "XULFrameElement.h"
-#include "XULMenuElement.h"
 #include "XULMenuBarElement.h"
+#include "XULMenuElement.h"
 #include "XULPopupElement.h"
 #include "XULResizerElement.h"
 #include "XULTextElement.h"
@@ -22,14 +22,14 @@
 #include "XULTreeElement.h"
 #include "js/CompilationAndEvaluation.h"
 #include "js/CompileOptions.h"  // JS::CompileOptions, JS::OwningCompileOptions, , JS::ReadOnlyCompileOptions, JS::ReadOnlyDecodeOptions, JS::DecodeOptions
-#include "js/experimental/CompileScript.h"  // JS::NewFrontendContext, JS::DestroyFrontendContext, JS::SetNativeStackQuota, JS::ThreadStackQuotaForSize, JS::CompileGlobalScriptToStencil, JS::CompilationStorage
-#include "js/experimental/JSStencil.h"      // JS::Stencil, JS::FrontendContext
 #include "js/SourceText.h"
 #include "js/Transcoding.h"
 #include "js/Utility.h"
+#include "js/experimental/CompileScript.h"  // JS::NewFrontendContext, JS::DestroyFrontendContext, JS::SetNativeStackQuota, JS::ThreadStackQuotaForSize, JS::CompileGlobalScriptToStencil, JS::CompilationStorage
+#include "js/experimental/JSStencil.h"      // JS::Stencil, JS::FrontendContext
 #include "jsapi.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/ArrayIterator.h"
+#include "mozilla/Assertions.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/DeclarationBlock.h"
 #include "mozilla/EventDispatcher.h"
@@ -40,7 +40,6 @@
 #include "mozilla/FocusModel.h"
 #include "mozilla/GlobalKeyListener.h"
 #include "mozilla/HoldDropJSObjects.h"
-#include "mozilla/MacroForEach.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MouseEvents.h"
 #include "mozilla/OwningNonNull.h"
@@ -52,10 +51,9 @@
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/FocusModel.h"
 #include "mozilla/TaskController.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/URLExtraData.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/BorrowedAttrInfo.h"
 #include "mozilla/dom/CSSRuleBinding.h"
@@ -67,7 +65,6 @@
 #include "mozilla/dom/FragmentOrElement.h"
 #include "mozilla/dom/FromParser.h"
 #include "mozilla/dom/MouseEventBinding.h"
-#include "mozilla/dom/MutationEventBinding.h"
 #include "mozilla/dom/NodeInfo.h"
 #include "mozilla/dom/ReferrerPolicyBinding.h"
 #include "mozilla/dom/ScriptSettings.h"
@@ -78,9 +75,9 @@
 #include "mozilla/fallible.h"
 #include "nsAtom.h"
 #include "nsAttrValueInlines.h"
+#include "nsCOMPtr.h"
 #include "nsCaseTreatment.h"
 #include "nsChangeHint.h"
-#include "nsCOMPtr.h"
 #include "nsCompatibility.h"
 #include "nsContentCreatorFunctions.h"
 #include "nsContentUtils.h"
@@ -106,6 +103,7 @@
 #include "nsIScriptContext.h"
 #include "nsISupportsUtils.h"
 #include "nsIURI.h"
+#include "nsIURIWithSizeOf.h"
 #include "nsIXPConnect.h"
 #include "nsMenuPopupFrame.h"
 #include "nsNodeInfoManager.h"
@@ -211,6 +209,7 @@ nsXULElement* nsXULElement::Construct(
       nodeInfo->Equals(nsGkAtoms::thumb) ||
       nodeInfo->Equals(nsGkAtoms::button) ||
       nodeInfo->Equals(nsGkAtoms::menuitem) ||
+      nodeInfo->Equals(nsGkAtoms::richlistitem) ||
       nodeInfo->Equals(nsGkAtoms::toolbarbutton) ||
       nodeInfo->Equals(nsGkAtoms::toolbarpaletteitem) ||
       nodeInfo->Equals(nsGkAtoms::scrollbarbutton)) {
@@ -222,68 +221,23 @@ nsXULElement* nsXULElement::Construct(
 }
 
 /* static */
-already_AddRefed<nsXULElement> nsXULElement::CreateFromPrototype(
-    nsXULPrototypeElement* aPrototype, mozilla::dom::NodeInfo* aNodeInfo,
-    bool aIsScriptable, bool aIsRoot) {
-  RefPtr<mozilla::dom::NodeInfo> ni = aNodeInfo;
+already_AddRefed<Element> nsXULElement::CreateFromPrototype(
+    nsXULPrototypeElement* aPrototype, Document* aDocument, bool aIsRoot) {
+  mozilla::dom::NodeInfo* ni = aPrototype->mNodeInfo;
+  RefPtr<mozilla::dom::NodeInfo> nodeInfo =
+      aDocument->NodeInfoManager()->GetNodeInfo(
+          ni->NameAtom(), ni->GetPrefixAtom(), ni->NamespaceID(), ELEMENT_NODE);
+
   nsCOMPtr<Element> baseElement;
-  NS_NewXULElement(getter_AddRefs(baseElement), ni.forget(),
+  NS_NewXULElement(getter_AddRefs(baseElement), nodeInfo.forget(),
                    dom::FROM_PARSER_NETWORK, aPrototype->mIsAtom);
-
-  if (baseElement) {
-    nsXULElement* element = FromNode(baseElement);
-
-    if (aPrototype->mHasIdAttribute) {
-      element->SetHasID();
-    }
-    if (aPrototype->mHasClassAttribute) {
-      element->SetMayHaveClass();
-    }
-    if (aPrototype->mHasStyleAttribute) {
-      element->SetMayHaveStyle();
-    }
-
-    element->MakeHeavyweight(aPrototype);
-    if (aIsScriptable) {
-      // Check each attribute on the prototype to see if we need to do
-      // any additional processing and hookup that would otherwise be
-      // done 'automagically' by SetAttr().
-      for (const auto& attribute : aPrototype->mAttributes) {
-        element->AddListenerForAttributeIfNeeded(attribute.mName);
-      }
-    }
-
-    return baseElement.forget().downcast<nsXULElement>();
+  if (!baseElement) {
+    return nullptr;
   }
 
-  return nullptr;
-}
-
-nsresult nsXULElement::CreateFromPrototype(nsXULPrototypeElement* aPrototype,
-                                           Document* aDocument,
-                                           bool aIsScriptable, bool aIsRoot,
-                                           Element** aResult) {
-  // Create an nsXULElement from a prototype
-  MOZ_ASSERT(aPrototype != nullptr, "null ptr");
-  if (!aPrototype) return NS_ERROR_NULL_POINTER;
-
-  MOZ_ASSERT(aResult != nullptr, "null ptr");
-  if (!aResult) return NS_ERROR_NULL_POINTER;
-
-  RefPtr<mozilla::dom::NodeInfo> nodeInfo;
-  if (aDocument) {
-    mozilla::dom::NodeInfo* ni = aPrototype->mNodeInfo;
-    nodeInfo = aDocument->NodeInfoManager()->GetNodeInfo(
-        ni->NameAtom(), ni->GetPrefixAtom(), ni->NamespaceID(), ELEMENT_NODE);
-  } else {
-    nodeInfo = aPrototype->mNodeInfo;
-  }
-
-  RefPtr<nsXULElement> element =
-      CreateFromPrototype(aPrototype, nodeInfo, aIsScriptable, aIsRoot);
-  element.forget(aResult);
-
-  return NS_OK;
+  nsXULElement* element = FromNode(baseElement);
+  element->MakeHeavyweight(aPrototype);
+  return baseElement.forget();
 }
 
 nsresult NS_NewXULElement(Element** aResult,
@@ -334,18 +288,11 @@ NS_INTERFACE_MAP_END_INHERITING(nsStyledElement)
 nsresult nsXULElement::Clone(mozilla::dom::NodeInfo* aNodeInfo,
                              nsINode** aResult) const {
   *aResult = nullptr;
-
-  RefPtr<mozilla::dom::NodeInfo> ni = aNodeInfo;
-  RefPtr<nsXULElement> element = Construct(ni.forget());
-
-  nsresult rv = const_cast<nsXULElement*>(this)->CopyInnerTo(
-      element, ReparseAttributes::No);
-  NS_ENSURE_SUCCESS(rv, rv);
-
+  RefPtr<nsXULElement> element = Construct(do_AddRef(aNodeInfo));
+  MOZ_TRY(const_cast<nsXULElement*>(this)->CopyInnerTo(element));
   // Note that we're _not_ copying mControllers.
-
   element.forget(aResult);
-  return rv;
+  return NS_OK;
 }
 
 //----------------------------------------------------------------------
@@ -548,12 +495,6 @@ void nsXULElement::AddListenerForAttributeIfNeeded(nsAtom* aLocalName) {
   }
 }
 
-void nsXULElement::AddListenerForAttributeIfNeeded(const nsAttrName& aName) {
-  if (aName.IsAtom()) {
-    AddListenerForAttributeIfNeeded(aName.Atom());
-  }
-}
-
 class XULInContentErrorReporter : public Runnable {
  public:
   explicit XULInContentErrorReporter(Document& aDocument)
@@ -591,11 +532,12 @@ nsresult nsXULElement::BindToTree(BindContext& aContext, nsINode& aParent) {
   Document& doc = aContext.OwnerDoc();
   if (!IsInNativeAnonymousSubtree() && !doc.AllowXULXBL() &&
       !doc.HasWarnedAbout(DeprecatedOperations::eImportXULIntoContent)) {
-    nsContentUtils::AddScriptRunner(new XULInContentErrorReporter(doc));
+    nsContentUtils::AddScriptRunner(
+        MakeAndAddRef<XULInContentErrorReporter>(doc));
   }
 
 #ifdef DEBUG
-  if (!doc.AllowXULXBL() && !doc.IsUnstyledDocument()) {
+  if (!doc.AllowXULXBL() && !doc.IsLoadedAsData()) {
     // To save CPU cycles and memory, we don't load xul.css for other elements
     // except scrollbars.
     //
@@ -609,29 +551,6 @@ nsresult nsXULElement::BindToTree(BindContext& aContext, nsINode& aParent) {
                "Unexpected XUL element in non-XUL doc");
   }
 #endif
-
-  // Within Bug 1492063 and its dependencies we started to apply a
-  // CSP to system privileged about pages. Since some about: pages
-  // are implemented in *.xul files we added this workaround to
-  // apply a CSP to them. To do so, we check the introduced custom
-  // attribute 'csp' on the root element.
-  if (doc.GetRootElement() == this) {
-    nsAutoString cspPolicyStr;
-    GetAttr(nsGkAtoms::csp, cspPolicyStr);
-
-#ifdef DEBUG
-    {
-      nsCOMPtr<nsIContentSecurityPolicy> docCSP = doc.GetCsp();
-      uint32_t policyCount = 0;
-      if (docCSP) {
-        docCSP->GetPolicyCount(&policyCount);
-      }
-      MOZ_ASSERT(policyCount == 0, "how come we already have a policy?");
-    }
-#endif
-
-    CSP_ApplyMetaCSPToDoc(doc, cspPolicyStr);
-  }
 
   if (NodeInfo()->Equals(nsGkAtoms::keyset, kNameSpaceID_XUL)) {
     // Create our XUL key listener and hook it up.
@@ -868,7 +787,7 @@ bool nsXULElement::IsEventStoppedFromAnonymousScrollbar(EventMessage aMessage) {
   return (IsRootOfNativeAnonymousSubtree() &&
           IsAnyOfXULElements(nsGkAtoms::scrollbar, nsGkAtoms::scrollcorner) &&
           (aMessage == ePointerClick || aMessage == eMouseDoubleClick ||
-           aMessage == eXULCommand || aMessage == eContextMenu ||
+           aMessage == eCommand || aMessage == eContextMenu ||
            aMessage == eDragStart || aMessage == ePointerAuxClick));
 }
 
@@ -903,7 +822,7 @@ nsresult nsXULElement::DispatchXULCommand(const EventChainVisitor& aVisitor,
         nullptr, orig->IsControl(), orig->IsAlt(), orig->IsShift(),
         orig->IsMeta(), inputSource, button);
   } else {
-    NS_WARNING("A XUL element is attached to a command that doesn't exist!\n");
+    NS_WARNING("A XUL element is attached to a command that doesn't exist!");
   }
   return NS_OK;
 }
@@ -916,7 +835,8 @@ void nsXULElement::GetEventTargetParent(EventChainPreVisitor& aVisitor) {
     aVisitor.SetParentTarget(nullptr, false);
     return;
   }
-  if (aVisitor.mEvent->mMessage == eXULCommand &&
+  if (aVisitor.mEvent->mMessage == eUnidentifiedEvent &&
+      aVisitor.mEvent->mSpecifiedEventType == nsGkAtoms::oncommand &&
       aVisitor.mEvent->mClass == eInputEventClass &&
       aVisitor.mEvent->mOriginalTarget == static_cast<nsIContent*>(this) &&
       !IsXULElement(nsGkAtoms::command)) {
@@ -959,14 +879,12 @@ nsXULElement::IsAttributeMapped(const nsAtom* aAttribute) const {
   return false;
 }
 
-nsIControllers* nsXULElement::GetControllers(ErrorResult& rv) {
-  if (!Controllers()) {
-    nsExtendedDOMSlots* slots = ExtendedDOMSlots();
-
+nsIControllers* nsXULElement::EnsureControllers() {
+  auto* slots = ExtendedDOMSlots();
+  if (!slots->mControllers) {
     slots->mControllers = new nsXULControllers();
   }
-
-  return Controllers();
+  return slots->mControllers;
 }
 
 void nsXULElement::Click(CallerType aCallerType) {
@@ -976,7 +894,9 @@ void nsXULElement::Click(CallerType aCallerType) {
 
 void nsXULElement::ClickWithInputSource(uint16_t aInputSource,
                                         bool aIsTrustedEvent) {
-  if (BoolAttrIsTrue(nsGkAtoms::disabled)) return;
+  if (State().HasState(ElementState::DISABLED)) {
+    return;
+  }
 
   nsCOMPtr<Document> doc = GetComposedDoc();  // Strong just in case
   if (doc) {
@@ -1072,48 +992,14 @@ nsresult nsXULElement::AddPopupListener(nsAtom* aName) {
 //----------------------------------------------------------------------
 
 nsresult nsXULElement::MakeHeavyweight(nsXULPrototypeElement* aPrototype) {
-  if (!aPrototype) {
-    return NS_OK;
-  }
-
-  size_t i;
-  nsresult rv;
-  for (i = 0; i < aPrototype->mAttributes.Length(); ++i) {
-    nsXULPrototypeAttribute* protoattr = &aPrototype->mAttributes[i];
-    nsAttrValue attrValue;
-
-    // Style rules need to be cloned.
-    if (protoattr->mValue.Type() == nsAttrValue::eCSSDeclaration) {
-      DeclarationBlock* decl = protoattr->mValue.GetCSSDeclarationValue();
-      RefPtr<DeclarationBlock> declClone = decl->Clone();
-
-      nsString stringValue;
-      protoattr->mValue.ToString(stringValue);
-
-      attrValue.SetTo(declClone.forget(), &stringValue);
-    } else {
-      attrValue.SetTo(protoattr->mValue);
-    }
-
-    bool oldValueSet;
-    // XXX we might wanna have a SetAndTakeAttr that takes an nsAttrName
-    if (protoattr->mName.IsAtom()) {
-      rv = mAttrs.SetAndSwapAttr(protoattr->mName.Atom(), attrValue,
-                                 &oldValueSet);
-    } else {
-      rv = mAttrs.SetAndSwapAttr(protoattr->mName.NodeInfo(), attrValue,
-                                 &oldValueSet);
-    }
-    NS_ENSURE_SUCCESS(rv, rv);
+  MOZ_ASSERT(aPrototype);
+  for (const auto& protoattr : aPrototype->mAttributes) {
+    nsAttrValue value(protoattr.mValue);
+    MOZ_TRY(SetParsedAttr(
+        protoattr.mName.NamespaceID(), protoattr.mName.LocalName(),
+        protoattr.mName.GetPrefix(), value, /* aNotify = */ false));
   }
   return NS_OK;
-}
-
-bool nsXULElement::BoolAttrIsTrue(nsAtom* aName) const {
-  const nsAttrValue* attr = GetAttrInfo(kNameSpaceID_None, aName).mValue;
-
-  return attr && attr->Type() == nsAttrValue::eAtom &&
-         attr->GetAtomValue() == nsGkAtoms::_true;
 }
 
 bool nsXULElement::IsEventAttributeNameInternal(nsAtom* aName) {
@@ -1432,7 +1318,6 @@ nsresult nsXULPrototypeElement::SetAttrAt(uint32_t aPos,
   }
 
   if (mAttributes[aPos].mName.Equals(nsGkAtoms::id) && !aValue.IsEmpty()) {
-    mHasIdAttribute = true;
     // Store id as atom.
     // id="" means that the element has no id. Not that it has
     // emptystring as id.
@@ -1443,6 +1328,19 @@ nsresult nsXULPrototypeElement::SetAttrAt(uint32_t aPos,
     mAttributes[aPos].mValue.ParseAtom(aValue);
 
     return NS_OK;
+  } else if (mAttributes[aPos].mName.Equals(nsGkAtoms::aria_controls) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_describedby) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_details) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_errormessage) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_flowto) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_labelledby) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::aria_owns) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::control) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::_for) ||
+             mAttributes[aPos].mName.Equals(nsGkAtoms::headers)) {
+    mAttributes[aPos].mValue.ParseAtomArray(aValue);
+
+    return NS_OK;
   } else if (mAttributes[aPos].mName.Equals(nsGkAtoms::is)) {
     // Store is as atom.
     mAttributes[aPos].mValue.ParseAtom(aValue);
@@ -1450,13 +1348,11 @@ nsresult nsXULPrototypeElement::SetAttrAt(uint32_t aPos,
 
     return NS_OK;
   } else if (mAttributes[aPos].mName.Equals(nsGkAtoms::_class)) {
-    mHasClassAttribute = true;
     // Compute the element's class list
     mAttributes[aPos].mValue.ParseAtomArray(aValue);
 
     return NS_OK;
   } else if (mAttributes[aPos].mName.Equals(nsGkAtoms::style)) {
-    mHasStyleAttribute = true;
     // Parse the element's 'style' attribute
 
     // This is basically duplicating what nsINode::NodePrincipal() does
@@ -1473,6 +1369,7 @@ nsresult nsXULPrototypeElement::SetAttrAt(uint32_t aPos,
         aValue, data, eCompatibility_FullStandards, nullptr,
         StyleCssRuleType::Style);
     if (declaration) {
+      declaration->SetImmutable();
       mAttributes[aPos].mValue.SetTo(declaration.forget(), &aValue);
 
       return NS_OK;
@@ -1507,15 +1404,21 @@ nsXULPrototypeScript::nsXULPrototypeScript(uint32_t aLineNo)
       mSrcLoadWaiters(nullptr),
       mStencil(nullptr) {}
 
-static nsresult WriteStencil(nsIObjectOutputStream* aStream, JSContext* aCx,
+static nsresult WriteStencil(nsIObjectOutputStream* aStream,
                              JS::Stencil* aStencil) {
+  JS::FrontendContext* fc = JS::NewFrontendContext();
+  if (!fc) {
+    return NS_ERROR_OUT_OF_MEMORY;
+  }
+
   JS::TranscodeBuffer buffer;
   JS::TranscodeResult code;
-  code = JS::EncodeStencil(aCx, aStencil, buffer);
+  code = JS::EncodeStencil(fc, aStencil, buffer);
+
+  JS::DestroyFrontendContext(fc);
 
   if (code != JS::TranscodeResult::Ok) {
     if (code == JS::TranscodeResult::Throw) {
-      JS_ClearPendingException(aCx);
       return NS_ERROR_OUT_OF_MEMORY;
     }
 
@@ -1608,11 +1511,6 @@ nsresult nsXULPrototypeScript::Serialize(
     const nsTArray<RefPtr<mozilla::dom::NodeInfo>>* aNodeInfos) {
   NS_ENSURE_TRUE(aProtoDoc, NS_ERROR_UNEXPECTED);
 
-  AutoJSAPI jsapi;
-  if (!jsapi.Init(xpc::CompilationScope())) {
-    return NS_ERROR_UNEXPECTED;
-  }
-
   NS_ASSERTION(!mSrcLoading || mSrcLoadWaiters != nullptr || !mStencil,
                "script source still loading when serializing?!");
   if (!mStencil) return NS_ERROR_FAILURE;
@@ -1622,10 +1520,7 @@ nsresult nsXULPrototypeScript::Serialize(
   rv = aStream->Write32(mLineNo);
   if (NS_FAILED(rv)) return rv;
 
-  JSContext* cx = jsapi.cx();
-  MOZ_ASSERT(xpc::CompilationScope() == JS::CurrentGlobalOrNull(cx));
-
-  return WriteStencil(aStream, cx, mStencil);
+  return WriteStencil(aStream, mStencil);
 }
 
 nsresult nsXULPrototypeScript::SerializeOutOfLine(
@@ -2064,6 +1959,19 @@ nsresult nsXULPrototypeScript::InstantiateScript(
 }
 
 void nsXULPrototypeScript::Set(JS::Stencil* aStencil) { mStencil = aStencil; }
+
+void nsXULPrototypeScript::AddSizeOfExcludingThis(nsWindowSizes& aSizes,
+                                                  size_t* aNodeSize) const {
+  // It is okay to include the size of mSrcURI here even though it might have
+  // strong references from elsewhere because the URI was created for this
+  // object, in XULContentSinkImpl::OpenScript() or
+  // nsXULPrototypeElement::Deserialize(). Only objects that created their own
+  // URI will call nsIURIWithSizeOf::SizeOfIncludingThis().
+  if (mSrcURI) {
+    *aNodeSize += SizeOfIncludingThisIfURIWithSizeOf(
+        mSrcURI, aSizes.mState.mMallocSizeOf);
+  }
+}
 
 //----------------------------------------------------------------------
 //

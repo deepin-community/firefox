@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Перанесці ў канец
     .accesskey = к
 fxviewtabrow-move-tab-window = Перанесці ў новае акно
     .accesskey = а
+fxviewtabrow-send-to-device = Даслаць на прыладу
+    .accesskey = р
+fxviewtabrow-send-to-mobile = Адаслаць на мабільны
+    .accesskey = ь
 fxviewtabrow-send-tab = Адправіць картку на прыладу
     .accesskey = т
 fxviewtabrow-pin-tab = Замацаваць картку
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Раз-цішыць картку
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Варыянты для { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Сцішыць { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Раз-цішыць { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Сцішыць картку
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Раз-цішыць картку
+fxviewtabrow-send-to-mobile-connect-device = Падключыць прыладу, каб дасылаць карткі
+fxviewtabrow-send-to-mobile-device-missing2 = Не бачыце вашай прылады?
+fxviewtabrow-send-to-mobile-not-verified = Уліковы запіс не пацверджаны
+fxviewtabrow-send-to-mobile-verify-account = Пацвердзіце свой уліковы запіс
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Увайдзіце, каб дасылаць карткі
+fxviewtabrow-send-to-mobile-turn-on-sync = Уключыць сінхранізацыю, каб дасылаць карткі

@@ -12,23 +12,37 @@ update-updateButton =
     .label = Reiniciar para actualizar { -brand-shorter-name }
     .accesskey = R
 update-checkingForUpdates = Buscando actualizaciones…
+settings-update-checking-for-updates =
+    .label = Buscando actualizaciones…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>Bajando actualización — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Descargando actualización — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Bajando actualización — { $transfer }
 
 ##
 
 update-applying = Aplicando actualización
+settings-update-applying =
+    .label = Aplicando actualización
 update-failed = Actualización fallida. <label data-l10n-name="failed-link">Bajar la última versión</label>
 update-failed-main = Actualización fallida. <a data-l10n-name="failed-link-main">Bajar la última versión</a>
 update-adminDisabled = Actualizaciones deshabilitadas por el administrador del sistema
 update-policy-disabled = Actualizaciones deshabilitadas por tu organización
+settings-update-policy-disabled =
+    .label = Actualizaciones deshabilitadas por tu organización
 update-noUpdatesFound = { -brand-short-name } está actualizado
+settings-update-no-updates-found =
+    .label = { -brand-short-name } está actualizado
 aboutdialog-update-checking-failed = Error al buscar actualizaciones.
+settings-update-checking-failed =
+    .label = Error al buscar actualizaciones.
 update-otherInstanceHandlingUpdates = { -brand-short-name } esta siendo actualizado por otra instancia
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } esta siendo actualizado por otra instancia
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } esta siendo actualiz
 aboutdialog-update-manual-with-link = Actualización disponible en <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Actualización disponible en <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = Ya no puedes seguir actualizando en este sistema.<label data-l10n-name="unsupported-link">Aprender más</label>
+settings-update-unsupported = Ya no puedes seguir actualizando en este sistema.<a data-l10n-name="unsupported-link">Aprender más</a>
 update-restarting = Reiniciando…
+settings-update-restarting =
+    .label = Reiniciando…
 update-internal-error2 = No se pueden buscar actualizaciones debido a un error interno. Actualizaciones disponibles en <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-internal-error = No se pueden buscar actualizaciones debido a un error interno. Actualizaciones disponibles en <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } es diseñado por <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, una <label data-l10n-name="community-creditsLink">comunidad mundial</label> que trabaja para mantener la web abierta, pública y accesible para todos.
 helpus = ¿Quieres ayudar? <label data-l10n-name="helpus-donateLink">¡Haz una donación</label> o <label data-l10n-name="helpus-getInvolvedLink">participa!</label>
 bottomLinks-license = Información de licencia
+bottom-links-terms = Términos de uso
+bottom-links-privacy = Política de privacidad
 bottomLinks-rights = Derechos del usuario final
 bottomLinks-privacy = Política de privacidad
 # Example of resulting string: 66.0.1 (64-bit)

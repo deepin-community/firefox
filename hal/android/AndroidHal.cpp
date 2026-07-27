@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -79,19 +78,20 @@ void GetCurrentNetworkInformation(hal::NetworkInformation* aNetworkInfo) {
 
 static bool IsSupportedScreenOrientation(hal::ScreenOrientation aOrientation) {
   // The Android backend only supports these orientations.
-  static constexpr ScreenOrientation kSupportedOrientations[] = {
-      ScreenOrientation::PortraitPrimary,
-      ScreenOrientation::PortraitSecondary,
-      ScreenOrientation::PortraitPrimary | ScreenOrientation::PortraitSecondary,
-      ScreenOrientation::LandscapePrimary,
-      ScreenOrientation::LandscapeSecondary,
-      ScreenOrientation::LandscapePrimary |
-          ScreenOrientation::LandscapeSecondary,
-      ScreenOrientation::PortraitPrimary |
-          ScreenOrientation::PortraitSecondary |
-          ScreenOrientation::LandscapePrimary |
-          ScreenOrientation::LandscapeSecondary,
-      ScreenOrientation::Default,
+  static constexpr hal::ScreenOrientation kSupportedOrientations[] = {
+      hal::ScreenOrientation::PortraitPrimary,
+      hal::ScreenOrientation::PortraitSecondary,
+      hal::ScreenOrientation::PortraitPrimary |
+          hal::ScreenOrientation::PortraitSecondary,
+      hal::ScreenOrientation::LandscapePrimary,
+      hal::ScreenOrientation::LandscapeSecondary,
+      hal::ScreenOrientation::LandscapePrimary |
+          hal::ScreenOrientation::LandscapeSecondary,
+      hal::ScreenOrientation::PortraitPrimary |
+          hal::ScreenOrientation::PortraitSecondary |
+          hal::ScreenOrientation::LandscapePrimary |
+          hal::ScreenOrientation::LandscapeSecondary,
+      hal::ScreenOrientation::Default,
   };
   for (auto supportedOrientation : kSupportedOrientations) {
     if (aOrientation == supportedOrientation) {

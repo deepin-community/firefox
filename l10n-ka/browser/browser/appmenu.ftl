@@ -8,13 +8,21 @@
 appmenuitem-banner-update-downloading =
     .label = ჩამოიტვირთება ახალი { -brand-shorter-name }
 appmenuitem-banner-update-available =
-    .label = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
+    .label = გასაახლებელია — ჩამოტვირთვა
 appmenuitem-banner-update-manual =
-    .label = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
+    .label = გასაახლებელია — ჩამოტვირთვა
 appmenuitem-banner-update-unsupported =
     .label = ვერ განახლდება — შეუთავსებელია
 appmenuitem-banner-update-restart =
-    .label = განახლება ხელმისაწვდომია — გადატვირთვა ახლავე
+    .label = გასაახლებელია — გადატვირთვა
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = გამოიყენეთ ახალი { -brand-short-name }. შეინარჩუნეთ ყველა თქვენი ჩანართი.
+appmenu-nova-update-link = გასაახლებლად კვლავ გაუშვით
+appmenu-nova-fxa-sign-in = შესვლა
+appmenu-nova-switch-device-promo =
+    .message = მალე გადადიხართ ახალ მოწყობილობაზე? თან წაიყოლეთ { -brand-short-name }!
+appmenu-nova-switch-device-link = როგორ გადაიტანოთ თქვენი მონაცემები
 appmenuitem-new-tab =
     .label = ახალი ჩანართი
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = ახალი პირადი ფანჯარა
 appmenuitem-history =
     .label = ისტორია
+appmenuitem-tab-groups =
+    .label = ჩანართის ჯგუფები
 appmenuitem-downloads =
     .label = ჩამოტვირთვები
 appmenuitem-passwords =
     .label = პაროლები
+appmenuitem-extensions-and-themes =
+    .label = გაფართოებები და თემები
+appmenuitem-extensions =
+    .label = გაფართოებები
 appmenuitem-addons-and-themes =
     .label = დამატებები და თემები
 appmenuitem-print =
@@ -77,6 +91,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = მეტი ჩანართის ჩვენება
     .tooltiptext = სხვა ჩანართების ჩვენებაც, ამ მოწყობილობიდან
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = უქმი ჩანართები
+    .tooltiptext = იხილეთ უქმი ჩანართები ამ მოწყობილობაზე
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = გახსნილი ჩანართები არაა
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = დასინქრონება და �
 appmenu-fxa-signed-in-label = შესვლა
 appmenu-fxa-setup-sync =
     .label = დასინქრონების ჩართვა…
+appmenu-fxa-setup-sync-new = ჩართვა
 appmenuitem-save-page =
     .label = გვერდის შენახვა როგორც…
+appmenuitem-fxa-sync-off-title = დასინქ. გამორთულია
+appmenuitem-fxa-sync-off-description = დაცვა და წვდომა თქვენს სანიშნებთან, პაროლებთან და ყველაფერთან ნებისმიერი ადგილიდან.
 
 ## What's New panel in App menu.
 
@@ -159,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = გახსენით მახასიათებლების აღრიცხვის არე
+    .tooltiptext = გახსენით მახასიათებლების აღრიცხვის არე
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -168,25 +192,42 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
-profiler-popup-presets-web-developer-description = მზა პარამეტრები, პროგრამების ხარვეზების გამოსავლენად, ნაკლები დატვირთვით.
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-description = მზა პარამეტრები პროგრამების ხარვეზების გამოსავლენად ნაკლები დატვირთვით.
 profiler-popup-presets-web-developer-label =
     .label = ვებშემუშავება
 profiler-popup-presets-firefox-description = მზა პარამეტრები, რომლითაც აღიწერება { -brand-shorter-name }.
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
-profiler-popup-presets-graphics-description = მზა პარამეტრები, გრაფიკული ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-graphics-description = მზა პარამეტრები გრაფიკული ხარვეზების გამოსავლენად – { -brand-shorter-name }.
 profiler-popup-presets-graphics-label =
     .label = გრაფიკა
-profiler-popup-presets-media-description2 = მზა პარამეტრები, ხმოვანი და ვიდეოფაილების ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-media-description2 = მზა პარამეტრები ხმოვანი და ვიდეოფაილების ხარვეზების გამოსავლენად – { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = ფაილები
-profiler-popup-presets-networking-description = მზა პარამეტრები, ქსელის ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-ml-description = მზა პარამეტრები მანქანური სწავლების ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = მანქანური სწავლება
+profiler-popup-presets-networking-description = მზა პარამეტრები ქსელის ხარვეზების გამოსავლენად – { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = ქსელი
-profiler-popup-presets-power-description = მზა პარამეტრები, კვების მიწოდების ხარვეზების გამოსავლენად – { -brand-shorter-name }, ჭარბი დატვირთვის შეზღუდვით.
+profiler-popup-presets-networking-with-logs-description = მზა ნაკრები, რომლითაც ქსელის ხარვეზებს გამოიკვლევს { -brand-shorter-name }, მათ შორის კავშირის აღრიცხვებს. მოცემული ჩანაწერები შეიძლება შეიცავდეს საფრთხილო მონაცემებს, როგორიცაა მონახულებული ბმულები.
+profiler-popup-presets-networking-with-logs-label =
+    .label = ქსელის აღრიცხვები
+profiler-popup-presets-power-description = მზა პარამეტრები კვების მიწოდების ხარვეზების გამოსავლენად – { -brand-shorter-name }, ჭარბი დატვირთვის შეზღუდვით.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = კვება
+profiler-popup-presets-debug-description = მზა პარამეტრები, რომ გაიმართოს { -brand-shorter-name }. მეტად დამტვირთავია, არ გამოიყენოთ მძიმე სამუშაოების დროს, გამოსადეგია ბრაუზერის ქცევაზე დასაკვირვებლად.
+profiler-popup-presets-debug-label =
+    .label = გამართვა
+profiler-popup-presets-web-compat-description = სასურველი მზა პარამეტრები ვებთავსებადობის ხარვეზების მოსაგვარებლად, ნაცვლად წარმადობის მიდევნებისა.
+profiler-popup-presets-web-compat-label =
+    .label = ვებთავსებადობა
 profiler-popup-presets-custom-label =
     .label = მორგებული
 
@@ -252,8 +293,63 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = ხელსაწყოთა ზოლის მორგება...
+appmenu-abouttranslations =
+    .label = თარგმნა…
+appmenu-edit-pdf =
+    .label = ჩაასწორეთ PDF…
 appmenu-developer-tools-subheader = ბრაუზერის ხელსაწყოები
 appmenu-developer-tools-extensions =
     .label = გაფართოებები შემმუშავებელთათვის
 appmenuitem-report-broken-site =
-    .label = მოხსენება დაზიანებული საიტის შესახებ
+    .label = არეული საიტის მოხსენება
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = ანგარიშზე შესვლა
+appmenuitem-monitor-title2 = აღკვეთეთ ვინაობის მონაცემთა მითვისება
+appmenuitem-monitor-description2 = შეიტყვეთ მონაცემთა მიტაცების შესახებ
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = მიიღეთ ცნობები მონაცემთა მიტაცებისას
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = დატოვეთ თქვენი ელფოსტა პირადი
+appmenuitem-relay-description2 = გეხმარებათ აირიდოთ უსარგებლო წერილები
+appmenuitem-relay-description = შენიღბეთ თქვენი ელფოსტა და ნომერი
+appmenuitem-services-relay-description = შენიღბვის მაჩვენებლების გვერდის გაშვება
+appmenuitem-vpn-title2 = მდებარეობის დასამალად გამოიყენეთ { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description3 = გააძნელეთ გვერდების მონახულებისას თქვენი დევნა
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = ისარგებლეთ მთლიანი მოწყობილობის დაცვით
+appmenuitem-vpn-description = დაიცავით პირადულობა ინტერნეტში
+appmenu-services-header = ჩემი მომსახურებები
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = პირადულობის ხელსაწყოები
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = მოსინჯეთ დაცვის სხვა ხელსაწყოებიც, Mozilla რომ ქმნის:
+appmenu-other-protection-header = მოსინჯეთ დაცვის სხვა ხელსაწყოები, რომელთაც გთავაზობთ { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = სხვა პროფილები
+appmenu-manage-profiles =
+    .label = პროფილების მართვა
+appmenu-copy-profile =
+    .label = ამ პროფილის ასლი
+appmenu-create-profile2 =
+    .label = ახალი პროფილის შექმნა
+appmenu-create-profile =
+    .label = ახალი პროფილი
+appmenu-edit-profile =
+    .aria-label = პროფილის ჩასწორება
+appmenu-edit-this-profile =
+    .label = ამ პროფილის ჩასწორება
+appmenu-profile-current-in-use = მიმდინარე პროფილი გამოიყენება
+appmenu-profiles-2 =
+    .label = პროფილები
+appmenu-profiles-header = პროფილები
+appmenu-all-profiles =
+    .label = ყველა პროფილი
+appmenu-secure-sync-header = უსაფრთხო დასინქ.

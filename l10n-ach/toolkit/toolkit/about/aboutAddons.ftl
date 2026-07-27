@@ -7,10 +7,6 @@ search-header =
     .placeholder = Yeny addons.mozilla.org
     .searchbuttonlabel = Yeny
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -47,7 +43,7 @@ detail-update-manual =
     .label = Neki
     .tooltiptext = Pe i ket ngec manyen pire kene
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
-# cannot be overriden by the user.
+# cannot be overridden by the user.
 detail-private-disallowed-label = Pe ki Yee i Dirica me Mung
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Mito nongo Dirica me Mung
@@ -194,26 +190,6 @@ shortcuts-modifier-other = Ket Ctrl onyo Alt
 #   $addon (string) - Name of the add-on
 shortcuts-exists = { $addon } dong tye katic kwede
 
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addons-heading-search-input =
@@ -226,7 +202,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } pe rwate kwede { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -241,12 +217,8 @@ details-notification-unsigned2 =
     .message = pe onongo kiromo moko ada pa { $name } me tic kwede i { -brand-short-name }. Mede ki diro.
 details-notification-unsigned-link = Ngec mapol
 details-notification-blocked = { $name } kityeko kwanyo pi kelo kop ikom gwok onyo bedo mot.
-details-notification-blocked2 =
-    .message = { $name } kityeko kwanyo pi kelo kop ikom gwok onyo bedo mot.
 details-notification-blocked-link = Ngec Mukene
 details-notification-softblocked = { $name } ngene pi kelo kop ikom gwok onyo bedo mot.
-details-notification-softblocked2 =
-    .message = { $name } ngene pi kelo kop ikom gwok onyo bedo mot.
 details-notification-softblocked-link = Ngec Mukene
 details-notification-gmp-pending = { $name } bi kete ma cokcoki.
 details-notification-gmp-pending2 =

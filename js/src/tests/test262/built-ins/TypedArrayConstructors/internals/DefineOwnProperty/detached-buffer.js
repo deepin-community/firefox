@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -139,6 +138,6 @@ testWithTypedArrayConstructors(function(TA) {
     false,
     'Reflect.defineProperty(sample, "6", {configurable: false, enumerable: true, writable: true}) must return false'
   );
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

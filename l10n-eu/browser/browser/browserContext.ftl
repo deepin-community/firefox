@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Ireki fitxa berrian
     .accesskey = t
+main-context-menu-open-link-split-view =
+    .label = Ireki lotura ikuspegi zatituan
+    .accesskey = z
 main-context-menu-open-link-container-tab =
     .label = Ireki lotura edukiontzi-fitxa berrian
     .accesskey = b
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Gorde lotura { -pocket-brand-name }-en
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiatu helbide elektronikoa
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiatu lotura
     .accesskey = K
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopiatu gunearen jarraipenik ez duen lotura
-    .accesskey = a
+main-context-menu-preview-link =
+    .label = Aurreikusi lotura
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiatu lotura garbia
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Ezkutatu kontrolak
     .accesskey = k
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Pantaila osoa
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Ikusi deskribapena
     .accesskey = d
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Bilatu irudia { $engine } erabiliz
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Gorde bideoa honela…
     .accesskey = b
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Bidali audioa postaz…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Bidali gailura
+    .accesskey = d
+main-context-menu-send-to-mobile-2 =
+    .label = Bidali mugikorrera
+    .accesskey = d
+main-context-menu-send-to-mobile-sign-in = Hasi saioa fitxak bidaltzeko
+main-context-menu-send-to-mobile-enable-sync2 = Gaitu sinkronizazioa fitxa bidaltzeko
+main-context-menu-send-to-mobile-connect-phone2 = Konektatu zure telefonoa
+main-context-menu-send-to-mobile-device-missing2 = Ez duzu zure gailua ikusten?
+main-context-menu-send-to-mobile-sign-in-from-link = Hasi saioa lotura bidaltzeko
+main-context-menu-send-to-mobile-sign-in-from-page = Hasi saioa orria bidaltzeko
+main-context-menu-send-to-mobile-enable-sync3 = Aktibatu sinkronizazioa fitxak bidaltzeko
+main-context-menu-send-to-mobile-enable-sync-from-link = Aktibatu sinkronizazioa lotura bidaltzeko
+main-context-menu-send-to-mobile-enable-sync-from-page = Aktibatu sinkronizazioa orria bidaltzeko
+main-context-menu-send-to-mobile-connect-phone3 = Konektatu gailu bat fitxak bidaltzeko
+main-context-menu-send-to-mobile-connect-phone-from-link = Konektatu gailu bat lotura bidaltzeko
+main-context-menu-send-to-mobile-connect-phone-from-page = Konektatu gailu bat orria bidaltzeko
 main-context-menu-save-to-pocket =
     .label = Gorde orria { -pocket-brand-name }-en
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Bidali orria gailura
     .accesskey = g
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Erabili gordetako saio-hasiera
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Gehitu bilaketa honentzat gako-hitza…
     .accesskey = k
+main-context-menu-add-engine =
+    .label = Gehitu bilaketa-motorra
+    .accesskey = b
 main-context-menu-link-send-to-device =
     .label = Bidali lotura gailura
     .accesskey = g
+main-context-menu-link-send-to-mobile =
+    .label = Bidali lotura mugikorrera
+    .accesskey = d
 main-context-menu-frame =
     .label = Marko hau
     .accesskey = h
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Agerrarazi pasahitza
     .accesskey = r
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Berria
+main-context-menu-pdfjs-copy-page =
+    .label = Kopiatu orria
+main-context-menu-pdfjs-cut-page =
+    .label = Ebaki orria
+main-context-menu-pdfjs-delete-page =
+    .label = Ezabatu orria
+main-context-menu-pdfjs-save-page =
+    .label = Gorde hautapena honela…

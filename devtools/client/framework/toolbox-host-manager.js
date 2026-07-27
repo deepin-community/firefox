@@ -54,39 +54,48 @@ const LAST_HOST = "devtools.toolbox.host";
 const PREVIOUS_HOST = "devtools.toolbox.previousHost";
 let ID_COUNTER = 1;
 
-function ToolboxHostManager(commands, hostType, hostOptions) {
-  this.commands = commands;
+class ToolboxHostManager {
+  constructor(commands, hostType, hostOptions) {
+    this.commands = commands;
 
-  // When debugging a local tab, we keep a reference of the current tab into which the toolbox is displayed.
-  // This will only change from the descriptor's localTab when we start debugging popups (i.e. window.open).
-  this.currentTab = this.commands.descriptorFront.localTab;
+    // When debugging a local tab, we keep a reference of the current tab into which the toolbox is displayed.
+    // This will only change from the descriptor's localTab when we start debugging popups (i.e. window.open).
+    this.currentTab = this.commands.descriptorFront.localTab;
 
-  // Keep the previously instantiated Host for all tabs where we displayed the Toolbox.
-  // This will only be useful when we start debugging popups (i.e. window.open).
-  // This is used to re-use the previous host instance when we re-select the original tab
-  // we were debugging before the popup opened.
-  this.hostPerTab = new Map();
+    // Keep the previously instantiated Host for all tabs where we displayed the Toolbox.
+    // This will only be useful when we start debugging popups (i.e. window.open).
+    // This is used to re-use the previous host instance when we re-select the original tab
+    // we were debugging before the popup opened.
+    this.hostPerTab = new Map();
 
-  this.frameId = ID_COUNTER++;
+    this.frameId = ID_COUNTER++;
 
-  if (!hostType) {
-    hostType = Services.prefs.getCharPref(LAST_HOST);
-    if (!Hosts[hostType]) {
-      // If the preference value is unexpected, restore to the default value.
-      Services.prefs.clearUserPref(LAST_HOST);
+    if (!hostType) {
       hostType = Services.prefs.getCharPref(LAST_HOST);
+      if (!Hosts[hostType]) {
+        // If the preference value is unexpected, restore to the default value.
+        Services.prefs.clearUserPref(LAST_HOST);
+        hostType = Services.prefs.getCharPref(LAST_HOST);
+      }
     }
+    this.eventController = new AbortController();
+    this.host = this.createHost(hostType, hostOptions);
+    this.hostType = hostType;
+    // List of event which are collected when a new host is created for a popup
+    // from `switchHostToTab` method.
+    this.collectPendingMessages = null;
+    Services.prefs.addObserver(ZOOM_VALUE_PREF, this.setMinWidthWithZoom);
   }
-  this.eventController = new AbortController();
-  this.host = this.createHost(hostType, hostOptions);
-  this.hostType = hostType;
-  this.setMinWidthWithZoom = this.setMinWidthWithZoom.bind(this);
-  this._onMessage = this._onMessage.bind(this);
-  Services.prefs.addObserver(ZOOM_VALUE_PREF, this.setMinWidthWithZoom);
-}
-
-ToolboxHostManager.prototype = {
-  async create(toolId) {
+  /**
+   * Create a Toolbox
+   *
+   * @param {string} toolId
+   *        The id of the tool to show
+   * @param {object} toolOptions
+   *        Options that will be passed to the tool init function
+   * @returns {Toolbox}
+   */
+  async create(toolId, toolOptions) {
     await this.host.create();
     if (this.currentTab) {
       this.hostPerTab.set(this.currentTab, this.host);
@@ -95,18 +104,19 @@ ToolboxHostManager.prototype = {
     this.host.frame.setAttribute("aria-label", L10N.getStr("toolbox.label"));
     this.host.frame.ownerDocument.defaultView.addEventListener(
       "message",
-      this._onMessage,
+      this.#onMessage,
       { signal: this.eventController.signal }
     );
 
-    const toolbox = new Toolbox(
-      this.commands,
-      toolId,
-      this.host.type,
-      this.host.frame.contentWindow,
-      this.frameId
-    );
-    toolbox.once("destroyed", this._onToolboxDestroyed.bind(this));
+    const toolbox = new Toolbox({
+      commands: this.commands,
+      selectedTool: toolId,
+      selectedToolOptions: toolOptions,
+      hostType: this.host.type,
+      contentWindow: this.host.frame.contentWindow,
+      frameId: this.frameId,
+    });
+    toolbox.once("destroyed", this.#onToolboxDestroyed);
 
     // Prevent reloading the toolbox when loading the tools in a tab
     // (e.g. from about:debugging)
@@ -117,9 +127,9 @@ ToolboxHostManager.prototype = {
 
     this.setMinWidthWithZoom();
     return toolbox;
-  },
+  }
 
-  setMinWidthWithZoom() {
+  setMinWidthWithZoom = () => {
     const zoomValue = parseFloat(Services.prefs.getCharPref(ZOOM_VALUE_PREF));
 
     if (isNaN(zoomValue)) {
@@ -140,18 +150,18 @@ ToolboxHostManager.prototype = {
       this.host.frame.style.minWidth =
         WIDTH_CHEVRON_AND_MEATBALL * zoomValue + "px";
     }
-  },
+  };
 
-  _onToolboxDestroyed() {
+  #onToolboxDestroyed = () => {
     // Delay self-destruction to let the debugger complete async destruction.
     // Otherwise it throws when running browser_dbg-breakpoints-in-evaled-sources.js
     // because the promise middleware delay each promise action using setTimeout...
     DevToolsUtils.executeSoon(() => {
       this.destroy();
     });
-  },
+  };
 
-  _onMessage(event) {
+  #onMessage = event => {
     if (!event.data) {
       return;
     }
@@ -159,6 +169,10 @@ ToolboxHostManager.prototype = {
     // Toolbox document is still chrome and disallow identifying message
     // origin via event.source as it is null. So use a custom id.
     if (msg.frameId != this.frameId) {
+      return;
+    }
+    if (this.collectPendingMessages) {
+      this.collectPendingMessages.push(event);
       return;
     }
     switch (msg.name) {
@@ -178,12 +192,12 @@ ToolboxHostManager.prototype = {
         this.host.setTitle(msg.title);
         break;
     }
-  },
+  };
 
   postMessage(data) {
     const window = this.host.frame.contentWindow;
     window.postMessage(data, "*");
-  },
+  }
 
   destroy() {
     Services.prefs.removeObserver(ZOOM_VALUE_PREF, this.setMinWidthWithZoom);
@@ -199,7 +213,7 @@ ToolboxHostManager.prototype = {
     this.host = null;
     this.hostType = null;
     this.commands = null;
-  },
+  }
 
   /**
    * Create a host object based on the given host type.
@@ -220,15 +234,15 @@ ToolboxHostManager.prototype = {
     }
     const newHost = new Hosts[hostType](this.currentTab, options);
     return newHost;
-  },
+  }
 
   /**
    * Migrate the toolbox to a new host, while keeping it fully functional.
    * The toolbox's iframe will be moved as-is to the new host.
    *
-   * @param {String} hostType
+   * @param {string} hostType
    *        The new type of host to spawn
-   * @param {Boolean} destroyPreviousHost
+   * @param {boolean} destroyPreviousHost
    *        Defaults to true. If false is passed, we will avoid destroying
    *        the previous host. This is helpful for popup debugging,
    *        where we migrate the toolbox between two tabs. In this scenario
@@ -267,6 +281,12 @@ ToolboxHostManager.prototype = {
 
     // change toolbox document's parent to the new host
     newIframe.swapFrameLoaders(iframe);
+
+    // swapFrameLoaders ends up disabling the new frame activeness,
+    // so ensure we set the expected state at the end of this method
+    iframe.docShellIsActive = false;
+    newIframe.docShellIsActive = true;
+
     if (destroyPreviousHost) {
       this.destroyHost();
     }
@@ -277,7 +297,6 @@ ToolboxHostManager.prototype = {
     ) {
       Services.prefs.setCharPref(PREVIOUS_HOST, this.hostType);
     }
-
     this.host = newHost;
     if (this.currentTab) {
       this.hostPerTab.set(this.currentTab, newHost);
@@ -286,7 +305,7 @@ ToolboxHostManager.prototype = {
     this.host.setTitle(this.host.frame.contentWindow.document.title);
     this.host.frame.ownerDocument.defaultView.addEventListener(
       "message",
-      this._onMessage,
+      this.#onMessage,
       { signal: this.eventController.signal }
     );
 
@@ -304,14 +323,14 @@ ToolboxHostManager.prototype = {
       name: "switched-host",
       hostType,
     });
-  },
+  }
 
   /**
    * When we are debugging popup, we are moving around the toolbox between original tab
    * and popup tabs. This method will only move the host to a new tab, while
    * keeping the same host type.
    *
-   * @param {String} tabBrowsingContextID
+   * @param {string} tabBrowsingContextID
    *        The ID of the browsing context of the tab we want to move to.
    */
   async switchHostToTab(tabBrowsingContextID) {
@@ -329,7 +348,15 @@ ToolboxHostManager.prototype = {
         newHost.frame.swapFrameLoaders(this.host.frame);
         this.host = newHost;
       } else {
+        // Ensure collecting any message sent by the toolbox in order to emit them
+        // on the newly created host, which is created asynchronously
+        const pendingMessages = [];
+        this.collectPendingMessages = pendingMessages;
         await this.switchHost(this.hostType, false);
+        this.collectPendingMessages = null;
+        for (const message of pendingMessages) {
+          this.#onMessage(message);
+        }
       }
       previousTab.addEventListener(
         "TabSelect",
@@ -344,7 +371,7 @@ ToolboxHostManager.prototype = {
       name: "switched-host-to-tab",
       browsingContextID: tabBrowsingContextID,
     });
-  },
+  }
 
   /**
    * Destroy the current host, and remove event listeners from its frame.
@@ -353,6 +380,7 @@ ToolboxHostManager.prototype = {
    */
   destroyHost() {
     return this.host.destroy();
-  },
-};
+  }
+}
+
 exports.ToolboxHostManager = ToolboxHostManager;

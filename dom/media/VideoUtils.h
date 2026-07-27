@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,8 +6,8 @@
 #define VideoUtils_h
 
 #include "AudioSampleFormat.h"
-#include "MediaInfo.h"
 #include "MediaCodecsSupport.h"
+#include "MediaInfo.h"
 #include "VideoLimits.h"
 #include "mozilla/AbstractThread.h"
 #include "mozilla/Attributes.h"
@@ -129,12 +127,6 @@ CheckedInt64 UsecsToFrames(int64_t aUsecs, uint32_t aRate);
 // Format TimeUnit as number of frames at given rate.
 CheckedInt64 TimeUnitToFrames(const media::TimeUnit& aTime, uint32_t aRate);
 
-// Converts milliseconds to seconds.
-#define MS_TO_SECONDS(ms) ((double)(ms) / (PR_MSEC_PER_SEC))
-
-// Converts seconds to milliseconds.
-#define SECONDS_TO_MS(s) ((int)((s) * (PR_MSEC_PER_SEC)))
-
 // Converts from seconds to microseconds. Returns failure if the resulting
 // integer is too big to fit in an int64_t.
 nsresult SecondsToUsecs(double aSeconds, int64_t& aOutUsecs);
@@ -202,8 +194,14 @@ already_AddRefed<SharedThreadPool> GetMediaThreadPool(MediaThreadType aType);
 // http://blog.pearce.org.nz/2013/11/what-does-h264avc1-codecs-parameters.html
 // for more details.
 // Returns false on failure.
+enum class H264CodecStringStrictness {
+  Lenient,  // Allow and returns invalid profile, constraint and level values.
+            // It is necessary to accept those strings for Web Compat reasons.
+  Strict    // Rejects invalid profile, constraint and level values.
+};
 bool ExtractH264CodecDetails(const nsAString& aCodecs, uint8_t& aProfile,
-                             uint8_t& aConstraint, H264_LEVEL& aLevel);
+                             uint8_t& aConstraint, H264_LEVEL& aLevel,
+                             H264CodecStringStrictness aStrictness);
 
 struct VideoColorSpace {
   // Default values are set according to
@@ -251,7 +249,7 @@ nsresult GenerateRandomName(nsCString& aOutSalt, uint32_t aLength);
 // path. This is based on code from nsExternalAppHandler::SetUpTempFile.
 nsresult GenerateRandomPathName(nsCString& aOutSalt, uint32_t aLength);
 
-already_AddRefed<TaskQueue> CreateMediaDecodeTaskQueue(const char* aName);
+already_AddRefed<TaskQueue> CreateMediaDecodeTaskQueue(StaticString aName);
 
 // Iteratively invokes aWork until aCondition returns true, or aWork returns
 // false. Use this rather than a while loop to avoid bogarting the task queue.
@@ -319,6 +317,7 @@ bool ParseCodecsString(const nsAString& aCodecs,
                        nsTArray<nsString>& aOutCodecs);
 
 bool IsH264CodecString(const nsAString& aCodec);
+bool IsAllowedH264Codec(const nsAString& aCodec);
 
 bool IsH265CodecString(const nsAString& aCodec);
 

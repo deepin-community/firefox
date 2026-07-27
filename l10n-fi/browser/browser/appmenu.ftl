@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Päivitys ei onnistu – järjestelmä ei yhteensopiva
 appmenuitem-banner-update-restart =
     .label = Päivitys saatavilla – käynnistä uudelleen
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Hanki uusin { -brand-short-name }. Säilytä kaikki välilehdet.
+appmenu-nova-update-link = Käynnistä uudelleen päivittääksesi
+appmenu-nova-fxa-sign-in = Kirjaudu sisään
+appmenu-nova-switch-device-promo =
+    .message = Hankitko pian uuden laitteen? Ota { -brand-short-name } mukaasi!
+appmenu-nova-switch-device-link = Näin siirrät tietosi
 appmenuitem-new-tab =
     .label = Uusi välilehti
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Uusi yksityinen ikkuna
 appmenuitem-history =
     .label = Sivuhistoria
+appmenuitem-tab-groups =
+    .label = Välilehtiryhmät
 appmenuitem-downloads =
     .label = Lataukset
 appmenuitem-passwords =
     .label = Salasanat
+appmenuitem-extensions-and-themes =
+    .label = Laajennukset ja teemat
+appmenuitem-extensions =
+    .label = Laajennukset
 appmenuitem-addons-and-themes =
     .label = Lisäosat ja teemat
 appmenuitem-print =
@@ -44,8 +58,8 @@ appmenuitem-help =
 appmenuitem-exit2 =
     .label =
         { PLATFORM() ->
-            [linux] Sulje selain
-           *[other] Sulje selain
+            [linux] Lopeta
+           *[other] Lopeta
         }
 appmenu-menu-button-closed2 =
     .tooltiptext = Avaa sovellusvalikko
@@ -77,16 +91,6 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Näytä lisää välilehtiä
     .tooltiptext = Näytä lisää välilehtiä tältä laitteelta
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Näytä yksi passiivinen välilehti
-           *[other] Näytä { $count } passiivista välilehteä
-        }
-    .tooltiptext = Näytä tämä laitteen passiiviset välilehdet
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
     .label = Passiiviset välilehdet
@@ -118,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Synkronoi ja tallenna tiedot
 appmenu-fxa-signed-in-label = Kirjaudu
 appmenu-fxa-setup-sync =
     .label = Ota synkronointi käyttöön…
+appmenu-fxa-setup-sync-new = Ota käyttöön
 appmenuitem-save-page =
     .label = Tallenna sivu nimellä…
+appmenuitem-fxa-sync-off-title = Synkronointi on pois päältä
+appmenuitem-fxa-sync-off-description = Suojaa ja käytä kirjanmerkkejäsi, salasanojasi ja muuta missä tahansa.
 
 ## What's New panel in App menu.
 
@@ -173,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Avaa profilointipaneeli
+    .tooltiptext = Avaa profilointipaneeli
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -199,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Esiasetus ääni- ja videovirheiden tutkimiseen { -brand-shorter-name }issa.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Esiasetus koneoppimisvirheiden tutkimiseen { -brand-shorter-name }issa.
+profiler-popup-presets-ml-label =
+    .label = Koneoppiminen
 profiler-popup-presets-networking-description = Esiasetus verkkovirheiden tutkimiseen { -brand-shorter-name }issa.
 profiler-popup-presets-networking-label =
     .label = Verkko
@@ -206,6 +219,12 @@ profiler-popup-presets-power-description = Esiasetus virrankäyttöongelmien tut
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Virta
+profiler-popup-presets-debug-description = Esiasetus { -brand-shorter-name }in vianjäljitykseen. Korkea rasitus, älä käytä suorituskykyä vaativaan työhön, käytä selaustoiminnan ymmärtämiseen.
+profiler-popup-presets-debug-label =
+    .label = Vianjäljitys
+profiler-popup-presets-web-compat-description = Suositeltu esiasetus verkkosivustojen yhteensopivuusongelmien vianjäljitykseen suorituskyvyn seurannan sijaan.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Mukautettu
 
@@ -271,6 +290,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Muokkaa työkalupalkkia…
+appmenu-abouttranslations =
+    .label = Käännä…
+appmenu-edit-pdf =
+    .label = Muokkaa PDF-tiedostoa…
 appmenu-developer-tools-subheader = Browser Tools
 appmenu-developer-tools-extensions =
     .label = Extensions for Developers
@@ -280,9 +303,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Kirjaudu tilillesi
+appmenuitem-monitor-title2 = Pysy identiteettivarkauksien edellä
+appmenuitem-monitor-description2 = Vastaanota hälytyksiä tietovuodoista
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Vastaanota tietovuotovaroituksia
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Pidä sähköpostisi yksityisenä
+appmenuitem-relay-description2 = Auttaa estämään roskapostia
 appmenuitem-relay-description = Peitä oikea sähköpostiosoitteesi ja puhelinnumerosi
+appmenuitem-services-relay-description = Käynnistä sähköpostimaskien hallintapaneeli
+appmenuitem-vpn-title2 = Piilota sijaintisi { -mozilla-vpn-brand-name }:llä
+appmenuitem-vpn-description3 = Tee selaamisestasi vaikeammin jäljitettävää
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Hanki koko laitteen suojaus
 appmenuitem-vpn-description = Suojaa toimintaasi verkossa
+appmenu-services-header = Omat palvelut
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Yksityisyystyökalut
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Kokeile muita Mozillan suojaustyökaluja:
+appmenu-other-protection-header = Kokeile muita { -vendor-short-name }n suojaustyökaluja:
+
+## Profiles panel
+
+appmenu-other-profiles = Muut profiilit
+appmenu-manage-profiles =
+    .label = Hallitse profiileja
+appmenu-copy-profile =
+    .label = Kopioi tämä profiili
+appmenu-create-profile2 =
+    .label = Luo uusi profiili
+appmenu-create-profile =
+    .label = Uusi profiili
+appmenu-edit-profile =
+    .aria-label = Muokkaa profiilia
+appmenu-edit-this-profile =
+    .label = Muokkaa tätä profiilia
+appmenu-profile-current-in-use = Käytössä oleva profiili
+appmenu-profiles-2 =
+    .label = Profiilit
+appmenu-profiles-header = Profiilit
+appmenu-all-profiles =
+    .label = Kaikki profiilit
+appmenu-secure-sync-header = Suojattu synkronointi

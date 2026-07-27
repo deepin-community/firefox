@@ -1,10 +1,8 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#if !defined(MediaDecoderStateMachine_h__)
-#  define MediaDecoderStateMachine_h__
+#if !defined(MediaDecoderStateMachine_h_)
+#  define MediaDecoderStateMachine_h_
 
 #  include "AudioDeviceInfo.h"
 #  include "ImageContainer.h"
@@ -14,11 +12,9 @@
 #  include "MediaFormatReader.h"
 #  include "MediaQueue.h"
 #  include "MediaSink.h"
-#  include "MediaStatistics.h"
 #  include "MediaTimer.h"
 #  include "SeekJob.h"
 #  include "mozilla/Atomics.h"
-#  include "mozilla/Attributes.h"
 #  include "mozilla/ReentrantMonitor.h"
 #  include "mozilla/StateMirroring.h"
 #  include "nsThreadUtils.h"
@@ -157,7 +153,7 @@ class MediaDecoderStateMachine
   void InvokeSuspendMediaSink() override;
   void InvokeResumeMediaSink() override;
 
-  bool IsCDMProxySupported(CDMProxy* aProxy) override;
+  nsresult IsCDMProxySupported(CDMProxy* aProxy) override;
 
   RefPtr<SetCDMPromise> SetCDMProxy(CDMProxy* aProxy) override;
 
@@ -257,11 +253,9 @@ class MediaDecoderStateMachine
   void OnVideoPopped(const RefPtr<VideoData>& aSample);
 
   void AudioAudibleChanged(bool aAudible);
+  void OnPlaybackRateFallback();
 
   void SetPlaybackRate(double aPlaybackRate) override;
-  void SetIsLiveStream(bool aIsLiveStream) override {
-    mIsLiveStream = aIsLiveStream;
-  }
   void SetCanPlayThrough(bool aCanPlayThrough) override {
     mCanPlayThrough = aCanPlayThrough;
   }
@@ -410,7 +404,7 @@ class MediaDecoderStateMachine
   bool mDispatchedStateMachine;
 
   // Used to dispatch another round schedule with specific target time.
-  DelayedScheduler mDelayedScheduler;
+  DelayedScheduler<TimeStamp> mDelayedScheduler;
 
   // Queue of audio frames. This queue is threadsafe, and is accessed from
   // the audio, decoder, state machine, and main threads.
@@ -472,8 +466,6 @@ class MediaDecoderStateMachine
 
   bool mCanPlayThrough = false;
 
-  bool mIsLiveStream = false;
-
   // True if all audio frames are already rendered.
   bool mAudioCompleted = false;
 
@@ -484,7 +476,7 @@ class MediaDecoderStateMachine
   bool mVideoDecodeSuspended;
 
   // Track enabling video decode suspension via timer
-  DelayedScheduler mVideoDecodeSuspendTimer;
+  DelayedScheduler<TimeStamp> mVideoDecodeSuspendTimer;
 
   // Track the current video decode mode.
   VideoDecodeMode mVideoDecodeMode;
@@ -496,6 +488,7 @@ class MediaDecoderStateMachine
   MediaEventListener mAudioQueueListener;
   MediaEventListener mVideoQueueListener;
   MediaEventListener mAudibleListener;
+  MediaEventListener mPlaybackRateFallbackListener;
   MediaEventListener mOnMediaNotSeekable;
 
   const bool mIsMSE;
@@ -544,13 +537,10 @@ class MediaDecoderStateMachine
   // set.
   Mirror<RefPtr<AudioDeviceInfo>> mSinkDevice;
 
-  // Whether all output should be captured into mOutputTracks, halted, or not
-  // captured.
-  Mirror<MediaDecoder::OutputCaptureState> mOutputCaptureState;
-
-  // A dummy track used to access the right MediaTrackGraph instance. Needed
-  // since there's no guarantee that output tracks are present.
-  Mirror<nsMainThreadPtrHandle<SharedDummyTrack>> mOutputDummyTrack;
+  // Stream capture information. When the state is Capturing, it contains a
+  // dummy track used to access the correct MediaTrackGraph instance, along with
+  // an indication of whether audio should be played out via audio devices.
+  Mirror<MediaDecoder::OutputCaptureInfo> mOutputCaptureInfo;
 
   // Tracks to capture data into.
   Mirror<CopyableTArray<RefPtr<ProcessedMediaTrack>>> mOutputTracks;

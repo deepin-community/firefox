@@ -4,39 +4,40 @@
 
 package org.mozilla.fenix.ui
 
-import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.espresso.Espresso.pressBack
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
+import androidx.test.filters.SdkSuppress
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
-import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithSystemLocaleChanged
-import org.mozilla.fenix.helpers.AppAndSystemHelper.setSystemLocale
+import org.mozilla.fenix.helpers.AppAndSystemHelper.clickSystemHomeScreenShortcutAddButton
+import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithAppLocaleChanged
 import org.mozilla.fenix.helpers.DataGenerationHelper.setTextToClipBoard
+import org.mozilla.fenix.helpers.FenixTestRule
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.MockBrowserDataHelper.addCustomSearchEngine
 import org.mozilla.fenix.helpers.MockBrowserDataHelper.createBookmarkItem
 import org.mozilla.fenix.helpers.MockBrowserDataHelper.createHistoryItem
-import org.mozilla.fenix.helpers.SearchDispatcher
+import org.mozilla.fenix.helpers.SearchMockServerRule
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.appContext
-import org.mozilla.fenix.helpers.TestHelper.clickSnackbarButton
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.restartApp
-import org.mozilla.fenix.helpers.TestHelper.verifySnackBarText
-import org.mozilla.fenix.helpers.TestSetup
+import org.mozilla.fenix.helpers.perf.DetectMemoryLeaksRule
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.ui.robots.EngineShortcut
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
 import org.mozilla.fenix.ui.robots.searchScreen
 import java.util.Locale
+import androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule as AndroidComposeTestRuleV2
 
-class SettingsSearchTest : TestSetup() {
-    private lateinit var searchMockServer: MockWebServer
+class SettingsSearchTest {
+    @get:Rule(order = 0)
+    val fenixTestRule: FenixTestRule = FenixTestRule()
+
+    private val mockWebServer get() = fenixTestRule.mockWebServer
+
     private val defaultSearchEngineList =
         listOf(
             "Bing",
@@ -44,32 +45,23 @@ class SettingsSearchTest : TestSetup() {
             "Google",
         )
 
-    @get:Rule
-    val activityTestRule = AndroidComposeTestRule(
+    @get:Rule(order = 1)
+    val composeTestRule = AndroidComposeTestRuleV2(
         HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
     ) { it.activity }
 
-    @Before
-    override fun setUp() {
-        super.setUp()
-        searchMockServer = MockWebServer().apply {
-            dispatcher = SearchDispatcher()
-            start()
-        }
-    }
+    @get:Rule(order = 2)
+    val memoryLeaksRule = DetectMemoryLeaksRule(composeTestRule = { composeTestRule })
 
-    @After
-    override fun tearDown() {
-        super.tearDown()
-        searchMockServer.shutdown()
-    }
+    @get:Rule
+    val searchMockServerRule = SearchMockServerRule()
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2203333
     @Test
     fun verifySearchSettingsMenuItemsTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             verifyToolbarText("Search")
             verifySearchEnginesSectionHeader()
@@ -77,6 +69,7 @@ class SettingsSearchTest : TestSetup() {
             verifyDefaultSearchEngineSummary("Google")
             verifyManageSearchShortcutsHeader()
             verifyManageShortcutsSummary()
+            verifyTheHomeScreenWidgetOption()
             verifyAddressBarSectionHeader()
             verifyAutocompleteURlsIsEnabled(true)
             verifyShowClipboardSuggestionsEnabled(true)
@@ -92,9 +85,9 @@ class SettingsSearchTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2203307
     @Test
     fun verifyDefaultSearchEnginesSettingsItemsTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             verifyDefaultSearchEngineHeader()
             openDefaultSearchEngineMenu()
@@ -110,15 +103,15 @@ class SettingsSearchTest : TestSetup() {
     fun verifyTheDefaultSearchEngineCanBeChangedTest() {
         // Goes through the settings and changes the default search engine, then verifies it has changed.
         defaultSearchEngineList.forEach {
-            homeScreen {
+            homeScreen(composeTestRule) {
             }.openThreeDotMenu {
-            }.openSettings {
+            }.clickSettingsButton {
             }.openSearchSubMenu {
                 openDefaultSearchEngineMenu()
                 changeDefaultSearchEngine(it)
                 exitMenu()
             }
-            searchScreen {
+            searchScreen(composeTestRule) {
                 verifySearchEngineIcon(it)
             }
         }
@@ -131,7 +124,7 @@ class SettingsSearchTest : TestSetup() {
         // Check if "Top domain" suggestions for the address bar's autocomplete are enabled
         if (FxNimbus.features.suggestShippedDomains.value().enabled) {
             // If true it will use the hardcoded list of "top domain" suggestions for the address bar's autocomplete suggestions
-            homeScreen {
+            homeScreen(composeTestRule) {
             }.openSearch {
                 typeSearch("mo")
                 verifyTypedToolbarText("monster.com", exists = true)
@@ -143,7 +136,7 @@ class SettingsSearchTest : TestSetup() {
             createHistoryItem("https://github.com/mozilla-mobile/fenix")
             createBookmarkItem("https://github.com/mozilla-mobile/focus-android", "focus-android", 1u)
 
-            homeScreen {
+            homeScreen(composeTestRule) {
             }.openSearch {
                 typeSearch("moz")
                 // "Top domain" suggestions from the address bar's autocomplete are disabled, "moz" shouldn't autocomplete to mozilla.org
@@ -170,13 +163,13 @@ class SettingsSearchTest : TestSetup() {
         // Check if "Top domain" suggestions for the address bar's autocomplete are enabled
         if (FxNimbus.features.suggestShippedDomains.value().enabled) {
             // If true it will use the hardcoded list of "top domain" suggestions for the address bar's autocomplete suggestions
-            homeScreen {
+            homeScreen(composeTestRule) {
             }.openThreeDotMenu {
-            }.openSettings {
+            }.clickSettingsButton {
             }.openSearchSubMenu {
                 toggleAutocomplete()
             }.goBack {
-            }.goBack {
+            }.goBack(composeTestRule) {
             }.openSearch {
                 typeSearch("moz")
                 verifyTypedToolbarText("moz", exists = true)
@@ -187,13 +180,13 @@ class SettingsSearchTest : TestSetup() {
             createHistoryItem("https://github.com/mozilla-mobile/fenix")
             createBookmarkItem("https://github.com/mozilla-mobile/focus-android", "focus-android", 1u)
 
-            homeScreen {
+            homeScreen(composeTestRule) {
             }.openThreeDotMenu {
-            }.openSettings {
+            }.clickSettingsButton {
             }.openSearchSubMenu {
                 toggleAutocomplete()
             }.goBack {
-            }.goBack {
+            }.goBack(composeTestRule) {
             }.openSearch {
                 // Having the setting disabled, it should not autocomplete anymore with the history items url
                 typeSearch("github.com/mozilla-mobile/f")
@@ -208,23 +201,22 @@ class SettingsSearchTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/361817
     @Test
     fun disableSearchBrowsingHistorySuggestionsToggleTest() {
-        val websiteURL = getGenericAsset(mockWebServer, 1).url.toString()
+        val websiteURL = mockWebServer.getGenericAsset(1).url.toString()
 
         createHistoryItem(websiteURL)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             switchSearchHistoryToggle()
             exitMenu()
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openSearch {
             typeSearch("test")
             verifySuggestionsAreNotDisplayed(
-                activityTestRule,
                 "Firefox Suggest",
                 websiteURL,
             )
@@ -234,13 +226,13 @@ class SettingsSearchTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/412926
     @Test
     fun disableSearchBookmarksToggleTest() {
-        val website = getGenericAsset(mockWebServer, 1)
+        val website = mockWebServer.getGenericAsset(1)
 
         createBookmarkItem(website.url.toString(), website.title, 1u)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             switchSearchBookmarksToggle()
             // We want to avoid confusion between history and bookmarks searches,
@@ -249,14 +241,15 @@ class SettingsSearchTest : TestSetup() {
             exitMenu()
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openSearch {
             typeSearch("test")
             verifySuggestionsAreNotDisplayed(
-                activityTestRule,
                 "Firefox Suggest",
                 website.title,
             )
+        }.dismissSearchBar {
+            verifyHomeComponent()
         }
     }
 
@@ -267,12 +260,12 @@ class SettingsSearchTest : TestSetup() {
     fun verifyCustomSearchEngineCanBeAddedFromSearchEngineMenuTest() {
         val customSearchEngine = object {
             val title = "TestSearchEngine"
-            val url = "http://localhost:${searchMockServer.port}/searchResults.html?search=%s"
+            val url = "http://localhost:${searchMockServerRule.server.port}/searchResults.html?search=%s"
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             openAddSearchEngineMenu()
@@ -280,22 +273,21 @@ class SettingsSearchTest : TestSetup() {
             typeCustomEngineDetails(customSearchEngine.title, customSearchEngine.url)
             verifySaveSearchEngineButtonEnabled(true)
             saveNewSearchEngine()
-            verifySnackBarText("Created ${customSearchEngine.title}")
             verifyEngineListContains(customSearchEngine.title, shouldExist = true)
             openEngineOverflowMenu(customSearchEngine.title)
             pressBack()
             changeDefaultSearchEngine(customSearchEngine.title)
             pressBack()
             openManageShortcutsMenu()
-            verifyEngineListContains(customSearchEngine.title, shouldExist = true)
+            verifyEngineListContains(customSearchEngine.title, shouldExist = false)
             pressBack()
         }.goBack {
             verifySettingsOptionSummary("Search", customSearchEngine.title)
-        }.goBack {
+        }.goBack(composeTestRule) {
         }.openSearch {
             verifySearchEngineIcon(customSearchEngine.title)
             clickSearchSelectorButton()
-            verifySearchShortcutListContains(customSearchEngine.title)
+            verifySearchShortcutList(customSearchEngine.title, isSearchEngineDisplayed = true)
         }
     }
 
@@ -304,12 +296,12 @@ class SettingsSearchTest : TestSetup() {
     fun addCustomSearchEngineToManageShortcutsListTest() {
         val customSearchEngine = object {
             val title = "TestSearchEngine"
-            val url = "http://localhost:${searchMockServer.port}/searchResults.html?search=%s"
+            val url = "http://localhost:${searchMockServerRule.server.port}/searchResults.html?search=%s"
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openManageShortcutsMenu()
             openAddSearchEngineMenu()
@@ -325,20 +317,20 @@ class SettingsSearchTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2203343
     @Test
     fun verifyLearnMoreLinksFromAddSearchEngineSectionTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             openAddSearchEngineMenu()
-        }.clickCustomSearchStringLearnMoreLink {
+        }.clickCustomSearchStringLearnMoreLink(composeTestRule) {
             verifyCustomSearchEngineLearnMoreURL()
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             openAddSearchEngineMenu()
-        }.clickCustomSearchSuggestionsLearnMoreLink {
+        }.clickCustomSearchSuggestionsLearnMoreLink(composeTestRule) {
             verifyCustomSearchEngineLearnMoreURL()
         }
     }
@@ -348,16 +340,16 @@ class SettingsSearchTest : TestSetup() {
     fun editCustomSearchEngineTest() {
         val customSearchEngine = object {
             val title = "TestSearchEngine"
-            val url = "http://localhost:${searchMockServer.port}/searchResults.html?search=%s"
+            val url = "http://localhost:${searchMockServerRule.server.port}/searchResults.html?search=%s"
             val newTitle = "NewEngineTitle"
         }
 
-        addCustomSearchEngine(searchMockServer, customSearchEngine.title)
-        restartApp(activityTestRule.activityRule)
+        addCustomSearchEngine(searchMockServerRule.server, customSearchEngine.title)
+        restartApp(composeTestRule.activityRule)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             verifyEngineListContains(customSearchEngine.title, shouldExist = true)
@@ -365,7 +357,6 @@ class SettingsSearchTest : TestSetup() {
             clickEdit()
             typeCustomEngineDetails(customSearchEngine.newTitle, customSearchEngine.url)
             saveEditSearchEngine()
-            verifySnackBarText("Saved ${customSearchEngine.newTitle}")
             verifyEngineListContains(customSearchEngine.newTitle, shouldExist = true)
             pressBack()
             openManageShortcutsMenu()
@@ -378,30 +369,27 @@ class SettingsSearchTest : TestSetup() {
     fun verifyErrorMessagesForInvalidSearchEngineUrlsTest() {
         val customSearchEngine = object {
             val title = "TestSearchEngine"
-            val badTemplateUrl = "http://localhost:${searchMockServer.port}/searchResults.html?search="
-            val typoUrl = "http://local:${searchMockServer.port}/searchResults.html?search=%s"
-            val goodUrl = "http://localhost:${searchMockServer.port}/searchResults.html?search=%s"
+            val badTemplateUrl = "http://localhost:${searchMockServerRule.server.port}/searchResults.html?search="
+            val typoUrl = "http://local:${searchMockServerRule.server.port}/searchResults.html?search=%s"
+            val goodUrl = "http://localhost:${searchMockServerRule.server.port}/searchResults.html?search=%s"
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             openAddSearchEngineMenu()
             typeCustomEngineDetails(customSearchEngine.title, customSearchEngine.badTemplateUrl)
             saveNewSearchEngine()
             verifyInvalidTemplateSearchStringFormatError()
-            typeCustomEngineDetails(customSearchEngine.title, customSearchEngine.typoUrl)
-            saveNewSearchEngine()
-            verifyErrorConnectingToSearchString(customSearchEngine.title)
             typeCustomEngineDetails(customSearchEngine.title, customSearchEngine.goodUrl)
             typeSearchEngineSuggestionString(customSearchEngine.badTemplateUrl)
             saveNewSearchEngine()
             verifyInvalidTemplateSearchStringFormatError()
-            typeSearchEngineSuggestionString(customSearchEngine.typoUrl)
+            typeCustomEngineDetails(customSearchEngine.title, customSearchEngine.typoUrl)
             saveNewSearchEngine()
-            verifyErrorConnectingToSearchString(customSearchEngine.title)
+            verifyEngineListContains(customSearchEngine.title, shouldExist = true)
         }
     }
 
@@ -411,20 +399,14 @@ class SettingsSearchTest : TestSetup() {
         val customSearchEngineTitle = "TestSearchEngine"
 
         addCustomSearchEngine(mockWebServer, searchEngineName = customSearchEngineTitle)
-        restartApp(activityTestRule.activityRule)
+        restartApp(composeTestRule.activityRule)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openDefaultSearchEngineMenu()
             verifyEngineListContains(customSearchEngineTitle, shouldExist = true)
-            openEngineOverflowMenu(customSearchEngineTitle)
-            clickDeleteSearchEngine()
-            verifySnackBarText("Deleted $customSearchEngineTitle")
-            clickSnackbarButton("UNDO")
-            verifyEngineListContains(customSearchEngineTitle, shouldExist = true)
-            changeDefaultSearchEngine(customSearchEngineTitle)
             openEngineOverflowMenu(customSearchEngineTitle)
             clickDeleteSearchEngine()
             verifyEngineListContains(customSearchEngineTitle, shouldExist = false)
@@ -434,9 +416,9 @@ class SettingsSearchTest : TestSetup() {
             verifyEngineListContains(customSearchEngineTitle, shouldExist = false)
             exitMenu()
         }
-        searchScreen {
+        searchScreen(composeTestRule) {
             clickSearchSelectorButton()
-            verifySearchShortcutListContains(customSearchEngineTitle, shouldExist = false)
+            verifySearchShortcutList(customSearchEngineTitle, isSearchEngineDisplayed = false)
         }
     }
 
@@ -446,25 +428,25 @@ class SettingsSearchTest : TestSetup() {
         val customSearchEngineTitle = "TestSearchEngine"
 
         addCustomSearchEngine(mockWebServer, searchEngineName = customSearchEngineTitle)
-        restartApp(activityTestRule.activityRule)
+        restartApp(composeTestRule.activityRule)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openManageShortcutsMenu()
             verifyEngineListContains(customSearchEngineTitle, shouldExist = true)
-            openCustomShortcutOverflowMenu(activityTestRule, customSearchEngineTitle)
-            clickDeleteSearchEngine(activityTestRule)
+            openCustomShortcutOverflowMenu(composeTestRule, customSearchEngineTitle)
+            clickDeleteSearchEngine(composeTestRule)
             verifyEngineListContains(customSearchEngineTitle, shouldExist = false)
             pressBack()
             openDefaultSearchEngineMenu()
             verifyEngineListContains(customSearchEngineTitle, shouldExist = false)
             exitMenu()
         }
-        searchScreen {
+        searchScreen(composeTestRule) {
             clickSearchSelectorButton()
-            verifySearchShortcutListContains(customSearchEngineTitle, shouldExist = false)
+            verifySearchShortcutList(customSearchEngineTitle, isSearchEngineDisplayed = false)
         }
     }
 
@@ -475,32 +457,27 @@ class SettingsSearchTest : TestSetup() {
     @SmokeTest
     @Test
     fun verifyShowSearchSuggestionsToggleTest() {
-        homeScreen {
-        }.openSearch {
+        searchScreen(composeTestRule) {
             // The Google related suggestions aren't always displayed on cold run
             // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=1813587
             clickSearchSelectorButton()
             selectTemporarySearchMethod("DuckDuckGo")
             typeSearch("mozilla ")
-            verifySearchEngineSuggestionResults(
-                activityTestRule,
-                "mozilla firefox",
-                searchTerm = "mozilla ",
-            )
+            verifySearchSuggestionsAreDisplayed("mozilla")
         }.dismissSearchBar {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             toggleShowSearchSuggestions()
         }.goBack {
-        }.goBack {
+        }.goBack(composeTestRule) {
         }.openSearch {
             // The Google related suggestions aren't always displayed on cold run
             // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=1813587
             clickSearchSelectorButton()
             selectTemporarySearchMethod("DuckDuckGo")
             typeSearch("mozilla")
-            verifySuggestionsAreNotDisplayed(activityTestRule, "mozilla firefox")
+            verifySuggestionsAreNotDisplayed("mozilla")
         }
     }
 
@@ -508,13 +485,13 @@ class SettingsSearchTest : TestSetup() {
     // Tests the "Don't allow" option from private mode search suggestions onboarding dialog
     @Test
     fun doNotAllowSearchSuggestionsInPrivateBrowsingTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
             togglePrivateBrowsingModeOnOff()
         }.openSearch {
             typeSearch("mozilla")
             verifyAllowSuggestionsInPrivateModeDialog()
             denySuggestionsInPrivateMode()
-            verifySuggestionsAreNotDisplayed(activityTestRule, "mozilla firefox")
+            verifySuggestionsAreNotDisplayed("mozilla firefox")
         }
     }
 
@@ -522,47 +499,45 @@ class SettingsSearchTest : TestSetup() {
     // Tests the "Allow" option from private mode search suggestions onboarding dialog
     @Test
     fun allowSearchSuggestionsInPrivateBrowsingTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
             togglePrivateBrowsingModeOnOff()
         }.openSearch {
             typeSearch("mozilla")
             verifyAllowSuggestionsInPrivateModeDialog()
             allowSuggestionsInPrivateMode()
-            verifySearchEngineSuggestionResults(
-                activityTestRule,
-                "mozilla firefox",
-                searchTerm = "mozilla",
-            )
+            verifySearchSuggestionsAreDisplayed("mozilla")
         }.dismissSearchBar {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             switchShowSuggestionsInPrivateSessionsToggle()
         }.goBack {
-        }.goBack {
+        }.goBack(composeTestRule) {
         }.openSearch {
             typeSearch("mozilla")
-            verifySuggestionsAreNotDisplayed(activityTestRule, "mozilla firefox")
+            verifySuggestionsAreNotDisplayed("mozilla")
         }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/888673
+    @SdkSuppress(minSdkVersion = 34)
     @Test
     fun verifyShowVoiceSearchToggleTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openSearch {
-            verifyVoiceSearchButtonVisibility(true)
+            verifyVoiceSearchButton(isDisplayed = true)
             startVoiceSearch()
+            closeVoiceSearchDialog()
         }.dismissSearchBar {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             toggleVoiceSearch()
             exitMenu()
         }
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openSearch {
-            verifyVoiceSearchButtonVisibility(false)
+            verifyVoiceSearchButton(isDisplayed = false)
         }
     }
 
@@ -572,69 +547,65 @@ class SettingsSearchTest : TestSetup() {
         val link = "https://www.mozilla.org/en-US/"
         setTextToClipBoard(appContext, link)
 
-        homeScreen {
-        }.openNavigationToolbar {
-            verifyClipboardSuggestionsAreDisplayed(link, true)
+        homeScreen(composeTestRule) {
+        }.openSearch {
+        }
+        navigationToolbar(composeTestRule) {
+            verifyClipboardSuggestionsAreDisplayed(true)
         }.visitLinkFromClipboard {
             waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
-        }.openTabDrawer(activityTestRule) {
+        }.openTabDrawer(composeTestRule) {
         }.openNewTab {
         }
-        navigationToolbar {
-            // After visiting the link from clipboard it shouldn't be displayed again
-            verifyClipboardSuggestionsAreDisplayed(shouldBeDisplayed = false)
-        }.goBackToHomeScreen {
-            setTextToClipBoard(appContext, link)
-        }.openTabDrawer(activityTestRule) {
-        }.openNewTab {
+        navigationToolbar(composeTestRule) {
+            verifyClipboardSuggestionsAreDisplayed(shouldBeDisplayed = true)
         }
-        navigationToolbar {
-            verifyClipboardSuggestionsAreDisplayed(link, true)
-        }.goBackToHomeScreen {
+        searchScreen(composeTestRule) {
+        }.dismissSearchBar {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             verifyShowClipboardSuggestionsEnabled(true)
             toggleClipboardSuggestion()
             verifyShowClipboardSuggestionsEnabled(false)
             exitMenu()
         }
-        homeScreen {
-        }.openTabDrawer(activityTestRule) {
+        homeScreen(composeTestRule) {
+        }.openTabDrawer {
         }.openNewTab {
         }
-        navigationToolbar {
-            verifyClipboardSuggestionsAreDisplayed(link, false)
+        navigationToolbar(composeTestRule) {
+            verifyClipboardSuggestionsAreDisplayed(false)
         }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2233337
     @Test
     fun verifyTheSearchEnginesListsRespectTheLocaleTest() {
-        runWithSystemLocaleChanged(Locale.CHINA, activityTestRule.activityRule) {
-            // Checking search engines for CH locale
-            homeScreen {
-            }.openSearch {
-                clickSearchSelectorButton()
-                verifySearchShortcutListContains(
+        runWithAppLocaleChanged(Locale.CHINA, composeTestRule.activityRule) {
+            navigationToolbar(composeTestRule) {
+            }.clickSearchSelectorButton {
+                verifySearchShortcutList(
                     "Google",
                     "百度",
                     "Bing",
                     "DuckDuckGo",
+                    isSearchEngineDisplayed = true,
                 )
             }.dismissSearchBar {}
+        }
 
-            // Checking search engines for FR locale
-            setSystemLocale(Locale.FRENCH)
-            homeScreen {
-            }.openSearch {
+        runWithAppLocaleChanged(Locale.FRENCH, composeTestRule.activityRule) {
+            navigationToolbar(composeTestRule) {
+            }.clickSearchSelectorButton {
                 clickSearchSelectorButton()
-                verifySearchShortcutListContains(
+                verifySearchShortcutList(
                     "Google",
                     "Bing",
                     "DuckDuckGo",
                     "Qwant",
                     "Wikipédia (fr)",
+                    isSearchEngineDisplayed = true,
                 )
             }
         }
@@ -643,22 +614,20 @@ class SettingsSearchTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2203334
     @Test
     fun verifyManageSearchShortcutsSettingsItemsTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openManageShortcutsMenu()
             verifyToolbarText("Manage alternative search engines")
             verifyEnginesShortcutsListHeader()
-            verifyManageShortcutsList(activityTestRule)
+            verifyManageShortcutsList(composeTestRule)
             verifySearchShortcutChecked(
-                EngineShortcut(name = "Google", checkboxIndex = 1, isChecked = true),
-                EngineShortcut(name = "Bing", checkboxIndex = 4, isChecked = true),
-                EngineShortcut(name = "DuckDuckGo", checkboxIndex = 7, isChecked = true),
-                EngineShortcut(name = "eBay", checkboxIndex = 10, isChecked = true),
-                EngineShortcut(name = "Wikipedia", checkboxIndex = 13, isChecked = true),
-                EngineShortcut(name = "Reddit", checkboxIndex = 16, isChecked = false),
-                EngineShortcut(name = "YouTube", checkboxIndex = 19, isChecked = false),
+                EngineShortcut(name = "Bing", checkboxIndex = 1, isChecked = true),
+                EngineShortcut(name = "DuckDuckGo", checkboxIndex = 4, isChecked = true),
+                EngineShortcut(name = "Wikipedia (en)", checkboxIndex = 7, isChecked = true),
+                EngineShortcut(name = "Reddit", checkboxIndex = 10, isChecked = false),
+                EngineShortcut(name = "YouTube", checkboxIndex = 13, isChecked = false),
             )
         }
     }
@@ -667,21 +636,37 @@ class SettingsSearchTest : TestSetup() {
     @SmokeTest
     @Test
     fun verifySearchShortcutChangesAreReflectedInSearchSelectorMenuTest() {
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
+        }.clickSettingsButton {
         }.openSearchSubMenu {
             openManageShortcutsMenu()
-            selectSearchShortcut(EngineShortcut(name = "Google", checkboxIndex = 1))
-            selectSearchShortcut(EngineShortcut(name = "Reddit", checkboxIndex = 16))
-            selectSearchShortcut(EngineShortcut(name = "YouTube", checkboxIndex = 19))
+            selectSearchShortcut(EngineShortcut(name = "Reddit", checkboxIndex = 10))
+            selectSearchShortcut(EngineShortcut(name = "YouTube", checkboxIndex = 13))
             exitMenu()
         }
-        searchScreen {
+        searchScreen(composeTestRule) {
             clickSearchSelectorButton()
-            verifySearchShortcutListContains("Google", shouldExist = false)
-            verifySearchShortcutListContains("YouTube", shouldExist = true)
-            verifySearchShortcutListContains("Reddit", shouldExist = true)
+            verifySearchShortcutList("YouTube", isSearchEngineDisplayed = true)
+            verifySearchShortcutList("Reddit", isSearchEngineDisplayed = true)
+        }
+    }
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/3351400
+    @Test
+    fun verifyTheHomeScreenWidgetOptionTest() {
+        homeScreen(composeTestRule) {
+        }.openThreeDotMenu {
+        }.clickSettingsButton {
+        }.openSearchSubMenu {
+            verifyTheHomeScreenWidgetOption()
+            verifyTheHomeScreenWidgetToggle(false)
+            clickTheHomeScreenWidgetToggle()
+            clickSystemHomeScreenShortcutAddButton()
+            verifyTheHomeScreenWidgetToggle(true)
+            verifySearchWidgetExistsOnHomeScreen()
+        }.clickSearchWidgetOnHomeScreen(composeTestRule) {
+            closeVoiceSearchDialog()
         }
     }
 }

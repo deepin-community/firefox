@@ -34,7 +34,7 @@ registerCleanupFunction(() => {
 function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
   let ev = aEvent;
   if (ev == "end" || ev == "start") {
-    let win = aTarget.ownerGlobal;
+    let win = aTarget.documentGlobal;
     const dwu = win.windowUtils;
     let bounds = dwu.getBoundsWithoutFlushing(aTarget);
     if (ev == "end") {
@@ -52,15 +52,15 @@ function simulateItemDrag(aToDrag, aTarget, aEvent = {}, aOffset = 2) {
     aTarget,
     null,
     null,
-    aToDrag.ownerGlobal,
-    aTarget.ownerGlobal,
+    aToDrag.documentGlobal,
+    aTarget.documentGlobal,
     ev
   );
   // Ensure dnd suppression is cleared.
   EventUtils.synthesizeMouseAtCenter(
     aTarget,
     { type: "mouseup" },
-    aTarget.ownerGlobal
+    aTarget.documentGlobal
   );
 }
 
@@ -131,7 +131,7 @@ function assertVisibilityScalars(expected) {
     ] ?? {};
 
   // Only some platforms have the menubar items.
-  if (AppConstants.MENUBAR_CAN_AUTOHIDE) {
+  if (!Services.appinfo.nativeMenubar) {
     expected.push("menubar-items_pinned_menu-bar");
   }
 
@@ -187,6 +187,7 @@ add_task(async function widgetPositions() {
     "tabbrowser-tabs_pinned_tabs-bar",
     "alltabs-button_pinned_tabs-bar",
     "unified-extensions-button_pinned_nav-bar-end",
+    "vertical-spacer_pinned_nav-bar-end",
 
     "forward-button_pinned_nav-bar-start",
     "back-button_pinned_nav-bar-start",
@@ -236,6 +237,7 @@ add_task(async function widgetPositions() {
     "back-button_pinned_nav-bar-end",
     "library-button_pinned_nav-bar-end",
     "unified-extensions-button_pinned_nav-bar-end",
+    "vertical-spacer_pinned_nav-bar-end",
 
     "fxa-toolbar-menu-button_pinned_bookmarks-bar",
     "new-tab-button_pinned_bookmarks-bar",
@@ -279,6 +281,7 @@ add_task(async function customizeMode() {
     "home-button_pinned_nav-bar-end",
     "library-button_pinned_nav-bar-end",
     "unified-extensions-button_pinned_nav-bar-end",
+    "vertical-spacer_pinned_nav-bar-end",
 
     "personal-bookmarks_pinned_bookmarks-bar",
   ]);
@@ -299,10 +302,18 @@ add_task(async function customizeMode() {
   let popupHidden = BrowserTestUtils.waitForEvent(toolbarPopup, "popuphidden");
   let subMenu = barMenu.querySelector("menupopup");
   popupShown = BrowserTestUtils.waitForEvent(subMenu, "popupshown");
-  EventUtils.synthesizeMouseAtCenter(barMenu, {}, win);
+  if (toolbarPopup.isNativeMenu) {
+    barMenu.openMenu(true);
+  } else {
+    EventUtils.synthesizeMouseAtCenter(barMenu, {}, win);
+  }
   await popupShown;
   let alwaysButton = barMenu.querySelector('*[data-visibility-enum="always"]');
-  EventUtils.synthesizeMouseAtCenter(alwaysButton, {}, win);
+  if (toolbarPopup.isNativeMenu) {
+    subMenu.activateItem(alwaysButton);
+  } else {
+    EventUtils.synthesizeMouseAtCenter(alwaysButton, {}, win);
+  }
   await popupHidden;
 
   let navbar = CustomizableUI.getCustomizationTarget(
@@ -374,6 +385,7 @@ add_task(async function contextMenus() {
     "home-button_pinned_nav-bar-end",
     "library-button_pinned_nav-bar-end",
     "unified-extensions-button_pinned_nav-bar-end",
+    "vertical-spacer_pinned_nav-bar-end",
 
     "personal-bookmarks_pinned_bookmarks-bar",
   ]);
@@ -467,6 +479,7 @@ add_task(async function extensions() {
 
       "random-addon-example-com_pinned_nav-bar-end",
       "unified-extensions-button_pinned_nav-bar-end",
+      "vertical-spacer_pinned_nav-bar-end",
 
       "random-addon-example-com_pinned_pageaction-urlbar",
     ]);
@@ -492,6 +505,7 @@ add_task(async function extensions() {
       "forward-button_pinned_nav-bar-start",
       "back-button_pinned_nav-bar-start",
       "unified-extensions-button_pinned_nav-bar-end",
+      "vertical-spacer_pinned_nav-bar-end",
     ]);
 
     await addon.enable();
@@ -516,6 +530,7 @@ add_task(async function extensions() {
 
       "random-addon-example-com_pinned_nav-bar-end",
       "unified-extensions-button_pinned_nav-bar-end",
+      "vertical-spacer_pinned_nav-bar-end",
 
       "random-addon-example-com_pinned_pageaction-urlbar",
     ]);
@@ -562,6 +577,7 @@ add_task(async function extensions() {
       "forward-button_pinned_nav-bar-start",
       "back-button_pinned_nav-bar-start",
       "unified-extensions-button_pinned_nav-bar-end",
+      "vertical-spacer_pinned_nav-bar-end",
     ]);
   });
 });

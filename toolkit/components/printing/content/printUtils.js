@@ -1,8 +1,3 @@
-// This file is loaded into the browser window scope.
-/* eslint-env mozilla/browser-window */
-
-// -*- tab-width: 2; indent-tabs-mode: nil; js-indent-level: 2 -*-
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -119,15 +114,12 @@ var PrintUtils = {
         );
       }
     }
-    try {
-      var PRINTDIALOGSVC = Cc[
-        "@mozilla.org/widget/printdialog-service;1"
-      ].getService(Ci.nsIPrintDialogService);
-      PRINTDIALOGSVC.showPageSetupDialog(window, printSettings, null);
-    } catch (e) {
+    var PRINTDIALOGSVC = Cc[
+      "@mozilla.org/widget/printdialog-service;1"
+    ].getService(Ci.nsIPrintDialogService);
+    PRINTDIALOGSVC.showPageSetupDialog(window, printSettings).catch(e => {
       dump("showPageSetup " + e + "\n");
-      return false;
-    }
+    });
     return true;
   },
 
@@ -313,9 +305,8 @@ var PrintUtils = {
       }
 
       if (useSystemDialog) {
-        const hasSelection = await PrintUtils.checkForSelection(
-          browsingContext
-        );
+        const hasSelection =
+          await PrintUtils.checkForSelection(browsingContext);
 
         // Prompt the user to choose a printer and make any desired print
         // settings changes.
@@ -488,11 +479,7 @@ var PrintUtils = {
       msg
     );
 
-    Services.telemetry.keyedScalarAdd(
-      "printing.error",
-      this._getErrorCodeForNSResult(nsresult),
-      1
-    );
+    Glean.printing.error[this._getErrorCodeForNSResult(nsresult)].add(1);
   },
 
   getPrintSettings(aPrinterName, aDefaultsOnly, aAllowPseudoPrinter = true) {

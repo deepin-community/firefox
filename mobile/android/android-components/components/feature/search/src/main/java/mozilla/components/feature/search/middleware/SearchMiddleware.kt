@@ -5,21 +5,27 @@
 package mozilla.components.feature.search.middleware
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import mozilla.appservices.remotesettings.RemoteSettingsClient
 import mozilla.components.browser.state.action.BrowserAction
 import mozilla.components.browser.state.action.SearchAction
+import mozilla.components.browser.state.action.SearchAction.SearchConfigurationAvailabilityChanged
 import mozilla.components.browser.state.search.RegionState
 import mozilla.components.browser.state.search.SearchEngine
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.SearchState
+import mozilla.components.feature.search.R
 import mozilla.components.feature.search.storage.BundledSearchEnginesStorage
 import mozilla.components.feature.search.storage.CustomSearchEngineStorage
+import mozilla.components.feature.search.storage.SearchEngineSelectorConfig
+import mozilla.components.feature.search.storage.SearchEngineSelectorRepository
 import mozilla.components.feature.search.storage.SearchMetadataStorage
 import mozilla.components.lib.state.Middleware
-import mozilla.components.lib.state.MiddlewareContext
 import mozilla.components.lib.state.Store
 import mozilla.components.support.base.log.logger.Logger
 import java.util.Locale
@@ -35,6 +41,8 @@ data class SearchExtraParams(
     val channelIdName: String,
     val channelIdParam: String,
 )
+
+internal const val SEARCH_CONFIG_ICONS_COLLECTION_NAME = "search-config-icons"
 
 /**
  * [Middleware] implementation for loading and saving [SearchEngine]s whenever the state changes.
@@ -60,22 +68,35 @@ class SearchMiddleware(
         context,
         additionalBundledSearchEngineIds.toSet(),
     ),
+    private val searchEngineSelectorConfig: SearchEngineSelectorConfig? = null,
     private val searchExtraParams: SearchExtraParams? = null,
     private val ioDispatcher: CoroutineContext = Dispatchers.IO,
 ) : Middleware<BrowserState, BrowserAction> {
     private val logger = Logger("SearchMiddleware")
     private val scope = CoroutineScope(ioDispatcher)
+    private val defaultSearchEngineIcon = BitmapFactory.decodeResource(
+        context.resources,
+        R.drawable.search_engine_placeholder,
+    )
+    private val client: RemoteSettingsClient? =
+        searchEngineSelectorConfig?.service?.remoteSettingsService?.makeClient(SEARCH_CONFIG_ICONS_COLLECTION_NAME)
+    private val searchEngineSelectorRepository: SearchEngineRepository? =
+        searchEngineSelectorConfig?.let {
+                SearchEngineSelectorRepository(context, it, defaultSearchEngineIcon, client)
+        }
 
     override fun invoke(
-        context: MiddlewareContext<BrowserState, BrowserAction>,
+        store: Store<BrowserState, BrowserAction>,
         next: (BrowserAction) -> Unit,
         action: BrowserAction,
     ) {
         when (action) {
-            is SearchAction.SetRegionAction -> loadSearchEngines(context.store, action.regionState, action.distribution)
+            is SearchAction.SetRegionAction -> loadSearchEngines(store, action.regionState, action.distribution)
             is SearchAction.UpdateCustomSearchEngineAction -> saveCustomSearchEngine(action)
             is SearchAction.RemoveCustomSearchEngineAction -> removeCustomSearchEngine(action)
             is SearchAction.SelectSearchEngineAction -> updateSearchEngineSelection(action)
+            is SearchAction.SelectPrivateSearchEngineAction -> updatePrivateSearchEngineSelection(action)
+            is SearchAction.ClearPrivateSearchEngineAction -> clearPrivateSearchEngineSelection()
             else -> {
                 // no-op
             }
@@ -86,11 +107,11 @@ class SearchMiddleware(
         when (action) {
             is SearchAction.ShowSearchEngineAction, is SearchAction.HideSearchEngineAction,
             is SearchAction.RestoreHiddenSearchEnginesAction,
-            -> updateHiddenSearchEngines(context.state.search.hiddenSearchEngines)
+            -> updateHiddenSearchEngines(store.state.search.hiddenSearchEngines)
             is SearchAction.AddAdditionalSearchEngineAction, is SearchAction.RemoveAdditionalSearchEngineAction ->
-                updateAdditionalSearchEngines(context.state.search.additionalSearchEngines)
+                updateAdditionalSearchEngines(store.state.search.additionalSearchEngines)
             is SearchAction.UpdateDisabledSearchEngineIdsAction -> updateDisabledSearchEngineIds(
-                context.store,
+                store,
                 action,
             )
             else -> {
@@ -99,6 +120,8 @@ class SearchMiddleware(
         }
     }
 
+    // SuppressWarnings will be removed when [BundleStorage] is entirely removed.
+    @SuppressWarnings("LongMethod")
     private fun loadSearchEngines(
         store: Store<BrowserState, BrowserAction>,
         region: RegionState,
@@ -107,25 +130,59 @@ class SearchMiddleware(
         val migrationValues = migration?.getValuesToMigrate()
         performCustomSearchEnginesMigration(migrationValues)
 
-        val regionBundle = async(ioDispatcher) {
-            bundleStorage.load(
+        val regionBundle: Deferred<BundleStorage.Bundle>
+        val allAdditionalSearchEngines: Deferred<List<SearchEngine>>
+
+        if (searchEngineSelectorRepository != null) {
+            val shouldRebuildSearchConfiguration = shouldRebuildSearchConfiguration(
+                currentSearchEnginesConfigurationId = store.state.search.searchEnvironmentId,
+                isNewSearchConfigurationAvailable = store.state.search.isNewSearchConfigurationAvailable,
+                searchEngineSelectorRepository = searchEngineSelectorRepository,
                 region = region,
                 distribution = distribution,
-                searchExtraParams = searchExtraParams,
-                coroutineContext = ioDispatcher,
             )
+            if (!shouldRebuildSearchConfiguration) {
+                store.dispatch(SearchConfigurationAvailabilityChanged(false))
+                return@launch
+            }
+
+            val result = async(ioDispatcher) {
+                searchEngineSelectorRepository.load(
+                    region = region,
+                    distribution = distribution,
+                    searchExtraParams = searchExtraParams,
+                    coroutineContext = ioDispatcher,
+                )
+            }
+            regionBundle = async {
+                result.await().copy(
+                    list = result.await().list.filter { !it.isOptional },
+                    searchEnvironmentId = result.await().searchEnvironmentId,
+                )
+            }
+            allAdditionalSearchEngines = async { result.await().list.filter { it.isOptional } }
+        } else {
+            regionBundle = async(ioDispatcher) {
+                bundleStorage.load(
+                    region = region,
+                    distribution = distribution,
+                    searchExtraParams = searchExtraParams,
+                    coroutineContext = ioDispatcher,
+                )
+            }
+            allAdditionalSearchEngines = async(ioDispatcher) {
+                bundleStorage.load(
+                    ids = additionalBundledSearchEngineIds,
+                    searchExtraParams = searchExtraParams,
+                    coroutineContext = ioDispatcher,
+                )
+            }
         }
+
         val customSearchEngines = async(ioDispatcher) { customStorage.loadSearchEngineList() }
         val hiddenSearchEngineIds = async(ioDispatcher) { metadataStorage.getHiddenSearchEngines() }
         val disabledSearchEngineIds = async(ioDispatcher) { metadataStorage.getDisabledSearchEngineIds() }
         val additionalSearchEngineIds = async(ioDispatcher) { metadataStorage.getAdditionalSearchEngines() }
-        val allAdditionalSearchEngines = async(ioDispatcher) {
-            bundleStorage.load(
-                ids = additionalBundledSearchEngineIds,
-                searchExtraParams = searchExtraParams,
-                coroutineContext = ioDispatcher,
-            )
-        }
 
         val hiddenSearchEngines = mutableListOf<SearchEngine>()
         val filteredRegionSearchEngines = regionBundle.await().list.filter { searchEngine ->
@@ -154,21 +211,42 @@ class SearchMiddleware(
             filteredRegionSearchEngines + customSearchEngines.await() + additionalSearchEngines,
         )
         val userChoice = async(ioDispatcher) { metadataStorage.getUserSelectedSearchEngine() }
+        val userPrivateChoice = async(ioDispatcher) { metadataStorage.getUserSelectedPrivateSearchEngine() }
 
         val action = SearchAction.SetSearchEnginesAction(
             regionSearchEngines = filteredRegionSearchEngines,
             regionDefaultSearchEngineId = regionBundle.await().defaultSearchEngineId,
             userSelectedSearchEngineId = userChoice.await()?.searchEngineId,
             userSelectedSearchEngineName = userChoice.await()?.searchEngineName,
+            userSelectedPrivateSearchEngineId = userPrivateChoice.await()?.searchEngineId,
+            userSelectedPrivateSearchEngineName = userPrivateChoice.await()?.searchEngineName,
             customSearchEngines = customSearchEngines.await(),
             hiddenSearchEngines = hiddenSearchEngines,
             disabledSearchEngineIds = disabledSearchEngineIds.await(),
             additionalSearchEngines = additionalSearchEngines,
             additionalAvailableSearchEngines = additionalAvailableSearchEngines,
             regionSearchEnginesOrder = regionSearchEngineIds,
+            searchEnginesConfigurationId = regionBundle.await().searchEnvironmentId,
         )
         store.dispatch(action)
     }
+
+    /**
+     * Check whether to avoid rebuilding the search configuration.
+     *
+     * @return `true` if search engines aren't yet configured or new ones are available, `false` otherwise.
+     */
+    private fun shouldRebuildSearchConfiguration(
+        currentSearchEnginesConfigurationId: Int?,
+        isNewSearchConfigurationAvailable: Boolean,
+        searchEngineSelectorRepository: SearchEngineRepository,
+        region: RegionState,
+        distribution: String?,
+    ): Boolean = isNewSearchConfigurationAvailable ||
+        currentSearchEnginesConfigurationId != searchEngineSelectorRepository.computeNewSearchEnvironmentId(
+        region = region,
+        distribution = distribution,
+    )
 
     private fun updateSearchEngineSelection(
         action: SearchAction.SelectSearchEngineAction,
@@ -177,6 +255,19 @@ class SearchMiddleware(
             action.searchEngineId,
             action.searchEngineName,
         )
+    }
+
+    private fun updatePrivateSearchEngineSelection(
+        action: SearchAction.SelectPrivateSearchEngineAction,
+    ) = scope.launch {
+        metadataStorage.setUserSelectedPrivateSearchEngine(
+            action.searchEngineId,
+            action.searchEngineName,
+        )
+    }
+
+    private fun clearPrivateSearchEngineSelection() = scope.launch {
+        metadataStorage.clearUserSelectedPrivateSearchEngine()
     }
 
     private fun removeCustomSearchEngine(
@@ -310,11 +401,50 @@ class SearchMiddleware(
         /**
          * A loaded bundle containing the list of search engines and the ID of the default for
          * the region.
+         *
+         * @property list List of search engines to use.
+         * @property defaultSearchEngineId ID of one of the search engines from [list] to use as the default.
+         * @property searchEnvironmentId Unique identifier of the current search environment.
          */
         data class Bundle(
             val list: List<SearchEngine>,
             val defaultSearchEngineId: String,
+            val searchEnvironmentId: Int?,
         )
+    }
+
+    /**
+     * A repository for search engines from Application Services.
+     */
+    interface SearchEngineRepository {
+        /**
+         * Check whether new search engines are available.
+         * This can help know if [load] would return the same search engines configuration as before
+         * and as such it allows avoiding the complex code and longer execution time from running [load] again.
+         *
+         * @param region Current [RegionState].
+         * @param locale Current [Locale]. Defaults to [Locale.getDefault].
+         * @param distribution Current distribution. Defaults to `null`.
+         */
+        fun computeNewSearchEnvironmentId(
+            region: RegionState,
+            locale: Locale = Locale.getDefault(),
+            distribution: String? = null,
+        ): Int
+
+        /**
+         * Loads the search engines for the given [locale] and [region] from Application Services.
+         *
+         * If [distribution] is not null then attempt to load the bundled search engine for the
+         * [distribution] in the specified [locale] and [region] if available.
+         */
+        suspend fun load(
+            region: RegionState,
+            locale: Locale = Locale.getDefault(),
+            distribution: String? = null,
+            searchExtraParams: SearchExtraParams? = null,
+            coroutineContext: CoroutineContext = Dispatchers.IO,
+        ): BundleStorage.Bundle
     }
 
     /**
@@ -331,6 +461,23 @@ class SearchMiddleware(
          * Sets the ID (and optionally name) of the default search engine the user has picked.
          */
         suspend fun setUserSelectedSearchEngine(id: String, name: String?)
+
+        /**
+         * Gets the ID (and optionally name) of the default search engine the user has picked for
+         * private browsing. Returns `null` if the user has not made a choice.
+         */
+        suspend fun getUserSelectedPrivateSearchEngine(): UserChoice?
+
+        /**
+         * Sets the ID (and optionally name) of the default search engine the user has picked for
+         * private browsing.
+         */
+        suspend fun setUserSelectedPrivateSearchEngine(id: String, name: String?)
+
+        /**
+         * Clears the user's private browsing search engine selection.
+         */
+        suspend fun clearUserSelectedPrivateSearchEngine()
 
         /**
          * Sets the list of IDs of hidden search engines.

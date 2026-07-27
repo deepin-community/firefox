@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = ਸਰੋਤ ਭਾਸ਼ਾ ਬਦਲੋ
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = ਅਫਸੋਸ ਹੈ ਪਰ ਅਸੀਂ ਹਾਲੇ { $language } ਤੋਂ ਅਨੁਵਾਦ ਕਰਨ ਲਈ ਸਹਿਯੋਗੀ ਨਹੀਂ ਹਾਂ।
+translations-panel-error-unsupported-hint-unknown-2 = ਅਫਸੋਸ ਹੈ ਪਰ ਅਸੀਂ ਹਾਲੇ ਇਸ ਭਾਸ਼ਾ ਤੋਂ ਅਨੁਵਾਦ ਕਰਨ ਲਈ ਸਹਿਯੋਗੀ ਨਹੀਂ ਹਾਂ।
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = ਆਫ਼ਲਾਈਨ ਅਨੁਵਾਦ ਲਈ �
 translations-manage-all-language = ਸਭ ਭਾਸ਼ਾਵਾਂ
 translations-manage-download-button = ਡਾਊਨਲੋਡ
 translations-manage-delete-button = ਹਟਾਓ
-translations-manage-intro = ਆਪਣੀ ਭਾਸ਼ਾ ਅਤੇ ਸਾਈਟ ਅਨੁਵਾਦ ਪਸੰਦਾਂ ਨੂੰ ਸੈੱਟ ਕਰੋ ਅਤੇ ਆਫ਼ਲਾਈਨ ਅਨੁਵਾਦ ਲਈ ਇੰਸਟਾਲ ਹੋਈਆਂ ਭਾਸ਼ਾਵਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ।
-translations-manage-install-description = ਆਫ਼ਲਾਈਨ ਅਨੁਵਾਦ ਲਈ ਭਾਸ਼ਾਵਾਂ ਇੰਸਟਾਲ ਕਰੋ
-translations-manage-language-install-button =
-    .label = ਇੰਸਟਾਲ ਕਰੋ
-translations-manage-language-install-all-button =
-    .label = ਸਭ ਇੰਸਟਾਲ
-    .accesskey = I
 translations-manage-intro-2 = ਆਪਣੀ ਭਾਸ਼ਾ ਅਤੇ ਸਾਈਟ ਅਨੁਵਾਦ ਪਸੰਦਾਂ ਨੂੰ ਸੈੱਟ ਕਰੋ ਅਤੇ ਆਫ਼ਲਾਈਨ ਅਨੁਵਾਦ ਲਈ ਡਾਊਨਲੋਡ ਹੋਈਆਂ ਭਾਸ਼ਾਵਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ।
 translations-manage-download-description = ਆਫ਼ਲਾਈਨ ਅਨੁਵਾਦ ਲਈ ਭਾਸ਼ਾਵਾਂ ਡਾਊਨਲੋਡ ਕਰੋ
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = ਸਭ ਹਟਾਓ
     .accesskey = e
-translations-manage-error-install = ਭਾਸ਼ਾ ਫ਼ਾਈਲਾਂ ਨੂੰ ਇੰਸਟਾਲ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਸੀ। ਫ਼ੇਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜੀ।
 translations-manage-error-download = ਭਾਸ਼ਾ ਫ਼ਾਈਲਾਂ ਡਾਊਨਲੋਡ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਹੈ। ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
 translations-manage-error-delete = ਭਾਸ਼ਾ ਫ਼ਾਈਲ ਹਟਾਉਣ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਸੀ। ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
 translations-manage-error-remove = ਭਾਸ਼ਾ ਫ਼ਾਈਲ ਹਟਾਉਣ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਸੀ। ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = ਅਨੁਵਾਦ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਸੀ। ਬਾਅਦ ਵਿੱਚ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = ਅਫਸੋਸ ਹੈ ਪਰ ਅਸੀਂ ਹਾਲੇ { $language } ਤੋਂ ਅਨੁਵਾਦ ਕਰਨ ਲਈ ਸਹਿਯੋਗੀ ਨਹੀਂ ਹਾਂ।
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = ਅਫਸੋਸ ਹੈ ਪਰ ਅਸੀਂ ਹਾਲੇ ਇਸ ਭਾਸ਼ਾ ਤੋਂ ਅਨੁਵਾਦ ਕਰਨ ਲਈ ਸਹਿਯੋਗੀ ਨਹੀਂ ਹਾਂ।
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

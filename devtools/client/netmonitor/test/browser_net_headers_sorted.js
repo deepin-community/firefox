@@ -22,7 +22,7 @@ add_task(async function () {
   store.dispatch(Actions.batchEnable(false));
 
   const wait = waitForNetworkEvents(monitor, 1);
-  await reloadBrowser();
+  await reloadSelectedTab();
   await wait;
 
   // Verify request and response headers.
@@ -193,4 +193,22 @@ async function verifyRawHeaders(monitor) {
     expectedRequestHeaders.toString(),
     "Raw Request Headers are not sorted"
   );
+
+  // Use keyboard to uncheck the toggle so we test Bug 1917296
+  for (const rawToggleInput of document.querySelectorAll(
+    ".devtools-checkbox-toggle"
+  )) {
+    ok(rawToggleInput.checked, "Toggle is checked");
+    rawToggleInput.focus();
+    EventUtils.synthesizeKey("VK_SPACE", {}, rawToggleInput.documentGlobal);
+  }
+
+  // Wait till raw headers are not available anymore.
+  await waitUntil(() => !document.querySelector("textarea.raw-headers"));
+  ok(true, "Raw headers are hidden");
+  for (const rawToggleInput of document.querySelectorAll(
+    ".devtools-checkbox-toggle"
+  )) {
+    ok(!rawToggleInput.checked, "Toggle is unchecked");
+  }
 }

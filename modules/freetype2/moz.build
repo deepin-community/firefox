@@ -1,12 +1,8 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 DEFINES['FT2_BUILD_LIBRARY'] = True
-
-CFLAGS += ['-std=c99']
 
 LOCAL_INCLUDES += [
     'include',
@@ -84,7 +80,8 @@ SOURCES += [
 # zlib library
 DEFINES['FT_CONFIG_OPTION_SYSTEM_ZLIB'] = True
 CFLAGS += CONFIG['MOZ_ZLIB_CFLAGS']
-USE_LIBS += ['zlib']
+if not CONFIG["USE_LIBZ_RS"]:
+    USE_LIBS += ['zlib']
 
 # png library
 DEFINES['FT_CONFIG_OPTION_USE_PNG'] = True

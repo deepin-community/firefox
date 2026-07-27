@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,13 +6,13 @@
 #define DOM_SVG_DOMSVGNUMBERLIST_H_
 
 #include "DOMSVGAnimatedNumberList.h"
+#include "SVGNumberList.h"
 #include "mozAutoDocUpdate.h"
+#include "mozilla/Attributes.h"
+#include "mozilla/RefPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsTArray.h"
-#include "SVGNumberList.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/RefPtr.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -34,13 +32,11 @@ class MOZ_RAII AutoChangeNumberListNotifier : public mozAutoDocUpdate {
       : mozAutoDocUpdate(aValue->Element()->GetComposedDoc(), true),
         mValue(aValue) {
     MOZ_ASSERT(mValue, "Expecting non-null value");
-    mEmptyOrOldValue =
-        mValue->Element()->WillChangeNumberList(mValue->AttrEnum(), *this);
+    mValue->Element()->WillChangeNumberList(mValue->AttrEnum(), *this);
   }
 
   ~AutoChangeNumberListNotifier() {
-    mValue->Element()->DidChangeNumberList(mValue->AttrEnum(), mEmptyOrOldValue,
-                                           *this);
+    mValue->Element()->DidChangeNumberList(mValue->AttrEnum(), *this);
     if (mValue->IsAnimating()) {
       mValue->Element()->AnimationNeedsResample();
     }
@@ -48,7 +44,6 @@ class MOZ_RAII AutoChangeNumberListNotifier : public mozAutoDocUpdate {
 
  private:
   T* const mValue;
-  nsAttrValue mEmptyOrOldValue;
 };
 
 /**
@@ -134,22 +129,21 @@ class DOMSVGNumberList final : public nsISupports, public nsWrapperCache {
     }
     return LengthNoFlush();
   }
-  void Clear(ErrorResult& error);
+  void Clear(ErrorResult& aRv);
   already_AddRefed<DOMSVGNumber> Initialize(DOMSVGNumber& aItem,
-                                            ErrorResult& error);
-  already_AddRefed<DOMSVGNumber> GetItem(uint32_t index, ErrorResult& error);
+                                            ErrorResult& aRv);
+  already_AddRefed<DOMSVGNumber> GetItem(uint32_t index, ErrorResult& aRv);
   already_AddRefed<DOMSVGNumber> IndexedGetter(uint32_t index, bool& found,
-                                               ErrorResult& error);
+                                               ErrorResult& aRv);
   already_AddRefed<DOMSVGNumber> InsertItemBefore(DOMSVGNumber& aItem,
                                                   uint32_t index,
-                                                  ErrorResult& error);
+                                                  ErrorResult& aRv);
   already_AddRefed<DOMSVGNumber> ReplaceItem(DOMSVGNumber& aItem,
-                                             uint32_t index,
-                                             ErrorResult& error);
-  already_AddRefed<DOMSVGNumber> RemoveItem(uint32_t index, ErrorResult& error);
+                                             uint32_t index, ErrorResult& aRv);
+  already_AddRefed<DOMSVGNumber> RemoveItem(uint32_t index, ErrorResult& aRv);
   already_AddRefed<DOMSVGNumber> AppendItem(DOMSVGNumber& newItem,
-                                            ErrorResult& error) {
-    return InsertItemBefore(newItem, LengthNoFlush(), error);
+                                            ErrorResult& aRv) {
+    return InsertItemBefore(newItem, LengthNoFlush(), aRv);
   }
   uint32_t Length() const { return NumberOfItems(); }
 

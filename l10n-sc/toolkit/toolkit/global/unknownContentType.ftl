@@ -5,14 +5,12 @@
 unknowncontenttype-handleinternally =
     .label = Aberi cun { -brand-short-name }
     .accesskey = e
-
 unknowncontenttype-settingschange =
     .value =
         { PLATFORM() ->
             [windows] Is cunfiguratziones si podent cambiare in is optziones de { -brand-short-name }.
            *[other] Is cunfiguratziones si podent cambiare in is preferèntzias de { -brand-short-name }.
         }
-
 unknowncontenttype-intro = As seberadu de abèrrere:
 unknowncontenttype-which-is = chi est:
 unknowncontenttype-from = dae:
@@ -35,7 +33,7 @@ unknowncontenttype-choose-handler =
            *[other] N
         }
 unknowncontenttype-save-file =
-    .label = Sarva s'archìviu
+    .label = Sarva s’archìviu
     .accesskey = S
 unknowncontenttype-remember-choice =
     .label = Dae immoe, faghe·ddu in automàticu pro totu is archìvios comente custu.

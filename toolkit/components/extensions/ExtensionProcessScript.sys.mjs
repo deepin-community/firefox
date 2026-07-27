@@ -9,18 +9,27 @@
  * after startup, in *every* browser process live outside of this file.
  */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   ExtensionChild: "resource://gre/modules/ExtensionChild.sys.mjs",
   ExtensionCommon: "resource://gre/modules/ExtensionCommon.sys.mjs",
   ExtensionContent: "resource://gre/modules/ExtensionContent.sys.mjs",
   ExtensionPageChild: "resource://gre/modules/ExtensionPageChild.sys.mjs",
+  ExtensionUserScriptsContent:
+    "resource://gre/modules/ExtensionUserScriptsContent.sys.mjs",
   ExtensionWorkerChild: "resource://gre/modules/ExtensionWorkerChild.sys.mjs",
   Schemas: "resource://gre/modules/Schemas.sys.mjs",
+  // We need to avoid touching Services.appinfo here in order to prevent
+  // the wrong version from being cached during xpcshell test startup.
+  isContentProcess: () =>
+    Services.appinfo.processType == Services.appinfo.PROCESS_TYPE_CONTENT,
+  isContentScriptProcess: () =>
+    lazy.isContentProcess ||
+    !WebExtensionPolicy.useRemoteWebExtensions ||
+    // Thunderbird still loads some content in the parent process.
+    AppConstants.MOZ_APP_NAME == "thunderbird",
 });
 
 import { ExtensionUtils } from "resource://gre/modules/ExtensionUtils.sys.mjs";
@@ -32,22 +41,6 @@ const { sharedData } = Services.cpmm;
 function getData(extension, key = "") {
   return sharedData.get(`extension/${extension.id}/${key}`);
 }
-
-// We need to avoid touching Services.appinfo here in order to prevent
-// the wrong version from being cached during xpcshell test startup.
-// eslint-disable-next-line mozilla/use-services
-ChromeUtils.defineLazyGetter(lazy, "isContentProcess", () => {
-  return Services.appinfo.processType == Services.appinfo.PROCESS_TYPE_CONTENT;
-});
-
-ChromeUtils.defineLazyGetter(lazy, "isContentScriptProcess", () => {
-  return (
-    lazy.isContentProcess ||
-    !WebExtensionPolicy.useRemoteWebExtensions ||
-    // Thunderbird still loads some content in the parent process.
-    AppConstants.MOZ_APP_NAME == "thunderbird"
-  );
-});
 
 var extensions = new DefaultWeakMap(policy => {
   return new lazy.ExtensionChild(policy);
@@ -71,8 +64,14 @@ ExtensionManager = {
       this
     );
     Services.cpmm.addMessageListener("Extension:UpdateContentScripts", this);
+    Services.cpmm.addMessageListener("Extension:UpdateUserScriptWorlds", this);
     Services.cpmm.addMessageListener("Extension:UpdatePermissions", this);
     Services.cpmm.addMessageListener("Extension:UpdateIgnoreQuarantine", this);
+
+    if (lazy.isContentProcess) {
+      // eslint-disable-next-line mozilla/balanced-listeners
+      Services.cpmm.sharedData.addEventListener("change", this);
+    }
 
     this.updateStubExtensions();
 
@@ -146,11 +145,13 @@ ExtensionManager = {
         id: extension.id,
         mozExtensionHostname: extension.uuid,
         name: extension.name,
+        version: extension.version,
         type: extension.type,
         baseURL: extension.resourceURL,
 
         isPrivileged: extension.isPrivileged,
         ignoreQuarantine: extension.ignoreQuarantine,
+        hasRecommendedState: extension.hasRecommendedState,
         temporarilyInstalled: extension.temporarilyInstalled,
         permissions: extension.permissions,
         allowedOrigins: extension.allowedOrigins,
@@ -167,6 +168,10 @@ ExtensionManager = {
 
         contentScripts: extension.contentScripts,
       });
+
+      if (sharedData.has("extensions/guards")) {
+        lazy.ExtensionCommon.GuardSets.updateFor(policy);
+      }
 
       policy.debugName = `${JSON.stringify(policy.name)} (ID: ${
         policy.id
@@ -218,10 +223,11 @@ ExtensionManager = {
   handleEvent(event) {
     if (
       event.type === "change" &&
-      event.changedKeys.includes("extensions/pending")
+      event.changedKeys.includes("extensions/guards")
     ) {
-      this.updateStubExtensions();
+      lazy.ExtensionCommon.GuardSets.updateAll();
     }
+    // TODO bug 1642012: previous "extensions/pending" branch was unreachable.
   },
 
   receiveMessage({ name, data }) {
@@ -317,6 +323,19 @@ ExtensionManager = {
               policy.registerContentScript(newScript);
               registeredContentScripts.set(scriptId, newScript);
             }
+          }
+          break;
+        }
+
+        case "Extension:UpdateUserScriptWorlds": {
+          let policy = WebExtensionPolicy.getByID(data.id);
+
+          if (policy) {
+            lazy.ExtensionUserScriptsContent.updateWorldConfig(
+              extensions.get(policy),
+              data.reset,
+              data.update
+            );
           }
           break;
         }

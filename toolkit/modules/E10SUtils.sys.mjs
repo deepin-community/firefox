@@ -43,13 +43,13 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "serializationHelper",
   "@mozilla.org/network/serialization-helper;1",
-  "nsISerializationHelper"
+  Ci.nsISerializationHelper
 );
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "extProtService",
   "@mozilla.org/uriloader/external-protocol-service;1",
-  "nsIExternalProtocolService"
+  Ci.nsIExternalProtocolService
 );
 
 function getOriginalReaderModeURI(aURI) {
@@ -73,6 +73,7 @@ const EXTENSION_REMOTE_TYPE = "extension";
 const PRIVILEGEDABOUT_REMOTE_TYPE = "privilegedabout";
 const PRIVILEGEDMOZILLA_REMOTE_TYPE = "privilegedmozilla";
 const SERVICEWORKER_REMOTE_TYPE = "webServiceWorker";
+const DISABLE_JIT_REMOTE_TYPE_SUFFIX = "disableJit=1";
 
 // This must start with the WEB_REMOTE_TYPE above.
 const DEFAULT_REMOTE_TYPE = WEB_REMOTE_TYPE;
@@ -203,6 +204,13 @@ function validatedWebRemoteType(
       geckoViewSessionContextId,
     };
 
+    let jitAllowed;
+    try {
+      jitAllowed = Services.policies.isAllowedForURI("jit", aTargetUri);
+    } catch (e) {
+      jitAllowed = true;
+    }
+
     // Get a principal to use for isolation.
     let targetPrincipal;
     if (aResultPrincipal) {
@@ -211,19 +219,27 @@ function validatedWebRemoteType(
       targetPrincipal = sm.createContentPrincipal(aTargetUri, originAttributes);
     }
 
+    let suffix = targetPrincipal.originSuffix;
+    if (!jitAllowed) {
+      if (suffix) {
+        suffix += `&${DISABLE_JIT_REMOTE_TYPE_SUFFIX}`;
+      } else {
+        suffix = `^${DISABLE_JIT_REMOTE_TYPE_SUFFIX}`;
+      }
+    }
+    let siteKey = `${targetPrincipal.siteOriginNoSuffix}${suffix}`;
+
     // If this is a special webCOOP+COEP= remote type that matches the
     // principal's siteOrigin, we don't want to override it with webIsolated=
     // as it's already isolated.
     if (
       aPreferredRemoteType &&
-      aPreferredRemoteType.startsWith(
-        `${WEB_REMOTE_COOP_COEP_TYPE_PREFIX}${targetPrincipal.siteOrigin}`
-      )
+      aPreferredRemoteType == `${WEB_REMOTE_COOP_COEP_TYPE_PREFIX}${siteKey}`
     ) {
       return aPreferredRemoteType;
     }
 
-    return `${FISSION_WEB_REMOTE_TYPE}=${targetPrincipal.siteOrigin}`;
+    return `${FISSION_WEB_REMOTE_TYPE}=${siteKey}`;
     // else fall through and probably return WEB_REMOTE_TYPE
   }
 
@@ -294,7 +310,7 @@ export var E10SUtils = {
    * Serialize csp data.
    *
    * @param {nsIContentSecurity} csp. The csp to serialize.
-   * @return {String} The base64 encoded csp data.
+   * @return {string} The base64 encoded csp data.
    */
   serializeCSP(csp) {
     let serializedCSP = null;
@@ -313,7 +329,7 @@ export var E10SUtils = {
    * Deserialize a base64 encoded csp (serialized with
    * Utils::serializeCSP).
    *
-   * @param {String} csp_b64 A base64 encoded serialized csp.
+   * @param {string} csp_b64 A base64 encoded serialized csp.
    * @return {nsIContentSecurityPolicy} A deserialized csp.
    */
   deserializeCSP(csp_b64) {
@@ -327,6 +343,53 @@ export var E10SUtils = {
       return csp;
     } catch (e) {
       this.log().error(`Failed to deserialize csp_b64 '${csp_b64}' ${e}`);
+    }
+    return null;
+  },
+
+  /**
+   * Serialize policyContainer data.
+   *
+   * @param {nsIPolicyContainer} policyContainer. The policyContainer to serialize.
+   * @return {string} The base64 encoded policyContainer data.
+   */
+  serializePolicyContainer(policyContainer) {
+    let serializedPolicyContainer = null;
+
+    try {
+      if (policyContainer) {
+        serializedPolicyContainer =
+          lazy.serializationHelper.serializeToString(policyContainer);
+      }
+    } catch (e) {
+      this.log().error(
+        `Failed to serialize policyContainer '${policyContainer}' ${e}`
+      );
+    }
+    return serializedPolicyContainer;
+  },
+
+  /**
+   * Deserialize a base64 encoded policyContainer (serialized with
+   * Utils::serializePolicyContainer).
+   *
+   * @param {string} policyContainerB64 A base64 encoded serialized policyContainer.
+   * @return {nsIPolicyContainer} A deserialized policyContainer.
+   */
+  deserializePolicyContainer(policyContainerB64) {
+    if (!policyContainerB64) {
+      return null;
+    }
+
+    try {
+      let policyContainer =
+        lazy.serializationHelper.deserializeObject(policyContainerB64);
+      policyContainer.QueryInterface(Ci.nsIPolicyContainer);
+      return policyContainer;
+    } catch (e) {
+      this.log().error(
+        `Failed to deserialize policyContainerB64 '${policyContainerB64}' ${e}`
+      );
     }
     return null;
   },
@@ -425,7 +488,7 @@ export var E10SUtils = {
           ? FILE_REMOTE_TYPE
           : DEFAULT_REMOTE_TYPE;
 
-      case "about":
+      case "about": {
         let module = this.getAboutModule(aURI);
         // If the module doesn't exist then an error page will be loading, that
         // should be ok to load in any process
@@ -483,8 +546,9 @@ export var E10SUtils = {
         }
 
         return NOT_REMOTE;
+      }
 
-      case "chrome":
+      case "chrome": {
         let chromeReg = Cc["@mozilla.org/chrome/chrome-registry;1"].getService(
           Ci.nsIXULChromeRegistry
         );
@@ -500,6 +564,7 @@ export var E10SUtils = {
         }
 
         return NOT_REMOTE;
+      }
 
       case "moz-extension":
         // Extension iframes should load in the same process
@@ -513,6 +578,8 @@ export var E10SUtils = {
       case "news":
       case "nntp":
       case "snews":
+      case "x-moz-ews":
+      case "x-moz-graph":
         // Protocols used by Thunderbird to display email messages.
         return NOT_REMOTE;
 
@@ -594,7 +661,7 @@ export var E10SUtils = {
    * Serialize principal data.
    *
    * @param {nsIPrincipal} principal The principal to serialize.
-   * @return {String} The serialized principal data.
+   * @return {string} The serialized principal data.
    */
   serializePrincipal(principal) {
     let serializedPrincipal = null;
@@ -614,7 +681,7 @@ export var E10SUtils = {
   /**
    * Deserialize a principal (serialized with serializePrincipal).
    *
-   * @param {String} serializedPincipal A serialized principal.
+   * @param {string} serializedPincipal A serialized principal.
    * @return {nsIPrincipal} A deserialized principal.
    */
   deserializePrincipal(serializedPincipal, fallbackPrincipalCallback = null) {
@@ -671,7 +738,7 @@ export var E10SUtils = {
    *
    * @param {nsICookieJarSettings} cookieJarSettings The cookieJarSettings to
    *   serialize.
-   * @return {String} The base64 encoded cookieJarSettings data.
+   * @return {string} The base64 encoded cookieJarSettings data.
    */
   serializeCookieJarSettings(cookieJarSettings) {
     let serialized = null;
@@ -691,7 +758,7 @@ export var E10SUtils = {
   /**
    * Deserialize a base64 encoded cookieJarSettings
    *
-   * @param {String} cookieJarSettings_b64 A base64 encoded serialized cookieJarSettings.
+   * @param {string} cookieJarSettings_b64 A base64 encoded serialized cookieJarSettings.
    * @return {nsICookieJarSettings} A deserialized cookieJarSettings.
    */
   deserializeCookieJarSettings(cookieJarSettings_b64) {
@@ -725,7 +792,7 @@ export var E10SUtils = {
    * Serialize referrerInfo.
    *
    * @param {nsIReferrerInfo} The referrerInfo to serialize.
-   * @return {String} The base64 encoded referrerInfo.
+   * @return {string} The base64 encoded referrerInfo.
    */
   serializeReferrerInfo(referrerInfo) {
     let serialized = null;
@@ -743,7 +810,7 @@ export var E10SUtils = {
   /**
    * Deserialize a base64 encoded referrerInfo
    *
-   * @param {String} referrerInfo_b64 A base64 encoded serialized referrerInfo.
+   * @param {string} referrerInfo_b64 A base64 encoded serialized referrerInfo.
    * @return {nsIReferrerInfo} A deserialized referrerInfo.
    */
   deserializeReferrerInfo(referrerInfo_b64) {

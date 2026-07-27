@@ -15,6 +15,8 @@ about-logging-set-log-file = הגדרת קובץ רישום
 about-logging-set-log-modules = הגדרת מודולי רישום
 about-logging-start-logging = התחלת רישום
 about-logging-stop-logging = הפסקת רישום
+about-logging-copy-as-url = העתקת ההגדרות הנוכחיות ככתובת אתר
+about-logging-url-copied = הגדרות הרישום הועתקו ללוח העריכה ככתובת
 about-logging-buttons-disabled = הרישום מוגדר באמצעות משתני סביבה ולכן הגדרה דינמית אינה זמינה.
 about-logging-some-elements-disabled = הרישום מוגדר באמצעות כתובת URL, חלק מאפשרויות התצורה אינן זמינות
 about-logging-info = מידע:
@@ -26,6 +28,8 @@ about-logging-logging-to-profiler = רישום ל־{ -profiler-brand-name }
 about-logging-no-log-modules = ללא
 about-logging-no-log-file = ללא
 about-logging-logging-preset-selector-text = ערכת רישום:
+about-logging-menu =
+    .title = אפשרויות מתקדמות
 
 ## Logging presets
 
@@ -43,6 +47,14 @@ about-logging-preset-media-playback-label = ניגון מדיה
 about-logging-preset-media-playback-description = מודולי רישום לאבחון בעיות בניגון מדיה (לא בעיות בשיחות ועידה בוידאו)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = מודולי רישום לאבחון שיחות WebRTC
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = מודולי רישום לאבחון בעיות עם מפענחי ומקודדי אודיו/וידאו, ומפענחי תמונה של WebCodecs
+about-logging-preset-ml-label = למידת מכונה
+about-logging-preset-ml-description = מודולי רישום לאבחון בעיות בלמידת מכונה
+about-logging-preset-web-compat-label = תאימות אתרים
+about-logging-preset-web-compat-description = מודולי רישום לאבחון בעיות בתאימות לאתרים
+about-logging-preset-navigation = ניווט
+about-logging-preset-navigation-description = מודולי רישום לאבחון בעיות בניווט והיסטוריית גלישה
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = מודולי רישום לאבחון בעיות WebGPU
 about-logging-preset-gfx-label = גרפיקה
@@ -55,9 +67,7 @@ about-logging-preset-custom-description = מודולי רישום שנבחרים
 # Error handling
 about-logging-error = שגיאה:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = ערך שגוי ״{ $v }״ עבור המפתח ״{ $k }״
 about-logging-unknown-logging-preset = ערכת רישום לא ידועה ״{ $v }״
@@ -65,4 +75,53 @@ about-logging-unknown-profiler-preset = ערכה לא ידועהשל יוצר ה
 about-logging-unknown-option = אפשרות about:logging לא ידועה ״{ $k }״
 about-logging-configuration-url-ignored = התעלמות מכתובת אתר של הגדרת תצורה
 about-logging-file-and-profiler-override = לא ניתן לאלץ פלט לקובץ ולעקוף אפשרויות של יוצר הפרופילים בו זמנית
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = אירעה שגיאה: { $errorText }
 about-logging-configured-via-url = האפשרות מוגדרת באמצעות כתובת אתר
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = נתוני הפרופיל נלכדו. האם ברצונך לשמור או להעלות אותם?
+about-logging-save-button = שמירה
+about-logging-upload-button = העלאה
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = נשמר אל { $path }
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = בהעלאת נתוני פרופיל: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = הועלה אל <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> שיתוף קישורץ
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = אירעה שגיאה בעת העלאת הפרופיל: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = אירעה שגיאה בעת אחסון הפרופיל שהועלה: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = אירעה שגיאה בעת שמירת הקובץ: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = פרופיל { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = פרופילים שהועלו
+about-logging-no-uploaded-profiles = עדיין לא הועלו פרופילים.
+about-logging-delete-uploaded-profile = מחיקה
+about-logging-view-uploaded-profile = צפייה בפרופיל
+about-logging-delete-profile-confirm-title = מחיקת פרופיל
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = האם ברצונך למחוק את הפרופיל ״{ $profileName }״? לא ניתן לבטל פעולה זו.
+about-logging-deleting-profile = מתבצעת מחיקה…

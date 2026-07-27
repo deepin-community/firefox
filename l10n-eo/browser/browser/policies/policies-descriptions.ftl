@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Difini politikojn, kiujn Webextensions povas aliri per chrome.storage.managed.
+policy-AIControls = Agordi regilojn de AI.
 policy-AllowedDomainsForApps = Difini la nomregnojn kiuj rajtas aliri Google Workspace.
 policy-AllowFileSelectionDialogs = Permesi dialogojn por elekti dosierojn.
 policy-AppAutoUpdate = Aktivigi aŭ malaktivigi aŭtomatan ĝisdatigon de programoj.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = Aktivigi aŭtomatan plenigon de adresoj.
 policy-AutofillCreditCardEnabled = Aktivigi aŭtomatan plenigon de pagmetodoj.
 policy-AutoLaunchProtocolsFromOrigins = Difini liston de eksteraj protokoloj, kiuj povas esti uzitaj el la listigitaj originoj, sen demandi al la uzanto.
 policy-BackgroundAppUpdate2 = Aktivigi aŭ malaktivigi la fonan ĝisdatigilon.
+policy-Backup = Malaktivigi sekurkopiojn kaj restarigon de profilaj datumoj.
 policy-BlockAboutAddons = Bloki aliron al administrilo de aldonaĵoj (about:addons).
 policy-BlockAboutConfig = Bloki aliron al la paĝo about:config.
 policy-BlockAboutProfiles = Bloki aliron al la paĝo about:profiles.
@@ -35,6 +37,7 @@ policy-Containers = Dinifi politikojn, kiuj rilatas ingojn.
 policy-DisableAccounts = Malaktivigi servojn kiuj postulas konton, tio inkluzivas speguladon.
 policy-DisabledCiphers = Malaktivigi ĉifradon.
 policy-DefaultDownloadDirectory = Difini la norman dosierujon por elŝutoj.
+policy-DefaultSerialGuardSetting = Administri uzon de interfaco Serial API.
 policy-DisableAppUpdate = Malpermesi al retumilo ĝisdatigiĝi.
 policy-DisableBuiltinPDFViewer = Malaktivigi PDF.js (PDF-legilo inkluzivita en { -brand-short-name }).
 policy-DisableDefaultBrowserAgent = Eviti ke la norma retumila agento faru ion ajn. Tio nur aplikeblas al Windows, ĉar aliaj sistemoj ne havas tiun agenton.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Malaktivigi la eblon konservi retpaĝojn en { -pocket-br
 policy-DisablePrivateBrowsing = Malaktivigi privatan retumon
 policy-DisableProfileImport = Malaktivigi la menueron por importi datumojn el alia retumilo.
 policy-DisableProfileRefresh = Malaktivigi la butonon "Reŝargi { -brand-short-name }" en la paĝo about:support.
+policy-DisableRemoteImprovements = Eviti ke { -brand-short-name } apliku efikecajn, stabilecajn aŭ trajtajn ŝanĝojn inter ĝisdatigoj.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Malaktivigi forajn agordojn.
 policy-DisableSafeMode = Malaktivigi la trajton por restartigi en sekura reĝimo. Rimarko: nur en Windows eblas malaktivigi la eniron al sekura reĝimo per la klavo "majuskle", pero grupa politiko.
 policy-DisableSecurityBypass = Malpermesi al uzanto ignori kelkajn sekurecajn avertojn.
 policy-DisableSetAsDesktopBackground = Malaktivigi la menueron "Difini kiel labortablan fonon" por bildoj.
@@ -79,6 +84,7 @@ policy-ExtensionSettings = Administri ĉiujn agordojn por instalo de etendaĵoj.
 policy-ExtensionUpdate = Aktivigi aŭ malaktivigi aŭtomatan ĝisdatigon de etendaĵoj.
 policy-FirefoxHome2 = Agordi { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Agordi { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Agordi trajtojn de genera AI.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Kiam izolitaj vortoj estas tajpitaj en la adresa strio, devige iri al intraneta retejo anstataŭ serĉi.
 policy-Handlers = Agordi la normajn programajn traktilojn.
 policy-HardwareAcceleration = Se estas "malvera" la aparata akcelo estos malŝaltita.
@@ -87,6 +93,7 @@ policy-Homepage = Difini kaj havi la eblon ŝlosi la ekan paĝon.
 policy-HttpAllowlist = Originoj, kiuj ne estos ŝanĝitaj al HTTPS.
 policy-HttpsOnlyMode = Permesi aktivigon de HTTPS-nuran reĝimon.
 policy-InstallAddonsPermission = Permesi al kelkaj retejoj la instalon de aldonaĵoj.
+policy-IPProtectionAvailable = Eviti ke la integrita VPN estu disponebla por uzantoj.
 policy-LegacyProfiles = Malaktivigi la trajton, kiu postulas malsamajn profilojn por ĉiu instalaĵo.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -97,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Reiri al la tradicia k
 ##
 
 policy-LocalFileLinks = Permesi al kelkaj difinitaj retejoj havi ligilojn al lokaj dosieroj.
+policy-LocalNetworkAccess = Aktivigi aŭ malaktivigi kontrolojn pri aliro al la loka reto.
 policy-ManagedBookmarks = Agordi liston de legosignoj, kiun kreas administrato kaj kiun la uzanto ne povas modifi.
 policy-ManualAppUpdateOnly = Permesi nur neaŭtomatajn ĝisdatigojn kaj ne sciigi la uzanton pri disponeblaj ĝisdatigoj.
 policy-PrimaryPassword = Postuli aŭ eviti la uzon de ĉefa pasvorto.
@@ -117,11 +125,13 @@ policy-PostQuantumKeyAgreementEnabled = Aktivigi la akcepton de postkvantuma ŝl
 policy-PDFjs = Malaktivigi aŭ agordi PDF.js, la integritan legilon de PDF en { -brand-short-name }.
 policy-Permissions2 = Agordi permesojn por filmilo, mikrofono, pozicio,sciigoj kaj aŭtomata ludado.
 policy-PictureInPicture = Aktivigi aŭ malaktivigi la reĝimon bildo en bildo
+policy-PopupBlocking2 = Permesi al kelkaj retejoj montri ŝprucaĵojn kaj esti redirektitaj de kadroj de aliaj
 policy-PopupBlocking = Norme permesi al kelkaj retejoj montri ŝprucfenestrojn.
 policy-Preferences = Difini kaj bloki la valoron por aro de preferoj.
 policy-PrivateBrowsingModeAvailability = Agordi la disponeblon de la reĝimo de privata retumo.
 policy-PromptForDownloadLocation = Demandi kie konservi elŝutitajn dosierojn.
 policy-Proxy = Agordi retperantojn.
+policy-RelaunchRequired = Postuli restartigon de { -brand-short-name } post difinita tempo kaj sciigi uzantojn pri la baldaŭa restarto.
 policy-RequestedLocales = Agordi la liston de lingvoj petataj de la programo, ordigitaj laŭ prefero.
 policy-SanitizeOnShutdown2 = Forigi retumajn datumojn je malŝalto.
 policy-SearchBar = Elekti la normal lokon de la serĉa strio. La uzanto povas tamen personecigi ĝin.
@@ -130,6 +140,9 @@ policy-SearchSuggestEnabled = Aktivigi aŭ malaktivigi serĉajn sugestojn.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Aldoni aŭ forigi modulojn PKCS #11.
 policy-ShowHomeButton = Montri la butonon por eka paĝo en la ilaro.
+policy-SitePolicies = Specifaj politikoj por retejoj.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Je starto, ne montri la kondiĉojn de uzo kaj la rimarkon pri privateco. Vi deklaras akcepti la kondiĉojn de uzo kaj rajti akcepti ilin nome de ĉiuj, kiuj ricevos de mi aliron al tiu ĉi retumilo.
 policy-SSLVersionMax = Difini la minimuman version de SSL.
 policy-SSLVersionMin = Difini la maksimuman version de SSL.
 policy-StartDownloadsInTempDirectory = Devige komenci elŝutojn en loka, provizora loko anstataŭ la norma elŝuta dosierujo.
@@ -137,6 +150,11 @@ policy-SupportMenu = Aldoni personecigitan menueron al la helpa menuo.
 policy-TranslateEnabled = Aktivigi aŭ malaktivigi tradukon de retpaĝoj.
 policy-UserMessaging = Ne montri specifajn mesaĝojn al la uzanto.
 policy-UseSystemPrintDialog = Presi per la sistema presa dialogo.
+policy-VisualSearchEnabled = Aktivigi aŭ malaktivigi vidan serĉon.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloki viziton al kelkaj retejoj. Vidu la dokumentaron por havi pli da informo pri la formo.
 policy-Windows10SSO = Permesi nurfojan komencon de seancon de Windows por kontoj laboraj, lernejaj aŭ de Microsoft.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permesi nurfojan komencon de seanco por konton de Microsoft Entra.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Aktivigi aŭ malaktivigi subtenon por la API de Javascript XSLTProcessor kaj por la proceza ordono XSLT.

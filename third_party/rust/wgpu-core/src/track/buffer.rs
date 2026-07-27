@@ -4,7 +4,13 @@
 //! a 16 bit bitflag of buffer usages. Because there is only ever
 //! one subresource, they have no selector.
 
-use std::sync::{Arc, Weak};
+use alloc::{
+    sync::{Arc, Weak},
+    vec::Vec,
+};
+
+use hal::BufferBarrier;
+use wgt::{strict_assert, strict_assert_eq, BufferUses};
 
 use super::{PendingTransition, TrackerIndex};
 use crate::{
@@ -15,8 +21,6 @@ use crate::{
         ResourceUsageCompatibilityError, ResourceUses,
     },
 };
-use hal::{BufferBarrier, BufferUses};
-use wgt::{strict_assert, strict_assert_eq};
 
 impl ResourceUses for BufferUses {
     const EXCLUSIVE: Self = Self::EXCLUSIVE;
@@ -25,10 +29,6 @@ impl ResourceUses for BufferUses {
 
     fn bits(self) -> u16 {
         Self::bits(&self)
-    }
-
-    fn all_ordered(self) -> bool {
-        Self::ORDERED.contains(self)
     }
 
     fn any_exclusive(self) -> bool {
@@ -57,13 +57,9 @@ impl BufferBindGroupState {
             .sort_unstable_by_key(|(b, _)| b.tracker_index());
     }
 
-    /// Returns a list of all buffers tracked. May contain duplicates.
-    pub fn used_tracker_indices(&self) -> impl Iterator<Item = TrackerIndex> + '_ {
-        self.buffers
-            .iter()
-            .map(|(b, _)| b.tracker_index())
-            .collect::<Vec<_>>()
-            .into_iter()
+    /// Returns an iterator over the tracked buffers. May contain duplicates.
+    pub fn used_resources(&self) -> impl Iterator<Item = &Arc<Buffer>> {
+        self.buffers.iter().map(|(b, _)| b)
     }
 
     /// Adds the given resource with the given state.
@@ -77,6 +73,7 @@ impl BufferBindGroupState {
 pub(crate) struct BufferUsageScope {
     state: Vec<BufferUses>,
     metadata: ResourceMetadata<Arc<Buffer>>,
+    ordered_uses_mask: BufferUses,
 }
 
 impl Default for BufferUsageScope {
@@ -84,6 +81,7 @@ impl Default for BufferUsageScope {
         Self {
             state: Vec::new(),
             metadata: ResourceMetadata::new(),
+            ordered_uses_mask: BufferUses::empty(),
         }
     }
 }
@@ -105,6 +103,10 @@ impl BufferUsageScope {
     pub fn set_size(&mut self, size: usize) {
         self.state.resize(size, BufferUses::empty());
         self.metadata.set_size(size);
+    }
+
+    pub fn set_ordered_uses_mask(&mut self, ordered_uses_mask: BufferUses) {
+        self.ordered_uses_mask = ordered_uses_mask;
     }
 
     /// Extend the vectors to let the given index be valid.
@@ -134,10 +136,7 @@ impl BufferUsageScope {
             let index = resource.tracker_index().as_usize();
 
             unsafe {
-                insert_or_merge(
-                    None,
-                    &mut self.state,
-                    &mut self.metadata,
+                self.insert_or_merge(
                     index as _,
                     index,
                     BufferStateProvider::Direct { state },
@@ -170,10 +169,7 @@ impl BufferUsageScope {
             scope.tracker_assert_in_bounds(index);
 
             unsafe {
-                insert_or_merge(
-                    None,
-                    &mut self.state,
-                    &mut self.metadata,
+                self.insert_or_merge(
                     index as u32,
                     index,
                     BufferStateProvider::Indirect {
@@ -208,10 +204,7 @@ impl BufferUsageScope {
         self.tracker_assert_in_bounds(index);
 
         unsafe {
-            insert_or_merge(
-                None,
-                &mut self.state,
-                &mut self.metadata,
+            self.insert_or_merge(
                 index as _,
                 index,
                 BufferStateProvider::Direct { state: new_state },
@@ -220,6 +213,67 @@ impl BufferUsageScope {
         }
 
         Ok(())
+    }
+
+    /// Does an insertion operation if the index isn't tracked
+    /// in the current metadata, otherwise merges the given state
+    /// with the current state. If the merging would cause
+    /// a conflict, returns that usage conflict.
+    ///
+    /// # Safety
+    ///
+    /// Indexes must be valid indexes into all arrays passed in
+    /// to this function, either directly or via metadata or provider structs.
+    #[inline(always)]
+    unsafe fn insert_or_merge(
+        &mut self,
+        index32: u32,
+        index: usize,
+        state_provider: BufferStateProvider<'_>,
+        metadata_provider: ResourceMetadataProvider<'_, Arc<Buffer>>,
+    ) -> Result<(), ResourceUsageCompatibilityError> {
+        let currently_owned = unsafe { self.metadata.contains_unchecked(index) };
+
+        if !currently_owned {
+            unsafe {
+                insert(
+                    None,
+                    &mut self.state,
+                    &mut self.metadata,
+                    index,
+                    state_provider,
+                    None,
+                    metadata_provider,
+                )
+            };
+            return Ok(());
+        }
+
+        unsafe {
+            merge(
+                &mut self.state,
+                index32,
+                index,
+                state_provider,
+                metadata_provider,
+            )
+        }
+    }
+
+    /// Removes the indicated usage from the scope.
+    ///
+    /// Note that multiple uses of the same type get merged. It is only
+    /// safe to remove a usage if you are certain you aren't going to
+    /// erase another usage you don't know about.
+    pub fn remove_usage(&mut self, buffer: &Buffer, usage: BufferUses) {
+        let index = buffer.tracker_index().as_usize();
+        if self.metadata.contains(index) {
+            // SAFETY: If the buffer is part of this usage scope, then the index
+            // is in range.
+            unsafe {
+                *self.state.get_unchecked_mut(index) &= !usage;
+            }
+        }
     }
 }
 
@@ -231,10 +285,12 @@ pub(crate) struct BufferTracker {
     metadata: ResourceMetadata<Arc<Buffer>>,
 
     temp: Vec<PendingTransition<BufferUses>>,
+
+    ordered_uses_mask: BufferUses,
 }
 
 impl BufferTracker {
-    pub fn new() -> Self {
+    pub fn new(ordered_uses_mask: BufferUses) -> Self {
         Self {
             start: Vec::new(),
             end: Vec::new(),
@@ -242,6 +298,8 @@ impl BufferTracker {
             metadata: ResourceMetadata::new(),
 
             temp: Vec::new(),
+
+            ordered_uses_mask,
         }
     }
 
@@ -275,7 +333,7 @@ impl BufferTracker {
     }
 
     /// Returns a list of all buffers tracked.
-    pub fn used_resources(&self) -> impl Iterator<Item = Arc<Buffer>> + '_ {
+    pub fn used_resources(&self) -> impl Iterator<Item = &Arc<Buffer>> + '_ {
         self.metadata.owned_resources()
     }
 
@@ -310,15 +368,11 @@ impl BufferTracker {
         self.tracker_assert_in_bounds(index);
 
         unsafe {
-            insert_or_barrier_update(
-                Some(&mut self.start),
-                &mut self.end,
-                &mut self.metadata,
+            self.insert_or_barrier_update(
                 index,
                 BufferStateProvider::Direct { state },
                 None,
                 ResourceMetadataProvider::Direct { resource: buffer },
-                &mut self.temp,
             )
         };
 
@@ -345,10 +399,7 @@ impl BufferTracker {
             self.tracker_assert_in_bounds(index);
             tracker.tracker_assert_in_bounds(index);
             unsafe {
-                insert_or_barrier_update(
-                    Some(&mut self.start),
-                    &mut self.end,
-                    &mut self.metadata,
+                self.insert_or_barrier_update(
                     index,
                     BufferStateProvider::Indirect {
                         state: &tracker.start,
@@ -359,7 +410,6 @@ impl BufferTracker {
                     ResourceMetadataProvider::Indirect {
                         metadata: &tracker.metadata,
                     },
-                    &mut self.temp,
                 )
             }
         }
@@ -383,10 +433,7 @@ impl BufferTracker {
             self.tracker_assert_in_bounds(index);
             scope.tracker_assert_in_bounds(index);
             unsafe {
-                insert_or_barrier_update(
-                    Some(&mut self.start),
-                    &mut self.end,
-                    &mut self.metadata,
+                self.insert_or_barrier_update(
                     index,
                     BufferStateProvider::Indirect {
                         state: &scope.state,
@@ -395,7 +442,6 @@ impl BufferTracker {
                     ResourceMetadataProvider::Indirect {
                         metadata: &scope.metadata,
                     },
-                    &mut self.temp,
                 )
             }
         }
@@ -415,11 +461,11 @@ impl BufferTracker {
     /// a given iterator of ids as a source of which IDs to look at.
     /// All the IDs must have first been added to the usage scope.
     ///
-    /// # Safety
+    /// # Panics
     ///
-    /// [`Self::set_size`] must be called with the maximum possible Buffer ID before this
-    /// method is called.
-    pub unsafe fn set_and_remove_from_usage_scope_sparse(
+    /// If a resource identified by `index_source` is not found in the usage
+    /// scope.
+    pub fn set_and_remove_from_usage_scope_sparse(
         &mut self,
         scope: &mut BufferUsageScope,
         index_source: impl IntoIterator<Item = TrackerIndex>,
@@ -437,11 +483,11 @@ impl BufferTracker {
             if unsafe { !scope.metadata.contains_unchecked(index) } {
                 continue;
             }
+
+            // SAFETY: we checked that the index is in bounds for the scope, and
+            // called `set_size` to ensure it is valid for `self`.
             unsafe {
-                insert_or_barrier_update(
-                    Some(&mut self.start),
-                    &mut self.end,
-                    &mut self.metadata,
+                self.insert_or_barrier_update(
                     index,
                     BufferStateProvider::Indirect {
                         state: &scope.state,
@@ -450,12 +496,69 @@ impl BufferTracker {
                     ResourceMetadataProvider::Indirect {
                         metadata: &scope.metadata,
                     },
-                    &mut self.temp,
                 )
             };
 
             unsafe { scope.metadata.remove(index) };
         }
+    }
+
+    /// If the resource isn't tracked
+    /// - Inserts the given resource.
+    /// - Uses the `start_state_provider` to populate `start_states`
+    /// - Uses either `end_state_provider` or `start_state_provider`
+    ///   to populate `current_states`.
+    ///
+    /// If the resource is tracked
+    /// - Inserts barriers from the state in `current_states`
+    ///   to the state provided by `start_state_provider`.
+    /// - Updates the `current_states` with either the state from
+    ///   `end_state_provider` or `start_state_provider`.
+    ///
+    /// Any barriers are added to the barrier vector.
+    ///
+    /// # Safety
+    ///
+    /// Indexes must be valid indexes into all arrays passed in
+    /// to this function, either directly or via metadata or provider structs.
+    #[inline(always)]
+    unsafe fn insert_or_barrier_update(
+        &mut self,
+        index: usize,
+        start_state_provider: BufferStateProvider<'_>,
+        end_state_provider: Option<BufferStateProvider<'_>>,
+        metadata_provider: ResourceMetadataProvider<'_, Arc<Buffer>>,
+    ) {
+        let currently_owned = unsafe { self.metadata.contains_unchecked(index) };
+
+        if !currently_owned {
+            unsafe {
+                insert(
+                    Some(&mut self.start),
+                    &mut self.end,
+                    &mut self.metadata,
+                    index,
+                    start_state_provider,
+                    end_state_provider,
+                    metadata_provider,
+                )
+            };
+            return;
+        }
+
+        let update_state_provider =
+            end_state_provider.unwrap_or_else(|| start_state_provider.clone());
+        unsafe {
+            barrier(
+                &mut self.end,
+                index,
+                start_state_provider,
+                &mut self.temp,
+                self.ordered_uses_mask,
+            )
+        };
+
+        unsafe { update(&mut self.end, index, update_state_provider) };
     }
 }
 
@@ -464,14 +567,16 @@ pub(crate) struct DeviceBufferTracker {
     current_states: Vec<BufferUses>,
     metadata: ResourceMetadata<Weak<Buffer>>,
     temp: Vec<PendingTransition<BufferUses>>,
+    ordered_uses_mask: BufferUses,
 }
 
 impl DeviceBufferTracker {
-    pub fn new() -> Self {
+    pub fn new(ordered_uses_mask: BufferUses) -> Self {
         Self {
             current_states: Vec::new(),
             metadata: ResourceMetadata::new(),
             temp: Vec::new(),
+            ordered_uses_mask,
         }
     }
 
@@ -489,7 +594,7 @@ impl DeviceBufferTracker {
     }
 
     /// Returns a list of all buffers tracked.
-    pub fn used_resources(&self) -> impl Iterator<Item = Weak<Buffer>> + '_ {
+    pub fn used_resources(&self) -> impl Iterator<Item = &Weak<Buffer>> + '_ {
         self.metadata.owned_resources()
     }
 
@@ -539,6 +644,7 @@ impl DeviceBufferTracker {
                 index,
                 start_state_provider.clone(),
                 &mut self.temp,
+                self.ordered_uses_mask,
             )
         };
         unsafe { update(&mut self.current_states, index, start_state_provider) };
@@ -572,6 +678,7 @@ impl DeviceBufferTracker {
                     index,
                     start_state_provider,
                     &mut self.temp,
+                    self.ordered_uses_mask,
                 )
             };
             unsafe { update(&mut self.current_states, index, end_state_provider) };
@@ -608,105 +715,6 @@ impl BufferStateProvider<'_> {
             }
         }
     }
-}
-
-/// Does an insertion operation if the index isn't tracked
-/// in the current metadata, otherwise merges the given state
-/// with the current state. If the merging would cause
-/// a conflict, returns that usage conflict.
-///
-/// # Safety
-///
-/// Indexes must be valid indexes into all arrays passed in
-/// to this function, either directly or via metadata or provider structs.
-#[inline(always)]
-unsafe fn insert_or_merge(
-    start_states: Option<&mut [BufferUses]>,
-    current_states: &mut [BufferUses],
-    resource_metadata: &mut ResourceMetadata<Arc<Buffer>>,
-    index32: u32,
-    index: usize,
-    state_provider: BufferStateProvider<'_>,
-    metadata_provider: ResourceMetadataProvider<'_, Arc<Buffer>>,
-) -> Result<(), ResourceUsageCompatibilityError> {
-    let currently_owned = unsafe { resource_metadata.contains_unchecked(index) };
-
-    if !currently_owned {
-        unsafe {
-            insert(
-                start_states,
-                current_states,
-                resource_metadata,
-                index,
-                state_provider,
-                None,
-                metadata_provider,
-            )
-        };
-        return Ok(());
-    }
-
-    unsafe {
-        merge(
-            current_states,
-            index32,
-            index,
-            state_provider,
-            metadata_provider,
-        )
-    }
-}
-
-/// If the resource isn't tracked
-/// - Inserts the given resource.
-/// - Uses the `start_state_provider` to populate `start_states`
-/// - Uses either `end_state_provider` or `start_state_provider`
-///   to populate `current_states`.
-///
-/// If the resource is tracked
-/// - Inserts barriers from the state in `current_states`
-///   to the state provided by `start_state_provider`.
-/// - Updates the `current_states` with either the state from
-///   `end_state_provider` or `start_state_provider`.
-///
-/// Any barriers are added to the barrier vector.
-///
-/// # Safety
-///
-/// Indexes must be valid indexes into all arrays passed in
-/// to this function, either directly or via metadata or provider structs.
-#[inline(always)]
-unsafe fn insert_or_barrier_update(
-    start_states: Option<&mut [BufferUses]>,
-    current_states: &mut [BufferUses],
-    resource_metadata: &mut ResourceMetadata<Arc<Buffer>>,
-    index: usize,
-    start_state_provider: BufferStateProvider<'_>,
-    end_state_provider: Option<BufferStateProvider<'_>>,
-    metadata_provider: ResourceMetadataProvider<'_, Arc<Buffer>>,
-    barriers: &mut Vec<PendingTransition<BufferUses>>,
-) {
-    let currently_owned = unsafe { resource_metadata.contains_unchecked(index) };
-
-    if !currently_owned {
-        unsafe {
-            insert(
-                start_states,
-                current_states,
-                resource_metadata,
-                index,
-                start_state_provider,
-                end_state_provider,
-                metadata_provider,
-            )
-        };
-        return;
-    }
-
-    let update_state_provider = end_state_provider.unwrap_or_else(|| start_state_provider.clone());
-    unsafe { barrier(current_states, index, start_state_provider, barriers) };
-
-    unsafe { update(current_states, index, update_state_provider) };
 }
 
 #[inline(always)]
@@ -771,18 +779,22 @@ unsafe fn barrier(
     index: usize,
     state_provider: BufferStateProvider<'_>,
     barriers: &mut Vec<PendingTransition<BufferUses>>,
+    ordered_uses_mask: BufferUses,
 ) {
     let current_state = unsafe { *current_states.get_unchecked(index) };
     let new_state = unsafe { state_provider.get_state(index) };
 
-    if skip_barrier(current_state, new_state) {
+    if skip_barrier(current_state, ordered_uses_mask, new_state) {
         return;
     }
 
     barriers.push(PendingTransition {
         id: index as _,
         selector: (),
-        usage: current_state..new_state,
+        usage: hal::StateTransition {
+            from: current_state,
+            to: new_state,
+        },
     });
 }
 

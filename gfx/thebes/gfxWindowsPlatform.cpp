@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #include "gfxWindowsPlatform.h"
 
 #include "cairo.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/layers/CompositorBridgeChild.h"
 
 #include "gfxBlur.h"
@@ -21,6 +18,7 @@
 
 #include "mozilla/Preferences.h"
 #include "mozilla/ProfilerLabels.h"
+#include "mozilla/ProfilerMarkers.h"
 #include "mozilla/ProfilerThreadSleep.h"
 #include "mozilla/Components.h"
 #include "mozilla/Sprintf.h"
@@ -29,7 +27,7 @@
 #include "nsServiceManagerUtils.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 
 #include "plbase64.h"
 #include "nsIXULRuntime.h"
@@ -38,9 +36,6 @@
 #include "nsIGfxInfo.h"
 
 #include "gfxCrashReporterUtils.h"
-
-#include "gfxGDIFontList.h"
-#include "gfxGDIFont.h"
 
 #include "mozilla/layers/CanvasChild.h"
 #include "mozilla/layers/CompositorThread.h"
@@ -54,8 +49,6 @@
 #include "gfxUserFontSet.h"
 #include "nsWindowsHelpers.h"
 #include "gfx2DGlue.h"
-
-#include <string>
 
 #include <d3d10_1.h>
 
@@ -72,6 +65,9 @@
 
 #include "base/thread.h"
 #include "mozilla/StaticPrefs_gfx.h"
+#ifdef MOZ_WMF_CDM
+#  include "mozilla/StaticPrefs_media.h"
+#endif
 #include "mozilla/StaticPrefs_layers.h"
 #include "gfxConfig.h"
 #include "VsyncSource.h"
@@ -79,6 +75,7 @@
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/gfx/DeviceManagerDx.h"
 #include "mozilla/gfx/DisplayConfigWindows.h"
+#include "mozilla/gfx/GPUProcessManager.h"
 #include "mozilla/layers/DeviceAttachmentsD3D11.h"
 #include "mozilla/WindowsProcessMitigations.h"
 #include "D3D11Checks.h"
@@ -96,28 +93,6 @@ DCForMetrics::DCForMetrics() {
   mDC = GetDC(nullptr);
   SetGraphicsMode(mDC, GM_ADVANCED);
 }
-
-class GfxD2DVramReporter final : public nsIMemoryReporter {
-  ~GfxD2DVramReporter() {}
-
- public:
-  NS_DECL_ISUPPORTS
-
-  NS_IMETHOD CollectReports(nsIHandleReportCallback* aHandleReport,
-                            nsISupports* aData, bool aAnonymize) override {
-    MOZ_COLLECT_REPORT("gfx-d2d-vram-draw-target", KIND_OTHER, UNITS_BYTES,
-                       Factory::GetD2DVRAMUsageDrawTarget(),
-                       "Video memory used by D2D DrawTargets.");
-
-    MOZ_COLLECT_REPORT("gfx-d2d-vram-source-surface", KIND_OTHER, UNITS_BYTES,
-                       Factory::GetD2DVRAMUsageSourceSurface(),
-                       "Video memory used by D2D SourceSurfaces.");
-
-    return NS_OK;
-  }
-};
-
-NS_IMPL_ISUPPORTS(GfxD2DVramReporter, nsIMemoryReporter)
 
 class GPUAdapterReporter final : public nsIMemoryReporter {
   // Callers must Release the DXGIAdapter after use or risk mem-leak
@@ -259,7 +234,7 @@ class D3DSharedTexturesReporter final : public nsIMemoryReporter {
 
 NS_IMPL_ISUPPORTS(D3DSharedTexturesReporter, nsIMemoryReporter)
 
-gfxWindowsPlatform::gfxWindowsPlatform() : mRenderMode(RENDER_GDI) {
+gfxWindowsPlatform::gfxWindowsPlatform() {
   // If win32k is locked down then we can't use COM STA and shouldn't need it.
   // Also, we won't be using any GPU memory in this process.
   if (!IsWin32kLockedDown()) {
@@ -268,15 +243,12 @@ gfxWindowsPlatform::gfxWindowsPlatform() : mRenderMode(RENDER_GDI) {
      */
     CoInitialize(nullptr);
 
-    RegisterStrongMemoryReporter(new GfxD2DVramReporter());
-    RegisterStrongMemoryReporter(new GPUAdapterReporter());
-    RegisterStrongMemoryReporter(new D3DSharedTexturesReporter());
+    RegisterStrongMemoryReporter(MakeAndAddRef<GPUAdapterReporter>());
+    RegisterStrongMemoryReporter(MakeAndAddRef<D3DSharedTexturesReporter>());
   }
 }
 
 gfxWindowsPlatform::~gfxWindowsPlatform() {
-  mozilla::gfx::Factory::D2DCleanup();
-
   DeviceManagerDx::Shutdown();
 
   // We don't initialize COM when win32k is locked down.
@@ -292,9 +264,8 @@ gfxWindowsPlatform::~gfxWindowsPlatform() {
 void gfxWindowsPlatform::InitMemoryReportersForGPUProcess() {
   MOZ_RELEASE_ASSERT(XRE_IsGPUProcess());
 
-  RegisterStrongMemoryReporter(new GfxD2DVramReporter());
-  RegisterStrongMemoryReporter(new GPUAdapterReporter());
-  RegisterStrongMemoryReporter(new D3DSharedTexturesReporter());
+  RegisterStrongMemoryReporter(MakeAndAddRef<GPUAdapterReporter>());
+  RegisterStrongMemoryReporter(MakeAndAddRef<D3DSharedTexturesReporter>());
 }
 
 /* static */
@@ -373,11 +344,7 @@ void gfxWindowsPlatform::InitAcceleration() {
 
   DeviceManagerDx::Init();
 
-  // Content processes should have received content device data from parent.
-  MOZ_ASSERT_IF(XRE_IsContentProcess(), GetInitContentDeviceData());
-
   InitializeConfig();
-  InitGPUProcessSupport();
   // Ensure devices initialization. SharedSurfaceANGLE and
   // SharedSurfaceD3D11Interop use them. The devices are lazily initialized
   // with WebRender to reduce memory usage.
@@ -397,10 +364,6 @@ void gfxWindowsPlatform::InitAcceleration() {
   gfxVars::SetSystemTextQualityListener(
       gfxDWriteFont::SystemTextQualityChanged);
 
-  // CanUseHardwareVideoDecoding depends on DeviceManagerDx state,
-  // so update the cached value now.
-  UpdateCanUseHardwareVideoDecoding();
-
   // Our ScreenHelperWin also depends on DeviceManagerDx state.
   if (XRE_IsParentProcess() && !gfxPlatform::IsHeadless()) {
     ScreenHelperWin::RefreshScreens();
@@ -414,16 +377,63 @@ void gfxWindowsPlatform::InitWebRenderConfig() {
   UpdateBackendPrefs();
 }
 
-bool gfxWindowsPlatform::CanUseHardwareVideoDecoding() {
+void gfxWindowsPlatform::InitPlatformHardwareVideoConfig() {
+  FeatureState& featureDec =
+      gfxConfig::GetFeature(Feature::HARDWARE_VIDEO_DECODING);
+  FeatureState& featureEnc =
+      gfxConfig::GetFeature(Feature::HARDWARE_VIDEO_ENCODING);
+
   DeviceManagerDx* dm = DeviceManagerDx::Get();
   if (!dm) {
-    return false;
+    featureDec.ForceDisable(FeatureStatus::Unavailable,
+                            "Requires DeviceManagerDx",
+                            "FEATURE_FAILURE_NO_DEVICE_MANAGER_DX"_ns);
+    featureEnc.ForceDisable(FeatureStatus::Unavailable,
+                            "Requires DeviceManagerDx",
+                            "FEATURE_FAILURE_NO_DEVICE_MANAGER_DX"_ns);
+  } else if (!dm->TextureSharingWorks()) {
+    featureDec.ForceDisable(FeatureStatus::Unavailable,
+                            "Requires texture sharing",
+                            "FEATURE_FAILURE_BROKEN_TEXTURE_SHARING"_ns);
+    featureEnc.ForceDisable(FeatureStatus::Unavailable,
+                            "Requires texture sharing",
+                            "FEATURE_FAILURE_BROKEN_TEXTURE_SHARING"_ns);
+  } else if (dm->IsWARP()) {
+    featureDec.ForceDisable(FeatureStatus::Unavailable, "Cannot use with WARP",
+                            "FEATURE_FAILURE_D3D11_WARP_DEVICE"_ns);
+    featureEnc.ForceDisable(FeatureStatus::Unavailable, "Cannot use with WARP",
+                            "FEATURE_FAILURE_D3D11_WARP_DEVICE"_ns);
   }
-  if (!dm->TextureSharingWorks()) {
-    return false;
-  }
-  return !dm->IsWARP() && gfxPlatform::CanUseHardwareVideoDecoding();
 }
+
+#ifdef MOZ_WMF_CDM
+void gfxWindowsPlatform::InitPlatformHardwarDRMConfig() {
+  nsCString message, failureId;
+  FeatureState& featureHWDRM = gfxConfig::GetFeature(Feature::WMF_HW_DRM);
+  featureHWDRM.Reset();
+  featureHWDRM.EnableByDefault();
+  if (StaticPrefs::media_wmf_media_engine_enabled() != 1 &&
+      StaticPrefs::media_wmf_media_engine_enabled() != 2) {
+    featureHWDRM.UserDisable(
+        "Force disabled by 'media.wmf.media-engine.enabled'",
+        "FEATURE_FAILURE_USER_FORCE_DISABLED"_ns);
+  } else if (StaticPrefs::media_wmf_media_engine_bypass_gfx_blocklist()) {
+    featureHWDRM.UserForceEnable(
+        "Force enabled by "
+        "'media.wmf.media-engine.bypass-gfx-blocklist'");
+  }
+  if (!IsGfxInfoStatusOkay(nsIGfxInfo::FEATURE_WMF_HW_DRM, &message,
+                           failureId)) {
+    featureHWDRM.Disable(FeatureStatus::Blocklisted, message.get(), failureId);
+  }
+  if (Preferences::GetBool("media.eme.hwdrm.failed", false)) {
+    featureHWDRM.ForceDisable(FeatureStatus::Unavailable,
+                              "Force disabled by failed to find a descryptor",
+                              "FEATURE_FAILURE_NO_DESCRYPTOR_FAILED"_ns);
+  }
+  gfxVars::SetUseWMFHWDWM(featureHWDRM.IsEnabled());
+}
+#endif
 
 bool gfxWindowsPlatform::InitDWriteSupport() {
   mozilla::ScopedGfxFeatureReporter reporter("DWrite");
@@ -443,27 +453,23 @@ bool gfxWindowsPlatform::HandleDeviceReset() {
   }
 
   if (resetReason != mozilla::gfx::DeviceResetReason::FORCED_RESET) {
-    Telemetry::Accumulate(Telemetry::DEVICE_RESET_REASON,
-                          uint32_t(resetReason));
+    glean::gfx::device_reset_reason.AccumulateSingleSample(
+        uint32_t(resetReason));
   }
 
   // Remove devices and adapters.
   DeviceManagerDx::Get()->ResetDevices();
 
-  imgLoader::NormalLoader()->ClearCache(true);
-  imgLoader::NormalLoader()->ClearCache(false);
-  imgLoader::PrivateBrowsingLoader()->ClearCache(true);
-  imgLoader::PrivateBrowsingLoader()->ClearCache(false);
-  gfxAlphaBoxBlur::ShutdownBlurCache();
+  imgLoader::NormalLoader()->ClearCache(Nothing());
+  imgLoader::PrivateBrowsingLoader()->ClearCache(Nothing());
+  gfxGaussianBlur::ShutdownBlurCache();
 
   gfxConfig::Reset(Feature::D3D11_COMPOSITING);
   gfxConfig::Reset(Feature::D3D11_HW_ANGLE);
-  gfxConfig::Reset(Feature::DIRECT2D);
 
   InitializeConfig();
   // XXX Add InitWebRenderConfig() calling.
   if (mInitializedDevices) {
-    InitGPUProcessSupport();
     InitializeDevices();
   }
   UpdateANGLEConfig();
@@ -478,36 +484,12 @@ BackendPrefsData gfxWindowsPlatform::GetBackendPrefs() const {
   data.mCanvasDefault = BackendType::SKIA;
   data.mContentDefault = BackendType::SKIA;
 
-  if (gfxConfig::IsEnabled(Feature::DIRECT2D)) {
-    data.mCanvasBitmask |= BackendTypeBit(BackendType::DIRECT2D1_1);
-    data.mCanvasDefault = BackendType::DIRECT2D1_1;
-  }
   return data;
 }
 
 void gfxWindowsPlatform::UpdateBackendPrefs() {
   BackendPrefsData data = GetBackendPrefs();
-  // Remove DIRECT2D1 preference if D2D1Device does not exist.
-  if (!Factory::HasD2D1Device()) {
-    data.mContentBitmask &= ~BackendTypeBit(BackendType::DIRECT2D1_1);
-    if (data.mContentDefault == BackendType::DIRECT2D1_1) {
-      data.mContentDefault = BackendType::SKIA;
-    }
-
-    // Don't exclude DIRECT2D1_1 if using remote canvas, because DIRECT2D1_1 and
-    // hence the device will be used in the GPU process.
-    if (!gfxPlatform::UseRemoteCanvas()) {
-      data.mCanvasBitmask &= ~BackendTypeBit(BackendType::DIRECT2D1_1);
-      if (data.mCanvasDefault == BackendType::DIRECT2D1_1) {
-        data.mCanvasDefault = BackendType::SKIA;
-      }
-    }
-  }
   InitBackendPrefs(std::move(data));
-}
-
-bool gfxWindowsPlatform::IsDirect2DBackend() {
-  return GetDefaultContentBackend() == BackendType::DIRECT2D1_1;
 }
 
 void gfxWindowsPlatform::UpdateRenderMode() {
@@ -525,9 +507,6 @@ void gfxWindowsPlatform::UpdateRenderMode() {
           << ", D3D11 status:"
           << FeatureStatusToString(
                  gfxConfig::GetValue(Feature::D3D11_COMPOSITING))
-          << ", D2D1 device:" << hexa(Factory::GetD2D1Device().get())
-          << ", D2D1 status:"
-          << FeatureStatusToString(gfxConfig::GetValue(Feature::DIRECT2D))
           << ", content:" << int(GetDefaultContentBackend())
           << ", compositor:" << int(GetCompositorBackend());
       MOZ_CRASH(
@@ -538,73 +517,15 @@ void gfxWindowsPlatform::UpdateRenderMode() {
 
 mozilla::gfx::BackendType gfxWindowsPlatform::GetContentBackendFor(
     mozilla::layers::LayersBackend aLayers) {
-  mozilla::gfx::BackendType defaultBackend =
-      gfxPlatform::GetDefaultContentBackend();
-  if (aLayers == LayersBackend::LAYERS_WR &&
-      gfx::gfxVars::UseWebRenderANGLE()) {
-    return defaultBackend;
-  }
-
-  if (defaultBackend == BackendType::DIRECT2D1_1) {
-    // We can't have D2D without D3D11 layers, so fallback to Skia.
-    return BackendType::SKIA;
-  }
-
-  // Otherwise we have some non-accelerated backend and that's ok.
-  return defaultBackend;
+  return gfxPlatform::GetDefaultContentBackend();
 }
 
 mozilla::gfx::BackendType gfxWindowsPlatform::GetPreferredCanvasBackend() {
-  mozilla::gfx::BackendType backend = gfxPlatform::GetPreferredCanvasBackend();
-
-  if (backend == BackendType::DIRECT2D1_1) {
-    if (!gfx::gfxVars::UseWebRenderANGLE()) {
-      // We can't have D2D without ANGLE when WebRender is enabled, so fallback
-      // to Skia.
-      return BackendType::SKIA;
-    }
-
-    // Fall back to software when remote canvas has been deactivated.
-    if (CanvasChild::Deactivated()) {
-      return BackendType::SKIA;
-    }
-  }
-  return backend;
+  return gfxPlatform::GetPreferredCanvasBackend();
 }
 
 bool gfxWindowsPlatform::CreatePlatformFontList() {
-  if (DWriteEnabled()) {
-    if (gfxPlatformFontList::Initialize(new gfxDWriteFontList)) {
-      return true;
-    }
-
-    // DWrite font initialization failed! Don't know why this would happen,
-    // but apparently it can - see bug 594865.
-    // So we're going to fall back to GDI fonts & rendering.
-    DisableD2D(FeatureStatus::Failed, "Failed to initialize fonts",
-               "FEATURE_FAILURE_FONT_FAIL"_ns);
-  }
-
-  // Make sure the static variable is initialized...
-  gfxPlatform::HasVariationFontSupport();
-  // ...then force it to false, even if the Windows version was recent enough
-  // to permit it, as we're using GDI fonts.
-  sHasVariationFontSupport = false;
-
-  return gfxPlatformFontList::Initialize(new gfxGDIFontList);
-}
-
-// This function will permanently disable D2D for the session. It's intended to
-// be used when, after initially chosing to use Direct2D, we encounter a
-// scenario we can't support.
-//
-// This is called during gfxPlatform::Init() so at this point there should be no
-// DrawTargetD2D/1 instances.
-void gfxWindowsPlatform::DisableD2D(FeatureStatus aStatus, const char* aMessage,
-                                    const nsACString& aFailureId) {
-  gfxConfig::SetFailed(Feature::DIRECT2D, aStatus, aMessage, aFailureId);
-  Factory::SetDirect3D11Device(nullptr);
-  UpdateBackendPrefs();
+  return gfxPlatformFontList::Initialize(new gfxDWriteFontList);
 }
 
 already_AddRefed<gfxASurface> gfxWindowsPlatform::CreateOffscreenSurface(
@@ -617,9 +538,7 @@ already_AddRefed<gfxASurface> gfxWindowsPlatform::CreateOffscreenSurface(
 
 #ifdef CAIRO_HAS_WIN32_SURFACE
   if (!XRE_IsContentProcess()) {
-    if (mRenderMode == RENDER_GDI || mRenderMode == RENDER_DIRECT2D) {
-      surf = new gfxWindowsSurface(aSize, aFormat);
-    }
+    surf = new gfxWindowsSurface(aSize, aFormat);
   }
 #endif
 
@@ -630,244 +549,512 @@ already_AddRefed<gfxASurface> gfxWindowsPlatform::CreateOffscreenSurface(
   return surf.forget();
 }
 
-static const char kFontAparajita[] = "Aparajita";
-static const char kFontArabicTypesetting[] = "Arabic Typesetting";
-static const char kFontArial[] = "Arial";
-static const char kFontArialUnicodeMS[] = "Arial Unicode MS";
-static const char kFontCambria[] = "Cambria";
-static const char kFontCambriaMath[] = "Cambria Math";
-static const char kFontEbrima[] = "Ebrima";
-static const char kFontEstrangeloEdessa[] = "Estrangelo Edessa";
-static const char kFontEuphemia[] = "Euphemia";
-static const char kFontGabriola[] = "Gabriola";
-static const char kFontJavaneseText[] = "Javanese Text";
-static const char kFontKhmerUI[] = "Khmer UI";
-static const char kFontLaoUI[] = "Lao UI";
-static const char kFontLeelawadeeUI[] = "Leelawadee UI";
-static const char kFontLucidaSansUnicode[] = "Lucida Sans Unicode";
-static const char kFontMVBoli[] = "MV Boli";
-static const char kFontMalgunGothic[] = "Malgun Gothic";
-static const char kFontMicrosoftJhengHei[] = "Microsoft JhengHei";
-static const char kFontMicrosoftNewTaiLue[] = "Microsoft New Tai Lue";
-static const char kFontMicrosoftPhagsPa[] = "Microsoft PhagsPa";
-static const char kFontMicrosoftTaiLe[] = "Microsoft Tai Le";
-static const char kFontMicrosoftUighur[] = "Microsoft Uighur";
-static const char kFontMicrosoftYaHei[] = "Microsoft YaHei";
-static const char kFontMicrosoftYiBaiti[] = "Microsoft Yi Baiti";
-static const char kFontMeiryo[] = "Meiryo";
-static const char kFontMongolianBaiti[] = "Mongolian Baiti";
-static const char kFontMyanmarText[] = "Myanmar Text";
-static const char kFontNirmalaUI[] = "Nirmala UI";
-static const char kFontNyala[] = "Nyala";
-static const char kFontPlantagenetCherokee[] = "Plantagenet Cherokee";
-static const char kFontSegoeUI[] = "Segoe UI";
-static const char kFontSegoeUIEmoji[] = "Segoe UI Emoji";
-static const char kFontSegoeUISymbol[] = "Segoe UI Symbol";
-static const char kFontSylfaen[] = "Sylfaen";
-static const char kFontTraditionalArabic[] = "Traditional Arabic";
-static const char kFontTwemojiMozilla[] = "Twemoji Mozilla";
-static const char kFontUtsaah[] = "Utsaah";
-static const char kFontYuGothic[] = "Yu Gothic";
-
 void gfxWindowsPlatform::GetCommonFallbackFonts(
-    uint32_t aCh, Script aRunScript, eFontPresentation aPresentation,
+    uint32_t aCh, Script aRunScript, FontPresentation aPresentation,
     nsTArray<const char*>& aFontList) {
   if (PrefersColor(aPresentation)) {
-    aFontList.AppendElement(kFontSegoeUIEmoji);
-    aFontList.AppendElement(kFontTwemojiMozilla);
+    aFontList.AppendElement("Segoe UI Emoji");
+    aFontList.AppendElement("Twemoji Mozilla");
   }
 
-  // Arial is used as the default fallback for system fallback
-  aFontList.AppendElement(kFontArial);
+  switch (aRunScript) {
+    case Script::INVALID:
+    case Script::NUM_SCRIPT_CODES:
+      // Ensure the switch covers all the Script enum values.
+      MOZ_ASSERT_UNREACHABLE("bad script code");
+      break;
 
-  if (!IS_IN_BMP(aCh)) {
-    uint32_t p = aCh >> 16;
-    if (p == 1) {  // SMP plane
-      aFontList.AppendElement(kFontSegoeUISymbol);
-      aFontList.AppendElement(kFontEbrima);
-      aFontList.AppendElement(kFontNirmalaUI);
-      aFontList.AppendElement(kFontCambriaMath);
-    }
-  } else {
-    uint32_t b = (aCh >> 8) & 0xff;
+    case Script::COMMON:
+    case Script::INHERITED:
+      // In most cases, COMMON and INHERITED characters will be merged into
+      // their context, but if they occur without context, we'll just treat
+      // them like Latin, etc.
+    case Script::LATIN:
+    case Script::CYRILLIC:
+    case Script::GREEK:
+    case Script::ARMENIAN:
+    case Script::HEBREW:
+      // We always append Arial below, so no need to add it here.
+      // aFontList.AppendElement("Arial");
+      break;
 
-    switch (b) {
-      case 0x05:
-        aFontList.AppendElement(kFontEstrangeloEdessa);
-        aFontList.AppendElement(kFontCambria);
-        break;
-      case 0x06:
-        aFontList.AppendElement(kFontMicrosoftUighur);
-        break;
-      case 0x07:
-        aFontList.AppendElement(kFontEstrangeloEdessa);
-        aFontList.AppendElement(kFontMVBoli);
-        aFontList.AppendElement(kFontEbrima);
-        break;
-      case 0x09:
-        aFontList.AppendElement(kFontNirmalaUI);
-        aFontList.AppendElement(kFontUtsaah);
-        aFontList.AppendElement(kFontAparajita);
-        break;
-      case 0x0a:
-      case 0x0b:
-      case 0x0c:
-      case 0x0d:
-        aFontList.AppendElement(kFontNirmalaUI);
-        break;
-      case 0x0e:
-        aFontList.AppendElement(kFontLaoUI);
-        aFontList.AppendElement(kFontLeelawadeeUI);
-        break;
-      case 0x10:
-        aFontList.AppendElement(kFontMyanmarText);
-        break;
-      case 0x11:
-        aFontList.AppendElement(kFontMalgunGothic);
-        break;
-      case 0x12:
-      case 0x13:
-        aFontList.AppendElement(kFontNyala);
-        aFontList.AppendElement(kFontPlantagenetCherokee);
-        break;
-      case 0x14:
-      case 0x15:
-      case 0x16:
-        aFontList.AppendElement(kFontEuphemia);
-        aFontList.AppendElement(kFontSegoeUISymbol);
-        break;
-      case 0x17:
-        aFontList.AppendElement(kFontKhmerUI);
-        aFontList.AppendElement(kFontLeelawadeeUI);
-        break;
-      case 0x18:  // Mongolian
-        aFontList.AppendElement(kFontMongolianBaiti);
-        aFontList.AppendElement(kFontEuphemia);
-        break;
-      case 0x19:
-        aFontList.AppendElement(kFontMicrosoftTaiLe);
-        aFontList.AppendElement(kFontMicrosoftNewTaiLue);
-        aFontList.AppendElement(kFontKhmerUI);
-        aFontList.AppendElement(kFontLeelawadeeUI);
-        break;
-      case 0x1a:
-        aFontList.AppendElement(kFontLeelawadeeUI);
-        break;
-      case 0x1c:
-        aFontList.AppendElement(kFontNirmalaUI);
-        break;
-      case 0x20:  // Symbol ranges
-      case 0x21:
-      case 0x22:
-      case 0x23:
-      case 0x24:
-      case 0x25:
-      case 0x26:
-      case 0x27:
-      case 0x29:
-      case 0x2a:
-      case 0x2b:
-      case 0x2c:
-        aFontList.AppendElement(kFontSegoeUI);
-        aFontList.AppendElement(kFontSegoeUISymbol);
-        aFontList.AppendElement(kFontCambria);
-        aFontList.AppendElement(kFontMeiryo);
-        aFontList.AppendElement(kFontArial);
-        aFontList.AppendElement(kFontLucidaSansUnicode);
-        aFontList.AppendElement(kFontEbrima);
-        break;
-      case 0x2d:
-      case 0x2e:
-      case 0x2f:
-        aFontList.AppendElement(kFontEbrima);
-        aFontList.AppendElement(kFontNyala);
-        aFontList.AppendElement(kFontSegoeUI);
-        aFontList.AppendElement(kFontSegoeUISymbol);
-        aFontList.AppendElement(kFontMeiryo);
-        break;
-      case 0x28:  // Braille
-        aFontList.AppendElement(kFontSegoeUISymbol);
-        break;
-      case 0x30:
-      case 0x31:
-        aFontList.AppendElement(kFontMicrosoftYaHei);
-        break;
-      case 0x32:
-        aFontList.AppendElement(kFontMalgunGothic);
-        break;
-      case 0x4d:
-        aFontList.AppendElement(kFontSegoeUISymbol);
-        break;
-      case 0x9f:
-        aFontList.AppendElement(kFontMicrosoftYaHei);
-        aFontList.AppendElement(kFontYuGothic);
-        break;
-      case 0xa0:  // Yi
-      case 0xa1:
-      case 0xa2:
-      case 0xa3:
-      case 0xa4:
-        aFontList.AppendElement(kFontMicrosoftYiBaiti);
-        aFontList.AppendElement(kFontSegoeUI);
-        break;
-      case 0xa5:
-      case 0xa6:
-      case 0xa7:
-        aFontList.AppendElement(kFontEbrima);
-        aFontList.AppendElement(kFontSegoeUI);
-        aFontList.AppendElement(kFontCambriaMath);
-        break;
-      case 0xa8:
-        aFontList.AppendElement(kFontMicrosoftPhagsPa);
-        aFontList.AppendElement(kFontNirmalaUI);
-        break;
-      case 0xa9:
-        aFontList.AppendElement(kFontMalgunGothic);
-        aFontList.AppendElement(kFontJavaneseText);
-        aFontList.AppendElement(kFontLeelawadeeUI);
-        break;
-      case 0xaa:
-        aFontList.AppendElement(kFontMyanmarText);
-        break;
-      case 0xab:
-        aFontList.AppendElement(kFontEbrima);
-        aFontList.AppendElement(kFontNyala);
-        break;
-      case 0xd7:
-        aFontList.AppendElement(kFontMalgunGothic);
-        break;
-      case 0xfb:
-        aFontList.AppendElement(kFontMicrosoftUighur);
-        aFontList.AppendElement(kFontGabriola);
-        aFontList.AppendElement(kFontSylfaen);
-        break;
-      case 0xfc:
-      case 0xfd:
-        aFontList.AppendElement(kFontTraditionalArabic);
-        aFontList.AppendElement(kFontArabicTypesetting);
-        break;
-      case 0xfe:
-        aFontList.AppendElement(kFontTraditionalArabic);
-        aFontList.AppendElement(kFontMicrosoftJhengHei);
-        break;
-      case 0xff:
-        aFontList.AppendElement(kFontMicrosoftJhengHei);
-        break;
-      default:
-        break;
-    }
+    case Script::MATHEMATICAL_NOTATION:
+    case Script::SYMBOLS:
+    case Script::SYMBOLS_EMOJI:
+      // Not currently returned by script run resolution (but some symbols may
+      // be handled below).
+      break;
+
+      // CJK-related script codes are a bit troublesome because of unification;
+      // we'll probably just get HAN much of the time, so the choice of which
+      // language font to try for fallback is rather arbitrary. Usually, though,
+      // we hope that font prefs will have handled this earlier.
+    case Script::BOPOMOFO:
+    case Script::HAN_WITH_BOPOMOFO:
+    case Script::SIMPLIFIED_HAN:
+    case Script::HAN:
+      aFontList.AppendElement("SimSun");
+      if (aCh > 0xFFFF) {
+        aFontList.AppendElement("SimSun-ExtB");
+      }
+      break;
+      // Currently, we don't resolve script runs to this value, but we may do so
+      // in future if we get better at handling things like `lang=zh-Hant`, not
+      // just resolving based on the Unicode text.
+    case Script::TRADITIONAL_HAN:
+    case Script::TRADITIONAL_HAN_WITH_LATIN:
+      aFontList.AppendElement("MingLiU");
+      if (aCh > 0xFFFF) {
+        aFontList.AppendElement("MingLiU-ExtB");
+      }
+      break;
+    case Script::HIRAGANA:
+    case Script::KATAKANA:
+    case Script::KATAKANA_OR_HIRAGANA:
+    case Script::JAPANESE:
+      aFontList.AppendElement("Yu Gothic");
+      aFontList.AppendElement("MS PGothic");
+      break;
+    case Script::HANGUL:
+    case Script::JAMO:
+    case Script::KOREAN:
+      aFontList.AppendElement("Malgun Gothic");
+      break;
+
+    case Script::YI:
+      aFontList.AppendElement("Microsoft Yi Baiti");
+      break;
+    case Script::MONGOLIAN:
+      aFontList.AppendElement("Mongolian Baiti");
+      break;
+    case Script::TIBETAN:
+      aFontList.AppendElement("Microsoft Himalaya");
+      break;
+    case Script::PHAGS_PA:
+      aFontList.AppendElement("Microsoft PhagsPa");
+      break;
+
+    case Script::ARABIC:
+      // Default to Arial (added unconditionally below) for Arabic script.
+      break;
+    case Script::ARABIC_NASTALIQ:
+      aFontList.AppendElement("Urdu Typesetting");
+      break;
+    case Script::SYRIAC:
+    case Script::ESTRANGELO_SYRIAC:
+      aFontList.AppendElement("Estrangelo Edessa");
+      break;
+    case Script::THAANA:
+      aFontList.AppendElement("MV Boli");
+      break;
+
+    case Script::BENGALI:
+      aFontList.AppendElement("Vrinda");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::DEVANAGARI:
+      aFontList.AppendElement("Kokila");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::GUJARATI:
+      aFontList.AppendElement("Shruti");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::GURMUKHI:
+      aFontList.AppendElement("Raavi");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::KANNADA:
+      aFontList.AppendElement("Tunga");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::MALAYALAM:
+      aFontList.AppendElement("Kartika");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::ORIYA:
+      aFontList.AppendElement("Kalinga");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::TAMIL:
+      aFontList.AppendElement("Latha");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::TELUGU:
+      aFontList.AppendElement("Gautami");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+    case Script::SINHALA:
+      aFontList.AppendElement("Iskoola Pota");
+      aFontList.AppendElement("Nirmala UI");
+      break;
+
+    case Script::CHAKMA:
+    case Script::MEETEI_MAYEK:
+    case Script::OL_CHIKI:
+    case Script::SORA_SOMPENG:
+      aFontList.AppendElement("Nirmala UI");
+      break;
+
+    case Script::MYANMAR:
+      aFontList.AppendElement("Myanmar Text");
+      break;
+    case Script::KHMER:
+      aFontList.AppendElement("Khmer UI");
+      break;
+    case Script::LAO:
+      aFontList.AppendElement("Lao UI");
+      break;
+    case Script::THAI:
+      aFontList.AppendElement("Tahoma");
+      aFontList.AppendElement("Leelawadee UI");
+      break;
+    case Script::TAI_LE:
+      aFontList.AppendElement("Microsoft Tai Le");
+      break;
+    case Script::BUGINESE:
+      aFontList.AppendElement("Leelawadee UI");
+      break;
+    case Script::NEW_TAI_LUE:
+      aFontList.AppendElement("Microsoft New Tai Lue");
+      break;
+    case Script::JAVANESE:
+      aFontList.AppendElement("Javanese Text");
+      break;
+
+    case Script::GEORGIAN:
+    case Script::KHUTSURI:
+    case Script::LISU:
+      aFontList.AppendElement("Segoe UI");
+      break;
+
+    case Script::ETHIOPIC:
+      aFontList.AppendElement("Nyala");
+      aFontList.AppendElement("Ebrima");
+      break;
+
+    case Script::ADLAM:
+    case Script::NKO:
+    case Script::OSMANYA:
+    case Script::TIFINAGH:
+    case Script::VAI:
+      aFontList.AppendElement("Ebrima");
+      break;
+
+    case Script::CANADIAN_ABORIGINAL:
+      aFontList.AppendElement("Euphemia");
+      break;
+
+    case Script::CHEROKEE:
+    case Script::OSAGE:
+      aFontList.AppendElement("Gadugi");
+      break;
+
+    case Script::BRAILLE:
+    case Script::DESERET:
+      aFontList.AppendElement("Segoe UI Symbol");
+      break;
+
+    case Script::BRAHMI:
+    case Script::CARIAN:
+    case Script::CUNEIFORM:
+    case Script::CYPRIOT:
+    case Script::EGYPTIAN_HIEROGLYPHS:
+    case Script::GLAGOLITIC:
+    case Script::GOTHIC:
+    case Script::IMPERIAL_ARAMAIC:
+    case Script::INSCRIPTIONAL_PAHLAVI:
+    case Script::INSCRIPTIONAL_PARTHIAN:
+    case Script::KHAROSHTHI:
+    case Script::LYCIAN:
+    case Script::LYDIAN:
+    case Script::MEROITIC_CURSIVE:
+    case Script::OGHAM:
+    case Script::OLD_ITALIC:
+    case Script::OLD_PERSIAN:
+    case Script::OLD_SOUTH_ARABIAN:
+    case Script::OLD_TURKIC:
+    case Script::PHOENICIAN:
+    case Script::RUNIC:
+    case Script::SHAVIAN:
+    case Script::UGARITIC:
+      aFontList.AppendElement("Segoe UI Historic");
+      break;
+
+      // For some scripts where Windows doesn't supply a font by default,
+      // there are Noto fonts that users might have installed:
+    case Script::AHOM:
+      aFontList.AppendElement("Noto Serif Ahom");
+      break;
+    case Script::AVESTAN:
+      aFontList.AppendElement("Noto Sans Avestan");
+      break;
+    case Script::BALINESE:
+      aFontList.AppendElement("Noto Sans Balinese");
+      break;
+    case Script::BAMUM:
+      aFontList.AppendElement("Noto Sans Bamum");
+      break;
+    case Script::BASSA_VAH:
+      aFontList.AppendElement("Noto Sans Bassa Vah");
+      break;
+    case Script::BATAK:
+      aFontList.AppendElement("Noto Sans Batak");
+      break;
+    case Script::BHAIKSUKI:
+      aFontList.AppendElement("Noto Sans Bhaiksuki");
+      break;
+    case Script::BUHID:
+      aFontList.AppendElement("Noto Sans Buhid");
+      break;
+    case Script::CAUCASIAN_ALBANIAN:
+      aFontList.AppendElement("Noto Sans Caucasian Albanian");
+      break;
+    case Script::CHAM:
+      aFontList.AppendElement("Noto Sans Cham");
+      break;
+    case Script::COPTIC:
+      aFontList.AppendElement("Noto Sans Coptic");
+      break;
+    case Script::DUPLOYAN:
+      aFontList.AppendElement("Noto Sans Duployan");
+      break;
+    case Script::ELBASAN:
+      aFontList.AppendElement("Noto Sans Elbasan");
+      break;
+    case Script::GRANTHA:
+      aFontList.AppendElement("Noto Sans Grantha");
+      break;
+    case Script::HANIFI_ROHINGYA:
+      aFontList.AppendElement("Noto Sans Hanifi Rohingya");
+      break;
+    case Script::HANUNOO:
+      aFontList.AppendElement("Noto Sans Hanunoo");
+      break;
+    case Script::HATRAN:
+      aFontList.AppendElement("Noto Sans Hatran");
+      break;
+    case Script::KAITHI:
+      aFontList.AppendElement("Noto Sans Kaithi");
+      break;
+    case Script::KAYAH_LI:
+      aFontList.AppendElement("Noto Sans Kayah Li");
+      break;
+    case Script::KHOJKI:
+      aFontList.AppendElement("Noto Sans Khojki");
+      break;
+    case Script::KHUDAWADI:
+      aFontList.AppendElement("Noto Sans Khudawadi");
+      break;
+    case Script::LEPCHA:
+      aFontList.AppendElement("Noto Sans Lepcha");
+      break;
+    case Script::LIMBU:
+      aFontList.AppendElement("Noto Sans Limbu");
+      break;
+    case Script::LINEAR_A:
+      aFontList.AppendElement("Noto Sans Linear A");
+      break;
+    case Script::LINEAR_B:
+      aFontList.AppendElement("Noto Sans Linear B");
+      break;
+    case Script::MAHAJANI:
+      aFontList.AppendElement("Noto Sans Mahajani");
+      break;
+    case Script::MANDAIC:
+      aFontList.AppendElement("Noto Sans Mandaic");
+      break;
+    case Script::MANICHAEAN:
+      aFontList.AppendElement("Noto Sans Manichaean");
+      break;
+    case Script::MARCHEN:
+      aFontList.AppendElement("Noto Sans Marchen");
+      break;
+    case Script::MENDE_KIKAKUI:
+      aFontList.AppendElement("Noto Sans Mende Kikakui");
+      break;
+    case Script::MEROITIC_HIEROGLYPHS:
+      aFontList.AppendElement("Noto Sans Meroitic");
+      break;
+    case Script::MIAO:
+      aFontList.AppendElement("Noto Sans Miao");
+      break;
+    case Script::MODI:
+      aFontList.AppendElement("Noto Sans Modi");
+      break;
+    case Script::MRO:
+      aFontList.AppendElement("Noto Sans Mro");
+      break;
+    case Script::MULTANI:
+      aFontList.AppendElement("Noto Sans Multani");
+      break;
+    case Script::NABATAEAN:
+      aFontList.AppendElement("Noto Sans Nabataean");
+      break;
+    case Script::NEWA:
+      aFontList.AppendElement("Noto Sans Newa");
+      break;
+    case Script::OLD_HUNGARIAN:
+      aFontList.AppendElement("Noto Sans Old Hungarian");
+      break;
+    case Script::OLD_NORTH_ARABIAN:
+      aFontList.AppendElement("Noto Sans Old North Arabian");
+      break;
+    case Script::OLD_PERMIC:
+      aFontList.AppendElement("Noto Sans Old Permic");
+      break;
+    case Script::PAHAWH_HMONG:
+      aFontList.AppendElement("Noto Sans Pahawh Hmong");
+      break;
+    case Script::PALMYRENE:
+      aFontList.AppendElement("Noto Sans Palmyrene");
+      break;
+    case Script::PAU_CIN_HAU:
+      aFontList.AppendElement("Noto Sans Pau Cin Hau");
+      break;
+    case Script::PSALTER_PAHLAVI:
+      aFontList.AppendElement("Noto Sans Psalter Pahlavi");
+      break;
+    case Script::REJANG:
+      aFontList.AppendElement("Noto Sans Rejang");
+      break;
+    case Script::SAMARITAN:
+      aFontList.AppendElement("Noto Sans Samaritan");
+      break;
+    case Script::SAURASHTRA:
+      aFontList.AppendElement("Noto Sans Saurashtra");
+      break;
+    case Script::SHARADA:
+      aFontList.AppendElement("Noto Sans Sharada");
+      break;
+    case Script::SIDDHAM:
+      aFontList.AppendElement("Noto Sans Siddham");
+      break;
+    case Script::SUNDANESE:
+      aFontList.AppendElement("Noto Sans Sundanese");
+      break;
+    case Script::SYLOTI_NAGRI:
+      aFontList.AppendElement("Noto Sans Syloti Nagri");
+      break;
+    case Script::TAGALOG:
+      aFontList.AppendElement("Noto Sans Tagalog");
+      break;
+    case Script::TAGBANWA:
+      aFontList.AppendElement("Noto Sans Tagbanwa");
+      break;
+    case Script::TAI_THAM:
+      aFontList.AppendElement("Noto Sans Tai Tham");
+      break;
+    case Script::TAI_VIET:
+      aFontList.AppendElement("Noto Sans Tai Viet");
+      break;
+    case Script::TAKRI:
+      aFontList.AppendElement("Noto Sans Takri");
+      break;
+    case Script::TIRHUTA:
+      aFontList.AppendElement("Noto Sans Tirhuta");
+      break;
+    case Script::WANCHO:
+      aFontList.AppendElement("Noto Sans Wancho");
+      break;
+    case Script::WARANG_CITI:
+      aFontList.AppendElement("Noto Sans Warang Citi");
+      break;
+
+    case Script::AFAKA:
+    case Script::ANATOLIAN_HIEROGLYPHS:
+    case Script::BERIA_ERFE:
+    case Script::BLISSYMBOLS:
+    case Script::BOOK_PAHLAVI:
+    case Script::CHORASMIAN:
+    case Script::CIRTH:
+    case Script::CYPRO_MINOAN:
+    case Script::DEMOTIC_EGYPTIAN:
+    case Script::DIVES_AKURU:
+    case Script::DOGRA:
+    case Script::EASTERN_SYRIAC:
+    case Script::ELYMAIC:
+    case Script::GARAY:
+    case Script::GUNJALA_GONDI:
+    case Script::GURUNG_KHEMA:
+    case Script::HARAPPAN_INDUS:
+    case Script::HIERATIC_EGYPTIAN:
+    case Script::JURCHEN:
+    case Script::KAWI:
+    case Script::KHITAN_SMALL_SCRIPT:
+    case Script::KIRAT_RAI:
+    case Script::KPELLE:
+    case Script::LATIN_FRAKTUR:
+    case Script::LATIN_GAELIC:
+    case Script::LOMA:
+    case Script::MAKASAR:
+    case Script::MASARAM_GONDI:
+    case Script::MAYAN_HIEROGLYPHS:
+    case Script::MEDEFAIDRIN:
+    case Script::MOON:
+    case Script::NAG_MUNDARI:
+    case Script::NAKHI_GEBA:
+    case Script::NANDINAGARI:
+    case Script::NUSHU:
+    case Script::NYIAKENG_PUACHUE_HMONG:
+    case Script::OL_ONAL:
+    case Script::OLD_CHURCH_SLAVONIC_CYRILLIC:
+    case Script::OLD_SOGDIAN:
+    case Script::OLD_UYGHUR:
+    case Script::RONGORONGO:
+    case Script::SARATI:
+    case Script::SIDETIC:
+    case Script::SIGNWRITING:
+    case Script::SOGDIAN:
+    case Script::SOYOMBO:
+    case Script::SUNUWAR:
+    case Script::TAI_YO:
+    case Script::TANGSA:
+    case Script::TANGUT:
+    case Script::TENGWAR:
+    case Script::TODHRI:
+    case Script::TOLONG_SIKI:
+    case Script::TOTO:
+    case Script::TULU_TIGALARI:
+    case Script::UNKNOWN:
+    case Script::UNWRITTEN_LANGUAGES:
+    case Script::VISIBLE_SPEECH:
+    case Script::VITHKUQI:
+    case Script::WESTERN_SYRIAC:
+    case Script::WOLEAI:
+    case Script::YEZIDI:
+    case Script::ZANABAZAR_SQUARE:
+      break;
   }
 
-  // Arial Unicode MS has lots of glyphs for obscure characters,
-  // use it as a last resort
-  aFontList.AppendElement(kFontArialUnicodeMS);
+  // Arial is used as default fallback for system fallback, so always try that.
+  aFontList.AppendElement("Arial");
+
+  // Symbols/dingbats are generally Script=COMMON but may be resolved to any
+  // surrounding script run. So we'll always append a couple of likely fonts
+  // for such characters.
+  const uint32_t b = aCh >> 8;
+  if (aRunScript == Script::COMMON ||  // Stray COMMON chars not resolved
+      (b >= 0x20 && b <= 0x2b) || b == 0x2e ||  // BMP symbols/punctuation/etc
+      GetGenCategory(aCh) == nsUGenCategory::kSymbol ||
+      GetGenCategory(aCh) == nsUGenCategory::kPunctuation) {
+    // Segoe UI handles some punctuation/symbols that are missing from many text
+    // fonts.
+    aFontList.AppendElement("Segoe UI");
+    aFontList.AppendElement("Segoe UI Symbol");
+    aFontList.AppendElement("Cambria Math");
+  }
+
+  // Arial Unicode MS also has lots of glyphs for obscure characters; try it as
+  // a last resort, if available.
+  aFontList.AppendElement("Arial Unicode MS");
 
   // If we didn't begin with the color-emoji fonts, include them here
   // so that they'll be preferred over user-installed (and possibly
   // broken) fonts in the global fallback path.
   if (!PrefersColor(aPresentation)) {
-    aFontList.AppendElement(kFontSegoeUIEmoji);
-    aFontList.AppendElement(kFontTwemojiMozilla);
+    aFontList.AppendElement("Segoe UI Emoji");
+    aFontList.AppendElement("Twemoji Mozilla");
   }
 }
 
@@ -1155,7 +1342,6 @@ void gfxWindowsPlatform::InitializeConfig() {
     // This information is relayed to content processes and the GPU process.
     InitializeD3D11Config();
     InitializeANGLEConfig();
-    InitializeD2DConfig();
   } else {
     ImportCachedContentDeviceData();
     InitializeANGLEConfig();
@@ -1202,8 +1388,8 @@ void gfxWindowsPlatform::RecordContentDeviceFailure(
   if (!XRE_IsContentProcess()) {
     return;
   }
-  Telemetry::Accumulate(Telemetry::GFX_CONTENT_FAILED_TO_ACQUIRE_DEVICE,
-                        uint32_t(aDevice));
+  glean::gfx::content_failed_to_acquire_device.AccumulateSingleSample(
+      uint32_t(aDevice));
 }
 
 void gfxWindowsPlatform::RecordStartupTelemetry() {
@@ -1220,8 +1406,7 @@ void gfxWindowsPlatform::RecordStartupTelemetry() {
     allSupportedColorSpaces |= colorSpace;
   }
 
-  Telemetry::ScalarSet(
-      Telemetry::ScalarID::GFX_HDR_WINDOWS_DISPLAY_COLORSPACE_BITFIELD,
+  glean::gfx_hdr::windows_display_colorspace_bitfield.Set(
       allSupportedColorSpaces);
 }
 
@@ -1268,22 +1453,11 @@ void gfxWindowsPlatform::InitializeDevices() {
     gfxConfig::SetFailed(
         Feature::D3D11_COMPOSITING, FeatureStatus::CrashedOnStartup,
         "Harware acceleration crashed during startup in a previous session");
-    gfxConfig::SetFailed(
-        Feature::DIRECT2D, FeatureStatus::CrashedOnStartup,
-        "Harware acceleration crashed during startup in a previous session");
     return;
   }
 
-  bool shouldUseD2D = gfxConfig::IsEnabled(Feature::DIRECT2D);
-
-  // First, initialize D3D11. If this succeeds we attempt to use Direct2D.
+  // First, initialize D3D11.
   InitializeD3D11();
-  InitializeD2D();
-
-  if (!gfxConfig::IsEnabled(Feature::DIRECT2D) && XRE_IsContentProcess() &&
-      shouldUseD2D) {
-    RecordContentDeviceFailure(TelemetryDeviceCode::D2D1);
-  }
 }
 
 void gfxWindowsPlatform::InitializeD3D11() {
@@ -1314,114 +1488,6 @@ void gfxWindowsPlatform::InitializeD3D11() {
         << "[D3D11] Failed to create the D3D11 device in content \
                            process.";
   }
-}
-
-void gfxWindowsPlatform::InitializeD2DConfig() {
-  FeatureState& d2d1 = gfxConfig::GetFeature(Feature::DIRECT2D);
-
-  if (!gfxConfig::IsEnabled(Feature::D3D11_COMPOSITING)) {
-    d2d1.DisableByDefault(FeatureStatus::Unavailable,
-                          "Direct2D requires Direct3D 11 compositing",
-                          "FEATURE_FAILURE_D2D_D3D11_COMP"_ns);
-    return;
-  }
-
-  d2d1.SetDefaultFromPref(StaticPrefs::GetPrefName_gfx_direct2d_disabled(),
-                          false,
-                          StaticPrefs::GetPrefDefault_gfx_direct2d_disabled());
-
-  nsCString message;
-  nsCString failureId;
-  if (!gfxPlatform::IsGfxInfoStatusOkay(nsIGfxInfo::FEATURE_DIRECT2D, &message,
-                                        failureId)) {
-    d2d1.Disable(FeatureStatus::Blocklisted, message.get(), failureId);
-  }
-
-  if (!d2d1.IsEnabled() &&
-      StaticPrefs::gfx_direct2d_force_enabled_AtStartup()) {
-    d2d1.UserForceEnable("Force-enabled via user-preference");
-  }
-}
-
-void gfxWindowsPlatform::InitializeD2D() {
-  ScopedGfxFeatureReporter d2d1_1("D2D1.1");
-
-  FeatureState& d2d1 = gfxConfig::GetFeature(Feature::DIRECT2D);
-
-  DeviceManagerDx* dm = DeviceManagerDx::Get();
-
-  // We don't know this value ahead of time, but the user can force-override
-  // it, so we use Disable instead of SetFailed.
-  if (dm->IsWARP()) {
-    d2d1.Disable(FeatureStatus::Blocked,
-                 "Direct2D is not compatible with Direct3D11 WARP",
-                 "FEATURE_FAILURE_D2D_WARP_BLOCK"_ns);
-  }
-
-  // If we pass all the initial checks, we can proceed to runtime decisions.
-  if (!d2d1.IsEnabled()) {
-    return;
-  }
-
-  if (!Factory::SupportsD2D1()) {
-    d2d1.SetFailed(FeatureStatus::Unavailable,
-                   "Failed to acquire a Direct2D 1.1 factory",
-                   "FEATURE_FAILURE_D2D_FACTORY"_ns);
-    return;
-  }
-
-  if (!dm->GetContentDevice()) {
-    d2d1.SetFailed(FeatureStatus::Failed,
-                   "Failed to acquire a Direct3D 11 content device",
-                   "FEATURE_FAILURE_D2D_DEVICE"_ns);
-    return;
-  }
-
-  if (!dm->TextureSharingWorks()) {
-    d2d1.SetFailed(FeatureStatus::Failed,
-                   "Direct3D11 device does not support texture sharing",
-                   "FEATURE_FAILURE_D2D_TXT_SHARING"_ns);
-    return;
-  }
-
-  // Using Direct2D depends on DWrite support.
-  if (!DWriteEnabled() && !InitDWriteSupport()) {
-    d2d1.SetFailed(FeatureStatus::Failed,
-                   "Failed to initialize DirectWrite support",
-                   "FEATURE_FAILURE_D2D_DWRITE"_ns);
-    return;
-  }
-
-  // Verify that Direct2D device creation succeeded.
-  RefPtr<ID3D11Device> contentDevice = dm->GetContentDevice();
-  if (!Factory::SetDirect3D11Device(contentDevice)) {
-    d2d1.SetFailed(FeatureStatus::Failed, "Failed to create a Direct2D device",
-                   "FEATURE_FAILURE_D2D_CREATE_FAILED"_ns);
-    return;
-  }
-
-  MOZ_ASSERT(d2d1.IsEnabled());
-  d2d1_1.SetSuccessful();
-}
-
-void gfxWindowsPlatform::InitGPUProcessSupport() {
-  FeatureState& gpuProc = gfxConfig::GetFeature(Feature::GPU_PROCESS);
-
-  if (!gpuProc.IsEnabled()) {
-    return;
-  }
-
-  if (!gfxConfig::IsEnabled(Feature::D3D11_COMPOSITING)) {
-    // Don't use the GPU process if not using D3D11, unless software
-    // compositor is allowed
-    if (StaticPrefs::layers_gpu_process_allow_software_AtStartup()) {
-      return;
-    }
-    gpuProc.Disable(FeatureStatus::Unavailable,
-                    "Not using GPU Process since D3D11 is unavailable",
-                    "FEATURE_FAILURE_NO_D3D11"_ns);
-  }
-  // If we're still enabled at this point, the user set the force-enabled pref.
 }
 
 class D3DVsyncSource final : public VsyncSource {
@@ -1591,6 +1657,7 @@ class D3DVsyncSource final : public VsyncSource {
           const TimeStamp vblank_begin_wait = TimeStamp::Now();
           {
             AUTO_PROFILER_THREAD_SLEEP;
+            AUTO_PROFILER_MARKER_UNTYPED("WaitForVBlank", GRAPHICS_VSync, {});
             hr = mWaitVBlankOutput->WaitForVBlank();
           }
           if (SUCCEEDED(hr)) {
@@ -1604,12 +1671,16 @@ class D3DVsyncSource final : public VsyncSource {
             }
           }
         }
-      }
-      if (!SUCCEEDED(hr)) {
+      } else {
+        // To mitigate bug 1924932 we only want to use DwmFlush if WaitForVBlank
+        // is disabled, WaitForVBlank is the standard since Vista so we should
+        // probably remove this option entirely.
+        AUTO_PROFILER_MARKER_UNTYPED("DwmFlush", GRAPHICS_VSync, {});
         hr = DwmFlush();
       }
       if (!SUCCEEDED(hr)) {
         // DWMFlush isn't working, fallback to software vsync.
+        AUTO_PROFILER_MARKER_UNTYPED("SoftwareVsync", GRAPHICS_VSync, {});
         ScheduleSoftwareVsync(TimeStamp::Now());
         return;
       }
@@ -1619,6 +1690,7 @@ class D3DVsyncSource final : public VsyncSource {
       flushTime = now;
       if ((flushDiff > longVBlank) || mPrevVsync.IsNull()) {
         // Our vblank took longer than 2 intervals, readjust our timestamps
+        PROFILER_MARKER_UNTYPED("LongVBlank", GRAPHICS_VSync);
         vsync = GetVBlankTime();
         mPrevVsync = vsync;
       } else {
@@ -1630,16 +1702,19 @@ class D3DVsyncSource final : public VsyncSource {
         vsync = mPrevVsync + mVsyncRate;
         if (vsync > now) {
           // DWMFlush woke up very early, so readjust our times again
+          PROFILER_MARKER_UNTYPED("EarlyWake", GRAPHICS_VSync);
           vsync = GetVBlankTime();
         }
 
         if (vsync <= mPrevVsync) {
+          PROFILER_MARKER_UNTYPED("TimeSteppedBack", GRAPHICS_VSync);
           vsync = TimeStamp::Now();
         }
 
         if ((now - vsync).ToMilliseconds() > 2.0) {
           // Account for time drift here where vsync never quite catches up to
           // Now and we'd fall ever so slightly further behind Now().
+          PROFILER_MARKER_UNTYPED("TimeFellBehind2ms", GRAPHICS_VSync);
           vsync = GetVBlankTime();
         }
 
@@ -1706,19 +1781,10 @@ void gfxWindowsPlatform::ImportGPUDeviceData(
   } else {
     // There should be no devices, so this just takes away the device status.
     dm->ResetDevices();
-
-    // Make sure we disable D2D if content processes might use it.
-    FeatureState& d2d1 = gfxConfig::GetFeature(Feature::DIRECT2D);
-    if (d2d1.IsEnabled()) {
-      d2d1.SetFailed(FeatureStatus::Unavailable,
-                     "Direct2D requires Direct3D 11 compositing",
-                     "FEATURE_FAILURE_D2D_D3D11_COMP"_ns);
-    }
   }
 
-  // CanUseHardwareVideoDecoding depends on d3d11 state, so update
-  // the cached value now.
-  UpdateCanUseHardwareVideoDecoding();
+  // Hardware video decoding depends on d3d11 state, so update the cache.
+  InitHardwareVideoConfig();
 
   // For completeness (and messaging in about:support). Content recomputes this
   // on its own, and we won't use ANGLE in the UI process if we're using a GPU
@@ -1734,7 +1800,6 @@ void gfxWindowsPlatform::ImportContentDeviceData(
 
   const DevicePrefs& prefs = aData.prefs();
   gfxConfig::Inherit(Feature::D3D11_COMPOSITING, prefs.d3d11Compositing());
-  gfxConfig::Inherit(Feature::DIRECT2D, prefs.useD2D1());
 
   if (gfxConfig::IsEnabled(Feature::D3D11_COMPOSITING)) {
     DeviceManagerDx* dm = DeviceManagerDx::Get();
@@ -1743,6 +1808,13 @@ void gfxWindowsPlatform::ImportContentDeviceData(
 }
 
 void gfxWindowsPlatform::BuildContentDeviceData(ContentDeviceData* aOut) {
+#ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
+  // D3D11_COMPOSITING may be updated by the GPU process in DeviceManagerDx.
+  if (auto* gpm = GPUProcessManager::Get()) {
+    MOZ_DIAGNOSTIC_ASSERT(gpm->IsGPUReady());
+  }
+#endif
+
   // Check for device resets before giving back new graphics information.
   UpdateRenderMode();
 
@@ -1750,7 +1822,6 @@ void gfxWindowsPlatform::BuildContentDeviceData(ContentDeviceData* aOut) {
 
   const FeatureState& d3d11 = gfxConfig::GetFeature(Feature::D3D11_COMPOSITING);
   aOut->prefs().d3d11Compositing() = d3d11.GetValue();
-  aOut->prefs().useD2D1() = gfxConfig::GetValue(Feature::DIRECT2D);
 
   if (d3d11.IsEnabled()) {
     DeviceManagerDx* dm = DeviceManagerDx::Get();
@@ -1779,16 +1850,39 @@ void gfxWindowsPlatform::GetPlatformDisplayInfo(
 
   ScaledResolutionSet scaled;
   GetScaledResolutions(scaled);
-  if (scaled.IsEmpty()) {
-    return;
+  if (!scaled.IsEmpty()) {
+    aObj.DefineProperty("ScaledResolutionCount", scaled.Length());
+    for (size_t i = 0; i < scaled.Length(); ++i) {
+      auto& s = scaled[i];
+      nsPrintfCString name("ScaledResolution%zu", i);
+      nsPrintfCString value("source %dx%d, target %dx%d", s.first.width,
+                            s.first.height, s.second.width, s.second.height);
+      aObj.DefineProperty(name.get(), value.get());
+    }
   }
 
-  aObj.DefineProperty("ScaledResolutionCount", scaled.Length());
-  for (size_t i = 0; i < scaled.Length(); ++i) {
-    auto& s = scaled[i];
-    nsPrintfCString name("ScaledResolution%zu", i);
-    nsPrintfCString value("source %dx%d, target %dx%d", s.first.width,
-                          s.first.height, s.second.width, s.second.height);
-    aObj.DefineProperty(name.get(), value.get());
+  nsTArray<DXGI_OUTPUT_DESC1> outputs =
+      DeviceManagerDx::Get()->EnumerateOutputs();
+  if (!outputs.IsEmpty()) {
+    nsAutoCString colorSpaces;
+    for (size_t i = 0; i < outputs.Length(); ++i) {
+      if (i > 0) {
+        colorSpaces.AppendLiteral(", ");
+      }
+      switch (outputs[i].ColorSpace) {
+        case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
+          colorSpaces.AppendLiteral("DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709");
+          break;
+        case DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020:
+          colorSpaces.AppendLiteral(
+              "DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020");
+          break;
+        default:
+          colorSpaces.AppendPrintf("DXGI_COLOR_SPACE_TYPE(%d)",
+                                   static_cast<int>(outputs[i].ColorSpace));
+          break;
+      }
+    }
+    aObj.DefineProperty("OutputColorSpaces", colorSpaces.get());
   }
 }

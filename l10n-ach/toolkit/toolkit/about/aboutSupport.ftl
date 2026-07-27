@@ -4,7 +4,6 @@
 
 page-title = Kwedo bal me Ngec
 page-subtitle = Pot buk man tye ki ngec matek me tic cing ma pire twero bedo tek ka itye ka temo cobo peko. Ka ce itye kamoyo pi lagam me lapeny ma ngene ikom { -brand-short-name }, rot <a data-l10n-name="support-link">support web site</a>.
-
 crashes-title = Ripot me poto
 crashes-id = Cwal ngec me ID
 crashes-send-date = Kicwalo
@@ -39,7 +38,6 @@ app-basics-service-workers = Service Workers ma kicoyo
 app-basics-profiles = Propwail
 app-basics-multi-process-support = Dirica me tic mapol
 app-basics-safe-mode = Kit maber
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Nyut i Gin manongo
@@ -76,24 +74,12 @@ sandbox-sys-call-tid = TID
 
 media-device-name = Nying
 
-## Codec support table
-
 ##
 
 intl-locales-requested = Leb ma kipenyo pi gi
 intl-locales-available = Leb matye
 intl-locales-supported = Leb me purugram
 intl-locales-default = Leb makwongo
-
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
 
 ##
 
@@ -104,7 +90,6 @@ report-crash-for-days =
         [one] Ripot me poto pi nino { $days } mukato
        *[other] Ripot me poto pi nino { $days } mukato
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -112,7 +97,6 @@ crashes-time-minutes =
         [one] dakika { $minutes } angec
        *[other] dakika { $minutes } angec
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -120,7 +104,6 @@ crashes-time-hours =
         [one] cawa { $hours } angec
        *[other] cawa { $hours } angec
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -128,7 +111,6 @@ crashes-time-days =
         [one] nino { $days }angec
        *[other] nino { $days } angec
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -136,7 +118,6 @@ pending-reports =
         [one] Ripot me poto weng (medo ki poto { $reports } mapud tye i wang cawa ma kimiyo)
        *[other] Ripot me poto weng (medo ki poto { $reports } mapud tye i wang cawa ma kimiyo)
     }
-
 raw-data-copied = Kiloko data ma numu i bao coc
 text-copied = Kiloko coc i bao me coc
 
@@ -149,11 +130,9 @@ blocked-mismatched-version = Kigengo woko pi kit pa deriba me cal mamegi mape rw
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Gigengo woko pi kit ladwor cal mamegi. Tem keto ngec manyen iye ladwor cal mamegi i cik { $driverVersion } onyo manyen ne.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType Paramita
-
 yes = Eyo
 no = Pe
 
@@ -163,7 +142,6 @@ no = Pe
 
 found = Kinongo
 missing = Pe tye
-
 gpu-description = Lok ikome
 gpu-vendor-id = ID pa Lacat
 gpu-device-id = ID me Jami tic
@@ -172,16 +150,12 @@ gpu-ram = RAM
 gpu-driver-version = Cik pa Deribwa
 gpu-driver-date = Nino dwe pa Deribwa
 gpu-active = Tye katic
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Kigengo woko; kod me poto { $failureCode }
-
 glcontext-crash-guard = OpenGL
-
 min-lib-versions = Cik me gwoko cik mamite
 loaded-lib-versions = Gutye ka tic ki cik
-
 has-seccomp-bpf = Seccomp-BPF (System Call Filtering)
 has-seccomp-tsync = Seccomp Thread Synchronization
 has-user-namespaces = Namespace pa lutic
@@ -189,12 +163,10 @@ has-privileged-user-namespaces = Namespace pa lutic pi twero me tic
 can-sandbox-content = Poko kin gin manonge iye program
 can-sandbox-media = Poko kin larwak me adyere
 sandbox-proc-type-content = jami
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = Pan/Zoom mape time la kacel
 apz-none = pe tye
 wheel-enabled = kicako ket me wheel
@@ -212,8 +184,3 @@ touch-warning = kijuko woko keto me aguda mape time la kacel pi ter mape kicwako
 policies-inactive = Pe tye katic
 policies-active = Tye katic
 policies-error = Bal
-
-## Printing section
-
-## Normandy sections
-

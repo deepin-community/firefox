@@ -4,7 +4,6 @@ import uuid
 
 import mozcrash
 import pytest
-from py._path.common import fspath
 
 
 @pytest.fixture(scope="session")
@@ -20,12 +19,13 @@ def check_for_crashes(tmpdir, stackwalk, monkeypatch):
     monkeypatch.delenv("MINIDUMP_SAVE_PATH", raising=False)
 
     def wrapper(
-        dump_directory=fspath(tmpdir),
+        dump_directory=str(tmpdir),
         symbols_path="symbols_path",
-        stackwalk_binary=fspath(stackwalk),
+        stackwalk_binary=str(stackwalk),
         dump_save_path=None,
         test_name=None,
         quiet=True,
+        keep=None,
     ):
         return mozcrash.check_for_crashes(
             dump_directory,
@@ -34,6 +34,7 @@ def check_for_crashes(tmpdir, stackwalk, monkeypatch):
             dump_save_path,
             test_name,
             quiet,
+            keep,
         )
 
     return wrapper
@@ -53,10 +54,10 @@ def minidump_files(request, tmpdir):
     for i in range(getattr(request, "param", 1)):
         name = uuid.uuid4()
 
-        dmp = tmpdir.join("{}.dmp".format(name))
+        dmp = tmpdir.join(f"{name}.dmp")
         dmp.write("foo")
 
-        extra = tmpdir.join("{}.extra".format(name))
+        extra = tmpdir.join(f"{name}.extra")
 
         extra.write_text(
             """
@@ -112,7 +113,7 @@ def mock_popen(monkeypatch):
                     stdout of each process in turn.
     """
 
-    class MockPopen(object):
+    class MockPopen:
         def __init__(self, args, *args_rest, **kwargs):
             # all_popens.append(self)
             self.args = args

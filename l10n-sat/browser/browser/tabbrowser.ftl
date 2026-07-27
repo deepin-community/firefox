@@ -141,9 +141,6 @@ tabbrowser-confirm-caretbrowsing-title = ᱠᱟᱨᱮᱴ ᱵᱽᱨᱟᱣᱡᱤ�
 tabbrowser-confirm-caretbrowsing-message = F7 ᱚᱛᱟ ᱞᱮᱠᱷᱟᱱ ᱠᱟᱨᱮᱴ ᱵᱽᱨᱟᱣᱡᱤᱝ ᱮᱢ ᱥᱮ ᱵᱚᱸᱫᱟᱭ ᱾ ᱱᱚᱶᱟ ᱯᱷᱤᱪᱚᱨ ᱫᱚ ᱣᱮᱵᱽ ᱥᱟᱦᱴᱟ ᱨᱮ ᱢᱤᱫ ᱩᱪᱟᱹᱲᱚᱜ ᱠᱚᱨᱥᱚᱨ ᱫᱚᱦᱚᱭᱟᱭ, ᱡᱟᱦᱟᱸ ᱛᱮ ᱟᱢ ᱠᱤᱵᱚᱨᱰ ᱚᱞ ᱠᱚ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱠᱟᱨᱮᱴ ᱵᱽᱨᱟᱣᱡᱤᱝ ᱪᱟᱹᱞᱩ ᱥᱟᱱᱟᱢ ᱠᱟᱱᱟ ᱥᱮ?
 tabbrowser-confirm-caretbrowsing-checkbox = ᱱᱚᱶᱟ ᱵᱟᱠᱚᱥ ᱟᱨ ᱟᱞᱚᱢ ᱫᱮᱷᱟᱣᱤᱧᱟ ᱾
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -179,6 +176,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = ᱡᱷᱚᱛᱚ ᱥᱩᱪᱤ  { $tabCount } ᱴᱮᱵᱽ ᱠᱚ
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = ᱴᱮᱵᱽ ᱢᱭᱩᱴ ᱢᱮ

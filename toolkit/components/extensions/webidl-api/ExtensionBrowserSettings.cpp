@@ -1,4 +1,3 @@
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,7 +24,8 @@ NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(
     mOpenSearchResultsInNewTabsSetting, mOpenUrlbarResultsInNewTabsSetting,
     mWebNotificationsDisabledSetting, mOverrideDocumentColorsSetting,
     mOverrideContentColorSchemeSetting, mUseDocumentFontsSetting,
-    mZoomFullPageSetting, mZoomSiteSpecificSetting, mColorManagementNamespace);
+    mVerticalTabsSetting, mZoomFullPageSetting, mZoomSiteSpecificSetting,
+    mColorManagementNamespace);
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(ExtensionBrowserSettings)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
@@ -71,6 +71,8 @@ NS_IMPL_WEBEXT_SETTING(ExtensionBrowserSettings, u"zoomFullPage"_ns,
                        ZoomFullPage)
 NS_IMPL_WEBEXT_SETTING(ExtensionBrowserSettings, u"zoomSiteSpecific"_ns,
                        ZoomSiteSpecific)
+NS_IMPL_WEBEXT_SETTING(ExtensionBrowserSettings, u"verticalTabs"_ns,
+                       VerticalTabs)
 
 ExtensionBrowserSettings::ExtensionBrowserSettings(
     nsIGlobalObject* aGlobal, ExtensionBrowser* aExtensionBrowser)

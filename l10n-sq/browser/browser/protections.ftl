@@ -58,7 +58,7 @@ mobile-app-links = Shfletuesi { -brand-product-name } për <a data-l10n-name="an
 lockwise-title = Mos harroni kurrë më një fjalëkalim
 passwords-title-logged-in = Administroni fjalëkalimet tuaja
 passwords-header-content = { -brand-product-name } depoziton në mënyrë të sigurt fjalëkalimet tuaj në shfletuesin tuaj.
-lockwise-header-content-logged-in = Depozitoni dhe njëkohësoni në mënyrë të sigurt fjalëkalimet tuaj në krejt pajisjet tuaja.
+lockwise-header-content-logged-in = Depozitoni dhe njëkohësoni në mënyrë të siguruar fjalëkalimet tuaj në krejt pajisjet tuaja.
 protection-report-passwords-save-passwords-button = Ruaji Fjalëkalimet
     .title = Ruani Fjalëkalimet
 protection-report-passwords-manage-passwords-button = Administroni Fjalëkalime
@@ -76,8 +76,8 @@ lockwise-scanned-text-breached-logins =
 # $count (Number) - Number of passwords stored in Lockwise.
 lockwise-scanned-text-no-breached-logins =
     { $count ->
-        [one] 1 fjalëkalim u depozitua në mënyrë të sigurt.
-       *[other] Fjalëkalimet tuaj po depozitohen në mënyrë të sigurt.
+        [one] 1 fjalëkalim u depozitua në mënyrë të siguruar.
+       *[other] Fjalëkalimet tuaj po depozitohen në mënyrë të siguruar.
     }
 lockwise-how-it-works-link = Si funksionon
 monitor-title = Shihni për cenime të dhënash
@@ -202,3 +202,44 @@ bar-tooltip-cryptominer =
             [one] { $count } nxjerrës kriptomonedhash ({ $percentage }%)
            *[other] { $count } nxjerrës kriptomonedhash ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Mbrojtje Privatësie
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } i bllokuar këtë javë
+       *[other] { $count } të bllokuar këtë javë
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } gjurmues
+       *[other] { $count } Gjurmues
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } krijues shenjash gishtash
+       *[other] { $count } krijues shenjash gishtash
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } “cookie” gjurmimi
+       *[other] { $count } “cookies” gjurmimi
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } gjurmues mediash shoqërore
+       *[other] { $count } gjurmues mediash shoqërore
+    }
+privacy-metrics-empty = S’ka gjurmues të bllokuar këtë javë. { -brand-short-name }-i ju mbron nga kërcënimet vijuese teksa shfletoni.
+privacy-metrics-loading = Po ngarkohen statistika mbrojtjeje…
+privacy-metrics-error = S’arrihet të ngarkohen statistika mbrojtjeje.
+privacy-metrics-private-window = { -brand-short-name } vazhdon të bllokojë gjurmues në Dritare Private, por s’mban ndonjë regjistër se ç’është bllokuar.

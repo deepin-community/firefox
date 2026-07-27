@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,15 +15,14 @@
 
 #include "nsIStorageStream.h"
 #include "nsIOutputStream.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Mutex.h"
 
-#define NS_STORAGESTREAM_CID                         \
-  { /* 669a9795-6ff7-4ed4-9150-c34ce2971b63 */       \
-    0x669a9795, 0x6ff7, 0x4ed4, {                    \
-      0x91, 0x50, 0xc3, 0x4c, 0xe2, 0x97, 0x1b, 0x63 \
-    }                                                \
-  }
+#define NS_STORAGESTREAM_CID                  \
+  {/* 669a9795-6ff7-4ed4-9150-c34ce2971b63 */ \
+   0x669a9795,                                \
+   0x6ff7,                                    \
+   0x4ed4,                                    \
+   {0x91, 0x50, 0xc3, 0x4c, 0xe2, 0x97, 0x1b, 0x63}}
 
 #define NS_STORAGESTREAM_CONTRACTID "@mozilla.org/storagestream;1"
 

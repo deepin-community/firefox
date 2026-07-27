@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -209,6 +207,14 @@ class WidgetOverscrollEffect : public OverscrollEffectBase {
                          ScrollDirections aOverscrollableDirections) override {
     RefPtr<GeckoContentController> controller =
         mApzc.GetGeckoContentController();
+    if (!aOverscrollableDirections.contains(ScrollDirection::eHorizontal)) {
+      aOverscroll.x = 0;
+    }
+
+    if (!aOverscrollableDirections.contains(ScrollDirection::eVertical)) {
+      aOverscroll.y = 0;
+    }
+
     if (controller && !aOverscrollableDirections.isEmpty()) {
       mIsOverscrolled = true;
       controller->UpdateOverscrollOffset(mApzc.GetGuid(), aOverscroll.x,
@@ -219,6 +225,9 @@ class WidgetOverscrollEffect : public OverscrollEffectBase {
 
   void RelieveOverscroll(const ParentLayerPoint& aVelocity,
                          SideBits aOverscrollSideBits) override {
+    if (!mIsOverscrolled) {
+      return;
+    }
     RefPtr<GeckoContentController> controller =
         mApzc.GetGeckoContentController();
     // From APZC's point of view, consider it to no longer be overscrolled

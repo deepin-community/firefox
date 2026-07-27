@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #ifndef mozilla_dom_URL_h
 #define mozilla_dom_URL_h
 
+#include "mozilla/dom/URLBinding.h"
 #include "mozilla/dom/URLSearchParams.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsIURI.h"
@@ -57,17 +56,15 @@ class URL final : public URLSearchParamsObserver, public nsWrapperCache {
                                            const nsACString& aURL,
                                            nsIURI* aBase, ErrorResult& aRv);
 
-  static void CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
-                              nsACString& aResult, ErrorResult& aRv);
-
-  static void CreateObjectURL(const GlobalObject& aGlobal, MediaSource& aSource,
+  static void CreateObjectURL(const GlobalObject& aGlobal,
+                              const BlobOrMediaSource& aObj,
                               nsACString& aResult, ErrorResult& aRv);
 
   static void RevokeObjectURL(const GlobalObject& aGlobal,
                               const nsACString& aURL, ErrorResult& aRv);
 
-  static bool IsValidObjectURL(const GlobalObject& aGlobal,
-                               const nsACString& aURL, ErrorResult& aRv);
+  static bool IsBoundToBlob(const GlobalObject& aGlobal, const nsACString& aURL,
+                            ErrorResult& aRv);
 
   static already_AddRefed<URL> Parse(const GlobalObject& aGlobal,
                                      const nsACString& aURL,
@@ -105,7 +102,7 @@ class URL final : public URLSearchParamsObserver, public nsWrapperCache {
   void GetSearch(nsACString& aSearch) const;
   void SetSearch(const nsACString& aSearch);
 
-  URLSearchParams* SearchParams();
+  already_AddRefed<URLSearchParams> SearchParams();
 
   void GetHash(nsACString& aHash) const;
   void SetHash(const nsACString& aHash);
@@ -135,8 +132,6 @@ class URL final : public URLSearchParamsObserver, public nsWrapperCache {
   RefPtr<URLSearchParams> mSearchParams;
   nsCOMPtr<nsIURI> mURI;
 };
-
-bool IsChromeURI(nsIURI* aURI);
 
 }  // namespace dom
 }  // namespace mozilla

@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Zmóžńće Warp, projekt za polěp�
 experimental-features-ime-search =
     .label = Adresowe polo: wuslědki za IME-kompoziciju pokazać
 experimental-features-ime-search-description = IME (Input Method Editor, editor zapodawanskeje metody)  je nastroj, kotryž wam zmóžnja, kompleksne symbole zapodać, kaž so na přikład we wuchodoaziskich abo indiskich rěčach wužiwaja, z pomocu standardneje tastatury. Hdyž tutón eksperiment zmóžnjeće, wostawa wokno adresoweho pola wočinjene, kotrež pytanske wuslědki a namjety pokazuje, mjeztym zo tekst z pomocu IME zapodawaće. Dźiwajće na to, zo móhł IME wokno pokazać, kotrež wuslědki adresoweho pola wobsahuje, tohodla so tute nastajenje jenož za IME namjetuje, kotryž tutón typ wokna njewužiwa.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Wobraz-we-wobrazu: při wuměnjenju rajtarka awtomatisce wočinić
-experimental-features-auto-pip-description = Wobraz-we-wobrazu za aktiwne wideja zmóžnić, hdyž so rajtarki wuměnjeja.
-genai-settings-chat-title =
-    .label = AI chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Bóčnica
-sidebar-description = Mějće lochki přistup k swojej historiji, rajtarkam z druhich gratow, rozšěrjenjam za bóčnicu a wjace při přehladowanju. <a data-l10n-name="connect">Měnjenja dźělić</a>
-vertical-tabs-title =
-    .label = Wertikalne rajtarki
-vertical-tabs-description = Přesuńće swoje rajtarki wot hornjeje kromy wobhladowaka nabok. Wužaduje sej, zo tež bóčnicu wupruwujeće. <a data-l10n-name="connect">Měnjenja dźělić</a>
-experimental-features-group-browsing =
-    .label = Přehladowanje
-experimental-features-group-developer-tools =
-    .label = Wuwiwarske nastroje
-experimental-features-group-webpage-display =
-    .label = Pokazanje webstrony
-experimental-features-group-customize-browsing =
-    .label = Přiměrće swoje přehladowanje
-experimental-features-group-customize-browsing-description = Jeli tute funkcije testujeće, <a data-l10n-name="connect">dźělće swoje mysle na Connect</a>

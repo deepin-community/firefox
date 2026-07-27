@@ -9,10 +9,27 @@ all-tabs-menu-new-user-context =
     .label = Nová kontajnerová karta
 all-tabs-menu-hidden-tabs =
     .label = Skryté karty
+all-tabs-menu-close-duplicate-tabs =
+    .label = Zavrieť duplicitné karty
+all-tabs-menu-view-all-tabs =
+    .label = Zobraziť všetky karty
 all-tabs-menu-manage-user-context =
     .label = Spravovať kontajnery
     .accesskey = S
-all-tabs-menu-close-duplicate-tabs =
-    .label = Zavrieť duplicitné karty
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Zavrieť všetky duplicitné karty
+all-tabs-menu-synced-tabs =
+    .label = Karty z ďalších zariadení
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Nedávne skupiny kariet
+all-tabs-menu-current-window-header = Aktuálne okno
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Zobraziť všetky
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Skupiny kariet
+# "Search" is a verb, as in "Search through all tabs".
+all-tabs-menu-search-all-tabs =
+    .label = Hľadať vo všetkých kartách

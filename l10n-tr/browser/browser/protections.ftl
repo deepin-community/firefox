@@ -31,7 +31,7 @@ protection-report-page-summary-default = Siz web’de gezinirken { -brand-short-
 protection-report-settings-link = Gizlilik ve güvenlik ayarlarınızı yönetin
 etp-card-title-always = Gelişmiş izlenme koruması: Her zaman açık
 etp-card-title-custom-not-blocking = Gelişmiş izlenme koruması: KAPALI
-etp-card-content-description = { -brand-short-name }, şirketlerin sizi web’de gizlice takip etmesini otomatik olarak engeller.
+etp-card-content-description = { -brand-short-name } şirketlerin sizi web’de gizlice takip etmesini otomatik olarak engeller.
 protection-report-etp-card-content-custom-not-blocking = Şu anda tüm korumalar kapalı. { -brand-short-name } koruma ayarlarınızı yöneterek hangi takip kodlarının engelleneceğini seçebilirsiniz.
 protection-report-manage-protections = Ayarları yönet
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
@@ -203,3 +203,61 @@ bar-tooltip-cryptominer =
             [one] { $count } kripto madencisi (%{ $percentage })
            *[other] { $count } kripto madencisi (%{ $percentage })
         }
+# Privacy Metrics Card
+privacy-metrics-title = Gizlilik Korumaları
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] Bu hafta { $count } takip kodu engellendi
+       *[other] Bu hafta { $count } takip kodu engellendi
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } takip kodu
+       *[other] { $count } takip kodu
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } parmak izi toplayıcı
+       *[other] { $count } parmak izi toplayıcı
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } takip çerezi
+       *[other] { $count } takip çerezi
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } sosyal medya takip kodu
+       *[other] { $count } sosyal medya takip kodu
+    }
+privacy-metrics-empty = Bu hafta hiç takip kodu engellenmedi. Siz internette gezinirken { -brand-short-name } sizi aşağıdaki tehditlerden korur.
+privacy-metrics-loading = Koruma istatistikleri yükleniyor…
+privacy-metrics-error = Koruma istatistikleri yüklenemedi.
+privacy-metrics-private-window = { -brand-short-name } gizli pencerelerde takip kodlarını engellemeye devam eder ama neleri engellediğinin kaydını tutmaz.
+
+## VPN promo card and banner
+
+protections-vpn-title = Gizlilik korumalarını tarayıcının ötesine taşıyın
+protections-vpn-header-content = { -mozilla-vpn-brand-name } ile tüm cihazınızı koruyun. Tek dokunuşla tüm trafiği şifreler ve konumunuzu gizler.
+protections-get-vpn-link = { -mozilla-vpn-brand-name }’i edinin
+protections-vpn-title-subscribed = VPN: Abonesiniz
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [one] { -mozilla-vpn-brand-name }  { $count } ayrı cihazınızda tüm trafiğinizi şifreler ve konumunuzu gizler. Aboneliğinizden en iyi şekilde yararlanmak için <a data-l10n-name="playstore-link">Google Play Store</a> veya <a data-l10n-name="appstore-link">Apple App Store</a>’dan uygulamayı yükleyin.
+       *[other] { -mozilla-vpn-brand-name }  { $count } ayrı cihazınızda tüm trafiğinizi şifreler ve konumunuzu gizler. Aboneliğinizden en iyi şekilde yararlanmak için <a data-l10n-name="playstore-link">Google Play Store</a> veya <a data-l10n-name="appstore-link">Apple App Store</a>’dan uygulamayı yükleyin.
+    }
+protections-vpn-banner-header = Tarayıcının ötesine geçen koruma
+protections-vpn-banner-content = { -mozilla-vpn-brand-name }’i risksiz deneyin, TechRadar’ın neden “hızı, basitliği ve uygun fiyatıyla denemeye değer” dediğini kendiniz görün.
+protections-vpn-banner-link = { -mozilla-vpn-brand-name }’i edinin

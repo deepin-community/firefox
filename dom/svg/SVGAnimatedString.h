@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,33 +5,47 @@
 #ifndef DOM_SVG_SVGANIMATEDSTRING_H_
 #define DOM_SVG_SVGANIMATEDSTRING_H_
 
-#include "nsError.h"
+#include <memory>
+
 #include "mozilla/Attributes.h"
 #include "mozilla/SMILAttr.h"
 #include "mozilla/SVGAnimatedClassOrString.h"
 #include "mozilla/dom/SVGElement.h"
-#include "mozilla/UniquePtr.h"
+#include "nsError.h"
+#include "nsString.h"
 
 namespace mozilla {
 
+class ErrorResult;
 class SMILValue;
 
 namespace dom {
 class SVGElement;
-}
+class OwningTrustedScriptURLOrString;
+class TrustedScriptURLOrString;
+}  // namespace dom
 
-class SVGAnimatedString final : public SVGAnimatedClassOrString {
+class SVGAnimatedString : public SVGAnimatedClassOrString {
  public:
   using SVGElement = dom::SVGElement;
+  using OwningTrustedScriptURLOrString = dom::OwningTrustedScriptURLOrString;
+  using TrustedScriptURLOrString = dom::TrustedScriptURLOrString;
 
   void Init(uint8_t aAttrEnum) {
-    mAnimVal = nullptr;
+    mAnimVal = VoidString();
     mAttrEnum = aAttrEnum;
     mIsBaseSet = false;
   }
 
   void SetBaseValue(const nsAString& aValue, SVGElement* aSVGElement,
                     bool aDoSetAttr) override;
+  MOZ_CAN_RUN_SCRIPT void SetBaseValue(const TrustedScriptURLOrString& aValue,
+                                       SVGElement* aSVGElement, bool aDoSetAttr,
+                                       nsIPrincipal* aSubjectPrincipal,
+                                       ErrorResult& aRv) override {
+    SVGAnimatedClassOrString::SetBaseValue(aValue, aSVGElement, aDoSetAttr,
+                                           aSubjectPrincipal, aRv);
+  }
   void GetBaseValue(nsAString& aValue,
                     const SVGElement* aSVGElement) const override {
     aSVGElement->GetStringBaseValue(mAttrEnum, aValue);
@@ -48,18 +60,16 @@ class SVGAnimatedString final : public SVGAnimatedClassOrString {
   // explicitly set by markup or a DOM call), false otherwise.
   // If this returns false, the animated value is still valid, that is,
   // usable, and represents the default base value of the attribute.
-  bool IsExplicitlySet() const { return !!mAnimVal || mIsBaseSet; }
+  bool IsExplicitlySet() const { return !mAnimVal.IsVoid() || mIsBaseSet; }
 
-  UniquePtr<SMILAttr> ToSMILAttr(SVGElement* aSVGElement);
+  std::unique_ptr<SMILAttr> ToSMILAttr(SVGElement* aSVGElement);
 
   SVGAnimatedString() = default;
 
   SVGAnimatedString& operator=(const SVGAnimatedString& aOther) {
+    mAnimVal = aOther.mAnimVal;
     mAttrEnum = aOther.mAttrEnum;
     mIsBaseSet = aOther.mIsBaseSet;
-    if (aOther.mAnimVal) {
-      mAnimVal = MakeUnique<nsString>(*aOther.mAnimVal);
-    }
     return *this;
   }
 
@@ -68,8 +78,7 @@ class SVGAnimatedString final : public SVGAnimatedClassOrString {
   }
 
  private:
-  // FIXME: Should probably use void string rather than UniquePtr<nsString>.
-  UniquePtr<nsString> mAnimVal;
+  nsString mAnimVal = VoidString();
   uint8_t mAttrEnum = 0;  // element specified tracking for attribute
   bool mIsBaseSet = false;
 
@@ -94,6 +103,18 @@ class SVGAnimatedString final : public SVGAnimatedClassOrString {
     void ClearAnimValue() override;
     nsresult SetAnimValue(const SMILValue& aValue) override;
   };
+};
+
+class SVGAnimatedScriptHrefString final : public SVGAnimatedString {
+ public:
+  using SVGElement = dom::SVGElement;
+  using OwningTrustedScriptURLOrString = dom::OwningTrustedScriptURLOrString;
+  using TrustedScriptURLOrString = dom::TrustedScriptURLOrString;
+  MOZ_CAN_RUN_SCRIPT void SetBaseValue(const TrustedScriptURLOrString& aValue,
+                                       SVGElement* aSVGElement, bool aDoSetAttr,
+                                       nsIPrincipal* aSubjectPrincipal,
+                                       ErrorResult& aRv) override;
+  SVGAnimatedScriptHrefString() = default;
 };
 
 }  // namespace mozilla

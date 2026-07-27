@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -273,7 +271,7 @@ this.windows = class extends ExtensionAPIPersistent {
             }
 
             let tab = tabTracker.getTab(createData.tabId);
-            if (!context.canAccessWindow(tab.ownerGlobal)) {
+            if (!context.canAccessWindow(tab.documentGlobal)) {
               throw new ExtensionError(`Invalid tab ID: ${createData.tabId}`);
             }
             // Private browsing tabs can only be moved to private browsing
@@ -301,7 +299,11 @@ this.windows = class extends ExtensionAPIPersistent {
               );
             }
 
-            args.appendElement(tab);
+            // If the tab is part of a split view, move the whole split view
+            // instead of just that single tab.
+            const tabToAdopt = tab.splitview ?? tab;
+            // For tab adoption logic, see getTabToAdopt() in browser-init.js.
+            args.appendElement(tabToAdopt);
           } else if (createData.url !== null) {
             if (Array.isArray(createData.url)) {
               let array = Cc["@mozilla.org/array;1"].createInstance(
@@ -324,7 +326,7 @@ this.windows = class extends ExtensionAPIPersistent {
             } else {
               let url = context.uri.resolve(createData.url);
               args.appendElement(mkstr(url));
-              isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
+              isOnlyMozExtensionUrl = ExtensionUtils.isExtensionUrl(url);
               if (!context.checkLoadURL(url, { dontReportErrors: true })) {
                 if (isOnlyMozExtensionUrl) {
                   // For backwards-compatibility (also in tabs APIs), we allow
@@ -343,7 +345,7 @@ this.windows = class extends ExtensionAPIPersistent {
                 ? "about:privatebrowsing"
                 : HomePage.get().split("|", 1)[0];
             args.appendElement(mkstr(url));
-            isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
+            isOnlyMozExtensionUrl = ExtensionUtils.isExtensionUrl(url);
 
             if (!context.checkLoadURL(url, { dontReportErrors: true })) {
               // The extension principal cannot directly load about:-URLs,
@@ -421,6 +423,19 @@ this.windows = class extends ExtensionAPIPersistent {
           // 10px offset is same to Chromium
           sanitizePositionParams(createData, baseWindow, 10);
 
+          if (createData.width !== null) {
+            features.push("outerWidth=" + createData.width);
+          }
+          if (createData.height !== null) {
+            features.push("outerHeight=" + createData.height);
+          }
+          if (createData.left !== null) {
+            features.push("left=" + createData.left);
+          }
+          if (createData.top !== null) {
+            features.push("top=" + createData.top);
+          }
+
           let window = Services.ww.openWindow(
             null,
             AppConstants.BROWSER_CHROME_URL,
@@ -430,7 +445,6 @@ this.windows = class extends ExtensionAPIPersistent {
           );
 
           let win = windowManager.getWrapper(window);
-          win.updateGeometry(createData);
 
           // TODO: focused, type
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,6 +9,7 @@
 #include "mozilla/ErrorResult.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/dom/BrowsingContext.h"
+#include "mozilla/dom/DOMStringList.h"
 #include "mozilla/dom/LocationBase.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsString.h"
@@ -22,6 +21,10 @@ class nsIURI;
 class nsPIDOMWindowInner;
 
 namespace mozilla::dom {
+
+// Serializes principals to strings for location.ancestorOrigin purposes.
+nsTArray<nsString> ProduceAncestorOriginsList(
+    const nsTArray<nsCOMPtr<nsIPrincipal>>& aPrincipals);
 
 //*****************************************************************************
 // Location: Script "location" object
@@ -36,17 +39,18 @@ class Location final : public nsISupports,
 
   explicit Location(nsPIDOMWindowInner* aWindow);
 
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Location)
 
   // WebIDL API:
-  void Assign(const nsAString& aUrl, nsIPrincipal& aSubjectPrincipal,
+  void Assign(const nsACString& aUrl, nsIPrincipal& aSubjectPrincipal,
               ErrorResult& aError);
 
-  void Reload(bool aForceget, nsIPrincipal& aSubjectPrincipal,
+  MOZ_CAN_RUN_SCRIPT
+  void Reload(JSContext* aCx, bool aForceget, nsIPrincipal& aSubjectPrincipal,
               ErrorResult& aError);
 
-  void GetHref(nsAString& aHref, nsIPrincipal& aSubjectPrincipal,
+  void GetHref(nsACString& aHref, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError) {
     if (!CallerSubsumes(&aSubjectPrincipal)) {
       aError.Throw(NS_ERROR_DOM_SECURITY_ERR);
@@ -56,50 +60,53 @@ class Location final : public nsISupports,
     aError = GetHref(aHref);
   }
 
-  void GetOrigin(nsAString& aOrigin, nsIPrincipal& aSubjectPrincipal,
+  void GetOrigin(nsACString& aOrigin, nsIPrincipal& aSubjectPrincipal,
                  ErrorResult& aError);
 
-  void GetProtocol(nsAString& aProtocol, nsIPrincipal& aSubjectPrincipal,
+  void GetProtocol(nsACString& aProtocol, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void SetProtocol(const nsAString& aProtocol, nsIPrincipal& aSubjectPrincipal,
+  void SetProtocol(const nsACString& aProtocol, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void GetHost(nsAString& aHost, nsIPrincipal& aSubjectPrincipal,
+  void GetHost(nsACString& aHost, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
 
-  void SetHost(const nsAString& aHost, nsIPrincipal& aSubjectPrincipal,
+  void SetHost(const nsACString& aHost, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
 
-  void GetHostname(nsAString& aHostname, nsIPrincipal& aSubjectPrincipal,
+  void GetHostname(nsACString& aHostname, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void SetHostname(const nsAString& aHostname, nsIPrincipal& aSubjectPrincipal,
+  void SetHostname(const nsACString& aHostname, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void GetPort(nsAString& aPort, nsIPrincipal& aSubjectPrincipal,
+  void GetPort(nsACString& aPort, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
 
-  void SetPort(const nsAString& aPort, nsIPrincipal& aSubjectPrincipal,
+  void SetPort(const nsACString& aPort, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
 
-  void GetPathname(nsAString& aPathname, nsIPrincipal& aSubjectPrincipal,
+  void GetPathname(nsACString& aPathname, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void SetPathname(const nsAString& aPathname, nsIPrincipal& aSubjectPrincipal,
+  void SetPathname(const nsACString& aPathname, nsIPrincipal& aSubjectPrincipal,
                    ErrorResult& aError);
 
-  void GetSearch(nsAString& aSeach, nsIPrincipal& aSubjectPrincipal,
+  void GetSearch(nsACString& aSeach, nsIPrincipal& aSubjectPrincipal,
                  ErrorResult& aError);
 
-  void SetSearch(const nsAString& aSeach, nsIPrincipal& aSubjectPrincipal,
+  void SetSearch(const nsACString& aSeach, nsIPrincipal& aSubjectPrincipal,
                  ErrorResult& aError);
 
-  void GetHash(nsAString& aHash, nsIPrincipal& aSubjectPrincipal,
+  void GetHash(nsACString& aHash, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
 
-  void SetHash(const nsAString& aHash, nsIPrincipal& aSubjectPrincipal,
+  void SetHash(const nsACString& aHash, nsIPrincipal& aSubjectPrincipal,
                ErrorResult& aError);
+
+  RefPtr<DOMStringList> GetAncestorOrigins(nsIPrincipal& aSubjectPrincipal,
+                                           ErrorResult& aRv);
 
   nsPIDOMWindowInner* GetParentObject() const { return mInnerWindow; }
 
@@ -108,14 +115,12 @@ class Location final : public nsISupports,
 
   // Non WebIDL methods:
 
-  nsresult GetHref(nsAString& aHref);
-
-  nsresult ToString(nsAString& aString) { return GetHref(aString); }
+  nsresult GetHref(nsACString& aHref);
 
   void ClearCachedValues();
 
  protected:
-  virtual ~Location();
+  ~Location();
 
   BrowsingContext* GetBrowsingContext() override;
   nsIDocShell* GetDocShell() override;
@@ -129,8 +134,9 @@ class Location final : public nsISupports,
 
   bool CallerSubsumes(nsIPrincipal* aSubjectPrincipal);
 
-  nsString mCachedHash;
+  nsCString mCachedHash;
   nsCOMPtr<nsPIDOMWindowInner> mInnerWindow;
+  RefPtr<DOMStringList> mRelevantDocNullAncestorOriginsList;
 };
 
 }  // namespace mozilla::dom

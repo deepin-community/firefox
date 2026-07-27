@@ -1,15 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/EMEUtils.h"
 
-#include "jsfriendapi.h"
-#include "MediaData.h"
 #include "KeySystemConfig.h"
+#include "MediaData.h"
+#include "jsfriendapi.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/BufferSourceBinding.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/KeySystemNames.h"
 #include "mozilla/dom/UnionTypes.h"
@@ -33,10 +32,9 @@ LogModule* GetEMEVerboseLog() {
 }
 
 void CopyArrayBufferViewOrArrayBufferData(
-    const dom::ArrayBufferViewOrArrayBuffer& aBufferOrView,
-    nsTArray<uint8_t>& aOutData) {
+    const dom::BufferSource& aBufferOrView, nsTArray<uint8_t>& aOutData) {
   aOutData.Clear();
-  Unused << dom::AppendTypedArrayDataTo(aBufferOrView, aOutData);
+  (void)dom::AppendTypedArrayDataTo(aBufferOrView, aOutData);
 }
 
 bool IsClearkeyKeySystem(const nsAString& aKeySystem) {
@@ -53,7 +51,7 @@ bool IsWidevineKeySystem(const nsAString& aKeySystem) {
 
 #ifdef MOZ_WMF_CDM
 bool IsMediaFoundationCDMPlaybackEnabled() {
-  // 1=enabled encrypted and clear, 2=enabled encrytped.
+  // 1=enabled encrypted and clear, 2=enabled encrypted.
   return StaticPrefs::media_wmf_media_engine_enabled() == 1 ||
          StaticPrefs::media_wmf_media_engine_enabled() == 2;
 }
@@ -193,9 +191,6 @@ void MFCDMCapabilitiesIPDLToKeySystemConfig(
   }
   aKeySystemConfig.mPersistentState = aCDMConfig.persistentState();
   aKeySystemConfig.mDistinctiveIdentifier = aCDMConfig.distinctiveID();
-  aKeySystemConfig.mIsHDCP22Compatible = aCDMConfig.isHDCP22Compatible()
-                                             ? *aCDMConfig.isHDCP22Compatible()
-                                             : false;
   EME_LOG("New Capabilities=%s",
           NS_ConvertUTF16toUTF8(aKeySystemConfig.GetDebugInfo()).get());
 }
@@ -253,9 +248,9 @@ void DeprecationWarningLog(const dom::Document* aDocument,
   warnings.InsertOrUpdate(aMsgName, true);
   AutoTArray<nsString, 1> params;
   nsString& uri = *params.AppendElement();
-  Unused << aDocument->GetDocumentURI(uri);
+  (void)aDocument->GetDocumentURI(uri);
   nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, "Media"_ns,
-                                  aDocument, nsContentUtils::eDOM_PROPERTIES,
+                                  aDocument, PropertiesFile::DOM_PROPERTIES,
                                   aMsgName, params);
 }
 

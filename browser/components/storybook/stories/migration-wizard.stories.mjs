@@ -4,12 +4,16 @@
 
 // Imported for side-effects.
 import { html } from "lit.all.mjs";
-import "chrome://global/content/elements/panel-list.js";
+import "chrome://global/content/elements/panel-list.mjs";
 import "browser/components/migration/content/migration-wizard.mjs";
 import { MigrationWizardConstants } from "chrome://browser/content/migration/migration-wizard-constants.mjs";
 
 // Imported for side-effects.
 import "toolkit-widgets/named-deck.js";
+
+window.MozXULElement.insertFTLIfNeeded(
+  "locales-preview/migrationWizardChromeWindows.ftl"
+);
 
 export default {
   title: "Domain-specific UI Widgets/Migration Wizard",
@@ -546,7 +550,7 @@ FileImportProgress.args = {
   dialogMode: true,
   state: {
     page: MigrationWizardConstants.PAGES.FILE_IMPORT_PROGRESS,
-    title: "Importing Passwords",
+    title: "Importing passwords",
     progress: {
       [MigrationWizardConstants.DISPLAYED_FILE_RESOURCE_TYPES
         .PASSWORDS_FROM_FILE]: {
@@ -561,7 +565,7 @@ FileImportSuccess.args = {
   dialogMode: true,
   state: {
     page: MigrationWizardConstants.PAGES.FILE_IMPORT_PROGRESS,
-    title: "Passwords Imported Successfully",
+    title: "Passwords imported successfully",
     progress: {
       [MigrationWizardConstants.DISPLAYED_FILE_RESOURCE_TYPES.PASSWORDS_NEW]: {
         value: MigrationWizardConstants.PROGRESS_VALUE.SUCCESS,
@@ -589,6 +593,14 @@ SafariPasswordPermissions.args = {
   dialogMode: true,
   state: {
     page: MigrationWizardConstants.PAGES.SAFARI_PASSWORD_PERMISSION,
+  },
+};
+
+export const ChromeWindowsPasswordPermissions = Template.bind({});
+ChromeWindowsPasswordPermissions.args = {
+  dialogMode: true,
+  state: {
+    page: MigrationWizardConstants.PAGES.CHROME_WINDOWS_PASSWORD_PERMISSION,
   },
 };
 

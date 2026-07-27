@@ -17,7 +17,7 @@ use webrender::api::*;
 use webrender::render_api::*;
 use webrender::api::units::*;
 use webrender::api::FillRule;
-use crate::wrench::{FontDescriptor, Wrench, WrenchThing};
+use crate::wrench::{FontDescriptor, Wrench, WrenchThing, DisplayList};
 use crate::yaml_helper::{StringEnum, YamlHelper, make_perspective};
 use yaml_rust::{Yaml, YamlLoader};
 use crate::PLATFORM_DEFAULT_FACE_NAME;
@@ -142,7 +142,8 @@ impl LocalExternalImageHandler {
             ExternalImageData {
                 id: image_id,
                 channel_index: channel_idx,
-                image_type: ExternalImageType::TextureHandle(target)
+                image_type: ExternalImageType::TextureHandle(target),
+                normalized_uvs: false,
             }
         )
     }
@@ -153,7 +154,8 @@ impl ExternalImageHandler for LocalExternalImageHandler {
         &mut self,
         key: ExternalImageId,
         _channel_index: u8,
-    ) -> ExternalImage {
+        _is_composited: bool,
+    ) -> ExternalImage<'_> {
         let (id, desc) = self.texture_ids[key.0 as usize];
         ExternalImage {
             uv: TexelRect::new(0.0, 0.0, desc.size.width as f32, desc.size.height as f32),
@@ -311,12 +313,17 @@ fn is_image_opaque(format: ImageFormat, bytes: &[u8]) -> bool {
 
 struct IsRoot(bool);
 
+pub struct Snapshot {
+    key: SnapshotImageKey,
+    size: LayoutSize,
+}
+
 pub struct YamlFrameReader {
     yaml_path: PathBuf,
     aux_dir: PathBuf,
     frame_count: u32,
 
-    display_lists: Vec<(PipelineId, BuiltDisplayList)>,
+    display_lists: Vec<DisplayList>,
 
     watch_source: bool,
     list_resources: bool,
@@ -331,6 +338,7 @@ pub struct YamlFrameReader {
     fonts: HashMap<FontDescriptor, FontKey>,
     font_instances: HashMap<(FontKey, FontSize, FontInstanceFlags, SyntheticItalics), FontInstanceKey>,
     font_render_mode: Option<FontRenderMode>,
+    snapshots: HashMap<String, Snapshot>,
     allow_mipmaps: bool,
 
     /// A HashMap that allows specifying a numeric id for clip and clip chains in YAML
@@ -365,6 +373,7 @@ impl YamlFrameReader {
             fonts: HashMap::new(),
             font_instances: HashMap::new(),
             font_render_mode: None,
+            snapshots: HashMap::new(),
             allow_mipmaps: false,
             image_map: HashMap::new(),
             user_clip_id_map: HashMap::new(),
@@ -405,8 +414,11 @@ impl YamlFrameReader {
 
     pub fn new_from_args(args: &clap::ArgMatches) -> YamlFrameReader {
         let yaml_file = args.value_of("INPUT").map(PathBuf::from).unwrap();
+        YamlFrameReader::new(&yaml_file)
+    }
 
-        let mut y = YamlFrameReader::new(&yaml_file);
+    pub fn new_from_show_args(args: &clap::ArgMatches) -> YamlFrameReader {
+        let mut y = YamlFrameReader::new_from_args(args);
 
         y.keyframes = args.value_of("keyframes").map(|path| {
             let mut file = File::open(&path).unwrap();
@@ -439,13 +451,23 @@ impl YamlFrameReader {
 
         if let Some(pipelines) = yaml["pipelines"].as_vec() {
             for pipeline in pipelines {
-                self.build_pipeline(wrench, pipeline["id"].as_pipeline_id().unwrap(), pipeline);
+                let pipeline_id = pipeline["id"].as_pipeline_id().unwrap();
+                let mut builder = DisplayListBuilder::new(pipeline_id);
+                self.build_pipeline(wrench, &mut builder, pipeline_id, false, pipeline);
             }
         }
 
-        let root_stacking_context = &yaml["root"];
-        assert_ne!(*root_stacking_context, Yaml::BadValue);
-        self.build_pipeline(wrench, wrench.root_pipeline_id, root_stacking_context);
+        let mut builder = DisplayListBuilder::new(wrench.root_pipeline_id);
+
+        if let Some(frames) = yaml["frames"].as_vec() {
+            for frame in frames {
+                self.build_pipeline(wrench, &mut builder, wrench.root_pipeline_id, true, frame);
+            }
+        } else {
+            let root_stacking_context = &yaml["root"];
+            assert_ne!(*root_stacking_context, Yaml::BadValue);
+            self.build_pipeline(wrench, &mut builder, wrench.root_pipeline_id, true, root_stacking_context);
+        }
 
         // If replaying the same frame during interactive use, the frame gets rebuilt,
         // but the external image handler has already been consumed by the renderer.
@@ -457,9 +479,16 @@ impl YamlFrameReader {
     fn build_pipeline(
         &mut self,
         wrench: &mut Wrench,
+        builder: &mut DisplayListBuilder,
         pipeline_id: PipelineId,
+        send_transaction: bool,
         yaml: &Yaml
     ) {
+        let offscreen = yaml["offscreen"].as_bool().unwrap_or(false);
+        // By default, present if send_transaction is set to true. Can be overridden
+        // by a field in the pipeline's root.
+        let present = !offscreen && yaml["present"].as_bool().unwrap_or(send_transaction);
+
         // Don't allow referencing clips between pipelines for now.
         self.user_clip_id_map.clear();
         self.user_clipchain_id_map.clear();
@@ -467,7 +496,6 @@ impl YamlFrameReader {
         self.spatial_id_stack.clear();
         self.spatial_id_stack.push(SpatialId::root_scroll_node(pipeline_id));
 
-        let mut builder = DisplayListBuilder::new(pipeline_id);
         builder.begin();
         let mut info = CommonItemProperties {
             clip_rect: LayoutRect::zero(),
@@ -475,8 +503,15 @@ impl YamlFrameReader {
             spatial_id: SpatialId::new(0, PipelineId::dummy()),
             flags: PrimitiveFlags::default(),
         };
-        self.add_stacking_context_from_yaml(&mut builder, wrench, yaml, IsRoot(true), &mut info);
-        self.display_lists.push(builder.end());
+        self.add_stacking_context_from_yaml(builder, wrench, yaml, IsRoot(true), &mut info);
+        let (pipeline, payload) = builder.end();
+        self.display_lists.push(DisplayList {
+            pipeline,
+            payload,
+            present,
+            send_transaction,
+            render_offscreen: offscreen,
+        });
 
         assert_eq!(self.spatial_id_stack.len(), 1);
     }
@@ -665,6 +700,15 @@ impl YamlFrameReader {
                             kind,
                         )
                     }
+                    ("snapshot", args, _) => {
+                        let snapshot = self.snapshots
+                            .get(args[0])
+                            .expect("Missing snapshot");
+                        return (
+                            snapshot.key.as_image(),
+                            snapshot.size,
+                        );
+                    }
                     _ => {
                         panic!("Failed to load image {:?}", file.to_str());
                     }
@@ -806,16 +850,6 @@ impl YamlFrameReader {
         let bounds = self.resolve_rect(&item[bounds_key]);
         let color = self.resolve_colorf(&item["color"]).unwrap_or(ColorF::BLACK);
         dl.push_rect(info, bounds, color);
-    }
-
-    fn handle_clear_rect(
-        &self,
-        dl: &mut DisplayListBuilder,
-        item: &Yaml,
-        info: &CommonItemProperties,
-    ) {
-        let bounds = item["bounds"].as_rect().expect("clear-rect type must have bounds");
-        dl.push_clear_rect(info, bounds);
     }
 
     fn handle_hit_test(
@@ -1179,6 +1213,31 @@ impl YamlFrameReader {
         } else {
             BoxShadowClipMode::Outset
         };
+        let shadow_radius = item["shadow-radius"].as_border_radius().unwrap_or_else(|| {
+            let adjust_radius = |border_radius: f32, spread_amount: f32| {
+                if border_radius > 0.0 {
+                    (border_radius + spread_amount).max(0.0)
+                } else {
+                    0.0
+                }
+            };
+            let adjust_corner = |corner: LayoutSize, spread_amount: f32| {
+                LayoutSize::new(
+                    adjust_radius(corner.width, spread_amount),
+                    adjust_radius(corner.height, spread_amount),
+                )
+            };
+            let spread_amount = match clip_mode {
+                BoxShadowClipMode::Outset => spread_radius,
+                BoxShadowClipMode::Inset => -spread_radius,
+            };
+            BorderRadius {
+                top_left: adjust_corner(border_radius.top_left, spread_amount),
+                top_right: adjust_corner(border_radius.top_right, spread_amount),
+                bottom_right: adjust_corner(border_radius.bottom_right, spread_amount),
+                bottom_left: adjust_corner(border_radius.bottom_left, spread_amount),
+            }
+        });
 
         dl.push_box_shadow(
             info,
@@ -1188,6 +1247,7 @@ impl YamlFrameReader {
             blur_radius,
             spread_radius,
             border_radius,
+            shadow_radius,
             clip_mode,
         );
     }
@@ -1285,6 +1345,7 @@ impl YamlFrameReader {
                                  "src"
                              }];
         let tiling = item["tile-size"].as_i64();
+
         let file = rsrc_path(filename, &self.aux_dir);
         let (image_key, image_dims) =
             self.add_or_get_image(&file, tiling, item, wrench);
@@ -1539,6 +1600,7 @@ impl YamlFrameReader {
                 ("backface-visible", PrimitiveFlags::IS_BACKFACE_VISIBLE),
                 ("scrollbar-container", PrimitiveFlags::IS_SCROLLBAR_CONTAINER),
                 ("prefer-compositor-surface", PrimitiveFlags::PREFER_COMPOSITOR_SURFACE),
+                ("checkerboard-background", PrimitiveFlags::CHECKERBOARD_BACKGROUND),
             ] {
                 if let Some(value) = item[key].as_bool() {
                     flags.set(flag, value);
@@ -1556,7 +1618,6 @@ impl YamlFrameReader {
             match item_type {
                 "rect" => self.handle_rect(dl, item, &info),
                 "hit-test" => self.handle_hit_test(dl, item, &mut info),
-                "clear-rect" => self.handle_clear_rect(dl, item, &info),
                 "line" => self.handle_line(dl, item, &mut info),
                 "image" => self.handle_image(dl, wrench, item, &mut info),
                 "yuv-image" => self.handle_yuv_image(dl, wrench, item, &mut info),
@@ -1863,12 +1924,15 @@ impl YamlFrameReader {
             .as_point()
             .unwrap_or(default_transform_origin);
 
+        let is_2d = yaml["is-2d"].as_bool().unwrap_or(false);
+        let should_snap = yaml["should-snap"].as_bool().unwrap_or(false);
+
         let reference_frame_kind = if !yaml["perspective"].is_badvalue() {
             ReferenceFrameKind::Perspective { scrolling_relative_to: None }
         } else {
             ReferenceFrameKind::Transform {
-                is_2d_scale_translation: false,
-                should_snap: false,
+                is_2d_scale_translation: is_2d,
+                should_snap,
                 paired_with_perspective: yaml["paired-with-perspective"].as_bool().unwrap_or(false),
             }
         };
@@ -1977,22 +2041,38 @@ impl YamlFrameReader {
         let default_bounds = || LayoutRect::from_size(wrench.window_size_f32());
         let mut bounds = yaml["bounds"].as_rect().unwrap_or_else(default_bounds);
 
-        let pushed_reference_frame =
-            if !yaml["transform"].is_badvalue() || !yaml["perspective"].is_badvalue() {
-                let reference_frame_id = self.push_reference_frame(dl, default_bounds, yaml);
-                self.spatial_id_stack.push(reference_frame_id);
-                bounds.max -= bounds.min.to_vector();
-                bounds.min = LayoutPoint::zero();
-                true
-            } else {
-                false
-            };
-
-        let clip_chain_id = self.to_clip_chain_id(&yaml["clip-chain"], dl);
-
         let transform_style = yaml["transform-style"]
             .as_transform_style()
             .unwrap_or(TransformStyle::Flat);
+
+        let has_transform = !yaml["transform"].is_badvalue() || !yaml["perspective"].is_badvalue();
+        let pushed_reference_frame = if has_transform || bounds.min != LayoutPoint::zero() {
+            let reference_frame_id = if has_transform {
+                self.push_reference_frame(dl, default_bounds, yaml)
+            } else {
+                let parent_spatial_id = *self.spatial_id_stack.last().unwrap();
+                dl.push_reference_frame(
+                    bounds.min,
+                    parent_spatial_id,
+                    transform_style,
+                    PropertyBinding::Value(LayoutTransform::identity()),
+                    ReferenceFrameKind::Transform {
+                        is_2d_scale_translation: true,
+                        should_snap: false,
+                        paired_with_perspective: false,
+                    },
+                    self.next_spatial_key(),
+                )
+            };
+            self.spatial_id_stack.push(reference_frame_id);
+            bounds.max -= bounds.min.to_vector();
+            bounds.min = LayoutPoint::zero();
+            true
+        } else {
+            false
+        };
+
+        let clip_chain_id = self.to_clip_chain_id(&yaml["clip-chain"], dl);
         let mix_blend_mode = yaml["mix-blend-mode"]
             .as_mix_blend_mode()
             .unwrap_or(MixBlendMode::Normal);
@@ -2017,14 +2097,33 @@ impl YamlFrameReader {
 
         let filters = yaml["filters"].as_vec_filter_op().unwrap_or_default();
         let filter_datas = yaml["filter-datas"].as_vec_filter_data().unwrap_or_default();
-        let filter_primitives = yaml["filter-primitives"].as_vec_filter_primitive().unwrap_or_default();
+
+        let snapshot = if !yaml["snapshot"].is_badvalue() {
+            let yaml = &yaml["snapshot"];
+            let name = yaml["name"].as_str().unwrap_or("snapshot");
+            let area = yaml["area"].as_rect().unwrap_or(bounds);
+            let detached = yaml["detached"].as_bool().unwrap_or(false);
+
+            let key = SnapshotImageKey(wrench.api.generate_image_key());
+            self.snapshots.insert(name.to_string(), Snapshot {
+                key,
+                size: bounds.size(),
+            });
+
+            let mut txn = Transaction::new();
+            txn.add_snapshot_image(key);
+            wrench.api.send_transaction(wrench.document_id, txn);
+
+            Some(SnapshotInfo { key, area, detached })
+        } else {
+            None
+        };
 
         let mut flags = StackingContextFlags::empty();
         flags.set(StackingContextFlags::IS_BLEND_CONTAINER, is_blend_container);
         flags.set(StackingContextFlags::WRAPS_BACKDROP_FILTER, wraps_backdrop_filter);
 
         dl.push_stacking_context(
-            bounds.min,
             *self.spatial_id_stack.last().unwrap(),
             info.flags,
             clip_chain_id,
@@ -2032,9 +2131,9 @@ impl YamlFrameReader {
             mix_blend_mode,
             &filters,
             &filter_datas,
-            &filter_primitives,
             raster_space,
             flags,
+            snapshot,
         );
 
         if let Some(yaml_items) = yaml["items"].as_vec() {
@@ -2062,13 +2161,11 @@ impl YamlFrameReader {
 
         let filters = item["filters"].as_vec_filter_op().unwrap_or_default();
         let filter_datas = item["filter-datas"].as_vec_filter_data().unwrap_or_default();
-        let filter_primitives = item["filter-primitives"].as_vec_filter_primitive().unwrap_or_default();
 
         dl.push_backdrop_filter(
             info,
             &filters,
             &filter_datas,
-            &filter_primitives,
         );
     }
 }
@@ -2099,7 +2196,7 @@ impl WrenchThing for YamlFrameReader {
         if should_build_yaml || wrench.should_rebuild_display_lists() {
             wrench.begin_frame();
             wrench.send_lists(
-                self.frame_count,
+                &mut self.frame_count,
                 self.display_lists.clone(),
                 &self.scroll_offsets,
             );
@@ -2107,7 +2204,6 @@ impl WrenchThing for YamlFrameReader {
             wrench.refresh();
         }
 
-        self.frame_count += 1;
         self.frame_count
     }
 

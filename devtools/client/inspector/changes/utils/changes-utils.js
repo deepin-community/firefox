@@ -5,22 +5,20 @@
 "use strict";
 
 const {
-  getFormatStr,
   getStr,
 } = require("resource://devtools/client/inspector/changes/utils/l10n.js");
 
 /**
  * Get a human-friendly style source path to display in the Changes panel.
  * For element inline styles, return a string indicating that.
- * For inline stylesheets, return a string indicating that plus the stylesheet's index.
+ * For inline stylesheets, return a string indicating that.
  * For URLs, return just the stylesheet filename.
  *
- * @param {Object} source
+ * @param {object} source
  *        Information about the style source. Contains:
- *        - type: {String} One of "element" or "stylesheet"
+ *        - type: {string} One of "element" or "stylesheet"
  *        - href: {String|null} Stylesheet URL or document URL for elmeent inline styles
- *        - index: {Number} Position of the stylesheet in its document's stylesheet list.
- * @return {String}
+ * @return {string}
  */
 function getSourceForDisplay(source) {
   let href;
@@ -30,12 +28,13 @@ function getSourceForDisplay(source) {
       href = getStr("changes.elementStyleLabel");
       break;
     case "inline":
-      href = getFormatStr("changes.inlineStyleSheetLabel", `#${source.index}`);
+      href = getStr("changes.inlineStyleSheetLabel2");
       break;
-    case "stylesheet":
+    case "stylesheet": {
       const url = new URL(source.href);
       href = url.pathname.substring(url.pathname.lastIndexOf("/") + 1);
       break;
+    }
   }
 
   return href;

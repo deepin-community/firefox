@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "CoalescedTouchData.h"
+
 #include "BrowserChild.h"
 #include "mozilla/dom/PointerEventHandler.h"
 
@@ -28,6 +27,7 @@ void CoalescedTouchData::CreateCoalescedTouchEvent(
     PointerEventHandler::InitPointerEventFromTouch(*event, aEvent, *touch);
     event->mFlags.mBubbles = false;
     event->mFlags.mCancelable = false;
+    event->convertToPointerRawUpdate = false;
   }
 }
 
@@ -36,6 +36,7 @@ void CoalescedTouchData::Coalesce(const WidgetTouchEvent& aEvent,
                                   const uint64_t& aInputBlockId,
                                   const nsEventStatus& aApzResponse) {
   MOZ_ASSERT(aEvent.mMessage == eTouchMove);
+  MOZ_ASSERT(!aEvent.mFlags.mIsSynthesizedForTests);
   if (IsEmpty()) {
     CreateCoalescedTouchEvent(aEvent);
     mGuid = aGuid;
@@ -47,10 +48,9 @@ void CoalescedTouchData::Coalesce(const WidgetTouchEvent& aEvent,
     MOZ_ASSERT(mCoalescedInputEvent->mModifiers == aEvent.mModifiers);
     MOZ_ASSERT(mCoalescedInputEvent->mInputSource == aEvent.mInputSource);
 
-    for (size_t i = 0; i < aEvent.mTouches.Length(); i++) {
-      const RefPtr<Touch>& touch = aEvent.mTouches[i];
+    for (const RefPtr<Touch>& touch : aEvent.mTouches) {
       // Get the same touch in the original event
-      RefPtr<Touch> sameTouch = GetTouch(touch->Identifier());
+      const RefPtr<Touch> sameTouch = GetTouch(touch->Identifier());
       // The checks in CoalescedTouchData::CanCoalesce ensure it should never
       // be null.
       MOZ_ASSERT(sameTouch);
@@ -58,6 +58,7 @@ void CoalescedTouchData::Coalesce(const WidgetTouchEvent& aEvent,
       MOZ_ASSERT(!sameTouch->mCoalescedWidgetEvents->mEvents.IsEmpty());
       if (!sameTouch->Equals(touch)) {
         sameTouch->SetSameAs(touch);
+        sameTouch->convertToPointerRawUpdate = touch->convertToPointerRawUpdate;
         WidgetPointerEvent* event =
             sameTouch->mCoalescedWidgetEvents->mEvents.AppendElement(
                 WidgetPointerEvent(aEvent.IsTrusted(), ePointerMove,
@@ -72,11 +73,24 @@ void CoalescedTouchData::Coalesce(const WidgetTouchEvent& aEvent,
   }
 }
 
+void CoalescedTouchData::NotifyTouchRawUpdateOfHandled(
+    const WidgetTouchEvent& aEvent) {
+  if (IsEmpty()) {
+    return;
+  }
+  for (const RefPtr<Touch>& touch : aEvent.mTouches) {
+    if (const RefPtr<Touch> sameTouch = GetTouch(touch->Identifier())) {
+      sameTouch->convertToPointerRawUpdate = false;
+    }
+  }
+}
+
 bool CoalescedTouchData::CanCoalesce(const WidgetTouchEvent& aEvent,
                                      const ScrollableLayerGuid& aGuid,
                                      const uint64_t& aInputBlockId,
                                      const nsEventStatus& aApzResponse) {
   MOZ_ASSERT(!IsEmpty());
+  MOZ_ASSERT(!mCoalescedInputEvent->mFlags.mIsSynthesizedForTests);
   if (mGuid != aGuid || mInputBlockId != aInputBlockId ||
       mCoalescedInputEvent->mModifiers != aEvent.mModifiers ||
       mCoalescedInputEvent->mInputSource != aEvent.mInputSource ||

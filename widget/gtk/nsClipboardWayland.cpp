@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,12 +6,9 @@
 
 #include "AsyncGtkClipboardRequest.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/ScopeExit.h"
 #include "prtime.h"
 
 #include <gtk/gtk.h>
-#include <stdlib.h>
-#include <string.h>
 
 using namespace mozilla;
 
@@ -61,8 +55,6 @@ ClipboardData nsRetrievalContextWayland::WaitForClipboardData(
   PRTime entryTime = PR_Now();
   while (!request.HasCompleted()) {
     if (iteration++ > kClipboardFastIterationNum) {
-      /* sleep for 10 ms/iteration */
-      PR_Sleep(PR_MillisecondsToInterval(10));
       if (PR_Now() - entryTime > kClipboardTimeout) {
         MOZ_CLIPBOARD_LOG(
             "  failed to get async clipboard data in time limit\n");

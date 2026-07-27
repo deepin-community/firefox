@@ -46,25 +46,3 @@ experimental-features-js-warp-description = 启用 Warp，此项目旨在改善 
 experimental-features-ime-search =
     .label = 地址栏：实时显示输入过程中的结果
 experimental-features-ime-search-description = 对于东亚及印度语言使用者，要在标准键盘上输入各种文字，输入法是不可或缺的工具。启用此实验后，地址栏面板将在文本输入过程中保持打开状态，并实时显示搜索结果与建议。请注意：某些输入法的面板可能会覆盖地址栏显示的结果，建议在确认所用输入法无上述行为后，开启此首选项。
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = 画中画：切换标签页时自动开启
-experimental-features-auto-pip-description = 切换标签页时，为正在播放的视频启用画中画功能。
-genai-settings-chat-title =
-    .label = AI 聊天机器人
-# Updated sidebar settings
-sidebar-title =
-    .label = 侧栏
-sidebar-description = 在浏览时轻松访问历史记录、其他设备上的标签页、侧栏扩展等。<a data-l10n-name="connect">分享反馈</a>
-vertical-tabs-title =
-    .label = 垂直标签页
-vertical-tabs-description = 将标签页栏从浏览器顶部移到侧边。需要同时试用侧栏功能。<a data-l10n-name="connect">分享反馈</a>
-experimental-features-group-browsing =
-    .label = 浏览
-experimental-features-group-developer-tools =
-    .label = 开发者工具
-experimental-features-group-webpage-display =
-    .label = 网页显示
-experimental-features-group-customize-browsing =
-    .label = 定制浏览体验
-experimental-features-group-customize-browsing-description = 如果您尝试了这些功能，欢迎<a data-l10n-name="connect">在 Connect 上分享自己的想法</a>

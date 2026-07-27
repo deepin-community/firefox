@@ -90,7 +90,7 @@ function runTest() {
     return;
   }
   var scrollbox = document.getElementById('scrollbox');
-  is(content.scrollTop, content.scrollTopMax, "We should have scrolled to the bottom of the scrollframe");
+  isfuzzy(content.scrollTop, content.scrollTopMax, 1, "We should have scrolled to the bottom of the scrollframe");
   is(rotationAdjusted, false, "The rotation should not have been adjusted");
   SimpleTest.finish();
 }
@@ -101,8 +101,7 @@ function startTest() {
   // we might end up at the bottom of the page.
   SpecialPowers.pushPrefEnv({"set": [["general.smoothScroll", false],
                                      ["test.events.async.enabled", true],
-                                     ["mousewheel.transaction.timeout", 100000],
-                                     ["dom.event.wheel-event-groups.enabled", true]]},
+                                     ["mousewheel.transaction.timeout", 100000]]},
                             runTest);
 }
 

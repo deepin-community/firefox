@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Дар ҳоли тасвирбард�
 contentanalysis-slow-agent-dialog-body-file = «{ $agent }» мувофиқи сиёсати маълумоти ташкилоти шумо «{ $filename }»-ро бозбинӣ мекунад. Ин метавонад каме вақт гирад.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] «{ $agent }» мувофиқи сиёсатҳои маълумоти ташкилоти шумо файли «{ $filename }» ва { $count } унсури иловагиро баррасӣ карда истодааст. Ин метавонад каме вақт гирад.
+       *[other] «{ $agent }» мувофиқи сиёсатҳои маълумоти ташкилоти шумо файли «{ $filename }» ва { $count } унсури иловагиро баррасӣ карда истодааст. Ин метавонад каме вақт гирад.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = «{ $agent }» мувофиқи сиёсати маълумоти ташкилоти шумо маводи воридкардаи шуморо бозбинӣ мекунад. Ин метавонад каме вақт гирад.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = ҳофизаи муваққатӣ
 contentanalysis-operationtype-dropped-text = матни гузаронидашуда
 contentanalysis-operationtype-print = чоп кардан
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = боркунии «{ $filename }»
+contentanalysis-upload-description = боркунии «{ $filename }»
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = боргирии «{ $filename }»
 contentanalysis-warndialogtitle = Ин муҳтаво метавонад хатарнок бошад
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Таҳлили муҳтаво бо н�
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Ташкилоти шумо аз нармафзори пешгирӣ аз гумшавии маълумот (DLP) истифода мебарад, ки ин муҳтаворо манъ кард: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Ҳангоми алоқабандӣ бо нармафзори пешгирӣ аз гумшавии маълумот (DLP) хато ба миён омад. Интиқол барои манбаъ рад карда шуд: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Ҳангоми алоқабандӣ бо { $agent } хато ба миён омад. Интиқол барои манбаъ рад карда шуд: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Алоқабандӣ бо { $agent } ғайриимкон аст. Интиқол барои манбаъ рад карда шуд: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Амали тафтиши имзо барои { $agent } иҷро нашуд. Интиқол барои манбаъ рад карда шуд: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Боркунии «{ $filename }» �
 contentanalysis-error-message-dropped-text = Кашидан ва гузоштани матн рад карда шуд.
 contentanalysis-error-message-clipboard = Гузоштани матн рад карда шуд.
 contentanalysis-error-message-print = Чоп рад карда шуд.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Вақти интизории пайвастшавӣ ба «{ $agent }» ба анҷом расид. «{ $contentName }» манъ карда шудааст.
 contentanalysis-block-dialog-title-upload-file = Шумо барои бор кардани ин файл иҷозат надоред
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Тибқи сиёсати ҳифзи маълумоти ташкилоти шумо, ба шумо барои бор кардани файли «{ $filename }» иҷозат дода нашудааст. Барои маълумоти бештар бо маъмури низом дар тамос шавед.
+contentanalysis-block-dialog-title-download-file = Шумо барои боргирӣ кардани ин файл иҷозат надоред
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Тибқи сиёсати ҳифзи маълумоти ташкилоти шумо, ба шумо барои боргирӣ кардани файли «{ $filename }» иҷозат дода нашудааст. Барои маълумоти бештар бо маъмури низом дар тамос шавед.
 contentanalysis-block-dialog-title-clipboard = Шумо барои гузоштани ин муҳтаво иҷозат надоред
 contentanalysis-block-dialog-body-clipboard = Тибқи сиёсати ҳифзи маълумоти ташкилоти шумо, ба шумо барои гузоштани ин муҳтаво иҷозат дода нашудааст. Барои маълумоти бештар бо маъмури низом дар тамос шавед.
 contentanalysis-block-dialog-title-dropped-text = Шумо барои ҷойгир кардани ин муҳтаво иҷозат надоред

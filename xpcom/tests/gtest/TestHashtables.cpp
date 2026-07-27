@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +14,6 @@
 #include "nsISupports.h"
 #include "nsCOMArray.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/Unused.h"
 
 #include "gtest/gtest.h"
 
@@ -187,16 +184,12 @@ static void testTHashtable(nsTHashtable<EntityToUnicodeEntry>& hash,
 // all this nsIFoo stuff was copied wholesale from TestCOMPtr.cpp
 //
 
-#define NS_IFOO_IID                                  \
-  {                                                  \
-    0x6f7652e0, 0xee43, 0x11d1, {                    \
-      0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3 \
-    }                                                \
-  }
+#define NS_IFOO_IID \
+  {0x6f7652e0, 0xee43, 0x11d1, {0x9c, 0xc3, 0x00, 0x60, 0x08, 0x8c, 0xa6, 0xb3}}
 
 class IFoo final : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IFOO_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IFOO_IID)
 
   IFoo();
 
@@ -218,8 +211,6 @@ class IFoo final : public nsISupports {
   static unsigned int total_destructions_;
   nsCString mString;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(IFoo, NS_IFOO_IID)
 
 unsigned int IFoo::total_constructions_;
 unsigned int IFoo::total_destructions_;
@@ -500,12 +491,30 @@ auto MakeEmptyBaseHashtable() {
 }
 
 template <typename TypeParam>
+auto MakeUniqueEmptyBaseHashtable() {
+  return MakeUnique<
+      nsBaseHashtable<nsUint64HashKey, typename TypeParam::DataType,
+                      typename TypeParam::UserDataType>>();
+}
+
+template <typename TypeParam>
 auto MakeBaseHashtable(const uint32_t aExpectedAddRefCnt) {
   auto table = MakeEmptyBaseHashtable<TypeParam>();
 
   auto myChar = MakeRefPtr<TestUniCharRefCounted>(42, aExpectedAddRefCnt);
 
   table.InsertOrUpdate(1, typename TypeParam::UserDataType(std::move(myChar)));
+
+  return table;
+}
+
+template <typename TypeParam>
+auto MakeUniqueBaseHashtable(const uint32_t aExpectedAddRefCnt) {
+  auto table = MakeUniqueEmptyBaseHashtable<TypeParam>();
+
+  auto myChar = MakeRefPtr<TestUniCharRefCounted>(42, aExpectedAddRefCnt);
+
+  table->InsertOrUpdate(1, typename TypeParam::UserDataType(std::move(myChar)));
 
   return table;
 }
@@ -644,10 +653,10 @@ TYPED_TEST_P(BaseHashtableTest, SizeOfIncludingThis) {
   // This doesn't compile at the moment, since nsBaseHashtableET lacks
   // SizeOfIncludingThis implementation. Bug 1689214.
 #if 0
-  auto table = MakeBaseHashtable<TypeParam>(
+  auto table = MakeUniqueBaseHashtable<TypeParam>(
       TypeParam::kExpectedAddRefCnt_SizeOfIncludingThis);
 
-  auto res = table.SizeOfIncludingThis(MallocSizeOf);
+  auto res = table->SizeOfIncludingThis(MallocSizeOf);
   EXPECT_GT(res, 0u);
 #endif
 }
@@ -986,14 +995,11 @@ TYPED_TEST_P(BaseHashtableTest, ShallowSizeOfExcludingThis) {
 }
 
 TYPED_TEST_P(BaseHashtableTest, ShallowSizeOfIncludingThis) {
-  // Make this work with ASAN builds, bug 1689549.
-#if !defined(MOZ_ASAN)
-  auto table = MakeBaseHashtable<TypeParam>(
+  auto table = MakeUniqueBaseHashtable<TypeParam>(
       TypeParam::kExpectedAddRefCnt_ShallowSizeOfIncludingThis);
 
-  auto res = table.ShallowSizeOfIncludingThis(MallocSizeOf);
+  auto res = table->ShallowSizeOfIncludingThis(MallocSizeOf);
   EXPECT_GT(res, 0u);
-#endif
 }
 
 TYPED_TEST_P(BaseHashtableTest, SwapElements) {
@@ -1069,8 +1075,6 @@ TEST(Hashtables, DataHashtable)
 
 TEST(Hashtables, DataHashtable_STLIterators)
 {
-  using mozilla::Unused;
-
   nsTHashMap<nsUint32HashKey, const char*> UniToEntity(ENTITY_COUNT);
 
   for (auto& entity : gEntities) {
@@ -1093,18 +1097,17 @@ TEST(Hashtables, DataHashtable_STLIterators)
   // with the actual syntactical requirements of those algorithms).
   std::for_each(UniToEntity.cbegin(), UniToEntity.cend(),
                 [](const auto& entry) {});
-  Unused << std::find_if(
-      UniToEntity.cbegin(), UniToEntity.cend(),
-      [](const auto& entry) { return entry.GetKey() == 42; });
-  Unused << std::accumulate(
+  (void)std::find_if(UniToEntity.cbegin(), UniToEntity.cend(),
+                     [](const auto& entry) { return entry.GetKey() == 42; });
+  (void)std::accumulate(
       UniToEntity.cbegin(), UniToEntity.cend(), 0u,
       [](size_t sum, const auto& entry) { return sum + entry.GetKey(); });
-  Unused << std::any_of(UniToEntity.cbegin(), UniToEntity.cend(),
-                        [](const auto& entry) { return entry.GetKey() == 42; });
-  Unused << std::max_element(UniToEntity.cbegin(), UniToEntity.cend(),
-                             [](const auto& lhs, const auto& rhs) {
-                               return lhs.GetKey() > rhs.GetKey();
-                             });
+  (void)std::any_of(UniToEntity.cbegin(), UniToEntity.cend(),
+                    [](const auto& entry) { return entry.GetKey() == 42; });
+  (void)std::max_element(UniToEntity.cbegin(), UniToEntity.cend(),
+                         [](const auto& lhs, const auto& rhs) {
+                           return lhs.GetKey() > rhs.GetKey();
+                         });
 
   // const range-based for
   {

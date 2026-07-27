@@ -1,5 +1,3 @@
-/* -*- Mode: javascript; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4
- * -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -99,6 +97,48 @@ DEFINE_CLASS_IMPL(ModuleObject)
 bool IdentFilter(JSContext* cx, JS::Handle<JS::Value> from,
                  JS::MutableHandle<JS::Value> to) {
   to.set(from);
+  return true;
+}
+
+bool GetModuleStatusName(JSContext* cx, JS::Handle<JS::Value> from,
+                         JS::MutableHandle<JS::Value> to) {
+  if (!from.isInt32()) {
+    return false;
+  }
+
+  const char* statusStr = nullptr;
+  switch (static_cast<ModuleStatus>(from.toInt32())) {
+    case ModuleStatus::New:
+      statusStr = "New";
+      break;
+    case ModuleStatus::Unlinked:
+      statusStr = "Unlinked";
+      break;
+    case ModuleStatus::Linking:
+      statusStr = "Linking";
+      break;
+    case ModuleStatus::Linked:
+      statusStr = "Linked";
+      break;
+    case ModuleStatus::Evaluating:
+      statusStr = "Evaluating";
+      break;
+    case ModuleStatus::EvaluatingAsync:
+      statusStr = "EvaluatingAsync";
+      break;
+    case ModuleStatus::Evaluated:
+      statusStr = "Evaluated";
+      break;
+    default:
+      MOZ_CRASH("Unknown ModuleStatus value");
+  }
+
+  JS::Rooted<JSString*> str(cx, JS_NewStringCopyZ(cx, statusStr));
+  if (!str) {
+    return false;
+  }
+
+  to.setString(str);
   return true;
 }
 
@@ -206,6 +246,16 @@ static Value Uint32OrUndefinedValue(mozilla::Maybe<uint32_t> x) {
   return Uint32Value(x.value());
 }
 
+static Value AsyncEvaluationOrderInt32Value(AsyncEvaluationOrder x) {
+  if (x.isUnset()) {
+    return Int32Value(-1);
+  }
+  if (x.isDone()) {
+    return Int32Value(-2);
+  }
+  return Uint32Value(x.get());
+}
+
 static Value ColumnNumberOneOriginValue(JS::ColumnNumberOneOrigin x) {
   uint32_t column = x.oneOriginValue();
   MOZ_ASSERT(column <= INT32_MAX);
@@ -228,6 +278,13 @@ template <class T, typename RawGetterT, typename FilterT>
 bool ShellModuleWrapperGetter(JSContext* cx, const JS::CallArgs& args,
                               RawGetterT rawGetter, FilterT filter) {
   JS::Rooted<T*> wrapper(cx, &args.thisv().toObject().as<T>());
+  if constexpr (std::is_same_v<T, ShellModuleObjectWrapper>) {
+    if (!wrapper->get()->hasCyclicModuleFields()) {
+      args.rval().set(UndefinedValue());
+      return true;
+    }
+  }
+
   JS::Rooted<JS::Value> raw(cx, rawGetter(wrapper->get()));
 
   JS::Rooted<JS::Value> filtered(cx);
@@ -285,6 +342,13 @@ template <class T, typename RawGetterT, typename FilterT>
 bool ShellModuleNativeWrapperGetter(JSContext* cx, const JS::CallArgs& args,
                                     RawGetterT rawGetter, FilterT filter) {
   JS::Rooted<T*> wrapper(cx, &args.thisv().toObject().as<T>());
+  if constexpr (std::is_same_v<T, ShellModuleObjectWrapper>) {
+    if (!wrapper->get()->hasCyclicModuleFields()) {
+      args.rval().set(UndefinedValue());
+      return true;
+    }
+  }
+
   JS::Rooted<typename T::Target*> owner(cx, wrapper->get());
 
   JS::Rooted<JS::Value> filtered(cx);
@@ -308,6 +372,15 @@ bool ModuleTypeToString(JSContext* cx, JS::Handle<JSObject*> owner,
       break;
     case JS::ModuleType::JSON:
       to.setString(cx->names().json);
+      break;
+    case JS::ModuleType::CSS:
+      to.setString(cx->names().css);
+      break;
+    case JS::ModuleType::Bytes:
+      to.setString(cx->names().bytes);
+      break;
+    case JS::ModuleType::Text:
+      to.setString(cx->names().text);
       break;
   }
 
@@ -334,12 +407,18 @@ bool ModuleTypeToString(JSContext* cx, JS::Handle<JSObject*> owner,
 
 DEFINE_GETTER_FUNCTIONS(ModuleRequestObject, specifier, StringOrNullValue,
                         IdentFilter)
+DEFINE_GETTER_FUNCTIONS(ModuleRequestObject, getFirstUnsupportedAttributeKey,
+                        StringOrNullValue, IdentFilter)
 DEFINE_NATIVE_GETTER_FUNCTIONS(ModuleRequestObject, moduleType,
                                ModuleTypeToString);
 
 static const JSPropertySpec ShellModuleRequestObjectWrapper_accessors[] = {
     JS_PSG("specifier", ShellModuleRequestObjectWrapper_specifierGetter, 0),
     JS_PSG("moduleType", ShellModuleRequestObjectWrapper_moduleTypeGetter, 0),
+    JS_PSG(
+        "firstUnsupportedAttributeKey",
+        ShellModuleRequestObjectWrapper_getFirstUnsupportedAttributeKeyGetter,
+        0),
     JS_PS_END,
 };
 
@@ -394,7 +473,7 @@ static const JSPropertySpec ShellRequestedModuleWrapper_accessors[] = {
 
 DEFINE_GETTER_FUNCTIONS(ModuleObject, namespace_, ObjectOrNullValue,
                         IdentFilter)
-DEFINE_GETTER_FUNCTIONS(ModuleObject, status, StatusValue, IdentFilter)
+DEFINE_GETTER_FUNCTIONS(ModuleObject, status, StatusValue, GetModuleStatusName)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, maybeEvaluationError, Value, IdentFilter)
 DEFINE_NATIVE_GETTER_FUNCTIONS(ModuleObject, requestedModules,
                                SpanToArrayFilter<ShellRequestedModuleWrapper>)
@@ -406,18 +485,14 @@ DEFINE_NATIVE_GETTER_FUNCTIONS(ModuleObject, indirectExportEntries,
                                SpanToArrayFilter<ShellExportEntryWrapper>)
 DEFINE_NATIVE_GETTER_FUNCTIONS(ModuleObject, starExportEntries,
                                SpanToArrayFilter<ShellExportEntryWrapper>)
-DEFINE_GETTER_FUNCTIONS(ModuleObject, maybeDfsIndex, Uint32OrUndefinedValue,
-                        IdentFilter)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, maybeDfsAncestorIndex,
                         Uint32OrUndefinedValue, IdentFilter)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, hasTopLevelAwait, BooleanValue,
                         IdentFilter)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, maybeTopLevelCapability,
                         ObjectOrUndefinedValue, IdentFilter)
-DEFINE_GETTER_FUNCTIONS(ModuleObject, isAsyncEvaluating, BooleanValue,
-                        IdentFilter)
-DEFINE_GETTER_FUNCTIONS(ModuleObject, maybeAsyncEvaluatingPostOrder,
-                        Uint32OrUndefinedValue, IdentFilter)
+DEFINE_GETTER_FUNCTIONS(ModuleObject, asyncEvaluationOrder,
+                        AsyncEvaluationOrderInt32Value, IdentFilter)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, asyncParentModules, ObjectOrNullValue,
                         ListToArrayFilter<ShellModuleObjectWrapper>)
 DEFINE_GETTER_FUNCTIONS(ModuleObject, maybePendingAsyncDependencies,
@@ -437,17 +512,14 @@ static const JSPropertySpec ShellModuleObjectWrapper_accessors[] = {
            ShellModuleObjectWrapper_indirectExportEntriesGetter, 0),
     JS_PSG("starExportEntries",
            ShellModuleObjectWrapper_starExportEntriesGetter, 0),
-    JS_PSG("dfsIndex", ShellModuleObjectWrapper_maybeDfsIndexGetter, 0),
     JS_PSG("dfsAncestorIndex",
            ShellModuleObjectWrapper_maybeDfsAncestorIndexGetter, 0),
     JS_PSG("hasTopLevelAwait", ShellModuleObjectWrapper_hasTopLevelAwaitGetter,
            0),
     JS_PSG("topLevelCapability",
            ShellModuleObjectWrapper_maybeTopLevelCapabilityGetter, 0),
-    JS_PSG("isAsyncEvaluating",
-           ShellModuleObjectWrapper_isAsyncEvaluatingGetter, 0),
-    JS_PSG("asyncEvaluatingPostOrder",
-           ShellModuleObjectWrapper_maybeAsyncEvaluatingPostOrderGetter, 0),
+    JS_PSG("asyncEvaluationOrder",
+           ShellModuleObjectWrapper_asyncEvaluationOrderGetter, 0),
     JS_PSG("asyncParentModules",
            ShellModuleObjectWrapper_asyncParentModulesGetter, 0),
     JS_PSG("pendingAsyncDependencies",
@@ -498,7 +570,28 @@ DEFINE_NATIVE_CREATE(ImportEntry, ShellImportEntryWrapper_accessors, nullptr)
 DEFINE_NATIVE_CREATE(ExportEntry, ShellExportEntryWrapper_accessors, nullptr)
 DEFINE_NATIVE_CREATE(RequestedModule, ShellRequestedModuleWrapper_accessors,
                      nullptr)
-DEFINE_CREATE(ModuleObject, ShellModuleObjectWrapper_accessors, nullptr)
 
 #undef DEFINE_CREATE
 #undef DEFINE_NATIVE_CREATE
+
+JS::ModuleType ShellModuleObjectWrapper::getModuleType() {
+  return static_cast<JS::ModuleType>(getReservedSlot(ModuleTypeSlot).toInt32());
+}
+
+ShellModuleObjectWrapper* ShellModuleObjectWrapper::create(
+    JSContext* cx, JS::Handle<ModuleObject*> target,
+    JS::ModuleType moduleType) {
+  JS::Rooted<JSObject*> obj(cx, JS_NewObject(cx, &class_));
+  if (!obj) {
+    return nullptr;
+  }
+  if (!DefinePropertiesAndFunctions(cx, obj, ShellModuleObjectWrapper_accessors,
+                                    nullptr)) {
+    return nullptr;
+  }
+  auto* wrapper = &obj->as<ShellModuleObjectWrapper>();
+  wrapper->initReservedSlot(TargetSlot, ObjectValue(*target));
+  wrapper->initReservedSlot(ModuleTypeSlot,
+                            Int32Value(static_cast<int32_t>(moduleType)));
+  return wrapper;
+}

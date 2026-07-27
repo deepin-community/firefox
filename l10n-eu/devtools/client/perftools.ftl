@@ -33,19 +33,39 @@ perftools-description-local-build =
     Zuk makina honetan konpilatutako eraikitze bat analizatzen ari bazara,
     gehi ezazu zure eraikitzearen objdir-a beheko zerrendan, sinboloen
     informazioa bilatzeko erabili ahal izan dadin.
+perftools-pick-local-build-directory = Hautatu eraikitze-direktorioa
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Lagin-tartea:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
 
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
+
 ##
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Buffer-tamaina:
-
 perftools-custom-threads-label = Gehitu hari pertsonalizatuak izenez:
-
 perftools-devtools-interval-label = Tartea:
 perftools-devtools-threads-label = Hariak:
 perftools-devtools-settings-label = Ezarpenak
@@ -70,6 +90,14 @@ perftools-button-restart = Berrabiarazi
 perftools-button-add-directory = Gehitu direktorioa
 perftools-button-remove-directory = Kendu hautatutakoak
 perftools-button-edit-settings = Editatu ezarpenak…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Ekintza gehiago
+perftools-menu-more-actions-restart-with-profiling = Berrabiarazi { -brand-shorter-name } abioko analisia gaituta
+perftools-menu-more-actions-copy-for-startup = Kopiatu abioko analisirako ingurune-aldagaiak
+perftools-menu-more-actions-copy-for-perf-tests = Kopiatu errendimenduaren probetarako parametroak
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -96,7 +124,7 @@ perftools-thread-img-decoder =
 perftools-thread-dns-resolver =
     .title = DNS ebazpena hari honetan gertatzen da
 perftools-thread-task-controller =
-    .title = TaskController hari-putzuko hariak
+    .title = TaskController hari-multzoko hariak
 perftools-thread-jvm-gecko =
     .title = Gecko JVM hari nagusia
 perftools-thread-jvm-nimbus =
@@ -108,12 +136,11 @@ perftools-thread-jvm-glean =
 perftools-thread-jvm-arch-disk-io =
     .title = Kotlin azpirrutinen liburutegirako IO dispatcher-a
 perftools-thread-jvm-pool =
-    .title = Izenik gabeko hari multzoan sortutako hariak
+    .title = Izenik gabeko hari-multzoan sortutako hariak
 
 ##
 
 perftools-record-all-registered-threads = Saihestu goiko hautapenak eta grabatu erregistratutako hari guztiak
-
 perftools-tools-threads-input-label =
     .title = Hari-izen hauek komaz bereizitako zerrenda bat dira eta harien analisia gaitzeko erabiltzen da analizatzailean. Haria kontuan har dadin, nahikoa da hari-izena erdizka bat etortzea; zuriuneak errespetatu egiten dira.
 
@@ -121,7 +148,6 @@ perftools-tools-threads-input-label =
 ## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Berria</b>: { -profiler-brand-name } orain garatzaile-tresnen zati da. Eskuratu tresna boteretsu berri honi buruzko <a>argibide gehiago</a>.
-
 perftools-onboarding-close-button =
     .aria-label = Itxi aurkezpeneko mezua
 
@@ -129,33 +155,31 @@ perftools-onboarding-close-button =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/shared/background.jsm.js
+# devtools/client/performance-new/shared/background.sys.mjs
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Web garapena
 perftools-presets-web-developer-description = Web aplikazio gehienen arazketarako gomendatutako aurrezarpena, eragin negatibo txikiarekin.
-
 perftools-presets-firefox-label = { -brand-shorter-name }
 perftools-presets-firefox-description = { -brand-shorter-name }(r)en profila egiteko gomendatutako aurrezarpena.
-
 perftools-presets-graphics-label = Grafikoak
 perftools-presets-graphics-description = { -brand-shorter-name }(r)en programa-errore grafikoak ikertzeko aurrezarpena.
-
 perftools-presets-media-label = Multimedia
 perftools-presets-media-description2 = { -brand-shorter-name }(r)en audio eta bideo programa-erroreak ikertzeko aurrezarpena.
-
+perftools-presets-ml-label = Ikasketa automatikoa
+perftools-presets-ml-description2 = { -brand-shorter-name }(r)en ikasketa automatikoko programa-erroreak ikertzeko aurrezarpena.
 perftools-presets-networking-label = Sarea
 perftools-presets-networking-description = { -brand-shorter-name }(r)en sareko programa-erroreak ikertzeko aurrezarpena.
-
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Energia
 perftools-presets-power-description = { -brand-shorter-name }(r)en energia-erabilpenaren arazoak ikertzeko aurrezarpena, eragin negatibo txikiarekin.
-
+perftools-presets-debug-label = Arazketa
+perftools-presets-debug-description = { -brand-shorter-name }(r)en arazketarako aurrezarpena. Eragin negatibo handia du, ez erabili errendimenduarekin lotutako lanerako, bai ordea nabigatzailearen portaera ulertzeko.
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Webguneetako web bateragarritasun arazoen arazketarako, errendimenduaren jarraipenerako baino, gomendatutako aurrezarpena.
 perftools-presets-custom-label = Pertsonalizatua
-
-##
-

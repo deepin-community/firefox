@@ -18,13 +18,10 @@ let LINEAR_GRADIENT_ID_COUNT = 0;
 class ColorPath extends ComputedStylePath {
   constructor(props) {
     super(props);
-
-    this.state = this.propToState(props);
   }
 
-  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    this.setState(this.propToState(nextProps));
+  static getDerivedStateFromProps(props) {
+    return ColorPath.propToState(props);
   }
 
   getPropertyName() {
@@ -35,7 +32,7 @@ class ColorPath extends ComputedStylePath {
     return keyframe.value;
   }
 
-  propToState({ keyframes, name }) {
+  static propToState({ keyframes, name }) {
     const maxObject = { distance: -Number.MAX_VALUE };
 
     for (let i = 0; i < keyframes.length - 1; i++) {
@@ -146,10 +143,10 @@ class ColorPath extends ComputedStylePath {
 /**
  * Parse given RGBA string.
  *
- * @param {String} propertyName
- * @param {String} colorString
+ * @param {string} propertyName
+ * @param {string} colorString
  *        e.g. rgb(0, 0, 0) or rgba(0, 0, 0, 0.5) and so on.
- * @return {Object}
+ * @return {object}
  *         RGBA {r: r, g: g, b: b, a: a}.
  */
 function getRGBA(propertyName, colorString) {
@@ -181,11 +178,11 @@ function getRGBA(propertyName, colorString) {
 /**
  * Return the distance from give two RGBA.
  *
- * @param {Object} rgba1
+ * @param {object} rgba1
  *        RGBA (format is same to getRGBA)
- * @param {Object} rgba2
+ * @param {object} rgba2
  *        RGBA (format is same to getRGBA)
- * @return {Number}
+ * @return {number}
  *         The range is 0 - 1.0.
  */
 function getRGBADistance(rgba1, rgba2) {

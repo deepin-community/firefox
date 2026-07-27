@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -80,27 +78,20 @@ nrappkit copyright:
 
 // Original author: bcampen@mozilla.com [:bwc]
 
-#ifndef test_nr_socket__
-#define test_nr_socket__
+#ifndef test_nr_socket_
+#define test_nr_socket_
 
-extern "C" {
-#include "transport_addr.h"
-}
-
-#include "nr_socket_prsock.h"
-
-extern "C" {
-#include "nr_socket.h"
-}
-
-#include <set>
-#include <map>
 #include <list>
+#include <map>
+#include <set>
 #include <string>
 
-#include "mozilla/UniquePtr.h"
-#include "prinrval.h"
 #include "mediapacket.h"
+#include "mozilla/UniquePtr.h"
+#include "nr_socket.h"
+#include "nr_socket_prsock.h"
+#include "prinrval.h"
+#include "transport_addr.h"
 
 namespace mozilla {
 
@@ -159,7 +150,8 @@ class TestNat {
         block_tls_(false),
         error_code_for_drop_(0),
         delay_stun_resp_ms_(0),
-        nat_delegate_(nullptr) {}
+        nat_delegate_(nullptr),
+        network_delay_ms_(0) {}
 
   bool has_port_mappings() const;
 
@@ -199,6 +191,7 @@ class TestNat {
   std::map<nsCString, CopyableTArray<nsCString>> stun_redirect_map_;
 
   NatDelegate* nat_delegate_;
+  unsigned int network_delay_ms_;
   std::shared_ptr<NrSocketProxyConfig> proxy_config_;
 
  private:
@@ -274,7 +267,7 @@ class TestNrSocket : public NrSocketBase {
     int send_from_queue();
     NS_INLINE_DECL_THREADSAFE_REFCOUNTING(PortMapping);
 
-    PRIntervalTime last_used_;
+    PRIntervalTime last_used_ = 0;
     RefPtr<NrSocketBase> external_socket_;
     // For non-symmetric, most of the data here doesn't matter
     nr_transport_addr remote_address_;
@@ -354,6 +347,7 @@ class TestNrSocket : public NrSocketBase {
   std::list<RefPtr<PortMapping>> port_mappings_;
 
   void* timer_handle_;
+  nsTArray<nsCOMPtr<nsITimer>> mTimers;
 
   // Just used for fake stun responses right now. Not _necessarily_ just UDP
   // stuff, UdpPacket just has what we need to make this work for UDP.
@@ -363,4 +357,4 @@ class TestNrSocket : public NrSocketBase {
 
 }  // namespace mozilla
 
-#endif  // test_nr_socket__
+#endif  // test_nr_socket_

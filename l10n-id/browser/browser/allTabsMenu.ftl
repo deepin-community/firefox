@@ -12,7 +12,17 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = Kelola Kontainer
     .accesskey = K
-all-tabs-menu-close-duplicate-tabs =
-    .label = Tutup tab berganda
 all-tabs-menu-close-all-duplicate-tabs =
-    .label = Tutup semua tab duplikat
+    .label = Tutup semua tab berganda
+all-tabs-menu-synced-tabs =
+    .label = Tab dari perangkat lain
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Grup tab terbaru
+all-tabs-menu-current-window-header = Jendela saat ini
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Tampilkan semua
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Grup tab

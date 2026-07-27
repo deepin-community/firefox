@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +8,6 @@
 #include "nsAppRunner.h"
 #include "mozilla/XREAppData.h"
 #include "mozilla/Base64.h"
-#include "mozilla/ScopeExit.h"
 #include "mozilla/GUniquePtr.h"
 #include "MainThreadUtils.h"
 #include "nsPrintfCString.h"
@@ -38,7 +34,7 @@ static const char* introspect_template =
 
 bool nsDBusRemoteServer::HandleOpenURL(const gchar* aInterfaceName,
                                        const gchar* aMethodName,
-                                       const gchar* aParam) {
+                                       Span<const gchar> aParam) {
   nsPrintfCString ourInterfaceName("org.mozilla.%s", mAppName.get());
 
   if ((strcmp("OpenURL", aMethodName) != 0) ||
@@ -91,7 +87,7 @@ static void HandleMethodCall(GDBusConnection* aConnection, const gchar* aSender,
   }
 
   int ret = static_cast<nsDBusRemoteServer*>(aUserData)->HandleOpenURL(
-      aInterfaceName, aMethodName, commandLine);
+      aInterfaceName, aMethodName, mozilla::Span(commandLine, len));
   if (!ret) {
     g_dbus_method_invocation_return_error(
         aInvocation, G_DBUS_ERROR, G_DBUS_ERROR_NOT_SUPPORTED,

@@ -36,6 +36,7 @@ certificate-viewer-key-size = Teɣzi n tsarut
 certificate-viewer-inc-locality = Tamnaḍt n usekles
 certificate-viewer-locality = Tamnaḍt
 certificate-viewer-location = Adig
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Asulay n uɣmis
 certificate-viewer-method = Tarrayt
 certificate-viewer-modulus = Beṭṭu ɣef
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = Talɣut ɣef udabu (AIA)
 certificate-viewer-certificate-policies = Tisertiyin n uselkin
 certificate-viewer-embedded-scts = SCT usliɣ
 certificate-viewer-crl-endpoints = Agazen n tagara CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Sader
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Asiɣzef-agi yettwacreḍ d uzɣin, ayagi yebɣa ad d-yini dakken ilaq imsaɣen ad agin aselkin ma yella ur tegzin ara.

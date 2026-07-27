@@ -5,36 +5,26 @@
 translation-window2 =
     .title = Etzetziones - Tradutzione
     .style = min-width: 36em
-
 translation-close-key =
     .key = w
-
-translation-languages-disabled-desc = Nissuna tradutzione at a èssere frunida pro is lìnguas imbenientes
-
+translation-languages-disabled-desc = Nissuna tradutzione at a èssere frunida pro is limbas imbenientes
 translation-languages-column =
     .label = Limbas
-
 translation-languages-button-remove =
-    .label = Boga sa lìngua
+    .label = Boga sa limba
     .accesskey = s
-
 translation-languages-button-remove-all =
-    .label = Boga·nche totu is lìnguas
+    .label = Boga·nche totu is limbas
     .accesskey = o
-
 translation-sites-disabled-desc = Nissuna tradutzione at a èssere frunida pro is sitos imbenientes
-
 translation-sites-column =
     .label = Sitos web
-
 translation-sites-button-remove =
     .label = Boga su situ
     .accesskey = B
-
 translation-sites-button-remove-all =
     .label = Boga totu is sitos
     .accesskey = i
-
 translation-dialog =
     .buttonlabelaccept = Serra
     .buttonaccesskeyaccept = S

@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = ફોર્મ સ્વતઃભરણ વિકલ્પો
 autofill-options-link-osx = ફોર્મ સ્વતઃભરણ પસંદગીઓ
 
@@ -44,3 +44,6 @@ autofill-category-name = નામ
 autofill-category-organization = સંસ્થા
 autofill-category-tel = ફોન
 autofill-category-email = ઇમેઇલ
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } એ એક અસુરક્ષિત સાઇટ શોધી છે. સ્વતઃભરણ ફોર્મ અસ્થાયી રૂપે અક્ષમ કરેલું છે.

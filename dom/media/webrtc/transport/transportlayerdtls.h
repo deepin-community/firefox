@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Original author: ekr@rtfm.com
 
-#ifndef transportlayerdtls_h__
-#define transportlayerdtls_h__
+#ifndef transportlayerdtls_h_
+#define transportlayerdtls_h_
 
 #include <queue>
 #include <set>
@@ -18,16 +16,16 @@
 #  include <Security/CipherSuite.h>
 #endif
 
+#include "ScopedNSSTypes.h"
+#include "dtlsidentity.h"
+#include "m_cpp_utils.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "nsCOMPtr.h"
 #include "nsITimer.h"
-#include "ScopedNSSTypes.h"
-#include "m_cpp_utils.h"
-#include "dtlsidentity.h"
-#include "transportlayer.h"
 #include "ssl.h"
 #include "sslproto.h"
+#include "transportlayer.h"
 
 namespace mozilla {
 

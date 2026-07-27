@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -16,13 +15,12 @@
 struct jpeg_compress_struct;
 struct jpeg_common_struct;
 
-#define NS_JPEGENCODER_CID                           \
-  {                                                  \
-    /* ac2bb8fe-eeeb-4572-b40f-be03932b56e0 */       \
-    0xac2bb8fe, 0xeeeb, 0x4572, {                    \
-      0xb4, 0x0f, 0xbe, 0x03, 0x93, 0x2b, 0x56, 0xe0 \
-    }                                                \
-  }
+#define NS_JPEGENCODER_CID                    \
+  {/* ac2bb8fe-eeeb-4572-b40f-be03932b56e0 */ \
+   0xac2bb8fe,                                \
+   0xeeeb,                                    \
+   0x4572,                                    \
+   {0xb4, 0x0f, 0xbe, 0x03, 0x93, 0x2b, 0x56, 0xe0}}
 
 // Provides JPEG encoding functionality. Use InitFromData() to do the
 // encoding. See that function definition for encoding options.

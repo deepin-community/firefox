@@ -10,13 +10,11 @@
 
 psmerr-ssl-disabled = No se puede conectar de forma segura porque el protocolo SSL fue deshabilitado.
 psmerr-ssl2-disabled = No se puede conectar de forma segura porque el sitio usa una versión antigua e insegura del protocolo SSL.
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     Recibió un certificado no válido.  Contacte al administrador del servidor o correspondiente correo electrónico y envíeles la siguiente información:
     
     Su certificado contiene el mismo número de serie que otro certificado emitido por la autoridad de certificados.  Obtenga un nuevo certificado conteniendo un número de serie único.
-
 ssl-error-export-only-server = No es posible comunicarse de forma segura. La otra parte no admite cifrado de grado alto.
 ssl-error-us-only-server = No es posible comunicarse de forma segura. La otra parte requiere cifrado de grado alto que no es compatible.
 ssl-error-no-cypher-overlap = No se puede comunicar de forma segura con un compañero: no hay algoritmos de cifrado comunes.
@@ -153,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = No se configuró un algoritmo de fi
 ssl-error-unsupported-signature-algorithm = El par utilizó una combinación no soportada de firma y algoritmo de hash.
 ssl-error-missing-extended-master-secret = El par intentó continuar sin una extensión extended_master_secret correcta.
 ssl-error-unexpected-extended-master-secret = El par intentó continuar con una extensión extended_master_secret inesperada.
-
 sec-error-io = Ocurrió un error de E/S durante la autorización de seguridad.
 sec-error-library-failure = fallo en la biblioteca de seguridad.
 sec-error-bad-data = biblioteca de seguridad: se recibieron datos incorrectos.
@@ -214,8 +211,8 @@ sec-error-no-module = biblioteca de seguridad: ningún módulo de seguridad pued
 sec-error-no-token = La tarjeta de seguridad o el token no existe, necesita inicializarse o se ha eliminado.
 sec-error-read-only = biblioteca de seguridad: base de datos de solo lectura.
 sec-error-no-slot-selected = No slot or token was selected.
-sec-error-cert-nickname-collision = Ya existe un certificado con el mismo apodo.
-sec-error-key-nickname-collision = Ya existe una clave con el mismo apodo.
+sec-error-cert-nickname-collision = Ya existe un certificado con el mismo alias.
+sec-error-key-nickname-collision = Ya existe una clave con el mismo alias.
 sec-error-safe-not-created = error al crear un objeto seguro
 sec-error-baggage-not-created = error while creating baggage object
 sec-error-bad-export-algorithm = Algoritmo requerido no permitido
@@ -229,7 +226,7 @@ sec-error-pkcs12-corrupt-pfx-structure = Unable to import.  File structure is co
 sec-error-pkcs12-unsupported-pbe-algorithm = Unable to import.  Encryption algorithm not supported.
 sec-error-pkcs12-unsupported-version = Unable to import.  File version not supported.
 sec-error-pkcs12-privacy-password-incorrect = Unable to import.  Incorrect privacy password.
-sec-error-pkcs12-cert-collision = Unable to import.  Same nickname already exists in database.
+sec-error-pkcs12-cert-collision = No se puede importar. Ya existe el mismo alias en la base de datos.
 sec-error-user-cancelled = El usuario presionó cancelar.
 sec-error-pkcs12-duplicate-data = No importado, ya está en la base de datos.
 sec-error-message-send-aborted = Mensaje no enviado.
@@ -238,7 +235,7 @@ sec-error-inadequate-cert-type = Tipo de certificado no aprobado para la aplicac
 sec-error-cert-addr-mismatch = La dirección en el certificado de firma no coincide con la dirección de los encabezados del mensaje.
 sec-error-pkcs12-unable-to-import-key = Unable to import.  Error attempting to import private key.
 sec-error-pkcs12-importing-cert-chain = Unable to import.  Error attempting to import certificate chain.
-sec-error-pkcs12-unable-to-locate-object-by-name = Unable to export.  Unable to locate certificate or key by nickname.
+sec-error-pkcs12-unable-to-locate-object-by-name = No se puede exportar. No se puede localizar el certificado o la clave por alias.
 sec-error-pkcs12-unable-to-export-key = Unable to export.  Private Key could not be located and exported.
 sec-error-pkcs12-unable-to-write = Unable to export.  Unable to write the export file.
 sec-error-pkcs12-unable-to-read = Unable to import.  Unable to read the import file.
@@ -246,7 +243,7 @@ sec-error-pkcs12-key-database-not-initialized = Unable to export.  Key database 
 sec-error-keygen-fail = No se puede generar el  par de claves pública/privada.
 sec-error-invalid-password = Password entered is invalid.  Please pick a different one.
 sec-error-retry-old-password = Old password entered incorrectly.  Please try again.
-sec-error-bad-nickname = El apodo del certificado ya está en uso.
+sec-error-bad-nickname = El alias del certificado ya está en uso.
 sec-error-not-fortezza-issuer = La cadena FORTEZZA del par tiene un certificado que no es de FORTEZZA.
 sec-error-cannot-move-sensitive-key = No se puede mover una clave confidencial a la ranura donde se necesita.
 sec-error-js-invalid-module-name = Nombre de módulo inválido.
@@ -320,7 +317,6 @@ sec-error-locked-password = La contraseña está bloqueada.
 sec-error-unknown-pkcs11-error = Error PKCS #11 desconocido.
 sec-error-bad-crl-dp-url = URL no válida o no soportada en el nombre de punto de distribución de CRL.
 sec-error-cert-signature-algorithm-disabled = El certificado fue firmado usando un algoritmo de firma que está deshabilitado porque no es seguro.
-
 mozilla-pkix-error-key-pinning-failure = El servidor usa key pinning (HPKP) pero no se ha podido construir una cadena de certificados confiables que coincida con el pinset. Las violaciones de key pinning no se pueden anular.
 mozilla-pkix-error-ca-cert-used-as-end-entity = El servidor utiliza un certificado con una extensión de las restricciones básicas que lo identifica como una autoridad de certificación. Para un certificado correctamente emitido, este no debería ser el caso.
 mozilla-pkix-error-inadequate-key-size = El servidor presentó un certificado con un tamaño de clave que es demasiado pequeño para esteblecer una conexión segura.
@@ -335,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = El servidor presentó un certifica
 mozilla-pkix-error-empty-issuer-name = El servidor presentó un certificado con un nombre distinguido de emisor vacío.
 mozilla-pkix-error-additional-policy-constraint-failed = Una restricción de política adicional falló al validar este certificado.
 mozilla-pkix-error-self-signed-cert = El certificado no es confiable porque es auto firmado.
-
+mozilla-pkix-error-issuer-no-longer-trusted = La autoridad de certificación que emitió el certificado fue considerada no confiable antes de la emisión del certificado.
 xp-java-remove-principal-error = Couldn't remove the principal
 xp-java-delete-privilege-error = No se puede borrar el privilegio
 xp-java-cert-not-exists-error = This principal doesn't have a certificate
-
 xp-sec-fortezza-bad-card = La tarjeta Fortezza no se ha inicializado correctamente. Elimínela y devuélvala a su emisor.
 xp-sec-fortezza-no-card = No se encontraron tarjetas Fortezza
 xp-sec-fortezza-none-selected = No se seleccionó ninguna tarjeta Fortezza

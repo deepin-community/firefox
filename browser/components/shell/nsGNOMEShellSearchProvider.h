@@ -1,17 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __nsGNOMEShellSearchProvider_h__
-#define __nsGNOMEShellSearchProvider_h__
+#ifndef _nsGNOMEShellSearchProvider_h_
+#define _nsGNOMEShellSearchProvider_h_
 
 #include <gio/gio.h>
 
 #include "mozilla/RefPtr.h"
 #include "mozilla/GRefPtr.h"
+#include "mozilla/Span.h"
 #include "nsINavHistoryService.h"
 #include "nsUnixRemoteServer.h"
 #include "nsString.h"
@@ -23,7 +21,7 @@ class nsGNOMEShellSearchProvider;
 
 class GnomeHistoryIcon {
  public:
-  GnomeHistoryIcon() : mTimeStamp(-1), mWidth(0), mHeight(0) {};
+  GnomeHistoryIcon() : mTimeStamp(-1), mWidth(0), mHeight(0) {}
 
   // From which search is this icon
   void Set(int aTimeStamp, mozilla::UniquePtr<uint8_t[]> aData, int aWidth,
@@ -58,7 +56,7 @@ class nsGNOMEShellHistorySearchResult : public nsUnixRemoteServer {
                                   GDBusConnection* aConnection, int aTimeStamp)
       : mSearchProvider(aSearchProvider),
         mConnection(aConnection),
-        mTimeStamp(aTimeStamp) {};
+        mTimeStamp(aTimeStamp) {}
 
   void SetReply(RefPtr<GDBusMethodInvocation> aReply) {
     mReply = std::move(aReply);
@@ -76,11 +74,11 @@ class nsGNOMEShellHistorySearchResult : public nsUnixRemoteServer {
   // when we have search results available.
   void ReceiveSearchResultContainer(
       nsCOMPtr<nsINavHistoryContainerResultNode> aHistResultContainer);
-
   nsCOMPtr<nsINavHistoryContainerResultNode> GetSearchResultContainer() {
     return mHistResultContainer;
   }
-  void HandleCommandLine(const char* aBuffer, uint32_t aTimestamp) {
+  void HandleCommandLine(mozilla::Span<const char> aBuffer,
+                         uint32_t aTimestamp) {
     nsUnixRemoteServer::HandleCommandLine(aBuffer, aTimestamp);
   }
 
@@ -96,6 +94,7 @@ class nsGNOMEShellHistorySearchResult : public nsUnixRemoteServer {
  private:
   nsGNOMEShellSearchProvider* mSearchProvider;
   nsCOMPtr<nsINavHistoryContainerResultNode> mHistResultContainer;
+  nsTArray<nsCString> mOpenTabs;
   nsAutoCString mSearchTerm;
   RefPtr<GDBusMethodInvocation> mReply;
   GDBusConnection* mConnection = nullptr;
@@ -150,4 +149,4 @@ class nsGNOMEShellSearchProvider {
 
 nsGNOMEShellHistoryService* GetGNOMEShellHistoryService();
 
-#endif  // __nsGNOMEShellSearchProvider_h__
+#endif  // _nsGNOMEShellSearchProvider_h_

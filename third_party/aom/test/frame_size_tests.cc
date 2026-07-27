@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -12,7 +12,7 @@
 #include <array>
 #include <memory>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/video_source.h"
 #include "test/util.h"
@@ -327,10 +327,10 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Values(AOM_USAGE_ALL_INTRA),
                        ::testing::Values(AOM_Q), ::testing::Range(6, 10)));
 
-typedef struct {
+struct FrameSizeParam {
   unsigned int width;
   unsigned int height;
-} FrameSizeParam;
+};
 
 const FrameSizeParam FrameSizeTestParams[] = { { 96, 96 }, { 176, 144 } };
 

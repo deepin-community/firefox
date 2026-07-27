@@ -1,3 +1,6 @@
+use alloc::boxed::Box;
+use core::time::Duration;
+
 use crate::{
     DynDevice, DynFence, DynResource, DynSurfaceTexture, Surface, SurfaceConfiguration,
     SurfaceError,
@@ -25,9 +28,9 @@ pub trait DynSurface: DynResource {
 
     unsafe fn acquire_texture(
         &self,
-        timeout: Option<std::time::Duration>,
+        timeout: Option<Duration>,
         fence: &dyn DynFence,
-    ) -> Result<Option<DynAcquiredSurfaceTexture>, SurfaceError>;
+    ) -> Result<DynAcquiredSurfaceTexture, SurfaceError>;
 
     unsafe fn discard_texture(&self, texture: Box<dyn DynSurfaceTexture>);
 }
@@ -49,19 +52,17 @@ impl<S: Surface + DynResource> DynSurface for S {
 
     unsafe fn acquire_texture(
         &self,
-        timeout: Option<std::time::Duration>,
+        timeout: Option<Duration>,
         fence: &dyn DynFence,
-    ) -> Result<Option<DynAcquiredSurfaceTexture>, SurfaceError> {
+    ) -> Result<DynAcquiredSurfaceTexture, SurfaceError> {
         let fence = fence.expect_downcast_ref();
-        unsafe { S::acquire_texture(self, timeout, fence) }.map(|acquired| {
-            acquired.map(|ast| {
-                let texture = Box::new(ast.texture);
-                let suboptimal = ast.suboptimal;
-                DynAcquiredSurfaceTexture {
-                    texture,
-                    suboptimal,
-                }
-            })
+        unsafe { S::acquire_texture(self, timeout, fence) }.map(|ast| {
+            let texture = Box::new(ast.texture);
+            let suboptimal = ast.suboptimal;
+            DynAcquiredSurfaceTexture {
+                texture,
+                suboptimal,
+            }
         })
     }
 

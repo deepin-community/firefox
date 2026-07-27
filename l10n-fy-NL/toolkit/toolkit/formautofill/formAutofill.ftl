@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } probearret b
 autofill-edit-payment-method-os-prompt-macos = bewarre betellingsgegevens toane
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } probearret bewarre betellingsgegevens te toanen. Befêstigje hjirûnder tagong ta dizze Windows-account.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } probearret bewarre betellingsgegevens te toanen.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Opsjes foar Formulieren automatysk ynfoljen
 autofill-options-link-osx = Foarkarren foar Formulieren automatysk ynfoljen
 
@@ -81,3 +81,6 @@ autofill-category-name = namme
 autofill-category-organization = organisaasje
 autofill-category-tel = telefoan
 autofill-category-email = e-mailadres
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } hat in ûnfeilige website detektearre. Formulieren automatysk ynfolje is tydlik útskeakele

@@ -4,21 +4,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import {TestServer} from '@pptr/testserver';
 import expect from 'expect';
 import type * as MochaBase from 'mocha';
-import puppeteer from 'puppeteer/lib/cjs/puppeteer/puppeteer.js';
+import puppeteer, {TimeoutError} from 'puppeteer/internal/puppeteer.js';
 import type {Browser} from 'puppeteer-core/internal/api/Browser.js';
 import type {BrowserContext} from 'puppeteer-core/internal/api/BrowserContext.js';
 import type {Page} from 'puppeteer-core/internal/api/Page.js';
 import type {Cookie} from 'puppeteer-core/internal/common/Cookie.js';
-import type {
-  PuppeteerLaunchOptions,
-  PuppeteerNode,
-} from 'puppeteer-core/internal/node/PuppeteerNode.js';
+import {ConnectionClosedError} from 'puppeteer-core/internal/common/Errors.js';
+import type {LaunchOptions} from 'puppeteer-core/internal/node/LaunchOptions.js';
+import type {PuppeteerNode} from 'puppeteer-core/internal/node/PuppeteerNode.js';
 import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
 import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 import {isErrorLike} from 'puppeteer-core/internal/util/ErrorLike.js';
@@ -37,7 +36,7 @@ declare global {
        */
       withDebugLogs: (
         description: string,
-        body: (this: MochaBase.Suite) => void
+        body: (this: MochaBase.Suite) => void,
       ) => void;
     }
     export interface TestFunction {
@@ -48,7 +47,7 @@ declare global {
       deflake: (
         repeats: number,
         title: string,
-        fn: MochaBase.AsyncFunc
+        fn: MochaBase.AsyncFunc,
       ) => void;
       /*
        * Use to rerun a single test and capture logs for the failed attempts
@@ -56,7 +55,7 @@ declare global {
       deflakeOnly: (
         repeats: number,
         title: string,
-        fn: MochaBase.AsyncFunc
+        fn: MochaBase.AsyncFunc,
       ) => void;
     }
   }
@@ -75,6 +74,7 @@ const isChrome = product === 'chrome';
 const protocol = (process.env['PUPPETEER_PROTOCOL'] || 'cdp') as
   | 'cdp'
   | 'webDriverBiDi';
+const pipeTransport = process.env['PUPPETEER_PIPE'] === 'true';
 
 let extraLaunchOptions = {};
 try {
@@ -82,35 +82,59 @@ try {
 } catch (error) {
   if (isErrorLike(error)) {
     console.warn(
-      `Error parsing EXTRA_LAUNCH_OPTIONS: ${error.message}. Skipping.`
+      `Error parsing EXTRA_LAUNCH_OPTIONS: ${error.message}. Skipping.`,
     );
   } else {
     throw error;
   }
 }
 
-const defaultBrowserOptions = Object.assign(
+const defaultBrowserOptions: LaunchOptions = Object.assign(
   {
     handleSIGINT: true,
     executablePath: process.env['BINARY'],
     headless: headless === 'shell' ? ('shell' as const) : isHeadless,
     dumpio: !!process.env['DUMPIO'],
     protocol,
-  } satisfies PuppeteerLaunchOptions,
-  extraLaunchOptions
+    args: [],
+    extraPrefsFirefox: {},
+    pipe: pipeTransport,
+  },
+  extraLaunchOptions,
 );
 
-if (defaultBrowserOptions.executablePath) {
-  console.warn(
-    `WARN: running ${product} tests with ${defaultBrowserOptions.executablePath}`
-  );
-} else {
-  const executablePath = puppeteer.executablePath();
-  if (!fs.existsSync(executablePath)) {
-    throw new Error(
-      `Browser is not downloaded at ${executablePath}. Run 'npm install' and try to re-run tests`
-    );
+// Required by tests and cannot be overridden by EXTRA_LAUNCH_OPTIONS.
+defaultBrowserOptions.extraPrefsFirefox!['network.dns.localDomains'] =
+  `domain1.test,domain2.test,domain3.test`;
+defaultBrowserOptions.args!.push(
+  `--host-resolver-rules=MAP domain1.test 127.0.0.1,MAP domain2.test 127.0.0.1,MAP domain3.test 127.0.0.1`,
+);
+defaultBrowserOptions.args!.push(`--force-device-scale-factor=1`);
+
+let executableExists = false;
+function verifyExecutable() {
+  if (executableExists) {
+    return;
   }
+
+  if (defaultBrowserOptions.executablePath) {
+    console.warn(
+      `WARN: running ${product} tests with ${defaultBrowserOptions.executablePath}`,
+    );
+    if (!fs.existsSync(defaultBrowserOptions.executablePath)) {
+      throw new Error(
+        `Browser executable not found at ${defaultBrowserOptions.executablePath}`,
+      );
+    }
+  } else {
+    const executablePath = puppeteer.executablePath();
+    if (!fs.existsSync(executablePath)) {
+      throw new Error(
+        `Browser is not downloaded at ${executablePath}. Run 'npm install' and try to re-run tests`,
+      );
+    }
+  }
+  executableExists = true;
 }
 
 const processVariables: {
@@ -120,7 +144,7 @@ const processVariables: {
   isFirefox: boolean;
   isChrome: boolean;
   protocol: 'cdp' | 'webDriverBiDi';
-  defaultBrowserOptions: PuppeteerLaunchOptions;
+  defaultBrowserOptions: LaunchOptions;
 } = {
   product,
   headless,
@@ -132,42 +156,65 @@ const processVariables: {
 };
 
 const setupServer = async () => {
-  const assetsPath = path.join(__dirname, '../assets');
-  const cachedPath = path.join(__dirname, '../assets', 'cached');
+  const assetsPath = path.join(import.meta.dirname, '../assets');
+  const cachedPath = path.join(import.meta.dirname, '../assets', 'cached');
 
   const server = await TestServer.create(assetsPath);
-  const port = server.port;
   server.enableHTTPCache(cachedPath);
-  server.PORT = port;
-  server.PREFIX = `http://localhost:${port}`;
-  server.CROSS_PROCESS_PREFIX = `http://127.0.0.1:${port}`;
-  server.EMPTY_PAGE = `http://localhost:${port}/empty.html`;
 
   const httpsServer = await TestServer.createHTTPS(assetsPath);
-  const httpsPort = httpsServer.port;
   httpsServer.enableHTTPCache(cachedPath);
-  httpsServer.PORT = httpsPort;
-  httpsServer.PREFIX = `https://localhost:${httpsPort}`;
-  httpsServer.CROSS_PROCESS_PREFIX = `https://127.0.0.1:${httpsPort}`;
-  httpsServer.EMPTY_PAGE = `https://localhost:${httpsPort}/empty.html`;
 
   return {server, httpsServer};
 };
 
+/**
+ * Adjusts Mocha.Context timeout and returns launch params with timeouts set.
+ */
+function adjustBrowserLaunchTimeout(context: Mocha.Context): {
+  timeout: number;
+  protocolTimeout: number;
+} {
+  let defaultTimeout = context.timeout() || 10_000;
+  if (isFirefox) {
+    defaultTimeout += 5_000;
+  }
+  // Let mocha fail after the 1s of timeout.
+  context.timeout(defaultTimeout + 1_000);
+  return {
+    timeout: defaultTimeout,
+    // Commands should fail before Mocha timeouts
+    protocolTimeout: defaultTimeout - 1_000,
+  };
+}
+
+let browserPromise: Promise<Browser> | null = null;
 export const setupTestBrowserHooks = (): void => {
   before(async function () {
+    const {timeout, protocolTimeout} = adjustBrowserLaunchTimeout(this);
+    const defaultTimeout = this.timeout() || 10_000;
+    // Let mocha fail after the 1s of timeout.
+    this.timeout(defaultTimeout + 1_000);
+    verifyExecutable();
     try {
       if (!state.browser) {
-        state.browser = await puppeteer.launch({
-          ...processVariables.defaultBrowserOptions,
-          timeout: this.timeout() - 1_000,
-          protocolTimeout: this.timeout() * 2,
-        });
+        if (!browserPromise) {
+          browserPromise = (puppeteer as unknown as PuppeteerNode).launch({
+            ...processVariables.defaultBrowserOptions,
+            timeout,
+            protocolTimeout,
+          });
+        }
+
+        state.browser = await browserPromise;
       }
     } catch (error) {
-      console.error(error);
-      // Intentionally empty as `getTestState` will throw
-      // if browser is not found
+      if (error instanceof TimeoutError) {
+        // If we get a Puppeteer Timeout Error the browser in not usable
+        browserPromise = null;
+      } else {
+        console.error(error);
+      }
     }
   });
 
@@ -180,7 +227,7 @@ export const setupTestBrowserHooks = (): void => {
         console.log(
           key,
           // @ts-expect-error TS cannot the key type.
-          `${Math.round(((memory[key] / 1024 / 1024) * 100) / 100)} MB`
+          `${Math.round(((memory[key] / 1024 / 1024) * 100) / 100)} MB`,
         );
       }
     }
@@ -195,16 +242,71 @@ export const setupTestBrowserHooks = (): void => {
   });
 };
 
+export const setupSeparateTestBrowserHooks = (
+  launchOptions: Readonly<LaunchOptions>,
+  options: {
+    createContext?: boolean;
+    createPage?: boolean;
+  } = {},
+): Awaited<ReturnType<typeof launch>> => {
+  const {createContext = true, createPage = true} = options;
+
+  const state: Awaited<ReturnType<typeof launch>> = {} as any;
+  before(async function () {
+    const {timeout, protocolTimeout} = adjustBrowserLaunchTimeout(this);
+    const browserState = await launch(
+      {
+        timeout,
+        protocolTimeout,
+        ...launchOptions,
+      },
+      {
+        after: 'all',
+        ...options,
+      },
+    );
+    // Trick to keep the correct reference
+    const props = Object.entries(browserState).reduce((acc, entries) => {
+      const [key, value] = entries;
+      acc[key] = {
+        value,
+        writable: true,
+      };
+      return acc;
+    }, {} as PropertyDescriptorMap);
+    Object.defineProperties(state, props);
+  });
+
+  if (createContext) {
+    beforeEach(async () => {
+      state.context = await state.browser.createBrowserContext();
+      if (createPage) {
+        state.page = await state.context.newPage();
+      }
+    });
+
+    afterEach(async () => {
+      await state.context.close();
+    });
+  }
+
+  after(async () => {
+    await state.close();
+  });
+
+  return state;
+};
+
 export const getTestState = async (
   options: {
     skipLaunch?: boolean;
     skipContextCreation?: boolean;
-  } = {}
+  } = {},
 ): Promise<PuppeteerTestState> => {
   const {skipLaunch = false, skipContextCreation = false} = options;
 
   state.defaultBrowserOptions = JSON.parse(
-    JSON.stringify(processVariables.defaultBrowserOptions)
+    JSON.stringify(processVariables.defaultBrowserOptions),
   );
 
   state.server?.reset();
@@ -232,8 +334,8 @@ export const getTestState = async (
 
 const setupGoldenAssertions = (): void => {
   const suffix = processVariables.product.toLowerCase();
-  const GOLDEN_DIR = path.join(__dirname, `../golden-${suffix}`);
-  const OUTPUT_DIR = path.join(__dirname, `../output-${suffix}`);
+  const GOLDEN_DIR = path.join(import.meta.dirname, `../golden-${suffix}`);
+  const OUTPUT_DIR = path.join(import.meta.dirname, `../output-${suffix}`);
   if (fs.existsSync(OUTPUT_DIR)) {
     rmSync(OUTPUT_DIR);
   }
@@ -247,7 +349,7 @@ export interface PuppeteerTestState {
   context: BrowserContext;
   page: Page;
   puppeteer: PuppeteerNode;
-  defaultBrowserOptions: PuppeteerLaunchOptions;
+  defaultBrowserOptions: LaunchOptions;
   server: TestServer;
   httpsServer: TestServer;
   isFirefox: boolean;
@@ -263,56 +365,65 @@ if (
   process.env['MOCHA_WORKER_ID'] === '0'
 ) {
   console.log(
-    `Running unit tests with:
+    `Running tests with:
   -> product: ${processVariables.product}
   -> binary: ${
     processVariables.defaultBrowserOptions.executablePath ||
-    path.relative(process.cwd(), puppeteer.executablePath())
+    path.relative(
+      process.cwd(),
+      puppeteer.executablePath({
+        headless: isHeadless
+          ? processVariables.headless === 'shell'
+            ? 'shell'
+            : true
+          : false,
+      }),
+    )
   }
   -> mode: ${
-    processVariables.isHeadless
-      ? processVariables.headless === 'true'
-        ? '--headless=new'
-        : '--headless'
+    isHeadless
+      ? processVariables.headless === 'shell'
+        ? 'shell'
+        : 'headless'
       : 'headful'
-  }`
+  }
+  -> protocol: ${protocol}
+  -> pipeTransport: ${pipeTransport}`,
   );
 }
 
 const browserNotClosedError = new Error(
-  'A manually launched browser was not closed!'
+  'A manually launched browser was not closed!',
 );
 
-export const mochaHooks = {
-  async beforeAll(): Promise<void> {
-    async function setUpDefaultState() {
-      const {server, httpsServer} = await setupServer();
+export const mochaHooks: Mocha.RootHookObject = {
+  async beforeAll(this: Mocha.Context): Promise<void> {
+    const {server, httpsServer} = await setupServer();
 
-      state.puppeteer = puppeteer;
-      state.server = server;
-      state.httpsServer = httpsServer;
-      state.isFirefox = processVariables.isFirefox;
-      state.isChrome = processVariables.isChrome;
-      state.isHeadless = processVariables.isHeadless;
-      state.headless = processVariables.headless;
-      state.puppeteerPath = path.resolve(
-        path.join(__dirname, '..', '..', 'packages', 'puppeteer')
-      );
-    }
-
-    try {
-      await Deferred.race([
-        setUpDefaultState(),
-        Deferred.create({
-          message: `Failed in after Hook`,
-          timeout: (this as any).timeout() - 1000,
-        }),
-      ]);
-    } catch {}
+    state.puppeteer = puppeteer as unknown as PuppeteerNode;
+    state.server = server;
+    state.httpsServer = httpsServer;
+    state.isFirefox = processVariables.isFirefox;
+    state.isChrome = processVariables.isChrome;
+    state.isHeadless = processVariables.isHeadless;
+    state.headless = processVariables.headless;
+    state.puppeteerPath = path.resolve(
+      path.join(
+        import.meta.dirname,
+        '..',
+        '..',
+        'packages',
+        'puppeteer',
+        'lib',
+        'esm',
+        'puppeteer',
+        'puppeteer.js',
+      ),
+    );
   },
 
-  async afterAll(): Promise<void> {
-    (this as any).timeout(0);
+  async afterAll(this: Mocha.Context): Promise<void> {
+    this.timeout(0);
     const lastTestFile = (this as any)?.test?.parent?.suites?.[0]?.file
       ?.split('/')
       ?.at(-1);
@@ -322,9 +433,9 @@ export const mochaHooks = {
         state.httpsServer?.stop(),
         state.browser?.close(),
       ]);
-    } catch (error) {
+    } catch {
       throw new Error(
-        `Closing defaults (HTTP TestServer, HTTPS TestServer, Browser ) failed in ${lastTestFile}}`
+        `Closing defaults (HTTP TestServer, HTTPS TestServer, Browser ) failed in ${lastTestFile}}`,
       );
     }
     if (browserCleanupsAfterAll.length > 0) {
@@ -333,14 +444,16 @@ export const mochaHooks = {
     }
   },
 
-  async afterEach(): Promise<void> {
+  async afterEach(this: Mocha.Context): Promise<void> {
+    const timeout = this.timeout();
+    this.timeout(0);
     if (browserCleanups.length > 0) {
-      (this as any).test.error(browserNotClosedError);
+      (this.test as Mocha.Hook).error(browserNotClosedError);
       await Deferred.race([
         closeLaunched(browserCleanups)(),
         Deferred.create({
           message: `Failed in after Hook`,
-          timeout: (this as any).timeout() - 1000,
+          timeout: timeout - 1000,
         }),
       ]);
     }
@@ -365,14 +478,14 @@ expect.extend({
             return '';
           },
         };
-      } catch (err) {}
+      } catch {}
     }
 
     return {
       pass: false,
       message: () => {
         return `"${actual}" didn't contain any of the strings ${JSON.stringify(
-          expected
+          expected,
         )}`;
       },
     };
@@ -381,7 +494,7 @@ expect.extend({
 
 export const expectCookieEquals = async (
   cookies: Cookie[],
-  expectedCookies: Array<Partial<Cookie>>
+  expectedCookies: Array<Partial<Cookie>>,
 ): Promise<void> => {
   if (!processVariables.isChrome) {
     // Only keep standard properties when testing on a browser other than Chrome.
@@ -399,7 +512,7 @@ export const expectCookieEquals = async (
             'size',
             'value',
           ].includes(key);
-        })
+        }),
       );
     });
   }
@@ -414,7 +527,7 @@ export const shortWaitForArrayToHaveAtLeastNElements = async (
   data: unknown[],
   minLength: number,
   attempts = 3,
-  timeout = 50
+  timeout = 50,
 ): Promise<void> => {
   for (let i = 0; i < attempts; i++) {
     if (data.length >= minLength) {
@@ -428,7 +541,7 @@ export const shortWaitForArrayToHaveAtLeastNElements = async (
 
 export const createTimeout = <T>(
   n: number,
-  value?: T
+  value?: T,
 ): Promise<T | undefined> => {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -451,7 +564,7 @@ const closeLaunched = (storage: Array<() => Promise<void>>) => {
     } catch (error) {
       // If the browser was closed by other means, swallow the error
       // and mark the browser as closed.
-      if ((error as Error)?.message.includes('Connection closed')) {
+      if (error instanceof ConnectionClosedError) {
         storage.splice(0, storage.length);
         return;
       }
@@ -462,27 +575,32 @@ const closeLaunched = (storage: Array<() => Promise<void>>) => {
 };
 
 export const launch = async (
-  launchOptions: Readonly<PuppeteerLaunchOptions>,
+  launchOptions: Readonly<LaunchOptions>,
   options: {
     after?: 'each' | 'all';
     createContext?: boolean;
     createPage?: boolean;
-  } = {}
+  } = {},
 ): Promise<
   PuppeteerTestState & {
     close: () => Promise<void>;
   }
 > => {
-  const {after = 'each', createContext = true, createPage = true} = options;
+  const {after = 'each', createContext = false, createPage = true} = options;
   const initState = await getTestState({
     skipLaunch: true,
   });
   const cleanupStorage =
     after === 'each' ? browserCleanups : browserCleanupsAfterAll;
   try {
-    const browser = await puppeteer.launch({
+    const args = [
+      ...(initState.defaultBrowserOptions.args ?? []),
+      ...(launchOptions.args ?? []),
+    ];
+    const browser = await (puppeteer as unknown as PuppeteerNode).launch({
       ...initState.defaultBrowserOptions,
       ...launchOptions,
+      args,
     });
     cleanupStorage.push(() => {
       return browser.close();

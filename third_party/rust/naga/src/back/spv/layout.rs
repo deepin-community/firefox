@@ -1,12 +1,19 @@
-use super::{Instruction, LogicalLayout, PhysicalLayout};
+use alloc::{vec, vec::Vec};
+use core::iter;
+
 use spirv::{Op, Word, MAGIC_NUMBER};
-use std::iter;
+
+use super::{Instruction, LogicalLayout, PhysicalLayout};
+
+#[cfg(test)]
+use alloc::format;
 
 // https://github.com/KhronosGroup/SPIRV-Headers/pull/195
 const GENERATOR: Word = 28;
 
 impl PhysicalLayout {
-    pub(super) const fn new(version: Word) -> Self {
+    pub(super) const fn new(major_version: u8, minor_version: u8) -> Self {
+        let version = ((major_version as u32) << 16) | ((minor_version as u32) << 8);
         PhysicalLayout {
             magic_number: MAGIC_NUMBER,
             version,
@@ -23,10 +30,17 @@ impl PhysicalLayout {
         sink.extend(iter::once(self.bound));
         sink.extend(iter::once(self.instruction_schema));
     }
+
+    /// Returns `(major, minor)`.
+    pub(super) const fn lang_version(&self) -> (u8, u8) {
+        let major = (self.version >> 16) as u8;
+        let minor = (self.version >> 8) as u8;
+        (major, minor)
+    }
 }
 
-impl super::recyclable::Recyclable for PhysicalLayout {
-    fn recycle(self) -> Self {
+impl super::reclaimable::Reclaimable for PhysicalLayout {
+    fn reclaim(self) -> Self {
         PhysicalLayout {
             magic_number: self.magic_number,
             version: self.version,
@@ -53,20 +67,20 @@ impl LogicalLayout {
     }
 }
 
-impl super::recyclable::Recyclable for LogicalLayout {
-    fn recycle(self) -> Self {
+impl super::reclaimable::Reclaimable for LogicalLayout {
+    fn reclaim(self) -> Self {
         Self {
-            capabilities: self.capabilities.recycle(),
-            extensions: self.extensions.recycle(),
-            ext_inst_imports: self.ext_inst_imports.recycle(),
-            memory_model: self.memory_model.recycle(),
-            entry_points: self.entry_points.recycle(),
-            execution_modes: self.execution_modes.recycle(),
-            debugs: self.debugs.recycle(),
-            annotations: self.annotations.recycle(),
-            declarations: self.declarations.recycle(),
-            function_declarations: self.function_declarations.recycle(),
-            function_definitions: self.function_definitions.recycle(),
+            capabilities: self.capabilities.reclaim(),
+            extensions: self.extensions.reclaim(),
+            ext_inst_imports: self.ext_inst_imports.reclaim(),
+            memory_model: self.memory_model.reclaim(),
+            entry_points: self.entry_points.reclaim(),
+            execution_modes: self.execution_modes.reclaim(),
+            debugs: self.debugs.reclaim(),
+            annotations: self.annotations.reclaim(),
+            declarations: self.declarations.reclaim(),
+            function_declarations: self.function_declarations.reclaim(),
+            function_definitions: self.function_definitions.reclaim(),
         }
     }
 }
@@ -82,14 +96,12 @@ impl Instruction {
         }
     }
 
-    #[allow(clippy::panic)]
     pub(super) fn set_type(&mut self, id: Word) {
         assert!(self.type_id.is_none(), "Type can only be set once");
         self.type_id = Some(id);
         self.wc += 1;
     }
 
-    #[allow(clippy::panic)]
     pub(super) fn set_result(&mut self, id: Word) {
         assert!(self.result_id.is_none(), "Result can only be set once");
         self.result_id = Some(id);
@@ -108,7 +120,7 @@ impl Instruction {
     }
 
     pub(super) fn to_words(&self, sink: &mut impl Extend<Word>) {
-        sink.extend(Some(self.wc << 16 | self.op as u32));
+        sink.extend(Some((self.wc << 16) | self.op as u32));
         sink.extend(self.type_id);
         sink.extend(self.result_id);
         sink.extend(self.operands.iter().cloned());
@@ -125,13 +137,13 @@ impl Instruction {
         assert_eq!(wc, words.len() as u16);
         assert_eq!(op, self.op as u16);
 
-        if self.type_id.is_some() {
-            assert_eq!(words[inst_index], self.type_id.unwrap());
+        if let Some(type_id) = self.type_id {
+            assert_eq!(words[inst_index], type_id);
             inst_index += 1;
         }
 
-        if self.result_id.is_some() {
-            assert_eq!(words[inst_index], self.result_id.unwrap());
+        if let Some(result_id) = self.result_id {
+            assert_eq!(words[inst_index], result_id);
             inst_index += 1;
         }
 
@@ -144,10 +156,13 @@ impl Instruction {
 #[test]
 fn test_physical_layout_in_words() {
     let bound = 5;
-    let version = 0x10203;
+
+    // The least and most significant bytes of `version` must both be zero
+    // according to the SPIR-V spec.
+    let version = 0x0001_0200;
 
     let mut output = vec![];
-    let mut layout = PhysicalLayout::new(version);
+    let mut layout = PhysicalLayout::new(1, 2);
     layout.bound = bound;
 
     layout.in_words(&mut output);

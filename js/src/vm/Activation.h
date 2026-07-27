@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -33,10 +31,6 @@ namespace JS {
 class CallArgs;
 class JS_PUBLIC_API Compartment;
 
-namespace dbg {
-class JS_PUBLIC_API AutoEntryMonitor;
-}  // namespace dbg
-
 }  // namespace JS
 
 namespace js {
@@ -46,32 +40,6 @@ class InterpreterActivation;
 namespace jit {
 class JitActivation;
 }  // namespace jit
-
-// This class is separate from Activation, because it calls Compartment::wrap()
-// which can GC and walk the stack. It's not safe to do that within the
-// JitActivation constructor.
-class MOZ_RAII ActivationEntryMonitor {
-  JSContext* cx_;
-
-  // The entry point monitor that was set on cx_->runtime() when this
-  // ActivationEntryMonitor was created.
-  JS::dbg::AutoEntryMonitor* entryMonitor_;
-
-  explicit inline ActivationEntryMonitor(JSContext* cx);
-
-  ActivationEntryMonitor(const ActivationEntryMonitor& other) = delete;
-  void operator=(const ActivationEntryMonitor& other) = delete;
-
-  void init(JSContext* cx, jit::CalleeToken entryToken);
-  void init(JSContext* cx, InterpreterFrame* entryFrame);
-
-  JS::Value asyncStack(JSContext* cx);
-
- public:
-  inline ActivationEntryMonitor(JSContext* cx, InterpreterFrame* entryFrame);
-  inline ActivationEntryMonitor(JSContext* cx, jit::CalleeToken entryToken);
-  inline ~ActivationEntryMonitor();
-};
 
 // [SMDOC] LiveSavedFrameCache: SavedFrame caching to minimize stack walking
 //
@@ -277,7 +245,8 @@ class LiveSavedFrameCache {
    public:
     // If iter's frame is of a type that can be cached, construct a FramePtr
     // for its frame. Otherwise, return Nothing.
-    static inline mozilla::Maybe<FramePtr> create(const FrameIter& iter);
+    static inline mozilla::Maybe<FramePtr> create(JSContext* cx,
+                                                  const FrameIter& iter);
 
     inline bool hasCachedSavedFrame() const;
     inline void setHasCachedSavedFrame();
@@ -330,9 +299,6 @@ class LiveSavedFrameCache {
   using EntryVector = Vector<Entry, 0, SystemAllocPolicy>;
   EntryVector* frames;
 
-  LiveSavedFrameCache(const LiveSavedFrameCache&) = delete;
-  LiveSavedFrameCache& operator=(const LiveSavedFrameCache&) = delete;
-
  public:
   explicit LiveSavedFrameCache() : frames(nullptr) {}
 
@@ -347,6 +313,9 @@ class LiveSavedFrameCache {
       frames = nullptr;
     }
   }
+
+  LiveSavedFrameCache(const LiveSavedFrameCache&) = delete;
+  LiveSavedFrameCache& operator=(const LiveSavedFrameCache&) = delete;
 
   bool initialized() const { return !!frames; }
   bool init(JSContext* cx) {
@@ -483,7 +452,6 @@ class Activation {
   inline LiveSavedFrameCache* getLiveSavedFrameCache(JSContext* cx);
   void clearLiveSavedFrameCache() { frameCache_.get().clear(); }
 
- private:
   Activation(const Activation& other) = delete;
   void operator=(const Activation& other) = delete;
 };

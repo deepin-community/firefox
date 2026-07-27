@@ -7,6 +7,7 @@ package mozilla.components.service.fxa
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.edit
 import mozilla.appservices.fxaclient.FxaRustAuthState
 import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.concept.sync.AccountEvent
@@ -173,17 +174,11 @@ internal class SharedPrefAccountStorage(
     }
 
     override fun write(accountState: String) {
-        accountPreferences()
-            .edit()
-            .putString(FXA_STATE_KEY, accountState)
-            .apply()
+        accountPreferences().edit { putString(FXA_STATE_KEY, accountState) }
     }
 
     override fun clear() {
-        accountPreferences()
-            .edit()
-            .remove(FXA_STATE_KEY)
-            .apply()
+        accountPreferences().edit { remove(FXA_STATE_KEY) }
     }
 
     private fun accountPreferences(): SharedPreferences {
@@ -221,7 +216,7 @@ internal class SecureAbove22AccountStorage(
         private const val PREF_KEY_HAS_STATE = "fxaStatePresent"
     }
 
-    private val store = SecureAbove22Preferences(context, STORAGE_NAME)
+    private val store = SecureAbove22Preferences(context, STORAGE_NAME, crashReporting = crashReporter)
 
     // Prefs are used here to keep track of abnormal storage behaviour - namely, account state disappearing without
     // being cleared first through this class. Note that clearing application data will clear both 'store' and 'prefs'.
@@ -249,18 +244,18 @@ internal class SecureAbove22AccountStorage(
             if (it == null && prefs.getBoolean(PREF_KEY_HAS_STATE, false)) {
                 crashReporter?.submitCaughtException(AbnormalAccountStorageEvent.UnexpectedlyMissingAccountState())
                 // Clear prefs to make sure we only submit this exception once.
-                prefs.edit().clear().apply()
+                prefs.edit { clear() }
             }
         }?.let { FirefoxAccount.fromJSONString(it, crashReporter) }
     }
 
     override fun write(accountState: String) {
         store.putString(KEY_ACCOUNT_STATE, accountState)
-        prefs.edit().putBoolean(PREF_KEY_HAS_STATE, true).apply()
+        prefs.edit { putBoolean(PREF_KEY_HAS_STATE, true) }
     }
 
     override fun clear() {
         store.clear()
-        prefs.edit().clear().apply()
+        prefs.edit { clear() }
     }
 }

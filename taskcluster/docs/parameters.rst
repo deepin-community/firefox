@@ -47,6 +47,10 @@ Push Information
 ``head_rev``
    The revision to check out; this can be a short revision string
 
+``head_git_rev``
+   Optionally, the git commit corresponding to the head_rev when it's in a Mercurial
+   repository.
+
 ``base_ref``
    Reference where ``head_rev`` got merged into. It is usually a branch or a tag.
 
@@ -93,6 +97,12 @@ Push Information
 ``tasks_for``
    The ``tasks_for`` value used to generate the decision task.
 
+``pull_request_number``
+   The GitHub pull request number, if any.
+
+``dontbuild``
+   Set (to `true`) when the commit message requested that no tasks run on this push.
+
 Tree Information
 ----------------
 
@@ -114,14 +124,9 @@ Try Configuration
    The mode in which a try push is operating.  This can be one of:
 
     * ``"try_task_config"`` - Used to configure the taskgraph.
-    * ``"try_option_syntax"`` - Used when pushing to try with legacy try syntax.
     * ``"try_auto"`` - Used to make try pushes behave more like a push on ``autoland``.
     * ``"try_select"`` - Used by ``mach try`` to build a list of tasks locally.
     * ``None`` - Not a try push or ``mach try release``.
-
-``try_options``
-    The arguments given as try syntax (as a dictionary), or ``None`` if
-    ``try_mode`` is not ``try_option_syntax``.
 
 ``try_task_config``
     The contents of the ``try_task_config.json`` file, or ``{}`` if
@@ -205,7 +210,7 @@ Release Promotion
    Specify the next version for version bump tasks.
 
 ``release_type``
-   The type of release being promoted. One of "nightly", "beta", "esr115", "esr128", "release-rc", or "release".
+   The type of release being promoted. One of "nightly", "beta", "esr115", "esr128", "esr140", or "release".
 
 ``release_eta``
    The time and date when a release is scheduled to live. This value is passed to Balrog.
@@ -231,11 +236,8 @@ Release Promotion
 ``release_product``
    The product that is being released.
 
-``required_signoffs``
-   A list of signoffs that are required for this release promotion flavor. If specified, and if the corresponding `signoff_urls` url isn't specified, tasks that require these signoffs will not be scheduled.
-
-``signoff_urls``
-   A dictionary of signoff keys to url values. These are the urls marking the corresponding ``required_signoffs`` as signed off.
+``partial_versions``
+   A list of previous versions that partial updates should be generated for, in the form of X.YbuildN, eg: ["138.0.1build1", "137.0build2"].
 
 
 Repository Merge Day

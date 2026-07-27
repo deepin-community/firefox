@@ -1,5 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -25,7 +24,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "ProfileService",
   "@mozilla.org/toolkit/profile-service;1",
-  "nsIToolkitProfileService"
+  Ci.nsIToolkitProfileService
 );
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -36,10 +35,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     // eslint-disable-next-line mozilla/no-browser-refs-in-toolkit
     "resource:///modules/asrouter/ASRouterDefaultConfig.sys.mjs",
 
-  ExperimentManager: "resource://nimbus/lib/ExperimentManager.sys.mjs",
-
-  RemoteSettingsExperimentLoader:
-    "resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs",
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
 class CannotLockProfileError extends Error {
@@ -74,7 +70,8 @@ export var BackgroundTasksUtils = {
         // Sadly this writes to `profiles.ini`, but there's little to be done.
         this._defaultProfile = lazy.ProfileService.createProfile(
           tmpd,
-          `MOZ_BACKGROUNDTASKS_DEFAULT_PROFILE_PATH-${Date.now()}`
+          `MOZ_BACKGROUNDTASKS_DEFAULT_PROFILE_PATH-${Date.now()}`,
+          "backgroundtasks"
         );
       } else if (noDefaultProfile) {
         lazy.log.info(`getDefaultProfile: setting default profile to null`);
@@ -136,7 +133,7 @@ export var BackgroundTasksUtils = {
    * @template T
    * @param {(lock: nsIProfileLock) => Promise<T>} callback
    * @param {nsIToolkitProfile} [profile] defaults to default profile
-   * @return {Promise<T>}
+   * @returns {Promise<T>}
    */
   async withProfileLock(callback, profile = this.getDefaultProfile()) {
     if (!profile) {
@@ -300,22 +297,10 @@ export var BackgroundTasksUtils = {
    *                                     targeting from default browsing profile.
    */
   async enableNimbus(commandLine, defaultProfile = {}) {
-    try {
-      await lazy.ExperimentManager.onStartup({ defaultProfile });
-    } catch (err) {
-      lazy.log.error("Failed to initialize ExperimentManager:", err);
-      throw err;
-    }
-
-    try {
-      await lazy.RemoteSettingsExperimentLoader.init({ forceSync: true });
-    } catch (err) {
-      lazy.log.error(
-        "Failed to initialize RemoteSettingsExperimentLoader:",
-        err
-      );
-      throw err;
-    }
+    await lazy.ExperimentAPI.init({
+      forceSync: true,
+      extraContext: { defaultProfile },
+    });
 
     // Allow manual explicit opt-in to experiment branches to facilitate testing.
     //
@@ -338,11 +323,9 @@ export var BackgroundTasksUtils = {
           branch: params.get("optin_branch"),
           collection: params.get("optin_collection"),
         };
-        await lazy.RemoteSettingsExperimentLoader.optInToExperiment(data);
+        await lazy.ExperimentAPI.optInToExperiment(data);
         lazy.log.info(`Opted in to experiment: ${JSON.stringify(data)}`);
-      }
-
-      if (uri.schemeIs("file")) {
+      } else if (uri.schemeIs("file")) {
         let branchSlug = params.get("optin_branch");
         let path = decodeURIComponent(uri.filePath);
         let response = await fetch(uri.spec);
@@ -352,9 +335,8 @@ export var BackgroundTasksUtils = {
           // written, that's not the norm.
           recipe = recipe.data;
         }
-        let branch = recipe.branches.find(b => b.slug == branchSlug);
 
-        lazy.ExperimentManager.forceEnroll(recipe, branch);
+        await lazy.ExperimentAPI.manager.forceEnroll(recipe, branchSlug);
         lazy.log.info(`Forced enrollment into: ${path}, branch: ${branchSlug}`);
       }
     }

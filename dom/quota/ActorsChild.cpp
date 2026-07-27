@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,7 +11,7 @@
 
 // Global includes
 #include <new>
-#include <utility>
+
 #include "mozilla/Assertions.h"
 #include "mozilla/dom/quota/PQuotaRequest.h"
 #include "nsError.h"
@@ -165,27 +163,6 @@ void QuotaRequestChild::HandleResponse(const EstimateResponse& aResponse) {
   mRequest->SetResult(variant);
 }
 
-void QuotaRequestChild::HandleResponse(const nsTArray<nsCString>& aResponse) {
-  AssertIsOnOwningThread();
-  MOZ_ASSERT(mRequest);
-
-  RefPtr<nsVariant> variant = new nsVariant();
-
-  if (aResponse.IsEmpty()) {
-    variant->SetAsEmptyArray();
-  } else {
-    nsTArray<const char*> stringPointers(aResponse.Length());
-    std::transform(aResponse.cbegin(), aResponse.cend(),
-                   MakeBackInserter(stringPointers),
-                   std::mem_fn(&nsCString::get));
-
-    variant->SetAsArray(nsIDataType::VTYPE_CHAR_STR, nullptr,
-                        stringPointers.Length(), stringPointers.Elements());
-  }
-
-  mRequest->SetResult(variant);
-}
-
 void QuotaRequestChild::HandleResponse(
     const GetFullOriginMetadataResponse& aResponse) {
   AssertIsOnOwningThread();
@@ -225,7 +202,6 @@ mozilla::ipc::IPCResult QuotaRequestChild::Recv__delete__(
       HandleResponse(aResponse.get_StorageNameResponse().name());
       break;
 
-    case RequestResponse::TResetOriginResponse:
     case RequestResponse::TPersistResponse:
       HandleResponse();
       break;
@@ -240,10 +216,6 @@ mozilla::ipc::IPCResult QuotaRequestChild::Recv__delete__(
 
     case RequestResponse::TEstimateResponse:
       HandleResponse(aResponse.get_EstimateResponse());
-      break;
-
-    case RequestResponse::TListOriginsResponse:
-      HandleResponse(aResponse.get_ListOriginsResponse().origins());
       break;
 
     default:

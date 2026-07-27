@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,15 +12,13 @@
 #include "nsDebug.h"
 #include "nsIObserver.h"
 #include "nsISupports.h"
+#include "nsIWorkerDebugger.h"
 #include "nsIWorkerDebuggerManager.h"
 #include "nsTArray.h"
+#include "nsXULAppAPI.h"
 
-#define WORKERDEBUGGERMANAGER_CID                    \
-  {                                                  \
-    0x62ec8731, 0x55ad, 0x4246, {                    \
-      0xb2, 0xea, 0xf2, 0x6c, 0x1f, 0xe1, 0x9d, 0x2d \
-    }                                                \
-  }
+#define WORKERDEBUGGERMANAGER_CID \
+  {0x62ec8731, 0x55ad, 0x4246, {0xb2, 0xea, 0xf2, 0x6c, 0x1f, 0xe1, 0x9d, 0x2d}}
 #define WORKERDEBUGGERMANAGER_CONTRACTID \
   "@mozilla.org/dom/workers/workerdebuggermanager;1"
 
@@ -39,7 +35,7 @@ class WorkerDebuggerManager final : public nsIObserver,
   nsTArray<nsCOMPtr<nsIWorkerDebuggerManagerListener>> mListeners;
 
   // Only touched on the main thread.
-  nsTArray<RefPtr<WorkerDebugger>> mDebuggers;
+  nsTArray<nsCOMPtr<nsIWorkerDebugger>> mDebuggers;
 
  public:
   static already_AddRefed<WorkerDebuggerManager> GetInstance();
@@ -63,13 +59,19 @@ class WorkerDebuggerManager final : public nsIObserver,
   void RegisterDebuggerMainThread(WorkerPrivate* aWorkerPrivate,
                                   bool aNotifyListeners);
 
+  void RegisterDebugger(nsIWorkerDebugger* aRemoteWorkerDebugger);
+
   void UnregisterDebugger(WorkerPrivate* aWorkerPrivate);
 
   void UnregisterDebuggerMainThread(WorkerPrivate* aWorkerPrivate);
 
+  void UnregisterDebugger(nsIWorkerDebugger* aRemoteWorkerDebugger);
+
   uint32_t GetDebuggersLength() const;
 
-  WorkerDebugger* GetDebuggerAt(uint32_t aIndex) const;
+  nsIWorkerDebugger* GetDebuggerAt(uint32_t aIndex) const;
+
+  nsCOMPtr<nsIWorkerDebugger> GetDebuggerById(const nsString& aWorkerId);
 
  private:
   nsTArray<nsCOMPtr<nsIWorkerDebuggerManagerListener>> CloneListeners();

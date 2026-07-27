@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,7 +28,8 @@ var Readerable = {
     // Only care about 'real' HTML documents:
     if (
       doc.mozSyntheticDocument ||
-      !doc.defaultView.HTMLDocument.isInstance(doc)
+      !doc.defaultView.HTMLDocument.isInstance(doc) ||
+      doc.contentType == "application/pdf"
     ) {
       return false;
     }

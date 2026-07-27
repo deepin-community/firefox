@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,18 +9,23 @@
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
 #include "mozilla/gfx/CanvasManagerChild.h"
+#include "mozilla/gfx/CanvasShutdownManager.h"
 #include "mozilla/gfx/DrawTargetRecording.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/Tools.h"
 #include "mozilla/gfx/Rect.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/ProcessChild.h"
+#include "mozilla/ipc/SharedMemoryHandle.h"
 #include "mozilla/layers/CanvasDrawEventRecorder.h"
 #include "mozilla/layers/ImageDataSerializer.h"
 #include "mozilla/layers/SourceSurfaceSharedData.h"
-#include "mozilla/Maybe.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/Mutex.h"
+#include "mozilla/StaticPrefs_gfx.h"
 #include "nsIObserverService.h"
+#include "nsICanvasRenderingContextInternal.h"
 #include "RecordedCanvasEventImpl.h"
 
 namespace mozilla {
@@ -37,27 +40,29 @@ class RecorderHelpers final : public CanvasDrawEventRecorder::Helpers {
 
   ~RecorderHelpers() override = default;
 
-  bool InitTranslator(TextureType aTextureType, TextureType aWebglTextureType,
-                      gfx::BackendType aBackendType, Handle&& aReadHandle,
-                      nsTArray<Handle>&& aBufferHandles, uint64_t aBufferSize,
-                      CrossProcessSemaphoreHandle&& aReaderSem,
-                      CrossProcessSemaphoreHandle&& aWriterSem) override {
+  bool InitTranslator(
+      TextureType aTextureType, TextureType aWebglTextureType,
+      gfx::BackendType aBackendType,
+      ipc::MutableSharedMemoryHandle&& aReadHandle,
+      nsTArray<ipc::ReadOnlySharedMemoryHandle>&& aBufferHandles,
+      CrossProcessSemaphoreHandle&& aReaderSem,
+      CrossProcessSemaphoreHandle&& aWriterSem) override {
     NS_ASSERT_OWNINGTHREAD(RecorderHelpers);
     if (NS_WARN_IF(!mCanvasChild)) {
       return false;
     }
     return mCanvasChild->SendInitTranslator(
         aTextureType, aWebglTextureType, aBackendType, std::move(aReadHandle),
-        std::move(aBufferHandles), aBufferSize, std::move(aReaderSem),
+        std::move(aBufferHandles), std::move(aReaderSem),
         std::move(aWriterSem));
   }
 
-  bool AddBuffer(Handle&& aBufferHandle, uint64_t aBufferSize) override {
+  bool AddBuffer(ipc::ReadOnlySharedMemoryHandle&& aBufferHandle) override {
     NS_ASSERT_OWNINGTHREAD(RecorderHelpers);
     if (!mCanvasChild) {
       return false;
     }
-    return mCanvasChild->SendAddBuffer(std::move(aBufferHandle), aBufferSize);
+    return mCanvasChild->SendAddBuffer(std::move(aBufferHandle));
   }
 
   bool ReaderClosed() override {
@@ -65,7 +70,7 @@ class RecorderHelpers final : public CanvasDrawEventRecorder::Helpers {
     if (!mCanvasChild) {
       return false;
     }
-    return !mCanvasChild->CanSend() || ipc::ProcessChild::ExpectingShutdown();
+    return !mCanvasChild->CanSend() || AppShutdown::IsShutdownImpending();
   }
 
   bool RestartReader() override {
@@ -76,19 +81,30 @@ class RecorderHelpers final : public CanvasDrawEventRecorder::Helpers {
     return mCanvasChild->SendRestartTranslation();
   }
 
+  already_AddRefed<CanvasChild> GetCanvasChild() const override {
+    RefPtr<CanvasChild> canvasChild(mCanvasChild);
+    return canvasChild.forget();
+  }
+
  private:
   const WeakPtr<CanvasChild> mCanvasChild;
 };
+
+// Limit the number of in-flight export surfaces
+static Atomic<uint32_t> sCurrentExportSurfaces(0);
+// Limit the memory used by in-flight export surfaces
+static Atomic<size_t> sCurrentExportSurfaceMemory(0);
 
 class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
  public:
   MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(SourceSurfaceCanvasRecording, final)
 
   SourceSurfaceCanvasRecording(
-      int64_t aTextureId, const RefPtr<gfx::SourceSurface>& aRecordedSuface,
+      const RemoteTextureOwnerId aTextureOwnerId,
+      const RefPtr<gfx::SourceSurface>& aRecordedSuface,
       CanvasChild* aCanvasChild,
       const RefPtr<CanvasDrawEventRecorder>& aRecorder)
-      : mTextureId(aTextureId),
+      : mTextureOwnerId(aTextureOwnerId),
         mRecordedSurface(aRecordedSuface),
         mCanvasChild(aCanvasChild),
         mRecorder(aRecorder) {
@@ -101,19 +117,21 @@ class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
 
   ~SourceSurfaceCanvasRecording() {
     ReferencePtr surfaceAlias = this;
+    ReferencePtr exportID = mExportID;
     if (NS_IsMainThread()) {
       ReleaseOnMainThread(std::move(mRecorder), surfaceAlias,
-                          std::move(mRecordedSurface), std::move(mCanvasChild));
+                          std::move(mRecordedSurface), std::move(mCanvasChild),
+                          exportID);
       return;
     }
 
     mRecorder->AddPendingDeletion(
         [recorder = std::move(mRecorder), surfaceAlias,
          aliasedSurface = std::move(mRecordedSurface),
-         canvasChild = std::move(mCanvasChild)]() mutable -> void {
+         canvasChild = std::move(mCanvasChild), exportID]() mutable -> void {
           ReleaseOnMainThread(std::move(recorder), surfaceAlias,
-                              std::move(aliasedSurface),
-                              std::move(canvasChild));
+                              std::move(aliasedSurface), std::move(canvasChild),
+                              exportID);
         });
   }
 
@@ -126,20 +144,18 @@ class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
   }
 
   already_AddRefed<gfx::DataSourceSurface> GetDataSurface() final {
-    EnsureDataSurfaceOnMainThread();
+    MutexAutoLock lock(mDataSurfaceLock);
+    EnsureDataSurfaceOnMainThread(lock);
     return do_AddRef(mDataSourceSurface);
   }
 
   void AttachSurface() { mDetached = false; }
-  void DetachSurface() { mDetached = true; }
+  void DetachSurface(bool aInvalidate = false) {
+    mDetached = true;
 
-  void InvalidateDataSurface() {
-    if (mDataSourceSurface && mMayInvalidate) {
-      // This must be the only reference to the data left.
-      MOZ_ASSERT(mDataSourceSurface->hasOneRef());
-      mDataSourceSurface =
-          gfx::Factory::CopyDataSourceSurface(mDataSourceSurface);
-      mMayInvalidate = false;
+    if (aInvalidate) {
+      MutexAutoLock lock(mDataSurfaceLock);
+      InvalidateDataSurface(lock);
     }
   }
 
@@ -148,12 +164,66 @@ class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
     return mRecordedSurface->ExtractSubrect(aRect);
   }
 
+  static size_t GetExportSurfaceSize(gfx::SourceSurface* aSurface) {
+    return ImageDataSerializer::ComputeRGBBufferSize(aSurface->GetSize(),
+                                                     aSurface->GetFormat())
+        .valueOr(0);
+  }
+
+  bool GetSurfaceDescriptor(SurfaceDescriptor& aDesc) final {
+    if (!NS_IsMainThread()) {
+      // Only allow recording surface upload optimization on main thread.
+      return false;
+    }
+    static Atomic<uintptr_t> sNextExportID(0);
+    if (!mExportID) {
+      if (++sCurrentExportSurfaces >
+          StaticPrefs::gfx_canvas_accelerated_max_export_surfaces()) {
+        --sCurrentExportSurfaces;
+        return false;
+      }
+      size_t bytes = GetExportSurfaceSize(mRecordedSurface);
+      if ((sCurrentExportSurfaceMemory += bytes) >
+          StaticPrefs::gfx_canvas_accelerated_max_export_surface_memory()) {
+        --sCurrentExportSurfaces;
+        sCurrentExportSurfaceMemory -= bytes;
+        return false;
+      }
+      mExportID = gfx::ReferencePtr(++sNextExportID);
+      mRecorder->RecordEvent(RecordedAddExportSurface(mExportID, this));
+    }
+    aDesc = SurfaceDescriptorCanvasSurface(
+        static_cast<gfx::CanvasManagerChild*>(mCanvasChild->Manager())->Id(),
+        mCanvasChild->Id(), uintptr_t(mExportID));
+    return true;
+  }
+
  private:
-  void EnsureDataSurfaceOnMainThread() {
-    // The data can only be retrieved on the main thread.
-    if (!mDataSourceSurface && NS_IsMainThread()) {
-      mDataSourceSurface = mCanvasChild->GetDataSurface(
-          mTextureId, mRecordedSurface, mDetached, mMayInvalidate);
+  void InvalidateDataSurface(const MutexAutoLock& aProofOfLock)
+      MOZ_REQUIRES(mDataSurfaceLock) {
+    // The data is about to be invalidated and must be copied before it is
+    // modified.
+    if (mDataSourceSurface && mMayInvalidate) {
+      mDataSourceSurface =
+          gfx::Factory::CopyDataSourceSurface(mDataSourceSurface);
+      mMayInvalidate = false;
+    }
+  }
+
+  void EnsureDataSurfaceOnMainThread(const MutexAutoLock& aProofOfLock)
+      MOZ_REQUIRES(mDataSurfaceLock) {
+    if (NS_IsMainThread()) {
+      // The data can only be retrieved on the main thread.
+      if (!mDataSourceSurface) {
+        mDataSourceSurface = mCanvasChild->GetDataSurface(
+            mTextureOwnerId, mRecordedSurface, mDetached, mMayInvalidate);
+      }
+    } else {
+      // If data is going to be accessed on another thread, then copy the data
+      // if necessary before access. This avoids the main thread accidentally
+      // trying to invalidate the data surface while the other thread is still
+      // accessing it.
+      InvalidateDataSurface(aProofOfLock);
     }
   }
 
@@ -161,28 +231,40 @@ class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
   static void ReleaseOnMainThread(RefPtr<CanvasDrawEventRecorder> aRecorder,
                                   ReferencePtr aSurfaceAlias,
                                   RefPtr<gfx::SourceSurface> aAliasedSurface,
-                                  RefPtr<CanvasChild> aCanvasChild) {
+                                  RefPtr<CanvasChild> aCanvasChild,
+                                  ReferencePtr aExportID) {
     MOZ_ASSERT(NS_IsMainThread());
 
     aRecorder->RemoveStoredObject(aSurfaceAlias);
     aRecorder->RecordEvent(RecordedRemoveSurfaceAlias(aSurfaceAlias));
+    if (aExportID) {
+      aRecorder->RecordEvent(RecordedRemoveExportSurface(aExportID));
+      --sCurrentExportSurfaces;
+      size_t bytes = GetExportSurfaceSize(aAliasedSurface);
+      sCurrentExportSurfaceMemory -= bytes;
+    }
     aAliasedSurface = nullptr;
     aCanvasChild = nullptr;
     aRecorder = nullptr;
   }
 
-  int64_t mTextureId;
+  const RemoteTextureOwnerId mTextureOwnerId;
   RefPtr<gfx::SourceSurface> mRecordedSurface;
   RefPtr<CanvasChild> mCanvasChild;
   RefPtr<CanvasDrawEventRecorder> mRecorder;
-  RefPtr<gfx::DataSourceSurface> mDataSourceSurface;
+  Mutex mDataSurfaceLock{"SourceSurfaceCanvasRecording::mDataSurfaceLock"};
+  RefPtr<gfx::DataSourceSurface> mDataSourceSurface
+      MOZ_GUARDED_BY(mDataSurfaceLock);
+  bool mMayInvalidate MOZ_GUARDED_BY(mDataSurfaceLock) = false;
   bool mDetached = false;
-  bool mMayInvalidate = false;
+  ReferencePtr mExportID;
 };
 
 class CanvasDataShmemHolder {
  public:
-  CanvasDataShmemHolder(ipc::SharedMemory* aShmem, CanvasChild* aCanvasChild)
+  CanvasDataShmemHolder(
+      const std::shared_ptr<ipc::ReadOnlySharedMemoryMapping>& aShmem,
+      CanvasChild* aCanvasChild)
       : mMutex("CanvasChild::DataShmemHolder::mMutex"),
         mShmem(aShmem),
         mCanvasChild(aCanvasChild) {}
@@ -207,8 +289,7 @@ class CanvasDataShmemHolder {
   void Destroy() {
     class DestroyRunnable final : public dom::WorkerThreadRunnable {
      public:
-      DestroyRunnable(dom::WorkerPrivate* aWorkerPrivate,
-                      CanvasDataShmemHolder* aShmemHolder)
+      explicit DestroyRunnable(CanvasDataShmemHolder* aShmemHolder)
           : dom::WorkerThreadRunnable("CanvasDataShmemHolder::Destroy"),
             mShmemHolder(aShmemHolder) {}
 
@@ -237,7 +318,7 @@ class CanvasDataShmemHolder {
     if (mCanvasChild) {
       if (mWorkerRef) {
         if (!mWorkerRef->Private()->IsOnCurrentThread()) {
-          auto task = MakeRefPtr<DestroyRunnable>(mWorkerRef->Private(), this);
+          auto task = MakeRefPtr<DestroyRunnable>(this);
           dom::WorkerPrivate* worker = mWorkerRef->Private();
           mMutex.Unlock();
           task->Dispatch(worker);
@@ -250,7 +331,7 @@ class CanvasDataShmemHolder {
         return;
       }
 
-      mCanvasChild->ReturnDataSurfaceShmem(mShmem.forget());
+      mCanvasChild->ReturnDataSurfaceShmem(std::move(mShmem));
       mCanvasChild = nullptr;
       mWorkerRef = nullptr;
     }
@@ -267,7 +348,7 @@ class CanvasDataShmemHolder {
 
  private:
   Mutex mMutex;
-  RefPtr<ipc::SharedMemory> mShmem;
+  std::shared_ptr<ipc::ReadOnlySharedMemoryMapping> mShmem;
   RefPtr<CanvasChild> mCanvasChild MOZ_GUARDED_BY(mMutex);
   RefPtr<dom::ThreadSafeWorkerRef> mWorkerRef MOZ_GUARDED_BY(mMutex);
 };
@@ -277,18 +358,22 @@ CanvasChild::CanvasChild(dom::ThreadSafeWorkerRef* aWorkerRef)
 
 CanvasChild::~CanvasChild() { MOZ_ASSERT(!mWorkerRef); }
 
-static void NotifyCanvasDeviceReset() {
+static void NotifyCanvasDeviceChanged() {
   nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
   if (obs) {
     obs->NotifyObservers(nullptr, "canvas-device-reset", nullptr);
   }
 }
 
-ipc::IPCResult CanvasChild::RecvNotifyDeviceChanged() {
+ipc::IPCResult CanvasChild::RecvNotifyDeviceReset(
+    const nsTArray<RemoteTextureOwnerId>& aOwnerIds) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
 
-  NotifyCanvasDeviceReset();
-  mRecorder->RecordEvent(RecordedDeviceChangeAcknowledged());
+  if (auto* manager = gfx::CanvasShutdownManager::MaybeGet()) {
+    manager->OnRemoteCanvasReset(aOwnerIds);
+  }
+
+  mRecorder->RecordEvent(RecordedDeviceResetAcknowledged());
   return IPC_OK();
 }
 
@@ -302,7 +387,7 @@ ipc::IPCResult CanvasChild::RecvDeactivate() {
   if (auto* cm = gfx::CanvasManagerChild::Get()) {
     cm->DeactivateCanvas();
   }
-  NotifyCanvasDeviceReset();
+  NotifyCanvasDeviceChanged();
   return IPC_OK();
 }
 
@@ -350,6 +435,7 @@ void CanvasChild::ActorDestroy(ActorDestroyReason aWhy) {
   if (mRecorder) {
     mRecorder->DetachResources();
   }
+  mTextureInfo.clear();
 }
 
 void CanvasChild::Destroy() {
@@ -407,6 +493,8 @@ void CanvasChild::DropFreeBuffersWhenDormant() {
   // Drop any free buffers if we have not had any non-empty transactions.
   if (mDormant && mRecorder) {
     mRecorder->DropFreeBuffers();
+    // Notify CanvasTranslator it is dormant.
+    SendDropFreeBuffersWhenDormant();
   }
 }
 
@@ -428,13 +516,14 @@ bool CanvasChild::ShouldBeCleanedUp() const {
   }
 
   // We can only be cleaned up if nothing else references our recorder.
-  return !mRecorder || mRecorder->hasOneRef();
+  return !mRecorder || (mRecorder->hasOneRef() && mTextureInfo.empty());
 }
 
 already_AddRefed<gfx::DrawTargetRecording> CanvasChild::CreateDrawTarget(
-    int64_t aTextureId, const RemoteTextureOwnerId& aTextureOwnerId,
-    gfx::IntSize aSize, gfx::SurfaceFormat aFormat) {
+    const RemoteTextureOwnerId& aTextureOwnerId, gfx::IntSize aSize,
+    gfx::SurfaceFormat aFormat) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
+  MOZ_ASSERT(mTextureInfo.find(aTextureOwnerId) == mTextureInfo.end());
 
   if (!mRecorder) {
     return nullptr;
@@ -443,52 +532,76 @@ already_AddRefed<gfx::DrawTargetRecording> CanvasChild::CreateDrawTarget(
   RefPtr<gfx::DrawTarget> dummyDt = gfx::Factory::CreateDrawTarget(
       gfx::BackendType::SKIA, gfx::IntSize(1, 1), aFormat);
   RefPtr<gfx::DrawTargetRecording> dt = MakeAndAddRef<gfx::DrawTargetRecording>(
-      mRecorder, aTextureId, aTextureOwnerId, dummyDt, aSize);
+      mRecorder, aTextureOwnerId, dummyDt, aSize);
   dt->SetOptimizeTransform(true);
 
-  mTextureInfo.insert({aTextureId, {}});
+  mTextureInfo.insert({aTextureOwnerId, {}});
 
   return dt.forget();
 }
 
-bool CanvasChild::EnsureDataSurfaceShmem(gfx::IntSize aSize,
-                                         gfx::SurfaceFormat aFormat) {
+size_t CanvasChild::SizeOfDataSurfaceShmem(gfx::IntSize aSize,
+                                           gfx::SurfaceFormat aFormat) {
+  if (!mRecorder) {
+    return 0;
+  }
+  Maybe<uint32_t> sizeRequired =
+      ImageDataSerializer::ComputeRGBBufferSize(aSize, aFormat);
+  return sizeRequired.isSome()
+             ? ipc::shared_memory::PageAlignedSize(size_t(sizeRequired.value()))
+             : 0;
+}
+
+bool CanvasChild::ShouldGrowDataSurfaceShmem(size_t aSizeRequired) {
+  return aSizeRequired > 0 && (!mDataSurfaceShmemAvailable ||
+                               mDataSurfaceShmem->Size() < aSizeRequired);
+}
+
+bool CanvasChild::EnsureDataSurfaceShmem(size_t aSizeRequired) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
 
-  if (!mRecorder) {
+  if (!aSizeRequired) {
     return false;
   }
 
-  size_t sizeRequired =
-      ImageDataSerializer::ComputeRGBBufferSize(aSize, aFormat);
-  if (!sizeRequired) {
-    return false;
-  }
-  sizeRequired = ipc::SharedMemory::PageAlignedSize(sizeRequired);
-
-  if (!mDataSurfaceShmemAvailable || mDataSurfaceShmem->Size() < sizeRequired) {
+  if (ShouldGrowDataSurfaceShmem(aSizeRequired)) {
     RecordEvent(RecordedPauseTranslation());
-    auto dataSurfaceShmem = MakeRefPtr<ipc::SharedMemory>();
-    if (!dataSurfaceShmem->Create(sizeRequired) ||
-        !dataSurfaceShmem->Map(sizeRequired)) {
-      return false;
-    }
-
-    auto shmemHandle = dataSurfaceShmem->TakeHandle();
+    auto shmemHandle = ipc::shared_memory::Create(aSizeRequired);
     if (!shmemHandle) {
       return false;
     }
 
-    if (!SendSetDataSurfaceBuffer(std::move(shmemHandle), sizeRequired)) {
+    auto roMapping = shmemHandle.AsReadOnly().Map();
+    if (!roMapping) {
       return false;
     }
 
-    mDataSurfaceShmem = dataSurfaceShmem.forget();
+    auto id = ++mNextDataSurfaceShmemId;
+    if (!id) {
+      // If ids overflow, ensure that zero is reserved.
+      id = ++mNextDataSurfaceShmemId;
+    }
+    if (!SendSetDataSurfaceBuffer(id, std::move(shmemHandle))) {
+      return false;
+    }
+
+    mDataSurfaceShmem = std::make_shared<ipc::ReadOnlySharedMemoryMapping>(
+        std::move(roMapping));
     mDataSurfaceShmemAvailable = true;
   }
 
   MOZ_ASSERT(mDataSurfaceShmemAvailable);
   return true;
+}
+
+bool CanvasChild::EnsureDataSurfaceShmem(gfx::IntSize aSize,
+                                         gfx::SurfaceFormat aFormat) {
+  size_t sizeRequired = SizeOfDataSurfaceShmem(aSize, aFormat);
+  if (!sizeRequired) {
+    return false;
+  }
+
+  return EnsureDataSurfaceShmem(sizeRequired);
 }
 
 void CanvasChild::RecordEvent(const gfx::RecordedEvent& aEvent) {
@@ -508,8 +621,8 @@ int64_t CanvasChild::CreateCheckpoint() {
 }
 
 already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
-    int64_t aTextureId, const gfx::SourceSurface* aSurface, bool aDetached,
-    bool& aMayInvalidate) {
+    const RemoteTextureOwnerId aTextureOwnerId,
+    const gfx::SourceSurface* aSurface, bool aDetached, bool& aMayInvalidate) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
   MOZ_ASSERT(aSurface);
 
@@ -528,17 +641,19 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
   gfx::IntSize ssSize = aSurface->GetSize();
   gfx::SurfaceFormat ssFormat = aSurface->GetFormat();
   auto stride = ImageDataSerializer::ComputeRGBStride(ssFormat, ssSize.width);
+  if (stride.isNothing()) {
+    return nullptr;
+  }
 
   // Shmem is only valid if the surface is the latest snapshot (not detached).
   if (!aDetached) {
     // If there is a shmem associated with this snapshot id, then we want to try
     // use that directly without having to allocate a new shmem for retrieval.
-    auto it = mTextureInfo.find(aTextureId);
+    auto it = mTextureInfo.find(aTextureOwnerId);
     if (it != mTextureInfo.end() && it->second.mSnapshotShmem) {
-      const auto shmemPtr =
-          reinterpret_cast<uint8_t*>(it->second.mSnapshotShmem->Memory());
+      const auto* shmemPtr = it->second.mSnapshotShmem->DataAs<uint8_t>();
       MOZ_ASSERT(shmemPtr);
-      mRecorder->RecordEvent(RecordedPrepareShmem(aTextureId));
+      mRecorder->RecordEvent(RecordedPrepareShmem(aTextureOwnerId));
       auto checkpoint = CreateCheckpoint();
       if (NS_WARN_IF(!mRecorder->WaitForCheckpoint(checkpoint))) {
         return nullptr;
@@ -549,22 +664,29 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
         delete closure;
         return nullptr;
       }
+      // We can cast away the const of `shmemPtr` to match the call because the
+      // DataSourceSurface will not be written to.
       RefPtr<gfx::DataSourceSurface> dataSurface =
           gfx::Factory::CreateWrappingDataSourceSurface(
-              shmemPtr, stride, ssSize, ssFormat, ReleaseDataShmemHolder,
-              closure);
+              const_cast<uint8_t*>(shmemPtr), stride.value(), ssSize, ssFormat,
+              ReleaseDataShmemHolder, closure);
       aMayInvalidate = true;
       return dataSurface.forget();
     }
   }
 
-  RecordEvent(RecordedPrepareDataForSurface(aSurface));
-
-  if (!EnsureDataSurfaceShmem(ssSize, ssFormat)) {
+  size_t sizeRequired = SizeOfDataSurfaceShmem(ssSize, ssFormat);
+  if (!sizeRequired) {
     return nullptr;
   }
 
-  RecordEvent(RecordedGetDataForSurface(aSurface));
+  RecordEvent(RecordedCacheDataSurface(aSurface));
+
+  if (!EnsureDataSurfaceShmem(sizeRequired)) {
+    return nullptr;
+  }
+
+  RecordEvent(RecordedGetDataForSurface(mNextDataSurfaceShmemId, aSurface));
   auto checkpoint = CreateCheckpoint();
   if (NS_WARN_IF(!mRecorder->WaitForCheckpoint(checkpoint))) {
     return nullptr;
@@ -578,11 +700,14 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
 
   mDataSurfaceShmemAvailable = false;
 
-  auto* data = static_cast<uint8_t*>(mDataSurfaceShmem->Memory());
+  const auto* data = mDataSurfaceShmem->DataAs<uint8_t>();
 
+  // We can cast away the const of `data` to match the call because the
+  // DataSourceSurface will not be written to.
   RefPtr<gfx::DataSourceSurface> dataSurface =
       gfx::Factory::CreateWrappingDataSourceSurface(
-          data, stride, ssSize, ssFormat, ReleaseDataShmemHolder, closure);
+          const_cast<uint8_t*>(data), stride.value(), ssSize, ssFormat,
+          ReleaseDataShmemHolder, closure);
   aMayInvalidate = false;
   return dataSurface.forget();
 }
@@ -593,22 +718,22 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
 }
 
 already_AddRefed<gfx::SourceSurface> CanvasChild::WrapSurface(
-    const RefPtr<gfx::SourceSurface>& aSurface, int64_t aTextureId) {
+    const RefPtr<gfx::SourceSurface>& aSurface,
+    const RemoteTextureOwnerId aTextureOwnerId) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
 
   if (!aSurface) {
     return nullptr;
   }
 
-  return MakeAndAddRef<SourceSurfaceCanvasRecording>(aTextureId, aSurface, this,
-                                                     mRecorder);
+  return MakeAndAddRef<SourceSurfaceCanvasRecording>(aTextureOwnerId, aSurface,
+                                                     this, mRecorder);
 }
 
 void CanvasChild::ReturnDataSurfaceShmem(
-    already_AddRefed<ipc::SharedMemory> aDataSurfaceShmem) {
-  RefPtr<ipc::SharedMemory> data = aDataSurfaceShmem;
+    std::shared_ptr<ipc::ReadOnlySharedMemoryMapping>&& aDataSurfaceShmem) {
   // We can only reuse the latest data surface shmem.
-  if (data == mDataSurfaceShmem) {
+  if (aDataSurfaceShmem == mDataSurfaceShmem) {
     MOZ_ASSERT(!mDataSurfaceShmemAvailable);
     mDataSurfaceShmemAvailable = true;
   }
@@ -625,26 +750,25 @@ void CanvasChild::DetachSurface(const RefPtr<gfx::SourceSurface>& aSurface,
                                 bool aInvalidate) {
   if (auto* surface =
           static_cast<SourceSurfaceCanvasRecording*>(aSurface.get())) {
-    surface->DetachSurface();
-    if (aInvalidate) {
-      surface->InvalidateDataSurface();
-    }
+    surface->DetachSurface(aInvalidate);
   }
 }
 
-ipc::IPCResult CanvasChild::RecvNotifyRequiresRefresh(int64_t aTextureId) {
-  auto it = mTextureInfo.find(aTextureId);
+ipc::IPCResult CanvasChild::RecvNotifyRequiresRefresh(
+    const RemoteTextureOwnerId aTextureOwnerId) {
+  auto it = mTextureInfo.find(aTextureOwnerId);
   if (it != mTextureInfo.end()) {
     it->second.mRequiresRefresh = true;
   }
   return IPC_OK();
 }
 
-bool CanvasChild::RequiresRefresh(int64_t aTextureId) const {
+bool CanvasChild::RequiresRefresh(
+    const RemoteTextureOwnerId aTextureOwnerId) const {
   if (mBlocked) {
     return true;
   }
-  auto it = mTextureInfo.find(aTextureId);
+  auto it = mTextureInfo.find(aTextureOwnerId);
   if (it != mTextureInfo.end()) {
     return it->second.mRequiresRefresh;
   }
@@ -652,17 +776,17 @@ bool CanvasChild::RequiresRefresh(int64_t aTextureId) const {
 }
 
 ipc::IPCResult CanvasChild::RecvSnapshotShmem(
-    int64_t aTextureId, Handle&& aShmemHandle, uint32_t aShmemSize,
+    const RemoteTextureOwnerId aTextureOwnerId,
+    ipc::ReadOnlySharedMemoryHandle&& aShmemHandle,
     SnapshotShmemResolver&& aResolve) {
-  auto it = mTextureInfo.find(aTextureId);
+  auto it = mTextureInfo.find(aTextureOwnerId);
   if (it != mTextureInfo.end()) {
-    auto shmem = MakeRefPtr<ipc::SharedMemory>();
-    if (NS_WARN_IF(!shmem->SetHandle(std::move(aShmemHandle),
-                                     ipc::SharedMemory::RightsReadOnly)) ||
-        NS_WARN_IF(!shmem->Map(aShmemSize))) {
+    auto shmem = aShmemHandle.Map();
+    if (NS_WARN_IF(!shmem)) {
       shmem = nullptr;
     } else {
-      it->second.mSnapshotShmem = std::move(shmem);
+      it->second.mSnapshotShmem =
+          std::make_shared<ipc::ReadOnlySharedMemoryMapping>(std::move(shmem));
     }
     aResolve(true);
   } else {
@@ -671,8 +795,63 @@ ipc::IPCResult CanvasChild::RecvSnapshotShmem(
   return IPC_OK();
 }
 
-void CanvasChild::CleanupTexture(int64_t aTextureId) {
-  mTextureInfo.erase(aTextureId);
+ipc::IPCResult CanvasChild::RecvNotifyTextureDestruction(
+    const RemoteTextureOwnerId aTextureOwnerId) {
+  auto it = mTextureInfo.find(aTextureOwnerId);
+  if (it == mTextureInfo.end()) {
+    MOZ_ASSERT(!CanSend());
+    return IPC_OK();
+  }
+
+  mTextureInfo.erase(aTextureOwnerId);
+  return IPC_OK();
+}
+
+already_AddRefed<gfx::SourceSurface> CanvasChild::SnapshotExternalCanvas(
+    gfx::DrawTargetRecording* aTarget,
+    nsICanvasRenderingContextInternal* aCanvas,
+    mozilla::ipc::IProtocol* aActor) {
+  // SnapshotExternalCanvas is only valid to use if using Accelerated Canvas2D
+  // with the pending events queue enabled. This ensures WebGL and AC2D are
+  // running under the same thread, and that events can be paused or resumed
+  // while synchronizing between WebGL and AC2D.
+  if (!gfx::gfxVars::UseAcceleratedCanvas2D() ||
+      !StaticPrefs::gfx_canvas_remote_use_canvas_translator_event_AtStartup()) {
+    return nullptr;
+  }
+
+  gfx::SurfaceFormat format = aCanvas->GetIsOpaque()
+                                  ? gfx::SurfaceFormat::B8G8R8X8
+                                  : gfx::SurfaceFormat::B8G8R8A8;
+  gfx::IntSize size(aCanvas->GetWidth(), aCanvas->GetHeight());
+  // Create a source sourface that will be associated with the snapshot.
+  RefPtr<gfx::SourceSurface> surface =
+      aTarget->CreateExternalSourceSurface(size, format);
+  if (!surface) {
+    return nullptr;
+  }
+
+  // Pause translation until the sync-id identifying the snapshot is received.
+  uint64_t syncId = ++mLastSyncId;
+  mRecorder->RecordEvent(RecordedAwaitTranslationSync(syncId));
+
+  // Flush WebGL to cause any IPDL messages to get sent at this sync point.
+  aCanvas->SyncSnapshot();
+
+  // Once the IPDL message is sent to generate the snapshot, resolve the sync-id
+  // to a surface in the recording stream. The AwaitTranslationSync above will
+  // ensure this event is not translated until the snapshot is generated first.
+  mRecorder->RecordEvent(aTarget,
+                         RecordedResolveExternalSnapshot(
+                             syncId, gfx::ReferencePtr(surface), size, format));
+
+  uint32_t managerId = static_cast<gfx::CanvasManagerChild*>(Manager())->Id();
+  ActorId canvasId = aActor->Id();
+
+  // Actually send the request via IPDL to snapshot the external WebGL canvas.
+  SendSnapshotExternalCanvas(syncId, managerId, canvasId);
+
+  return surface.forget();
 }
 
 }  // namespace layers

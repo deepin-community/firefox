@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -351,6 +349,7 @@ struct DebugBreakMarker {
               MS::Location::MarkerTable};
     schema.SetAllLabels("{marker.data.Severity}: {marker.data.name}");
     schema.AddKeyFormat("Message", MS::Format::String);
+    schema.AddKeyFormat("name", MS::Format::String, MS::PayloadFlags::Hidden);
     schema.AddKeyFormat("Severity", MS::Format::String);
     schema.AddKeyFormat("Expression", MS::Format::String);
     schema.AddKeyFormat("File", MS::Format::String);
@@ -361,9 +360,24 @@ struct DebugBreakMarker {
 
 }  // namespace geckoprofiler::markers
 
+#ifdef ANDROID
+static void NS_PrintStackFrame(const char* aBuf) {
+  __android_log_print(ANDROID_LOG_INFO, "Gecko", "%s", aBuf);
+}
+#endif
+
+static void NS_PrintStackTrace() {
+#ifdef ANDROID
+  MozWalkTheStackWithWriter(NS_PrintStackFrame);
+#else
+  MozWalkTheStack(stderr);
+#endif
+}
+
 EXPORT_XPCOM_API(void)
 NS_DebugBreak(uint32_t aSeverity, const char* aStr, const char* aExpr,
               const char* aFile, int32_t aLine) {
+  aFile = MOZ_StripRelativeComponents(aFile);
   FixedBuffer nonPIDBuf;
   FixedBuffer buf;
   const char* sevString = "WARNING";
@@ -466,7 +480,7 @@ NS_DebugBreak(uint32_t aSeverity, const char* aStr, const char* aExpr,
       RealBreak();
 #endif
 #if defined(DEBUG)
-      MozWalkTheStack(stderr);
+      NS_PrintStackTrace();
 #endif
       Abort(buf.buffer);
       return;
@@ -490,11 +504,11 @@ NS_DebugBreak(uint32_t aSeverity, const char* aStr, const char* aExpr,
       return;
 
     case NS_ASSERT_STACK:
-      MozWalkTheStack(stderr);
+      NS_PrintStackTrace();
       return;
 
     case NS_ASSERT_STACK_AND_ABORT:
-      MozWalkTheStack(stderr);
+      NS_PrintStackTrace();
       // Fall through to abort
       [[fallthrough]];
 

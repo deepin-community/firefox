@@ -11,8 +11,7 @@ Introduction
 
 The string classes are a library of C++ classes which are used to manage
 buffers of wide (16-bit) and narrow (8-bit) character strings. The headers
-and implementation are in the `xpcom/string
-<https://searchfox.org/mozilla-central/source/xpcom/string>`_ directory. All
+and implementation are in the :searchfox:`xpcom/string` directory. All
 strings are stored as a single contiguous buffer of characters.
 
 The 8-bit and 16-bit string classes have completely separate base classes,
@@ -157,6 +156,7 @@ and members in classes or structs.
     "ns[C]String" -> "nsLiteral[C]String" [style=dashed];
     "nsAuto[C]StringN" -> "nsPromiseFlat[C]String";
     "nsAuto[C]StringN" -> "nsPrintfCString";
+    "nsAuto[C]StringN" -> "nsFmtCString";
 
 The following is a list of the most common concrete classes. Once you are
 familiar with them, see the appendix describing What Class to Use When.
@@ -184,6 +184,11 @@ familiar with them, see the appendix describing What Class to Use When.
 * ``nsPrintfCString`` - derived from ``nsCString``, this string behaves like an
   ``nsAutoCString``. The constructor takes parameters which allows it to
   construct a 8-bit string from a printf-style format string and parameter
+  list.
+
+* ``nsFmtCString`` - derived from ``nsCString``, this string behaves like an
+  ``nsAutoCString``. The constructor takes parameters which allows it to
+  construct a 8-bit string from an {fmt}-style format string and parameter
   list.
 
 There are also a number of concrete classes that are created as a side-effect
@@ -351,7 +356,8 @@ Use ``mozilla::CopyNSStringToXPCOMString()`` in
 Searching strings - looking for substrings, characters, etc.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``nsReadableUtils.h`` header provides helper methods for searching in runnables.
+The ``nsReadableUtils.h`` header provides helper methods for searching in
+readables.
 
 .. code-block:: cpp
 
@@ -460,13 +466,12 @@ common encodings are:
 In addition, there exist multiple other (legacy) encodings. The Web-relevant
 ones are defined in the `Encoding Standard <https://encoding.spec.whatwg.org/>`_.
 Conversions from these encodings to
-UTF-8 and UTF-16 are provided by `mozilla::Encoding
-<https://searchfox.org/mozilla-central/source/intl/Encoding.h#109>`_.
+UTF-8 and UTF-16 are provided by :searchfox:`mozilla::Encoding <intl/Encoding.h#109>`.
 Additionally, on Windows the are some rare cases (e.g. drag&drop) where it's
 necessary to call a system API with data encoded in the Windows
 locale-dependent legacy encoding instead of UTF-16. In those rare cases, use
 ``MultiByteToWideChar``/``WideCharToMultiByte`` from kernel32.dll. Do not use
-``iconv`` on *nix. We only support UTF-8-encoded file paths on *nix, non-path
+``iconv`` on \*nix. We only support UTF-8-encoded file paths on \*nix, non-path
 Gtk strings are always UTF-8 and Cocoa and Java strings are always UTF-16.
 
 When working with existing code, it is important to examine the current usage
@@ -903,6 +908,7 @@ list between the ``SetCapacity()`` call and operations from the list):
 * ``AppendASCII()``
 * ``AppendLiteral()``
 * ``AppendPrintf()``
+* ``AppendFmt()``
 * ``AppendInt()``
 * ``AppendFloat()``
 * ``LossyAppendUTF16toASCII()``
@@ -1048,7 +1054,7 @@ Class Reference
 
     .. cpp:function:: const char_type* EndReading() const
 
-    .. cpp:function:: bool Equals(const self_type&, comparator_type = ...) const
+    .. cpp:function:: bool Equals(const self_type&, comparator_type) const
 
     .. cpp:function:: char_type First() const
 

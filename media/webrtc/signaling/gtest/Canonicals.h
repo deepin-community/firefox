@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -37,8 +35,9 @@ class ConcreteCanonicals {
         INIT_CANONICAL(mVideoSendCodec, Nothing()),
         INIT_CANONICAL(mVideoRecvRtpRtcpConfig, Nothing()),
         INIT_CANONICAL(mVideoSendRtpRtcpConfig, Nothing()),
-        INIT_CANONICAL(mVideoCodecMode,
-                       webrtc::VideoCodecMode::kRealtimeVideo) {}
+        INIT_CANONICAL(mVideoCodecMode, webrtc::VideoCodecMode::kRealtimeVideo),
+        INIT_CANONICAL(mVideoDegradationPreference,
+                       webrtc::DegradationPreference::DISABLED) {}
 
   Canonical<bool> mReceiving;
   Canonical<bool> mTransmitting;
@@ -63,6 +62,7 @@ class ConcreteCanonicals {
   Canonical<Maybe<RtpRtcpConfig>> mVideoRecvRtpRtcpConfig;
   Canonical<Maybe<RtpRtcpConfig>> mVideoSendRtpRtcpConfig;
   Canonical<webrtc::VideoCodecMode> mVideoCodecMode;
+  Canonical<webrtc::DegradationPreference> mVideoDegradationPreference;
 };
 #undef INIT_CANONICAL
 
@@ -142,6 +142,10 @@ class ConcreteControl : public AudioConduitControlInterface,
   }
   Canonical<webrtc::VideoCodecMode>& CanonicalVideoCodecMode() override {
     return mVideoCodecMode;
+  }
+  Canonical<webrtc::DegradationPreference>&
+  CanonicalVideoDegradationPreference() override {
+    return mVideoDegradationPreference;
   }
 };
 

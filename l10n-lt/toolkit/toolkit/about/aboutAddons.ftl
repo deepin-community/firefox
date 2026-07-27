@@ -236,6 +236,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Jau naudoja priedas „{ $addon }“
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Rodyti dar { $numberToShow }
@@ -370,16 +372,16 @@ addon-detail-update-check-label = Tikrinti, ar yra naujinimų
 install-update-button = Atnaujinti
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Leidžiama privačiojo naršymo languose
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Leidžiama privačiojo naršymo languose
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-help = Leidus, priedas turės priėjimą prie jūsų veiklos internete naršant privačiai. <a data-l10n-name="learn-more">Sužinokite daugiau</a>
 addon-detail-private-browsing-allow = Leisti
 addon-detail-private-browsing-disallow = Neleisti
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -395,6 +397,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Šis priedas buvo peržiūrėtas ir atitinka mūsų saugumo bei našumo standartus
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficialus „Mozilla“ sukurtas priedas. Atitinka saugumo ir našumo standartus
 
 ##
 
@@ -408,6 +414,8 @@ addon-permissions-optional = Papildomam funkcionalumui reikalingi leidimai:
 addon-permissions-learnmore = Sužinokite apie leidimus daugiau
 recommended-extensions-heading = Rekomenduojami priedai
 recommended-themes-heading = Rekomenduojami grafiniai apvalkalai
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
 addon-sitepermissions-required = Suteikia šias galimybes <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -435,7 +443,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Priedas „{ $name }“ yra nesuderinamas su „{ -brand-short-name } { $version }“.
 # Variables:
 #   $version (string) - Application version.
@@ -450,12 +458,8 @@ details-notification-unsigned2 =
     .message = Nepavyko patikrinti „{ $name }“ suderinamumo su „{ -brand-short-name }“. Elkitės atsargiai.
 details-notification-unsigned-link = Daugiau informacijos
 details-notification-blocked = Priedas „{ $name }“ išjungtas saugumo arba stabilumo sumetimais.
-details-notification-blocked2 =
-    .message = Priedas „{ $name }“ išjungtas saugumo arba stabilumo sumetimais.
 details-notification-blocked-link = Plačiau
 details-notification-softblocked = Yra duomenų, jog priedas „{ $name }“ sukelia saugumo arba stabilumo problemas.
-details-notification-softblocked2 =
-    .message = Yra duomenų, jog priedas „{ $name }“ sukelia saugumo arba stabilumo problemas.
 details-notification-softblocked-link = Plačiau
 details-notification-gmp-pending = „{ $name }“ bus netrukus įdiegtas.
 details-notification-gmp-pending2 =

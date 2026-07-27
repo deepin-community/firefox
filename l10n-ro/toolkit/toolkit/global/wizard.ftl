@@ -11,7 +11,6 @@ wizard-linux-button-back =
 wizard-win-button-back =
     .label = < Înapoi
     .accesskey = p
-
 wizard-macos-button-next =
     .label = Continuă
     .accesskey = C
@@ -21,17 +20,15 @@ wizard-linux-button-next =
 wizard-win-button-next =
     .label = Înainte >
     .accesskey = n
-
 wizard-macos-button-finish =
     .label = Terminat
 wizard-linux-button-finish =
     .label = Încheiere
 wizard-win-button-finish =
     .label = Încheiere
-
 wizard-macos-button-cancel =
-    .label = Renunță
+    .label = Anulează
 wizard-linux-button-cancel =
-    .label = Renunță
+    .label = Anulează
 wizard-win-button-cancel =
-    .label = Renunță
+    .label = Anulează

@@ -26,13 +26,14 @@ system there are two kind of writes:
   Shader. The system is not able to determine if a resource is fully
   initialized afterwards but is no longer allowed to perform any
   clears, therefore this leads to a
-  `MemoryInitKind.ImplicitlyInitialized` action, exactly like a read
+  `MemoryInitKind.NeedsInitializedMemory` action, exactly like a read
   would.
 
  */
 
+use core::{fmt, iter, ops::Range};
+
 use smallvec::SmallVec;
-use std::{fmt, iter, ops::Range};
 
 mod buffer;
 mod texture;
@@ -63,6 +64,35 @@ pub(crate) struct InitTracker<Idx: Ord + Copy + Default> {
     /// Non-overlapping list of all uninitialized ranges, sorted by
     /// range end.
     uninitialized_ranges: UninitializedRangeVec<Idx>,
+}
+
+pub(crate) struct UninitializedIter<'a, Idx: fmt::Debug + Ord + Copy> {
+    uninitialized_ranges: &'a UninitializedRangeVec<Idx>,
+    drain_range: Range<Idx>,
+    next_index: usize,
+}
+
+impl<'a, Idx> Iterator for UninitializedIter<'a, Idx>
+where
+    Idx: fmt::Debug + Ord + Copy,
+{
+    type Item = Range<Idx>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.uninitialized_ranges
+            .get(self.next_index)
+            .and_then(|range| {
+                if range.start < self.drain_range.end {
+                    self.next_index += 1;
+                    Some(
+                        range.start.max(self.drain_range.start)
+                            ..range.end.min(self.drain_range.end),
+                    )
+                } else {
+                    None
+                }
+            })
+    }
 }
 
 pub(crate) struct InitTrackerDrain<'a, Idx: fmt::Debug + Ord + Copy> {
@@ -190,8 +220,20 @@ where
             })
     }
 
+    // Returns an iterator over the uninitialized ranges in a query range.
+    pub(crate) fn uninitialized(&mut self, drain_range: Range<Idx>) -> UninitializedIter<'_, Idx> {
+        let index = self
+            .uninitialized_ranges
+            .partition_point(|r| r.end <= drain_range.start);
+        UninitializedIter {
+            drain_range,
+            uninitialized_ranges: &self.uninitialized_ranges,
+            next_index: index,
+        }
+    }
+
     // Drains uninitialized ranges in a query range.
-    pub(crate) fn drain(&mut self, drain_range: Range<Idx>) -> InitTrackerDrain<Idx> {
+    pub(crate) fn drain(&mut self, drain_range: Range<Idx>) -> InitTrackerDrain<'_, Idx> {
         let index = self
             .uninitialized_ranges
             .partition_point(|r| r.end <= drain_range.start);
@@ -206,7 +248,6 @@ where
 
 impl InitTracker<u32> {
     // Makes a single entry uninitialized if not already uninitialized
-    #[allow(dead_code)]
     pub(crate) fn discard(&mut self, pos: u32) {
         // first range where end>=idx
         let r_idx = self.uninitialized_ranges.partition_point(|r| r.end < pos);
@@ -239,7 +280,8 @@ impl InitTracker<u32> {
 
 #[cfg(test)]
 mod test {
-    use std::ops::Range;
+    use alloc::{vec, vec::Vec};
+    use core::ops::Range;
 
     type Tracker = super::InitTracker<u32>;
 

@@ -7,10 +7,6 @@ search-header =
     .placeholder = Cari di addons.mozilla.org
     .searchbuttonlabel = Cari
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -166,29 +162,6 @@ addon-install-from-file-filter-name = Add-ons
 addon-open-about-debugging = Add-ons Nyahpepijat
     .accesskey = s
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 extension-heading = Urus ekstensi anda
@@ -206,7 +179,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } tidak serasi dengan { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -221,12 +194,8 @@ details-notification-unsigned2 =
     .message = { $name } tidak dapat disahkan untuk digunakan di { -brand-short-name }. Teruskan dengan berhati-hati.
 details-notification-unsigned-link = Maklumat Lanjut
 details-notification-blocked = { $name } telah dinyahdayakan kerana isu keselamatan atau kestabilan.
-details-notification-blocked2 =
-    .message = { $name } telah dinyahdayakan kerana isu keselamatan atau kestabilan.
 details-notification-blocked-link = Maklumat Lanjut
 details-notification-softblocked = { $name } telah dikenalpasti sebagai punca dalam isu keselamatan dan kestabilan.
-details-notification-softblocked2 =
-    .message = { $name } telah dikenalpasti sebagai punca dalam isu keselamatan dan kestabilan.
 details-notification-softblocked-link = Maklumat Lanjut
 details-notification-gmp-pending = { $name } akan dipasang sebentar lagi.
 details-notification-gmp-pending2 =

@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = { $name } 容器設定
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = 名稱
+    .placeholder = 加入名稱
+containers-icon-label2 =
+    .label = 圖示
+containers-color-label2 =
+    .label = 色彩
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = 名稱
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = 輸入容器名稱
-
 containers-icon-label = 圖示
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = 色彩
     .accesskey = o
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = 完成
     .buttonaccesskeyaccept = D
-
 containers-color-blue =
     .label = 藍色
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = 紫色
 containers-color-toolbar =
     .label = 與工具列相同
-
 containers-icon-fence =
     .label = 籬笆
 containers-icon-fingerprint =
@@ -91,3 +89,19 @@ containers-icon-tree =
     .label = 大樹
 containers-icon-chill =
     .label = 墨鏡
+containers-window-new3 =
+    .title = 新增容器
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = { $name } 容器設定
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = 新增容器
+containers-panel-create-button =
+    .label = 完成
+containers-panel-cancel-button =
+    .label = 取消

@@ -375,16 +375,16 @@ addon-detail-update-check-label = Thoir sùil airson ùrachaidhean
 install-update-button = Ùraich
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Ceadaichte ann an uinneagan prìobhaideach
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Ceadaichte ann an uinneagan prìobhaideach
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-help = Ma fhuair e cead, gheibh an leudachan cothrom air a’ ghnìomhachd air loidhne agad nuair a bhios tu ri brabhsadh prìobhaideach. <a data-l10n-name="learn-more">Barrachd fiosrachaidh</a>
 addon-detail-private-browsing-allow = Ceadaich
 addon-detail-private-browsing-disallow = Na ceadaich
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -400,6 +400,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Chaidh an leudachan seo a sgrùdadh is tha e a’ coileanadh nan stannardan againn a thaobh tèarainteachd is dèanadas
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Leudachan oifigeil le Mozilla. Tha e a’ coileanadh nan stannardan a thaobh tèarainteachd is dèanadas
 
 ##
 
@@ -458,12 +462,8 @@ details-notification-unsigned2 =
     .message = Cha b’ urrainn dhuinn { $name } a dhearbhadh a chum cleachdaidh ann an { -brand-short-name }. Bi faiceallach.
 details-notification-unsigned-link = Barrachd fiosrachaidh
 details-notification-blocked = Chaidh { $name } a chur à comas air sgàth adhbharan tèarainteachd no seasmhachd.
-details-notification-blocked2 =
-    .message = Chaidh { $name } a chur à comas air sgàth adhbharan tèarainteachd no seasmhachd.
 details-notification-blocked-link = Barrachd fiosrachaidh
 details-notification-softblocked = Tha fhios gun adhbharaich { $name } duilgheadasan tèarainteachd is seasmhachd.
-details-notification-softblocked2 =
-    .message = Tha fhios gun adhbharaich { $name } duilgheadasan tèarainteachd is seasmhachd.
 details-notification-softblocked-link = Barrachd fiosrachaidh
 details-notification-gmp-pending = Thèid { $name } stàladh a dh'aithghearr.
 details-notification-gmp-pending2 =

@@ -5,6 +5,9 @@ This document describes the telemetry that Firefox records for the Firefox
 Suggest feature. That is, it describes Firefox Suggest telemetry recorded on the
 client. It also discusses the data that Firefox sends to the Merino service.
 
+This document only covers Legacy telemetry, not Glean telemetry.
+Glean metrics are self-documenting and can be looked up in the Glean dictionary.
+
 For information on other telemetry related to the address bar, see the general
 address bar :doc:`telemetry` document. For information on all telemetry in
 Firefox, see the toolkit :doc:`/toolkit/components/telemetry/index` document.
@@ -16,9 +19,7 @@ Firefox, see the toolkit :doc:`/toolkit/components/telemetry/index` document.
 Histograms
 ----------
 
-The following histograms are recorded for Firefox Suggest. For general
-information on histogram telemetry in Firefox, see the
-:doc:`/toolkit/components/telemetry/collection/histograms` document.
+The following histograms were once recorded for Firefox Suggest.
 
 FX_URLBAR_MERINO_LATENCY_MS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,7 +33,11 @@ Changelog
   Firefox 93.0
     Introduced. [Bug 1727799_]
 
+  Firefox 137.0
+    Removed. [Bug 1946922_]
+
 .. _1727799: https://bugzilla.mozilla.org/show_bug.cgi?id=1727799
+.. _1946922: https://bugzilla.mozilla.org/show_bug.cgi?id=1946922
 
 FX_URLBAR_MERINO_LATENCY_WEATHER_MS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +51,11 @@ Changelog
   Firefox 110.0
     Introduced. [Bug 1804536_]
 
+  Firefox 137.0
+    Removed. [Bug 1946922_]
+
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1946922: https://bugzilla.mozilla.org/show_bug.cgi?id=1946922
 
 FX_URLBAR_MERINO_RESPONSE
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,8 +90,12 @@ Changelog
     timeout elapsed" to "The fetch completed without any error before the
     timeout elapsed and it included at least one suggestion." [Bug 1804536_]
 
+  Firefox 137.0
+    Removed. [Bug 1946922_]
+
 .. _1737923: https://bugzilla.mozilla.org/show_bug.cgi?id=1737923
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1946922: https://bugzilla.mozilla.org/show_bug.cgi?id=1946922
 
 FX_URLBAR_MERINO_RESPONSE_WEATHER
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,7 +123,11 @@ Changelog
   Firefox 110.0
     Introduced. [Bug 1804536_]
 
+  Firefox 137.0
+    Removed. [Bug 1946922_]
+
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1946922: https://bugzilla.mozilla.org/show_bug.cgi?id=1946922
 
 FX_URLBAR_QUICK_SUGGEST_REMOTE_SETTINGS_LATENCY_MS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -129,20 +146,27 @@ Changelog
   Firefox 94.0.2
     Introduced. [Bug 1737651_]
 
+  Firefox 135.0
+    Removed. [Bug 1932502_]
+
 .. _1737651: https://bugzilla.mozilla.org/show_bug.cgi?id=1737651
+.. _1932502: https://bugzilla.mozilla.org/show_bug.cgi?id=1932502
 
 Scalars
 -------
 
-The following scalars are recorded for Firefox Suggest. For general information
-on scalar telemetry in Firefox, see the
-:doc:`/toolkit/components/telemetry/collection/scalars` document.
+The following scalars are recorded for Firefox Suggest.
 
-browser.ui.interaction.preferences_panePrivacy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+browser.ui.interaction.preferences_paneSearch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This keyed scalar is incremented each time the user clicks a Firefox Suggest
-checkbox or toggle switch in the preferences UI. Keys are the following:
+checkbox or toggle switch in the preferences UI.
+
+Note: These are also recorded in different forms under the
+``contextual.services.quicksuggest.*`` telemetry described below.
+
+Keys are the following:
 
 :firefoxSuggestBestMatch:
   This key is incremented when the "Top pick" checkbox is clicked. In 120 this
@@ -153,10 +177,10 @@ checkbox or toggle switch in the preferences UI. Keys are the following:
 :firefoxSuggestDataCollectionToggle:
   This key is incremented when the toggle switch for data collection
   is clicked.
-:firefoxSuggestNonsponsoredToggle:
+:firefoxSuggestNonsponsored:
   This key is incremented when the toggle switch for non-sponsored suggestions
   is clicked.
-:firefoxSuggestSponsoredToggle:
+:firefoxSuggestSponsored:
   This key is incremented when the toggle switch for sponsored suggestions
   is clicked.
 
@@ -174,10 +198,18 @@ Changelog
     Removed ``firefoxSuggestBestMatch`` and
     ``firefoxSuggestBestMatchLearnMore``. [Bug 1857391_]
 
+  Firefox 123.0
+    Recording moved from ``browser.ui.interaction.preferences_panePrivacy`` to
+    ``browser.ui.interaction.preferences_paneSearch``. [Bug 1852048_]
+    ``firefoxSuggestNonsponsoredToggle`` was renamed to ``firefoxSuggestNonsponsored``
+    ``firefoxSuggestSponsoredToggle`` was renamed to ``firefoxSuggestSponsored``
+    ``
+
 .. _1735976: https://bugzilla.mozilla.org/show_bug.cgi?id=1735976
 .. _1755100: https://bugzilla.mozilla.org/show_bug.cgi?id=1755100
 .. _1756917: https://bugzilla.mozilla.org/show_bug.cgi?id=1756917
 .. _1857391: https://bugzilla.mozilla.org/show_bug.cgi?id=1857391
+.. _1852048: https://bugzilla.mozilla.org/show_bug.cgi?id=1852048
 
 contextual.services.quicksuggest.block_dynamic_wikipedia
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +223,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.block_nonsponsored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,7 +242,11 @@ Changelog
   Firefox 101.0
     Introduced. [Bug 1761059_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1761059: https://bugzilla.mozilla.org/show_bug.cgi?id=1761059
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.block_nonsponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -239,7 +279,11 @@ Changelog
   Firefox 101.0
     Introduced. [Bug 1761059_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1761059: https://bugzilla.mozilla.org/show_bug.cgi?id=1761059
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.block_sponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,7 +315,11 @@ Changelog
   Firefox 110.0
     Introduced. [Bug 1804536_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -302,7 +350,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nav_notmatched
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -319,7 +371,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nav_shown_heuristic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -336,7 +392,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nav_shown_nav
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -354,7 +414,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nav_superceded
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -371,7 +435,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nonsponsored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -385,7 +453,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_nonsponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -416,7 +488,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.click_sponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,7 +523,11 @@ Changelog
   Firefox 110.0
     Introduced. [Bug 1804536_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.exposure_weather
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -519,7 +599,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.help_nonsponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -551,7 +635,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.help_sponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -632,7 +720,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_nav_notmatched
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -650,7 +742,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_nav_shown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -668,7 +764,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_nav_superceded
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -686,7 +786,11 @@ Changelog
   Firefox 112.0
     Introduced. [Bug 1819797_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_nonsponsored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -706,7 +810,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_nonsponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -751,7 +859,11 @@ Changelog
   Firefox 109.0
     Introduced. [Bug 1800993_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 contextual.services.quicksuggest.impression_sponsored_bestmatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -797,15 +909,17 @@ Changelog
   Firefox 110.0
     Introduced. [Bug 1804536_]
 
+  Firefox 133.0
+    Removed. [Bug 1925355_]
+
 .. _1804536: https://bugzilla.mozilla.org/show_bug.cgi?id=1804536
+.. _1925355: https://bugzilla.mozilla.org/show_bug.cgi?id=1925355
 
 Events
 ------
 
 The following Firefox Suggest events are recorded in the
-``contextservices.quicksuggest`` category. For general information on event
-telemetry in Firefox, see the
-:doc:`/toolkit/components/telemetry/collection/events` document.
+``contextservices.quicksuggest`` category.
 
 contextservices.quicksuggest.data_collect_toggled
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -833,7 +947,11 @@ Changelog
   Firefox 94.0.2
     Introduced. [Bug 1735976_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1735976: https://bugzilla.mozilla.org/show_bug.cgi?id=1735976
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 contextservices.quicksuggest.enable_toggled
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -867,9 +985,13 @@ Changelog
     modal dialog since the ``browser.urlbar.suggest.quicksuggest.nonsponsored``
     pref is no longer set when the user opts in or out. [Bug 1740965_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1693126: https://bugzilla.mozilla.org/show_bug.cgi?id=1693126
 .. _1735976: https://bugzilla.mozilla.org/show_bug.cgi?id=1735976
 .. _1740965: https://bugzilla.mozilla.org/show_bug.cgi?id=1740965
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 contextservices.quicksuggest.engagement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -925,10 +1047,14 @@ Changelog
   Firefox 114.0
     ``other`` is added as a value of the event object. [Bug 1827943_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1761059: https://bugzilla.mozilla.org/show_bug.cgi?id=1761059
 .. _1800993: https://bugzilla.mozilla.org/show_bug.cgi?id=1800993
 .. _1819797: https://bugzilla.mozilla.org/show_bug.cgi?id=1819797
 .. _1827943: https://bugzilla.mozilla.org/show_bug.cgi?id=1827943
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 contextservices.quicksuggest.impression_cap
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -984,8 +1110,12 @@ Changelog
   Firefox 101.0
     Introduced. [Bug 1761058_, 1765881_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1761058: https://bugzilla.mozilla.org/show_bug.cgi?id=1761058
 .. _1765881: https://bugzilla.mozilla.org/show_bug.cgi?id=1765881
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 contextservices.quicksuggest.opt_in_dialog
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1061,10 +1191,14 @@ Changelog
     ``dismiss_2``.
     [Bug 1761171_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1723860: https://bugzilla.mozilla.org/show_bug.cgi?id=1723860
 .. _1733687: https://bugzilla.mozilla.org/show_bug.cgi?id=1733687
 .. _1745026: https://bugzilla.mozilla.org/show_bug.cgi?id=1745026
 .. _1761171: https://bugzilla.mozilla.org/show_bug.cgi?id=1761171
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 contextservices.quicksuggest.sponsored_toggled
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1092,8 +1226,12 @@ Changelog
     modal dialog since the ``browser.urlbar.suggest.quicksuggest.sponsored``
     pref is no longer set when the user opts in or out. [Bug 1740965_]
 
+  Firefox 133.0
+    Removed. [Bug 1921748_]
+
 .. _1728430: https://bugzilla.mozilla.org/show_bug.cgi?id=1728430
 .. _1740965: https://bugzilla.mozilla.org/show_bug.cgi?id=1740965
+.. _1921748: https://bugzilla.mozilla.org/show_bug.cgi?id=1921748
 
 Environment
 -----------
@@ -1167,9 +1305,13 @@ Changelog
   Firefox 100.0
     Added ``learn_more_1``. [Bug 1761171_]
 
+  Firefox 137.0
+    Removed. [Bug 1936455_]
+
 .. _1734447: https://bugzilla.mozilla.org/show_bug.cgi?id=1734447
 .. _1745026: https://bugzilla.mozilla.org/show_bug.cgi?id=1745026
 .. _1761171: https://bugzilla.mozilla.org/show_bug.cgi?id=1761171
+.. _1936455: https://bugzilla.mozilla.org/show_bug.cgi?id=1936455
 
 browser.urlbar.quicksuggest.dataCollection.enabled
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1183,7 +1325,11 @@ Changelog
   Firefox 94.0.2
     Introduced. [Bug 1735976_]
 
+  Firefox 146.0
+    Removed. [Bug 1995362_]
+
 .. _1735976: https://bugzilla.mozilla.org/show_bug.cgi?id=1735976
+.. _1995362: https://bugzilla.mozilla.org/show_bug.cgi?id=1995362
 
 browser.urlbar.suggest.quicksuggest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1223,8 +1369,12 @@ Changelog
     all other users, it will default to true when/if they are enrolled in
     online. [Bug 1740965_]
 
+  Firefox 146.0
+    Removed. [Bug 1995574_]
+
 .. _1735976: https://bugzilla.mozilla.org/show_bug.cgi?id=1735976
 .. _1740965: https://bugzilla.mozilla.org/show_bug.cgi?id=1740965
+.. _1995574: https://bugzilla.mozilla.org/show_bug.cgi?id=1995574
 
 browser.urlbar.suggest.quicksuggest.sponsored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1269,7 +1419,13 @@ Changelog
 Nimbus Exposure Event
 ---------------------
 
-A `Nimbus exposure event`_ is recorded once per app session when the user first
+.. note::
+
+  This section is historical and describes how older versions of Firefox
+  recorded Nimbus exposure events for Firefox Suggest. Recent Firefox versions
+  no longer record Nimbus exposure events for Firefox Suggest.
+
+A Nimbus exposure event is recorded once per app session when the user first
 encounters the UI of an experiment in which they're enrolled. The timing of the
 event depends on the experiment and branch.
 
@@ -1320,12 +1476,15 @@ Changelog
   Firefox 124.0
     The ``experimentType = "modal"`` case is removed.
 
-.. _Nimbus exposure event: https://experimenter.info/jetstream/jetstream/#enrollment-vs-exposure
+  Firefox 135.0
+    The ``experimentType`` Nimbus variable is removed. By this time it already
+    not been referenced in Firefox code for quite a while. [Bug 1932502_]
 
 .. _1724076: https://bugzilla.mozilla.org/show_bug.cgi?id=1724076
 .. _1727392: https://bugzilla.mozilla.org/show_bug.cgi?id=1727392
 .. _1752953: https://bugzilla.mozilla.org/show_bug.cgi?id=1752953
 .. _1760596: https://bugzilla.mozilla.org/show_bug.cgi?id=1760596
+.. _1932502: https://bugzilla.mozilla.org/show_bug.cgi?id=1932502
 
 Merino Search Queries
 ---------------------

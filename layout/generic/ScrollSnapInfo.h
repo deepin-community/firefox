@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,15 @@
 #ifndef mozilla_layout_ScrollSnapInfo_h_
 #define mozilla_layout_ScrollSnapInfo_h_
 
-#include <memory>
-#include "mozilla/ScrollTypes.h"
-#include "mozilla/ScrollSnapTargetId.h"
-#include "mozilla/ServoStyleConsts.h"
+#include <iosfwd>
+
+#include "mozilla/AppUnits.h"
 #include "mozilla/Maybe.h"
+#include "mozilla/ScrollSnapTargetId.h"
+#include "mozilla/ScrollTypes.h"
+#include "mozilla/ServoStyleConsts.h"
+#include "mozilla/StaticPrefs_layout.h"
+#include "mozilla/WritingModes.h"
 #include "mozilla/layers/LayersTypes.h"
 #include "nsPoint.h"
 
@@ -33,26 +35,24 @@ struct SnapPoint {
   SnapPoint(Maybe<nscoord>&& aX, Maybe<nscoord>&& aY)
       : mX(std::move(aX)), mY(std::move(aY)) {}
 
-  bool operator==(const SnapPoint& aOther) const {
-    return mX == aOther.mX && mY == aOther.mY;
-  }
+  bool operator==(const SnapPoint&) const = default;
 
   Maybe<nscoord> mX;
   Maybe<nscoord> mY;
+
+  const Maybe<nscoord>& I(WritingMode aWM) const {
+    return aWM.IsVertical() ? mY : mX;
+  }
+  const Maybe<nscoord>& B(WritingMode aWM) const {
+    return aWM.IsVertical() ? mX : mY;
+  }
 };
 
 struct ScrollSnapInfo {
   using ScrollDirection = layers::ScrollDirection;
   ScrollSnapInfo();
 
-  bool operator==(const ScrollSnapInfo& aOther) const {
-    return mScrollSnapStrictnessX == aOther.mScrollSnapStrictnessX &&
-           mScrollSnapStrictnessY == aOther.mScrollSnapStrictnessY &&
-           mSnapTargets == aOther.mSnapTargets &&
-           mXRangeWiderThanSnapport == aOther.mXRangeWiderThanSnapport &&
-           mYRangeWiderThanSnapport == aOther.mYRangeWiderThanSnapport &&
-           mSnapportSize == aOther.mSnapportSize;
-  }
+  bool operator==(const ScrollSnapInfo&) const = default;
 
   bool HasScrollSnapping() const;
   bool HasSnapPositions() const;
@@ -63,6 +63,13 @@ struct ScrollSnapInfo {
   // The scroll frame's scroll-snap-type.
   StyleScrollSnapStrictness mScrollSnapStrictnessX;
   StyleScrollSnapStrictness mScrollSnapStrictnessY;
+
+  StyleScrollSnapStrictness StrictnessInline(WritingMode aWM) const {
+    return aWM.IsVertical() ? mScrollSnapStrictnessY : mScrollSnapStrictnessX;
+  }
+  StyleScrollSnapStrictness StrictnessBlock(WritingMode aWM) const {
+    return aWM.IsVertical() ? mScrollSnapStrictnessX : mScrollSnapStrictnessY;
+  }
 
   struct SnapTarget {
     // The scroll positions corresponding to scroll-snap-align values.
@@ -87,11 +94,7 @@ struct ScrollSnapInfo {
           mScrollSnapStop(aScrollSnapStop),
           mTargetId(aTargetId) {}
 
-    bool operator==(const SnapTarget& aOther) const {
-      return mSnapPoint == aOther.mSnapPoint && mSnapArea == aOther.mSnapArea &&
-             mScrollSnapStop == aOther.mScrollSnapStop &&
-             mTargetId == aOther.mTargetId;
-    }
+    bool operator==(const SnapTarget& aOther) const = default;
   };
 
   CopyableTArray<SnapTarget> mSnapTargets;
@@ -113,10 +116,7 @@ struct ScrollSnapInfo {
     ScrollDirection mDirection;
     ScrollSnapTargetId mTargetId;
 
-    bool operator==(const ScrollSnapRange& aOther) const {
-      return mDirection == aOther.mDirection && mSnapArea == aOther.mSnapArea &&
-             mTargetId == aOther.mTargetId;
-    }
+    bool operator==(const ScrollSnapRange& aOther) const = default;
 
     nscoord Start() const {
       return mDirection == ScrollDirection::eHorizontal ? mSnapArea.X()
@@ -131,7 +131,10 @@ struct ScrollSnapInfo {
     // Returns true if |aPoint| is a valid snap position in this range.
     bool IsValid(nscoord aPoint, nscoord aSnapportSize) const {
       MOZ_ASSERT(End() - Start() > aSnapportSize);
-      return Start() <= aPoint && aPoint <= End() - aSnapportSize;
+      const nscoord tolerance = StaticPrefs::layout_disable_pixel_alignment()
+                                    ? 0
+                                    : CSSPixel::ToAppUnits(CSSCoord(0.5f));
+      return Start() <= aPoint && aPoint <= End() - aSnapportSize + tolerance;
     }
   };
   // An array of the range that the target element is larger than the snapport
@@ -148,6 +151,15 @@ struct ScrollSnapInfo {
   // Note: This snapport size has been already deflated by scroll-padding.
   nsSize mSnapportSize;
 };
+
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget& aTarget);
+
+// For convenience, allow printing a pointer to a SnapTarget without
+// explicitly dereferencing it. This makes it easier to print an
+// array of pointers.
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget* aTarget);
 
 }  // namespace mozilla
 

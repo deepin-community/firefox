@@ -31,10 +31,10 @@ add_task(async function () {
     requestItem.scrollIntoView();
     EventUtils.sendMouseEvent({ type: "mouseover" }, requestsListStatus);
     await waitUntil(() => requestsListStatus.title);
-    await waitForDOMIfNeeded(requestItem, ".requests-list-timings-total");
+    await waitForDOM(requestItem, ".requests-list-timings-total");
   }
 
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[0],
@@ -49,7 +49,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[1],
@@ -64,7 +64,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[2],
@@ -79,7 +79,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[3],
@@ -94,7 +94,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[4],
@@ -109,7 +109,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[5],
@@ -125,7 +125,7 @@ add_task(async function () {
       time: true,
     }
   );
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[6],
@@ -136,7 +136,10 @@ add_task(async function () {
       statusText: "OK",
       type: "plain",
       fullMimeType: "text/plain",
-      transferred: L10N.getFormatStrWithNumbers("networkMenu.sizeB", 324),
+      transferred: L10N.getFormatStrWithNumbers(
+        "networkMenu.sizeB",
+        AppConstants.USE_LIBZ_RS ? 333 : 324
+      ),
       size: L10N.getFormatStrWithNumbers("networkMenu.size.kB", 10.99),
       time: true,
     }
@@ -165,7 +168,7 @@ add_task(async function () {
 
   await teardown(monitor);
 
-  function testResponseTab(type) {
+  async function testResponseTab(type) {
     const tabpanel = document.querySelector("#response-panel");
 
     function checkVisibility(box) {
@@ -181,7 +184,7 @@ add_task(async function () {
         "The response json view doesn't display"
       );
       is(
-        tabpanel.querySelector(".CodeMirror-code") === null,
+        tabpanel.querySelector(".cm-content") === null,
         box !== "textarea",
         "The response editor doesn't display"
       );
@@ -271,7 +274,11 @@ add_task(async function () {
       case "html": {
         checkVisibility("html");
 
-        const text = document.querySelector(".html-preview iframe").src;
+        const browser = document.querySelector(".html-preview browser");
+        ok(!!browser.currentURI?.spec);
+        await waitForBrowserLoaded(browser);
+
+        const text = browser.currentURI.spec;
         const expectedText =
           "data:text/html;charset=UTF-8," +
           encodeURIComponent("<blink>Not Found</blink>");
@@ -279,7 +286,7 @@ add_task(async function () {
         is(
           text,
           expectedText,
-          "The text shown in the iframe is incorrect for the html request."
+          "The text shown in the browser is incorrect for the html request."
         );
         break;
       }
@@ -296,11 +303,11 @@ add_task(async function () {
           "The image name info isn't correct."
         );
         is(mime.textContent, "image/png", "The image mime info isn't correct.");
-        is(
-          dimensions.textContent,
-          "16" + " \u00D7 " + "16",
+        await waitFor(
+          () => dimensions.textContent === "16" + " \u00D7 " + "16",
           "The image dimensions info isn't correct."
         );
+
         break;
       }
       case "gzip": {
@@ -352,7 +359,10 @@ add_task(async function () {
     const waitDOM = waitForDOM(tabpanel, ".response-image");
     store.dispatch(Actions.selectRequestByIndex(index));
     const [imageNode] = await waitDOM;
-    await once(imageNode, "load");
+    await waitFor(
+      () => imageNode.complete === true && imageNode.naturalWidth > 0,
+      "Wait for the image to load"
+    );
     await onResponseContent;
   }
 });

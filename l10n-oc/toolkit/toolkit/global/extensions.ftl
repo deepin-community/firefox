@@ -16,6 +16,15 @@ webext-perms-header-unsigned = Apondre { $extension } ? Aquesta extension fogu
 webext-perms-header-unsigned-with-perms = Apondre { $extension } ? Aquesta extension foguèt pas verificada. Las extensions malvolentas pòdon prendre vòstras donadas personalas o far perilh a vòstre ordenador. L’apondètz sonque se vos fisatz de la font. Aquesta extension aurà la permission de :
 webext-perms-sideload-header = { $extension } es estat apondut
 webext-perms-optional-perms-header = { $extension } demanda de permissions suplementàrias.
+webext-perms-header2 = Apondre { $extension } ?
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = Autorizacions necessàrias :
+webext-perms-header-optional-settings = Paramètres opcionals :
+webext-perms-header-update-required-perms = Autorizacions necessàrias novèla :
+webext-perms-header-optional-required-perms = Autorizacions novèlas :
+webext-perms-header-data-collection-is-none = Culhida de donadas :
 
 ##
 
@@ -25,7 +34,6 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Anullar
     .accesskey = n
-
 webext-perms-sideload-text = Un programa del vòstre ordenador installèt un modul complementari que poiriá portar tòrt a vòstre navegador. Mercé de reveire las permissions que demanda aquel modul e prenètz la decision de l’activar o de l’anullar (que demòre desactivat).
 webext-perms-sideload-text-no-perms = Un programa del vòstre ordenador installèt un modul complementari que poiriá portar tòrt a vòstre navegador. Mercé de reveire las permissions que demanda aquel modul e prenètz la decision de l’activar o de l’anullar (que demòre desactivat).
 webext-perms-sideload-enable =
@@ -34,14 +42,15 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Anullar
     .accesskey = n
-
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = { $extension } es estat mes a jorn. Devètz aprovar las autorizacions novèlas abans l’installacion de la version novèla. Seleccionar « Anullar » servarà la version actuala de l’extension.
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = { $extension } es estat actualizat. Devètz aprovar de permissions novèlas abans d'installar la version actualizada. Causir « Anullar »  mantendrà la version actuala de l’extension. Aquesta extension aurà la permission de :
 webext-perms-update-accept =
     .label = Metre a jorn
     .accesskey = M
-
 webext-perms-optional-perms-list-intro = Vòl :
 webext-perms-optional-perms-allow =
     .label = Autorizar
@@ -49,13 +58,10 @@ webext-perms-optional-perms-allow =
 webext-perms-optional-perms-deny =
     .label = Refusar
     .accesskey = R
-
 webext-perms-host-description-all-urls = Accedir a vòstras donadas per totes los sites web
-
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
 webext-perms-host-description-wildcard = Accedir a vòstras donadas pels sites del domeni { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -67,7 +73,6 @@ webext-perms-host-description-too-many-wildcards =
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
 webext-perms-host-description-one-site = Accedir a vòstras donadas per { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -76,6 +81,23 @@ webext-perms-host-description-too-many-sites =
         [one] Accedir a vòstras donadas dins { $domainCount } autre site
        *[other] Accedir a vòstras donadas dins { $domainCount } autres sites
     }
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = Accedir a vòstras donadas pels sites dels domenis { $domain }
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains = Accedir a vòstras donadas pels sites de { $domainCount } domenis
+
+## Strings for data collection permissions in the permission prompt.
+
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } demanda d’autorizacions suplementàrias
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -86,9 +108,6 @@ webext-perms-host-description-too-many-sites =
 
 webext-site-perms-header-with-gated-perms-midi = Aqueste modul complementari dòna accès a { $hostname } a vòstres periferics MIDI.
 webext-site-perms-header-with-gated-perms-midi-sysex = Aqueste modul complementari dòna accès a { $hostname } a vòstres periferics MIDI (amb presa en carga de SysEx)
-
-##
-
 
 ## Headers used in the webextension permissions dialog.
 ## Note: This string will be used as raw markup. Avoid characters like <, >, &

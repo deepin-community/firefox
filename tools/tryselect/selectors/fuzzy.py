@@ -3,12 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import os
 import sys
 from pathlib import PurePath
-
-from gecko_taskgraph.target_tasks import filter_by_uncommon_try_tasks
-from mach.util import get_state_dir
 
 from ..cli import BaseTryParser
 from ..push import check_working_directory, generate_try_task_config, push_to_try
@@ -20,10 +16,6 @@ from ..util.fzf import (
     fzf_bootstrap,
     fzf_shortcuts,
     run_fzf,
-)
-from ..util.manage_estimates import (
-    download_task_history_data,
-    make_trimmed_taskgraph_cache,
 )
 
 
@@ -47,8 +39,11 @@ class FuzzyParser(BaseTryParser):
             {
                 "action": "store_true",
                 "default": False,
-                "help": "Force running fzf interactively even when using presets or "
-                "queries with -q/--query.",
+                "help": "Run fzf interactively, even if --preset or --query is used. "
+                "Tasks selected interactively will be unioned with tasks selected "
+                "by the --preset/--query flags. If -x/--and is also specified, tasks "
+                "selected interactively will instead be intersected with tasks "
+                "selected by --preset/--query.",
             },
         ],
         [
@@ -80,15 +75,7 @@ class FuzzyParser(BaseTryParser):
             },
         ],
         [
-            ["-s", "--show-estimates"],
-            {
-                "action": "store_true",
-                "default": False,
-                "help": "Show task duration estimates.",
-            },
-        ],
-        [
-            ["--disable-target-task-filter"],
+            ["--disable-target-task-filter", "--all-tasks"],
             {
                 "action": "store_true",
                 "default": False,
@@ -113,11 +100,14 @@ class FuzzyParser(BaseTryParser):
         "browsertime",
         "chemspill-prio",
         "disable-pgo",
+        "do-not-optimize",
         "env",
         "existing-tasks",
         "gecko-profile",
+        "native-profiling",
         "new-test-config",
         "path",
+        "target-tasks-method",
         "test-tag",
         "pernosco",
         "rebuild",
@@ -127,6 +117,7 @@ class FuzzyParser(BaseTryParser):
 
 
 def run(
+    metrics,
     update=False,
     query=None,
     intersect_query=None,
@@ -141,13 +132,17 @@ def run(
     test_tag=None,
     exact=False,
     closed_tree=False,
-    show_estimates=False,
     disable_target_task_filter=False,
-    push_to_lando=False,
+    push_to_vcs=False,
     show_chunk_numbers=False,
     new_test_config=False,
+    **kwargs,
 ):
+    metrics.mach_try.fzf_bootstrap_duration.start()
+    from gecko_taskgraph.target_tasks import filter_by_uncommon_try_tasks
+
     fzf = fzf_bootstrap(update)
+    metrics.mach_try.fzf_bootstrap_duration.stop()
 
     if not fzf:
         print(FZF_NOT_FOUND)
@@ -155,27 +150,22 @@ def run(
 
     push = not stage_changes and not dry_run
     check_working_directory(push)
+
+    target_tasks_method = None
+    if try_config_params and "target_tasks_method" in try_config_params:
+        target_tasks_method = try_config_params.pop("target_tasks_method")
+
+    metrics.mach_try.taskgraph_generation_duration.start()
     tg = generate_tasks(
-        parameters, full=full, disable_target_task_filter=disable_target_task_filter
+        parameters,
+        full=full,
+        disable_target_task_filter=disable_target_task_filter,
+        target_tasks_method=target_tasks_method,
     )
     all_tasks = tg.tasks
+    metrics.mach_try.taskgraph_generation_duration.stop()
 
-    # graph_Cache created by generate_tasks, recreate the path to that file.
-    cache_dir = os.path.join(
-        get_state_dir(specific_to_topsrcdir=True), "cache", "taskgraph"
-    )
-    if full:
-        graph_cache = os.path.join(cache_dir, "full_task_graph")
-        dep_cache = os.path.join(cache_dir, "full_task_dependencies")
-        target_set = os.path.join(cache_dir, "full_task_set")
-    else:
-        graph_cache = os.path.join(cache_dir, "target_task_graph")
-        dep_cache = os.path.join(cache_dir, "target_task_dependencies")
-        target_set = os.path.join(cache_dir, "target_task_set")
-
-    if show_estimates:
-        download_task_history_data(cache_dir=cache_dir)
-        make_trimmed_taskgraph_cache(graph_cache, dep_cache, target_file=target_set)
+    metrics.mach_try.task_filtering_duration.start()
 
     if not full and not disable_target_task_filter:
         all_tasks = {
@@ -187,12 +177,16 @@ def run(
     if try_config_params.get("try_task_config", {}).get("worker-types", []):
         all_tasks = filter_tasks_by_worker_type(all_tasks, try_config_params)
         if not all_tasks:
+            metrics.mach_try.task_filtering_duration.stop()
             return 1
 
     if test_paths or test_tag:
         all_tasks = filter_tasks_by_paths(all_tasks, test_paths, tag=test_tag)
         if not all_tasks:
+            metrics.mach_try.task_filtering_duration.stop()
             return 1
+
+    metrics.mach_try.task_filtering_duration.stop()
 
     key_shortcuts = [k + ":" + v for k, v in fzf_shortcuts.items()]
     base_cmd = [
@@ -204,26 +198,9 @@ def run(
         format_header(),
         "--preview-window=right:30%",
         "--print-query",
+        "--preview",
+        f'{str(PurePath(sys.executable))} {PREVIEW_SCRIPT} -t "{{+f}}"',
     ]
-
-    if show_estimates:
-        base_cmd.extend(
-            [
-                "--preview",
-                '{} {} -g {} -s -c {} -t "{{+f}}"'.format(
-                    str(PurePath(sys.executable)), PREVIEW_SCRIPT, dep_cache, cache_dir
-                ),
-            ]
-        )
-    else:
-        base_cmd.extend(
-            [
-                "--preview",
-                '{} {} -t "{{+f}}"'.format(
-                    str(PurePath(sys.executable)), PREVIEW_SCRIPT
-                ),
-            ]
-        )
 
     if exact:
         base_cmd.append("--exact")
@@ -241,7 +218,10 @@ def run(
         else:
             fzf_tasks = set(candidate_tasks.keys())
 
+        metrics.mach_try.interactive_duration.start()
         query_str, tasks = run_fzf(cmd, sorted(fzf_tasks))
+        metrics.mach_try.interactive_duration.stop()
+
         queries.append(query_str)
         return set(tasks)
 
@@ -272,20 +252,29 @@ def run(
         return queries
 
     # build commit message
-    msg = "Fuzzy"
-    args = ["query={}".format(q) for q in queries]
+    if "preset_id" in kwargs:
+        msg = "Fuzzy (preset: {})".format(kwargs.get("preset_id"))
+    else:
+        msg = "Fuzzy"
+    args = [f"query={q}" for q in queries]
     if test_paths:
         args.append("paths={}".format(":".join(test_paths)))
     if args:
         msg = "{} {}".format(msg, "&".join(args))
+
+    metrics.mach_try.task_config_generation_duration.start()
+    try_task_config = generate_try_task_config(
+        "fuzzy", selected, params=try_config_params
+    )
+    metrics.mach_try.task_config_generation_duration.stop()
+
     return push_to_try(
         "fuzzy",
         message.format(msg=msg),
-        try_task_config=generate_try_task_config(
-            "fuzzy", selected, params=try_config_params
-        ),
+        metrics,
+        try_task_config=try_task_config,
         stage_changes=stage_changes,
         dry_run=dry_run,
         closed_tree=closed_tree,
-        push_to_lando=push_to_lando,
+        push_to_vcs=push_to_vcs,
     )

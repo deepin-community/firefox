@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,18 +9,15 @@
 #include "js/TypeDecls.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/CycleCollectedJSContext.h"  // for MicroTaskRunnable
+#include "mozilla/RefPtr.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/CustomElementRegistryBinding.h"
-#include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/ElementInternals.h"
-#include "mozilla/dom/ElementInternalsBinding.h"
-#include "mozilla/dom/HTMLFormElement.h"
-#include "mozilla/RefPtr.h"
-#include "nsCycleCollectionParticipant.h"
-#include "nsWrapperCache.h"
-#include "nsTHashSet.h"
 #include "nsAtomHashKeys.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsTHashSet.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -31,6 +26,7 @@ namespace dom {
 
 struct CustomElementData;
 struct ElementDefinitionOptions;
+struct LifecycleCallbackArgs;
 class CallbackFunction;
 class CustomElementCallback;
 class CustomElementReaction;
@@ -41,36 +37,13 @@ enum class ElementCallbackType {
   eConnected,
   eDisconnected,
   eAdopted,
+  eConnectedMove,
   eAttributeChanged,
   eFormAssociated,
   eFormReset,
   eFormDisabled,
   eFormStateRestore,
   eGetCustomInterface
-};
-
-struct LifecycleCallbackArgs {
-  // Used by the attribute changed callback.
-  RefPtr<nsAtom> mName;
-  nsString mOldValue;
-  nsString mNewValue;
-  nsString mNamespaceURI;
-
-  // Used by the adopted callback.
-  RefPtr<Document> mOldDocument;
-  RefPtr<Document> mNewDocument;
-
-  // Used by the form associated callback.
-  RefPtr<HTMLFormElement> mForm;
-
-  // Used by the form disabled callback.
-  bool mDisabled;
-
-  // Used by the form state restore callback.
-  Nullable<OwningFileOrUSVStringOrFormData> mState;
-  RestoreReason mReason;
-
-  size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const;
 };
 
 // Each custom element has an associated callback queue and an element is
@@ -181,18 +154,6 @@ struct CustomElementDefinition {
   // A construction stack. Use nullptr to represent an "already constructed
   // marker".
   nsTArray<RefPtr<Element>> mConstructionStack;
-
-  // See step 6.1.10 of https://dom.spec.whatwg.org/#concept-create-element
-  // which set up the prefix after a custom element is created. However, In
-  // Gecko, the prefix isn't allowed to be changed in NodeInfo, so we store the
-  // prefix information here and propagate to where NodeInfo is assigned to a
-  // custom element instead.
-  nsTArray<RefPtr<nsAtom>> mPrefixStack;
-
-  // This basically is used for distinguishing the custom element constructor
-  // is invoked from document.createElement or directly from JS, i.e.
-  // `new CustomElementConstructor()`.
-  uint32_t mConstructionDepth = 0;
 
   bool IsCustomBuiltIn() { return mType != mLocalName; }
 
@@ -373,7 +334,8 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(CustomElementRegistry)
 
  public:
-  explicit CustomElementRegistry(nsPIDOMWindowInner* aWindow);
+  explicit CustomElementRegistry(nsPIDOMWindowInner* aWindow,
+                                 bool aIsScoped = false);
 
  private:
   class RunCustomElementCreationCallback : public mozilla::Runnable {
@@ -400,6 +362,13 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
 
  public:
   /**
+   * Constructing a CustomElementRegistry
+   * https://html.spec.whatwg.org/#dom-customelementregistry
+   */
+  static already_AddRefed<CustomElementRegistry> Constructor(
+      const GlobalObject& aGlobal);
+
+  /**
    * Looking up a custom element definition.
    * https://html.spec.whatwg.org/#look-up-a-custom-element-definition
    */
@@ -410,6 +379,10 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
   CustomElementDefinition* LookupCustomElementDefinition(
       JSContext* aCx, JSObject* aConstructor) const;
 
+  /**
+   * Enqueue a custom element callback reaction.
+   * https://html.spec.whatwg.org/#enqueue-a-custom-element-callback-reaction
+   */
   static void EnqueueLifecycleCallback(ElementCallbackType aType,
                                        Element* aCustomElement,
                                        const LifecycleCallbackArgs& aArgs,
@@ -417,7 +390,7 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
 
   /**
    * Upgrade an element.
-   * https://html.spec.whatwg.org/multipage/scripting.html#upgrades
+   * https://html.spec.whatwg.org/#concept-upgrade-an-element
    */
   MOZ_CAN_RUN_SCRIPT
   static void Upgrade(Element* aElement, CustomElementDefinition* aDefinition,
@@ -482,6 +455,12 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
     elements->Insert(elem);
   }
 
+  bool IsScoped() const { return mIsScoped; }
+
+  static already_AddRefed<CustomElementRegistry> GetScopedRegistry(nsINode&);
+  static void SetScopedRegistry(nsINode&, CustomElementRegistry&);
+  static void RemoveScopedRegistry(nsINode&);
+
   void TraceDefinitions(JSTracer* aTrc);
 
  private:
@@ -537,6 +516,10 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
   // It is used to prevent reentrant invocations of element definition.
   bool mIsCustomDefinitionRunning;
 
+  // Used to check when the registry has been constructed via script
+  // https://html.spec.whatwg.org/#is-scoped
+  bool mIsScoped;
+
  private:
   int32_t InferNamespace(JSContext* aCx, JS::Handle<JSObject*> constructor);
 
@@ -552,9 +535,15 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
               CustomElementConstructor& aFunctionConstructor,
               const ElementDefinitionOptions& aOptions, ErrorResult& aRv);
 
+  /**
+   * https://html.spec.whatwg.org/#dom-customelementregistry-get
+   */
   void Get(const nsAString& name,
            OwningCustomElementConstructorOrUndefined& aRetVal);
 
+  /**
+   * https://html.spec.whatwg.org/#dom-customelementregistry-getname
+   */
   void GetName(JSContext* aCx, CustomElementConstructor& aConstructor,
                nsAString& aResult);
 

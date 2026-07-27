@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -54,6 +52,7 @@ void EventCallbackDebuggerNotificationGuard::DispatchToManager(
       mEventTarget->GetDebuggerNotificationType());
 
   if (notificationType) {
+#ifdef MOZ_EXECUTION_TRACING
     CycleCollectedJSContext* ccjcx = CycleCollectedJSContext::Get();
     if (ccjcx) {
       nsAutoString eventType;
@@ -64,10 +63,13 @@ void EventCallbackDebuggerNotificationGuard::DispatchToManager(
         JS_TracerLeaveLabelTwoByte(ccjcx->Context(), eventType.get());
       }
     }
-    aManager->Dispatch<EventCallbackDebuggerNotification>(
-        DebuggerNotificationType::DomEvent,
-        // The DOM event will always be live during event dispatch.
-        MOZ_KnownLive(mEvent), *notificationType, aPhase);
+#endif
+    if (MOZ_UNLIKELY(aManager)) {
+      aManager->Dispatch<EventCallbackDebuggerNotification>(
+          DebuggerNotificationType::DomEvent,
+          // The DOM event will always be live during event dispatch.
+          MOZ_KnownLive(mEvent), *notificationType, aPhase);
+    }
   }
 }
 

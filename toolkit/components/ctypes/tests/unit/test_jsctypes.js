@@ -1,4 +1,3 @@
-/* -*-  indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -428,7 +427,7 @@ function run_abstract_class_tests() {
   }, TypeError);
 
   Assert.ok(ctypes.CType.prototype.hasOwnProperty("constructor"));
-  Assert.ok(ctypes.CType.prototype.constructor === ctypes.CType);
+  Assert.strictEqual(ctypes.CType.prototype.constructor, ctypes.CType);
 
   // Check that ctypes.CType.prototype has the correct properties and functions.
   Assert.ok(ctypes.CType.prototype.hasOwnProperty("name"));
@@ -439,7 +438,7 @@ function run_abstract_class_tests() {
   Assert.ok(ctypes.CType.prototype.hasOwnProperty("toSource"));
 
   // Make sure we can access 'prototype' on a CTypeProto.
-  Assert.ok(ctypes.CType.prototype.prototype === ctypes.CData.prototype);
+  Assert.strictEqual(ctypes.CType.prototype.prototype, ctypes.CData.prototype);
 
   // Check that the shared properties and functions on ctypes.CType.prototype throw.
   do_check_throws(function () {
@@ -476,7 +475,7 @@ function run_abstract_class_tests() {
 
   Assert.ok(ctypes.CData.hasOwnProperty("prototype"));
   Assert.ok(ctypes.CData.prototype.hasOwnProperty("constructor"));
-  Assert.ok(ctypes.CData.prototype.constructor === ctypes.CData);
+  Assert.strictEqual(ctypes.CData.prototype.constructor, ctypes.CData);
 
   // Check that ctypes.CData.prototype has the correct properties and functions.
   Assert.ok(ctypes.CData.prototype.hasOwnProperty("value"));
@@ -512,7 +511,7 @@ function run_Int64_tests() {
 
   Assert.ok(ctypes.Int64.hasOwnProperty("prototype"));
   Assert.ok(ctypes.Int64.prototype.hasOwnProperty("constructor"));
-  Assert.ok(ctypes.Int64.prototype.constructor === ctypes.Int64);
+  Assert.strictEqual(ctypes.Int64.prototype.constructor, ctypes.Int64);
 
   // Check that ctypes.Int64 and ctypes.Int64.prototype have the correct
   // properties and functions.
@@ -795,7 +794,7 @@ function run_UInt64_tests() {
 
   Assert.ok(ctypes.UInt64.hasOwnProperty("prototype"));
   Assert.ok(ctypes.UInt64.prototype.hasOwnProperty("constructor"));
-  Assert.ok(ctypes.UInt64.prototype.constructor === ctypes.UInt64);
+  Assert.strictEqual(ctypes.UInt64.prototype.constructor, ctypes.UInt64);
 
   // Check that ctypes.UInt64 and ctypes.UInt64.prototype have the correct
   // properties and functions.
@@ -1269,7 +1268,7 @@ function run_basic_class_tests(t) {
     ctypes.CData.prototype
   );
   Assert.ok(t.prototype instanceof ctypes.CData);
-  Assert.ok(t.prototype.constructor === t);
+  Assert.strictEqual(t.prototype.constructor, t);
 
   // Check that the shared properties and functions on 't.prototype' throw.
   do_check_throws(function () {
@@ -1294,7 +1293,7 @@ function run_basic_class_tests(t) {
   let d = t();
   Assert.strictEqual(Object.getPrototypeOf(d), t.prototype);
   Assert.ok(d instanceof t);
-  Assert.ok(d.constructor === t);
+  Assert.strictEqual(d.constructor, t);
 }
 
 function run_bool_tests(library) {
@@ -1307,7 +1306,7 @@ function run_bool_tests(library) {
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -1358,7 +1357,7 @@ function run_bool_tests(library) {
     }, TypeError);
   }
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents, d.value);
   Assert.equal(d.toSource(), "ctypes." + name + "(" + d.value + ")");
   Assert.equal(d.toSource(), d.toString());
@@ -1436,7 +1435,7 @@ function run_integer_tests(library, t, name, size, signed, limits) {
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -1511,7 +1510,7 @@ function run_integer_tests(library, t, name, size, signed, limits) {
     }, TypeError);
   }
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents, d.value);
   Assert.equal(d.toSource(), "ctypes." + name + "(" + d.value + ")");
   Assert.equal(d.toSource(), d.toString());
@@ -1551,7 +1550,7 @@ function run_float_tests(library, t, name, size) {
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -1585,7 +1584,7 @@ function run_float_tests(library, t, name, size) {
     // allow values that can't be represented precisely as a float
     d.value = 0xffffffff;
     let delta = 1 - d.value / 0xffffffff;
-    Assert.ok(delta != 0);
+    Assert.notEqual(delta, 0);
     Assert.ok(delta > -0.01 && delta < 0.01);
     d.value = 1 + 1 / 0x80000000;
     Assert.equal(d.value, 1);
@@ -1665,7 +1664,7 @@ function run_float_tests(library, t, name, size) {
   }
   Assert.equal(t(NaN).toSource(), t.toSource() + "(NaN)");
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents, d.value);
   Assert.equal(d.toSource(), "ctypes." + name + "(" + d.value + ")");
   Assert.equal(d.toSource(), d.toString());
@@ -1723,7 +1722,7 @@ function run_wrapped_integer_tests(
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -1795,7 +1794,7 @@ function run_wrapped_integer_tests(
     }, TypeError);
   }
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents.toString(), d.value.toString());
   Assert.equal(
     d.toSource(),
@@ -1839,7 +1838,7 @@ function run_char_tests(library, t, name, size, signed, limits) {
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -1922,7 +1921,7 @@ function run_char_tests(library, t, name, size, signed, limits) {
     }, TypeError);
   }
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents, 1);
   Assert.equal(d.toSource(), "ctypes." + name + "(" + d.value + ")");
   Assert.equal(d.toSource(), d.toString());
@@ -1976,7 +1975,7 @@ function run_char16_tests(library, t, name, limits) {
 
   Assert.equal(t.toString(), "type " + name);
   Assert.equal(t.toSource(), "ctypes." + name);
-  Assert.ok(t.ptr === ctypes.PointerType(t));
+  Assert.strictEqual(t.ptr, ctypes.PointerType(t));
   Assert.equal(t.array().name, name + "[]");
   Assert.equal(t.array(5).name, name + "[5]");
 
@@ -2056,7 +2055,7 @@ function run_char16_tests(library, t, name, limits) {
     }, TypeError);
   }
 
-  Assert.ok(d.address().constructor === t.ptr);
+  Assert.strictEqual(d.address().constructor, t.ptr);
   Assert.equal(d.address().contents, "a");
   Assert.equal(d.toSource(), "ctypes." + name + '("' + d.value + '")');
   Assert.equal(d.toSource(), d.toString());
@@ -2118,7 +2117,7 @@ function run_type_ctor_class_tests(
     ctypes.CType.prototype
   );
   Assert.ok(c.prototype instanceof ctypes.CType);
-  Assert.ok(c.prototype.constructor === c);
+  Assert.strictEqual(c.prototype.constructor, c);
 
   // Check that 'c.prototype' has the correct properties and functions.
   for (let p of props) {
@@ -2163,7 +2162,7 @@ function run_type_ctor_class_tests(
     );
   }
   Assert.ok(t.prototype instanceof ctypes.CData);
-  Assert.ok(t.prototype.constructor === t);
+  Assert.strictEqual(t.prototype.constructor, t);
 
   // Check that the prototype of 't.prototype' has the correct properties and
   // functions.
@@ -2223,7 +2222,7 @@ function run_type_ctor_class_tests(
     let d = t();
     Assert.strictEqual(Object.getPrototypeOf(d), t.prototype);
     Assert.ok(d instanceof t);
-    Assert.ok(d.constructor === t);
+    Assert.strictEqual(d.constructor, t);
     // Other objects that are not instances of 't'.
     Assert.equal({} instanceof t, false);
     Assert.equal(Object.getPrototypeOf(t) instanceof t, false);
@@ -2284,14 +2283,14 @@ function run_StructType_tests() {
   Assert.equal(opaque_t.name, "a");
   Assert.equal(opaque_t.toString(), "type a");
   Assert.equal(opaque_t.toSource(), 'ctypes.StructType("a")');
-  Assert.ok(opaque_t.prototype === undefined);
-  Assert.ok(opaque_t.fields === undefined);
-  Assert.ok(opaque_t.size === undefined);
+  Assert.strictEqual(opaque_t.prototype, undefined);
+  Assert.strictEqual(opaque_t.fields, undefined);
+  Assert.strictEqual(opaque_t.size, undefined);
   do_check_throws(function () {
     opaque_t();
   }, Error);
   let opaqueptr_t = opaque_t.ptr;
-  Assert.ok(opaqueptr_t.targetType === opaque_t);
+  Assert.strictEqual(opaqueptr_t.targetType, opaque_t);
   Assert.equal(opaqueptr_t.name, "a*");
   Assert.equal(opaqueptr_t.toString(), "type a*");
   Assert.equal(opaqueptr_t.toSource(), 'ctypes.StructType("a").ptr');
@@ -2361,7 +2360,7 @@ function run_StructType_tests() {
     g_t.toSource(),
     'ctypes.StructType("g_t", [{ "a": ctypes.int32_t }, { "b": ctypes.double }])'
   );
-  Assert.ok(g_t.ptr === ctypes.PointerType(g_t));
+  Assert.strictEqual(g_t.ptr, ctypes.PointerType(g_t));
   Assert.equal(g_t.array().name, name + "[]");
   Assert.equal(g_t.array(5).name, name + "[5]");
 
@@ -2379,10 +2378,10 @@ function run_StructType_tests() {
   ];
   let t_t = new ctypes.StructType("t_t", fields);
   Assert.equal(t_t.fields.length, 4);
-  Assert.ok(t_t.fields[0].a === ctypes.int32_t);
-  Assert.ok(t_t.fields[1].b === ctypes.int8_t);
-  Assert.ok(t_t.fields[2].c === g_t);
-  Assert.ok(t_t.fields[3].d === ctypes.int8_t);
+  Assert.strictEqual(t_t.fields[0].a, ctypes.int32_t);
+  Assert.strictEqual(t_t.fields[1].b, ctypes.int8_t);
+  Assert.strictEqual(t_t.fields[2].c, g_t);
+  Assert.strictEqual(t_t.fields[3].d, ctypes.int8_t);
   /* disabled temporarily per bug 598225.
   do_check_throws(function() { t_t.fields.z = 0; }, Error);
   do_check_throws(function() { t_t.fields[4] = 0; }, Error);
@@ -2473,7 +2472,7 @@ function run_StructType_tests() {
   }
 
   let g_a = g.address();
-  Assert.ok(g_a.constructor === g_t.ptr);
+  Assert.strictEqual(g_a.constructor, g_t.ptr);
   Assert.equal(g_a.contents.a, g.a);
 
   let s = new s_t(3, g, 10);
@@ -2490,7 +2489,7 @@ function run_StructType_tests() {
   Assert.equal(s.b.a, 7);
 
   g_a = s.addressOfField("b");
-  Assert.ok(g_a.constructor === g_t.ptr);
+  Assert.strictEqual(g_a.constructor, g_t.ptr);
   Assert.equal(g_a.contents.a, s.b.a);
   do_check_throws(function () {
     s.addressOfField();
@@ -2506,7 +2505,7 @@ function run_StructType_tests() {
   Assert.equal(s.toSource(), s.toString());
   // eslint-disable-next-line no-eval
   var s2 = eval(s.toSource());
-  Assert.ok(s2.constructor === s_t);
+  Assert.strictEqual(s2.constructor, s_t);
   Assert.equal(s.b.b, s2.b.b);
 
   // Test that structs can be set from an object using 'value'.
@@ -2629,15 +2628,15 @@ function run_PointerType_tests() {
   let p_t = ctypes.PointerType(g_t);
   Assert.equal(p_t.name, name + "*");
   Assert.equal(p_t.size, ctypes.uintptr_t.size);
-  Assert.ok(p_t.targetType === g_t);
-  Assert.ok(p_t === g_t.ptr);
+  Assert.strictEqual(p_t.targetType, g_t);
+  Assert.strictEqual(p_t, g_t.ptr);
 
   Assert.equal(p_t.toString(), "type " + name + "*");
   Assert.equal(
     p_t.toSource(),
     'ctypes.StructType("g_t", [{ "a": ctypes.int32_t }, { "b": ctypes.double }]).ptr'
   );
-  Assert.ok(p_t.ptr === ctypes.PointerType(p_t));
+  Assert.strictEqual(p_t.ptr, ctypes.PointerType(p_t));
   Assert.equal(p_t.array().name, name + "*[]");
   Assert.equal(p_t.array(5).name, name + "*[5]");
 
@@ -2694,7 +2693,7 @@ function run_PointerType_tests() {
 
   // Test void pointers.
   let v_t = ctypes.PointerType(ctypes.void_t);
-  Assert.ok(v_t === ctypes.voidptr_t);
+  Assert.strictEqual(v_t, ctypes.voidptr_t);
   let v = v_t(p);
   Assert.equal(ptrValue(v), ptrValue(p));
 
@@ -2707,9 +2706,9 @@ function run_PointerType_tests() {
 
   // Test 'isNull'.
   let n = f_t(0);
-  Assert.ok(n.isNull() === true);
+  Assert.strictEqual(n.isNull(), true);
   n = p.address();
-  Assert.ok(n.isNull() === false);
+  Assert.strictEqual(n.isNull(), false);
 
   // Test 'increment'/'decrement'.
   g_t = ctypes.StructType("g_t", [{ a: ctypes.int32_t }, { b: ctypes.double }]);
@@ -2747,6 +2746,7 @@ function run_PointerType_tests() {
   let typed_array_samples = [
     [new Int8Array(c_arraybuffer), ctypes.int8_t],
     [new Uint8Array(c_arraybuffer), ctypes.uint8_t],
+    [new Uint8ClampedArray(c_arraybuffer), ctypes.uint8_t],
     [new Int16Array(c_arraybuffer), ctypes.int16_t],
     [new Uint16Array(c_arraybuffer), ctypes.uint16_t],
     [new Int32Array(c_arraybuffer), ctypes.int32_t],
@@ -2760,6 +2760,7 @@ function run_PointerType_tests() {
     typed_array_samples.push(
       [new Int8Array(c_shared_arraybuffer), ctypes.int8_t],
       [new Uint8Array(c_shared_arraybuffer), ctypes.uint8_t],
+      [new Uint8ClampedArray(c_shared_arraybuffer), ctypes.uint8_t],
       [new Int16Array(c_shared_arraybuffer), ctypes.int16_t],
       [new Uint16Array(c_shared_arraybuffer), ctypes.uint16_t],
       [new Int32Array(c_shared_arraybuffer), ctypes.int32_t],
@@ -2777,9 +2778,10 @@ function run_PointerType_tests() {
       let number_of_items = c_arraybuffer.byteLength / item_type.size;
       let array_type = item_type.array(number_of_items);
 
-      // Int8Array on unshared memory is interconvertible with Int8Array on
-      // shared memory, etc.
-      if (i % 8 != j % 8) {
+      // Arrays are interconvertible iff they share the same ctypes element type
+      // (e.g. Uint8Array and Uint8ClampedArray both map to uint8_t).
+      // ctypes type objects are singletons so identity comparison is correct.
+      if (typed_array_samples[i][1] !== typed_array_samples[j][1]) {
         info(
           "Checking that typed array " +
             view.constructor.name +
@@ -2834,6 +2836,37 @@ function run_PointerType_tests() {
           Assert.equal(c_array[k - 1], view[k]);
         }
       }
+    }
+  }
+
+  // Typed arrays with no ctypes equivalent are rejected for any ctypes array type.
+  for (const [name, ctor] of [
+    [
+      "BigInt64Array",
+      typeof BigInt64Array !== "undefined" ? BigInt64Array : null,
+    ],
+    [
+      "BigUint64Array",
+      typeof BigUint64Array !== "undefined" ? BigUint64Array : null,
+    ],
+    ["Float16Array", typeof Float16Array !== "undefined" ? Float16Array : null],
+  ]) {
+    if (!ctor) {
+      continue;
+    }
+    let view = new ctor(c_arraybuffer);
+    for (let item_type of [ctypes.uint8_t, ctypes.int32_t, ctypes.float64_t]) {
+      info(
+        "Checking that typed array " +
+          name +
+          " can NOT be converted to " +
+          item_type +
+          " array"
+      );
+      let n = c_arraybuffer.byteLength / item_type.size;
+      do_check_throws(function () {
+        item_type.array(n)(view);
+      }, TypeError);
     }
   }
 
@@ -2909,8 +2942,8 @@ function run_FunctionType_tests() {
   let name = "g_t()";
   Assert.equal(f_t.name, name);
   Assert.equal(f_t.size, undefined);
-  Assert.ok(f_t.abi === ctypes.default_abi);
-  Assert.ok(f_t.returnType === g_t);
+  Assert.strictEqual(f_t.abi, ctypes.default_abi);
+  Assert.strictEqual(f_t.returnType, g_t);
   Assert.ok(!f_t.argTypes.length);
 
   Assert.equal(f_t.toString(), "type " + name);
@@ -2996,9 +3029,9 @@ function run_FunctionType_tests() {
     ctypes.char.ptr.array().ptr,
     [ctypes.int32_t, fp_t]
   );
-  Assert.ok(f4_t.argTypes.length == 2);
-  Assert.ok(f4_t.argTypes[0] === ctypes.int32_t);
-  Assert.ok(f4_t.argTypes[1] === fp_t);
+  Assert.equal(f4_t.argTypes.length, 2);
+  Assert.strictEqual(f4_t.argTypes[0], ctypes.int32_t);
+  Assert.strictEqual(f4_t.argTypes[1], fp_t);
   /* disabled temporarily per bug 598225.
   do_check_throws(function() { f4_t.argTypes.z = 0; }, Error);
   do_check_throws(function() { f4_t.argTypes[0] = 0; }, Error);
@@ -3067,7 +3100,7 @@ function run_ArrayType_tests() {
   Assert.equal(a_t.name, name + "[10]");
   Assert.equal(a_t.length, 10);
   Assert.equal(a_t.size, g_t.size * 10);
-  Assert.ok(a_t.elementType === g_t);
+  Assert.strictEqual(a_t.elementType, g_t);
 
   Assert.equal(a_t.toString(), "type " + name + "[10]");
   Assert.equal(
@@ -3098,8 +3131,8 @@ function run_ArrayType_tests() {
   Assert.equal(a[ctypes.UInt64(0)].b, 2);
 
   let a_p = a.addressOfElement(0);
-  Assert.ok(a_p.constructor.targetType === g_t);
-  Assert.ok(a_p.constructor === g_t.ptr);
+  Assert.strictEqual(a_p.constructor.targetType, g_t);
+  Assert.strictEqual(a_p.constructor, g_t.ptr);
   Assert.equal(a_p.contents.a, a[0].a);
   Assert.equal(a_p.contents.b, a[0].b);
   a_p.contents.a = 5;
@@ -3804,7 +3837,7 @@ function run_function_tests(library) {
 
   // Test that the library.declare(name, functionType) form works.
   let test_ansi_len_2 = library.declare("test_ansi_len", fn_t);
-  Assert.ok(test_ansi_len_2.constructor === fn_t);
+  Assert.strictEqual(test_ansi_len_2.constructor, fn_t);
   Assert.equal(ptrValue(test_ansi_len), ptrValue(test_ansi_len_2));
   /* disabled temporarily per bug 598225.
   do_check_throws(function() { test_ansi_len_2.value = null; }, Error);
@@ -4002,6 +4035,36 @@ function run_variadic_tests(library) {
 
   Assert.equal(result.value, 3 + 5 + 7 + 11);
 
+  let add_float_double_va = library.declare(
+    "test_add_float_double_va_cdecl",
+    ctypes.default_abi,
+    ctypes.void_t,
+    ctypes.double.ptr,
+    "..."
+  );
+  let dresult = ctypes.double(0.0);
+  add_float_double_va(
+    dresult.address(),
+    ctypes.float32_t(1.5),
+    ctypes.double(2.25)
+  );
+  Assert.equal(dresult.value, 3.75);
+
+  let add_uint8_uint16_va = library.declare(
+    "test_add_uint8_uint16_va_cdecl",
+    ctypes.default_abi,
+    ctypes.void_t,
+    ctypes.uint32_t.ptr,
+    "..."
+  );
+  let uresult = ctypes.uint32_t(0);
+  add_uint8_uint16_va(
+    uresult.address(),
+    ctypes.uint8_t(200),
+    ctypes.uint16_t(1000)
+  );
+  Assert.equal(uresult.value, 1200);
+
   result = ctypes.int32_t.array(3)([1, 1, 1]);
   let v1 = ctypes.int32_t.array(4)([1, 2, 3, 5]);
   let v2 = ctypes.int32_t.array(3)([7, 11, 13]);
@@ -4043,7 +4106,7 @@ function run_static_data_tests(library) {
   let data_rect = library.declare("data_rect", rect_t);
 
   // Test reading static data.
-  Assert.ok(data_rect.constructor === rect_t);
+  Assert.strictEqual(data_rect.constructor, rect_t);
   Assert.equal(data_rect.top, -1);
   Assert.equal(data_rect.left, -2);
   Assert.equal(data_rect.bottom, 3);

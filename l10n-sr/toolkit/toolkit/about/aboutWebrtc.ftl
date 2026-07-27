@@ -8,13 +8,14 @@
 
 # The text "WebRTC" is a proper noun and should not be translated.
 about-webrtc-document-title = WebRTC интернали
-
 # "about:webrtc" is a internal browser URL and should not be
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = Чување странице about:webrtc
 
 ## These labels are for a disclosure which contains the information for closed PeerConnection sections
 
+about-webrtc-closed-peerconnection-disclosure-show-msg = Прикажи затворене PeerConnection везе
+about-webrtc-closed-peerconnection-disclosure-hide-msg = Сакриј затворене PeerConnection везе
 
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
@@ -22,22 +23,26 @@ about-webrtc-aec-logging-msg-label = AEC евидентирање
 about-webrtc-aec-logging-off-state-label = Започни AEC евидентирање
 about-webrtc-aec-logging-on-state-label = Заустави AEC евидентирање
 about-webrtc-aec-logging-on-state-msg = AEC евидентирање је активно (разговарајте са позиваоцем неколико минута па зауставите евидентирање)
-
 about-webrtc-aec-logging-toggled-on-state-msg = AEC евидентирање је активно (разговарајте са позиваоцем неколико минута па зауставите евидентирање)
+about-webrtc-aec-logging-unavailable-sandbox = Променљива окружења MOZ_DISABLE_CONTENT_SANDBOX=1 је неопходна за извоз AEC дневника. Поставите ову променљиву само ако разумете могуће ризике.
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
 about-webrtc-aec-logging-toggled-off-state-msg = Датотеке евиденција се налазе у: { $path }
 
 ##
 
-# The autorefresh checkbox causes the page to autorefresh its content when checked
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Аутоматско освежавање
-
-
+# A button which forces a refresh of displayed statistics
+about-webrtc-force-refresh-button = Освежи
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
 about-webrtc-peerconnection-id-label = PeerConnection ID:
+# The number of DataChannels that a PeerConnection has opened
+about-webrtc-data-channels-opened-label = Отворени канали података:
+# The number of once open DataChannels that a PeerConnection has closed
+about-webrtc-data-channels-closed-label = Затворени канали података:
 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
@@ -83,17 +88,19 @@ about-webrtc-type-remote = Удаљени
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 about-webrtc-nominated = Номиновани
-
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 # This represents an attribute of an ICE candidate.
 about-webrtc-selected = Одабрани
-
 about-webrtc-save-page-label = Сачувај страницу као…
 about-webrtc-debug-mode-msg-label = Режим за отклањање грешака
 about-webrtc-debug-mode-off-state-label = Покрени режим за отклањање грешака
 about-webrtc-debug-mode-on-state-label = Заустави режим за отклањање грешака
 about-webrtc-stats-heading = Статистика сесије
+about-webrtc-enable-logging-label = Омогући WebRTC унапред подешени дневник
+about-webrtc-peerconnections-section-heading = RTCPeerConnection статистика
+about-webrtc-peerconnections-section-show-msg = Прикажи RTCPeerConnection статистику
+about-webrtc-peerconnections-section-hide-msg = Сакриј RTCPeerConnection статистику
 about-webrtc-stats-clear = Обриши историју
 about-webrtc-log-heading = Евиденција везе
 about-webrtc-log-clear = Обриши евиденцију
@@ -101,11 +108,12 @@ about-webrtc-log-show-msg = прикажи евиденцију
     .title = кликните да бисте проширили овај одељак
 about-webrtc-log-hide-msg = Сакриј дневник
     .title = кликните да смањите овај одељак
-
 about-webrtc-log-section-show-msg = Прикажи евиденцију
     .title = Кликните да бисте проширили овај одељак
 about-webrtc-log-section-hide-msg = Сакриј дневник
     .title = Кликните да смањите овај одељак
+about-webrtc-copy-report-button = Копирај извештај
+about-webrtc-copy-report-history-button = Копирај историјат извештаја
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -121,6 +129,9 @@ about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (зат�
 ## Variables:
 ##  $codecs - a list of media codecs
 
+about-webrtc-short-send-receive-direction = Слање / пријем: { $codecs }
+about-webrtc-short-send-direction = Слање: { $codecs }
+about-webrtc-short-receive-direction = Пријем: { $codecs }
 
 ##
 
@@ -150,7 +161,7 @@ about-webrtc-dropped-frames-label = Испуштени кадрови:
 about-webrtc-discarded-packets-label = Одбачени пакети:
 about-webrtc-decoder-label = Декодер
 about-webrtc-encoder-label = Енкодер
-about-webrtc-show-tab-label = Прикажи картицу
+about-webrtc-show-tab-label = Прикажи језичак
 about-webrtc-current-framerate-label = Фрејмрејт
 about-webrtc-width-px = Ширина (у пикселима)
 about-webrtc-height-px = Висина (у пикселима)
@@ -179,58 +190,54 @@ about-webrtc-pc-configuration-hide-msg = Сакриј конфигурацију
 # An option whose value will not be displayed but instead noted as having been
 # provided
 about-webrtc-configuration-element-provided = Одобрено
-
 # An option whose value will not be displayed but instead noted as having not
 # been provided
 about-webrtc-configuration-element-not-provided = Није одобрено
-
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Корисничка WebRTC подешавања
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = Кориснички измењена WebRTC конфигурација
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = Прикажи кориснички измењену конфигурацију
+about-webrtc-user-modified-configuration-hide-msg = Сакриј кориснички измењену конфигурацију
+
+##
 
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Процењени пропусни опсег
-
 # The ID of the MediaStreamTrack
 about-webrtc-track-identifier = Идентификатор нумере
-
 # The estimated bandwidth available for sending WebRTC media in bytes per second
 about-webrtc-send-bandwidth-bytes-sec = Пропусни опсег за слање (бајтови/сек)
-
 # The estimated bandwidth available for receiving WebRTC media in bytes per second
 about-webrtc-receive-bandwidth-bytes-sec = Пропусни опсег за примање (бајтови/сек)
-
 # Maximum number of bytes per second that will be padding zeros at the ends of packets
 about-webrtc-max-padding-bytes-sec = Максимална допуна (бајтови/сек)
-
 # The amount of time inserted between packets to keep them spaced out
 about-webrtc-pacer-delay-ms = Интервал кашњења ms
-
 # The amount of time it takes for a packet to travel from the local machine to the remote machine,
 # and then have a packet return
 about-webrtc-round-trip-time-ms = RTT ms
-
 # This is a section heading for video frame statistics for a MediaStreamTrack.
 # see https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack.
 # Variables:
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Статистика видео оквира - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = страница је снимљена на: { $path }
 about-webrtc-debug-mode-off-state-msg = евиденција праћења се налази у: { $path }
 about-webrtc-debug-mode-on-state-msg = режим за отклањање грешака је активан, евиденција праћења је у: { $path }
 about-webrtc-aec-logging-off-state-msg = датотеке евиденција се налазе у: { $path }
-
+# This path is used for saving the about:webrtc page so it can be attached to
+# bug reports.
+# Variables:
+#  $path (String) - The path to which the file is saved.
 about-webrtc-save-page-complete-msg = Страница је снимљена на: { $path }
-about-webrtc-debug-mode-toggled-off-state-msg = Евиденција праћења се налази у: { $path }
-about-webrtc-debug-mode-toggled-on-state-msg = Режим за отклањање грешака је активан, евиденција праћења је у: { $path }
-
-##
-
 # This is the total number of frames encoded or decoded over an RTP stream.
 # Variables:
 #  $frames (Number) - The number of frames encoded or decoded.
@@ -240,7 +247,6 @@ about-webrtc-frames =
         [few] { $frames } фрејма
        *[other] { $frames } фрејмова
     }
-
 # This is the number of audio channels encoded or decoded over an RTP stream.
 # Variables:
 #  $channels (Number) - The number of channels encoded or decoded.
@@ -250,7 +256,6 @@ about-webrtc-channels =
         [few] { $channels } канала
        *[other] { $channels } канала
     }
-
 # This is the total number of packets received on the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets received.
@@ -260,7 +265,6 @@ about-webrtc-received-label =
         [few] Примљена { $packets } пакета
        *[other] Примљено { $packets } пакета
     }
-
 # This is the total number of packets lost by the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets lost.
@@ -270,7 +274,6 @@ about-webrtc-lost-label =
         [few] Изгубљена { $packets } пакета
        *[other] Изгубљено { $packets } пакета
     }
-
 # This is the total number of packets sent by the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets sent.
@@ -280,13 +283,11 @@ about-webrtc-sent-label =
         [few] Послана { $packets } пакета
        *[other] Послано { $packets } пакета
     }
-
 # Jitter is the variance in the arrival time of packets.
 # See: https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter
 # Variables:
 #   $jitter (Number) - The jitter.
 about-webrtc-jitter-label = Jitter { $jitter }
-
 # ICE candidates arriving after the remote answer arrives are considered trickled
 # (an attribute of an ICE candidate). These are highlighted in the ICE stats
 # table with light blue background.
@@ -299,12 +300,10 @@ about-webrtc-trickle-caption-msg = Загубљени кандидати (они
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-local = Постави локални SDP на временску ознаку { NUMBER($timestamp, useGrouping: "false") }
-
 # This is used as a header for remote SDP.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-remote = Постави удаљени SDP на временску ознаку { NUMBER($timestamp, useGrouping: "false") }
-
 # This is used as a header for an SDP section contained in two columns allowing for side-by-side comparisons.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
@@ -320,6 +319,6 @@ about-webrtc-hide-msg-sdp = Сакриј SDP
 ## The Media Context is the set of preferences and detected capabilities that informs
 ## the negotiated CODEC settings.
 
-
-##
-
+about-webrtc-media-context-show-msg = Прикажи медијски контекст
+about-webrtc-media-context-hide-msg = Сакриј медијски контекст
+about-webrtc-media-context-heading = Медијски контекст

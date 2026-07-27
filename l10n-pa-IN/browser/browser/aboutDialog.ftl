@@ -12,23 +12,37 @@ update-updateButton =
     .label = { -brand-shorter-name } ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਮੁੜ ਚਾਲੂ ਕਰੋ
     .accesskey = R
 update-checkingForUpdates = ਅੱਪਡੇਟ ਲਈ ਜਾਂਚਿਆ ਜਾ ਰਿਹਾ ਹੈ…
+settings-update-checking-for-updates =
+    .label = ਅੱਪਡੇਟ ਲਈ ਜਾਂਚਿਆ ਜਾ ਰਿਹਾ ਹੈ…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ — { $transfer }
 
 ##
 
 update-applying = ਅੱਪਡੇਟ ਨੂੰ ਲਾਗੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...
+settings-update-applying =
+    .label = ਅੱਪਡੇਟ ਨੂੰ ਲਾਗੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...
 update-failed = ਅੱਪਡੇਟ ਫੇਲ੍ਹ ਹੋਇਆ। <label data-l10n-name="failed-link">ਨਵਾਂ ਵਰਜ਼ਨ ਡਾਊਨਲੋਡ ਕਰੋ</label>
 update-failed-main = ਅੱਪਡੇਟ ਨਾਕਾਮਯਾਬ ਹੋਈ। <a data-l10n-name="failed-link-main">ਸੱਜਰੀ ਵੰਨਗੀ ਡਾਊਨਲੋਡ ਕਰੋ</a>
 update-adminDisabled = ਤੁਹਾਡੇ ਢਾਂਚਾ ਪਰਸ਼ਾਸ਼ਕ ਵਲੋਂ ਅੱਪਡੇਟਾਂ ਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੋਈ ਹੈ।
 update-policy-disabled = ਅੱਪਡੇਟ ਆਪਣੇ ਸੰਗਠਨ ਵਲੋਂ ਅਸਮਰੱਥ ਕੀਤੇ ਹਨ
+settings-update-policy-disabled =
+    .label = ਅੱਪਡੇਟ ਆਪਣੇ ਸੰਗਠਨ ਵਲੋਂ ਅਸਮਰੱਥ ਕੀਤੇ ਹਨ
 update-noUpdatesFound = { -brand-short-name } ਅੱਪ-ਟੂ-ਡੇਟ ਹੈ
+settings-update-no-updates-found =
+    .label = { -brand-short-name } ਅੱਪ-ਟੂ-ਡੇਟ ਹੈ
 aboutdialog-update-checking-failed = ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਵਿੱਚ ਨਾਕਾਮਯਾਬੀ ਮਿਲੀ।
+settings-update-checking-failed =
+    .label = ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਵਿੱਚ ਨਾਕਾਮਯਾਬੀ ਮਿਲੀ।
 update-otherInstanceHandlingUpdates = { -brand-short-name } ਨੂੰ ਕਿਸੇ ਹੋਰ ਮੌਕੇ ਰਾਹੀਂ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } ਨੂੰ ਕਿਸੇ ਹੋਰ ਮੌਕੇ ਰਾਹੀਂ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } ਨੂੰ ਕਿਸ�
 aboutdialog-update-manual-with-link = <label data-l10n-name="manual-link">{ $displayUrl }</label> ‘ਤੇ ਅੱਪਡੇਟ ਮੌਜੂਦ ਹੈ
 settings-update-manual-with-link = <a data-l10n-name="manual-link">{ $displayUrl }</a> ‘ਤੇ ਅੱਪਡੇਟ ਮੌਜੂਦ ਹੈ
 update-unsupported = ਤੁਸੀਂ ਇਸ ਸਿਸਟਮ ਨੂੰ ਹੋਰ ਅੱਪਡੇਟ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹੋ। <label data-l10n-name="unsupported-link">ਹੋਰ ਜਾਣੋ</label>
+settings-update-unsupported = ਤੁਸੀਂ ਇਸ ਸਿਸਟਮ ਨੂੰ ਹੋਰ ਅੱਪਡੇਟ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹੋ। <a data-l10n-name="unsupported-link">ਹੋਰ ਜਾਣੋ</a>
 update-restarting = …ਮੁੜ-ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ
+settings-update-restarting =
+    .label = …ਮੁੜ-ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ
 update-internal-error2 = ਅੰਦਰੂਨੀ ਗ਼ਲਤੀ ਕਰਕੇ ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਤੋੰ ਅਸਮਰੱਥ। ਅੱਪਡੇਟਾਂ <label data-l10n-name="manual-link">{ $displayUrl }</label> ਉੱਤੇ ਮੌਜੂਦ ਹਨ।
+settings-update-internal-error = ਅੰਦਰੂਨੀ ਗ਼ਲਤੀ ਕਰਕੇ ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਤੋੰ ਅਸਮਰੱਥ। ਅੱਪਡੇਟਾਂ <a data-l10n-name="manual-link">{ $displayUrl }</a> ਉੱਤੇ ਮੌਜੂਦ ਹਨ।
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } ਨੂੰ  <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> ਨੇ ਬਣਾਇਆ ਹੈ, ਜੋ ਕਿ ਵੈੱਬ ਨੂੰ ਸਭ ਲਈ ਆਜ਼ਾਦ, ਜਨਤਕ ਅਤੇ ਹਰੇਕ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਰੱਖਣ ਲਈ ਰਲ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਵਾਲਾ ਇੱਕ <label data-l10n-name="community-creditsLink">ਆਲਮੀ ਭਾਈਚਾਰਾ</label> ਹੈ।
 helpus = ਮਦਦ ਚਾਹੀਦੀ ਹੈ? <label data-l10n-name="helpus-donateLink">ਦਾਨ ਦਿਓ</label> ਜਾਂ <label data-l10n-name="helpus-getInvolvedLink">ਹਿੱਸਾ ਲਵੋ!</label>
 bottomLinks-license = ਲਸੰਸ ਬਾਰੇ ਜਾਣਕਾਰੀ
+bottom-links-terms = ਵਰਤੋਂ ਦੀਆਂ ਸ਼ਰਤਾਂ
+bottom-links-privacy = ਪਰਦੇਦਾਰੀ ਸੂਚਨਾ
 bottomLinks-rights = ਵਰਤੋਂਕਾਰ ਦੇ ਹੱਕ
 bottomLinks-privacy = ਪਰਦੇਦਾਰੀ ਨੀਤੀ
 # Example of resulting string: 66.0.1 (64-bit)

@@ -16,23 +16,38 @@ authors = [
     "Chun-Min Chang <chun.m.chang@gmail.com>",
     "Paul Adenot <paul@paul.cx>",
 ]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 readme = "README.md"
 license = "ISC"
 
+[features]
+audio-dump = []
+gecko-in-tree = ["cubeb-backend/gecko-in-tree"]
+tsan-annotations = []
+vpio-forcelist = []
+
 [lib]
+name = "cubeb_coreaudio"
 crate-type = [
     "staticlib",
     "rlib",
 ]
+path = "src/lib.rs"
 
 [dependencies]
 atomic = "0.4"
 audio-mixer = "0.2"
 bitflags = "2"
-cubeb-backend = "0.13"
+cubeb-backend = "0.32"
 float-cmp = "0.6"
 libc = "0.2"
-mach = "0.3"
+mach2 = "0.4"
+num = "0.4.3"
 ringbuf = "0.2.6"
 triple_buffer = "5.0.5"
 whatsys = "0.3"
@@ -43,5 +58,4 @@ path = "coreaudio-sys-utils"
 [dev-dependencies]
 itertools = "0.11"
 
-[features]
-audio-dump = []
+[workspace]

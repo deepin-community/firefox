@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { ExtensionParent } = ChromeUtils.importESModule(
@@ -251,9 +249,8 @@ add_task(async function testExtensionDebuggingUtilsWithMultipleAddons() {
   };
 
   const { DebugUtils } = ExtensionParent;
-  const debugBrowser = await DebugUtils.getExtensionProcessBrowser(
-    fakeAddonActor
-  );
+  const debugBrowser =
+    await DebugUtils.getExtensionProcessBrowser(fakeAddonActor);
   const anotherDebugBrowser = await DebugUtils.getExtensionProcessBrowser(
     anotherFakeAddonActor
   );

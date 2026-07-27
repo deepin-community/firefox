@@ -18,6 +18,9 @@ const gElements = {
     .querySelector("login-list")
     .shadowRoot.querySelector("login-filter"),
   menuButton: document.querySelector("menu-button"),
+  get exportButton() {
+    return this.menuButton.shadowRoot.querySelector(".menuitem-export");
+  },
   // removeAllLogins button is nested inside of menuButton
   get removeAllButton() {
     return this.menuButton.shadowRoot.querySelector(
@@ -32,6 +35,7 @@ function updateNoLogins() {
   document.documentElement.classList.toggle("no-logins", numberOfLogins == 0);
   gElements.loginList.classList.toggle("no-logins", numberOfLogins == 0);
   gElements.loginItem.classList.toggle("no-logins", numberOfLogins == 0);
+  gElements.exportButton.disabled = numberOfLogins == 0;
   gElements.removeAllButton.disabled = numberOfLogins == 0;
 }
 
@@ -120,6 +124,11 @@ window.addEventListener("AboutLoginsChromeToContent", event => {
       gElements.loginItem.setVulnerableLogins(event.detail.value);
       break;
     }
+    case "SetChangePasswordURLs": {
+      gElements.loginList.setChangePasswordURLs(event.detail.value);
+      gElements.loginItem.setChangePasswordURLs(event.detail.value);
+      break;
+    }
     case "Setup": {
       gElements.loginList.selectLoginByDomainOrGuid(
         event.detail.value.preselectedLogin
@@ -127,6 +136,11 @@ window.addEventListener("AboutLoginsChromeToContent", event => {
       handleAllLogins(event.detail.value.logins);
       handleSyncState(event.detail.value.syncState);
       gElements.loginList.setSortDirection(event.detail.value.selectedSort);
+      if (!event.detail.value.importVisible) {
+        gElements.menuButton.shadowRoot.querySelector(
+          ".menuitem-import-browser"
+        ).hidden = true;
+      }
       document.documentElement.classList.add("initialized");
       gElements.loginList.classList.add("initialized");
       break;
@@ -198,8 +212,7 @@ window.addEventListener("AboutLoginsRemoveAllLoginsDialog", () => {
 
 window.addEventListener("AboutLoginsExportPasswordsDialog", async () => {
   recordTelemetryEvent({
-    object: "export",
-    method: "mgmt_menu_item_used",
+    name: "mgmtMenuItemUsedExport",
   });
   let dialog = document.querySelector("confirmation-dialog");
   let options = {
@@ -245,8 +258,7 @@ let searchParamsChanged = false;
 let { protocol, pathname, searchParams } = new URL(document.location);
 
 recordTelemetryEvent({
-  method: "open_management",
-  object: searchParams.get("entryPoint") || "direct",
+  name: "openManagement" + (searchParams.get("entryPoint") || "Direct"),
 });
 
 if (searchParams.has("entryPoint")) {

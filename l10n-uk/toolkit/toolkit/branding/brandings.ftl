@@ -31,6 +31,14 @@
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-thunderbird-brand-name = Mozilla Thunderbird
+-thunderbird-brand-short-name = Thunderbird
+-mdn-brand-name = Веб-документація MDN
+-yelp-brand-name = Yelp
+
+##
+
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
@@ -42,70 +50,70 @@
 # and kept in English.
 -firefox-home-brand-name =
     { $case ->
-       *[nom]
-            { $capitalization ->
-               *[upper] Домівка Firefox
-                [lower] домівка Firefox
-            }
         [gen]
             { $capitalization ->
-               *[upper] Домівки Firefox
                 [lower] домівки Firefox
+               *[upper] Домівки Firefox
             }
         [dat]
             { $capitalization ->
-               *[upper] Домівці Firefox
                 [lower] домівці Firefox
+               *[upper] Домівці Firefox
             }
         [acc]
             { $capitalization ->
-               *[upper] Домівку Firefox
                 [lower] домівку Firefox
+               *[upper] Домівку Firefox
             }
         [abl]
             { $capitalization ->
-               *[upper] Домівкою Firefox
                 [lower] домівкою Firefox
+               *[upper] Домівкою Firefox
             }
         [loc]
             { $capitalization ->
-               *[upper] Домівці Firefox
                 [lower] домівці Firefox
+               *[upper] Домівці Firefox
+            }
+       *[nom]
+            { $capitalization ->
+                [lower] домівка Firefox
+               *[upper] Домівка Firefox
             }
     }
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxview-brand-name =
     { $case ->
-       *[nom]
-            { $capitalization ->
-               *[upper] Оглядач Firefox
-                [lower] оглядач Firefox
-            }
         [gen]
             { $capitalization ->
-               *[upper] Оглядача Firefox
                 [lower] оглядача Firefox
+               *[upper] Оглядача Firefox
             }
         [dat]
             { $capitalization ->
-               *[upper] Оглядачу Firefox
                 [lower] оглядачу Firefox
+               *[upper] Оглядачу Firefox
             }
         [acc]
             { $capitalization ->
-               *[upper] Оглядача Firefox
                 [lower] оглядача Firefox
+               *[upper] Оглядача Firefox
             }
         [abl]
             { $capitalization ->
-               *[upper] Оглядачем Firefox
                 [lower] оглядачем Firefox
+               *[upper] Оглядачем Firefox
             }
         [loc]
             { $capitalization ->
-               *[upper] Оглядачі Firefox
                 [lower] оглядачі Firefox
+               *[upper] Оглядачі Firefox
+            }
+       *[nom]
+            { $capitalization ->
+                [lower] оглядач Firefox
+               *[upper] Оглядач Firefox
             }
     }
 # Firefox Labs is the name for a page in Settings to allow users to learn about
@@ -113,3 +121,48 @@
 # The "Labs" portion can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxlabs-brand-name = Firefox Labs
+-smart-window-brand-name =
+    { $case ->
+        [gen]
+            { $form ->
+                [upper-plural] Розумних вікон
+                [lower-singular] розумного вікна
+                [lower-plural] розумних вікон
+               *[upper-singular] Розумного вікна
+            }
+        [dat]
+            { $form ->
+                [upper-plural] Розумним вікнам
+                [lower-singular] розумному вікну
+                [lower-plural] розумним вікнам
+               *[upper-singular] Розумному вікну
+            }
+        [acc]
+            { $form ->
+                [upper-plural] Розумні вікна
+                [lower-singular] розумне вікно
+                [lower-plural] розумні вікна
+               *[upper-singular] Розумне вікно
+            }
+        [abl]
+            { $form ->
+                [upper-plural] Розумними вікнами
+                [lower-singular] розумним вікном
+                [lower-plural] розумними вікнами
+               *[upper-singular] Розумним вікном
+            }
+        [loc]
+            { $form ->
+                [upper-plural] Розумних вікнах
+                [lower-singular] розумному вікні
+                [lower-plural] розумних вікнах
+               *[upper-singular] Розумному вікні
+            }
+       *[nom]
+            { $form ->
+                [upper-plural] Розумні вікна
+                [lower-singular] розумне вікно
+                [lower-plural] розумні вікна
+               *[upper-singular] Розумне вікно
+            }
+    }

@@ -36,6 +36,8 @@ storage-variable-view-search-box =
 # Add Item button title
 storage-add-button =
     .title = Öğe ekle
+storage-delete-all-button =
+    .title = Hepsini sil
 # Refresh button title
 storage-refresh-button =
     .title = Öğeleri tazele
@@ -71,6 +73,7 @@ storage-table-headers-cookies-expires = Expires / Max-Age
 storage-table-headers-cookies-size = Boyut
 storage-table-headers-cookies-last-accessed = Son erişim
 storage-table-headers-cookies-creation-time = Oluşturma
+storage-table-headers-cookies-update-time = Güncelleme
 storage-table-headers-cache-status = Durum
 storage-table-headers-extension-storage-area = Depolama alanı
 
@@ -107,3 +110,11 @@ storage-idb-delete-blocked = Tüm bağlantılar kapatıldıktan sonra “{ $dbNa
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = “{ $dbName }” veritabanı silinemedi.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Çerez oluşturulamadı: “{ $errorString }”.
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Çerez güncellenemedi: “{ $errorString }”.

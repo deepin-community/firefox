@@ -13,8 +13,13 @@
 
   let imports = {};
   ChromeUtils.defineESModuleGetters(imports, {
+    DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
+    KeyboardLockUtils: "resource://gre/modules/KeyboardLockUtils.sys.mjs",
     ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
   });
+
+  const DIRECTION_BACKWARD = -1;
+  const DIRECTION_FORWARD = 1;
 
   class MozTabbox extends MozXULElement {
     constructor() {
@@ -112,41 +117,50 @@
         return;
       }
 
-      // Skip if chrome code has cancelled this:
-      if (event.defaultPreventedByChrome) {
+      // Skip if chrome code has cancelled this
+      // or keyboard lock & webcontent default prevented it
+      if (event.defaultPrevented) {
         return;
       }
 
       // Don't check if the event was already consumed because tab
       // navigation should always work for better user experience.
 
-      const { ShortcutUtils } = imports;
+      const { KeyboardLockUtils, ShortcutUtils } = imports;
 
-      switch (ShortcutUtils.getSystemActionForEvent(event)) {
+      const action = ShortcutUtils.getSystemActionForEvent(event);
+      // If we don't have an action, don't request reply.
+      if (
+        action != null &&
+        KeyboardLockUtils.mustWaitForKeyboardLockRequestedReply(event)
+      ) {
+        return;
+      }
+
+      switch (action) {
         case ShortcutUtils.CYCLE_TABS:
-          Services.telemetry.keyedScalarAdd(
-            "browser.ui.interaction.keyboard",
-            "ctrl-tab",
-            1
-          );
+          Glean.browserUiInteraction.keyboard["ctrl-tab"].add(1);
           Services.prefs.setBoolPref(
             "browser.engagement.ctrlTab.has-used",
             true
           );
           if (this.tabs && this.handleCtrlTab) {
-            this.tabs.advanceSelectedTab(event.shiftKey ? -1 : 1, true);
+            this.tabs.advanceSelectedTab(
+              event.shiftKey ? DIRECTION_BACKWARD : DIRECTION_FORWARD,
+              true
+            );
             event.preventDefault();
           }
           break;
         case ShortcutUtils.PREVIOUS_TAB:
           if (this.tabs) {
-            this.tabs.advanceSelectedTab(-1, true);
+            this.tabs.advanceSelectedTab(DIRECTION_BACKWARD, true);
             event.preventDefault();
           }
           break;
         case ShortcutUtils.NEXT_TAB:
           if (this.tabs) {
-            this.tabs.advanceSelectedTab(1, true);
+            this.tabs.advanceSelectedTab(DIRECTION_FORWARD, true);
             event.preventDefault();
           }
           break;
@@ -254,9 +268,107 @@
   customElements.define("deck", MozDeck);
 
   class MozTabpanels extends MozDeck {
+    /**
+     * Panels that are currently within an active Split View.
+     *
+     * @type {string[]}
+     */
+    #splitViewPanels = [];
+
+    /**
+     * The splitter placed in between Split View panels.
+     *
+     * @type {XULElement}
+     */
+    #splitViewSplitter = null;
+    #splitterWasDragging = false;
+    #splitterAriaUpdateTask = null;
+    #splitViewSplitterObserver = new MutationObserver(() => {
+      const splitterState = this.#splitViewSplitter.getAttribute("state");
+      if (splitterState === "dragging") {
+        this.#splitterWasDragging = true;
+        gBrowser.activeSplitView.resetRightPanelWidth();
+      } else {
+        const wasDragging = this.#splitterWasDragging;
+        this.#splitterWasDragging = false;
+        if (wasDragging) {
+          window.promiseDocumentFlushed(() =>
+            this.#recordSplitViewResizeTelemetry()
+          );
+        }
+        this.#splitterAriaUpdateTask.arm();
+      }
+    });
+
+    static #SPLIT_VIEW_PANEL_EVENTS = Object.freeze([
+      "click",
+      "mouseover",
+      "mouseout",
+    ]);
+
     constructor() {
       super();
       this._tabbox = null;
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.#splitterAriaUpdateTask = new imports.DeferredTask(
+        () => this.updateSplitterAriaAttributes(),
+        0
+      );
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.#splitViewSplitterObserver.disconnect();
+      this.#splitterAriaUpdateTask.finalize();
+    }
+
+    #recordSplitViewResizeTelemetry() {
+      if (!this.#splitViewPanels.length) {
+        return;
+      }
+
+      const leftPanel = document.getElementById(this.#splitViewPanels[0]);
+      if (!leftPanel) {
+        return;
+      }
+
+      const leftWidth = leftPanel.getBoundingClientRect().width;
+      const totalWidth = this.getBoundingClientRect().width;
+      const widthPercentage = Math.round((leftWidth / totalWidth) * 100);
+
+      Glean.splitview.resize.record({ width: widthPercentage });
+    }
+
+    handleEvent(e) {
+      const browser =
+        e.currentTarget.tagName === "browser"
+          ? e.currentTarget
+          : e.currentTarget.querySelector("browser");
+      let elToFocus = null;
+      switch (e.type) {
+        case "click":
+          if (e.target.tagName !== "browser") {
+            elToFocus = e.target;
+          }
+        // falls through
+        case "focus": {
+          const tab = gBrowser.getTabForBrowser(browser);
+          const tabstrip = this.tabbox.tabs;
+          tabstrip.selectedItem = tab;
+          break;
+        }
+        case "mouseover":
+          gBrowser.appendStatusPanel(browser);
+          break;
+        case "mouseout":
+          StatusPanel.panel.setAttribute("inactive", true);
+          gBrowser.appendStatusPanel();
+          break;
+      }
+      elToFocus?.focus();
     }
 
     get tabbox() {
@@ -267,6 +379,80 @@
       }
 
       return (this._tabbox = this.closest("tabbox"));
+    }
+
+    get splitViewSplitter() {
+      if (!this.#splitViewSplitter) {
+        this.#splitViewSplitter = this.#createSplitViewSplitter();
+      }
+      return this.#splitViewSplitter;
+    }
+
+    #createSplitViewSplitter() {
+      const splitter = document.createXULElement("splitter");
+      splitter.className = "split-view-splitter";
+      splitter.setAttribute("resizebefore", "sibling");
+      splitter.setAttribute("resizeafter", "none");
+      splitter.setAttribute("tabindex", "0");
+      splitter.setAttribute("role", "separator");
+      splitter.setAttribute("data-l10n-id", "tab-splitview-splitter");
+      this.#splitterWasDragging = false;
+      splitter.addEventListener("command", () => {
+        gBrowser.activeSplitView.resetRightPanelWidth();
+        window.promiseDocumentFlushed(() =>
+          this.#recordSplitViewResizeTelemetry()
+        );
+        this.#splitterAriaUpdateTask.arm();
+      });
+      this.#splitViewSplitterObserver.observe(splitter, {
+        attributeFilter: ["state"],
+      });
+      return splitter;
+    }
+
+    async updateSplitterAriaAttributes() {
+      // avoid triggering the splitter's creation here if it doesnt already exist
+      const splitter = this.#splitViewSplitter;
+      if (!splitter) {
+        return;
+      }
+      // The splitter is actively controlling the size of the left/first panel
+      const controlledPanel =
+        this.#splitViewPanels.length &&
+        document.getElementById(this.splitViewPanels[0]);
+      if (controlledPanel) {
+        splitter.setAttribute("aria-controls", controlledPanel.id);
+
+        // gather the min, max and current widths to update the aria attributes
+        const [containerWidth, currentWidth] =
+          await window.promiseDocumentFlushed(() => [
+            this.clientWidth,
+            controlledPanel.clientWidth,
+          ]);
+        const minWidth = parseFloat(getComputedStyle(controlledPanel).minWidth);
+        // We can reuse the controlled panel's minWidth to calculate maxWidth as it should be
+        // the same as the 2nd panel in the splitview
+        const maxWidth = containerWidth - minWidth;
+        // Sometimes dragging the splitter produces a panel width attribute which exceeds
+        // the max width, so lets get our own measurment. This may end up at the previous
+        // frames width
+        if (controlledPanel.hasAttribute("width")) {
+          const storedWidth = Number(controlledPanel.getAttribute("width"));
+          if (storedWidth > maxWidth) {
+            controlledPanel.setAttribute("width", currentWidth);
+            controlledPanel.style.width = currentWidth + "px";
+          }
+        }
+
+        splitter.setAttribute("aria-valuemin", String(minWidth));
+        splitter.setAttribute("aria-valuemax", String(maxWidth));
+        splitter.setAttribute("aria-valuenow", String(currentWidth));
+      } else {
+        splitter.removeAttribute("aria-controls");
+        splitter.removeAttribute("aria-valuenow");
+        splitter.removeAttribute("aria-valuemin");
+        splitter.removeAttribute("aria-valuemax");
+      }
     }
 
     /**
@@ -311,6 +497,136 @@
       }
 
       return tabElmFromIndex;
+    }
+
+    set splitViewPanels(newPanels) {
+      for (const [i, panel] of newPanels.entries()) {
+        const panelEl = document.getElementById(panel);
+        panelEl?.classList.add("split-view-panel");
+        panelEl?.setAttribute("column", i);
+        const browser = panelEl?.querySelector("browser");
+        const browserContainer = panelEl?.querySelector(".browserContainer");
+        for (const eventType of MozTabpanels.#SPLIT_VIEW_PANEL_EVENTS) {
+          browserContainer?.addEventListener(eventType, this);
+        }
+        browser?.addEventListener("focus", this);
+      }
+      this.#splitViewPanels = newPanels;
+      this.setSplitViewActive(!!newPanels.length);
+    }
+
+    get splitViewPanels() {
+      return this.#splitViewPanels;
+    }
+
+    /**
+     * Remove split view attributes from tabs and their linked panels.
+     *
+     * @param {MozTabbrowserTab[]} tabs
+     */
+    removeTabsFromSplitview(tabs) {
+      for (const tab of tabs) {
+        let panel = tab.linkedPanel;
+        const panelEl = document.getElementById(panel);
+        panelEl?.classList.remove("split-view-panel");
+        panelEl?.classList.remove("split-view-panel-active");
+        panelEl?.removeAttribute("column");
+        const browser = panelEl?.querySelector("browser");
+        const browserContainer = panelEl?.querySelector(".browserContainer");
+
+        for (const eventType of MozTabpanels.#SPLIT_VIEW_PANEL_EVENTS) {
+          browserContainer?.removeEventListener(eventType, this);
+        }
+        browser?.removeEventListener("focus", this);
+        const index = this.#splitViewPanels.indexOf(panel);
+
+        if (index !== -1) {
+          this.#splitViewPanels.splice(index, 1);
+        }
+      }
+
+      this.setSplitViewActive(!!this.#splitViewPanels.length);
+    }
+
+    /**
+     * Temporarily hide split view panels when switching to a non-split-view tab.
+     * Preserves the split-view-panel class and column attribute so panels re-enter
+     * the flex layout at their correct size when reactivated.
+     *
+     * @param {MozTabbrowserTab[]} tabs
+     */
+    suspendSplitViewPanels(tabs) {
+      for (const tab of tabs) {
+        const panelEl = document.getElementById(tab.linkedPanel);
+        panelEl?.classList.remove("split-view-panel-active");
+      }
+      this.setSplitViewActive(!!this.#splitViewPanels.length);
+    }
+
+    /**
+     * Updates attributes on panels such as the blue outline for active splitview tabs,
+     * panel ordering and aria attributes.
+     *
+     * @param {boolean} updatedValue
+     */
+    setSplitViewActive(updatedValue) {
+      const splitViewTabSelected =
+        gBrowser.selectedTab.splitview && updatedValue;
+      this.toggleAttribute("splitview", updatedValue);
+      this.splitViewSplitter.hidden = !splitViewTabSelected;
+      const selectedPanel = this.selectedPanel;
+
+      /**
+       * Check whether `node` follows `a` in DOM order, and optionally
+       * precedes `b`.
+       *
+       * @param {Node} node - The node to test.
+       * @param {Node} a - `node` must follow this element.
+       * @param {Node} [b] - If provided, `node` must also precede this element.
+       * @returns {boolean}
+       */
+      const isBetween = (node, a, b = null) => {
+        const isAfterA = Boolean(
+          node.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING
+        );
+        if (!b) {
+          return isAfterA;
+        }
+        const isBeforeB = Boolean(
+          node.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
+        );
+        return isAfterA && isBeforeB;
+      };
+
+      if (splitViewTabSelected) {
+        // Ensure panels are in the correct DOM order so that focus moves
+        // as expected when tabbing across a splitview
+        const firstPanel = document.getElementById(this.splitViewPanels[0]);
+        const secondPanel = document.getElementById(this.splitViewPanels[1]);
+        if (firstPanel && secondPanel) {
+          // Does secondPanel follow firstPanel? Move firstPanel before secondPanel if necessary
+          if (
+            !(
+              firstPanel.compareDocumentPosition(secondPanel) &
+              Node.DOCUMENT_POSITION_FOLLOWING
+            )
+          ) {
+            firstPanel.parentElement.moveBefore(firstPanel, secondPanel);
+          }
+        }
+        // Ensure the splitter is in-between the panels
+        if (
+          firstPanel &&
+          !isBetween(this.#splitViewSplitter, firstPanel, secondPanel)
+        ) {
+          firstPanel.after(this.#splitViewSplitter);
+        }
+      }
+      // Ensure that selected index stays up to date, in case the splitter
+      // offsets it.
+      this.selectedPanel = selectedPanel;
+      // Update aria attributes
+      this.#splitterAriaUpdateTask.arm();
     }
   }
 
@@ -370,8 +686,9 @@
       }
 
       let stopwatchid = this.container.getAttribute("stopwatchid");
+      let timerId;
       if (stopwatchid) {
-        TelemetryStopwatch.start(stopwatchid);
+        timerId = Glean.browserTimings[stopwatchid].start();
       }
 
       // Call this before setting the 'ignorefocus' attribute because this
@@ -393,19 +710,32 @@
       }
 
       if (stopwatchid) {
-        TelemetryStopwatch.finish(stopwatchid);
+        Glean.browserTimings[stopwatchid].stopAndAccumulate(timerId);
       }
     }
 
+    /**
+     * @returns {"ltr"|"rtl"}
+     */
+    #getDirection() {
+      return window.getComputedStyle(this).direction;
+    }
+
+    /**
+     * @param {KeyEvent} event
+     */
     on_keydown(event) {
       if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
         return;
       }
+
+      // Handles some keyboard interactions when the active tab is in focus.
       switch (event.keyCode) {
         case KeyEvent.DOM_VK_LEFT: {
-          let direction = window.getComputedStyle(this.container).direction;
-          this.container.advanceSelectedTab(
-            direction == "ltr" ? -1 : 1,
+          this.container.advanceSelectedItem(
+            this.#getDirection() == "ltr"
+              ? DIRECTION_BACKWARD
+              : DIRECTION_FORWARD,
             this.arrowKeysShouldWrap
           );
           event.preventDefault();
@@ -413,9 +743,10 @@
         }
 
         case KeyEvent.DOM_VK_RIGHT: {
-          let direction = window.getComputedStyle(this.container).direction;
-          this.container.advanceSelectedTab(
-            direction == "ltr" ? 1 : -1,
+          this.container.advanceSelectedItem(
+            this.#getDirection() == "ltr"
+              ? DIRECTION_FORWARD
+              : DIRECTION_BACKWARD,
             this.arrowKeysShouldWrap
           );
           event.preventDefault();
@@ -423,23 +754,28 @@
         }
 
         case KeyEvent.DOM_VK_UP:
-          this.container.advanceSelectedTab(-1, this.arrowKeysShouldWrap);
+          this.container.advanceSelectedItem(
+            DIRECTION_BACKWARD,
+            this.arrowKeysShouldWrap
+          );
           event.preventDefault();
           break;
 
         case KeyEvent.DOM_VK_DOWN:
-          this.container.advanceSelectedTab(1, this.arrowKeysShouldWrap);
+          this.container.advanceSelectedItem(
+            DIRECTION_FORWARD,
+            this.arrowKeysShouldWrap
+          );
           event.preventDefault();
           break;
 
         case KeyEvent.DOM_VK_HOME:
-          this.container._selectNewTab(this.container.allTabs[0]);
+          this.container._selectNewTab(this.allTabs.at(0), DIRECTION_FORWARD);
           event.preventDefault();
           break;
 
         case KeyEvent.DOM_VK_END: {
-          let { allTabs } = this.container;
-          this.container._selectNewTab(allTabs[allTabs.length - 1], -1);
+          this.container._selectNewTab(this.allTabs.at(-1), DIRECTION_BACKWARD);
           event.preventDefault();
           break;
         }
@@ -477,6 +813,11 @@
       }
     }
 
+    /** @returns {boolean} */
+    get visible() {
+      return !this.hidden;
+    }
+
     set linkedPanel(val) {
       this.setAttribute("linkedpanel", val);
     }
@@ -491,6 +832,8 @@
   ]);
   customElements.define("tab", MozElements.MozTab);
 
+  const ARIA_FOCUSED_CLASS_NAME = "tablist-keyboard-focus";
+
   class TabsBase extends MozElements.BaseControl {
     constructor() {
       super();
@@ -498,9 +841,9 @@
       this.addEventListener("DOMMouseScroll", event => {
         if (Services.prefs.getBoolPref("toolkit.tabbox.switchByScrolling")) {
           if (event.detail > 0) {
-            this.advanceSelectedTab(1, false);
+            this.advanceSelectedTab(DIRECTION_FORWARD, false);
           } else {
-            this.advanceSelectedTab(-1, false);
+            this.advanceSelectedTab(DIRECTION_BACKWARD, false);
           }
           event.stopPropagation();
         }
@@ -510,8 +853,9 @@
     // to be called from derived class connectedCallback
     baseConnect() {
       this._tabbox = null;
-      this.ACTIVE_DESCENDANT_ID =
-        "keyboard-focused-tab-" + Math.trunc(Math.random() * 1000000);
+      this.ACTIVE_DESCENDANT_ID = `${ARIA_FOCUSED_CLASS_NAME}-${Math.trunc(
+        Math.random() * 1000000
+      )}`;
 
       if (!this.hasAttribute("orient")) {
         this.setAttribute("orient", "horizontal");
@@ -572,6 +916,9 @@
       return this._tabbox;
     }
 
+    /**
+     * @param {number} val
+     */
     set selectedIndex(val) {
       var tab = this.getItemAtIndex(val);
       if (!tab) {
@@ -596,6 +943,9 @@
       }
     }
 
+    /**
+     * @returns {number}
+     */
     get selectedIndex() {
       const tabs = this.allTabs;
       for (var i = 0; i < tabs.length; i++) {
@@ -606,6 +956,9 @@
       return -1;
     }
 
+    /**
+     * @param {MozTab|null} [val]
+     */
     set selectedItem(val) {
       if (val && !val.selected) {
         // The selectedIndex setter ignores invalid values
@@ -614,6 +967,9 @@
       }
     }
 
+    /**
+     * @returns {MozTab|null}
+     */
     get selectedItem() {
       const tabs = this.allTabs;
       for (var i = 0; i < tabs.length; i++) {
@@ -624,22 +980,36 @@
       return null;
     }
 
+    /**
+     * @returns {MozTab[]}
+     */
+    get ariaFocusableItems() {
+      return this.allTabs;
+    }
+
+    /**
+     * @returns {number}
+     */
     get ariaFocusedIndex() {
-      const tabs = this.allTabs;
-      for (var i = 0; i < tabs.length; i++) {
-        if (tabs[i].id == this.ACTIVE_DESCENDANT_ID) {
+      const items = this.ariaFocusableItems;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].id == this.ACTIVE_DESCENDANT_ID) {
           return i;
         }
       }
       return -1;
     }
 
+    /**
+     * @param {MozTab|null} [val]
+     */
     set ariaFocusedItem(val) {
-      let setNewItem = val && this.getIndexOfItem(val) != -1;
+      let setNewItem = val && this.ariaFocusableItems.includes(val);
       let clearExistingItem = this.ariaFocusedItem && (!val || setNewItem);
+
       if (clearExistingItem) {
         let ariaFocusedItem = this.ariaFocusedItem;
-        ariaFocusedItem.classList.remove("keyboard-focused-tab");
+        ariaFocusedItem.classList.remove(ARIA_FOCUSED_CLASS_NAME);
         ariaFocusedItem.id = "";
         this.selectedItem.removeAttribute("aria-activedescendant");
         let evt = new CustomEvent("AriaFocus");
@@ -647,9 +1017,8 @@
       }
 
       if (setNewItem) {
-        this.ariaFocusedItem = null;
         val.id = this.ACTIVE_DESCENDANT_ID;
-        val.classList.add("keyboard-focused-tab");
+        val.classList.add(ARIA_FOCUSED_CLASS_NAME);
         this.selectedItem.setAttribute(
           "aria-activedescendant",
           this.ACTIVE_DESCENDANT_ID
@@ -659,6 +1028,9 @@
       }
     }
 
+    /**
+     * @returns {MozTab|null}
+     */
     get ariaFocusedItem() {
       return document.getElementById(this.ACTIVE_DESCENDANT_ID);
     }
@@ -694,10 +1066,18 @@
       return tabpanelsElm.children[tabElmIdx];
     }
 
+    /**
+     * @param {MozTab} item
+     * @returns {number}
+     */
     getIndexOfItem(item) {
       return Array.prototype.indexOf.call(this.allTabs, item);
     }
 
+    /**
+     * @param {numb} index
+     * @returns {MozTab|null}
+     */
     getItemAtIndex(index) {
       return this.allTabs[index] || null;
     }
@@ -705,20 +1085,22 @@
     /**
      * Find an adjacent tab.
      *
-     * @param {Node} startTab         A <tab> element to start searching from.
-     * @param {Number} opts.direction 1 to search forward, -1 to search backward.
-     * @param {Boolean} opts.wrap     If true, wrap around if the search reaches
-     *                                the end (or beginning) of the tab strip.
-     * @param {Boolean} opts.startWithAdjacent
-     *                                If true (which is the default), start
-     *                                searching from the  next tab after (or
-     *                                before) startTab.  If false, startTab may
-     *                                be returned if it passes the filter.
-     * @param {Boolean} opts.advance  If false, start searching with startTab.  If
-     *                                true, start searching with an adjacent tab.
-     * @param {Function} opts.filter  A function to select which tabs to return.
-     *
-     * @return {Node | null}     The next <tab> element or, if none exists, null.
+     * @param {MozTab} startTab
+     *   A `<tab>` element to start searching from.
+     * @param {object} opts
+     * @param {number} [opts.direction=1]
+     *   1 to search forward, -1 to search backward.
+     * @param {boolean} [opts.wrap=false]
+     *   If true, wrap around if the search reaches the end (or beginning)
+     *   of the tab strip.
+     * @param {boolean} [opts.startWithAdjacent=true]
+     *   If true (which is the default), start searching from the next tab
+     *   after (or before) `startTab`. If false, `startTab` may be returned
+     *   if it passes the filter.
+     * @param {function(MozTab):boolean} [opts.filter]
+     *   A function to select which tabs to return.
+     * @return {MozTab|null}
+     *   The next `<tab>` element or, if none exists, null.
      */
     findNextTab(startTab, opts = {}) {
       let {
@@ -761,6 +1143,12 @@
       }
     }
 
+    /**
+     * @param {MozTab} aNewTab
+     * @param {-1|1} [aFallbackDir]
+     * @param {boolean} [aWrap]
+     * @returns
+     */
     _selectNewTab(aNewTab, aFallbackDir, aWrap) {
       this.ariaFocusedItem = null;
 
@@ -804,28 +1192,53 @@
       return true;
     }
 
+    /**
+     * Selects the next visible tab in this list of tabs.
+     *
+     * @param {-1|1} [aDir]
+     * @param {boolean} [aWrap]
+     */
     advanceSelectedTab(aDir, aWrap) {
-      let startTab = this.ariaFocusedItem || this.selectedItem;
+      let { ariaFocusedItem } = this;
+      let startTab = ariaFocusedItem;
+      if (!ariaFocusedItem || !this.allTabs.includes(ariaFocusedItem)) {
+        startTab = this.selectedItem;
+      }
       let newTab = null;
 
       // Handle keyboard navigation for a hidden tab that can be selected, like the Firefox View tab,
       // which has a random placement in this.allTabs.
       if (startTab.hidden) {
         if (aDir == 1) {
-          newTab = this.allTabs.find(tab => !tab.hidden);
+          newTab = this.allTabs.find(tab => tab.visible);
         } else {
-          newTab = this.allTabs.findLast(tab => !tab.hidden);
+          newTab = this.allTabs.findLast(tab => tab.visible);
         }
       } else {
         newTab = this.findNextTab(startTab, {
           direction: aDir,
           wrap: aWrap,
+          filter: tab => tab.visible,
         });
       }
 
       if (newTab && newTab != startTab) {
         this._selectNewTab(newTab, aDir, aWrap);
       }
+    }
+
+    /**
+     * Selects the next visible item in this list of items.
+     *
+     * This provides an extension point for code to mix non-tab items inside
+     * of this tab list and be able to appropriately and logically advance to
+     * the next tab or non-tab.
+     *
+     * @param {-1|1} [aDir]
+     * @param {boolean} [aWrap]
+     */
+    advanceSelectedItem(aDir, aWrap) {
+      this.advanceSelectedTab(aDir, aWrap);
     }
 
     appendItem(label, value) {
@@ -856,7 +1269,7 @@
       this.insertBefore(start, this.firstChild);
 
       let end = MozXULElement.parseXULToFragment(
-        `<spacer class="tabs-right" flex="1"/>`
+        `<spacer class="tabs-right"/>`
       );
       this.insertBefore(end, null);
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -100,6 +98,10 @@ template <typename... Ts>
   return Intersect(a1, a2) != ThreadProfilingFeatures::NotProfiled;
 }
 
+namespace mozilla {
+class CycleCollectedJSContext;
+}
+
 namespace mozilla::profiler {
 
 // All data members related to thread profiling are stored here.
@@ -159,10 +161,11 @@ class ThreadRegistrationData {
   // If this is a JS thread, this is its JSContext, which is required for any
   // JS sampling.
   // Written from thread, read from thread and suspended thread.
-  JSContext* mJSContext = nullptr;
+  CycleCollectedJSContext* mCCJSContext = nullptr;
 
-  // If mJSContext is not null AND the thread is being profiled, this points at
-  // the start of a JsFrameBuffer to be used for on-thread synchronous sampling.
+  // If mCCJSContext is not null AND the thread is being profiled, this points
+  // at the start of a JsFrameBuffer to be used for on-thread synchronous
+  // sampling.
   JsFrame* mJsFrameBuffer = nullptr;
 
   // The profiler needs to start and stop JS sampling of JS threads at various
@@ -430,7 +433,10 @@ class ThreadRegistrationUnlockedReaderAndAtomicRWOnThread
   // Non-atomic members read here MUST be written from LockedRWOnThread (to
   // guarantee that they are only modified on this thread.)
 
-  [[nodiscard]] JSContext* GetJSContext() const { return mJSContext; }
+  [[nodiscard]] JSContext* GetJSContext() const;
+  [[nodiscard]] CycleCollectedJSContext* GetCycleCollectedJSContext() const {
+    return mCCJSContext;
+  }
 
  protected:
   ThreadRegistrationUnlockedReaderAndAtomicRWOnThread(const char* aName,
@@ -521,8 +527,8 @@ class ThreadRegistrationLockedRWFromAnyThread
 class ThreadRegistrationLockedRWOnThread
     : public ThreadRegistrationLockedRWFromAnyThread {
  public:
-  void SetJSContext(JSContext* aJSContext);
-  void ClearJSContext();
+  void SetCycleCollectedJSContext(CycleCollectedJSContext* aCCJSContext);
+  void ClearCycleCollectedJSContext();
 
   // Poll to see if JS sampling should be started/stopped.
   void PollJSSampling();

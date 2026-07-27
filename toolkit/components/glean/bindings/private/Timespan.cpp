@@ -1,17 +1,21 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/glean/bindings/Timespan.h"
 
+#include "nsIThread.h"
 #include "nsString.h"
+#include "nsThreadUtils.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/Components.h"
+#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -89,7 +93,7 @@ static Maybe<TimesToStartsMutex::AutoLock> GetTimesToStartsLock() {
   return Some(std::move(lock));
 }
 
-void TimespanMetric::Start() const {
+void TimespanStandalone::Start() const {
   auto optScalarId = ScalarIdForMetric(mId);
   if (optScalarId) {
     auto scalarId = optScalarId.extract();
@@ -101,7 +105,7 @@ void TimespanMetric::Start() const {
   fog_timespan_start(mId);
 }
 
-void TimespanMetric::Stop() const {
+void TimespanStandalone::Stop() const {
   auto optScalarId = ScalarIdForMetric(mId);
   if (optScalarId) {
     auto scalarId = optScalarId.extract();
@@ -115,14 +119,14 @@ void TimespanMetric::Stop() const {
         } else if (MOZ_UNLIKELY(delta < 0)) {
           theDelta = 0;
         }
-        Telemetry::ScalarSet(scalarId, theDelta);
+        TelemetryScalar::Set(scalarId, theDelta);
       }
     });
   }
   fog_timespan_stop(mId);
 }
 
-void TimespanMetric::Cancel() const {
+void TimespanStandalone::Cancel() const {
   auto optScalarId = ScalarIdForMetric(mId);
   if (optScalarId) {
     auto scalarId = optScalarId.extract();
@@ -132,11 +136,11 @@ void TimespanMetric::Cancel() const {
   fog_timespan_cancel(mId);
 }
 
-void TimespanMetric::SetRaw(uint32_t aDuration) const {
+void TimespanStandalone::SetRaw(uint32_t aDuration) const {
   auto optScalarId = ScalarIdForMetric(mId);
   if (optScalarId) {
     auto scalarId = optScalarId.extract();
-    Telemetry::ScalarSet(scalarId, aDuration);
+    TelemetryScalar::Set(scalarId, aDuration);
   }
   fog_timespan_set_raw(mId, aDuration);
 }

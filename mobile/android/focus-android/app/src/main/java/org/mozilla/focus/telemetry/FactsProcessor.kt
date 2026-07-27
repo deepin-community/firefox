@@ -25,6 +25,9 @@ import org.mozilla.focus.GleanMetrics.CustomTabsToolbar
  * will be collected.
  */
 object FactsProcessor {
+    /**
+     * Initializes the [FactsProcessor] and registers it with the [Facts] system.
+     */
     fun initialize() {
         Facts.registerProcessor(
             object : FactProcessor {
@@ -74,9 +77,7 @@ object FactsProcessor {
 /**
  * Extracts an extraKey from a context menu Fact.
  */
-fun Fact.toContextMenuExtraKey() =
-    if (component == Component.FEATURE_CONTEXTMENU) {
-        metadata?.get("item").toString().removePrefix("mozac.feature.contextmenu.")
-    } else {
-        throw IllegalArgumentException("Fact is not a context menu fact")
-    }
+fun Fact.toContextMenuExtraKey(): String {
+    require(component == Component.FEATURE_CONTEXTMENU) { "Fact is not a context menu fact" }
+    return metadata?.get("item").toString().removePrefix("mozac.feature.contextmenu.")
+}

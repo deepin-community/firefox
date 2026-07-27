@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLTitleElement.h"
 
-#include "mozilla/dom/HTMLTitleElementBinding.h"
 #include "mozilla/ErrorResult.h"
-#include "nsStyleConsts.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/HTMLTitleElementBinding.h"
 #include "nsContentUtils.h"
+#include "nsStyleConsts.h"
 
 NS_IMPL_NS_NEW_HTML_ELEMENT(Title)
 
@@ -49,16 +47,18 @@ void HTMLTitleElement::CharacterDataChanged(nsIContent* aContent,
   SendTitleChangeEvent(false);
 }
 
-void HTMLTitleElement::ContentAppended(nsIContent* aFirstNewContent) {
+void HTMLTitleElement::ContentAppended(nsIContent* aFirstNewContent,
+                                       const ContentAppendInfo&) {
   SendTitleChangeEvent(false);
 }
 
-void HTMLTitleElement::ContentInserted(nsIContent* aChild) {
+void HTMLTitleElement::ContentInserted(nsIContent* aChild,
+                                       const ContentInsertInfo&) {
   SendTitleChangeEvent(false);
 }
 
-void HTMLTitleElement::ContentRemoved(nsIContent* aChild,
-                                      nsIContent* aPreviousSibling) {
+void HTMLTitleElement::ContentWillBeRemoved(nsIContent* aChild,
+                                            const ContentRemoveInfo&) {
   SendTitleChangeEvent(false);
 }
 
@@ -86,8 +86,7 @@ void HTMLTitleElement::DoneAddingChildren(bool aHaveNotified) {
 }
 
 void HTMLTitleElement::SendTitleChangeEvent(bool aBound) {
-  Document* doc = GetUncomposedDoc();
-  if (doc) {
+  if (Document* doc = GetUncomposedDoc()) {
     doc->NotifyPossibleTitleChange(aBound);
   }
 }

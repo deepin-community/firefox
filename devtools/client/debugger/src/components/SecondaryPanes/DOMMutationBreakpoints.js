@@ -4,6 +4,8 @@
 
 import React, { Component } from "devtools/client/shared/vendor/react";
 import {
+  br,
+  button,
   div,
   input,
   li,
@@ -11,7 +13,9 @@ import {
 } from "devtools/client/shared/vendor/react-dom-factories";
 import PropTypes from "devtools/client/shared/vendor/react-prop-types";
 
-import Reps from "devtools/client/shared/components/reps/index";
+const Reps = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/components/reps/index.mjs"
+);
 const {
   REPS: { Rep },
   MODE,
@@ -107,23 +111,21 @@ class DOMMutationBreakpointsContents extends Component {
     );
   }
 
-  /* eslint-disable react/no-danger */
   renderEmpty() {
     const { openInspector } = this.props;
-    const text = L10N.getFormatStr(
-      "noDomMutationBreakpoints",
-      `<a>${L10N.getStr("inspectorTool")}</a>`
-    );
     return div(
       {
         className: "dom-mutation-empty",
       },
-      div({
-        onClick: () => openInspector(),
-        dangerouslySetInnerHTML: {
-          __html: text,
+      L10N.getStr("noDomMutationBreakpoints.notice"),
+      br(),
+      button(
+        {
+          className: "devtools-button devtools-button-standalone",
+          onClick: () => openInspector(),
         },
-      })
+        L10N.getStr("noDomMutationBreakpoints.openInspectorButton")
+      )
     );
   }
 

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2021 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +32,7 @@ using namespace js::wasm;
 
 /* static */
 DebugFrame* DebugFrame::from(Frame* fp) {
-  MOZ_ASSERT(GetNearestEffectiveInstance(fp)->code().codeMeta().debugEnabled);
+  MOZ_ASSERT(GetNearestEffectiveInstance(fp)->code().debugEnabled());
   auto* df =
       reinterpret_cast<DebugFrame*>((uint8_t*)fp - DebugFrame::offsetOfFrame());
   MOZ_ASSERT(GetNearestEffectiveInstance(fp) == df->instance());

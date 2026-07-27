@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Seiten entfernen
         }
     .accesskey = e
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Verwaltete Lesezeichen
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Das Lesezeichen- und Chronik-System wird nicht funktionieren, da eine der Dateien von { -brand-short-name } von einer anderen Anwendung verwendet wird. Dieses Problem könnte von einer Sicherheitssoftware verursacht werden, beispielsweise von einem Virenscanner.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Ordner teilen
+    .badge = Neu

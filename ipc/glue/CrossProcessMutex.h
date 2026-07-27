@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +13,7 @@
 #endif
 #if !defined(XP_WIN) && !defined(XP_NETBSD) && !defined(XP_OPENBSD)
 #  include <pthread.h>
-#  include "mozilla/ipc/SharedMemory.h"
+#  include "mozilla/ipc/SharedMemoryMapping.h"
 #  include "mozilla/Atomics.h"
 #endif
 
@@ -39,7 +37,7 @@ namespace mozilla {
 #if defined(XP_WIN)
 typedef mozilla::UniqueFileHandle CrossProcessMutexHandle;
 #elif !defined(XP_NETBSD) && !defined(XP_OPENBSD)
-typedef mozilla::ipc::SharedMemory::Handle CrossProcessMutexHandle;
+typedef mozilla::ipc::MutableSharedMemoryHandle CrossProcessMutexHandle;
 #else
 // Stub for other platforms. We can't use uintptr_t here since different
 // processes could disagree on its size.
@@ -104,7 +102,7 @@ class CrossProcessMutex {
 #if defined(XP_WIN)
   HANDLE mMutex;
 #elif !defined(XP_NETBSD) && !defined(XP_OPENBSD)
-  RefPtr<mozilla::ipc::SharedMemory> mSharedBuffer;
+  mozilla::ipc::SharedMemoryMappingWithHandle mSharedBuffer;
   pthread_mutex_t* mMutex;
   mozilla::Atomic<int32_t>* mCount;
 #endif

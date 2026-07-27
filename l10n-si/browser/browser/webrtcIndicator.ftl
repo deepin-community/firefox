@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Note: This is currently placed under browser/base/content so that we can
-# get the strings to appear without having our localization community need
-# to go through and translate everything. Once these strings are ready for
-# translation, we'll move it to the locales folder.
-
-
 ## These strings are used so that the window has a title in tools that
 ## enumerate/look for window titles. It is not normally visible anywhere.
 
@@ -30,7 +24,6 @@ webrtc-item-browser = පටිත්ත
 
 # This is used for the website origin for the sharing menu if no readable origin could be deduced from the URL.
 webrtc-sharing-menuitem-unknown-host = නොදන්නා මූලයකි
-
 # Variables:
 #   $origin (String): The website origin (e.g. www.mozilla.org)
 #   $itemList (String): A formatted list of items (e.g. "camera, microphone and tab audio")
@@ -39,7 +32,6 @@ webrtc-sharing-menuitem =
 webrtc-sharing-menu =
     .label = පටිති බෙදාගන්නා උපාංග
     .accesskey = d
-
 webrtc-sharing-window = ඔබ වෙනත් යෙදුමක කවුළුවක් බෙදා ගනිමින්.
 webrtc-sharing-browser-window = ඔබ { -brand-short-name } බෙදා ගනිමින් සිටියි.
 webrtc-sharing-screen = ඔබගේ සමස්ත තිරයම බෙදා ගනිමින් සිටියි.
@@ -86,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -150,5 +142,4 @@ webrtc-action-not-now =
 
 webrtc-remember-allow-checkbox = තීරණය මතක තබාගන්න
 webrtc-mute-notifications-checkbox = බෙදාගැනීමේදී අඩවිවල දැනුම්දීම් නිහඬ කරන්න
-
-webrtc-reason-for-no-permanent-allow-insecure = මෙම අඩවිය වෙත ඔබගේ සම්බන්ධතාවය අනාරක්‍ෂිතයි. ඔබව රක්‍ෂා කිරීමට, { -brand-short-name } මෙම වාරය සඳහා පමණක් ප්‍රවේශයට ඉඩ දෙයි.
+webrtc-reason-for-no-permanent-allow-insecure = මෙම අඩවිය වෙත ඔබගේ සම්බන්‍ධතාව අනාරක්‍ෂිතයි. ඔබගේ රැකවරණයට { -brand-short-name } මෙම වාරය සඳහා පමණක් ප්‍රවේශයට ඉඩ දෙයි.

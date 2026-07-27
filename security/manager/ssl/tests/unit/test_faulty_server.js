@@ -72,38 +72,35 @@ add_task(
   {
     skip_if: () => AppConstants.MOZ_SYSTEM_NSS,
   },
-  async function testRetryXyber() {
-    const retryDomain = "xyber-net-interrupt.example.com";
+  async function testMlkem768x25519NoX25519Fallback() {
+    const retryDomain = "mlkem768x25519-net-interrupt.example.com";
 
     Services.prefs.setBoolPref("security.tls.enable_kyber", true);
     Services.prefs.setCharPref("network.dns.localDomains", [retryDomain]);
     Services.prefs.setIntPref("network.http.speculative-parallel-limit", 0);
 
-    // Get the number of xyber / x25519 callbacks prior to making the request
-    // ssl_grp_kem_xyber768d00 = 25497
+    // Get the number of mlkem768x25519 and x25519 callbacks prior to making the request
+    // ssl_grp_kem_mlkem768x25519 = 4588
     // ssl_grp_ec_curve25519 = 29
-    let countOfXyber = handlerCount("/callback/25497");
+    let countOfMlkem = handlerCount("/callback/4588");
     let countOfX25519 = handlerCount("/callback/29");
+
     let chan = makeChan(`https://${retryDomain}:8443`);
-    let [, buf] = await channelOpenPromise(chan, CL_ALLOW_UNKNOWN_CL);
-    ok(buf);
-    // The server will make a xyber768d00 callback for the initial request, and
-    // then an x25519 callback for the retry. Both callback counts should
-    // increment by one.
-    equal(
-      handlerCount("/callback/25497"),
-      countOfXyber + 1,
-      "negotiated xyber768d00"
+    let [req] = await channelOpenPromise(chan, CL_EXPECT_FAILURE);
+    // PR_END_OF_FILE_ERROR maps to NS_ERROR_NET_RESET, so the transaction retries.
+    equal(req.status, Cr.NS_ERROR_NET_RESET);
+    // At least one mlkem attempt was made (may be more due to retries).
+    Assert.greater(
+      handlerCount("/callback/4588"),
+      countOfMlkem,
+      "negotiated mlkem768x25519"
     );
-    equal(handlerCount("/callback/29"), countOfX25519 + 1, "negotiated x25519");
-    if (!mozinfo.socketprocess_networking) {
-      // Bug 1824574
-      equal(
-        1,
-        await Glean.tls.xyberIntoleranceReason.PR_END_OF_FILE_ERROR.testGetValue(),
-        "PR_END_OF_FILE_ERROR telemetry accumulated"
-      );
-    }
+    // x25519 was never negotiated across the original attempt or any retry.
+    equal(
+      handlerCount("/callback/29"),
+      countOfX25519,
+      "did not negotiate x25519"
+    );
   }
 );
 
@@ -111,27 +108,28 @@ add_task(
   {
     skip_if: () => AppConstants.MOZ_SYSTEM_NSS,
   },
-  async function testNoRetryXyber() {
-    const retryDomain = "xyber-alert-after-server-hello.example.com";
+  async function testNoRetryMlkem768x25519HandshakeFailed() {
+    const retryDomain = "mlkem768x25519-alert-after-server-hello.example.com";
 
     Services.prefs.setBoolPref("security.tls.enable_kyber", true);
     Services.prefs.setCharPref("network.dns.localDomains", [retryDomain]);
     Services.prefs.setIntPref("network.http.speculative-parallel-limit", 0);
 
-    // Get the number of xyber / x25519 / p256 callbacks prior to making the request
-    // ssl_grp_kem_xyber768d00 = 25497
+    // Get the number of mlkem768x25519 and x25519 callbacks prior to making
+    // the request
+    // ssl_grp_kem_mlkem768x25519 = 4588
     // ssl_grp_ec_curve25519 = 29
-    let countOfXyber = handlerCount("/callback/25497");
+    let countOfMlkem = handlerCount("/callback/4588");
     let countOfX25519 = handlerCount("/callback/29");
     let chan = makeChan(`https://${retryDomain}:8443`);
     let [req] = await channelOpenPromise(chan, CL_EXPECT_FAILURE);
     equal(req.status, 0x805a2f4d); // psm::GetXPCOMFromNSSError(SSL_ERROR_HANDSHAKE_FAILED)
-    // The server will make a xyber768d00 callback for the initial request and
+    // The server will make a mlkem768x25519 callback for the initial request and
     // the client should not retry.
     equal(
-      handlerCount("/callback/25497"),
-      countOfXyber + 1,
-      "negotiated xyber768d00"
+      handlerCount("/callback/4588"),
+      countOfMlkem + 1,
+      "negotiated mlkem768x25519"
     );
     equal(
       handlerCount("/callback/29"),

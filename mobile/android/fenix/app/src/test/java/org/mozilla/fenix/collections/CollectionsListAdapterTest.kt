@@ -5,15 +5,13 @@
 package org.mozilla.fenix.collections
 
 import android.widget.FrameLayout
-import io.mockk.mockk
-import io.mockk.verify
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class CollectionsListAdapterTest {
     private val collectionList: Array<String> =
         arrayOf(
@@ -21,7 +19,8 @@ class CollectionsListAdapterTest {
             "Collection 1",
             "Collection 2",
         )
-    private val onNewCollectionClicked: () -> Unit = mockk(relaxed = true)
+    private var onNewCollectionClickedCount = 0
+    private val onNewCollectionClicked: () -> Unit = { onNewCollectionClickedCount++ }
 
     @Test
     fun `getItemCount should return the correct list size`() {
@@ -56,9 +55,7 @@ class CollectionsListAdapterTest {
 
         assertEquals("Add new collection", holder1.textView.text)
         holder1.textView.callOnClick()
-        verify {
-            onNewCollectionClicked()
-        }
+        assertEquals(1, onNewCollectionClickedCount)
 
         assertEquals(true, holder2.textView.isChecked)
         assertEquals("Collection 1", holder2.textView.text)

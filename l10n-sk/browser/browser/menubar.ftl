@@ -3,26 +3,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Možnosti
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Nastavenia…
+menu-application-set-as-default =
+    .label = Nastaviť { -brand-shorter-name(case: "acc") } ako predvolený prehliadač
 menu-application-services =
     .label = Služby
 menu-application-hide-this =
-    .label = Skryť { -brand-shorter-name }
+    .label = Skryť { -brand-shorter-name(case: "acc") }
 menu-application-hide-other =
     .label = Skryť ostatné
 menu-application-show-all =
@@ -46,7 +39,7 @@ menu-quit =
         }
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
-    .label = Ukončiť { -brand-shorter-name }
+    .label = Ukončiť { -brand-shorter-name(case: "acc") }
 menu-about =
     .label = O aplikácii { -brand-shorter-name }
     .accesskey = O
@@ -99,6 +92,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Zdieľať
     .accesskey = Z
+menu-file-share-qrcode =
+    .label = Generovať QR kód…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Vygenerovať QR kód
+    .accesskey = R
 menu-file-print-setup =
     .label = Nastavenie tlače…
     .accesskey = N
@@ -147,8 +146,6 @@ menu-view-history-button =
     .label = História
 menu-view-synced-tabs-sidebar =
     .label = Synchronizované karty
-menu-view-megalist-sidebar =
-    .label = Heslá
 menu-view-full-zoom =
     .label = Lupa
     .accesskey = L
@@ -256,6 +253,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Záložky mobilného Firefoxu
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profily
+menu-profiles-manage-profiles =
+    .label = Spravovať profily
+menu-profiles-new-profile =
+    .label = Nový profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (aktuálny)
+menu-profiles-menu =
+    .label = Profily
+    .accesskey = r
+
 ## Tools Menu
 
 menu-tools =
@@ -264,6 +277,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Správca sťahovania súborov
     .accesskey = S
+menu-tools-extensions-and-themes =
+    .label = Rozšírenia a témy vzhľadu
+    .accesskey = R
 menu-tools-addons-and-themes =
     .label = Doplnky a témy
     .accesskey = D
@@ -291,6 +307,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Informácie o stránke
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = Upraviť PDF…
+    .accesskey = F
 menu-settings =
     .label = Nastavenia
     .accesskey =

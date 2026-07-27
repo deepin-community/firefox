@@ -36,6 +36,8 @@ storage-variable-view-search-box =
 # Add Item button title
 storage-add-button =
     .title = Добавить элемент
+storage-delete-all-button =
+    .title = Удалить всё
 # Refresh button title
 storage-refresh-button =
     .title = Обновить элементы
@@ -71,6 +73,7 @@ storage-table-headers-cookies-expires = Срок действия / Макс. в
 storage-table-headers-cookies-size = Размер
 storage-table-headers-cookies-last-accessed = Последний доступ
 storage-table-headers-cookies-creation-time = Создан
+storage-table-headers-cookies-update-time = Обновлено
 storage-table-headers-cache-status = Состояние
 storage-table-headers-extension-storage-area = Место хранения
 
@@ -107,3 +110,11 @@ storage-idb-delete-blocked = База данных «{ $dbName }» будет у
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = База данных «{ $dbName }» не может быть удалена.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Не удалось создать куку: «{ $errorString }».
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Кука не может быть обновлена: «{ $errorString }».

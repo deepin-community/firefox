@@ -12,9 +12,6 @@ about-webrtc-document-title = WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = запазване на about:webrtc като
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Журнал на AEC
@@ -28,6 +25,10 @@ about-webrtc-aec-logging-toggled-off-state-msg = Журналните файло
 
 ##
 
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Автоматично опресняване
+# A button which forces a refresh of displayed statistics
+about-webrtc-force-refresh-button = Опресняване
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
@@ -106,11 +107,6 @@ about-webrtc-log-section-hide-msg = Скриване на журнал
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (затворена) { $now }
 
-## These are used to indicate what direction media is flowing.
-## Variables:
-##  $codecs - a list of media codecs
-
-
 ##
 
 about-webrtc-local-candidate = Локален кандидат
@@ -135,30 +131,16 @@ about-webrtc-fold-default-show-msg = Подробности
     .title = Щракнете, за да разширите раздела
 about-webrtc-fold-default-hide-msg = Без подробности
     .title = Щракнете, за да свиете раздела
+about-webrtc-discarded-packets-label = Отхвърлени пакети:
 about-webrtc-decoder-label = Декодер
 about-webrtc-encoder-label = Кодер
 
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
-
-## These are displayed on the button that shows or hides the
-## PeerConnection configuration disclosure
-
+# This is an SSRC on the remote side of the connection that is sending RTP
+about-webrtc-remote-send-ssrc = Отдалечено изпращане на SSRC
 
 ##
-
-
-## These are displayed on the button that shows or hides the
-## user modified configuration disclosure
-
-
-##
-
-
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
 
 about-webrtc-save-page-msg = страницата е запазена в: { $path }
 about-webrtc-debug-mode-off-state-msg = журналът на дебъгването може да бъде намерен в: { $path }
@@ -173,7 +155,7 @@ about-webrtc-save-page-complete-msg = Страницата е запазена �
 # Variables:
 #  $packets (Number) - The number of packets received.
 about-webrtc-received-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Получен { $packets } пакет
        *[other] Получени { $packets } пакета
     }
@@ -181,7 +163,7 @@ about-webrtc-received-label =
 # Variables:
 #  $packets (Number) - The number of packets lost.
 about-webrtc-lost-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Загубен { $packets } пакет
        *[other] Загубени { $packets } пакета
     }
@@ -189,7 +171,7 @@ about-webrtc-lost-label =
 # Variables:
 #  $packets (Number) - The number of packets sent.
 about-webrtc-sent-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Изпратен { $packets } пакет
        *[other] Изпратени { $packets } пакета
     }
@@ -206,14 +188,8 @@ about-webrtc-trickle-caption-msg = Забавилите се кандидати 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
 
-
-## These are displayed on the button that shows or hides the SDP information disclosure
-
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-
+# This is used as a header for an SDP section contained in two columns allowing for side-by-side comparisons.
+# Variables:
+#  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
+#  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
+about-webrtc-sdp-set-timestamp = Времеви маркер { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)

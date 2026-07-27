@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -8,7 +6,6 @@
 
 #include "mozilla/DebugOnly.h"
 
-#include <stdlib.h>
 #include <utility>
 
 #include "jspubtd.h"
@@ -518,6 +515,13 @@ class NodeBuilder {
   [[nodiscard]] bool importDeclaration(NodeVector& elts, HandleValue moduleSpec,
                                        TokenPos* pos, MutableHandleValue dst);
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+  [[nodiscard]] bool importSourceDeclaration(HandleValue bindingName,
+                                             HandleValue moduleSpec,
+                                             TokenPos* pos,
+                                             MutableHandleValue dst);
+#endif
+
   [[nodiscard]] bool importSpecifier(HandleValue importName,
                                      HandleValue bindingName, TokenPos* pos,
                                      MutableHandleValue dst);
@@ -640,19 +644,13 @@ class NodeBuilder {
   [[nodiscard]] bool metaProperty(HandleValue meta, HandleValue property,
                                   TokenPos* pos, MutableHandleValue dst);
 
-  [[nodiscard]] bool callImportExpression(HandleValue ident, NodeVector& args,
-                                          TokenPos* pos,
-                                          MutableHandleValue dst);
+  [[nodiscard]] bool callImportExpression(HandleValue meta,
+                                          HandleValue property,
+                                          NodeVector& args, TokenPos* pos,
+                                          MutableHandleValue dst,
+                                          bool isImportSource = false);
 
   [[nodiscard]] bool super(TokenPos* pos, MutableHandleValue dst);
-
-#ifdef ENABLE_RECORD_TUPLE
-  [[nodiscard]] bool recordExpression(NodeVector& elts, TokenPos* pos,
-                                      MutableHandleValue dst);
-
-  [[nodiscard]] bool tupleExpression(NodeVector& elts, TokenPos* pos,
-                                     MutableHandleValue dst);
-#endif
 
   /*
    * declarations
@@ -1133,18 +1131,6 @@ bool NodeBuilder::objectExpression(NodeVector& elts, TokenPos* pos,
   return listNode(AST_OBJECT_EXPR, "properties", elts, pos, dst);
 }
 
-#ifdef ENABLE_RECORD_TUPLE
-bool NodeBuilder::recordExpression(NodeVector& elts, TokenPos* pos,
-                                   MutableHandleValue dst) {
-  return listNode(AST_RECORD_EXPR, "properties", elts, pos, dst);
-}
-
-bool NodeBuilder::tupleExpression(NodeVector& elts, TokenPos* pos,
-                                  MutableHandleValue dst) {
-  return listNode(AST_TUPLE_EXPR, "elements", elts, pos, dst);
-}
-#endif
-
 bool NodeBuilder::thisExpression(TokenPos* pos, MutableHandleValue dst) {
   return newNode(AST_THIS_EXPR, pos, dst);
 }
@@ -1190,6 +1176,16 @@ bool NodeBuilder::importDeclaration(NodeVector& elts, HandleValue moduleRequest,
   return newNode(AST_IMPORT_DECL, pos, "specifiers", array, "moduleRequest",
                  moduleRequest, dst);
 }
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+bool NodeBuilder::importSourceDeclaration(HandleValue bindingName,
+                                          HandleValue moduleRequest,
+                                          TokenPos* pos,
+                                          MutableHandleValue dst) {
+  return newNode(AST_IMPORT_SOURCE_DECL, pos, "binding", bindingName,
+                 "moduleRequest", moduleRequest, dst);
+}
+#endif
 
 bool NodeBuilder::importSpecifier(HandleValue importName,
                                   HandleValue bindingName, TokenPos* pos,
@@ -1406,14 +1402,22 @@ bool NodeBuilder::metaProperty(HandleValue meta, HandleValue property,
                  dst);
 }
 
-bool NodeBuilder::callImportExpression(HandleValue ident, NodeVector& args,
-                                       TokenPos* pos, MutableHandleValue dst) {
+bool NodeBuilder::callImportExpression(HandleValue meta, HandleValue property,
+                                       NodeVector& args, TokenPos* pos,
+                                       MutableHandleValue dst,
+                                       bool isImportSource /* = false */) {
   RootedValue array(cx);
   if (!newArray(args, &array)) {
     return false;
   }
 
-  return newNode(AST_CALL_IMPORT, pos, "ident", ident, "arguments", array, dst);
+  if (isImportSource) {
+    return newNode(AST_CALL_IMPORT_SOURCE, pos, "meta", meta, "property",
+                   property, "arguments", array, dst);
+  } else {
+    return newNode(AST_CALL_IMPORT, pos, "ident", meta, "arguments", array,
+                   dst);
+  }
 }
 
 bool NodeBuilder::super(TokenPos* pos, MutableHandleValue dst) {
@@ -1456,6 +1460,9 @@ class ASTSerializer {
                            MutableHandleValue dst);
   bool variableDeclarator(ParseNode* pn, MutableHandleValue dst);
   bool importDeclaration(BinaryNode* importNode, MutableHandleValue dst);
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+  bool importSourceDeclaration(BinaryNode* importNode, MutableHandleValue dst);
+#endif
   bool importSpecifier(BinaryNode* importSpec, MutableHandleValue dst);
   bool importNamespaceSpecifier(UnaryNode* importSpec, MutableHandleValue dst);
   bool exportDeclaration(ParseNode* exportNode, MutableHandleValue dst);
@@ -1900,6 +1907,45 @@ bool ASTSerializer::importDeclaration(BinaryNode* importNode,
                                    &importNode->pn_pos, dst);
 }
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+bool ASTSerializer::importSourceDeclaration(BinaryNode* importNode,
+                                            MutableHandleValue dst) {
+  MOZ_ASSERT(importNode->isKind(ParseNodeKind::ImportSourceDecl));
+
+  NameNode* bindingName = &importNode->left()->as<NameNode>();
+  MOZ_ASSERT(bindingName->isKind(ParseNodeKind::Name));
+
+  auto* moduleRequest = &importNode->right()->as<BinaryNode>();
+  MOZ_ASSERT(moduleRequest->isKind(ParseNodeKind::ImportModuleRequest));
+
+  ParseNode* moduleSpecNode = moduleRequest->left();
+  MOZ_ASSERT(moduleSpecNode->isKind(ParseNodeKind::StringExpr));
+
+  RootedValue bindingNameValue(cx);
+  if (!identifier(bindingName, &bindingNameValue)) {
+    return false;
+  }
+
+  RootedValue moduleSpec(cx);
+  if (!literal(moduleSpecNode, &moduleSpec)) {
+    return false;
+  }
+
+  // Import source declarations do not have import attributes.
+  MOZ_ASSERT(moduleRequest->right()->isKind(ParseNodeKind::PosHolder));
+  NodeVector attributes(cx);
+
+  RootedValue moduleRequestValue(cx);
+  if (!builder.moduleRequest(moduleSpec, attributes, &importNode->pn_pos,
+                             &moduleRequestValue)) {
+    return false;
+  }
+
+  return builder.importSourceDeclaration(bindingNameValue, moduleRequestValue,
+                                         &importNode->pn_pos, dst);
+}
+#endif
+
 bool ASTSerializer::importSpecifier(BinaryNode* importSpec,
                                     MutableHandleValue dst) {
   MOZ_ASSERT(importSpec->isKind(ParseNodeKind::ImportSpec));
@@ -2188,7 +2234,8 @@ bool ASTSerializer::forInit(ParseNode* pn, MutableHandleValue dst) {
   bool lexical = pn->isKind(ParseNodeKind::LetDecl) ||
                  pn->isKind(ParseNodeKind::ConstDecl)
 #ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-                 || pn->isKind(ParseNodeKind::UsingDecl)
+                 || pn->isKind(ParseNodeKind::UsingDecl) ||
+                 pn->isKind(ParseNodeKind::AwaitUsingDecl)
 #endif
       ;
   return (lexical || pn->isKind(ParseNodeKind::VarStmt))
@@ -2273,6 +2320,11 @@ bool ASTSerializer::statement(ParseNode* pn, MutableHandleValue dst) {
 
     case ParseNodeKind::ImportDecl:
       return importDeclaration(&pn->as<BinaryNode>(), dst);
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    case ParseNodeKind::ImportSourceDecl:
+      return importSourceDeclaration(&pn->as<BinaryNode>(), dst);
+#endif
 
     case ParseNodeKind::ExportStmt:
     case ParseNodeKind::ExportDefaultStmt:
@@ -3132,48 +3184,6 @@ bool ASTSerializer::expression(ParseNode* pn, MutableHandleValue dst) {
       return builder.objectExpression(elts, &obj->pn_pos, dst);
     }
 
-#ifdef ENABLE_RECORD_TUPLE
-    case ParseNodeKind::RecordExpr: {
-      ListNode* record = &pn->as<ListNode>();
-      NodeVector elts(cx);
-      if (!elts.reserve(record->count())) {
-        return false;
-      }
-
-      for (ParseNode* item : record->contents()) {
-        MOZ_ASSERT(record->pn_pos.encloses(item->pn_pos));
-
-        RootedValue prop(cx);
-        if (!property(item, &prop)) {
-          return false;
-        }
-        elts.infallibleAppend(prop);
-      }
-
-      return builder.recordExpression(elts, &record->pn_pos, dst);
-    }
-
-    case ParseNodeKind::TupleExpr: {
-      ListNode* tuple = &pn->as<ListNode>();
-      NodeVector elts(cx);
-      if (!elts.reserve(tuple->count())) {
-        return false;
-      }
-
-      for (ParseNode* item : tuple->contents()) {
-        MOZ_ASSERT(tuple->pn_pos.encloses(item->pn_pos));
-
-        RootedValue expr(cx);
-        if (!expression(item, &expr)) {
-          return false;
-        }
-        elts.infallibleAppend(expr);
-      }
-
-      return builder.tupleExpression(elts, &tuple->pn_pos, dst);
-    }
-#endif
-
     case ParseNodeKind::PrivateName:
     case ParseNodeKind::Name:
       return identifier(&pn->as<NameNode>(), dst);
@@ -3278,6 +3288,9 @@ bool ASTSerializer::expression(ParseNode* pn, MutableHandleValue dst) {
              builder.metaProperty(firstIdent, secondIdent, &node->pn_pos, dst);
     }
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    case ParseNodeKind::CallImportSourceExpr:
+#endif
     case ParseNodeKind::CallImportExpr: {
       BinaryNode* node = &pn->as<BinaryNode>();
       ParseNode* identNode = node->left();
@@ -3294,10 +3307,24 @@ bool ASTSerializer::expression(ParseNode* pn, MutableHandleValue dst) {
       ParseNode* optionsArgNode = specNode->as<BinaryNode>().right();
       MOZ_ASSERT(node->pn_pos.encloses(optionsArgNode->pn_pos));
 
-      RootedValue ident(cx);
-      Handle<PropertyName*> name = cx->names().import;
-      if (!identifier(name, &identNode->pn_pos, &ident)) {
+      RootedValue meta(cx);
+      RootedValue property(cx);
+
+      Rooted<JSAtom*> importStr(cx, cx->names().import);
+      if (!identifier(importStr, &identNode->pn_pos, &meta)) {
         return false;
+      }
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+      if (pn->isKind(ParseNodeKind::CallImportSourceExpr)) {
+        Rooted<JSAtom*> sourceStr(cx, cx->names().source);
+        if (!identifier(sourceStr, &identNode->pn_pos, &property)) {
+          return false;
+        }
+      } else
+#endif
+      {
+        property = NullValue();
       }
 
       NodeVector args(cx);
@@ -3320,7 +3347,13 @@ bool ASTSerializer::expression(ParseNode* pn, MutableHandleValue dst) {
         }
       }
 
-      return builder.callImportExpression(ident, args, &pn->pn_pos, dst);
+      bool isImportSource = false;
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+      isImportSource = pn->isKind(ParseNodeKind::CallImportSourceExpr);
+#endif
+
+      return builder.callImportExpression(meta, property, args, &pn->pn_pos,
+                                          dst, isImportSource);
     }
 
     case ParseNodeKind::SetThis: {
@@ -3900,10 +3933,9 @@ static bool reflect_parse(JSContext* cx, uint32_t argc, Value* vp) {
     return false;
   }
 
-  Parser<FullParseHandler, char16_t> parser(
-      &fc, options, chars.begin().get(), chars.length(),
-      /* foldConstants = */ false, compilationState,
-      /* syntaxParser = */ nullptr);
+  Parser<FullParseHandler, char16_t> parser(&fc, options, chars.begin().get(),
+                                            chars.length(), compilationState,
+                                            /* syntaxParser = */ nullptr);
   if (!parser.checkOptions()) {
     return false;
   }

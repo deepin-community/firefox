@@ -9,6 +9,7 @@ autofill-manage-addresses-title = Tansiwin ittwakelsen
 autofill-manage-addresses-list-header = Tansiwin
 autofill-manage-credit-cards-title = Tikaṛḍiwin n uselek ittwakelsen
 autofill-manage-credit-cards-list-header = Takaṛḍa n usmad
+autofill-manage-payment-methods-title = Isseklas tarrayin n uxelleṣ
 autofill-manage-cards-list-header = Tikarḍiwin
 autofill-manage-dialog =
     .style = min-width: 560px
@@ -16,7 +17,9 @@ autofill-manage-remove-button = Kkes
 autofill-manage-add-button = Rnu…
 autofill-manage-edit-button = Ẓreg…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Sekles tansa?
 address-capture-save-doorhanger-description = Sekles talɣut deg { -brand-short-name } i wakken ad tizmireḍ ad teččareḍ tiferkiyin s zzerb.
@@ -38,81 +41,91 @@ address-capture-manage-address-button =
     .label = Iɣewwaren n tansa
 address-capture-learn-more-button =
     .label = Issin ugar
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Rnu tansa tamaynut
 address-capture-open-menu-button =
     .aria-label = Ldi umuɣ
+address-capture-edit-address-link = Ẓreg tansa
+    .aria-label = Ẓreg tansa
 address-capture-edit-address-button =
     .aria-label = Ẓreg tansa
 # The dialog title for creating addresses in browser preferences.
 autofill-add-address-title = Rnu tansa
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Ẓreg tansa
-autofill-address-name = Isem
 autofill-address-given-name = Isem n twacult
 autofill-address-additional-name = Isem alemmas
 autofill-address-family-name = Isem
+autofill-address-name = Isem
 autofill-address-organization = Takebbanit
 autofill-address-street-address = Tansa n taddart
 autofill-address-street = Tansa n taddart
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Taddart
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Taddart neɣ adrum
 autofill-address-island = Tigzirt
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Tamurt
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-autofill-address-city = Aγrem
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+autofill-address-city = Aɣrem
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Tamnaḍt
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Sader
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Tamnaḍt
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Tamnaḍt
 autofill-address-state = Addad
 autofill-address-county = Tamurt
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Taparicit
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Azegdu
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Tamnaḍt
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Agezdu
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Tageldit
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Tamnaḍt
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Tangalt n pusṭa
+# Postal code field.
 autofill-address-zip = Tangalt n pusṭa
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Tangalt n irlanda
 
 ##
 
-
-##
-
-autofill-address-country = Tamnaḍt neγ tamurt
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Rnu tansa tamaynut
+autofill-address-country = Tamnaḍt neɣ tamurt
 autofill-address-country-only = Tamurt
-autofill-address-tel = Tiliγri
+autofill-address-tel = Tiliɣri
 autofill-address-email = Imayl
 autofill-cancel-button = Sefsex
 autofill-save-button = Sekles
@@ -129,12 +142,19 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ittaεraḍ ad d-sken talɣut n tkarḍa n usmad. Sentem anekcum ɣer usfaylu-a n umiḍan ddaw.
        *[other] { -brand-short-name } yettaεraḍ ad isken talɣut n tkarḍa n usmad.
     }
+autofill-message-tooltip = Sken izen yerzan taččart tawurmant
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-card-title = Rnu takarḍa
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title2 = Ẓreg takarḍa
+autofill-card-number-2 =
+    .label = Uṭṭun n tkeṛḍa
 autofill-card-number = Uṭṭun n tkeṛḍa
 autofill-card-invalid-number = Ma ulac aɣilif, sekcem uṭṭun n tkeṛḍa ameɣtu
+autofill-card-name-on-card-2 =
+    .label = Isem deg tkarḍa
+autofill-card-billing-address-2 =
+    .label = Tansa n tuzna n tfaturt
 autofill-card-name-on-card = Isem deg tkarḍa
 autofill-card-expires-month = Aggur n tagara
 autofill-card-expires-year = Aseggas n tagara

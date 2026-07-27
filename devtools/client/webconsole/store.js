@@ -42,6 +42,9 @@ const performanceMarker = require("resource://devtools/client/webconsole/middlew
 const {
   thunk,
 } = require("resource://devtools/client/shared/redux/middleware/thunk.js");
+const {
+  visibilityHandlerStore,
+} = require("resource://devtools/client/shared/redux/visibilityHandlerStore.js");
 
 // Enhancers
 const enableBatching = require("resource://devtools/client/webconsole/enhancers/batching.js");
@@ -61,7 +64,7 @@ function configureStore(webConsoleUI, options = {}) {
   const sidebarToggle = getBoolPref(PREFS.FEATURES.SIDEBAR_TOGGLE);
   const autocomplete = getBoolPref(PREFS.FEATURES.AUTOCOMPLETE);
   const eagerEvaluation = getBoolPref(PREFS.FEATURES.EAGER_EVALUATION);
-  const groupWarnings = getBoolPref(PREFS.FEATURES.GROUP_WARNINGS);
+  const groupSimilar = getBoolPref(PREFS.FEATURES.GROUP_SIMILAR_MESSAGES);
   const historyCount = getIntPref(PREFS.UI.INPUT_HISTORY_COUNT);
 
   const initialState = {
@@ -71,7 +74,7 @@ function configureStore(webConsoleUI, options = {}) {
       autocomplete,
       eagerEvaluation,
       historyCount,
-      groupWarnings,
+      groupSimilar,
     }),
     filters: FilterState({
       error: getBoolPref(PREFS.FILTER.ERROR),
@@ -90,7 +93,6 @@ function configureStore(webConsoleUI, options = {}) {
       editorWidth: getIntPref(PREFS.UI.EDITOR_WIDTH),
       showEditorOnboarding: getBoolPref(PREFS.UI.EDITOR_ONBOARDING),
       timestampsVisible: getBoolPref(PREFS.UI.MESSAGE_TIMESTAMP),
-      showEvaluationContextSelector: getBoolPref(PREFS.UI.CONTEXT_SELECTOR),
       enableNetworkMonitoring:
         webConsoleUI.isBrowserConsole || webConsoleUI.isBrowserToolboxConsole
           ? getBoolPref(PREFS.UI.ENABLE_NETWORK_MONITORING)
@@ -111,7 +113,7 @@ function configureStore(webConsoleUI, options = {}) {
     eventTelemetry.bind(null, options.telemetry)
   );
 
-  return createStore(
+  const store = createStore(
     createRootReducer(),
     initialState,
     compose(
@@ -123,6 +125,9 @@ function configureStore(webConsoleUI, options = {}) {
       enableBatching()
     )
   );
+
+  // Also wrap the store in order to pause store update notifications while the panel is hidden.
+  return visibilityHandlerStore(store);
 }
 
 function createRootReducer() {

@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Ku kóńcoju pśesunuś
     .accesskey = k
 fxviewtabrow-move-tab-window = Do nowego wokna pśesunuś
     .accesskey = w
+fxviewtabrow-send-to-device = Na rěd pósłaś
+    .accesskey = s
+fxviewtabrow-send-to-mobile = Na mobilny rěd pósłaś
+    .accesskey = m
 fxviewtabrow-send-tab = Rejtarik na rěd pósłaś
     .accesskey = p
 fxviewtabrow-pin-tab = Rejtarik pśipěś
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Rejtarik głosny cyniś
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Nastajenja za { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = { $tabTitle } nimy
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = { $tabTitle } głosny
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Rejtarik nimy cyniś
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Rejtarik głosny cyniś
+fxviewtabrow-send-to-mobile-connect-device = Zwěžćo rěd, aby rejtariki pósłał
+fxviewtabrow-send-to-mobile-device-missing2 = Njewiźiśo swój rěd?
+fxviewtabrow-send-to-mobile-not-verified = Konto njejo pśeglědane
+fxviewtabrow-send-to-mobile-verify-account = Wašo konto pśeglědowaś
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Pśizjawśo se, aby rejtariki pósłał
+fxviewtabrow-send-to-mobile-turn-on-sync = Zmóžniśo synchronizaciju, aby rejtariki pósłał

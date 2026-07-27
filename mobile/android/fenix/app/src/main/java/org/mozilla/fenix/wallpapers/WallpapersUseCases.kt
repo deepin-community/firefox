@@ -9,6 +9,7 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mozilla.components.concept.fetch.Client
@@ -37,6 +38,10 @@ class WallpapersUseCases(
 ) {
     private val downloader = WallpaperDownloader(storageRootDirectory, client)
     private val fileManager = WallpaperFileManager(storageRootDirectory)
+
+    val fetchCurrentWallpaperUseCase: FetchCurrentWallpaperUseCase by lazy {
+        DefaultFetchCurrentWallpaperUseCase(context.settings(), appStore)
+    }
 
     // Use case for initializing wallpaper feature. Should usually be called early
     // in the app's lifetime to ensure that any potential long-running tasks can complete quickly.
@@ -75,6 +80,27 @@ class WallpapersUseCases(
     }
 
     /**
+     * Contract for use cases that retrieve the user's currently selected wallpaper.
+     */
+    interface FetchCurrentWallpaperUseCase {
+        /**
+         * Start operation to retrieve user's currently selected wallpaper.
+         */
+        suspend operator fun invoke()
+    }
+
+    internal class DefaultFetchCurrentWallpaperUseCase(
+        private val settings: Settings,
+        private val appStore: AppStore,
+    ) : FetchCurrentWallpaperUseCase {
+        override suspend fun invoke() {
+            Wallpaper.getCurrentWallpaperFromSettings(settings)?.let {
+                appStore.dispatch(AppAction.WallpaperAction.UpdateCurrentWallpaper(it))
+            }
+        }
+    }
+
+    /**
      * Contract for usecases that initialize the wallpaper feature.
      */
     interface InitializeWallpapersUseCase {
@@ -97,10 +123,6 @@ class WallpapersUseCases(
         private val currentLocale: String,
     ) : InitializeWallpapersUseCase {
         override suspend fun invoke() {
-            Wallpaper.getCurrentWallpaperFromSettings(settings)?.let {
-                appStore.dispatch(AppAction.WallpaperAction.UpdateCurrentWallpaper(it))
-            }
-
             val currentWallpaperName = if (settings.shouldMigrateLegacyWallpaper) {
                 val migratedWallpaperName =
                     migrationHelper.migrateLegacyWallpaper(settings.currentWallpaperName)
@@ -120,10 +142,11 @@ class WallpapersUseCases(
             }
             val currentWallpaper = possibleWallpapers.find { it.name == currentWallpaperName }
                 ?: fileManager.lookupExpiredWallpaper(settings)
+                ?: Wallpaper.getCurrentWallpaperFromSettings(settings)
                 ?: Wallpaper.Default
 
-            // Dispatching this early will make it accessible to the home screen ASAP. If it has been
-            // dispatched above, we may still need to update other metadata about it.
+            // Dispatching this early will make it accessible to the home screen ASAP. This may have
+            // been dispatched by FetchCurrentWallpaperUseCase, but this could include additional metadata.
             appStore.dispatch(AppAction.WallpaperAction.UpdateCurrentWallpaper(currentWallpaper))
 
             fileManager.clean(
@@ -136,10 +159,16 @@ class WallpapersUseCases(
                 wallpaper.copy(thumbnailFileState = result)
             }
 
-            val defaultIncluded = listOf(Wallpaper.Default) + wallpapersWithUpdatedThumbnailState
+            val defaultIncluded = defaultWallpapers + wallpapersWithUpdatedThumbnailState
             appStore.dispatch(AppAction.WallpaperAction.UpdateAvailableWallpapers(defaultIncluded))
         }
 
+        private val defaultWallpapers: List<Wallpaper> =
+            if (settings.enableHomepageEdgeToEdgeBackgroundFeature) {
+                listOf(Wallpaper.EdgeToEdge, Wallpaper.Default)
+            } else {
+                listOf(Wallpaper.Default)
+            }
         private fun Wallpaper.isExpired(): Boolean = when (this) {
             Wallpaper.Default -> false
             else -> {
@@ -176,13 +205,20 @@ class WallpapersUseCases(
         internal suspend fun loadWallpaperFromDisk(
             wallpaper: Wallpaper,
             orientation: Int,
-        ): Bitmap? = Result.runCatching {
+        ): Bitmap? = try {
             val path = wallpaper.getLocalPathFromContext(orientation)
             withContext(Dispatchers.IO) {
                 val file = File(getFilesDir(), path)
                 BitmapFactory.decodeStream(file.inputStream())
             }
-        }.getOrNull()
+        } catch (e: CancellationException) {
+            // CancellationException must not be swallowed: if the coroutine was canceled while loading,
+            // rethrowing ensures the cancellation propagates and callers won't treat a null result as a
+            // load failure.
+            throw e
+        } catch (_: Exception) {
+            null
+        }
 
         /**
          * Get the expected local path on disk for a wallpaper. This will differ depending
@@ -248,7 +284,9 @@ class WallpapersUseCases(
          * @param wallpaper The selected wallpaper.
          */
         override suspend fun invoke(wallpaper: Wallpaper): Wallpaper.ImageFileState {
-            return if (wallpaper == Wallpaper.Default || fileManager.wallpaperImagesExist(wallpaper)) {
+            return if (wallpaper.collection == Wallpaper.DefaultCollection ||
+                fileManager.wallpaperImagesExist(wallpaper)
+            ) {
                 selectWallpaper(wallpaper)
                 dispatchDownloadState(wallpaper, Wallpaper.ImageFileState.Downloaded)
                 Wallpaper.ImageFileState.Downloaded

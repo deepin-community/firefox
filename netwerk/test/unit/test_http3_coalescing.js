@@ -8,7 +8,6 @@ var { setTimeout } = ChromeUtils.importESModule(
   "resource://gre/modules/Timer.sys.mjs"
 );
 
-let h2Port;
 let h3Port;
 
 const certOverrideService = Cc[
@@ -16,14 +15,12 @@ const certOverrideService = Cc[
 ].getService(Ci.nsICertOverrideService);
 
 function setup() {
-  h2Port = Services.env.get("MOZHTTP2_PORT");
-  Assert.notEqual(h2Port, null);
-  Assert.notEqual(h2Port, "");
-
   h3Port = Services.env.get("MOZHTTP3_PORT");
   Assert.notEqual(h3Port, null);
   Assert.notEqual(h3Port, "");
   Services.prefs.setBoolPref("network.http.http3.enable", true);
+  // Happy Eyeballs does not support connection coalescing for now.
+  Services.prefs.setBoolPref("network.http.happy_eyeballs_enabled", false);
 }
 
 setup();
@@ -36,9 +33,11 @@ registerCleanupFunction(async () => {
   );
   Services.prefs.clearUserPref("network.dns.httpssvc.reset_exclustion_list");
   Services.prefs.clearUserPref("network.http.http3.enable");
+  Services.prefs.clearUserPref("network.http.happy_eyeballs_enabled");
   Services.prefs.clearUserPref(
     "network.dns.httpssvc.http3_fast_fallback_timeout"
   );
+  Services.prefs.clearUserPref("network.http.http3.pmtud");
   Services.prefs.clearUserPref(
     "network.http.http3.alt-svc-mapping-for-testing"
   );
@@ -74,32 +73,32 @@ function channelOpenPromise(chan, flags) {
 async function H3CoalescingTest(host1, host2) {
   Services.prefs.setCharPref(
     "network.http.http3.alt-svc-mapping-for-testing",
-    `${host1};h3-29=:${h3Port}`
+    `${host1};h3=:${h3Port}`
   );
   Services.prefs.setCharPref("network.dns.localDomains", host1);
 
   let chan = makeChan(`https://${host1}`);
   let [req] = await channelOpenPromise(chan, CL_ALLOW_UNKNOWN_CL);
   req.QueryInterface(Ci.nsIHttpChannel);
-  Assert.equal(req.protocolVersion, "h3-29");
+  Assert.equal(req.protocolVersion, "h3");
   let hash = req.getResponseHeader("x-http3-conn-hash");
 
   Services.prefs.setCharPref(
     "network.http.http3.alt-svc-mapping-for-testing",
-    `${host2};h3-29=:${h3Port}`
+    `${host2};h3=:${h3Port}`
   );
   Services.prefs.setCharPref("network.dns.localDomains", host2);
 
   chan = makeChan(`https://${host2}`);
   [req] = await channelOpenPromise(chan, CL_ALLOW_UNKNOWN_CL);
   req.QueryInterface(Ci.nsIHttpChannel);
-  Assert.equal(req.protocolVersion, "h3-29");
+  Assert.equal(req.protocolVersion, "h3");
   // The port used by the second connection should be the same as the first one.
   Assert.equal(req.getResponseHeader("x-http3-conn-hash"), hash);
 }
 
 add_task(async function testH3CoalescingWithSpeculativeConnection() {
-  await http3_setup_tests("h3-29");
+  await http3_setup_tests("h3");
   Services.prefs.setIntPref("network.http.speculative-parallel-limit", 6);
   await H3CoalescingTest("foo.h3_coalescing.org", "bar.h3_coalescing.org");
 });

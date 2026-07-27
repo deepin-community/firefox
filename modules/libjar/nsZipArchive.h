@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef nsZipArchive_h_
 #define nsZipArchive_h_
-
-#include "mozilla/Attributes.h"
 
 #define ZIP_TABSIZE 256
 #define ZIP_BUFLEN \
@@ -85,6 +82,9 @@ class nsZipArchive final {
   ~nsZipArchive();
 
  public:
+  nsZipArchive& operator=(const nsZipArchive& rhs) = delete;
+  nsZipArchive(const nsZipArchive& rhs) = delete;
+
   static const char* sFileCorruptedReason;
 
   /**
@@ -116,14 +116,14 @@ class nsZipArchive final {
    *
    * @return  status code
    */
-  nsresult Test(const char* aEntryName);
+  nsresult Test(const nsACString& aEntryName);
 
   /**
    * GetItem
    * @param   aEntryName Name of file in the archive
    * @return  pointer to nsZipItem
    */
-  nsZipItem* GetItem(const char* aEntryName);
+  nsZipItem* GetItem(const nsACString& aEntryName);
 
   /**
    * ExtractFile
@@ -211,9 +211,6 @@ class nsZipArchive final {
   nsZipItem* CreateZipItem() MOZ_REQUIRES(mLock);
   nsresult BuildFileList(PRFileDesc* aFd = nullptr);
   nsresult BuildSynthetics();
-
-  nsZipArchive& operator=(const nsZipArchive& rhs) = delete;
-  nsZipArchive(const nsZipArchive& rhs) = delete;
 };
 
 /**
@@ -226,6 +223,9 @@ class nsZipFind final {
   nsZipFind(nsZipArchive* aZip, char* aPattern, bool regExp);
   ~nsZipFind();
 
+  nsZipFind& operator=(const nsZipFind& rhs) = delete;
+  nsZipFind(const nsZipFind& rhs) = delete;
+
   nsresult FindNext(const char** aResult, uint16_t* aNameLen);
 
  private:
@@ -234,9 +234,6 @@ class nsZipFind final {
   nsZipItem* mItem;
   uint16_t mSlot;
   bool mRegExp;
-
-  nsZipFind& operator=(const nsZipFind& rhs) = delete;
-  nsZipFind(const nsZipFind& rhs) = delete;
 };
 
 /**
@@ -303,7 +300,8 @@ class nsZipItemPtr_base {
    * @param   aEntryName  Archive membername
    * @param   doCRC       When set to true Read() will check crc
    */
-  nsZipItemPtr_base(nsZipArchive* aZip, const char* aEntryName, bool doCRC);
+  nsZipItemPtr_base(nsZipArchive* aZip, const nsACString& aEntryName,
+                    bool doCRC);
 
   uint32_t Length() const { return mReadlen; }
 
@@ -321,7 +319,8 @@ class nsZipItemPtr final : public nsZipItemPtr_base {
                 " a number of assumptions.");
 
  public:
-  nsZipItemPtr(nsZipArchive* aZip, const char* aEntryName, bool doCRC = false)
+  nsZipItemPtr(nsZipArchive* aZip, const nsACString& aEntryName,
+               bool doCRC = false)
       : nsZipItemPtr_base(aZip, aEntryName, doCRC) {}
   /**
    * @return buffer containing the whole zip member or nullptr on error.
@@ -363,7 +362,8 @@ class nsZipHandle final {
  public:
   static nsresult Init(nsIFile* file, nsZipHandle** ret,
                        PRFileDesc** aFd = nullptr);
-  static nsresult Init(nsZipArchive* zip, const char* entry, nsZipHandle** ret);
+  static nsresult Init(nsZipArchive* zip, const nsACString& entry,
+                       nsZipHandle** ret);
   static nsresult Init(const uint8_t* aData, uint32_t aLen, nsZipHandle** aRet);
 
   NS_METHOD_(MozExternalRefCountType) AddRef(void);

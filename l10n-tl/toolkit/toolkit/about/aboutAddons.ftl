@@ -10,6 +10,7 @@ search-header =
 ## Variables
 ##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
+list-empty-get-extensions-message = Kumuha ng mga extension at mga tema sa <a data-l10n-name="get-extensions">{ $domain }</a>
 
 ##
 
@@ -26,6 +27,9 @@ list-empty-button =
 help-button = Suporta sa mga Add-on
 sidebar-help-button-title =
     .title = Suporta sa mga Add-on
+addons-settings-button = Mga Setting para sa { -brand-short-name }
+sidebar-settings-button-title =
+    .title = Mga Setting para sa { -brand-short-name }
 show-unsigned-extensions-button =
     .label = Ang ibang mga extension ay hindi kayang ma-verify
 show-all-extensions-button =
@@ -34,6 +38,8 @@ detail-version =
     .label = Bersyon
 detail-last-updated =
     .label = Huling In-update
+addon-detail-description-expand = Magpakita ng higit pa
+addon-detail-description-collapse = Magpakita ng mas kaunti
 detail-contributions-description = Hinihiling ang iyong suporta para sa pagpapatuloy ng development ng add-on na ito sa pamamagitan ng pagbibigay ng ano mang halaga ng kontribusyon.
 detail-contributions-button = Tumulong
     .title = Tumulong sa pagpapaunlad ng add-on na ito
@@ -220,6 +226,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Ginagamit na ng { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Magpakita ng { $numberToShow } Pa
@@ -289,6 +297,8 @@ dictionary-enabled-heading = Naka-enable
 dictionary-disabled-heading = Naka-disable
 locale-enabled-heading = Naka-enable
 locale-disabled-heading = Naka-disable
+sitepermission-enabled-heading = Naka-enable
+sitepermission-disabled-heading = Naka-disable
 always-activate-button = Palaging i-activate
 never-activate-button = Wag kailanman i-activate
 addon-detail-author-label = May-akda
@@ -338,16 +348,16 @@ addon-detail-update-check-label = Maghanap ng mga Update
 install-update-button = I-update
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Pinagpayagan sa mga private window
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Pinagpayagan sa mga private window
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-help = Kapag pinayagan, ang extension ay magkakaroon ng access sa iyong mga online activity habang nasa private browsing. <a data-l10n-name="learn-more">Alamin</a>
 addon-detail-private-browsing-allow = Payagan
 addon-detail-private-browsing-disallow = Huwag Payagan
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -390,7 +400,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Ang { $name } ay di akma para sa { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -405,12 +415,8 @@ details-notification-unsigned2 =
     .message = Ang { $name } ay hindi maaaring mapatunayan para magamit sa { -brand-short-name }. Maingat na magpatuloy.
 details-notification-unsigned-link = Karagdagang Impormasyon
 details-notification-blocked = Ang { $name } ay kasalukuyang hindi pinagana dahil sa mga isyu sa seguridad o stabilidad.
-details-notification-blocked2 =
-    .message = Ang { $name } ay kasalukuyang hindi pinagana dahil sa mga isyu sa seguridad o stabilidad.
 details-notification-blocked-link = Karagdagang Impormasyon
 details-notification-softblocked = Ang { $name } ay kilala na magdudulot ng mga isyu sa seguridad at stabilidad.
-details-notification-softblocked2 =
-    .message = Ang { $name } ay kilala na magdudulot ng mga isyu sa seguridad at stabilidad.
 details-notification-softblocked-link = Karagdagang Impormasyon
 details-notification-gmp-pending = Ang { $name } ay ikakabit sa ilang sandali.
 details-notification-gmp-pending2 =

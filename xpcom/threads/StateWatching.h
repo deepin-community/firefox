@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,6 +12,7 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
 #include "mozilla/RefPtr.h"
+#include "nsCycleCollectionNoteChild.h"
 #include "nsISupports.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
@@ -138,9 +137,10 @@ class Watchable : public WatchTarget {
 
   const T& Ref() const { return mValue; }
   operator const T&() const { return Ref(); }
-  Watchable& operator=(const T& aNewValue) {
+  template <typename U>
+  Watchable& operator=(U&& aNewValue) {
     if (aNewValue != mValue) {
-      mValue = aNewValue;
+      mValue = std::forward<U>(aNewValue);
       NotifyWatchers();
     }
 
@@ -153,6 +153,18 @@ class Watchable : public WatchTarget {
 
   T mValue;
 };
+
+template <typename T>
+inline void ImplCycleCollectionUnlink(Watchable<T>& aField) {
+  ImplCycleCollectionUnlink<T>(aField);
+}
+
+template <typename T>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback, const Watchable<T>& aField,
+    const char* aName, uint32_t aFlags = 0) {
+  ImplCycleCollectionTraverse(aCallback, aField.Ref(), aName, aFlags);
+}
 
 // Manager class for state-watching. Declare one of these in any class for which
 // you want to invoke method callbacks.

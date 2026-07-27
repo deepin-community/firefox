@@ -4,10 +4,6 @@
 
 xpinstall-prompt = သင့်ကွန်ပျူတာတွင် ဆော့ဖ်ဝဲတပ်ဆင်ရန် တောင်းဆိုသည့် ဤဝဘ်ဆိုက်ကို { -brand-short-name } က တားမြစ်ထားသည်။
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = ဆော့ဖ်ဝဲထည့်သွင်းမှ�
 xpinstall-disabled-button =
     .label = လုပ်ဆောင်နိုင်စေမည်။
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } ကို { -brand-short-name } သို့ ထည့်ထားသည်
@@ -38,12 +33,10 @@ webext-perms-update-menu-item = { $addonName } သည် ခွင့်ပြ�
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { -brand-shorter-name }မှ { $name } ကို ပယ်ဖျက်ချင်ပါသလား?
 addon-removal-button = ပယ်ဖျက်ပါ
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying = အက်အွန် { $addonCount } ခုကို ရယူပြီး အတည်ပြုနေသည်…
 addon-download-verifying = စစ်ဆေးအတည်ပြုနေသည်။
-
 addon-install-cancel-button =
     .label = မလုပ်ဆောင်တော့ပါ
     .accesskey = C

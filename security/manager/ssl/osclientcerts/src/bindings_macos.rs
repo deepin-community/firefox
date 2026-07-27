@@ -1,4 +1,3 @@
-/* -*- Mode: rust; rust-indent-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -66,14 +65,15 @@ extern "C" {
     ) -> CFDataRef;
     pub fn SecKeyCopyAttributes(key: SecKeyRef) -> CFDictionaryRef;
     pub fn SecKeyCopyExternalRepresentation(key: SecKeyRef, err: *mut CFErrorRef) -> CFDataRef;
+    pub static kSecAttrKeyTypeECSECPrimeRandom: CFStringRef;
     pub static kSecKeyAlgorithmECDSASignatureDigestX962SHA1: CFStringRef;
     pub static kSecKeyAlgorithmECDSASignatureDigestX962SHA256: CFStringRef;
     pub static kSecKeyAlgorithmECDSASignatureDigestX962SHA384: CFStringRef;
     pub static kSecKeyAlgorithmECDSASignatureDigestX962SHA512: CFStringRef;
     pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw: CFStringRef;
+    pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1: CFStringRef;
     pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256: CFStringRef;
     pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384: CFStringRef;
     pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512: CFStringRef;
-    pub static kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1: CFStringRef;
-    pub static kSecAttrKeyTypeECSECPrimeRandom: CFStringRef;
+    pub static kSecKeyAlgorithmRSASignatureRaw: CFStringRef;
 }

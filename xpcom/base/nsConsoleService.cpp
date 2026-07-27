@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -56,6 +54,8 @@ static const bool gLoggingBuffered = true;
 #ifdef XP_WIN
 static bool gLoggingToDebugger = true;
 #endif  // XP_WIN
+
+static mozilla::LazyLogModule gPageMessagesLog("PageMessages");
 
 nsConsoleService::MessageElement::~MessageElement() = default;
 
@@ -374,6 +374,34 @@ nsresult nsConsoleService::LogMessageWithMode(
     if (mListeners.Count() > 0) {
       r = new LogMessageRunnable(aMessage, this);
     }
+
+    // Avoid MOG_LOG-ing messages sent from the content process,
+    // where ContentParent will pass SuppressLog output mode.
+    if (aOutputMode == OutputToLog) {
+      uint32_t logLevel = 0;
+      aMessage->GetLogLevel(&logLevel);
+
+      LogLevel mozLogLevel = LogLevel::Info;
+      switch (logLevel) {
+        case nsIConsoleMessage::debug:
+          mozLogLevel = LogLevel::Debug;
+          break;
+        case nsIConsoleMessage::info:
+          mozLogLevel = LogLevel::Info;
+          break;
+        case nsIConsoleMessage::warn:
+          mozLogLevel = LogLevel::Warning;
+          break;
+        case nsIConsoleMessage::error:
+          mozLogLevel = LogLevel::Error;
+          break;
+      }
+      if (MOZ_LOG_TEST(gPageMessagesLog, mozLogLevel)) {
+        nsCString msg;
+        aMessage->ToString(msg);
+        MOZ_LOG(gPageMessagesLog, mozLogLevel, ("%s", msg.get()));
+      }
+    }
   }
 
   if (retiredMessage) {
@@ -390,53 +418,6 @@ nsresult nsConsoleService::LogMessageWithMode(
     if (mainThread) {
       SchedulerGroup::Dispatch(r.forget());
     }
-  }
-
-  return NS_OK;
-}
-
-// See nsIConsoleService.idl for more info about this method
-NS_IMETHODIMP
-nsConsoleService::CallFunctionAndLogException(
-    JS::Handle<JS::Value> targetGlobal, JS::HandleValue function, JSContext* cx,
-    JS::MutableHandleValue retval) {
-  if (!targetGlobal.isObject() || !function.isObject()) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  JS::Rooted<JS::Realm*> contextRealm(cx, JS::GetCurrentRealmOrNull(cx));
-  if (!contextRealm) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  JS::Rooted<JSObject*> global(
-      cx, js::CheckedUnwrapDynamic(&targetGlobal.toObject(), cx));
-  if (!global) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  // Use AutoJSAPI in order to trigger AutoJSAPI::ReportException
-  // which will do most of the work required for this function.
-  //
-  // We only have to pick the right global for which we want to flag
-  // the exception against.
-  dom::AutoJSAPI jsapi;
-  if (!jsapi.Init(global)) {
-    return NS_ERROR_UNEXPECTED;
-  }
-  JSContext* ccx = jsapi.cx();
-
-  // AutoJSAPI picks `targetGlobal` as execution compartment
-  // whereas we expect to run `function` from the callsites compartment.
-  JSAutoRealm ar(ccx, JS::GetRealmGlobalOrNull(contextRealm));
-
-  JS::RootedValue funVal(ccx, function);
-  if (!JS_WrapValue(ccx, &funVal)) {
-    return NS_ERROR_FAILURE;
-  }
-  if (!JS_CallFunctionValue(ccx, nullptr, funVal, JS::HandleValueArray::empty(),
-                            retval)) {
-    return NS_ERROR_XPC_JAVASCRIPT_ERROR;
   }
 
   return NS_OK;

@@ -59,10 +59,7 @@ history-section-label = Chronik
 item-history-and-downloads =
     .label = Besuchte Seiten & Download-Chronik
     .accesskey = B
-item-history-form-data-downloads =
-    .label = Chronik
-    .accesskey = C
-item-history-form-data-downloads-description = Löscht die Website- und Download-Chronik, gespeicherte Formularinformationen und Suchanfragen
+item-history-and-downloads-description2 = Löscht die Chronik von Websites und Downloads
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Website-Einstellungen
     .accesskey = W
+item-formdata-prefs =
+    .label = Gespeicherte Formularinformationen
+    .accesskey = F
+item-formdata-description = Löscht Namen, E-Mail-Adressen und andere Einträge, die Sie in Formularen eingeben
 item-site-prefs-description = Setzt Ihre Berechtigungen und Website-Einstellungen auf die ursprünglichen Einstellungen zurück
 data-section-label = Daten
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Die gesamte Chronik wird gelöscht.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Alle ausgewählten Elemente werden gelöscht.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Wird berechnet…

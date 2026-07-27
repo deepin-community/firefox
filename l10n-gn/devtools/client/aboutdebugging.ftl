@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Ñemopotĩ - Mboy aravópa oiporu / { 
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Ko { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Ko { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Ko { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Ñembosako’i
+about-debugging-sidebar-setup-title =
+    .title = Ñembosako’i
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -111,6 +119,8 @@ about-debugging-setup-usb-status-updating = Hekopyahuhína...
 about-debugging-setup-usb-step-enable-dev-menu2 = Emyandy mboguatahára poravoha ne Android mba’e’okápe.
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug2 = Emyandy USB mopotĩha mboguatahára poravoha Android pegua.
+# USB section step by step guide
+about-debugging-setup-usb-step-enable-file-transfer = Emyandy marandurenda jeguerova ha ehecháke nde apopyvusu myanyhẽhápe añoite.
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug-firefox2 = Emyandy USB mopotĩha Firefox-pe Android mba’e’okápe.
 # USB section step by step guide
@@ -311,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Mba’epytyvõrã ñemondo
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Ñepyrũha
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker ñemoinge ko’ág̃a ndoikói multiproceso { -brand-shorter-name } peg̃uarã
@@ -323,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Tembiporu ryru hembiapoitáva
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Tapereko ha’etéva ha tetepy rapereko kundahára ohotahápe g̃uarã
+about-debugging-message-error-icon =
+    .alt = Ta’ãngachu’i javygua
+about-debugging-message-info-icon =
+    .alt = Marandu ra’ãnga’i
+about-debugging-message-warning-icon =
+    .alt = Ta’ãngachu’i kyhyjerã
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Emboty ñe’ẽmondo
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Emboty ñe’ẽmondo
@@ -332,3 +354,5 @@ about-debugging-message-details-label-error = Mba’emimi jejavygua
 about-debugging-message-details-label-warning = Mba’emimi je’epihyigua
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Mba’emimi
+about-debugging-sidebar =
+    .heading = Ñemopotĩ

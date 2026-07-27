@@ -1,5 +1,5 @@
 // META: title=validation tests for WebNN API triangular operation
-// META: global=window,dedicatedworker
+// META: global=window
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -11,12 +11,12 @@ promise_test(async t => {
   const builder = new MLGraphBuilder(context);
 
   // The input tensor which is at least 2-D.
-  for (let dimensions of allWebNNDimensionsArray.slice(0, 2)) {
+  for (let shape of allWebNNShapesArray.slice(0, 2)) {
     for (let dataType of allWebNNOperandDataTypes) {
       if (!context.opSupportLimits().input.dataTypes.includes(dataType)) {
         continue;
       }
-      const input = builder.input(`input${++inputIndex}`, {dataType, dimensions});
+      const input = builder.input(`input${++inputIndex}`, {dataType, shape});
       const label = 'triangular_3';
       const options = {label};
       const regrexp = new RegExp('\\[' + label + '\\]');

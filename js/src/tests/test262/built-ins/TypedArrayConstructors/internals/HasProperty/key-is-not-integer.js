@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -23,8 +22,8 @@ features: [Reflect, TypedArray]
 TypedArray.prototype["1.1"] = "test262";
 TypedArray.prototype["0.000001"] = "test262";
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA(1);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg(1));
 
   assert.sameValue(Reflect.has(sample, "1.1"), false, "1.1");
   assert.sameValue(Reflect.has(sample, "0.000001"), false, "0.000001");

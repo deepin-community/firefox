@@ -45,6 +45,7 @@ loader.lazyRequireGetter(
 
 const PREF_SIDEBAR_ENABLED = "devtools.webconsole.sidebarToggle";
 const PREF_BROWSERTOOLBOX_SCOPE = "devtools.browsertoolbox.scope";
+const PREF_CMNEXT_ENABLED = "devtools.webconsole.codemirrorNext";
 
 /**
  * A WebConsoleUI instance is an interactive console initialized *per target*
@@ -54,11 +55,12 @@ const PREF_BROWSERTOOLBOX_SCOPE = "devtools.browsertoolbox.scope";
  * The WebConsoleUI is responsible for the actual Web Console UI
  * implementation.
  */
-class WebConsoleUI {
-  /*
+class WebConsoleUI extends EventEmitter {
+  /**
    * @param {WebConsole} hud: The WebConsole owner object.
    */
   constructor(hud) {
+    super();
     this.hud = hud;
     this.hudId = this.hud.hudId;
     this.isBrowserConsole = this.hud.isBrowserConsole;
@@ -85,13 +87,12 @@ class WebConsoleUI {
         this._onScopePrefChanged
       );
     }
-
-    EventEmitter.decorate(this);
   }
 
   /**
    * Initialize the WebConsoleUI instance.
-   * @return object
+   *
+   * @return {object}
    *         A promise object that resolves once the frame is ready to use.
    */
   init() {
@@ -210,10 +211,10 @@ class WebConsoleUI {
    *
    * This method emits the "messages-cleared" notification.
    *
-   * @param boolean clearStorage
+   * @param {boolean} clearStorage
    *        True if you want to clear the console messages storage associated to
    *        this Web Console.
-   * @param object event
+   * @param {object} event
    *        If the event exists, calls preventDefault on it.
    */
   async clearOutput(clearStorage, event) {
@@ -305,7 +306,7 @@ class WebConsoleUI {
    * Connect to the server using the remote debugging protocol.
    *
    * @private
-   * @return object
+   * @return {object}
    *         A promise object that is resolved/reject based on the proxies connections.
    */
   async _attachTargets() {
@@ -435,7 +436,7 @@ class WebConsoleUI {
   /**
    * Handler for when the page is done loading.
    *
-   * @param Boolean hasNativeConsoleAPI
+   * @param {boolean} hasNativeConsoleAPI
    *        True if the `console` object is the native one and hasn't been overloaded by a custom
    *        object by the page itself.
    */
@@ -542,11 +543,11 @@ class WebConsoleUI {
     }
 
     const messageUpdates = [];
-    for (const { resource } of updates) {
+    for (const { resource, update } of updates) {
       if (
         resource.resourceType == this.hud.resourceCommand.TYPES.NETWORK_EVENT
       ) {
-        this.networkDataProvider?.onNetworkResourceUpdated(resource);
+        this.networkDataProvider?.onNetworkResourceUpdated(resource, update);
         messageUpdates.push(resource);
       }
     }
@@ -589,10 +590,16 @@ class WebConsoleUI {
 
     // Initialize module loader and load all the WebConsoleWrapper. The entire code-base
     // doesn't need any extra privileges and runs entirely in content scope.
-    const WebConsoleWrapper = BrowserLoader({
+    const browserLoader = BrowserLoader({
       baseURI: "resource://devtools/client/webconsole/",
       window: this.window,
-    }).require("resource://devtools/client/webconsole/webconsole-wrapper.js");
+    });
+    // Expose `require` for the CustomFormatter ESM in order to allow it to load
+    // ObjectInspector, which are still CommonJS modules, via the same BrowserLoader instance.
+    this.window.browserLoaderRequire = browserLoader.require;
+    const WebConsoleWrapper = browserLoader.require(
+      "resource://devtools/client/webconsole/webconsole-wrapper.js"
+    );
 
     this.wrapper = new WebConsoleWrapper(
       this.outputNode,
@@ -613,16 +620,27 @@ class WebConsoleUI {
 
   _initOutputSyntaxHighlighting() {
     // Given a DOM node, we syntax highlight identically to how the input field
-    // looks. See https://codemirror.net/demo/runmode.html;
-    const syntaxHighlightNode = node => {
+    // looks.
+    const syntaxHighlightNode = (doc, node, text) => {
       const editor = this.jsterm && this.jsterm.editor;
       if (node && editor) {
-        node.classList.add("cm-s-mozilla");
-        editor.CodeMirror.runMode(
-          node.textContent,
-          "application/javascript",
-          node
-        );
+        if (Services.prefs.getBoolPref(PREF_CMNEXT_ENABLED)) {
+          node.classList.add("cm-highlighted");
+          const htmlString = editor.highlightText(doc, text);
+          const sanitizer = new win.Sanitizer({
+            elements: ["span"],
+            attributes: ["class"],
+          });
+          node.setHTML(htmlString, { sanitizer });
+        } else {
+          // For CM5 See https://codemirror.net/demo/runmode.html
+          node.classList.add("cm-s-mozilla");
+          editor.CodeMirror.runMode(
+            node.textContent,
+            "application/javascript",
+            node
+          );
+        }
       }
     };
 
@@ -635,14 +653,14 @@ class WebConsoleUI {
         connectedCallback() {
           if (!this.connected) {
             this.connected = true;
-            syntaxHighlightNode(this);
+            syntaxHighlightNode(win.document, this, this.textContent);
 
             // Highlight Again when the innerText changes
             // We remove the listener before running codemirror mode and add
             // it again to capture text changes
             this.observer = new win.MutationObserver((mutations, observer) => {
               observer.disconnect();
-              syntaxHighlightNode(this);
+              syntaxHighlightNode(win.document, this, this.textContent);
               observer.observe(this, { childList: true });
             });
 
@@ -672,20 +690,9 @@ class WebConsoleUI {
       window: this.window,
     });
 
-    let clearShortcut;
-    if (lazy.AppConstants.platform === "macosx") {
-      const alternativaClearShortcut = l10n.getStr(
-        "webconsole.clear.alternativeKeyOSX"
-      );
-      shortcuts.on(alternativaClearShortcut, event =>
-        this.clearOutput(true, event)
-      );
-      clearShortcut = l10n.getStr("webconsole.clear.keyOSX");
-    } else {
-      clearShortcut = l10n.getStr("webconsole.clear.key");
+    for (const clearShortcut of this.getClearKeyShortcuts()) {
+      shortcuts.on(clearShortcut, event => this.clearOutput(true, event));
     }
-
-    shortcuts.on(clearShortcut, event => this.clearOutput(true, event));
 
     if (this.isBrowserConsole) {
       // Make sure keyboard shortcuts work immediately after opening
@@ -716,8 +723,26 @@ class WebConsoleUI {
   }
 
   /**
+   * Returns system-specific key shortcuts for clearing the console.
+   *
+   * @return {string[]}
+   *         An array of key shortcut strings.
+   */
+  getClearKeyShortcuts() {
+    if (lazy.AppConstants.platform === "macosx") {
+      return [
+        l10n.getStr("webconsole.clear.alternativeKeyOSX"),
+        l10n.getStr("webconsole.clear.keyOSX"),
+      ];
+    }
+
+    return [l10n.getStr("webconsole.clear.key")];
+  }
+
+  /**
    * Sets the focus to JavaScript input field when the web console tab is
    * selected or when there is a split console present.
+   *
    * @private
    */
   _onPanelSelected() {
@@ -749,7 +774,11 @@ class WebConsoleUI {
   }
 
   getJsTermTooltipAnchor() {
-    return this.outputNode.querySelector(".CodeMirror-cursor");
+    return this.outputNode.querySelector(
+      Services.prefs.getBoolPref(PREF_CMNEXT_ENABLED)
+        ? ".cm-cursor"
+        : ".CodeMirror-cursor"
+    );
   }
 
   attachRef(id, node) {

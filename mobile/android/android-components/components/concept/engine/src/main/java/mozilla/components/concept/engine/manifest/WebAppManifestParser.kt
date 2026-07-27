@@ -4,8 +4,8 @@
 
 package mozilla.components.concept.engine.manifest
 
-import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.core.graphics.toColorInt
 import mozilla.components.concept.engine.manifest.parser.ShareTargetParser
 import mozilla.components.concept.engine.manifest.parser.parseIcons
 import mozilla.components.concept.engine.manifest.parser.serializeEnumName
@@ -51,7 +51,7 @@ class WebAppManifestParser {
      * - Removes invalid enum values (ie display: halfscreen)
      * - Ensures display, dir, start_url, and scope always have a value
      * - Trims most strings (name, short_name, ...)
-     * See https://searchfox.org/mozilla-central/source/dom/manifest/ManifestProcessor.jsm
+     * See https://searchfox.org/firefox-main/source/dom/manifest/ManifestProcessor.jsm
      */
     fun parse(json: JSONObject): Result {
         return try {
@@ -138,7 +138,7 @@ private fun parseColor(color: String?): Int? {
     }
 
     return try {
-        Color.parseColor(color)
+        color.toColorInt()
     } catch (e: IllegalArgumentException) {
         null
     }

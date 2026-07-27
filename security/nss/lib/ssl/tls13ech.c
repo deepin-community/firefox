@@ -31,6 +31,9 @@ tls13_DeriveSecret(sslSocket *ss, PK11SymKey *key,
                    PK11SymKey **dest,
                    SSLHashType hash);
 
+const char keylogLabelECHSecret[] = "ECH_SECRET";
+const char keylogLabelECHConfig[] = "ECH_CONFIG";
+
 PRBool
 tls13_Debug_CheckXtnBegins(const PRUint8 *start, const PRUint16 xtnType)
 {
@@ -92,7 +95,7 @@ tls13_CopyEchConfigs(PRCList *oConfigs, PRCList *configs)
     for (PRCList *cur_p = PR_LIST_HEAD(oConfigs);
          cur_p != oConfigs;
          cur_p = PR_NEXT_LINK(cur_p)) {
-        config = (sslEchConfig *)PR_LIST_TAIL(oConfigs);
+        config = (sslEchConfig *)cur_p;
         newConfig = PORT_ZNew(sslEchConfig);
         if (!newConfig) {
             goto loser;
@@ -458,7 +461,7 @@ SSLExp_EncodeEchConfigId(PRUint8 configId, const char *publicName, unsigned int 
      *       case 0xfe0d: ECHConfigContents contents;
      *     }
      * } ECHConfig;
-    */
+     */
     rv = sslBuffer_AppendNumber(&b, TLS13_ECH_VERSION, 2);
     if (rv != SECSuccess) {
         goto loser;
@@ -1087,7 +1090,7 @@ tls13_OpenClientHelloInner(sslSocket *ss, const SECItem *outer, const SECItem *o
     }
 #else
     rv = SECITEM_CopyItem(NULL, decryptedChInner, &ss->xtnData.ech->innerCh);
-    if (rv != SECSuccess) {
+    if (rv != SECSuccess || decryptedChInner->len <= TLS13_ECH_AEAD_TAG_LEN) {
         goto loser;
     }
     decryptedChInner->len -= TLS13_ECH_AEAD_TAG_LEN; /* Fake tag */
@@ -1658,7 +1661,7 @@ tls13_PadChInner(sslBuffer *chInner, uint8_t maxNameLen, uint8_t serverNameLen)
  * payloadLen = Size of zeroed placeholder field for payload.
  * payloadOffset = Out parameter, start of payload field
  * echXtn = Out parameter, constructed ECH Xtn with zeroed placeholder field.
-*/
+ */
 SECStatus
 tls13_BuildEchXtn(sslEchConfig *cfg, const SECItem *hpkeEnc, unsigned int payloadLen, PRUint16 *payloadOffset, sslBuffer *echXtn)
 {
@@ -1880,14 +1883,14 @@ tls13_ComputeEchHelloRetryTranscript(sslSocket *ss, const PRUint8 *sh, unsigned 
      */
     if (!ss->ssl3.hs.helloRetry || !ss->sec.isServer) {
         /*
-        * This function can be called in three situations:
-        *    - By the server, prior to sending the HRR, when ECH was accepted
-        *    - By the client, after receiving the HRR, but before it knows whether ECH was accepted
-        *    - By the server, after accepting ECH and receiving CH2 when it needs to reconstruct the HRR
-        * In the first two situations, we need to include the message hash of inner ClientHello1 but don't
-        * want to alter the buffer containing the current transcript.
-        * In the last, the buffer already contains the message hash of inner ClientHello1.
-        */
+         * This function can be called in three situations:
+         *    - By the server, prior to sending the HRR, when ECH was accepted
+         *    - By the client, after receiving the HRR, but before it knows whether ECH was accepted
+         *    - By the server, after accepting ECH and receiving CH2 when it needs to reconstruct the HRR
+         * In the first two situations, we need to include the message hash of inner ClientHello1 but don't
+         * want to alter the buffer containing the current transcript.
+         * In the last, the buffer already contains the message hash of inner ClientHello1.
+         */
         SSL3Hashes hashes;
         rv = tls13_ComputeHash(ss, &hashes, previousTranscript->buf, previousTranscript->len, tls13_GetHash(ss));
         if (rv != SECSuccess) {
@@ -2075,7 +2078,7 @@ loser:
     return SECFailure;
 }
 
-/* Ech Secret is HKDF-Extract(0, ClientHelloInner.random) where 
+/* Ech Secret is HKDF-Extract(0, ClientHelloInner.random) where
    "0" is a string of Hash.len bytes of value 0. */
 SECStatus
 tls13_DeriveEchSecret(const sslSocket *ss, PK11SymKey **output)
@@ -2155,6 +2158,10 @@ tls13_MaybeGreaseEch(sslSocket *ss, const sslBuffer *preamble, sslBuffer *buf)
     if (ss->vrange.max < SSL_LIBRARY_VERSION_TLS_1_3 ||
         IS_DTLS(ss)) {
         return SECSuccess;
+    }
+
+    if (ss->firstHsDone) {
+        sslBuffer_Clear(&ss->ssl3.hs.greaseEchBuf);
     }
 
     /* In draft-09, CH2 sends exactly the same GREASE ECH extension. */
@@ -2269,6 +2276,7 @@ tls13_MaybeGreaseEch(sslSocket *ss, const sslBuffer *preamble, sslBuffer *buf)
     }
 
     /* Stash the GREASE ECH extension - in the case of HRR, CH2 must echo it. */
+    PORT_Assert(ss->ssl3.hs.greaseEchBuf.len == 0);
     ss->ssl3.hs.greaseEchBuf = greaseBuf;
 
     sslBuffer_Clear(&chInnerXtns);
@@ -2287,6 +2295,34 @@ loser:
         PK11_FreeSlot(slot);
     }
     return SECFailure;
+}
+
+/*
+ * Logs ECH Secret for sslSocket into sslkeylogfile.
+ *
+ * Called from tls13_SetupClientHello and tls13_MaybeHandleEch.
+ *
+ * This function is simply a debugging aid and therefore does not return a
+ * SECStatus.
+ */
+void
+tls13_EchKeyLog(sslSocket *ss)
+{
+#ifdef NSS_ALLOW_SSLKEYLOGFILE
+    PK11SymKey *shared_secret;
+    HpkeContext *cx;
+    sslEchConfig *cfg = NULL;
+
+    cx = ss->ssl3.hs.echHpkeCtx;
+    if (cx && !PR_CLIST_IS_EMPTY(&ss->echConfigs)) {
+        shared_secret = PK11_HPKE_GetSharedSecret(cx);
+        if (shared_secret) {
+            cfg = (sslEchConfig *)PR_LIST_HEAD(&ss->echConfigs);
+            ssl3_RecordKeyLog(ss, keylogLabelECHSecret, shared_secret);
+            ssl3_WriteKeyLog(ss, keylogLabelECHConfig, &cfg->raw);
+        }
+    }
+#endif
 }
 
 SECStatus
@@ -2319,6 +2355,7 @@ tls13_MaybeHandleEch(sslSocket *ss, const PRUint8 *msg, PRUint32 msgLen, SECItem
     ss->ssl3.hs.preliminaryInfo |= ssl_preinfo_ech;
 
     if (ss->ssl3.hs.echAccepted) {
+        tls13_EchKeyLog(ss);
         PORT_Assert(tmpEchInner);
         PORT_Assert(!PR_CLIST_IS_EMPTY(&ss->ssl3.hs.remoteExtensions));
 
@@ -2437,7 +2474,7 @@ tls13_MaybeHandleEchSignal(sslSocket *ss, const PRUint8 *sh, PRUint32 shLen, PRB
             PORT_SetError(SSL_ERROR_BAD_2ND_CLIENT_HELLO);
             return SECFailure;
         }
-        ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ssl_tls13_encrypted_client_hello_xtn;
+        ssl3_RecordExtensionNegotiated(ss, &ss->xtnData, ssl_tls13_encrypted_client_hello_xtn);
 
         /* Only overwrite client_random with client_inner_random if CHInner was
          *  succesfully used for handshake (NOT if HRR is received). */
@@ -2660,6 +2697,8 @@ tls13_MaybeAcceptEch(sslSocket *ss, const SECItem *sidBytes, const PRUint8 *chOu
     TLSExtension *hrrXtn;
     PRBool previouslyOfferedEch;
 
+    PORT_Assert(!ss->ssl3.hs.echAccepted);
+
     if (!ss->xtnData.ech || ss->xtnData.ech->receivedInnerXtn || IS_DTLS(ss)) {
         ss->ssl3.hs.echDecided = PR_TRUE;
         return SECSuccess;
@@ -2670,13 +2709,12 @@ tls13_MaybeAcceptEch(sslSocket *ss, const SECItem *sidBytes, const PRUint8 *chOu
     if (ss->ssl3.hs.helloRetry) {
         ss->ssl3.hs.echDecided = PR_TRUE;
         PORT_Assert(!ss->ssl3.hs.echHpkeCtx);
+
         hrrXtn = ssl3_FindExtension(ss, ssl_tls13_cookie_xtn);
         if (!hrrXtn) {
             /* If the client doesn't echo cookie, we can't decrypt. */
             return SECSuccess;
         }
-
-        PORT_Assert(!ss->ssl3.hs.echHpkeCtx);
 
         PRUint8 *tmp = hrrXtn->data.data;
         PRUint32 len = hrrXtn->data.len;
@@ -2698,8 +2736,8 @@ tls13_MaybeAcceptEch(sslSocket *ss, const SECItem *sidBytes, const PRUint8 *chOu
         ss->ssl3.hs.echHpkeCtx = echData.hpkeCtx;
 
         const PRUint8 greaseConstant[TLS13_ECH_SIGNAL_LEN] = { 0 };
-        ss->ssl3.hs.echAccepted = previouslyOfferedEch &&
-                                  !NSS_SecureMemcmp(greaseConstant, echData.signal, TLS13_ECH_SIGNAL_LEN);
+        PRBool signal = previouslyOfferedEch &&
+                        !NSS_SecureMemcmp(greaseConstant, echData.signal, TLS13_ECH_SIGNAL_LEN);
 
         if (echData.configId != ss->xtnData.ech->configId ||
             echData.kdfId != ss->xtnData.ech->kdfId ||
@@ -2712,6 +2750,7 @@ tls13_MaybeAcceptEch(sslSocket *ss, const SECItem *sidBytes, const PRUint8 *chOu
         if (!ss->ssl3.hs.echHpkeCtx) {
             return SECSuccess;
         }
+        ss->ssl3.hs.echAccepted = signal;
     }
 
     if (ss->ssl3.hs.echDecided && !ss->ssl3.hs.echAccepted) {
@@ -2759,7 +2798,7 @@ tls13_MaybeAcceptEch(sslSocket *ss, const SECItem *sidBytes, const PRUint8 *chOu
             return SECFailure;
         } else {
             /* Send retry_configs (if we have any) when we fail to decrypt or
-            * found no candidates. This does *not* count as negotiating ECH. */
+             * found no candidates. This does *not* count as negotiating ECH. */
             return ssl3_RegisterExtensionSender(ss, &ss->xtnData,
                                                 ssl_tls13_encrypted_client_hello_xtn,
                                                 tls13_ServerSendEchXtn);

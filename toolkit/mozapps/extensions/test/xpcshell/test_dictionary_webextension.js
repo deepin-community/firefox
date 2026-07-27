@@ -7,7 +7,7 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "spellCheck",
   "@mozilla.org/spellchecker/engine;1",
-  "mozISpellCheckingEngine"
+  Ci.mozISpellCheckingEngine
 );
 
 add_setup(async function setup() {
@@ -39,36 +39,48 @@ add_task(
     pref_set: [["extensions.install_origins.enabled", true]],
   },
   async function test_validation() {
-    await Assert.rejects(
-      promiseInstallWebExtension({
-        manifest: {
-          browser_specific_settings: {
-            gecko: { id: "en-US-no-dic@dictionaries.mozilla.org" },
+    let { messages } = await promiseConsoleOutput(async () => {
+      await Assert.rejects(
+        promiseInstallWebExtension({
+          manifest: {
+            browser_specific_settings: {
+              gecko: { id: "en-US-no-dic@dictionaries.mozilla.org" },
+            },
+            dictionaries: {
+              "en-US": "subdir/en-US.dic",
+            },
           },
-          dictionaries: {
-            "en-US": "en-US.dic",
-          },
-        },
-      }),
-      /Expected file to be downloaded for install/
-    );
+        }),
+        /Expected file to be downloaded for install/
+      );
 
-    await Assert.rejects(
-      promiseInstallWebExtension({
-        manifest: {
-          browser_specific_settings: {
-            gecko: { id: "en-US-no-aff@dictionaries.mozilla.org" },
+      await Assert.rejects(
+        promiseInstallWebExtension({
+          manifest: {
+            browser_specific_settings: {
+              gecko: { id: "en-US-no-aff@dictionaries.mozilla.org" },
+            },
+            dictionaries: {
+              "en-US": "en-US.dic",
+            },
           },
-          dictionaries: {
-            "en-US": "en-US.dic",
-          },
-        },
 
-        files: {
-          "en-US.dic": "",
-        },
-      }),
-      /Expected file to be downloaded for install/
+          files: {
+            "en-US.dic": "",
+          },
+        }),
+        /Expected file to be downloaded for install/
+      );
+    });
+    const expectedErrorPatterns = [
+      /Loading extension 'en-US-no-dic@dictionaries.mozilla.org': Reading manifest: Invalid dictionary path specified for 'en-US': subdir\/en-US.dic/,
+      /Loading extension 'en-US-no-dic@dictionaries.mozilla.org': Reading manifest: Invalid dictionary path specified for 'en-US': Missing affix file: subdir\/en-US.aff/,
+      /Loading extension 'en-US-no-aff@dictionaries.mozilla.org': Reading manifest: Invalid dictionary path specified for 'en-US': Missing affix file: en-US.aff/,
+    ];
+    AddonTestUtils.checkMessages(
+      messages,
+      { expected: expectedErrorPatterns.map(pat => ({ message: pat })) },
+      "Got expected error messages in the console"
     );
 
     let addon = await promiseInstallWebExtension({
@@ -197,24 +209,35 @@ add_task(
     let amUninstallEvents = amEvents
       .filter(evt => evt.method === "uninstall")
       .map(evt => {
-        const { object, value } = evt;
-        return { object, value };
+        const { object, value, extra } = evt;
+        return {
+          object,
+          value,
+          extra: { blocklist_state: extra.blocklist_state },
+        };
       });
+
+    const blocklist_state = `${Ci.nsIBlocklistService.STATE_NOT_BLOCKED}`;
 
     Assert.deepEqual(
       amUninstallEvents,
       [
-        { object: "dictionary", value: addon.id },
-        { object: "dictionary", value: addon2.id },
+        { object: "dictionary", value: addon.id, extra: { blocklist_state } },
+        { object: "dictionary", value: addon2.id, extra: { blocklist_state } },
       ],
       "Got the expected uninstall telemetry events"
     );
 
+    const baseGleanExtra = {
+      addon_type: "dictionary",
+      method: "uninstall",
+      blocklist_state,
+    };
     Assert.deepEqual(
       AddonTestUtils.getAMGleanEvents("manage", { method: "uninstall" }),
       [
-        { addon_type: "dictionary", addon_id: addon.id, method: "uninstall" },
-        { addon_type: "dictionary", addon_id: addon2.id, method: "uninstall" },
+        { ...baseGleanExtra, addon_id: addon.id },
+        { ...baseGleanExtra, addon_id: addon2.id },
       ],
       "Got the expected uninstall Glean events."
     );

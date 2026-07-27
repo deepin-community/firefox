@@ -5,53 +5,43 @@
 permissions-window2 =
     .title = અપવાદો
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = વેબ સાઈટનું સરનામું
     .accesskey = d
-
 permissions-block =
     .label = બ્લોક
     .accesskey = B
-
 permissions-session =
     .label = સત્ર માટે પરવાનગી આપો
     .accesskey = S
-
 permissions-allow =
     .label = પરવાનગી આપો
     .accesskey = A
-
 permissions-site-name =
     .label = વેબસાઇટ
-
 permissions-status =
     .label = પરિસ્થિતિ
-
 permissions-remove =
     .label = વેબસાઇટ દૂર કરો
     .accesskey = R
-
 permissions-remove-all =
     .label = બધી વેબસાઇટ્સને દૂર કરો
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = પરિવર્તનો સાચવો
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = પરિવર્તનો સાચવો
     .buttonaccesskeyaccept = S
-
 permissions-searchbox =
     .placeholder = વેબસાઇટ શોધો
-
 permissions-capabilities-allow =
     .label = માન્યતા આપો
 permissions-capabilities-block =
     .label = બ્લોક
 permissions-capabilities-prompt =
     .label = હંમેશા પૂછો
-
 permissions-capabilities-listitem-allow =
     .value = માન્યતા આપો
 permissions-capabilities-listitem-block =
@@ -64,18 +54,12 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = અયોગ્ય યજમાનનામ દાખલ થયેલ છે
 permissions-invalid-uri-label = મહેરબાની કરીને માન્ય યજમાનનામ દાખલ કરો
 
-## Exceptions - Tracking Protection
-
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = અપવાદો - કૂકીઝ અને સાઇટ ડેટા
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = તમે કઈ વેબસાઇટ્સને કૂકીઝ અને સાઇટ ડેટાનો ઉપયોગ કરવા માટે હંમેશાં મંજૂરી અથવા ક્યારેક મંજૂરી આપી શકો તે નિર્દિષ્ટ કરી શકો છો.  તમે જે સાઇટને સંચાલિત કરવા માંગો છો તેનું ચોક્કસ સરનામું લખો અને પછી અવરોધિત કરો, સત્ર માટે પરવાનગી આપો, અથવા માત્ર પરવાનગી આપો પર ક્લિક કરો.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -98,9 +82,6 @@ permissions-exceptions-addons-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = કઈ વેબ સાઈટો એડ-ઓન સ્થાપિત કરવા માટે માન્ય છે તે તમે સ્પષ્ટ કરી શકો છો. તમે જે સાઈટને પરવાનગી આપવા માંગો છો તેનું ચોક્કસ સરનામું લખો અને પછી પરવાનગી ક્લિક કરો.
 
-## Site Permissions - Autoplay
-
-
 ## Site Permissions - Notifications
 
 permissions-site-notification-window2 =
@@ -121,9 +102,6 @@ permissions-site-location-disable-label =
     .label = તમારા સ્થાનને મેળવવા માગતી નવી વિનંતીઓને અવરોધિત કરો
 permissions-site-location-disable-desc = આ તમારા સ્થાનને મેળવવા માટે પરવાનગીની વિનંતિ કરવાથી ઉપરોક્ત સૂચિબદ્ધ કોઈપણ વેબસાઇટ્સને અટકાવશે. તમારા સ્થાનને મેળવવાની અવરોધિત કરવાથી કેટલીક વેબસાઈટ સુવિધાઓ તૂટી શકે છે.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -143,8 +121,3 @@ permissions-site-microphone-desc = નીચેની વેબસાઇટ્�
 permissions-site-microphone-disable-label =
     .label = તમારા માઇક્રોફોનને મેળવવા માગતી નવી વિનંતીઓને અવરોધિત કરો
 permissions-site-microphone-disable-desc = આ તમારા માઇક્રોફોનને મેળવવા માટે પરવાનગીની વિનંતિ કરવાથી ઉપરોક્ત સૂચિબદ્ધ કોઈપણ વેબસાઇટ્સને અટકાવશે. તમારા માઇક્રોફોનને મેળવવાની અવરોધિત કરવાથી કેટલીક વેબસાઈટ સુવિધાઓ તૂટી શકે છે.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

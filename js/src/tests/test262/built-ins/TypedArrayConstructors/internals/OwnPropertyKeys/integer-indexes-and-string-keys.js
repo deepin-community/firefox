@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -21,8 +20,8 @@ features: [Reflect, TypedArray]
 TypedArray.prototype[3] = 42;
 TypedArray.prototype.bar = 42;
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample1 = new TA([42, 42, 42]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample1 = new TA(makeCtorArg([42, 42, 42]));
   sample1.test262 = 42;
   sample1.ecma262 = 42;
   var result1 = Reflect.ownKeys(sample1);
@@ -31,7 +30,7 @@ testWithTypedArrayConstructors(function(TA) {
     "result1"
   );
 
-  var sample2 = new TA(4).subarray(2);
+  var sample2 = new TA(makeCtorArg(4)).subarray(2);
   sample2.test262 = 42;
   sample2.ecma262 = 42;
   var result2 = Reflect.ownKeys(sample2);

@@ -1,8 +1,4 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
-
-Services.prefs.setBoolPref("extensions.manifestV3.enabled", true);
 
 async function testManifest(manifest, expectedError) {
   ExtensionTestUtils.failOnSchemaWarnings(false);
@@ -101,5 +97,36 @@ add_task(async function test_action_version() {
     warnings,
     [`Property "action" is unsupported in Manifest Version 2`],
     `Manifest v2 with "action" key first warning is clear.`
+  );
+});
+
+// Verify that extended F13-F19 keys are invalid when specified in the
+// extensions manifest.
+//
+// Other related tests:
+// - browser_manage_shortcuts.js include a test that makes sure the F13-F19 keys are valid when
+//   assigned by a user through about:addons "Manage Shortcuts".
+// - browser_ext_commands_update.js include a test that makes sure the F13-F19 keys
+//   are valid when dynamically assigned by the extension through
+//   browser.commands.update API calls.
+add_task(async function test_invalid_extended_function_keys() {
+  info("Verify F13-19 are invalid when assigned from the extension manifest");
+  ExtensionTestUtils.failOnSchemaWarnings(false);
+  let normalized = await ExtensionTestUtils.normalizeManifest({
+    commands: {
+      invalidFnKeyCommand: {
+        suggested_key: {
+          default: "Alt+F13",
+        },
+      },
+    },
+  });
+  const EXPECTED_ERROR_REGEX = new RegExp(
+    `Value ".*" must not include extended F13-F19 keys. F13-F19 keys can only be used for user-defined keyboard shortcuts`
+  );
+  ExtensionTestUtils.failOnSchemaWarnings(true);
+  ok(
+    EXPECTED_ERROR_REGEX.test(normalized.error),
+    `Should have reported F13 as an invalid key manifest error, got: ${normalized.error}`
   );
 });

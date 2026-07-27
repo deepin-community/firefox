@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = بند کرو
     .aria-label = بند کرو
-firefoxview-empty-state-icon =
-    .alt = توجہ:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = ہݨے ہݨے
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,12 @@ firefoxview-tabpickup-progress-label = { $percentValue } فیصد مکمل
 firefoxview-tabpickup-step-signin-header = آلات دے درمیان بغیر کہیں رکاوٹ دے سوئچ کرو۔
 firefoxview-tabpickup-step-signin-description = اتھاں اپݨے فون دے ٹیبز حاصل کرݨ کیتے، پہلے سائن ان کرو یا ہک اکاؤنٹ بݨاؤ۔
 firefoxview-tabpickup-step-signin-primarybutton = جاری
-firefoxview-syncedtabs-signin-header = کِتھاؤں وی ٹیبز چِھک آؤ
-firefoxview-syncedtabs-signin-description = جِتُّھوں وی تُساں { -brand-product-name } ورتین٘دے ہِیوے اُتّھوں کنوں آپݨے ٹیبز ݙیکھݨ کِیتے، آپݨے اکاؤنٹ وِچ سائن اِن تھیوو۔ ڄیکر تُہاݙے کول اکاؤنٹ کائے نِھیں، تاں وَل اَساں تُہاکُوں سائن اَپ کرݨ کِیتے اقدامات کریسوں۔
-firefoxview-syncedtabs-signin-primarybutton = سائن ان یا سائن اپ
+firefoxview-syncedtabs-signin-primarybutton-2 = سائن ان
 firefoxview-tabpickup-adddevice-header = { -brand-product-name } اپݨے فون یا ٹیبلٹ تے سینک کرو
 firefoxview-tabpickup-adddevice-description = موبائل کیتے { -brand-product-name } ڈاؤن لوڈ کرو تے اُتھاں سائن اِن تھیوو۔
 firefoxview-tabpickup-adddevice-learn-how = ڄاݨو کیویں
 firefoxview-tabpickup-adddevice-primarybutton = موبائل کیتے { -brand-product-name } حاصل کرو
-firefoxview-syncedtabs-adddevice-header = آپݨیاں ٻیاں ݙیوائساں تے { -brand-product-name } وچ سائن ان تھیوو
-firefoxview-syncedtabs-adddevice-description = جِتُّھوں وی تُساں { -brand-product-name } ورتین٘دے ہِیوے اُتّھوں کنوں آپݨے ٹیبز ݙیکھݨ کِیتے، آپݨے سبھے آلات اُتے سائن اِن تھیوو۔ <a data-l10n-name="url">وادُھو آلات کوں جوڑݨ</a> دا طریقہ سِکّھو۔
+firefoxview-syncedtabs-adddevice-header-2 = کِتھاؤں وی ٹیبز چِھک آؤ
 firefoxview-syncedtabs-adddevice-primarybutton = موبائل کیتے { -brand-product-name } ازماؤ
 firefoxview-tabpickup-synctabs-header = ٹیب ہم وقت کرݨ چالو کرو
 firefoxview-tabpickup-synctabs-description = ڈیوائسز دے درمیان ٹیبز شیئر کرݨ کیتے { -brand-short-name } کوں اجازت ݙیو۔
@@ -48,7 +43,6 @@ firefoxview-tabpickup-synctabs-learn-how = ڄاݨو کیویں
 firefoxview-tabpickup-synctabs-primarybutton = کھلیاں ٹیبز ہم وقت کرو
 firefoxview-syncedtabs-synctabs-header = آپݨیاں ہم وقت کرݨ ترتیباں اپ ڈیٹ کرو
 firefoxview-syncedtabs-synctabs-description = ٻِنّھاں آلات کنوں ٹیبز ݙیکھݨ کِیتے، تُہاکُوں آپݨے کُھلّے ہوئے ٹیبز کوں سنک کرݨ دی لوڑ ہِے۔
-firefoxview-syncedtabs-synctabs-checkbox = کُھلّے ہوئے ٹیبز کوں ہم وقت کرݨ دی اجازت ݙیؤ۔
 firefoxview-syncedtabs-loading-header = ہم وقت تھیندا پئے
 firefoxview-syncedtabs-loading-description = جہڑیلے اِیہ تھی ویسی، تُہاکُوں کُئی وی ٹیب نظرسی جہڑے تُساں ٻِنّھاں آلات اُتّے کھولے ہِن، جَلتی وَلا ݙِکھاؤے۔
 firefoxview-tabpickup-fxa-admin-disabled-header = تہاݙی تنظیم ہم وقت کرݨ غیر فعال کر ݙتا ہے
@@ -82,7 +76,6 @@ firefoxview-closed-tabs-title = حالیہ بند تھیاں
 firefoxview-closed-tabs-description2 = او ورقے دوبارہ کھولو جیڑھے تساں ایں ونڈو وچ بند کر ݙتے ہن۔
 firefoxview-closed-tabs-placeholder-header = حالیہ بند ٹیبز کوئی کائنی
 firefoxview-closed-tabs-placeholder-body = جݙاں تساں ایں ونڈو وِچ ہک ٹیب بند کریندے او، تساں اینکوں اتھوں چھِک سڳدے او۔
-firefoxview-closed-tabs-placeholder-body2 = جݙاں تساں ہک ٹیب بند کریندے او، تساں اینکوں اتھوں چھِک سڳدے ہو۔
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -148,8 +141,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = ونڈو { $winID } (حالیہ)
-firefoxview-opentabs-focus-tab =
-    .title = ایں ٹیب تے سوئچ کرو
 firefoxview-show-more = ودھیک ݙکھاؤ
 firefoxview-show-less = گھٹ ݙکھاؤ
 firefoxview-show-all = سارے ݙکھاؤ
@@ -165,8 +156,8 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = حالیہ بند تھئے ٹیباں وچ ڳولو
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = ہم وقت تھیاں ٹیباں ڳولو
+firefoxview-search-text-box-tabs =
+    .placeholder = ٹیب ڳولو
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = کھلیاں ٹیباں ڳولو
@@ -189,10 +180,6 @@ firefoxview-sort-history-by-date-label = تریخ دے لحاظ نال چھان�
 firefoxview-sort-history-by-site-label = سائٹ دے لحاظ نال چھانٹی کرو
 firefoxview-sort-open-tabs-by-recency-label = موجودہ سرگرمی دے لحاظ نال ترتیب ݙیؤ
 firefoxview-sort-open-tabs-by-order-label = ٹیب ترتیب نال چھانٹی کرو
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = { $url } تے سوئچ کرو
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,7 +196,6 @@ firefoxview-history-site-localhost = (مقامی فائلاں)
 ##
 
 firefoxview-show-all-history = ساری تاریخ ݙکھاؤ
-firefoxview-view-more-browsing-history = ٻئی براؤزنگ تاریخ ݙیکھو
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -222,12 +208,6 @@ firefoxview-history-empty-description-two = اَساں جو کُجھ کرین٘�
 # Button text for choosing a browser within the ’Import history from another browser’ banner
 firefoxview-choose-browser-button = براؤزر چݨو
     .title = براؤزر چݨو
-
-## Message displayed in Firefox View when the user has chosen to never remember History
-
-firefoxview-dont-remember-history-empty-header = ݙکھاوݨ کیتے کجھ کائنی
-firefoxview-dont-remember-history-empty-description = اَساں جو کُجھ کرین٘دے ہِسے اُون٘دا مرکز تُہاݙی رازداری دی راکھی ہِے۔ اِیہو وجہ ہِے جو تُساں اِیں سرگرمی کوں کنٹرول کر سڳدے ہِیوے جہڑی { -brand-short-name } یاد ہِے۔
-firefoxview-dont-remember-history-empty-description-two = تُہاݙی موجودہ ترتیباں دی بنیاد اُتے، { -brand-short-name }کوں تُہاݙی سرگرمی یاد نِھیں رہن٘دی جہڑیلے تُساں براؤز کرین٘دے ہِیوے۔ اِیکوں بَدلݨ کِیتے، <a data-l10n-name="history-settings-url-two">آپݨی ہسٹری کوں یاد رکّھݨ کِیتے آپݨی تاریخ دیاں ترتیباں بَدلو</a>۔
 
 ##
 

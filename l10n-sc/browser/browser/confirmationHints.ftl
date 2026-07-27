@@ -17,7 +17,7 @@ confirmation-hint-address-updated = Indiritzu atualizadu
 confirmation-hint-credit-card-created = Carta sarvada
 confirmation-hint-credit-card-updated = Carta atualizada
 confirmation-hint-pin-tab = Apicadu
-confirmation-hint-pin-tab-description = Incarca s'ischeda cun su butone deretu pro ddu isblocare.
+confirmation-hint-pin-tab-description = Incarca s’ischeda cun su butone deretu pro dda isblocare.
 confirmation-hint-send-to-device = Imbiadu
 confirmation-hint-firefox-relay-mask-created = Alias nou creadu.
 confirmation-hint-firefox-relay-mask-reused = Alias torradu a impreare.
@@ -29,3 +29,5 @@ confirmation-hint-duplicate-tabs-closed =
         [one] { $tabCount } ischeda serrada
        *[other] { $tabCount } ischedas serradas
     }
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = Tramudadu a su menù

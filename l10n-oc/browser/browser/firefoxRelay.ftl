@@ -4,7 +4,7 @@
 
 
 ## Error messages for failed HTTP web requests.
-## https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
+## https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status#client_error_responses
 ## Variables:
 ##   $status (Number) - HTTP status code, for example 403
 
@@ -33,3 +33,12 @@ firefox-relay-opt-in-confirmation-disable =
 firefox-relay-opt-in-confirmation-postpone =
     .label = Pas ara
     .accesskey = P
+firefox-relay-and-fxa-opt-in-confirmation-enable-button-sign-up =
+    .label = Crear un compte
+    .accesskey = C
+firefox-relay-and-fxa-opt-in-confirmation-disable =
+    .label = Me mostrar pas mai aquò
+    .accesskey = M
+firefox-relay-and-fxa-opt-in-confirmation-postpone =
+    .label = Mai tard
+    .accesskey = M

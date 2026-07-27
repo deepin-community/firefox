@@ -17,9 +17,6 @@ perftools-heading-features-disabled = ආබල කළ විශේෂාංග
 perftools-heading-features-experimental = පරීක්‍ෂාත්මක
 perftools-heading-local-build = ස්ථානීය තැනුම
 
-##
-
-
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-milliseconds = මි.ත. { NUMBER($interval, maxFractionalUnits: 2) }
@@ -28,12 +25,12 @@ perftools-range-interval-milliseconds = මි.ත. { NUMBER($interval, maxFract
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = අන්තරාච ප්‍රමාණය:
-
 perftools-devtools-interval-label = අන්තරය:
 perftools-devtools-settings-label = සැකසුම්
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
+perftools-status-restart-required = මෙම විශේෂාංගය සබල කිරීමට අතිරික්සුව යළි ඇරඹිය යුතුයි.
 
 ## These are shown briefly when the user is waiting for the profiler to respond.
 
@@ -50,41 +47,28 @@ perftools-button-add-directory = නාමාවලියක් එක් කර
 perftools-button-remove-directory = තේරූ දෑ ඉවත් කරන්න
 perftools-button-edit-settings = සැකසුම් සංස්කරණය...
 
-## These messages are descriptions of the threads that can be enabled for the profiler.
-
-
-##
-
-
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
 
+perftools-onboarding-message = <b>නව</b>: { -profiler-brand-name } දැන් සංවර්ධක මෙවලම් වෙත අනුකලනය කර ඇත. මෙම ප්‍රබල නව මෙවලම ගැන <a>තව දැනගන්න</a>.
 
 ## Profiler presets
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
-# The same labels and descriptions are also defined in appmenu.ftl.
-
-# Presets and their l10n IDs are defined in the file
 # devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = වියමන සංවර්ධක
-
 perftools-presets-firefox-label = { -brand-shorter-name }
-
 perftools-presets-graphics-label = මාධ්‍යරූප
-
 perftools-presets-media-label = මාධ්‍ය
-
 perftools-presets-networking-label = ජාලකරණය
-
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = බලය
-
 perftools-presets-custom-label = අභිරුචි
-
-##
-

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -75,12 +73,7 @@ class nsTLiteralString : public mozilla::detail::nsTStringRepr<T> {
   };
 #endif
 
-  /**
-   * Prohibit get() on temporaries as in "x"_ns.get().
-   * These should be written as just "x", using a string literal directly.
-   */
-  constexpr const typename raw_type<T, int>::type get() const&& = delete;
-  constexpr const typename raw_type<T, int>::type get() const& {
+  constexpr const typename raw_type<T, int>::type get() const {
     return this->mData;
   }
 
@@ -91,8 +84,8 @@ class nsTLiteralString : public mozilla::detail::nsTStringRepr<T> {
 // any non-private use of that constructor would get into the codebase.
 #if defined(__clang__)
  private:
-  friend constexpr auto operator"" _ns(const char* aStr, std::size_t aLen);
-  friend constexpr auto operator"" _ns(const char16_t* aStr, std::size_t aLen);
+  friend constexpr auto operator""_ns(const char* aStr, std::size_t aLen);
+  friend constexpr auto operator""_ns(const char16_t* aStr, std::size_t aLen);
 #else
  public:
 #endif
@@ -112,6 +105,10 @@ class nsTLiteralString : public mozilla::detail::nsTStringRepr<T> {
 
 extern template class nsTLiteralString<char>;
 extern template class nsTLiteralString<char16_t>;
+
+template <typename Char>
+struct fmt::formatter<nsTLiteralString<Char>, Char>
+    : fmt::formatter<mozilla::detail::nsTStringRepr<Char>, Char> {};
 
 namespace mozilla {
 constexpr MOZ_IMPLICIT StaticString::StaticString(nsLiteralCString const& str)

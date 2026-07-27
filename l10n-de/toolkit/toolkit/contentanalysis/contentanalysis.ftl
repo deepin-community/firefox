@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Analyse läuft
 contentanalysis-slow-agent-dialog-body-file = { $agent } überprüft "{ $filename }" mit den Datenrichtlinien Ihrer Organisation. Dies kann einen Moment dauern.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } überprüft "{ $filename }" und { $count } weiteren Eintrag auf die Datenrichtlinien Ihrer Organisation. Dies kann einen Moment dauern.
+       *[other] { $agent } überprüft "{ $filename }" und { $count } weitere Einträge auf die Datenrichtlinien Ihrer Organisation. Dies kann einen Moment dauern.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } überprüft die Daten, die Sie eingefügt haben, mit den Datenrichtlinien Ihrer Organisation. Dies kann einen Moment dauern.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,11 +34,13 @@ contentanalysis-operationtype-clipboard = Zwischenablage
 contentanalysis-operationtype-dropped-text = Hineingezogener Text
 contentanalysis-operationtype-print = Drucken
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = Upload von "{ $filename }"
+contentanalysis-upload-description = { $filename } hochladen
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = { $filename } herunterladen
 contentanalysis-warndialogtitle = Dieser Inhalt könnte nicht sicher sein
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
-contentanalysis-warndialogtext = Ihre Organisation verwendet Data Loss Prevention Software, die diesen Inhalt als nicht sicher markiert hat: { $content }. Trotzdem verwenden?
+contentanalysis-warndialogtext = Ihre Organisation verwendet eine Software zum Schutz vor Datenverlust, die diesen Inhalt als nicht sicher gemeldet hat: { $content }. Trotzdem verwenden?
 contentanalysis-warndialog-response-allow = Inhalt verwenden
 contentanalysis-warndialog-response-deny = Abbrechen
 contentanalysis-notification-title = Inhaltsanalyse
@@ -39,22 +50,7 @@ contentanalysis-notification-title = Inhaltsanalyse
 contentanalysis-genericresponse-message = Die Inhaltsanalyse antwortete mit { $response } für Ressource: { $content }
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-block-message = Ihre Organisation verwendet Data Loss Prevention Software, die diesen Inhalt blockiert hat: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Bei der Kommunikation mit der Data Loss Prevention Software ist ein Fehler aufgetreten. Übertragung verweigert für Ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Bei der Kommunikation mit { $agent } ist ein Fehler aufgetreten. Übertragung verweigert für Ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Verbindung mit { $agent } konnte nicht hergestellt werden. Übertragung verweigert für Ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Signaturüberprüfung für { $agent } fehlgeschlagen. Übertragung verweigert für Ressource: { $content }.
+contentanalysis-block-message = Ihre Organisation verwendet eine Software zum Schutz vor Datenverlust, die diesen Inhalt blockiert hat: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Hochladen von "{ $filename }" verwei
 contentanalysis-error-message-dropped-text = Ziehen und Ablegen verweigert.
 contentanalysis-error-message-clipboard = Einfügen verweigert.
 contentanalysis-error-message-print = Drucken verweigert.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Zeitüberschreitung der Verbindung zu { $agent }. { $contentName } wurde blockiert.
 contentanalysis-block-dialog-title-upload-file = Sie sind nicht berechtigt, diese Datei hochzuladen
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Laut den Datenschutzrichtlinien Ihres Unternehmens sind Sie nicht berechtigt, die Datei "{ $filename }" hochzuladen. Kontaktieren Sie Ihren Administrator für weitere Informationen.
+contentanalysis-block-dialog-title-download-file = Sie haben nicht die Erlaubnis, diese Datei herunterzuladen
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Laut den Datenschutzrichtlinien Ihres Unternehmens sind Sie nicht berechtigt, die Datei "{ $filename }" herunterzuladen. Kontaktieren Sie Ihren Administrator für weitere Informationen.
 contentanalysis-block-dialog-title-clipboard = Sie sind nicht berechtigt, diesen Inhalt einzufügen
 contentanalysis-block-dialog-body-clipboard = Laut den Datenschutzrichtlinien Ihres Unternehmens sind Sie nicht berechtigt, diesen Inhalt einzufügen. Kontaktieren Sie Ihren Administrator für weitere Informationen.
 contentanalysis-block-dialog-title-dropped-text = Sie sind nicht berechtigt, diesen Inhalt hierhin zu ziehen

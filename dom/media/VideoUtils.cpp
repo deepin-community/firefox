@@ -11,18 +11,14 @@
 #include "ImageContainer.h"
 #include "MediaContainerType.h"
 #include "MediaResource.h"
-#include "PDMFactory.h"
 #include "TimeUnits.h"
 #include "mozilla/Base64.h"
-#include "mozilla/EnumeratedRange.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/SchedulerGroup.h"
-#include "mozilla/ScopeExit.h"
 #include "mozilla/SharedThreadPool.h"
 #include "mozilla/StaticPrefs_accessibility.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/TaskQueue.h"
+#include "mozilla/dom/ContentChild.h"
 #include "nsCharSeparatedTokenizer.h"
 #include "nsContentTypeParser.h"
 #include "nsIConsoleService.h"
@@ -82,7 +78,9 @@ CheckedInt64 TimeUnitToFrames(const TimeUnit& aTime, uint32_t aRate) {
 }
 
 nsresult SecondsToUsecs(double aSeconds, int64_t& aOutUsecs) {
-  if (aSeconds * double(USECS_PER_S) > double(INT64_MAX)) {
+  // This must be a >= test, because int64_t(double(INT64_MAX))
+  // overflows and gives INT64_MIN.
+  if (aSeconds * double(USECS_PER_S) >= double(INT64_MAX)) {
     return NS_ERROR_FAILURE;
   }
   aOutUsecs = int64_t(aSeconds * double(USECS_PER_S));
@@ -247,38 +245,38 @@ bool IsValidVideoRegion(const gfx::IntSize& aFrame,
 }
 
 already_AddRefed<SharedThreadPool> GetMediaThreadPool(MediaThreadType aType) {
-  const char* name;
-  uint32_t threads = 4;
+  RefPtr<SharedThreadPool> pool;
   switch (aType) {
     case MediaThreadType::PLATFORM_DECODER:
-      name = "MediaPDecoder";
+      pool = SharedThreadPool::Get("MediaPDecoder", 4);
       break;
     case MediaThreadType::WEBRTC_CALL_THREAD:
-      name = "WebrtcCallThread";
-      threads = 1;
+      pool = SharedThreadPool::Get("WebrtcCallThread", 1);
       break;
     case MediaThreadType::WEBRTC_WORKER:
-      name = "WebrtcWorker";
+      pool = SharedThreadPool::Get("WebrtcWorker", 4);
       break;
     case MediaThreadType::MDSM:
-      name = "MediaDecoderStateMachine";
-      threads = 1;
+      pool = SharedThreadPool::Get("MediaDecoderStateMachine", 1);
       break;
     case MediaThreadType::PLATFORM_ENCODER:
-      name = "MediaPEncoder";
+      pool = SharedThreadPool::Get("MediaPEncoder", 4);
       break;
     default:
       MOZ_FALLTHROUGH_ASSERT("Unexpected MediaThreadType");
     case MediaThreadType::SUPERVISOR:
-      name = "MediaSupervisor";
+      pool = SharedThreadPool::Get("MediaSupervisor", 4);
       break;
   }
 
-  RefPtr<SharedThreadPool> pool =
-      SharedThreadPool::Get(nsDependentCString(name), threads);
-
   // Ensure a larger stack for platform decoder threads
-  if (aType == MediaThreadType::PLATFORM_DECODER) {
+  bool needsLargerStacks = aType == MediaThreadType::PLATFORM_DECODER;
+// On Windows, platform encoder threads require larger stacks as well for
+// libaom.
+#ifdef XP_WIN
+  needsLargerStacks |= aType == MediaThreadType::PLATFORM_ENCODER;
+#endif
+  if (needsLargerStacks) {
     const uint32_t minStackSize = 512 * 1024;
     uint32_t stackSize;
     MOZ_ALWAYS_SUCCEEDS(pool->GetThreadStackSize(&stackSize));
@@ -449,7 +447,8 @@ bool ExtractVPXCodecDetails(const nsAString& aCodec, uint8_t& aProfile,
 }
 
 bool ExtractH264CodecDetails(const nsAString& aCodec, uint8_t& aProfile,
-                             uint8_t& aConstraint, H264_LEVEL& aLevel) {
+                             uint8_t& aConstraint, H264_LEVEL& aLevel,
+                             H264CodecStringStrictness aStrictness) {
   // H.264 codecs parameters have a type defined as avcN.PPCCLL, where
   // N = avc type. avc3 is avcc with SPS & PPS implicit (within stream)
   // PP = profile_idc, CC = constraint_set flags, LL = level_idc.
@@ -487,7 +486,22 @@ bool ExtractH264CodecDetails(const nsAString& aCodec, uint8_t& aProfile,
     level *= 10;
   }
 
+  if (aStrictness == H264CodecStringStrictness::Lenient) {
+    aLevel = static_cast<H264_LEVEL>(level);
+    return true;
+  }
+
+  // Check if valid level value
   aLevel = static_cast<H264_LEVEL>(level);
+  if (aLevel < H264_LEVEL::H264_LEVEL_1 ||
+      aLevel > H264_LEVEL::H264_LEVEL_6_2) {
+    return false;
+  }
+  if ((level % 10) > 2) {
+    if (level != 13) {
+      return false;
+    }
+  }
 
   return true;
 }
@@ -957,7 +971,7 @@ nsresult GenerateRandomPathName(nsCString& aOutSalt, uint32_t aLength) {
   return NS_OK;
 }
 
-already_AddRefed<TaskQueue> CreateMediaDecodeTaskQueue(const char* aName) {
+already_AddRefed<TaskQueue> CreateMediaDecodeTaskQueue(StaticString aName) {
   RefPtr<TaskQueue> queue = TaskQueue::Create(
       GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER), aName);
   return queue.forget();
@@ -1035,7 +1049,8 @@ void LogToBrowserConsole(const nsAString& aMsg) {
   if (!NS_IsMainThread()) {
     nsString msg(aMsg);
     nsCOMPtr<nsIRunnable> task = NS_NewRunnableFunction(
-        "LogToBrowserConsole", [msg]() { LogToBrowserConsole(msg); });
+        "LogToBrowserConsole",
+        [msg = std::move(msg)]() { LogToBrowserConsole(msg); });
     SchedulerGroup::Dispatch(task.forget());
     return;
   }
@@ -1088,7 +1103,34 @@ bool IsH264CodecString(const nsAString& aCodec) {
   uint8_t profile = 0;
   uint8_t constraint = 0;
   H264_LEVEL level;
-  return ExtractH264CodecDetails(aCodec, profile, constraint, level);
+  return ExtractH264CodecDetails(aCodec, profile, constraint, level,
+                                 H264CodecStringStrictness::Lenient);
+}
+
+bool IsAllowedH264Codec(const nsAString& aCodec) {
+  uint8_t profile = 0, constraint = 0;
+  H264_LEVEL level;
+
+  // Don't validate too much here, validation happens below
+  if (!ExtractH264CodecDetails(aCodec, profile, constraint, level,
+                               H264CodecStringStrictness::Lenient)) {
+    return false;
+  }
+
+  // Just assume what we can play on all platforms the codecs/formats that
+  // WMF can play, since we don't have documentation about what other
+  // platforms can play... According to the WMF documentation:
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815%28v=vs.85%29.aspx
+  // "The Media Foundation H.264 video decoder is a Media Foundation Transform
+  // that supports decoding of Baseline, Main, and High profiles, up to level
+  // 5.1.". We extend the limit to level 6.2, relying on the decoder to handle
+  // any potential errors, the level limit being rather arbitrary.
+  // We also report that we can play Extended profile, as there are
+  // bitstreams that are Extended compliant that are also Baseline compliant.
+  return level >= H264_LEVEL::H264_LEVEL_1 &&
+         level <= H264_LEVEL::H264_LEVEL_6_2 &&
+         (profile == H264_PROFILE_BASE || profile == H264_PROFILE_MAIN ||
+          profile == H264_PROFILE_EXTENDED || profile == H264_PROFILE_HIGH);
 }
 
 bool IsH265CodecString(const nsAString& aCodec) {
@@ -1216,13 +1258,12 @@ bool OnCellularConnection() {
     case nsINetworkLinkService::LINK_TYPE_ETHERNET:
     case nsINetworkLinkService::LINK_TYPE_USB:
     case nsINetworkLinkService::LINK_TYPE_WIFI:
+    default:
       return false;
     case nsINetworkLinkService::LINK_TYPE_WIMAX:
     case nsINetworkLinkService::LINK_TYPE_MOBILE:
       return true;
   }
-
-  return false;
 }
 
 bool IsWaveMimetype(const nsACString& aMimeType) {

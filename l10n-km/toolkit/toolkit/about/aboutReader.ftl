@@ -5,9 +5,6 @@
 about-reader-loading = កំពុង​ផ្ទុក…
 about-reader-load-error = បាន​បរាជ័យ​ក្នុង​ផ្ទុក​អត្ថបទ​ពី​ទំព័រ
 
-## These are used as tooltips in Type Control
-
-
 ## These are the styles of typeface that are options in the reader view controls.
 
 about-reader-font-type-serif = Serif
@@ -17,3 +14,7 @@ about-reader-font-type-sans-serif = Sans-serif
 
 about-reader-toolbar-close = បិទការមើលរបស់​​អ្នក​អាន
 about-reader-toolbar-type-controls = ប្រភេទ​វត្ថុ​បញ្ជា
+
+## Reader View text and layout menu
+
+about-reader-font-weight-light = ភ្លឺ

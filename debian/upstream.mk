@@ -43,7 +43,7 @@ ifneq (,$(filter experimental,$(DEB_DISTRIBUTION)))
 DIST = experimental
 endif
 ifneq (,$(filter testing% unstable sid,$(DEB_DISTRIBUTION)))
-DIST = trixie
+DIST = forky
 endif
 ifneq (,$(filter bpo% deb%,$(DEBIAN_RELEASE_EXTRA)))
 DEBIAN_TARGET := $(subst bpo,,$(subst deb,,$(DEBIAN_RELEASE_EXTRA)))
@@ -55,6 +55,9 @@ DIST = bookworm
 endif
 ifneq (,$(filter 13%,$(DEBIAN_TARGET)))
 DIST = trixie
+endif
+ifneq (,$(filter 14%,$(DEBIAN_TARGET)))
+DIST = forky
 endif
 endif
 
@@ -68,7 +71,7 @@ $(warning Upstream version in debian/changelog ($(UPSTREAM_RELEASE)) does not ma
 endif
 
 VERSION = $(UPSTREAM_RELEASE)
-$(call lazy,SOURCE_TARBALL_EXT,$$(shell sed -n '/^SOURCE_TAR/s/.*\.tar\.//p' toolkit/mozapps/installer/upload-files.mk))
+SOURCE_TARBALL_EXT := xz
 SOURCE_TARBALL = $(DEBIAN_SOURCE)_$(VERSION)$(SOURCE_BUILD_DATE:%=+%).orig.tar.$(SOURCE_TARBALL_EXT)
 SOURCE_TARBALL_LOCATION = ..
 

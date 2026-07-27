@@ -11,23 +11,9 @@ ChromeUtils.defineESModuleGetters(lazy, {
   assert: "chrome://remote/content/shared/webdriver/Assert.sys.mjs",
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
   pprint: "chrome://remote/content/shared/Format.sys.mjs",
-  RemoteAgent: "chrome://remote/content/components/RemoteAgent.sys.mjs",
+  truncate: "chrome://remote/content/shared/Format.sys.mjs",
   UserPromptHandler:
     "chrome://remote/content/shared/webdriver/UserPromptHandler.sys.mjs",
-});
-
-ChromeUtils.defineLazyGetter(lazy, "debuggerAddress", () => {
-  return lazy.RemoteAgent.running && lazy.RemoteAgent.cdp
-    ? lazy.remoteAgent.debuggerAddress
-    : null;
-});
-
-ChromeUtils.defineLazyGetter(lazy, "isHeadless", () => {
-  return Cc["@mozilla.org/gfx/info;1"].getService(Ci.nsIGfxInfo).isHeadless;
-});
-
-ChromeUtils.defineLazyGetter(lazy, "remoteAgent", () => {
-  return Cc["@mozilla.org/remote/agent;1"].createInstance(Ci.nsIRemoteAgent);
 });
 
 ChromeUtils.defineLazyGetter(lazy, "userAgent", () => {
@@ -51,7 +37,6 @@ export const WEBDRIVER_CLASSIC_CAPABILITIES = [
 
   // Gecko specific capabilities
   "moz:accessibilityChecks",
-  "moz:debuggerAddress",
   "moz:firefoxOptions",
   "moz:webdriverClick",
 
@@ -95,39 +80,23 @@ export class Timeouts {
     let t = new Timeouts();
 
     for (let [type, ms] of Object.entries(json)) {
-      switch (type) {
-        case "implicit":
-          t.implicit = lazy.assert.positiveInteger(
-            ms,
-            `Expected "${type}" to be a positive integer, ` +
-              lazy.pprint`got ${ms}`
-          );
-          break;
-
-        case "script":
-          if (ms !== null) {
-            lazy.assert.positiveInteger(
-              ms,
-              `Expected "${type}" to be a positive integer, ` +
-                lazy.pprint`got ${ms}`
-            );
-          }
-          t.script = ms;
-          break;
-
-        case "pageLoad":
-          t.pageLoad = lazy.assert.positiveInteger(
-            ms,
-            `Expected "${type}" to be a positive integer, ` +
-              lazy.pprint`got ${ms}`
-          );
-          break;
-
-        default:
-          throw new lazy.error.InvalidArgumentError(
-            `Unrecognized timeout: ${type}`
-          );
+      const supportedTimeouts = ["implicit", "pageLoad", "script"];
+      if (!supportedTimeouts.includes(type)) {
+        throw new lazy.error.InvalidArgumentError(
+          `Expected type of timeout to be one of "${supportedTimeouts.join(", ")}", ` +
+            lazy.pprint`got ${type}`
+        );
       }
+
+      if (ms !== null) {
+        lazy.assert.positiveInteger(
+          ms,
+          `Expected "${type}" to be a positive integer, ` +
+            lazy.pprint`got ${ms}`
+        );
+      }
+
+      t[type] = ms;
     }
 
     return t;
@@ -154,8 +123,23 @@ export const PageLoadStrategy = {
   Normal: "normal",
 };
 
+/**
+ * Enum of proxy types.
+ *
+ * @enum
+ */
+export const ProxyTypes = {
+  Autodetect: "autodetect",
+  Direct: "direct",
+  Manual: "manual",
+  Pac: "pac",
+  System: "system",
+};
+
 /** Proxy configuration object representation. */
-export class Proxy {
+export class ProxyConfiguration {
+  #previousValuesForPreferences;
+
   /** @class */
   constructor() {
     this.proxyType = null;
@@ -168,6 +152,21 @@ export class Proxy {
     this.socksProxyPort = null;
     this.socksVersion = null;
     this.proxyAutoconfigUrl = null;
+
+    // List of applied preferences to clean up on destroy.
+    this.#previousValuesForPreferences = new Set();
+  }
+
+  destroy() {
+    for (const { type, name, value } of this.#previousValuesForPreferences) {
+      if (type === "int") {
+        Services.prefs.setIntPref(name, value);
+      } else if (type === "string") {
+        Services.prefs.setStringPref(name, value);
+      }
+    }
+
+    this.#previousValuesForPreferences = new Set();
   }
 
   /**
@@ -180,47 +179,41 @@ export class Proxy {
    */
   init() {
     switch (this.proxyType) {
-      case "autodetect":
-        Services.prefs.setIntPref("network.proxy.type", 4);
+      case ProxyTypes.Autodetect:
+        this.#setPreference("network.proxy.type", 4);
         return true;
 
-      case "direct":
-        Services.prefs.setIntPref("network.proxy.type", 0);
+      case ProxyTypes.Direct:
+        this.#setPreference("network.proxy.type", 0);
         return true;
 
-      case "manual":
-        Services.prefs.setIntPref("network.proxy.type", 1);
+      case ProxyTypes.Manual:
+        this.#setPreference("network.proxy.type", 1);
 
         if (this.httpProxy) {
-          Services.prefs.setStringPref("network.proxy.http", this.httpProxy);
+          this.#setPreference("network.proxy.http", this.httpProxy, "string");
           if (Number.isInteger(this.httpProxyPort)) {
-            Services.prefs.setIntPref(
-              "network.proxy.http_port",
-              this.httpProxyPort
-            );
+            this.#setPreference("network.proxy.http_port", this.httpProxyPort);
           }
         }
 
         if (this.sslProxy) {
-          Services.prefs.setStringPref("network.proxy.ssl", this.sslProxy);
+          this.#setPreference("network.proxy.ssl", this.sslProxy, "string");
           if (Number.isInteger(this.sslProxyPort)) {
-            Services.prefs.setIntPref(
-              "network.proxy.ssl_port",
-              this.sslProxyPort
-            );
+            this.#setPreference("network.proxy.ssl_port", this.sslProxyPort);
           }
         }
 
         if (this.socksProxy) {
-          Services.prefs.setStringPref("network.proxy.socks", this.socksProxy);
+          this.#setPreference("network.proxy.socks", this.socksProxy, "string");
           if (Number.isInteger(this.socksProxyPort)) {
-            Services.prefs.setIntPref(
+            this.#setPreference(
               "network.proxy.socks_port",
               this.socksProxyPort
             );
           }
           if (this.socksVersion) {
-            Services.prefs.setIntPref(
+            this.#setPreference(
               "network.proxy.socks_version",
               this.socksVersion
             );
@@ -228,23 +221,25 @@ export class Proxy {
         }
 
         if (this.noProxy) {
-          Services.prefs.setStringPref(
+          this.#setPreference(
             "network.proxy.no_proxies_on",
-            this.noProxy.join(", ")
+            this.noProxy.join(", "),
+            "string"
           );
         }
         return true;
 
-      case "pac":
-        Services.prefs.setIntPref("network.proxy.type", 2);
-        Services.prefs.setStringPref(
+      case ProxyTypes.Pac:
+        this.#setPreference("network.proxy.type", 2);
+        this.#setPreference(
           "network.proxy.autoconfig_url",
-          this.proxyAutoconfigUrl
+          this.proxyAutoconfigUrl,
+          "string"
         );
         return true;
 
-      case "system":
-        Services.prefs.setIntPref("network.proxy.type", 5);
+      case ProxyTypes.System:
+        this.#setPreference("network.proxy.type", 5);
         return true;
 
       default:
@@ -277,31 +272,21 @@ export class Proxy {
         throw new lazy.error.InvalidArgumentError(`${host} contains a scheme`);
       }
 
+      // To parse the host a scheme has to be added temporarily.
+      // If the returned value for the port is an empty string it
+      // could mean no port or the default port for this scheme was
+      // specified. In such a case parse again with a different
+      // scheme to ensure we filter out the default port.
       let url;
-      try {
-        // To parse the host a scheme has to be added temporarily.
-        // If the returned value for the port is an empty string it
-        // could mean no port or the default port for this scheme was
-        // specified. In such a case parse again with a different
-        // scheme to ensure we filter out the default port.
-        url = new URL("http://" + host);
-        if (url.port == "") {
-          url = new URL("https://" + host);
+      for (let _url of [`http://${host}`, `https://${host}`]) {
+        url = URL.parse(_url);
+        if (!url) {
+          throw new lazy.error.InvalidArgumentError(
+            lazy.truncate`Expected "url" to be a valid URL, got ${_url}`
+          );
         }
-      } catch (e) {
-        throw new lazy.error.InvalidArgumentError(e.message);
-      }
-
-      let hostname = stripBracketsFromIpv6Hostname(url.hostname);
-
-      // If the port hasn't been set, use the default port of
-      // the selected scheme (except for socks which doesn't have one).
-      let port = parseInt(url.port);
-      if (!Number.isInteger(port)) {
-        if (scheme === "socks") {
-          port = null;
-        } else {
-          port = Services.io.getDefaultPort(scheme);
+        if (url.port != "") {
+          break;
         }
       }
 
@@ -317,10 +302,23 @@ export class Proxy {
         );
       }
 
+      let hostname = stripBracketsFromIpv6Hostname(url.hostname);
+
+      // If the port hasn't been set, use the default port of
+      // the selected scheme (except for socks which doesn't have one).
+      let port = parseInt(url.port);
+      if (!Number.isInteger(port)) {
+        if (scheme === "socks") {
+          port = null;
+        } else {
+          port = Services.io.getDefaultPort(scheme);
+        }
+      }
+
       return [hostname, port];
     }
 
-    let p = new Proxy();
+    let p = new ProxyConfiguration();
     if (typeof json == "undefined" || json === null) {
       return p;
     }
@@ -355,11 +353,6 @@ export class Proxy {
         break;
 
       case "manual":
-        if (typeof json.ftpProxy != "undefined") {
-          throw new lazy.error.InvalidArgumentError(
-            "Since Firefox 90 'ftpProxy' is no longer supported"
-          );
-        }
         if (typeof json.httpProxy != "undefined") {
           [p.httpProxy, p.httpProxyPort] = fromHost("http", json.httpProxy);
         }
@@ -371,6 +364,14 @@ export class Proxy {
           p.socksVersion = lazy.assert.positiveInteger(
             json.socksVersion,
             lazy.pprint`Expected "socksVersion" to be a positive integer, got ${json.socksVersion}`
+          );
+        }
+        if (
+          typeof json.socksVersion != "undefined" &&
+          typeof json.socksProxy == "undefined"
+        ) {
+          throw new lazy.error.InvalidArgumentError(
+            `Expected "socksProxy" to be provided if "socksVersion" is provided, got ${json.socksProxy}`
           );
         }
         if (typeof json.noProxy != "undefined") {
@@ -440,9 +441,33 @@ export class Proxy {
   toString() {
     return "[object Proxy]";
   }
+
+  #setPreference(name, value, type = "int") {
+    let prevValue;
+
+    if (type === "int") {
+      if (Services.prefs.getPrefType(name) != Services.prefs.PREF_INVALID) {
+        prevValue = Services.prefs.getIntPref(name);
+      }
+
+      Services.prefs.setIntPref(name, value);
+    } else if (type === "string") {
+      if (Services.prefs.getPrefType(name) != Services.prefs.PREF_INVALID) {
+        prevValue = Services.prefs.getStringPref(name);
+      }
+
+      Services.prefs.setStringPref(name, value);
+    }
+
+    if (prevValue !== undefined) {
+      this.#previousValuesForPreferences.add({ name, type, value: prevValue });
+    }
+  }
 }
 
 export class Capabilities extends Map {
+  #isBidi;
+
   /**
    * WebDriver session capabilities representation.
    *
@@ -456,13 +481,14 @@ export class Capabilities extends Map {
       ["browserName", getWebDriverBrowserName()],
       ["browserVersion", lazy.AppInfo.version],
       ["platformName", getWebDriverPlatformName()],
-      ["proxy", new Proxy()],
+      ["proxy", new ProxyConfiguration()],
+      ["setWindowRect", !lazy.AppInfo.isAndroid],
       ["unhandledPromptBehavior", new lazy.UserPromptHandler()],
       ["userAgent", lazy.userAgent],
 
       // Gecko specific capabilities
       ["moz:buildID", lazy.AppInfo.appBuildID],
-      ["moz:headless", lazy.isHeadless],
+      ["moz:headless", lazy.AppInfo.isHeadless],
       ["moz:platformVersion", Services.sysinfo.getProperty("version")],
       ["moz:processID", lazy.AppInfo.processID],
       ["moz:profile", maybeProfile()],
@@ -474,17 +500,18 @@ export class Capabilities extends Map {
       defaults.push(
         ["pageLoadStrategy", PageLoadStrategy.Normal],
         ["timeouts", new Timeouts()],
-        ["setWindowRect", !lazy.AppInfo.isAndroid],
         ["strictFileInteractability", false],
 
+        // Gecko specific capabilities
         ["moz:accessibilityChecks", false],
-        ["moz:debuggerAddress", lazy.debuggerAddress],
         ["moz:webdriverClick", true],
         ["moz:windowless", false]
       );
     }
 
     super(defaults);
+
+    this.#isBidi = isBidi;
   }
 
   /**
@@ -496,7 +523,7 @@ export class Capabilities extends Map {
   set(key, value) {
     if (key === "timeouts" && !(value instanceof Timeouts)) {
       throw new TypeError();
-    } else if (key === "proxy" && !(value instanceof Proxy)) {
+    } else if (key === "proxy" && !(value instanceof ProxyConfiguration)) {
       throw new TypeError();
     }
 
@@ -515,12 +542,17 @@ export class Capabilities extends Map {
   toJSON() {
     let marshalled = marshal(this);
 
-    // Always return the proxy capability even if it's empty
-    if (!("proxy" in marshalled)) {
-      marshalled.proxy = {};
+    if (!this.#isBidi) {
+      // For classic WebDriver, proxy is always returned at the moment even when not configured.
+      // See as well: https://github.com/w3c/webdriver/issues/1813
+      if (!("proxy" in marshalled)) {
+        marshalled.proxy = {};
+      }
+
+      // Don't add timeouts which is a WebDriver classic specific capability.
+      marshalled.timeouts = super.get("timeouts");
     }
 
-    marshalled.timeouts = super.get("timeouts");
     marshalled.unhandledPromptBehavior = super.get("unhandledPromptBehavior");
 
     return marshalled;
@@ -577,7 +609,7 @@ export class Capabilities extends Map {
           break;
 
         case "proxy":
-          v = Proxy.fromJSON(v);
+          v = ProxyConfiguration.fromJSON(v);
           break;
 
         case "setWindowRect":
@@ -666,11 +698,6 @@ export class Capabilities extends Map {
           );
           break;
 
-        // Don't set the value because it's only used to return the address
-        // of the Remote Agent's debugger (HTTP server).
-        case "moz:debuggerAddress":
-          continue;
-
         case "moz:webdriverClick":
           lazy.assert.boolean(
             v,
@@ -746,7 +773,7 @@ export class Capabilities extends Map {
         return value;
 
       case "proxy":
-        return Proxy.fromJSON(value);
+        return ProxyConfiguration.fromJSON(value);
 
       case "strictFileInteractability":
         return lazy.assert.boolean(
@@ -825,12 +852,6 @@ export class Capabilities extends Map {
           );
         }
         return value;
-
-      case "moz:debuggerAddress":
-        return lazy.assert.boolean(
-          value,
-          `Expected "${name}" to be a boolean, ` + lazy.pprint`got ${value}`
-        );
 
       default:
         lazy.assert.string(
@@ -1044,14 +1065,10 @@ export function processCapabilities(params) {
 
   requiredCapabilities = validateCapabilities(requiredCapabilities);
 
-  lazy.assert.array(
+  lazy.assert.isNonEmptyArray(
     allFirstMatchCapabilities,
-    lazy.pprint`Expected "firstMatch" to be an array, got ${allFirstMatchCapabilities}`
+    lazy.pprint`Expected "firstMatch" to be a non-empty array, got ${allFirstMatchCapabilities}`
   );
-  lazy.assert.that(
-    firstMatch => firstMatch.length >= 1,
-    lazy.pprint`Expected "firstMatch" to be an array of length 1 or greater, got ${allFirstMatchCapabilities}`
-  )(allFirstMatchCapabilities);
 
   const validatedFirstMatchCapabilities =
     allFirstMatchCapabilities.map(validateCapabilities);

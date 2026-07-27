@@ -17,7 +17,7 @@ change-password-reenter = Nowe gronidło (hyšći raz):
 pippki-failed-pw-change = Njejo móžno, gronidło změniś.
 pippki-incorrect-pw = Njejsćo pšawe gronidło zapódał. Pšosym wopytajśo hyšći raz.
 pippki-pw-change-ok = Gronidło jo se wuspěšnje změniło.
-pippki-pw-empty-warning = Waše skłaźone gronidła a priwatne kluce njebudu se nješćitaś.
+pippki-pw-empty-warning = Waše skłaźone gronidła a priwatne kluce njebudu se šćitaś.
 pippki-pw-erased-ok = Sćo swójo wulašował swójo gronidło.  { pippki-pw-empty-warning }
 pippki-pw-not-wanted = Warnowanje! Sćo se rozsuźił, až njeby se gronidło wužywało. { pippki-pw-empty-warning }
 pippki-pw-change2empty-in-fips-mode = Sćo tuchylu we FIPS-modusu. FIPS pomina se gronidło.
@@ -47,9 +47,6 @@ download-cert-message-desc = Pjerwjej až dowěriśo toś tej certifikatowej awt
 download-cert-view-cert =
     .label = Naglěd
 download-cert-view-text = Certifikat certifikatoweje awtority pśeglědaś
-
-## Client Authorization Ask dialog
-
 
 ## Client Authentication Ask dialog
 
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Wudany wót: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Skłaźony na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Toś ten rozsud se spomnjeś
+client-auth-cert-remember-label = Toś ten rozsud se spomnjeś:
+client-auth-cert-remember-never =
+    .label = Jaden raz
+client-auth-cert-remember-always =
+    .label = Stawnje
+client-auth-cert-remember-temporarily =
+    .label = Za toś to pósejźenje
 
 ## Set password (p12) dialog
 
@@ -97,7 +99,15 @@ set-password-backup-pw =
     .value = Gronidło zawěsćenja certifikata:
 set-password-repeat-backup-pw =
     .value = Gronidło zawěsćenja certifikata (hyšći raz):
-set-password-reminder = Wažny: Jolic zabydnjośo swóje gronidło za zawěsćenje certifikata, njamóžośo toś to zawěsćenje pózdźej wótnowiś. Pšosym wobchowajśo jo na wěstem městnje.
+set-password-reminder = Wažny: Jolic zabydnjośo swójo gronidło za zawěsćenje certifikata, njamóžośo toś to zawěsćenje pózdźej wótnowiś. Pšosym wobchowajśo jo na wěstem městnje.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Šćitana awtentifikacija
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Pšosym awtentificěrujśo se pla wěstotnego rěda ({ $tokenName }). Kak musyśo to cyniś, wótwisujo wót rěda (na pśikład pśez wužywanje cytaka palcowych wótśišćow abo pśez zapódawanje koda z tastaturu).
 
 ## Protected authentication alert
 

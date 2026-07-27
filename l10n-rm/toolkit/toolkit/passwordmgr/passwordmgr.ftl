@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Betg actualisar
     .accesskey = B
+primary-password-prompt-message = Endatescha p.pl. tes pled-clav universal.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Nagin num d'utilisader
-password-manager-toggle-password =
-    .label = Mussar il pled-clav
-    .accesskey = i
 password-manager-confirm-password-change = Confermar la midada dal pled-clav
 password-manager-select-username = Tscherna las infurmaziuns d'annunzia che duain vegnir actualisadas:

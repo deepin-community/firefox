@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = Informacije za rozwězowanje problemow
-page-subtitle = Toś ten bok wopśimujo techniske informacije, kótarež by mógli wužytne byś, gaž wopytujośo problem rozwězaś. Jolic pytaśo za wótegronami za zwucone pšašanja qó { -brand-short-name }, woglědajśo k našomu <a data-l10n-name="support-link">pódpěrańskemu websydłoju</a>.
+page-subtitle = Toś ten bok wopśimujo techniske informacije, kótarež by mógli wužytne byś, gaž wopytujośo problem rozwězaś. Jolic pytaśo za wótegronami za zwucone pšašanja wó { -brand-short-name }, woglědajśo se k našomu <a data-l10n-name="support-link">websedłoju pódpěry</a>.
 crashes-title = Rozpšawy wowalenjow
 crashes-id = ID rozpšawy
 crashes-send-date = Wótpósłany
@@ -15,6 +15,10 @@ support-addons-type = Typ
 support-addons-enabled = Zmóžnjony
 support-addons-version = Wersija
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Městno
 legacy-user-stylesheets-title = Zestarjete wužywaŕske stilowe pśedłogi
 legacy-user-stylesheets-enabled = Aktiwny
 legacy-user-stylesheets-stylesheet-types = Stilowe pśedłogi
@@ -129,13 +133,17 @@ place-database-stats-efficiency-perc = Eficienca (%)
 place-database-stats-sequentiality-perc = Sekwencialnosć (%)
 place-database-integrity = Integrita
 place-database-verify-integrity = Integritu pśeglědowaś
+place-database-last-idle-maintenance-data = Datum slědnego wótglědowanja pśi njeaktiwnosći
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Slědny datum procesa Vacuum
+place-database-last-integrity-corruption-date = Datum slědnego pśekśiwjenja integrity
 a11y-title = Bźezbariernosć
 a11y-activated = Aktiwěrowany
 a11y-force-disabled = Bźezbarjernosći zajźowaś
 a11y-handler-used = Pśistupny handler wužyty
 a11y-instantiator = Instancěrowak bźezbariernosći
 library-version-title = Bibliotekowe wersije
-copy-text-to-clipboard-label = Tekst do majzywótkłada kopěrowaś
+copy-text-to-clipboard-label = Tekst do mjazywótkłada kopěrowaś
 copy-raw-data-to-clipboard-label = Gropne daty do mjazywótkłada kopěrowaś
 sandbox-title = Pěskowy kašćik
 sandbox-sys-call-log-title = Wótpokazane systemowe wołanja
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Datowu banku nalicyś
 
 media-codec-support-sw-decoding = Softwarowe dekoděrowanje
 media-codec-support-hw-decoding = Hardwarowe dekoděrowanje
+media-codec-support-sw-encoding = Softwarowe koděrowanje
+media-codec-support-hw-encoding = Hardwarowe koděrowanje
 media-codec-support-codec-name = Mě Codec
 media-codec-support-supported = Pódprěty
 media-codec-support-unsupported = Njepódprěty

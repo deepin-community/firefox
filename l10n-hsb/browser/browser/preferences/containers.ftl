@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = Nastajenja kontejnera { $name }
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Mjeno
+    .placeholder = Přidajće mjeno
+containers-icon-label2 =
+    .label = Symbol
+containers-color-label2 =
+    .label = Barba
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = Mjeno
     .accesskey = M
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Zapodajće kontejnerowe mjeno
-
 containers-icon-label = Symbol
     .accesskey = S
     .style = { -containers-labels-style }
-
 containers-color-label = Barba
     .accesskey = B
     .style = { -containers-labels-style }
-
 containers-dialog =
-    .buttonlabelaccept = Hotowo
-    .buttonaccesskeyaccept = H
-
+    .buttonlabelaccept = Dokónčene
+    .buttonaccesskeyaccept = D
 containers-color-blue =
     .label = Módry
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Purpurny
 containers-color-toolbar =
     .label = Symbolowej lajsće přiměrić
-
 containers-icon-fence =
     .label = Płoćik
 containers-icon-fingerprint =
@@ -90,4 +88,20 @@ containers-icon-pet =
 containers-icon-tree =
     .label = Štom
 containers-icon-chill =
-    .label = Chłódnosć
+    .label = Wočerstwjenje
+containers-window-new3 =
+    .title = Nowy kontejner přidać
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Nastajenja kontejnera { $name }
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Nowy kontejner přidać
+containers-panel-create-button =
+    .label = Hotowy
+containers-panel-cancel-button =
+    .label = Přetorhnyć

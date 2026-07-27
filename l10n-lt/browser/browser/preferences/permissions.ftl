@@ -5,81 +5,65 @@
 permissions-window2 =
     .title = Išimtys
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Svetainės adresas
     .accesskey = d
-
 permissions-block =
     .label = Neleisti
     .accesskey = N
-
 permissions-disable-etp =
     .label = Sukurti išimtį
     .accesskey = i
-
 permissions-session =
     .label = Leisti vienam seansui
     .accesskey = s
-
 permissions-allow =
     .label = Leisti
     .accesskey = L
-
 permissions-button-off =
     .label = Išjungti
     .accesskey = g
-
 permissions-button-off-temporarily =
     .label = Išjungti laikinai
     .accesskey = k
-
 permissions-site-name =
     .label = Svetainė
-
 permissions-status =
     .label = Leidimas
-
 permissions-remove =
     .label = Pašalinti svetainę
     .accesskey = P
-
 permissions-remove-all =
     .label = Pašalinti visas svetaines
     .accesskey = v
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = Įrašyti pakeitimus
+    .buttonaccesskeyaccept = r
 permission-dialog =
     .buttonlabelaccept = Įrašyti pakeitimus
     .buttonaccesskeyaccept = r
-
 permissions-autoplay-menu = Numatyta visoms svetainėms:
-
 permissions-searchbox =
     .placeholder = Ieškoti svetainėje
-
 permissions-capabilities-autoplay-allow =
     .label = Leisti garsus ir vaizdo įrašus
 permissions-capabilities-autoplay-block =
     .label = Blokuoti garsus
 permissions-capabilities-autoplay-blockall =
     .label = Blokuoti garsus ir vaizdo įrašus
-
 permissions-capabilities-allow =
     .label = Leisti
 permissions-capabilities-block =
     .label = Neleisti
 permissions-capabilities-prompt =
     .label = Visada klausti
-
 permissions-capabilities-listitem-allow =
     .value = Leisti
 permissions-capabilities-listitem-block =
     .value = Neleisti
 permissions-capabilities-listitem-allow-session =
     .value = Leisti vienam seansui
-
 permissions-capabilities-listitem-off =
     .value = Išjungta
 permissions-capabilities-listitem-off-temporarily =
@@ -188,8 +172,3 @@ permissions-site-microphone-desc = Šios svetainės prašo leidimo naudoti jūs�
 permissions-site-microphone-disable-label =
     .label = Blokuoti naujus mikrofono naudojimo prašymus
 permissions-site-microphone-disable-desc = Tai neleis svetainėms, neišvardintoms aukščiau, prašyti leidimo naudoti jūsų mikrofoną. Mikrofono naudojimo blokavimas gali sutrikdyti svetainių funkcionalumą.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

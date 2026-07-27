@@ -1,6 +1,4 @@
-use super::Pid;
-use crate::errors::ThreadInfoError;
-use libc;
+use super::{errors::ThreadInfoError, Pid};
 
 type Result<T> = std::result::Result<T, ThreadInfoError>;
 

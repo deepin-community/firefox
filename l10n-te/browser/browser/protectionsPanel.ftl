@@ -21,12 +21,6 @@ protections-panel-etp-more-info =
     .aria-label = మెరుగైన ట్రాకింగ్ సంరక్షణ గురించి మరింత సమాచారం
 protections-panel-etp-on-header = ఈ సైటుకి మెరుగైన ట్రాకింగ్ సంరక్షణ చేతనంగా ఉంది
 protections-panel-etp-off-header = ఈ సైటుకి మెరుగైన ట్రాకింగ్ సంరక్షణ చేతనంగా లేదు
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = సైటు పనిచేయట్లేదా?
 # The heading/title of the sub-panel view
@@ -76,6 +70,8 @@ protections-panel-description-shim-allowed-learn-more = ఇంకా తెల�
 protections-panel-content-blocking-manage-settings =
     .label = సంరక్షణ అమరికలను నిర్వహించుకోండి
     .accesskey = M
+protections-panel-content-blocking-breakage-report-view =
+    .title = పనిచేయని సైటు నివేదన
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -89,6 +85,12 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-view-cancel = రద్దుచేయి
+protections-panel-cookie-banner-view-cancel-label =
+    .label = రద్దుచేయి
+protections-panel-report-broken-site =
+    .label = పనిచేయని సైటును నివేదించండి
+    .title = పనిచేయని సైటును నివేదించండి
 
 ## Protections panel info message
 

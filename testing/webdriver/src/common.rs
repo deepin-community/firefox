@@ -33,20 +33,15 @@ pub struct Cookie {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct CredentialParameters {
-    #[serde(rename = "credentialId")]
+#[serde(rename_all = "camelCase")]
+pub struct Credentials {
     pub credential_id: String,
-    #[serde(rename = "isResidentCredential")]
     pub is_resident_credential: bool,
-    #[serde(rename = "rpId")]
-    pub rp_id: String,
-    #[serde(rename = "privateKey")]
+    pub large_blob: Option<String>,
     pub private_key: String,
-    #[serde(rename = "userHandle")]
-    #[serde(default)]
-    pub user_handle: String,
-    #[serde(rename = "signCount")]
+    pub rp_id: String,
     pub sign_count: u64,
+    pub user_handle: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -59,10 +59,7 @@ history-section-label = Tembiasakue
 item-history-and-downloads =
     .label = Kundaha ha ñemboguejypyre rembiasakue
     .accesskey = B
-item-history-form-data-downloads =
-    .label = Tembiasakue
-    .accesskey = H
-item-history-form-data-downloads-description = Embogue tembiasakue tenda ha mboguejy, marandu ñongatupyre myanyhẽha ha jehekaha
+item-history-and-downloads-description2 = Embogue tenda jeheka rembiasakue ha mboguejypy
 item-cookies =
     .label = Kookie
     .accesskey = K
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Tenda ñemboheko
     .accesskey = i
+item-formdata-prefs =
+    .label = Marandu ñongatupyre myanyhẽha rehegua
+    .accesskey = o
+item-formdata-description = Embogue marandu ikatúva téra, ñandutiveve ha ambue mba’eporurã oĩva myanyhẽhápe
 item-site-prefs-description = Erujey umi ñemoneĩ ha jerohoryvéva tenda rehegua ñemboheko ypyguápe
 data-section-label = Mba’ekuaarã
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Opa tembiasakue oñemboguéta.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Opate temimoĩ isa’ypyréva oñemboguepáta.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Oñamindu’u…

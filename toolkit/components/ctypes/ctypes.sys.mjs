@@ -1,4 +1,3 @@
-/* -*-  indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,6 +13,6 @@
 
 // Initialize the ctypes object. You do not need to do this yourself.
 const init = Cc["@mozilla.org/jsctypes;1"].createInstance();
-init();
-
-export const ctypes = globalThis.ctypes;
+const scope = {};
+init(scope);
+export const ctypes = scope.ctypes;

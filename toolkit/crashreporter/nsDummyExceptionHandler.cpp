@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,6 +13,12 @@ void AnnotateTexturesSize(size_t size) {}
 void AnnotatePendingIPC(size_t aNumOfPendingIPC, uint32_t aTopPendingIPCCount,
                         const char* aTopPendingIPCName,
                         uint32_t aTopPendingIPCType) {}
+
+nsresult OOPInit(nsIFile* aXREDirectory) {
+  return nsresult::NS_ERROR_NOT_AVAILABLE;
+}
+
+void OOPDeinit() {}
 
 nsresult SetExceptionHandler(nsIFile* aXREDirectory, bool force /*=false*/) {
   return NS_ERROR_NOT_IMPLEMENTED;
@@ -118,11 +122,6 @@ nsresult AppendAppNotesToCrashReport(const nsACString& data) {
 
 bool GetAnnotation(const nsACString& key, nsACString& data) { return false; }
 
-void GetAnnotation(ProcessId childPid, Annotation annotation,
-                   nsACString& outStr) {
-  return;
-}
-
 nsresult RegisterAppMemory(void* ptr, size_t length) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
@@ -203,30 +202,36 @@ bool WriteExtraFile(const nsAString& id, const AnnotationTable& annotations) {
   return false;
 }
 
-void OOPInit() {}
+#if defined(MOZ_WIDGET_ANDROID)
+void SetNotificationPipeForChild(FileHandle breakpadFd,
+                                 FileHandle crashHelperFd) {}
+#endif  // defined(MOZ_WIDGET_ANDROID)
 
-#if defined(XP_WIN) || defined(XP_MACOSX)
-const char* GetChildNotificationPipe() { return nullptr; }
-#endif
-
-bool GetLastRunCrashID(nsAString& id) { return false; }
-
-#if !defined(XP_WIN) && !defined(XP_MACOSX)
-
-bool CreateNotificationPipeForChild(int* childCrashFd, int* childCrashRemapFd) {
+bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
+                             GeckoChildID aID) {
   return false;
 }
 
-#endif  // !defined(XP_WIN) && !defined(XP_MACOSX)
+#if defined(MOZ_WIDGET_ANDROID)
+void SetCrashHelperPipes(FileHandle breakpadFd, FileHandle crashHelperFd) {}
+#endif  // defined(MOZ_WIDGET_ANDROID)
 
-bool SetRemoteExceptionHandler(const char* aCrashPipe) { return false; }
+bool GetLastRunCrashID(nsAString& id) { return false; }
 
-bool TakeMinidumpForChild(ProcessId childPid, nsIFile** dump,
+#if defined(XP_WIN)
+bool ChildProcessProxyRendezvous(GeckoChildID aID, DWORD aPid, HANDLE aHandle) {
+  return false;
+}
+#endif  // defined(XP_WIN)
+
+bool SetRemoteExceptionHandler(int& aArgc, char** aArgv) { return false; }
+
+bool TakeMinidumpForChild(GeckoChildID aChildId, nsIFile** aDump,
                           AnnotationTable& aAnnotations) {
   return false;
 }
 
-bool FinalizeOrphanedMinidump(ProcessId aChildPid, GeckoProcessType aType,
+bool FinalizeOrphanedMinidump(GeckoChildID aChildId, GeckoProcessType aType,
                               nsString* aDumpId) {
   return false;
 }

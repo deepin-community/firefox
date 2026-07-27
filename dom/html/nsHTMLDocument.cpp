@@ -1,89 +1,83 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsHTMLDocument.h"
 
-#include "mozilla/DebugOnly.h"
+#include "DocumentInlines.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/StaticPrefs_intl.h"
-#include "nsCommandManager.h"
+#include "mozilla/css/Loader.h"
+#include "mozilla/dom/ContentList.h"
+#include "mozilla/dom/PrototypeDocumentContentSink.h"
+#include "mozilla/parser/PrototypeDocumentParser.h"
+#include "nsArrayUtils.h"
+#include "nsAttrName.h"
 #include "nsCOMPtr.h"
-#include "nsString.h"
-#include "nsPrintfCString.h"
-#include "nsReadableUtils.h"
-#include "nsUnicharUtils.h"
-#include "nsIHTMLContentSink.h"
-#include "nsIProtocolHandler.h"
-#include "nsIXMLContentSink.h"
-#include "nsHTMLParts.h"
-#include "nsGkAtoms.h"
-#include "nsPresContext.h"
-#include "nsPIDOMWindow.h"
+#include "nsCommandManager.h"
+#include "nsContentUtils.h"
 #include "nsDOMString.h"
-#include "nsIStreamListener.h"
-#include "nsIURI.h"
-#include "nsNetUtil.h"
-#include "nsIDocumentViewer.h"
 #include "nsDocShell.h"
 #include "nsDocShellLoadTypes.h"
-#include "nsIScriptContext.h"
-#include "nsContentList.h"
 #include "nsError.h"
-#include "nsIPrincipal.h"
-#include "nsJSPrincipals.h"
-#include "nsAttrName.h"
-
-#include "nsNetCID.h"
-#include "mozilla/parser/PrototypeDocumentParser.h"
-#include "mozilla/dom/PrototypeDocumentContentSink.h"
-#include "nsNameSpaceManager.h"
-#include "nsGenericHTMLElement.h"
-#include "mozilla/css/Loader.h"
 #include "nsFrameSelection.h"
-
-#include "nsContentUtils.h"
-#include "nsJSUtils.h"
-#include "DocumentInlines.h"
+#include "nsGenericHTMLElement.h"
+#include "nsGkAtoms.h"
+#include "nsHTMLParts.h"
 #include "nsICachingChannel.h"
+#include "nsIDocumentViewer.h"
+#include "nsIPrincipal.h"
+#include "nsIProtocolHandler.h"
+#include "nsIScriptContext.h"
 #include "nsIScriptElement.h"
-#include "nsArrayUtils.h"
+#include "nsIStreamListener.h"
+#include "nsIURI.h"
+#include "nsIXMLContentSink.h"
+#include "nsJSPrincipals.h"
+#include "nsJSUtils.h"
+#include "nsNameSpaceManager.h"
+#include "nsNetCID.h"
+#include "nsNetUtil.h"
+#include "nsPIDOMWindow.h"
+#include "nsPresContext.h"
+#include "nsPrintfCString.h"
+#include "nsReadableUtils.h"
+#include "nsString.h"
+#include "nsUnicharUtils.h"
 
 // AHMED 12-2
-#include "nsBidiUtils.h"
-
+#include "mozAutoDocUpdate.h"
 #include "mozilla/Encoding.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/IdentifierMapEntry.h"
 #include "mozilla/LoadInfo.h"
-#include "nsNodeInfoManager.h"
-#include "nsRange.h"
-#include "mozAutoDocUpdate.h"
-#include "nsCCUncollectableMarker.h"
-#include "nsHtml5Module.h"
-#include "mozilla/dom/Element.h"
 #include "mozilla/Preferences.h"
-#include "nsMimeTypes.h"
-#include "nsIRequest.h"
-#include "nsHtml5TreeOpExecutor.h"
-#include "nsHtml5Parser.h"
-#include "nsParser.h"
-#include "nsSandboxFlags.h"
-#include "mozilla/dom/HTMLBodyElement.h"
-#include "mozilla/dom/HTMLDocumentBinding.h"
-#include "mozilla/dom/nsCSPContext.h"
-#include "mozilla/dom/Selection.h"
-#include "mozilla/dom/ShadowIncludingTreeIterator.h"
-#include "nsCharsetSource.h"
-#include "nsFocusManager.h"
-#include "nsIFrame.h"
-#include "nsIContent.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StyleSheet.h"
 #include "mozilla/StyleSheetInlines.h"
-#include "mozilla/Unused.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/HTMLBodyElement.h"
+#include "mozilla/dom/HTMLDocumentBinding.h"
+#include "mozilla/dom/HTMLIFrameElement.h"
+#include "mozilla/dom/Selection.h"
+#include "mozilla/dom/ShadowIncludingTreeIterator.h"
+#include "mozilla/dom/nsCSPContext.h"
+#include "mozilla/glean/DomMetrics.h"
+#include "nsBidiUtils.h"
+#include "nsCCUncollectableMarker.h"
+#include "nsCharsetSource.h"
+#include "nsFocusManager.h"
+#include "nsHtml5Module.h"
+#include "nsHtml5Parser.h"
+#include "nsHtml5TreeOpExecutor.h"
+#include "nsIContent.h"
+#include "nsIFrame.h"
+#include "nsIRequest.h"
+#include "nsMimeTypes.h"
+#include "nsNodeInfoManager.h"
+#include "nsParser.h"
+#include "nsRange.h"
+#include "nsSandboxFlags.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -96,15 +90,11 @@ using namespace mozilla::dom;
 // =
 // ==================================================================
 
-static bool IsAsciiCompatible(const Encoding* aEncoding) {
-  return aEncoding->IsAsciiCompatible() || aEncoding == ISO_2022_JP_ENCODING;
-}
-
 nsresult NS_NewHTMLDocument(Document** aInstancePtrResult,
                             nsIPrincipal* aPrincipal,
                             nsIPrincipal* aPartitionedPrincipal,
-                            bool aLoadedAsData) {
-  RefPtr<nsHTMLDocument> doc = new nsHTMLDocument();
+                            mozilla::dom::LoadedAsData aLoadedAsData) {
+  RefPtr<nsHTMLDocument> doc = new nsHTMLDocument(aLoadedAsData);
 
   nsresult rv = doc->Init(aPrincipal, aPartitionedPrincipal);
 
@@ -113,14 +103,15 @@ nsresult NS_NewHTMLDocument(Document** aInstancePtrResult,
     return rv;
   }
 
-  doc->SetLoadedAsData(aLoadedAsData, /* aConsiderForMemoryReporting */ true);
+  doc->SetLoadedAsData(aLoadedAsData != mozilla::dom::LoadedAsData::No,
+                       /* aConsiderForMemoryReporting */ true);
   doc.forget(aInstancePtrResult);
 
   return NS_OK;
 }
 
-nsHTMLDocument::nsHTMLDocument()
-    : Document("text/html"),
+nsHTMLDocument::nsHTMLDocument(mozilla::dom::LoadedAsData aLoadedAsData)
+    : Document("text/html", aLoadedAsData),
       mContentListHolder(nullptr),
       mNumForms(0),
       mLoadFlags(0),
@@ -146,7 +137,9 @@ nsresult nsHTMLDocument::Init(nsIPrincipal* aPrincipal,
 
   // Now reset the compatibility mode of the CSSLoader
   // to match our compat mode.
-  CSSLoader()->SetCompatibilityMode(mCompatMode);
+  if (mCSSLoader) {
+    mCSSLoader->SetCompatibilityMode(mCompatMode);
+  }
 
   return NS_OK;
 }
@@ -192,11 +185,11 @@ void nsHTMLDocument::TryReloadCharset(nsIDocumentViewer* aViewer,
       aViewer->ForgetReloadEncoding();
 
       if (reloadEncodingSource <= aCharsetSource ||
-          !IsAsciiCompatible(aEncoding)) {
+          !aEncoding->IsAsciiCompatible()) {
         return;
       }
 
-      if (reloadEncoding && IsAsciiCompatible(reloadEncoding)) {
+      if (reloadEncoding && reloadEncoding->IsAsciiCompatible()) {
         aCharsetSource = reloadEncodingSource;
         aEncoding = WrapNotNull(reloadEncoding);
       }
@@ -220,7 +213,7 @@ void nsHTMLDocument::TryUserForcedCharset(nsIDocumentViewer* aViewer,
   }
 
   // mCharacterSet not updated yet for channel, so check aEncoding, too.
-  if (WillIgnoreCharsetOverride() || !IsAsciiCompatible(aEncoding)) {
+  if (WillIgnoreCharsetOverride() || !aEncoding->IsAsciiCompatible()) {
     return;
   }
 
@@ -252,8 +245,8 @@ void nsHTMLDocument::TryParentCharset(nsIDocShell* aDocShell,
   if (kCharsetFromInitialUserForcedAutoDetection == parentSource ||
       kCharsetFromFinalUserForcedAutoDetection == parentSource) {
     if (WillIgnoreCharsetOverride() ||
-        !IsAsciiCompatible(aEncoding) ||  // if channel said UTF-16
-        !IsAsciiCompatible(parentCharset)) {
+        !aEncoding->IsAsciiCompatible() ||  // if channel said UTF-16
+        !parentCharset->IsAsciiCompatible()) {
       return;
     }
     aEncoding = WrapNotNull(parentCharset);
@@ -269,7 +262,7 @@ void nsHTMLDocument::TryParentCharset(nsIDocShell* aDocShell,
   if (kCharsetFromInitialAutoDetectionASCII <= parentSource) {
     // Make sure that's OK
     if (!NodePrincipal()->Equals(parentPrincipal) ||
-        !IsAsciiCompatible(parentCharset)) {
+        !parentCharset->IsAsciiCompatible()) {
       return;
     }
 
@@ -334,16 +327,6 @@ nsresult nsHTMLDocument::StartDocumentLoad(
     loadAsHtml5 = false;
   }
 
-  // TODO: Proper about:blank treatment is bug 543435
-  if (loadAsHtml5 && view) {
-    // mDocumentURI hasn't been set, yet, so get the URI from the channel
-    nsCOMPtr<nsIURI> uri;
-    aChannel->GetURI(getter_AddRefs(uri));
-    if (NS_IsAboutBlankAllowQueryAndFragment(uri)) {
-      loadAsHtml5 = false;
-    }
-  }
-
   nsresult rv = Document::StartDocumentLoad(aCommand, aChannel, aLoadGroup,
                                             aContainer, aDocListener, aReset);
   if (NS_FAILED(rv)) {
@@ -371,6 +354,17 @@ nsresult nsHTMLDocument::StartDocumentLoad(
       }
     } else if (mViewSource && !html) {
       html5Parser->MarkAsNotScriptCreated("view-source-xml");
+    } else if (view && NS_IsAboutBlank(uri)) {
+      // Sadness: There are Chromium-originating WPTs that assume that
+      // as soon as `iframe.contentWindow.location.href == "about:blank"`,
+      // the about:blank DOM exists even for _non-initial_ navigations to
+      // about:blank. Since Chromium-originating WPTs manage to expect this,
+      // chances are that Web content might expect this as well, and the
+      // expectation was valid in Gecko previously. Therefore, let's
+      // special-case even _non-initial_ about:blank.
+      // /content-security-policy/inheritance/history-iframe.sub.html
+      // /content-security-policy/inheritance/window-open-local-after-network-scheme.sub.html
+      html5Parser->MarkAsNotScriptCreated("about-blank");
     } else {
       html5Parser->MarkAsNotScriptCreated(aCommand);
     }
@@ -487,15 +481,8 @@ nsresult nsHTMLDocument::StartDocumentLoad(
       mParser->SetContentSink(xmlsink);
     }
   } else {
-    if (loadAsHtml5) {
-      html5Parser->Initialize(this, uri, docShell, aChannel);
-    } else {
-      // about:blank *only*
-      nsCOMPtr<nsIHTMLContentSink> htmlsink;
-      NS_NewHTMLContentSink(getter_AddRefs(htmlsink), this, uri, docShell,
-                            aChannel);
-      mParser->SetContentSink(htmlsink);
-    }
+    MOZ_ASSERT(loadAsHtml5);
+    html5Parser->Initialize(this, uri, docShell, aChannel);
   }
 
   // parser the content of the URI
@@ -549,15 +536,134 @@ void nsHTMLDocument::RemovedForm() { --mNumForms; }
 
 int32_t nsHTMLDocument::GetNumFormsSynchronous() const { return mNumForms; }
 
-bool nsHTMLDocument::ResolveName(JSContext* aCx, const nsAString& aName,
-                                 JS::MutableHandle<JS::Value> aRetval,
-                                 ErrorResult& aError) {
+// https://html.spec.whatwg.org/multipage/dom.html#dom-document-nameditem
+void nsHTMLDocument::NamedGetter(JSContext* aCx, const nsAString& aName,
+                                 bool& aFound,
+                                 JS::MutableHandle<JSObject*> aRetVal,
+                                 mozilla::ErrorResult& aRv) {
+  if (!StaticPrefs::dom_document_name_getter_follow_spec_enabled()) {
+    JS::Rooted<JS::Value> v(aCx);
+    if ((aFound = ResolveNameForWindow(aCx, aName, &v, aRv))) {
+      SetUseCounter(mozilla::eUseCounter_custom_HTMLDocumentNamedGetterHit);
+      aRetVal.set(v.toObjectOrNull());
+    }
+    return;
+  }
+
+  aFound = false;
+  aRetVal.set(nullptr);
+
+  // Step 1. Let elements be the list of named elements with the name name that
+  // are in a document tree with the Document as their root.
+  IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aName);
+  if (!entry) {
+    return;
+  }
+
+  BaseContentList* list = entry->GetDocumentNameContentList();
+  if (!list || list->Length() == 0) {
+    return;
+  }
+
+  JS::Rooted<JS::Value> v(aCx);
+  if (list->Length() == 1) {
+    nsIContent* element = list->Item(0);
+    if (auto iframe = HTMLIFrameElement::FromNode(element)) {
+      // Step 2. If elements has only one element, and that element is an iframe
+      // element, and that iframe element's content navigable is not null, then
+      // return the active WindowProxy of the element's content navigable.
+      Nullable<WindowProxyHolder> win = iframe->GetContentWindow();
+      if (win.IsNull()) {
+        return;
+      }
+
+      if (!ToJSValue(aCx, win.Value(), &v)) {
+        aRv.NoteJSContextException(aCx);
+        return;
+      }
+
+      if (v.isNullOrUndefined()) {
+        return;
+      }
+    } else {
+      // Step 3. Otherwise, if elements has only one element, return that
+      // element.
+      if (!ToJSValue(aCx, element, &v)) {
+        aRv.NoteJSContextException(aCx);
+        return;
+      }
+    }
+  } else {
+    // Step 4. Otherwise, return an HTMLCollection rooted at the Document node,
+    // whose filter matches only named elements with the name name.
+    if (!ToJSValue(aCx, list, &v)) {
+      aRv.NoteJSContextException(aCx);
+      return;
+    }
+  }
+
+  bool collect = false;
+#ifdef NIGHTLY_BUILD
+  bool preventShadowing = false;
+  if (StaticPrefs::dom_document_name_getter_prevent_shadowing_enabled()) {
+    if (HTMLDocument_Binding::InterfaceHasProperty(aName)) {
+      preventShadowing = true;
+      collect = mShadowedHTMLDocumentProperties.Length() <= 10;
+    }
+  } else
+#endif
+  {
+    // To limit the possible performance/memory impact, only collect at most 10
+    // properties.
+    collect = mShadowedHTMLDocumentProperties.Length() <= 10 &&
+              HTMLDocument_Binding::InterfaceHasProperty(aName);
+  }
+
+  if (collect) {
+    if (!mShadowedHTMLDocumentProperties.Contains(aName)) {
+      mShadowedHTMLDocumentProperties.AppendElement(aName);
+    }
+  }
+
+#ifdef NIGHTLY_BUILD
+  if (preventShadowing) {
+    AutoTArray<nsString, 1> params;
+    params.AppendElement(aName);
+    nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns, this,
+                                    PropertiesFile::DOM_PROPERTIES,
+                                    "DocumentShadowingBlockedWarning", params);
+    return;
+  }
+#endif
+
+  SetUseCounter(mozilla::eUseCounter_custom_HTMLDocumentNamedGetterHit);
+  aFound = true;
+  aRetVal.set(&v.toObject());
+}
+
+void nsHTMLDocument::GetSupportedNames(nsTArray<nsString>& aNames) {
+  if (!StaticPrefs::dom_document_name_getter_follow_spec_enabled()) {
+    GetSupportedNamesForWindow(aNames);
+    return;
+  }
+
+  for (const auto& entry : mIdentifierMap) {
+    if (entry.HasDocumentNameElement()) {
+      aNames.AppendElement(entry.GetKeyAsString());
+    }
+  }
+}
+
+bool nsHTMLDocument::ResolveNameForWindow(JSContext* aCx,
+                                          const nsAString& aName,
+                                          JS::MutableHandle<JS::Value> aRetval,
+                                          ErrorResult& aError) {
   IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aName);
   if (!entry) {
     return false;
   }
 
-  nsBaseContentList* list = entry->GetNameContentList();
+  BaseContentList* list = entry->GetNameContentList();
   uint32_t length = list ? list->Length() : 0;
 
   nsIContent* node;
@@ -593,7 +699,7 @@ bool nsHTMLDocument::ResolveName(JSContext* aCx, const nsAString& aName,
   return true;
 }
 
-void nsHTMLDocument::GetSupportedNames(nsTArray<nsString>& aNames) {
+void nsHTMLDocument::GetSupportedNamesForWindow(nsTArray<nsString>& aNames) {
   for (const auto& entry : mIdentifierMap) {
     if (entry.HasNameElement() ||
         entry.HasIdElementExposedAsHTMLDocumentProperty()) {
@@ -616,7 +722,7 @@ nsresult nsHTMLDocument::Clone(dom::NodeInfo* aNodeInfo,
   NS_ASSERTION(aNodeInfo->NodeInfoManager() == mNodeInfoManager,
                "Can't import this document into another document!");
 
-  RefPtr<nsHTMLDocument> clone = new nsHTMLDocument();
+  RefPtr<nsHTMLDocument> clone = new nsHTMLDocument(LoadedAsData::AsData);
   nsresult rv = CloneDocHelper(clone.get());
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -649,8 +755,7 @@ bool nsHTMLDocument::WillIgnoreCharsetOverride() {
   if (mCharacterSetSource >= kCharsetFromByteOrderMark) {
     return true;
   }
-  if (!mCharacterSet->IsAsciiCompatible() &&
-      mCharacterSet != ISO_2022_JP_ENCODING) {
+  if (!mCharacterSet->IsAsciiCompatible()) {
     return true;
   }
   nsIURI* uri = GetOriginalURI();
@@ -697,8 +802,29 @@ bool nsHTMLDocument::WillIgnoreCharsetOverride() {
   return !potentialEffect;
 }
 
-void nsHTMLDocument::GetFormsAndFormControls(nsContentList** aFormList,
-                                             nsContentList** aFormControlList) {
+class nsHTMLDocument::ContentListHolder : public mozilla::Runnable {
+ public:
+  ContentListHolder(nsHTMLDocument* aDocument,
+                    mozilla::dom::ContentList* aFormList,
+                    mozilla::dom::ContentList* aFormControlList)
+      : mozilla::Runnable("ContentListHolder"),
+        mDocument(aDocument),
+        mFormList(aFormList),
+        mFormControlList(aFormControlList) {}
+
+  ~ContentListHolder() {
+    MOZ_ASSERT(!mDocument->mContentListHolder ||
+               mDocument->mContentListHolder == this);
+    mDocument->mContentListHolder = nullptr;
+  }
+
+  RefPtr<nsHTMLDocument> mDocument;
+  RefPtr<mozilla::dom::ContentList> mFormList;
+  RefPtr<mozilla::dom::ContentList> mFormControlList;
+};
+
+void nsHTMLDocument::GetFormsAndFormControls(ContentList** aFormList,
+                                             ContentList** aFormControlList) {
   RefPtr<ContentListHolder> holder = mContentListHolder;
   if (!holder) {
     // Flush our content model so it'll be up to date
@@ -709,7 +835,7 @@ void nsHTMLDocument::GetFormsAndFormControls(nsContentList** aFormList,
     //         anymore.
     FlushPendingNotifications(FlushType::Content);
 
-    RefPtr<nsContentList> htmlForms = GetExistingForms();
+    RefPtr<ContentList> htmlForms = GetExistingForms();
     if (!htmlForms) {
       // If the document doesn't have an existing forms content list, create a
       // new one which will be released soon by ContentListHolder.  The idea is
@@ -717,13 +843,13 @@ void nsHTMLDocument::GetFormsAndFormControls(nsContentList** aFormList,
       // down future DOM mutations.
       //
       // Please keep this in sync with Document::Forms().
-      htmlForms = new nsContentList(this, kNameSpaceID_XHTML, nsGkAtoms::form,
-                                    nsGkAtoms::form,
-                                    /* aDeep = */ true,
-                                    /* aLiveList = */ true);
+      htmlForms = new ContentList(this, kNameSpaceID_XHTML, nsGkAtoms::form,
+                                  nsGkAtoms::form,
+                                  /* aDeep = */ true,
+                                  /* aLiveList = */ true);
     }
 
-    RefPtr<nsContentList> htmlFormControls = new nsContentList(
+    RefPtr htmlFormControls = new ContentList(
         this, nsHTMLDocument::MatchFormControls, nullptr, nullptr,
         /* aDeep = */ true,
         /* aMatchAtom = */ nullptr,

@@ -17,10 +17,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Yeniləmə
     .accesskey = D
+primary-password-prompt-message = Lütfən ana parolunuzu daxil edin.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = İstifadəçi adı yoxdur
-password-manager-toggle-password =
-    .label = Parolu göstər
-    .accesskey = h
 password-manager-confirm-password-change = Parol Dəyişikliyini Təsdiqlə
 password-manager-select-username = Hansı daxil olmanı yeniləyəcəyinizi seçin:

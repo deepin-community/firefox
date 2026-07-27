@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -99,7 +97,6 @@
 
 #include "mozilla/Attributes.h"
 #include "mozilla/EndianUtils.h"
-#include "mozilla/Likely.h"
 #include "mozilla/UniquePtrExtensions.h"
 
 #include "RasterImage.h"
@@ -235,10 +232,11 @@ nsBMPDecoder::nsBMPDecoder(RasterImage* aImage, uint32_t aDataOffset)
   mH.mDataOffset = aDataOffset;
 }
 
-nsBMPDecoder::~nsBMPDecoder() {}
+nsBMPDecoder::~nsBMPDecoder() = default;
 
 // Obtains the size of the compressed image resource.
-int32_t nsBMPDecoder::GetCompressedImageSize() const {
+uint32_t nsBMPDecoder::GetCompressedImageSize() const {
+  // Keep this in sync with the overflow check in ReadInfoHeaderRest.
   // In the RGB case mImageSize might not be set, so compute it manually.
   MOZ_ASSERT(mPixelRowSize != 0);
   return mH.mCompression == Compression::RGB ? mPixelRowSize * AbsoluteHeight()
@@ -430,7 +428,7 @@ LexerResult nsBMPDecoder::DoDecode(SourceBufferIterator& aIterator,
 
   return mLexer.Lex(
       aIterator, aOnResume,
-      [=](State aState, const char* aData, size_t aLength) {
+      [this](State aState, const char* aData, size_t aLength) {
         switch (aState) {
           case State::FILE_HEADER:
             return ReadFileHeader(aData, aLength);
@@ -635,6 +633,16 @@ LexerTransition<nsBMPDecoder::State> nsBMPDecoder::ReadInfoHeaderRest(
   uint32_t surplus = mPixelRowSize % 4;
   if (surplus != 0) {
     mPixelRowSize += 4 - surplus;
+  }
+
+  if (mIsWithinICO && mH.mCompression == Compression::RGB) {
+    // The ICO decoders calls GetCompressedImageSize so we need to make sure the
+    // computation it does cannot overflow. Keep this in sync with that
+    // function.
+    auto product = CheckedInt<uint32_t>(mPixelRowSize) * AbsoluteHeight();
+    if (!product.isValid()) {
+      return Transition::TerminateFailure();
+    }
   }
 
   size_t bitFieldsLengthStillToRead = 0;
@@ -852,6 +860,7 @@ LexerTransition<nsBMPDecoder::State> nsBMPDecoder::SeekColorProfile(
 
   // We need to skip ahead to search for the embedded color profile. We want
   // to return to this point once we read it.
+  MOZ_ASSERT(!mReturnIterator.isSome());
   mReturnIterator = mLexer.Clone(*mIterator, SIZE_MAX);
   if (!mReturnIterator) {
     return Transition::TerminateFailure();
@@ -870,6 +879,7 @@ LexerTransition<nsBMPDecoder::State> nsBMPDecoder::ReadColorProfile(
   }
 
   // Jump back to where we left off.
+  MOZ_ASSERT(mReturnIterator.isSome());
   mIterator = std::move(mReturnIterator);
   return Transition::To(State::ALLOCATE_SURFACE, 0);
 }
@@ -910,6 +920,15 @@ LexerTransition<nsBMPDecoder::State> nsBMPDecoder::AllocateSurface() {
 
   mPipe = std::move(*pipe);
   ClearRowBufferRemainder();
+
+  // We might want to back track to here if we have a corrupt bmp that points
+  // into the color table for image data, so save an iterator at this point.
+  MOZ_ASSERT(!mReturnIterator.isSome());
+  mReturnIterator = mLexer.Clone(*mIterator, SIZE_MAX);
+  if (!mReturnIterator) {
+    return Transition::TerminateFailure();
+  }
+
   return Transition::To(State::COLOR_TABLE, mNumColors * mBytesPerColor);
 }
 
@@ -946,14 +965,23 @@ LexerTransition<nsBMPDecoder::State> nsBMPDecoder::ReadColorTable(
   // of the gap (possibly zero) between the color table and the pixel data.
   //
   // If the gap is negative the file must be malformed (e.g. mH.mDataOffset
-  // points into the middle of the color palette instead of past the end) and
-  // we give up.
+  // points into the middle of the color palette instead of past the end).
   if (mPreGapLength > mH.mDataOffset) {
-    return Transition::TerminateFailure();
+    // Allow corrupt bmp that say the image data starts in the color table, but
+    // if the image data offset is even before the color tables thats too far
+    // back and give up.
+    if (mPreGapLength - aLength > mH.mDataOffset) {
+      return Transition::TerminateFailure();
+    }
+    MOZ_ASSERT(mReturnIterator.isSome());
+    mIterator = std::move(mReturnIterator);
+    uint32_t gapLength = mH.mDataOffset - (mPreGapLength - aLength);
+    return Transition::ToUnbuffered(State::AFTER_GAP, State::GAP, gapLength);
   }
 
-  uint32_t gapLength = mH.mDataOffset - mPreGapLength;
+  mReturnIterator.reset();
 
+  uint32_t gapLength = mH.mDataOffset - mPreGapLength;
   return Transition::ToUnbuffered(State::AFTER_GAP, State::GAP, gapLength);
 }
 

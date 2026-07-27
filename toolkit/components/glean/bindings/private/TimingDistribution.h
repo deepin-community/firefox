@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +7,10 @@
 
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/glean/bindings/DistributionData.h"
-#include "mozilla/glean/bindings/GleanMetric.h"
+#include "mozilla/glean/bindings/GleanMetric.h"  // GleanMetric
+#include "mozilla/glean/bindings/TimingDistributionStandalone.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
-#include "mozilla/TimeStamp.h"
 #include "nsTArray.h"
 
 namespace mozilla::dom {
@@ -20,54 +18,14 @@ struct GleanDistributionData;
 }  // namespace mozilla::dom
 
 namespace mozilla::glean {
+// Forward declaration to make the friend class below work.
+class GleanTimingDistribution;
 
 namespace impl {
-class TimingDistributionMetric {
+class TimingDistributionMetric : public TimingDistributionStandalone {
  public:
-  constexpr explicit TimingDistributionMetric(uint32_t aId) : mId(aId) {}
-
-  /*
-   * Starts tracking time for the provided metric.
-   *
-   * @returns A unique TimerId for the new timer
-   */
-  TimerId Start() const;
-
-  /*
-   * Stops tracking time for the provided metric and associated timer id.
-   *
-   * Adds a count to the corresponding bucket in the timing distribution.
-   * This will record an error if no `Start` was called on this TimerId or
-   * if this TimerId was used to call `Cancel`.
-   *
-   * @param aId The TimerId to associate with this timing. This allows for
-   *            concurrent timing of events associated with different ids.
-   */
-  void StopAndAccumulate(const TimerId&& aId) const;
-
-  /*
-   * Adds a duration sample to a timing distribution metric.
-   *
-   * Adds a count to the corresponding bucket in the timing distribution.
-   * Prefer Start() and StopAndAccumulate() where possible.
-   * Users of this API are responsible for ensuring the timing source used
-   * to calculate the TimeDuration is monotonic and consistent accross
-   * platforms.
-   *
-   * NOTE: Negative durations are not handled and will saturate to INT64_MAX
-   *       nanoseconds.
-   *
-   * @param aDuration The duration of the sample to add to the distribution.
-   */
-  void AccumulateRawDuration(const TimeDuration& aDuration) const;
-
-  /*
-   * Aborts a previous `Start` call. No error is recorded if no `Start` was
-   * called.
-   *
-   * @param aId The TimerId whose `Start` you wish to abort.
-   */
-  void Cancel(const TimerId&& aId) const;
+  constexpr explicit TimingDistributionMetric(uint32_t aId)
+      : TimingDistributionStandalone(aId) {}
 
   /**
    * **Test-only API**
@@ -89,8 +47,9 @@ class TimingDistributionMetric {
   Result<Maybe<DistributionData>, nsCString> TestGetValue(
       const nsACString& aPingName = nsCString()) const;
 
- private:
-  const uint32_t mId;
+  using TimingDistributionStandalone::AutoTimer;
+
+  friend class mozilla::glean::GleanTimingDistribution;
 };
 }  // namespace impl
 
@@ -105,6 +64,8 @@ class GleanTimingDistribution final : public GleanMetric {
   uint64_t Start();
   void StopAndAccumulate(uint64_t aId);
   void Cancel(uint64_t aId);
+  void AccumulateSamples(const nsTArray<int64_t>& aSamples);
+  void AccumulateSingleSample(int64_t aSample);
 
   void TestGetValue(const nsACString& aPingName,
                     dom::Nullable<dom::GleanDistributionData>& aRetval,

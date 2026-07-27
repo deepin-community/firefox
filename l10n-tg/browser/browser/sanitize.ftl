@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Ду соати охир
 clear-time-duration-value-last-4-hours =
     .label = Чор соати охир
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Аз санаи { $midnightTime }
 clear-time-duration-value-today =
     .label = Имрӯз
 clear-time-duration-value-everything =
@@ -55,10 +59,7 @@ history-section-label = Таърих
 item-history-and-downloads =
     .label = Таърихи тамошо ва боргирӣ
     .accesskey = Т
-item-history-form-data-downloads =
-    .label = Таърих
-    .accesskey = Т
-item-history-form-data-downloads-description = Таърихи сомонаҳо ва боргириҳо, маълумоти нигоҳдошташуда дар шаклҳо ва ҷустуҷӯҳои шумо пок карда мешаванд
+item-history-and-downloads-description2 = Таърихи саҳифаҳои сомонаҳо ва боргириҳоро тоза мекунад
 item-cookies =
     .label = Кукиҳо
     .accesskey = К
@@ -94,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Танзимоти сомона
     .accesskey = а
+item-formdata-prefs =
+    .label = Маълумот дар бораи шакли нигоҳдошташуда
+    .accesskey = М
+item-formdata-description = Чизҳоро ба монанди номҳо, нишонии почтаи электронӣ ва унсурҳои дигареро, ки шумо дар шаклҳо ворид мекунед, тоза мекунад
 item-site-prefs-description = Иҷозатҳо ва хусусиятҳои сомонаҳои шумо ба танзимоти аслӣ барқарор карда мешаванд
 data-section-label = Иттилоот
 item-site-settings =
@@ -123,3 +128,6 @@ sanitize-everything-warning = Ҳамаи таърих тоза карда меш
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Ҳамаи ҷузъҳои интихобшуда тоза карда мешаванд.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Ҳисоб шуда истодааст…

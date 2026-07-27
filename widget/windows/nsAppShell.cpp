@@ -1,4 +1,3 @@
-/* -*- Mode: c++; tab-width: 2; indent-tabs-mode: nil; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,7 +16,6 @@
 #include "nsWindow.h"
 #include "nsString.h"
 #include "WinIMEHandler.h"
-#include "mozilla/widget/AudioSession.h"
 #include "mozilla/BackgroundHangMonitor.h"
 #include "mozilla/Hal.h"
 #include "nsIDOMWakeLockListener.h"
@@ -36,10 +34,6 @@
 #include "mozilla/WindowsProcessMitigations.h"
 
 #include <winternl.h>
-
-#ifdef MOZ_BACKGROUNDTASKS
-#  include "mozilla/BackgroundTasks.h"
-#endif
 
 #if defined(ACCESSIBILITY)
 #  include "mozilla/a11y/Compatibility.h"
@@ -358,6 +352,7 @@ nsAppShell::Observe(nsISupports* aSubject, const char* aTopic,
 
     if (!strcmp(aTopic, "sessionstore-windows-restored")) {
       nsWindow::SetIsRestoringSession(false);
+      WinUtils::InvalidateWindowPreviews();
       // Now that we've handled the observer notification, we can remove it
       obsServ->RemoveObserver(this, "sessionstore-windows-restored");
       return NS_OK;
@@ -462,7 +457,11 @@ WindowsDiagnosticsError CollectUser32SingleStepData(
 // the haruspex's task once the minidumps are in. (As this function should be
 // called at most once per process, the minor performance hit is not a concern.)
 //
-[[clang::optnone]] MOZ_NEVER_INLINE nsresult nsAppShell::InitHiddenWindow() {
+/* static */ [[clang::optnone]] MOZ_NEVER_INLINE HWND
+nsAppShell::StaticCreateEventWindow() {
+  // This code path would fail at CreateWindowW under win32k lockdown.
+  MOZ_RELEASE_ASSERT(!IsWin32kLockedDown());
+
   // note the incoming error-state; this may be relevant to errors we get later
   auto _initialErr [[maybe_unused]] = WinErrorState::Get();
   // reset the error-state, to avoid ambiguity below
@@ -483,8 +482,6 @@ WindowsDiagnosticsError CollectUser32SingleStepData(
   if (!_msgId) _atomTableInfo = DiagnoseUserAtomTable();
   NS_ASSERTION(sAppShellGeckoMsgId,
                "Could not register hidden window event message!");
-
-  mLastNativeEventScheduled = TimeStamp::NowLoRes();
 
   WNDCLASSW wc;
   HINSTANCE const module = GetModuleHandle(nullptr);
@@ -536,19 +533,19 @@ WindowsDiagnosticsError CollectUser32SingleStepData(
     }
 #endif  // MOZ_DIAGNOSTIC_ASSERT_ENABLED && _M_X64
 
-    MOZ_DIAGNOSTIC_ASSERT(_windowClassAtom,
-                          "RegisterClassW for EventWindowClass failed");
+    MOZ_RELEASE_ASSERT(_windowClassAtom,
+                       "RegisterClassW for EventWindowClass failed");
     WinErrorState::Clear();
   }
 
-  mEventWnd = CreateWindowW(kWindowClass, L"nsAppShell:EventWindow", 0, 0, 0,
-                            10, 10, HWND_MESSAGE, nullptr, module, nullptr);
+  HWND eventWnd =
+      CreateWindowW(kWindowClass, L"nsAppShell:EventWindow", 0, 0, 0, 10, 10,
+                    HWND_MESSAGE, nullptr, module, nullptr);
   auto const _cwErr [[maybe_unused]] = WinErrorState::Get();
 
 #if defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED) && defined(_M_X64)
-  if (!mEventWnd) {
+  if (!eventWnd) {
     // Retry with single-step data collection
-    HWND eventWnd{};
     WindowsDiagnosticsError rv = CollectUser32SingleStepData(
         [module, &eventWnd]() {
           eventWnd =
@@ -566,22 +563,46 @@ WindowsDiagnosticsError CollectUser32SingleStepData(
         "Failed to collect single step data for CreateWindowW");
     // If we reach this point then somehow the single-stepped call succeeded and
     // we can proceed
-    mEventWnd = eventWnd;
   }
 #endif  // MOZ_DIAGNOSTIC_ASSERT_ENABLED && _M_X64
 
-  MOZ_DIAGNOSTIC_ASSERT(mEventWnd, "CreateWindowW for EventWindow failed");
+  MOZ_RELEASE_ASSERT(eventWnd, "CreateWindowW for EventWindow failed");
+
+  return eventWnd;
+}
+
+HWND nsAppShell::sPrecachedEventWnd{};
+
+/* static */ bool nsAppShell::PrecacheEventWindow() {
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_RELEASE_ASSERT(!sPrecachedEventWnd);
+
+  sPrecachedEventWnd = StaticCreateEventWindow();
+  return static_cast<bool>(sPrecachedEventWnd);
+}
+
+nsresult nsAppShell::InitEventWindow() {
+  MOZ_ASSERT(NS_IsMainThread());
+
+  if (sPrecachedEventWnd) {
+    mEventWnd = sPrecachedEventWnd;
+    sPrecachedEventWnd = nullptr;
+  } else {
+    mEventWnd = StaticCreateEventWindow();
+  }
+
+  mLastNativeEventScheduled = TimeStamp::NowLoRes();
+
   NS_ENSURE_STATE(mEventWnd);
 
   return NS_OK;
 }
 
 nsresult nsAppShell::Init() {
-  LSPAnnotate();
-
   hal::Init();
 
   if (XRE_IsParentProcess()) {
+    LSPAnnotate();
     sTaskbarButtonCreatedMsg = ::RegisterWindowMessageW(kTaskbarButtonEventId);
     NS_ASSERTION(sTaskbarButtonCreatedMsg,
                  "Could not register taskbar button creation message");
@@ -592,20 +613,26 @@ nsresult nsAppShell::Init() {
   // we are processing native events. Disabling this is required for win32k
   // syscall lockdown.
   if (XRE_UseNativeEventProcessing()) {
-    if (nsresult rv = this->InitHiddenWindow(); NS_FAILED(rv)) {
+    if (nsresult rv = this->InitEventWindow(); NS_FAILED(rv)) {
       return rv;
     }
-  } else if (XRE_IsContentProcess() && !IsWin32kLockedDown()) {
-    // We're not generally processing native events, but still using GDI and we
-    // still have some internal windows, e.g. from calling CoInitializeEx.
-    // So we use a class that will do a single event pump where previously we
-    // might have processed multiple events to make sure any occasional messages
-    // to these windows are processed. This also allows any internal Windows
-    // messages to be processed to ensure the GDI data remains fresh.
-    nsCOMPtr<nsIThreadInternal> threadInt =
-        do_QueryInterface(NS_GetCurrentThread());
-    if (threadInt) {
-      threadInt->SetObserver(new SingleNativeEventPump());
+  } else {
+    // Load winmm.dll because it is still needed by our event loop and might not
+    // get loaded before we lower the sandbox.
+    ::LoadLibraryW(L"winmm.dll");
+
+    if (XRE_IsContentProcess() && !IsWin32kLockedDown()) {
+      // We're not generally processing native events, but still using GDI and
+      // we still have some internal windows, e.g. from calling CoInitializeEx.
+      // So we use a class that will do a single event pump where previously we
+      // might have processed multiple events to make sure any occasional
+      // messages to these windows are processed. This also allows any internal
+      // Windows messages to be processed to ensure the GDI data remains fresh.
+      nsCOMPtr<nsIThreadInternal> threadInt =
+          do_QueryInterface(NS_GetCurrentThread());
+      if (threadInt) {
+        threadInt->SetObserver(new SingleNativeEventPump());
+      }
     }
   }
 
@@ -626,7 +653,7 @@ nsresult nsAppShell::Init() {
   }
 
   if (!WinUtils::GetTimezoneName(mTimezoneName)) {
-    NS_WARNING("Unable to get system timezone name, timezone may be invalid\n");
+    NS_WARNING("Unable to get system timezone name, timezone may be invalid");
   }
 
   return nsBaseAppShell::Init();
@@ -634,17 +661,7 @@ nsresult nsAppShell::Init() {
 
 NS_IMETHODIMP
 nsAppShell::Run(void) {
-  bool wantAudio = true;
   if (XRE_IsParentProcess()) {
-#ifdef MOZ_BACKGROUNDTASKS
-    if (BackgroundTasks::IsBackgroundTaskMode()) {
-      wantAudio = false;
-    }
-#endif
-    if (MOZ_LIKELY(wantAudio)) {
-      mozilla::widget::StartAudioSession();
-    }
-
     // Add an observer that disables the screen saver when requested by Gecko.
     // For example when we're playing video in the foreground tab. Whole firefox
     // only needs one wakelock instance, so we would only create one listener in
@@ -656,10 +673,6 @@ nsAppShell::Run(void) {
 
   if (XRE_IsParentProcess()) {
     RemoveScreenWakeLockListener();
-
-    if (MOZ_LIKELY(wantAudio)) {
-      mozilla::widget::StopAudioSession();
-    }
   }
 
   return rv;
@@ -721,20 +734,6 @@ bool nsAppShell::ProcessNextNativeEvent(bool mayWait) {
 
   do {
     MSG msg;
-
-    // For avoiding deadlock between our process and plugin process by
-    // mouse wheel messages, we're handling actually when we receive one of
-    // following internal messages which is posted by native mouse wheel
-    // message handler. Any other events, especially native modifier key
-    // events, should not be handled between native message and posted
-    // internal message because it may make different modifier key state or
-    // mouse cursor position between them.
-    if (mozilla::widget::MouseScrollHandler::IsWaitingInternalMessage()) {
-      gotMessage = WinUtils::PeekMessage(&msg, nullptr, MOZ_WM_MOUSEWHEEL_FIRST,
-                                         MOZ_WM_MOUSEWHEEL_LAST, PM_REMOVE);
-      NS_ASSERTION(gotMessage,
-                   "waiting internal wheel message, but it has not come");
-    }
 
     if (!gotMessage) {
       gotMessage = WinUtils::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);

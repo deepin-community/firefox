@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,30 +10,31 @@
 #include "ClientSourceChild.h"
 #include "ClientState.h"
 #include "ClientValidation.h"
+#include "mozilla/SchedulerGroup.h"
+#include "mozilla/StaticPrefs_privacy.h"
+#include "mozilla/StorageAccess.h"
 #include "mozilla/Try.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/ClientIPCTypes.h"
 #include "mozilla/dom/DOMMozPromiseRequestHolder.h"
-#include "mozilla/dom/ipc/StructuredCloneData.h"
 #include "mozilla/dom/JSExecutionManager.h"
 #include "mozilla/dom/MessageEvent.h"
 #include "mozilla/dom/MessageEventBinding.h"
 #include "mozilla/dom/Navigator.h"
-#include "mozilla/dom/WorkerScope.h"
-#include "mozilla/dom/WorkerRef.h"
+#include "mozilla/dom/PolicyContainer.h"
 #include "mozilla/dom/ServiceWorker.h"
 #include "mozilla/dom/ServiceWorkerContainer.h"
 #include "mozilla/dom/ServiceWorkerManager.h"
-#include "mozilla/SchedulerGroup.h"
-#include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/StorageAccess.h"
-#include "nsIContentSecurityPolicy.h"
+#include "mozilla/dom/ServiceWorkerUtils.h"
+#include "mozilla/dom/WorkerRef.h"
+#include "mozilla/dom/WorkerScope.h"
+#include "mozilla/dom/ipc/StructuredCloneData.h"
+#include "mozilla/ipc/BackgroundUtils.h"
 #include "nsContentUtils.h"
 #include "nsFocusManager.h"
+#include "nsIContentSecurityPolicy.h"
 #include "nsIDocShell.h"
 #include "nsPIDOMWindow.h"
-
-#include "mozilla/ipc/BackgroundUtils.h"
 
 namespace mozilla::dom {
 
@@ -163,8 +162,9 @@ ClientSource::ClientSource(ClientManager* aManager,
     : mManager(aManager),
       mEventTarget(aEventTarget),
       mOwner(AsVariant(Nothing())),
-      mClientInfo(aArgs.id(), aArgs.type(), aArgs.principalInfo(),
-                  aArgs.creationTime()) {
+      mClientInfo(aArgs.id(), aArgs.agentClusterId(), aArgs.type(),
+                  aArgs.principalInfo(), aArgs.creationTime(), aArgs.url(),
+                  aArgs.frameType()) {
   MOZ_ASSERT(mManager);
   MOZ_ASSERT(mEventTarget);
 }
@@ -186,9 +186,10 @@ void ClientSource::Activate(PClientManagerChild* aActor) {
     return;
   }
 
-  ClientSourceConstructorArgs args(mClientInfo.Id(), mClientInfo.Type(),
-                                   mClientInfo.PrincipalInfo(),
-                                   mClientInfo.CreationTime());
+  ClientSourceConstructorArgs args(
+      mClientInfo.Id(), Nothing(), mClientInfo.Type(),
+      mClientInfo.PrincipalInfo(), mClientInfo.CreationTime(), VoidCString(),
+      FrameType::None);
   RefPtr<ClientSourceChild> actor = new ClientSourceChild(args);
   if (!aActor->SendPClientSourceConstructor(actor, args)) {
     Shutdown();
@@ -216,23 +217,24 @@ void ClientSource::WorkerExecutionReady(WorkerPrivate* aWorkerPrivate) {
     return;
   }
 
+  // Its safe to store the WorkerPrivate* here because the ClientSource
+  // is explicitly destroyed by WorkerPrivate before exiting its run loop.
+  //
+  // We need to initialize our owner before the call to
+  // ServiceWorkersStorageAllowedForGlobal below which will use SnapshotState to
+  // retrieve our StorageAccess.
+  MOZ_DIAGNOSTIC_ASSERT(mOwner.is<Nothing>());
+  mOwner = AsVariant(aWorkerPrivate);
+
   // A client without access to storage should never be controlled by
   // a service worker.  Check this here in case we were controlled before
   // execution ready.  We can't reliably determine what our storage policy
   // is before execution ready, unfortunately.
   if (mController.isSome()) {
     MOZ_DIAGNOSTIC_ASSERT(
-        aWorkerPrivate->StorageAccess() > StorageAccess::ePrivateBrowsing ||
-        (ShouldPartitionStorage(aWorkerPrivate->StorageAccess()) &&
-         StoragePartitioningEnabled(aWorkerPrivate->StorageAccess(),
-                                    aWorkerPrivate->CookieJarSettings())) ||
+        ServiceWorkersStorageAllowedForGlobal(aWorkerPrivate->GlobalScope()) ||
         StringBeginsWith(aWorkerPrivate->ScriptURL(), u"blob:"_ns));
   }
-
-  // Its safe to store the WorkerPrivate* here because the ClientSource
-  // is explicitly destroyed by WorkerPrivate before exiting its run loop.
-  MOZ_DIAGNOSTIC_ASSERT(mOwner.is<Nothing>());
-  mOwner = AsVariant(aWorkerPrivate);
 
   ClientSourceExecutionReadyArgs args(aWorkerPrivate->GetLocationInfo().mHref,
                                       FrameType::None);
@@ -251,10 +253,10 @@ nsresult ClientSource::WindowExecutionReady(nsPIDOMWindowInner* aInnerWindow) {
   }
 
   Document* doc = aInnerWindow->GetExtantDoc();
-  NS_ENSURE_TRUE(doc, NS_ERROR_UNEXPECTED);
+  NS_ENSURE_TRUE(doc, NS_ERROR_DOM_INVALID_STATE_ERR);
 
   nsIURI* uri = doc->GetOriginalURI();
-  NS_ENSURE_TRUE(uri, NS_ERROR_UNEXPECTED);
+  NS_ENSURE_TRUE(uri, NS_ERROR_NOT_AVAILABLE);
 
   // Don't use nsAutoCString here since IPC requires a full nsCString anyway.
   nsCString spec;
@@ -274,15 +276,11 @@ nsresult ClientSource::WindowExecutionReady(nsPIDOMWindowInner* aInnerWindow) {
   // assertion in this corner case.
 #ifdef DEBUG
   if (mController.isSome()) {
-    auto storageAccess = StorageAllowedForWindow(aInnerWindow);
     bool isAboutBlankURL = spec.LowerCaseEqualsLiteral("about:blank");
     bool isBlobURL = StringBeginsWith(spec, "blob:"_ns);
-    bool isStorageAllowed = storageAccess == StorageAccess::eAllow;
-    bool isPartitionEnabled =
-        StoragePartitioningEnabled(storageAccess, doc->CookieJarSettings());
-    MOZ_ASSERT(isAboutBlankURL || isBlobURL || isStorageAllowed ||
-               (StaticPrefs::privacy_partition_serviceWorkers() &&
-                isPartitionEnabled));
+    bool isStorageAllowed =
+        ServiceWorkersStorageAllowedForGlobal(aInnerWindow->AsGlobal());
+    MOZ_ASSERT(isAboutBlankURL || isBlobURL || isStorageAllowed);
   }
 #endif
 
@@ -400,11 +398,6 @@ void ClientSource::SetController(
   MOZ_RELEASE_ASSERT(ClientMatchPrincipalInfo(mClientInfo.PrincipalInfo(),
                                               aServiceWorker.PrincipalInfo()));
 
-  // A client in private browsing mode should never be controlled by
-  // a service worker.  The principal origin attributes should guarantee
-  // this invariant.
-  MOZ_DIAGNOSTIC_ASSERT(!mClientInfo.IsPrivateBrowsing());
-
   // A client without access to storage should never be controlled a
   // a service worker.  If we are already execution ready with a real
   // window or worker, then verify assert the storage policy is correct.
@@ -414,22 +407,13 @@ void ClientSource::SetController(
   // and about:blank windows.
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
   if (GetInnerWindow()) {
-    auto storageAccess = StorageAllowedForWindow(GetInnerWindow());
     bool IsAboutBlankURL = Info().URL().LowerCaseEqualsLiteral("about:blank");
     bool IsBlobURL = StringBeginsWith(Info().URL(), "blob:"_ns);
-    bool IsStorageAllowed = storageAccess == StorageAccess::eAllow;
-    bool IsPartitionEnabled =
-        GetInnerWindow()->GetExtantDoc()
-            ? StoragePartitioningEnabled(
-                  storageAccess,
-                  GetInnerWindow()->GetExtantDoc()->CookieJarSettings())
-            : false;
-    MOZ_DIAGNOSTIC_ASSERT(IsAboutBlankURL || IsBlobURL || IsStorageAllowed ||
-                          (StaticPrefs::privacy_partition_serviceWorkers() &&
-                           IsPartitionEnabled));
+    bool IsStorageAllowed = ServiceWorkersStorageAllowedForGlobal(GetGlobal());
+    MOZ_DIAGNOSTIC_ASSERT(IsAboutBlankURL || IsBlobURL || IsStorageAllowed);
   } else if (GetWorkerPrivate()) {
     MOZ_DIAGNOSTIC_ASSERT(
-        GetWorkerPrivate()->StorageAccess() > StorageAccess::ePrivateBrowsing ||
+        ServiceWorkersStorageAllowedForGlobal(GetGlobal()) ||
         StringBeginsWith(GetWorkerPrivate()->ScriptURL(), u"blob:"_ns));
   }
 #endif
@@ -477,23 +461,14 @@ RefPtr<ClientOpPromise> ClientSource::Control(
   bool controlAllowed = true;
   if (GetInnerWindow()) {
     // Local URL windows and windows with access to storage can be controlled.
-    auto storageAccess = StorageAllowedForWindow(GetInnerWindow());
     bool isAboutBlankURL = Info().URL().LowerCaseEqualsLiteral("about:blank");
     bool isBlobURL = StringBeginsWith(Info().URL(), "blob:"_ns);
-    bool isStorageAllowed = storageAccess == StorageAccess::eAllow;
-    bool isPartitionEnabled =
-        GetInnerWindow()->GetExtantDoc()
-            ? StoragePartitioningEnabled(
-                  storageAccess,
-                  GetInnerWindow()->GetExtantDoc()->CookieJarSettings())
-            : false;
-    controlAllowed =
-        isAboutBlankURL || isBlobURL || isStorageAllowed ||
-        (StaticPrefs::privacy_partition_serviceWorkers() && isPartitionEnabled);
+    bool isStorageAllowed = ServiceWorkersStorageAllowedForGlobal(GetGlobal());
+    controlAllowed = isAboutBlankURL || isBlobURL || isStorageAllowed;
   } else if (GetWorkerPrivate()) {
-    // Local URL workers and workers with access to storage cna be controlled.
+    // Local URL workers and workers with access to storage can be controlled.
     controlAllowed =
-        GetWorkerPrivate()->StorageAccess() > StorageAccess::ePrivateBrowsing ||
+        ServiceWorkersStorageAllowedForGlobal(GetGlobal()) ||
         StringBeginsWith(GetWorkerPrivate()->ScriptURL(), u"blob:"_ns);
   }
 
@@ -543,11 +518,12 @@ RefPtr<ClientOpPromise> ClientSource::Focus(const ClientFocusArgs& aArgs) {
     return ClientOpPromise::CreateAndReject(rv, __func__);
   }
   nsCOMPtr<nsPIDOMWindowOuter> outer;
-  nsPIDOMWindowInner* inner = GetInnerWindow();
+  nsCOMPtr<nsPIDOMWindowInner> inner = GetInnerWindow();
+  nsIDocShell* docshell = nullptr;
   if (inner) {
     outer = inner->GetOuterWindow();
   } else {
-    nsIDocShell* docshell = GetDocShell();
+    docshell = GetDocShell();
     if (docshell) {
       outer = docshell->GetWindow();
     }
@@ -560,9 +536,48 @@ RefPtr<ClientOpPromise> ClientSource::Focus(const ClientFocusArgs& aArgs) {
   }
 
   MOZ_ASSERT(NS_IsMainThread());
+
+  // Inlined from `ClientSource::SnapshotWindowState()`:
+  // Should not be necessary after bug 543435. Clean this up in bug 2025284.
+  if (docshell) {
+    // Force the creation of the initial document if it does not yet exist.
+    if (!docshell->GetDocument()) {
+      CopyableErrorResult rv;
+      rv.ThrowInvalidStateError("No document available.");
+      return ClientOpPromise::CreateAndReject(rv, __func__);
+    }
+    inner = GetInnerWindow();
+  }
+
   nsFocusManager::FocusWindow(outer, aArgs.callerType());
 
-  Result<ClientState, ErrorResult> state = SnapshotState();
+  Result<ClientState, ErrorResult> state =
+      [&]() -> Result<ClientState, ErrorResult> {
+    if (!inner) {
+      // Inlined from `ClientSource::SnapshotWindowState()`:
+      return ClientState(ClientWindowState(VisibilityState::Hidden, TimeStamp(),
+                                           StorageAccess::eDeny, false));
+    }
+    if (inner->GetClientSource() == this) {
+      // The pointer comparison assumes that an inner window
+      // cannot gain a new ClientSource other than this same
+      // `ClientSource` having moved from a docshell owner to an
+      // inner window owner gained via `outer`, so we don't need to worry
+      // about a newly-allocated ClientSource occupying the same
+      // memory as the one pointed to by `this`. That is, in the case
+      // of the pointers being unequal, `inner->GetClientSource()`
+      // returns `nullptr` and `this` is an invalid pointer.
+      // Per [expr.eq], it's not UB to compare a pointer to a deleted
+      // object, since no pointer comparisons are UB anymore. The
+      // case about pointer-past-end for a different object being
+      // _unspecified_ behavior does not apply here.
+      return SnapshotState();
+    }
+    ErrorResult rv;
+    rv.ThrowInvalidStateError("Client destroyed during focus");
+    return Err(std::move(rv));
+  }();
+
   if (state.isErr()) {
     return ClientOpPromise::CreateAndReject(
         CopyableErrorResult(state.unwrapErr()), __func__);
@@ -575,12 +590,12 @@ RefPtr<ClientOpPromise> ClientSource::PostMessage(
     const ClientPostMessageArgs& aArgs) {
   NS_ASSERT_OWNINGTHREAD(ClientSource);
 
-  // TODO: Currently this function only supports clients whose global
-  // object is a Window; it should also support those whose global
-  // object is a WorkerGlobalScope.
-  if (nsPIDOMWindowInner* const window = GetInnerWindow()) {
+  // (This only returns a global for windows or workers.)
+  nsIGlobalObject* global = GetGlobal();
+  if (global) {
     const RefPtr<ServiceWorkerContainer> container =
-        window->Navigator()->ServiceWorker();
+        global->GetServiceWorkerContainer();
+    MOZ_ASSERT_DEBUG_OR_FUZZING(container);
 
     // Note, EvictFromBFCache() may delete the ClientSource object
     // when bfcache lives in the child process.
@@ -590,8 +605,7 @@ RefPtr<ClientOpPromise> ClientSource::PostMessage(
   }
 
   CopyableErrorResult rv;
-  rv.ThrowNotSupportedError(
-      "postMessage to non-Window clients is not supported yet");
+  rv.ThrowInvalidStateError("Global discarded");
   return ClientOpPromise::CreateAndReject(rv, __func__);
 }
 
@@ -630,18 +644,17 @@ Result<ClientState, ErrorResult> ClientSource::SnapshotState() {
 
 nsISerialEventTarget* ClientSource::EventTarget() const { return mEventTarget; }
 
-void ClientSource::SetCsp(nsIContentSecurityPolicy* aCsp) {
+void ClientSource::SetPolicyContainer(nsIPolicyContainer* aPolicyContainer) {
   NS_ASSERT_OWNINGTHREAD(ClientSource);
-  if (!aCsp) {
+  if (!aPolicyContainer) {
     return;
   }
 
-  CSPInfo cspInfo;
-  nsresult rv = CSPToCSPInfo(aCsp, &cspInfo);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return;
-  }
-  mClientInfo.SetCspInfo(cspInfo);
+  mozilla::ipc::PolicyContainerArgs policyContainerArgs;
+  PolicyContainer::ToArgs(PolicyContainer::Cast(aPolicyContainer),
+                          policyContainerArgs);
+
+  SetPolicyContainerArgs(policyContainerArgs);
 }
 
 void ClientSource::SetPreloadCsp(nsIContentSecurityPolicy* aPreloadCsp) {
@@ -658,14 +671,16 @@ void ClientSource::SetPreloadCsp(nsIContentSecurityPolicy* aPreloadCsp) {
   mClientInfo.SetPreloadCspInfo(cspPreloadInfo);
 }
 
-void ClientSource::SetCspInfo(const CSPInfo& aCSPInfo) {
+void ClientSource::SetPolicyContainerArgs(
+    const mozilla::ipc::PolicyContainerArgs& aPolicyContainer) {
   NS_ASSERT_OWNINGTHREAD(ClientSource);
-  mClientInfo.SetCspInfo(aCSPInfo);
+  mClientInfo.SetPolicyContainerArgs(aPolicyContainer);
 }
 
-const Maybe<mozilla::ipc::CSPInfo>& ClientSource::GetCspInfo() {
+const Maybe<mozilla::ipc::PolicyContainerArgs>&
+ClientSource::GetPolicyContainerArgs() {
   NS_ASSERT_OWNINGTHREAD(ClientSource);
-  return mClientInfo.GetCspInfo();
+  return mClientInfo.GetPolicyContainerArgs();
 }
 
 void ClientSource::Traverse(nsCycleCollectionTraversalCallback& aCallback,

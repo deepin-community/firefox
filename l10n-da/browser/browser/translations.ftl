@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Skift kildesprog
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Beklager, vi understøtter ikke oversættelser fra { $language } endnu.
+translations-panel-error-unsupported-hint-unknown-2 = Beklager, vi understøtter ikke oversættelser fra dette sprog endnu.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Hent sprog til oversættelse offline.
 translations-manage-all-language = Alle sprog
 translations-manage-download-button = Hent
 translations-manage-delete-button = Slet
-translations-manage-intro = Vælg dit sprog, indstillinger for oversættelser af websteder og håndter sprog installeret til brug for oversættelse offline.
-translations-manage-install-description = Installer sprog til offline oversættelse
-translations-manage-language-install-button =
-    .label = Installer
-translations-manage-language-install-all-button =
-    .label = Installer alle
-    .accesskey = a
 translations-manage-intro-2 = Indstil dine præferencer for sprog og oversættelse af websteder og håndter sprog som er blevet hentet for at oversætte sider, når du ikke er online.
 translations-manage-download-description = Hent sprog for at oversætte sider, når du er offline
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Fjern alle
     .accesskey = e
-translations-manage-error-install = Der opstod et problem med at installere sprogfilerne. Prøv igen.
 translations-manage-error-download = Der opstod et problem med at hente sprogfilerne. Prøv igen.
 translations-manage-error-delete = Der opstod en fejl under sletningen af sprogfilerne. Prøv igen.
 translations-manage-error-remove = Der opstod en fejl med at fjerne sprogfilerne. Prøv igen.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Der opstod et problem med at oversætte. Prøv igen.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Beklager, vi understøtter ikke oversættelser fra { $language } endnu.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Beklager, vi understøtter ikke oversættelser fra dette sprog endnu.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

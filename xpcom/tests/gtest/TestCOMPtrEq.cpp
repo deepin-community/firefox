@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,19 +10,13 @@
 #include "nsCOMPtr.h"
 #include "gtest/gtest.h"
 
-#define NS_ICOMPTREQTESTFOO_IID                      \
-  {                                                  \
-    0x8eb5bbef, 0xd1a3, 0x4659, {                    \
-      0x9c, 0xf6, 0xfd, 0xf3, 0xe4, 0xd2, 0x00, 0x0e \
-    }                                                \
-  }
+#define NS_ICOMPTREQTESTFOO_IID \
+  {0x8eb5bbef, 0xd1a3, 0x4659, {0x9c, 0xf6, 0xfd, 0xf3, 0xe4, 0xd2, 0x00, 0x0e}}
 
 class nsICOMPtrEqTestFoo : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICOMPTREQTESTFOO_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_ICOMPTREQTESTFOO_IID)
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsICOMPtrEqTestFoo, NS_ICOMPTREQTESTFOO_IID)
 
 TEST(COMPtrEq, NullEquality)
 {

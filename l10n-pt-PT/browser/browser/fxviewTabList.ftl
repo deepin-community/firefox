@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Mover para Fim
     .accesskey = F
 fxviewtabrow-move-tab-window = Mover para Nova Janela
     .accesskey = J
+fxviewtabrow-send-to-device = Enviar para dispositivo
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Enviar para o telemóvel
+    .accesskey = m
 fxviewtabrow-send-tab = Enviar Separador para Dispositivo
     .accesskey = n
 fxviewtabrow-pin-tab = Fixar separador
@@ -67,18 +71,11 @@ fxviewtabrow-unmute-tab = Ativar som do separador
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opções para { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Silenciar { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Ativar o som de { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Silenciar som do separador
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Ativar som do separador
+fxviewtabrow-send-to-mobile-device-missing2 = Não vê o seu dispositivo?

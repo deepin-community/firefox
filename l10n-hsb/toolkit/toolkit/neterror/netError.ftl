@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Zablokowana strona
 neterror-captive-portal-page-title = So pola syće přizjewić
 neterror-dns-not-found-title = Serwer njeje so namakał
 neterror-malformed-uri-page-title = Njepłaćiwy URL
+general-body-title = Budźće kedźbliwy. Něšto w porjadku njeje.
+problem-with-this-site-title = Zda so, zo je problem z tutym sydłom
 
 ## Error page actions
 
@@ -23,6 +25,8 @@ neterror-override-exception-button = Riziko akceptować a pokročować
 neterror-pref-reset-button = Standardne nastajenja wobnowić
 neterror-return-to-previous-page-button = Wróćo hić
 neterror-return-to-previous-page-recommended-button = Wróćo (doporučeny)
+neterror-try-again-button-2 = Hišće raz spytać
+    .accesskey = H
 neterror-try-again-button = Hišće raz spytać
 neterror-add-exception-button = Za tute sydło přeco pokročować
 neterror-settings-button = DNS-nastajenja změnić
@@ -41,6 +45,13 @@ neterror-generic-error = { -brand-short-name } njemóže tutu stronu z někajkej
 neterror-load-error-try-again = Sydło móhło nachwilu k dispoziciji njestać abo přećežene być. Spytajcé za mało wokomikow hišće raz.
 neterror-load-error-connection = Jeli njemóžeće někotre strony začitać, přepruwujće zwisk wašeje ličakoweje syće.
 neterror-load-error-firewall = Jeli waš ličak abo syć so z wohnjowej murju abo proksy škita, zawěsćće, zo { -brand-short-name } smě na Web přistup měć.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Jeli pospytujeće, stronu lokalneje syće začitać, přepruwujće prošu, hač je { -brand-short-name } prawa lokalneje syće w nastajenjach priwatnosće a wěstoty dóstał.
+neterror-http-error-page = Přepruwujće, hač sće adresu websydła korektnje zapodał.
+neterror-http-empty-response = Přepruwujće, hač sće adresu websydła korektnje zapodał a spytajće za mało wokomikow hišće raz.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } je prózdnu stronu wróćo pósłał.
 neterror-captive-portal = Dyrbiće so pola tuteje syće přizjewić, prjedy hač móžeće přistup k internetej měć.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +60,12 @@ neterror-dns-not-found-hint-header = <strong>Jeli sće prawu adresu zapodał, m�
 neterror-dns-not-found-hint-try-again = Pozdźišo hišće raz spytać
 neterror-dns-not-found-hint-check-network = Waš syćowy zwisk přepruwować
 neterror-dns-not-found-hint-firewall = Přepruwujće, hač { -brand-short-name } ma prawo na přistup k webej (sće snano zwjazany, ale za wohnjomurju)
+neterror-dns-not-found-hint-check-network-2 = Waš syćowy zwisk přepruwować.
+neterror-dns-not-found-hint-firewall-2 = Přepruwujće, hač { -brand-short-name } ma prawo na přistup k webej (sće snano zwjazany, ale za wohnjomurju).
+neterror-dns-not-found-offline-hint-header = <strong>Što móžeće přećiwo tomu činić?</strong>
+neterror-dns-not-found-offline-hint-different-device = Spytajće z druhim gratom zwjazać.
+neterror-dns-not-found-offline-hint-modem = Přepruwujće swój modem abo router.
+neterror-dns-not-found-offline-hint-reconnect = Dźělće wot a zwjazajće zaso z WLAN.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +89,6 @@ neterror-dns-not-found-trr-unknown-problem = Njewočakowany problem.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } njemóže waše naprašowanje za adresu tutoho sydła přez naš dowěry hódny DNS reselwer škitać. Přičina je:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } njemóže waše naprašowanje za adresu tutoho sydła přez našeho poskićowarja wěsteho DNS. Přičina je:
 neterror-dns-not-found-native-fallback-heuristic = DNS přez HTTPS je so we wašej syći znjemóžnił.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } njemóžeše z { $trrDomain } zwjazać.
 
@@ -80,9 +96,14 @@ neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } nj
 
 neterror-file-not-found-filename = Přepruwujće datajowe mjeno za wulkopisanskimi abo hinašimi pisanskimi zmylkami.
 neterror-file-not-found-moved = Přepruwujće, hač je so dataja přesunyła, přemjenowała abo wotstroniła.
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = { -brand-short-name } njemóže dataju na <strong>{ $path }</strong> namakać. Pak njeeksistuje pak šćežka je wopačna.
+neterror-file-not-found-what-can-you-do = Jeli sće adresu manuelnje zapodał, pytajće za zmylkami wulko-/małopisanja abo pisanskimi zmylkami w mjenje abo šćežce dataje. Jeli sće składowanej zapołožce abo wotkazej slědował, je so dataja snano přesunyła, přemjenowała abo zhašała, wot toho zo je so składła. Pytajće za njej z pomocu swojeho managera datajow abo najnowšeho pytanja.
 neterror-access-denied = Snano je so wotstroniła, přesunyła, abo datajowe prawa zadźěwaju přistupej.
 neterror-unknown-protocol = Snano dyrbiće druhe programy instalować, zo by so tuta adresa wočiniła.
 neterror-redirect-loop = Tutón problem so druhdy přeze znjemóžnjenje abo wotpokazowanje plackow zawinuje.
+neterror-unknown-socket-type-client-config = To móhło dla konfiguraciskeho zmylka z wašim klientom być.
 neterror-unknown-socket-type-psm-installed = Pruwujće, hač Personal Security Manager je instalowany na wašim systemje.
 neterror-unknown-socket-type-server-config = Přičina je snano njestandardna konfiguracija na wašim serwerje.
 neterror-not-cached-intro = Požadany dokument w pufrowaku { -brand-short-name } k dispoziciji njesteji.
@@ -96,6 +117,9 @@ neterror-proxy-connect-failure-settings = Přepruwujće proksynastajenja, zo by 
 neterror-proxy-connect-failure-contact-admin = Skontaktujće swojeho syćoweho administratora, zo by so zawěsćiło, zo proksyserwer dźěła.
 neterror-content-encoding-error = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
 neterror-unsafe-content-type = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } { $hostname } njedowěrja, dokelž zwisk wěsty njeje. Spytajće URL do HTTPS změnić.
 neterror-nss-failure-not-verified = Strona, kotruž chceće sej wobhladać, njeda so pokazać, dokelž awtentiskosć přijatych datow njeda so přepruwować.
 neterror-nss-failure-contact-website = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
 # Variables:
@@ -148,3 +172,50 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Jeli so z <b>{ $mitm }</b> 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> ma wěstotne prawidło z mjenom HTTP Strict Transport Security (HSTS), kotrež woznamjenja, zo { -brand-short-name } móže so jenož wěsće zwjazać. Njemóžeće wuwzaće přidać, zo byšće tute sydło wopytał.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Najskerje ničo, dokelž je prawdźepodobnje, zo problem je ze sydłom samym.
+certerror-blocked-by-corp-headers-description = Druhdy websydła same a ludźi kaž wy před njewitanymi interakcijemi z druhimi sydłami škitaja.
+certerror-coop-learn-more = Dalše informacije wo Cross Origin Opener Policies (COOP)
+certerror-coep-learn-more = Dalše informacije wo Cross Origin Embedder Policies (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Zmylkowy kode: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Zda so, zo je problem z wašim internetnym zwiskom
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } njemóže wěsty zwisk z serwerom na { $hostname } nawjazać.
+fp-neterror-offline-intro = { -brand-short-name } njemóže ze serwerom <strong>{ $hostname }</strong> zwjazać
+fp-neterror-offline-intro-2 = { -brand-short-name } njemóže ze serwerom <strong>{ $hostname }</strong> zwjazać.
+fp-neterror-net-timeout-intro = Serwer na <strong>{ $hostname }{ $hostname }</strong> předołho trjeba, zo by wotmołwił.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = Serwer na <strong>{ $hostname }</strong> je zmylk wroćo pósłał: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = <strong>{ $hostname }</strong> je hłowowu linku z prózdnymi znamješkami wróćo pósłał, kotrež přez standardy web wěstoty dowolene njejsu.
+fp-neterror-content-encoding-intro = Strona, kotruž pospytujeće sej wobhladać, njeda so pokazać, dokelž njepłaćiwu abo njepodpěrowanu formu zhusćenja wužiwa.
+fp-neterror-coop-coep-intro = { -brand-short-name } njeje tutu stronu začitał, dokelž so zda, jako njeby wěstotna konfiguracija z předchadnej stronu wotpowědował.
+fp-neterror-blocked-by-policy-intro = Waša organizacija je přistup na tutu stronu abo websydło zablokowała.
+fp-neterror-http-auth-disabled-intro = Něchtó, kotryž wudawa, zo je sydło, móhł wěcy kaž waše wužiwarske mjeno, hesło abo e-mejlowu adresu kradnyć.
+fp-neterror-http-auth-disabled-secure-connection = Tute sydło sej wěsty zwisk wužaduje, a njemóžeće wuwzaće přidać, zo byšće jo wopytał.
+fp-neterror-why-did-this-happen = Čehodla je so to stało?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Zda so, zo tute sydło staru software ze znatymi wěstotnymi problemami wužiwa.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } { $hostname } njedowěrja, dokelž zwisk wěsty njeje.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Zawěsćće, zo najnowšu wersiju { -brand-short-name } wužiwaće. Dźiće k Pomoc > Wo { -brand-short-name } w meniju. Jeli najnowšu wersiju { -brand-short-name } wužiwaće, ma najskerje sydło tutón problem.
+fp-neterror-offline-what-can-you-do-body = Spytajće z druhim gratom zwjazać. Přepruwujće swój modem abo router. Dźělće zwisk WLAN a zwjazajće znowa.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Spytajće URL do HTTPS změnić. Ale zda so, zo je problem ze sydłom samym.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Druhdy websydła so před njewitanymi interakcijemi z druhimi sydłami škitaja.
+fp-learn-more-about-https-connections = Zhońće wjace wo zwiskach HTTPS
+fp-neterror-vpn-error-title = Zwisk z VPN móžny njeje
+fp-neterror-vpn-error-description = Spytajće za mało mjeńšin hišće raz.
+fp-neterror-denied-port-access = Tuta adresa wužiwa syćowy port, kotryž wužiwa so normalnje za druhe zaměry hač webpřehladowanje. { -brand-short-name } je naprašowanje za waš škit přetorhnył.

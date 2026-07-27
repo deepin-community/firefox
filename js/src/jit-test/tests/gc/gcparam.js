@@ -47,9 +47,11 @@ testChangeParam("allocationThreshold");
 testChangeParam("smallHeapIncrementalLimit");
 testChangeParam("largeHeapIncrementalLimit");
 testChangeParam("minEmptyChunkCount");
-testChangeParam("maxEmptyChunkCount");
 testChangeParam("compactingEnabled");
-testChangeParam("parallelMarkingEnabled");
+if (gcparam("helperThreadCount") > 1) {
+  // Can't enable if not enough threads.
+  testChangeParam("parallelMarkingEnabled");
+}
 testChangeParam("parallelMarkingThresholdMB");
 testChangeParam("minLastDitchGCPeriod");
 testChangeParam("nurseryEagerCollectionThresholdKB");
@@ -61,3 +63,7 @@ testChangeParam("urgentThreshold");
 testChangeParam("helperThreadRatio");
 testChangeParam("maxHelperThreads");
 testChangeParam("semispaceNurseryEnabled");
+testChangeParam("nurseryMaxTimeGoalMS");
+testChangeParam("storeBufferEntries");
+testChangeParam("storeBufferScaling");
+testChangeParam("incrementalWeakMapMarkingEnabled");

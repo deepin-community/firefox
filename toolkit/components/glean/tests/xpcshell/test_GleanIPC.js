@@ -36,6 +36,10 @@ const MEMORY_BUCKETS = ["13509772", "32131834"]; // buckets are strings : |
 const COUNTERS_NEAR_THE_SINK = 3;
 const COUNTERS_WITH_JUNK_ON_THEM = 5;
 const INVALID_COUNTERS = 7;
+const KEYED_CATEGORIES = [
+  ["chain", "cut", 10],
+  ["ring", "lasered", 11],
+];
 
 add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
   Glean.testOnly.badCode.add(BAD_CODE_COUNT);
@@ -61,6 +65,7 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
 
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t2); // 10ms
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t3); // 5ms
+  // Note: Sample-based APIs don't have non-main-process impls.
 
   Glean.testOnlyIpc.aCustomDist.accumulateSamples([3, 4]);
 
@@ -71,7 +76,7 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
     COUNTERS_WITH_JUNK_ON_THEM
   );
 
-  Glean.testOnly.mabelsBathroomCounters["1".repeat(72)].add(INVALID_COUNTERS);
+  Glean.testOnly.mabelsBathroomCounters["1".repeat(112)].add(INVALID_COUNTERS);
 
   Glean.testOnlyIpc.irate.addToNumerator(44);
   Glean.testOnlyIpc.irate.addToDenominator(14);
@@ -94,6 +99,16 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
 
   Glean.testOnly.whereHasTheTimeGone.relatively.stopAndAccumulate(l2); // 10ms
   Glean.testOnly.whereHasTheTimeGone.relatively.stopAndAccumulate(l3); // 5ms
+
+  Glean.testOnlyIpc.anUnorderedBool.set(true);
+
+  Glean.testOnlyIpc.anUnorderedLabeledBoolean.aLabel.set(true);
+
+  Glean.testOnlyIpc.anUnorderedQuantity.set(42);
+
+  for (let [key, category, value] of KEYED_CATEGORIES) {
+    Glean.testOnly.keyedCategories.get(key, category).add(value);
+  }
 });
 
 add_task(
@@ -118,7 +133,7 @@ add_task(
       Assert.ok(count == 1 && MEMORY_BUCKETS.includes(bucket));
     }
 
-    const customData = Glean.testOnlyIpc.aCustomDist.testGetValue("store1");
+    const customData = Glean.testOnlyIpc.aCustomDist.testGetValue("test-ping");
     Assert.equal(3 + 4, customData.sum, "Sum's correct");
     for (let [bucket, count] of Object.entries(customData.values)) {
       Assert.ok(
@@ -199,5 +214,28 @@ add_task(
         0
       )
     );
+
+    Assert.ok(
+      Glean.testOnlyIpc.anUnorderedBool.testGetValue(),
+      "IPC works for boolean metrics that ask for it."
+    );
+
+    Assert.ok(
+      Glean.testOnlyIpc.anUnorderedLabeledBoolean.aLabel.testGetValue(),
+      "IPC works for labeled_boolean metrics that ask for it."
+    );
+
+    Assert.equal(
+      42,
+      Glean.testOnlyIpc.anUnorderedQuantity.testGetValue(),
+      "IPC works for quantity metrics that ask for it."
+    );
+
+    for (let [key, category, value] of KEYED_CATEGORIES) {
+      Assert.equal(
+        value,
+        Glean.testOnly.keyedCategories.get(key, category).testGetValue()
+      );
+    }
   }
 );

@@ -17,7 +17,9 @@ autofill-manage-remove-button = Wotstronić
 autofill-manage-add-button = Přidać…
 autofill-manage-edit-button = Wobdźěłać…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Adresu składować?
 address-capture-save-doorhanger-description = Składujće informacije w { -brand-short-name }, zo byšće móhł formulary spěšnje wupjelnić.
@@ -39,78 +41,88 @@ address-capture-manage-address-button =
     .label = Adresowe nastajenja
 address-capture-learn-more-button =
     .label = Dalše informacije
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Nowu adresu přidać
 address-capture-open-menu-button =
     .aria-label = Meni wočinić
+address-capture-edit-address-link = Adresu wobdźěłać
+    .aria-label = Adresu wobdźěłać
 address-capture-edit-address-button =
     .aria-label = Adresu wobdźěłać
 # The dialog title for creating addresses in browser preferences.
 autofill-add-address-title = Adresu přidać
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Adresu wobdźěłać
-autofill-address-name = Mjeno
 autofill-address-given-name = Předmjeno
 autofill-address-additional-name = Druhe předmjeno
 autofill-address-family-name = Swójbne mjeno
+autofill-address-name = Mjeno
 autofill-address-organization = Organizacija
 autofill-address-street-address = Dróhowa adresa
 autofill-address-street = Dróhowa adresa
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Susodstwo
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Wjes abo gmejna
 autofill-address-island = Kupa
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Statok
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Město
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Wokrjes
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Póstowe městno
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Předměsto
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Zwjazkowy kraj
 autofill-address-state = Stat
 autofill-address-county = Kraj
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Wosada
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefektura
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Wobwod
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Department
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirat
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = PWČ
+# Postal code field.
 autofill-address-zip = PWČ
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Nowu adresu přidać
 autofill-address-country = Kraj abo region
 autofill-address-country-only = Kraj
 autofill-address-tel = Telefon
@@ -122,11 +134,6 @@ autofill-country-warning-message = Awtomatiske wupjelnjenje formularow je tuchwi
 autofill-add-new-card-title = Nowu kreditnu kartu přidać
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Kreditnu kartu wobdźěłać
-autofill-message-tooltip = Zdźělenku wo awtomatiskim wupjelnjenju pokazać
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Kartu přidać
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Kartu wobdźěłać
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,13 +142,34 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } pospytuje, daty kreditneje karty pokazać. Wobkrućće přistup k Windowsowemu kontu deleka.
        *[other] { -brand-short-name } pospytuje, daty kreditneje karty pokazać.
     }
+autofill-message-tooltip = Zdźělenku wo awtomatiskim wupjelnjenju pokazać
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Kartu přidać
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Kartu wobdźěłać
+autofill-card-number-2 =
+    .label = Kartowe čisło
 autofill-card-number = Kartowe čisło
 autofill-card-invalid-number = Prošu zapodajće płaćiwe kartowe čisło
+autofill-card-name-on-card-2 =
+    .label = Mjeno na karće
+autofill-card-expires-month-2 =
+    .label = Měsac spadnjenja
+autofill-card-expires-year-2 =
+    .label = Lěto spadnjenja
+autofill-card-billing-address-2 =
+    .label = Zličbowanska adresa
 autofill-card-name-on-card = Mjeno na karće
 autofill-card-expires-month = Wotběžny měsac
 autofill-card-expires-year = Wotběžne lěto
 autofill-card-billing-address = Zličbowanska adresa
 autofill-card-network = Kartowy typ
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = kreditne karty, kredit, karty, debetowe karty, debet, listowka, kasa
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

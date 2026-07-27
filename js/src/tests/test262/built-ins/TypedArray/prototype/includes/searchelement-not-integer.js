@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Google. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -19,8 +18,8 @@ includes: [testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA(10);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg(10));
   function throwFunc(){
     throw Test262Error()
     return 0;

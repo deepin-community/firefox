@@ -136,9 +136,6 @@ tabbrowser-confirm-caretbrowsing-title = Naršymas žymekliu
 tabbrowser-confirm-caretbrowsing-message = Klavišas F7 įjungia arba išjungia žymeklį, kai peržiūrimas tinklalapis. Jį įjungus teksto fragmentus galima pažymėti klaviatūra. Ar įjungti žymeklį?
 tabbrowser-confirm-caretbrowsing-checkbox = Šio dialogo daugiau neberodyti.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -174,6 +171,3 @@ tabbrowser-ctrl-tab-list-all-tabs =
             [few] Parodyti visas { $tabCount } korteles
            *[other] Parodyti visas { $tabCount } kortelių
         }
-
-## Tab manager menu buttons
-

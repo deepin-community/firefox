@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -431,37 +429,59 @@ void CheckADAM7InterpolatingWritePixels(const IntSize& aSize) {
 }
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels100_100)
-{ CheckADAM7InterpolatingWritePixels(IntSize(100, 100)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(100, 100));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels99_99)
-{ CheckADAM7InterpolatingWritePixels(IntSize(99, 99)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(99, 99));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels66_33)
-{ CheckADAM7InterpolatingWritePixels(IntSize(66, 33)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(66, 33));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels33_66)
-{ CheckADAM7InterpolatingWritePixels(IntSize(33, 66)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(33, 66));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels15_15)
-{ CheckADAM7InterpolatingWritePixels(IntSize(15, 15)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(15, 15));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels9_9)
-{ CheckADAM7InterpolatingWritePixels(IntSize(9, 9)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(9, 9));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels8_8)
-{ CheckADAM7InterpolatingWritePixels(IntSize(8, 8)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(8, 8));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels7_7)
-{ CheckADAM7InterpolatingWritePixels(IntSize(7, 7)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(7, 7));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels3_3)
-{ CheckADAM7InterpolatingWritePixels(IntSize(3, 3)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(3, 3));
+}
 
 TEST(ImageADAM7InterpolatingFilter, WritePixels1_1)
-{ CheckADAM7InterpolatingWritePixels(IntSize(1, 1)); }
+{
+  CheckADAM7InterpolatingWritePixels(IntSize(1, 1));
+}
 
 TEST(ImageADAM7InterpolatingFilter, TrivialInterpolation48_48)
-{ CheckInterpolation(IntSize(48, 48), {BGRAColor::Green()}); }
+{
+  CheckInterpolation(IntSize(48, 48), {BGRAColor::Green()});
+}
 
 TEST(ImageADAM7InterpolatingFilter, InterpolationOutput33_17)
 {
@@ -580,7 +600,9 @@ TEST(ImageADAM7InterpolatingFilter, InterpolationOutput3_3)
 }
 
 TEST(ImageADAM7InterpolatingFilter, InterpolationOutput1_1)
-{ CheckInterpolation(IntSize(1, 1), {BGRAColor::Blue()}); }
+{
+  CheckInterpolation(IntSize(1, 1), {BGRAColor::Blue()});
+}
 
 TEST(ImageADAM7InterpolatingFilter, ADAM7InterpolationFailsFor0_0)
 {

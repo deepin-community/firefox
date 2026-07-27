@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } uzantoj
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Spegulu viajn legosignojn ĉie.
 cfr-doorhanger-bookmark-fxa-body = Bona trovaĵo! Nun, retrovu tiun ĉi legosignon en viaj poŝaparatoj. Komencu per { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Speguli legosignojn nun…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Ferma butono
     .title = Fermi
+fxa-adoption-addresses-backup-title = Faru ni sekurkopion de viaj konservitaj adresoj
+fxa-adoption-addresses-backup-subtitle = Protektu viajn konservitajn adresojn per ĉifrita konservado en viaj aparatoj.
+fxa-adoption-credit-cards-backup-title = Faru ni sekurkopion de viaj pagmetodoj
+fxa-adoption-credit-cards-backup-subtitle = Protektu viajn pagmetodojn per ĉifrita konservado en viaj aparatoj.
+fxa-adoption-bookmarks-treatment-backup-title = Faru ni sekurkopion de viaj legosignoj
+fxa-adoption-bookmarks-treatment-backup-subtitle = Protektu viajn legosignojn per ĉifrita konservado en viaj aparatoj.
+fxa-adoption-primary-button-label = Krei konton
 
 ## Protections panel
 
@@ -225,6 +232,20 @@ fox-doodle-pin-secondary = Ne nun
 set-default-pdf-handler-headline = <strong>Viaj dosieroj PDFs malfermiĝas en { -brand-short-name }.</strong> Redakti aŭ subskribi formularojn rekte el via retesplorilo. Por ŝanĝi tion, serĉu “PDF” en la agordoj.
 set-default-pdf-handler-primary = Mi komprenis
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Subskribu sur la linio de punktoj — aŭ ie ajn!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Desegnu, tajpu aŭ alŝutu vian subskribon, poste metu ĝin ekzakte tien, kie vi ĝin volas. Konservu viajn oftajn subskribojn por uzi ilin estontece.
+annotations-make-default-pdf-handler-title = Ĉu igi { -brand-short-name } via norma PDF redaktilo?
+annotations-make-default-pdf-handler-subtitle = Malferminte dosieron PDF vi ĉiam povos aliri niajn ilojn.
+annotations-make-default-pdf-primary-cta-label = Elekti kiel norma
+annotations-make-default-pdf-next-label = Antaŭen
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Ĉu vi planas akiri novan aparaton?
@@ -245,6 +266,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Krei konton
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ĉu vi planas akiri novan aparaton?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Sekfu kelkajn simplajn paŝojn por kunporti kun vi viajn legosignojn, historion kaj pasvortojn kiam vi komencas uzi novan aparaton.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kiel fari sekurkopion de miaj datumoj
+device-migration-fxa-spotlight-sync-header = Retumi sen maltrafi ion ajn
+device-migration-fxa-spotlight-sync-body = Ĉifrite spegulu ĉiujn viajn gravajn informojn — ekzemple legosignojn kaj pasvortojn. Vi povas aliri ĉion denove el ie ajn per { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Unuaj paŝoj
 
 ## Set as Default PDF Reader Infobar
 
@@ -257,7 +281,7 @@ pdf-default-notification-decline-button =
 
 ## Launch on login infobar notification
 
-launch-on-login-infobar-message = <strong>Ĉu malfermi { -brand-short-name } ĉiufoje je restarto de via komputilo?</strong> Vi nun povas agordi { -brand-short-name } por ke ĝi aŭtomate malfermiĝu kiam vi restartigas vian aparaton.
+launch-on-login-infobar-message = <strong>Ĉu malfermi { -brand-short-name } ĉiufoje post restarto de via komputilo?</strong> Vi nun povas agordi { -brand-short-name } por ke ĝi aŭtomate malfermiĝu kiam vi restartigas vian aparaton.
 launch-on-login-learnmore = Pli da informo
 launch-on-login-infobar-confirm-button = Jes, malfermi per { -brand-short-name }
     .accesskey = J
@@ -267,9 +291,23 @@ launch-on-login-infobar-reject-button = Ne nun
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
-launch-on-login-infobar-final-message = <strong>Ĉu malfermi { -brand-short-name } ĉiufoje je restarto de via komputilo?</strong> Por administri la agordojn de aŭtomata malfermo, serĉi “restarto” en la agordoj..
+launch-on-login-infobar-final-message = <strong>Ĉu malfermi { -brand-short-name } ĉiufoje post restarto de via komputilo?</strong> Por administri la agordojn de aŭtomata malfermo, serĉi “restarto” en la agordoj..
 launch-on-login-infobar-final-reject-button = Ne, dankon
     .accesskey = N
+
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Ĉu malfermi { -brand-short-name } venontfoje, kiam la komputilo ŝaltiĝas?
+launch-on-login-spotlight-startup-checkbox = Malfermi { -brand-short-name } je restarto
+launch-on-login-spotlight-pin-taskbar-checkbox = Alpingli al la taska ilaro
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Malfermi antaŭajn fenestrojn kaj langetojn
+launch-on-login-spotlight-primary-button = Konservi kaj fermi { -brand-short-name }
 
 ## Tail Fox Set Default Spotlight
 
@@ -281,3 +319,177 @@ tail-fox-spotlight-title = Forpelu nedeziratajn spurilojn
 tail-fox-spotlight-subtitle = Adiaŭu nedeziratajn reklamajn spurilojn kaj ĝuu pli sekuran kaj rapidan sperton retuman.
 tail-fox-spotlight-primary-button = Malfermi miajn ligilojn per { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ne nun
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Spertu denove integritan privatecon
+welcome-back-spotlight-subtitle = Bonvenon denove al la ununura ĉefa retumilo subtenata de neprofitcela organizo. Ni vere strebas protekti viajn datumojn, kie ajn vi estas.
+welcome-back-embedded-import-title = Importu viajn datumojn kaj personecigu { -brand-short-name } por senti vin hejme
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Malnovaj versioj de { -brand-short-name } povus ekhavi problemojn ekde la 14a de januaro 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Por povi plu uzi { -brand-short-name } post la 14a de marto 2025, bonvolu ĝisdatigi ĝin.</strong>
+root-certificate-succession-infobar-link = Kiam bezonatas ĝisdatigi?
+root-certificate-succession-infobar-primary-button =
+    .label = Ĝisdatigi nun
+    .accesskey = n
+root-certificate-succession-infobar-secondary-button =
+    .label = Poste
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Vi maltrafis gravan ĝisdatigon de { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Kelkaj partoj de la retumilo baldaŭ ĉesos funkcii se vi ne ĝisdatigas. Nun estas bonega momento ricevi niajn lastajn protektojn kaj trajtojn.
+root-certificate-windows-background-notification-learn-more-button = Pli da informo
+root-certificate-windows-background-notification-update-button = Ĝisdatigi { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Fermi
+    .aria-label = Fermi
+fxa-menu-message-sign-up-button = Krei konton
+fxa-menu-message-sign-in-button = Komenci seancon
+fxa-menu-message-sync-button = Komenci speguli
+fxa-menu-message-sync-devices-primary-text = Speguli ĉiujn viajn aparatojn
+fxa-menu-message-sync-devices-secondary-text = Tuj ricevi viajn informojn — kiel legosignojn kaj pasvortojn — ie ajn, kie vi uzas { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Aliru tuj viajn legosignojn, pasvortojn kaj pli, el kie ajn vi komencis seancon de { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Speguli ĉiujn viajn aparatojn
+fxa-menu-message-backup-data-primary-text = Faru sekurkopion de viaj retumilaj datumoj
+fxa-menu-message-backup-data-secondary-text = Aŭtomate protekti legosignojn, pasvortojn kaj aliajn informojn en ĉiuj viaj aparatoj.
+fxa-menu-message-backup-data-collapsed-text = Fari sekurkopion de la retumilaj datumoj
+fxa-menu-message-backup-sync-primary-text = Tenu viajn datumojn sekuraj kaj spegulitaj
+fxa-menu-message-backup-sync-secondary-text = Speguli faras sekurkopion de la plimulto de viaj datumoj, tiel ke vi povas aliri ilin el ie ajn, kie vi uzas { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Speguli kaj fari sekurkopion de datumoj
+fxa-menu-message-mobile-primary-text = Sendi langetojn al via telefono
+fxa-menu-message-mobile-secondary-text = Tuj daŭrigi el tie, kie vi haltis, per spegulado de viaj langetoj al portebla aparato.
+fxa-menu-message-mobile-collapsed-text = Speguli kun via telefono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bonvenon denove
+multi-cta-fox-doodle-set-default-checkbox = Igi { -brand-short-name } la norma retumilo
+multi-cta-fox-doodle-pin-startmenu-checkbox = Alpingli { -brand-short-name } al la komenca menuo
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Alpingli { -brand-short-name } al via Dock
+       *[other] Alpingli { -brand-short-name } al la taska ilaro
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Komenci retumi
+multi-cta-fox-doodle-main-browser-primary-button-label = Igi { -brand-short-name } mia ĉefa retumilo
+multi-cta-fox-doodle-quick-reminder-subtitle = Jen rapida memorigo, pri tio ke vi povas havi vian preferatan privatecozorgan retumilon atingebla je unu alklako.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al via Dock.
+       *[other] Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al via taska ilaro.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al la komenca menuo.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Ĉu vi planas baldaŭe ĝisdatigi Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Faru sekurkopion de viaj pasvortoj kaj legosignoj, tiel vi pretos uzi iun ajn aparaton.
+windows-10-eos-sync-spotlight-primary-label = Fari sekurkopion de via { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Ĉu vi planas ĝisdatigi al Windows 11? Ne perdu viajn legosignojn kaj pasvortojn.
+windows-10-eos-sync-toast-subtitle = Faru sekurkopion de viaj datumoj, tiel ke { -brand-short-name } estos preta por uzo, ĉu en tiu ĉi komputilo ĉu en la venonta.
+windows-10-eos-sync-toast-primary-label = Unuaj paŝoj
+windows-10-eos-sync-toast-secondary-label = Rememorigi poste
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } ne estas antaŭinstalita kiel aliaj retumiloj de gigantaj entreprenoj. Ĝuste pri tio temas.
+windows-10-eos-challenger-sync-callout-subtitle = Kiam vi faras sekurkopion de viaj legosignoj kaj pasvortoj de { -brand-product-name }, estos pli facile transmeti ion al via elektita retumilo en alia aparato.
+windows-10-eos-challenger-pin-callout-subtitle = Alpinglu { -brand-shorter-name } al via taska ilaro, tiel ke via elektita retumilo estos ĉiam ĉemane kiam vi ĝin bezonos.
+windows-10-eos-challenger-sync-primary-button = Fari sekurkopion de via { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Alpingli { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } blokas minilojn de ĉifromono, sociretajn spurilojn kaj identigilojn de ciferecaj spuroj.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Spurioj ne povas identigi vian aparaton aŭ sekvi vin tra la reto, ĉar ni ne permesas tion al ili.
+windows-10-eos-sync-callout-privacy-screen-2-title = Protektu viajn pasvortojn kaj legosignojn por via venonta aparato.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Sekurkopio de { -brand-shorter-name } faciligas la taskon kunporti kun vi viajn datumojn kaj privatecajn agordojn.
+windows-10-eos-sync-callout-privacy-info-button = Montri blokataĵojn
+windows-10-eos-callout-addons-title = Provu aldonaĵojn: simplaj ĝisdatigoj, rimarkeblaj efikoj
+windows-10-eos-callout-addons-subtitle = Tiuj ĉi etendaĵoj estis elektitaj por helpi vin resti produktema, protektita kaj koncentrita.
+windows-10-eos-callout-addons-primary-button = Montri niajn elektojn
+windows-10-eos-sync-callout-addons-title = Vi ne perdos viajn aldonaĵojn kiam vi ĝisdatigos el Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Spegulu nun, tiel ke viaj aldonaĵoj de { -brand-product-name } estos ĉiam haveblaj, eĉ post ŝanĝo de aparato.
+windows-10-eos-sync-callout-next-button = Antaŭen
+windows-10-eos-sync-callout-get-started-button = Unuaj paŝoj
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Alvenis vertikalaj langetoj kaj grupoj de langetoj!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Pro populara peto, { -brand-product-name } ĵus aldonis novajn trajtojn por igi vian retumon simpla kaj sendistra.
+windows-10-eos-feature-toast-whats-new-button = Montri la novaĵojn
+windows-10-eos-feature-toast-dismiss-button = Ignori
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft ne plu subtenas Windows 10.</strong> Faru sekurkopion de viaj informoj por pretigi { -brand-product-name } por Windows 11.
+windows-10-eos-global-infobar-primary-button = Ŝalti sekurkopion
+    .accesskey = s
+windows-10-eos-global-infobar-learn-more-link = Pli da informo
+    .accessKey = i
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Rigora protekto kontraŭ spurado povas misfunkciigi retejojn.</strong> Solvu oftajn problemojn per malblokado de nepraj elementoj, kiuj povus tamen enhavi spurilojn.
+etp-strict-exceptions-infobar-learn-more = Pli da informo
+etp-strict-exceptions-infobar-button = Apliki korektojn
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Ne nun
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } ne estas via norma retumilo
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } ne estas via ĉefa retumilo
+set-default-menu-message-row-layout-title = Igu { -brand-short-name } via ĉefa retumilo
+set-default-menu-message-row-layout-title-variant = Igu { -brand-short-name } via norma retumilo
+set-default-menu-message-row-layout-subtitle = Via tuta retumo rapida, sekura kaj privata.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Tenu { -brand-short-name } ĉemane — igu ĝin via norma retumilo kaj alpinglu ĝin al la Dock.
+       *[other] Tenu { -brand-short-name } ĉemane — igu ĝin via norma retumilo kaj alpinglu ĝin al la taska strio.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] Tenu { -brand-short-name } ĉemane
+       *[other] Malfermi ĉiujn ligilojn per { -brand-short-name }
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Igu ĝin via norma retumilo kaj gardi ĝin en via Dock.
+       *[other] Profitu pli rapidan retumon kaj aŭtomatan protekton de privateco.
+    }
+set-default-menu-message-primary-button = Elekti kiel norma
+set-default-menu-message-primary-button-variant = Difini kiel ĉefa retumilo
+set-default-menu-message-primary-button-short-variant = Igi { -brand-short-name } la norma retumilo
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 retpoŝtajn maskojn, senpage
+relay-50-masks-announcement-subtitle = Vi nun ricevas 50 senpagajn maskojn (anstataŭ 5). Uzu unu por ĉiu konto, por teni vian faktan retpoŝtan adreson privata.
+relay-50-masks-announcement-primary-button = Iri al { -relay-brand-name }
+    .accesskey = I
+relay-50-masks-announcement-secondary-button = Ignori
+    .accesskey = g
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } renoviĝas.</strong> Vi nun vidas preparan, nepoluritan version, kiu estos eldonita poste dum tiu ĉi jaro.
+nova-early-access-share-feedback-link = Sendi komentojn
+    .accesskey = k
+nova-early-access-infobar-primary-button = Mi komprenis
+    .accesskey = k

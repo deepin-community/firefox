@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,8 +12,6 @@
 #include "mozilla/layers/MatrixMessage.h"
 #include "nsRefreshObservers.h"
 
-#include <functional>
-
 class nsIContent;
 class nsIWidget;
 class nsPresContext;
@@ -24,6 +21,8 @@ template <class T>
 class nsCOMPtr;
 
 namespace mozilla {
+
+enum class PreventDefaultResult : uint8_t { No, ByContent, ByChrome };
 
 class PresShell;
 class ScrollContainerFrame;
@@ -36,6 +35,8 @@ struct RepaintRequest;
 namespace apz {
 enum class PrecedingPointerDown : bool;
 }
+
+enum class SynthesizeForTests : bool { No, Yes };
 
 /* Refer to documentation on SendSetTargetAPZCNotification for this class */
 class DisplayportSetListener : public ManagedPostRefreshObserver {
@@ -95,6 +96,10 @@ class APZCCallbackHelper {
      given presShell. */
   static void InitializeRootDisplayport(PresShell* aPresShell);
 
+  /* Similar to above InitializeRootDisplayport but for an nsIFrame.
+     The nsIFrame needs to be a popup menu frame. */
+  static void InitializeRootDisplayport(nsIFrame* aFrame);
+
   /* Get the pres context associated with the document enclosing |aContent|. */
   static nsPresContext* GetPresContextForContent(nsIContent* aContent);
 
@@ -110,30 +115,29 @@ class APZCCallbackHelper {
 
   /* Synthesize a mouse event with the given parameters, and dispatch it
    * via the given widget. */
-  MOZ_CAN_RUN_SCRIPT
-  static nsEventStatus DispatchSynthesizedMouseEvent(
+  MOZ_CAN_RUN_SCRIPT static nsEventStatus DispatchSynthesizedMouseEvent(
       EventMessage aMsg, const LayoutDevicePoint& aRefPoint,
-      Modifiers aModifiers, int32_t aClickCount,
-      PrecedingPointerDown aPrecedingPointerDownState, nsIWidget* aWidget);
+      uint32_t aPointerId, Modifiers aModifiers, int32_t aClickCount,
+      PrecedingPointerDown aPrecedingPointerDownState, nsIWidget* aWidget,
+      SynthesizeForTests aSynthesizeForTests);
 
-  /* Dispatch a mouse event with the given parameters.
-   * Return whether or not any listeners have called preventDefault on the
-   * event.
-   * This is a lightweight wrapper around nsContentUtils::SendMouseEvent()
-   * and as such expects |aPoint| to be in layout coordinates. */
-  MOZ_CAN_RUN_SCRIPT
-  static PreventDefaultResult DispatchMouseEvent(
-      PresShell* aPresShell, const nsString& aType, const CSSPoint& aPoint,
-      int32_t aButton, int32_t aClickCount, int32_t aModifiers,
-      unsigned short aInputSourceArg, uint32_t aPointerId);
+  /*
+   * Synthesize a contextmenu event with the given parameters, and dispatch it
+   * via the given widget.
+   */
+  MOZ_CAN_RUN_SCRIPT static PreventDefaultResult
+  DispatchSynthesizedContextmenuEvent(const LayoutDevicePoint& aRefPoint,
+                                      uint32_t aPointerId, Modifiers aModifiers,
+                                      nsIWidget* aWidget,
+                                      SynthesizeForTests aSynthesizeForTests);
 
   /* Fire a single-tap event at the given point. The event is dispatched
    * via the given widget. */
-  MOZ_CAN_RUN_SCRIPT
-  static void FireSingleTapEvent(
-      const LayoutDevicePoint& aPoint, Modifiers aModifiers,
-      int32_t aClickCount, PrecedingPointerDown aPrecedingPointerDownState,
-      nsIWidget* aWidget);
+  MOZ_CAN_RUN_SCRIPT static void FireSingleTapEvent(
+      const LayoutDevicePoint& aPoint, uint32_t aPointerId,
+      Modifiers aModifiers, int32_t aClickCount,
+      PrecedingPointerDown aPrecedingPointerDownState, nsIWidget* aWidget,
+      SynthesizeForTests aSynthesizeForTests);
 
   /* Perform hit-testing on the touch points of |aEvent| to determine
    * which scrollable frames they target. If any of these frames don't have
@@ -200,6 +204,10 @@ class APZCCallbackHelper {
 };
 
 }  // namespace layers
+
+std::ostream& operator<<(std::ostream& aOut,
+                         const PreventDefaultResult aPreventDefaultResult);
+
 }  // namespace mozilla
 
 #endif /* mozilla_layers_APZCCallbackHelper_h */

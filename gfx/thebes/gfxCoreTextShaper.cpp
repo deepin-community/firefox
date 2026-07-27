@@ -1,14 +1,11 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "gfxCoreTextShaper.h"
 #include "gfxMacFont.h"
 #include "gfxFontUtils.h"
 #include "gfxTextRun.h"
-#include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/ScaledFontMac.h"
 #include "mozilla/UniquePtrExtensions.h"
 
@@ -39,7 +36,7 @@ CFDictionaryRef gfxCoreTextShaper::CreateAttrDict(bool aRightToLeft) {
   CFTypeRef attrs[] = {kCTFontAttributeName, kCTWritingDirectionAttributeName};
   CFTypeRef values[] = {mCTFont[0], dirArray};
   CFDictionaryRef attrDict = ::CFDictionaryCreate(
-      kCFAllocatorDefault, attrs, values, ArrayLength(attrs),
+      kCFAllocatorDefault, attrs, values, std::size(attrs),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
   ::CFRelease(dirArray);
   return attrDict;
@@ -76,8 +73,7 @@ static bool IsBuggyIndicScript(intl::Script aScript) {
          aScript == intl::Script::ORIYA || aScript == intl::Script::KHMER;
 }
 
-bool gfxCoreTextShaper::ShapeText(DrawTarget* aDrawTarget,
-                                  const char16_t* aText, uint32_t aOffset,
+bool gfxCoreTextShaper::ShapeText(const char16_t* aText, uint32_t aOffset,
                                   uint32_t aLength, Script aScript,
                                   nsAtom* aLanguage, bool aVertical,
                                   RoundingFlags aRounding,
@@ -571,7 +567,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
     CFTypeRef values[] = {type, selector};
     featureSettings[i] = ::CFDictionaryCreate(
         kCFAllocatorDefault, (const void**)keys, (const void**)values,
-        ArrayLength(keys), &kCFTypeDictionaryKeyCallBacks,
+        std::size(keys), &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks);
 
     ::CFRelease(selector);
@@ -580,7 +576,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
 
   CFArrayRef featuresArray =
       ::CFArrayCreate(kCFAllocatorDefault, (const void**)featureSettings,
-                      aCount,  // not ArrayLength(featureSettings), as we
+                      aCount,  // not std::size(featureSettings), as we
                                // may not have used all the allocated slots
                       &kCFTypeArrayCallBacks);
 
@@ -592,7 +588,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
   const CFTypeRef attrValues[] = {featuresArray};
   CFDictionaryRef attributesDict = ::CFDictionaryCreate(
       kCFAllocatorDefault, (const void**)attrKeys, (const void**)attrValues,
-      ArrayLength(attrKeys), &kCFTypeDictionaryKeyCallBacks,
+      std::size(attrKeys), &kCFTypeDictionaryKeyCallBacks,
       &kCFTypeDictionaryValueCallBacks);
   ::CFRelease(featuresArray);
 

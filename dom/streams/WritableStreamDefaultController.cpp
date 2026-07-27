@@ -1,21 +1,19 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "WritableStreamDefaultControllerAbstract.h"
 #include "js/Exception.h"
 #include "js/TypeDecls.h"
 #include "js/Value.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/AbortSignal.h"
-#include "mozilla/dom/Promise.h"
 #include "mozilla/dom/Promise-inl.h"
-#include "mozilla/dom/WritableStream.h"
-#include "mozilla/dom/WritableStreamDefaultController.h"
-#include "mozilla/dom/WritableStreamDefaultControllerBinding.h"
+#include "mozilla/dom/Promise.h"
 #include "mozilla/dom/UnderlyingSinkBinding.h"
+#include "mozilla/dom/WritableStream.h"
+#include "mozilla/dom/WritableStreamDefaultControllerBinding.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsISupports.h"
@@ -149,8 +147,10 @@ void SetUpWritableStreamDefaultController(
   ResetQueue(aController);
 
   // Step 6. Set controller.[[signal]] to a new AbortSignal.
-  RefPtr<AbortSignal> signal = new AbortSignal(aController->GetParentObject(),
-                                               false, JS::UndefinedHandleValue);
+  RefPtr<AbortSignal> signal =
+      AbortSignal::Create(aController->GetParentObject(), SignalAborted::No,
+                          JS::UndefinedHandleValue);
+
   aController->SetSignal(signal);
 
   // Step 7. Set controller.[[started]] to false.
@@ -254,7 +254,10 @@ MOZ_CAN_RUN_SCRIPT static void WritableStreamDefaultControllerProcessClose(
 
   // Step 3. Perform ! DequeueValue(controller).
   JS::Rooted<JS::Value> value(aCx);
-  DequeueValue(aController, &value);
+  DequeueValue(aCx, aController, &value, aRv);
+  if (aRv.Failed()) {
+    return;
+  }
 
   // Step 4. Assert: controller.[[queue]] is empty.
   MOZ_ASSERT(aController->Queue().isEmpty());
@@ -332,7 +335,10 @@ MOZ_CAN_RUN_SCRIPT static void WritableStreamDefaultControllerProcessWrite(
 
             // Step 4.4. Perform ! DequeueValue(controller).
             JS::Rooted<JS::Value> value(aCx);
-            DequeueValue(aController, &value);
+            DequeueValue(aCx, aController, &value, aRv);
+            if (aRv.Failed()) {
+              return;
+            }
 
             // Step 4.5. If ! WritableStreamCloseQueuedOrInFlight(stream) is
             // false and state is "writable",
@@ -415,7 +421,10 @@ static void WritableStreamDefaultControllerAdvanceQueueIfNeeded(
 
   // Step 8. Let value be ! PeekQueueValue(controller).
   JS::Rooted<JS::Value> value(aCx);
-  PeekQueueValue(aController, &value);
+  PeekQueueValue(aCx, aController, &value, aRv);
+  if (aRv.Failed()) {
+    return;
+  }
 
   // Step 9. If value is the close sentinel, perform !
   // WritableStreamDefaultControllerProcessClose(controller).

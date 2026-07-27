@@ -1,20 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/HTMLEmbedElement.h"
-#include "mozilla/dom/HTMLEmbedElementBinding.h"
-#include "mozilla/dom/ElementInlines.h"
 
+#include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/Document.h"
-#include "nsObjectLoadingContent.h"
-#include "nsThreadUtils.h"
-#include "nsIWidget.h"
+#include "mozilla/dom/ElementInlines.h"
+#include "mozilla/dom/HTMLEmbedElementBinding.h"
 #include "nsContentUtils.h"
 #include "nsFrameLoader.h"
+#include "nsIWidget.h"
+#include "nsObjectLoadingContent.h"
+#include "nsThreadUtils.h"
 #ifdef XP_MACOSX
 #  include "mozilla/EventDispatcher.h"
 #  include "mozilla/dom/Event.h"
@@ -77,6 +75,10 @@ void HTMLEmbedElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
                                     bool aNotify) {
   if (aValue) {
     AfterMaybeChangeAttr(aNamespaceID, aName, aNotify);
+  }
+
+  if (aName == nsGkAtoms::src) {
+    RefreshFeaturePolicy();
   }
 
   if (aNamespaceID == kNameSpaceID_None &&

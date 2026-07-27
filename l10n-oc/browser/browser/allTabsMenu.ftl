@@ -12,7 +12,12 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = Gerir los contenedors
     .accesskey = o
-all-tabs-menu-close-duplicate-tabs =
-    .label = Tampar los onglets duplicats
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Tampar totes los onglets duplicats
+all-tabs-menu-current-window-header = Fenèstra actuala
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = O afichar tot
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Grops d’onglets

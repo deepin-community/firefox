@@ -1,6 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
-
 "use strict";
 
 requestLongerTimeout(4);
@@ -252,14 +249,29 @@ add_task(async function test_new_tab_keep_settings() {
   );
   is(
     panel.anchorNode.closest("toolbarbutton").id,
-    "PanelUI-menu-button",
-    "The doorhanger is anchored to the menu icon"
+    "unified-extensions-button",
+    "The doorhanger is anchored to the extensions button"
   );
   is(
     panel.querySelector("#extension-new-tab-notification-description")
       .textContent,
-    "An extension,  New Tab Add-on, changed the page you see when you open a new tab.Learn more",
+    "An extension,  New Tab Add-on, changed the page you see when you open a new tab.",
     "The description includes the add-on name"
+  );
+
+  const learnMoreEl = panel.querySelector(
+    "#extension-new-tab-notification .popup-notification-learnmore-link"
+  );
+  ok(
+    BrowserTestUtils.isVisible(learnMoreEl),
+    "Expect the popupnotification learnmore link to be visible"
+  );
+
+  is(
+    learnMoreEl.getAttribute("href"),
+    Services.urlFormatter.formatURLPref("app.support.baseURL") +
+      "extension-home",
+    "learnmore link should have the expected url set"
   );
 
   // Click the Keep Changes button.

@@ -73,8 +73,12 @@ about-private-browsing-cookie-banners-promo-message = Дазвольце { -bran
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } паклапоціцца пра банеры кукі за вас
 about-private-browsing-cookie-banners-promo-body = Цяпер мы аўтаматычна адмаўляемся ад многіх банераў кукі, каб вас менш асочвалі і вы маглі вярнуцца да аглядання сайтаў без адцягнення ўвагі.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Не пакідайце слядоў на гэтай прыладзе
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } выдаляе кукі, гісторыю і дадзеныя сайтаў, калі вы закрываеце ўсе прыватныя вокны.
 about-private-browsing-felt-privacy-v1-info-link = Хто можа бачыць маю дзейнасць?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Закрыццё ўсіх прыватных вокнаў выдаляе кукі, гісторыю і звесткі сайтаў.

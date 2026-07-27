@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -85,7 +82,7 @@ END_TEST(testJitRValueAlloc_Double)
 BEGIN_TEST(testJitRValueAlloc_FloatReg) {
   RValueAllocation s;
   for (uint32_t i = 0; i < FloatRegisters::Total; i++) {
-    s = RValueAllocation::AnyFloat(FloatRegister::FromCode(i));
+    s = RValueAllocation::Float32(FloatRegister::FromCode(i));
     CHECK(s == Read(s));
   }
   return true;
@@ -95,7 +92,7 @@ END_TEST(testJitRValueAlloc_FloatReg)
 BEGIN_TEST(testJitRValueAlloc_FloatStack) {
   RValueAllocation s;
   for (auto i : Fibonacci{}) {
-    s = RValueAllocation::AnyFloat(i);
+    s = RValueAllocation::Float32(i);
     CHECK(s == Read(s));
   }
   return true;
@@ -336,4 +333,58 @@ BEGIN_TEST(testJitRValueAlloc_Int64Stack) {
   return true;
 }
 END_TEST(testJitRValueAlloc_Int64Stack)
+
+BEGIN_TEST(testJitRValueAlloc_Int64Int32Stack) {
+  for (auto i : Fibonacci{}) {
+    auto s = RValueAllocation::Int64Int32(i);
+    CHECK(s == Read(s));
+  }
+  return true;
+}
+END_TEST(testJitRValueAlloc_Int64Int32Stack)
 #endif
+
+BEGIN_TEST(testJitRValueAlloc_IntPtrCst) {
+#if !defined(JS_64BIT)
+  for (auto i : Fibonacci{}) {
+    auto s = RValueAllocation::IntPtrConstant(i);
+    CHECK(s == Read(s));
+  }
+#else
+  for (auto i : Fibonacci{}) {
+    for (auto j : Fibonacci{}) {
+      auto s = RValueAllocation::IntPtrConstant(i, j);
+      CHECK(s == Read(s));
+    }
+  }
+#endif
+  return true;
+}
+END_TEST(testJitRValueAlloc_IntPtrCst)
+
+BEGIN_TEST(testJitRValueAlloc_IntPtrReg) {
+  for (uint32_t i = 0; i < Registers::Total; i++) {
+    auto s = RValueAllocation::IntPtr(Register::FromCode(i));
+    CHECK(s == Read(s));
+  }
+  return true;
+}
+END_TEST(testJitRValueAlloc_IntPtrReg)
+
+BEGIN_TEST(testJitRValueAlloc_IntPtrStack) {
+  for (auto i : Fibonacci{}) {
+    auto s = RValueAllocation::IntPtr(i);
+    CHECK(s == Read(s));
+  }
+  return true;
+}
+END_TEST(testJitRValueAlloc_IntPtrStack)
+
+BEGIN_TEST(testJitRValueAlloc_IntPtrInt32Stack) {
+  for (auto i : Fibonacci{}) {
+    auto s = RValueAllocation::IntPtrInt32(i);
+    CHECK(s == Read(s));
+  }
+  return true;
+}
+END_TEST(testJitRValueAlloc_IntPtrInt32Stack)

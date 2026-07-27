@@ -12,13 +12,13 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "gClassifier",
   "@mozilla.org/url-classifier/dbservice;1",
-  "nsIURIClassifier"
+  Ci.nsIURIClassifier
 );
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "gStorageActivityService",
   "@mozilla.org/storage/activity-service;1",
-  "nsIStorageActivityService"
+  Ci.nsIStorageActivityService
 );
 
 ChromeUtils.defineLazyGetter(lazy, "gClassifierFeature", () => {
@@ -52,15 +52,25 @@ PurgeTrackerService.prototype = {
   // protection list, so we cache the result for faster future lookups.
   _trackingState: new Map(),
 
+  // Tracks if purgeTrackingCookieJars has not yet finished.
+  _purgeRunning: false,
+
   observe(aSubject, aTopic) {
     switch (aTopic) {
       case "idle-daily":
         // only allow one idle-daily listener to trigger until the list has been fully parsed.
-        Services.obs.removeObserver(this, "idle-daily");
-        this.purgeTrackingCookieJars();
+        if (!this._purgeRunning) {
+          this._purgeRunning = true;
+          this.purgeTrackingCookieJars();
+        }
         break;
       case "profile-after-change":
         Services.obs.addObserver(this, "idle-daily");
+        Services.obs.addObserver(this, "quit-application");
+        break;
+      case "quit-application":
+        Services.obs.removeObserver(this, "idle-daily");
+        Services.obs.removeObserver(this, "quit-application");
         break;
     }
   },
@@ -160,10 +170,9 @@ PurgeTrackerService.prototype = {
       let timeRemaining = Math.floor(
         (expireTimeMs - Date.now()) / 1000 / 60 / 60 / 24
       );
-      let permissionAgeHistogram = Services.telemetry.getHistogramById(
-        "COOKIE_PURGING_TRACKERS_USER_INTERACTION_REMAINING_DAYS"
+      Glean.cookiePurging.trackersUserInteractionRemainingDays.accumulateSingleSample(
+        timeRemaining
       );
-      permissionAgeHistogram.add(timeRemaining);
 
       this._telemetryData.notPurged.add(principal.baseDomain);
 
@@ -202,16 +211,7 @@ PurgeTrackerService.prototype = {
       Services.clearData.deleteDataFromPrincipal(
         principal,
         false,
-        Ci.nsIClearDataService.CLEAR_ALL_CACHES |
-          Ci.nsIClearDataService.CLEAR_COOKIES |
-          Ci.nsIClearDataService.CLEAR_DOM_STORAGES |
-          Ci.nsIClearDataService.CLEAR_CLIENT_AUTH_REMEMBER_SERVICE |
-          Ci.nsIClearDataService.CLEAR_EME |
-          Ci.nsIClearDataService.CLEAR_MEDIA_DEVICES |
-          Ci.nsIClearDataService.CLEAR_STORAGE_ACCESS |
-          Ci.nsIClearDataService.CLEAR_AUTH_TOKENS |
-          Ci.nsIClearDataService.CLEAR_AUTH_CACHE |
-          Ci.nsIClearDataService.CLEAR_COOKIE_BANNER_EXECUTED_RECORD,
+        Ci.nsIClearDataService.CLEAR_STATE_FOR_TRACKER_PURGING,
         resolve
       );
     });
@@ -221,9 +221,8 @@ PurgeTrackerService.prototype = {
   },
 
   resetPurgeList() {
-    // We've reached the end of the cookies.
-    // Restore the idle-daily listener so it will purge again tomorrow.
-    Services.obs.addObserver(this, "idle-daily");
+    // We've reached the end of the cookies. Accept new idle-daily triggers.
+    this._purgeRunning = false;
     // Set the date to 0 so we will start at the beginning of the list next time.
     Services.prefs.setStringPref(
       "privacy.purge_trackers.date_in_cookie_database",
@@ -237,36 +236,22 @@ PurgeTrackerService.prototype = {
     let lastPurge = Number(
       Services.prefs.getStringPref("privacy.purge_trackers.last_purge", now)
     );
-
-    let intervalHistogram = Services.telemetry.getHistogramById(
-      "COOKIE_PURGING_INTERVAL_HOURS"
-    );
     let hoursBetween = Math.floor((now - lastPurge) / 1000 / 60 / 60);
-    intervalHistogram.add(hoursBetween);
+    Glean.cookiePurging.intervalHours.accumulateSingleSample(hoursBetween);
 
     Services.prefs.setStringPref(
       "privacy.purge_trackers.last_purge",
       now.toString()
     );
-
-    let purgedHistogram = Services.telemetry.getHistogramById(
-      "COOKIE_PURGING_ORIGINS_PURGED"
+    Glean.cookiePurging.originsPurged.accumulateSingleSample(purged.size);
+    Glean.cookiePurging.trackersWithUserInteraction.accumulateSingleSample(
+      notPurged.size
     );
-    purgedHistogram.add(purged.size);
-
-    let notPurgedHistogram = Services.telemetry.getHistogramById(
-      "COOKIE_PURGING_TRACKERS_WITH_USER_INTERACTION"
-    );
-    notPurgedHistogram.add(notPurged.size);
 
     let duration = durationIntervals
       .map(([start, end]) => end - start)
       .reduce((acc, cur) => acc + cur, 0);
-
-    let durationHistogram = Services.telemetry.getHistogramById(
-      "COOKIE_PURGING_DURATION_MS"
-    );
-    durationHistogram.add(duration);
+    Glean.cookiePurging.duration.accumulateSingleSample(duration);
   },
 
   /*
@@ -397,13 +382,13 @@ PurgeTrackerService.prototype = {
     // Record how long this iteration took for telemetry.
     // This is a tuple of start and end time, the second
     // part will be added at the end of this function.
-    let duration = [Cu.now()];
+    let duration = [ChromeUtils.now()];
 
     /**
      * We record the creationTime of the last cookie we looked at and
      * start from there next time. This way even if new cookies are added or old ones are deleted we
      * have a reliable way of finding our spot.
-     **/
+     */
     let saved_date = Services.prefs.getStringPref(
       "privacy.purge_trackers.date_in_cookie_database",
       "0"
@@ -518,7 +503,7 @@ PurgeTrackerService.prototype = {
       saved_date
     );
 
-    duration.push(Cu.now());
+    duration.push(ChromeUtils.now());
     this._telemetryData.durationIntervals.push(duration);
 
     // We've reached the end, no need to repeat again until next idle-daily.
@@ -534,8 +519,10 @@ PurgeTrackerService.prototype = {
 
     lazy.logger.log("Batch finished, queueing next batch.");
     this._firstIteration = false;
-    Services.tm.idleDispatchToMainThread(() => {
-      this.purgeTrackingCookieJars();
+    await new Promise((resolve, reject) => {
+      Services.tm.idleDispatchToMainThread(() => {
+        this.purgeTrackingCookieJars().then(resolve, reject);
+      });
     });
   },
 };

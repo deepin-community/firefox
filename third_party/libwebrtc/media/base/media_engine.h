@@ -11,65 +11,64 @@
 #ifndef MEDIA_BASE_MEDIA_ENGINE_H_
 #define MEDIA_BASE_MEDIA_ENGINE_H_
 
+#include <cstdint>
 #include <memory>
-#include <string>
+#include <optional>
+#include <span>
 #include <vector>
 
+#include "api/audio/audio_device.h"
 #include "api/audio_codecs/audio_decoder_factory.h"
 #include "api/audio_codecs/audio_encoder_factory.h"
+#include "api/audio_options.h"
 #include "api/crypto/crypto_options.h"
+#include "api/environment/environment.h"
 #include "api/field_trials_view.h"
+#include "api/rtc_error.h"
 #include "api/rtp_parameters.h"
+#include "api/scoped_refptr.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "call/audio_state.h"
 #include "media/base/codec.h"
 #include "media/base/media_channel.h"
-#include "media/base/media_channel_impl.h"
 #include "media/base/media_config.h"
-#include "media/base/video_common.h"
+#include "media/base/stream_params.h"
 #include "rtc_base/system/file_wrapper.h"
 
 namespace webrtc {
+
 class AudioMixer;
 class Call;
-}  // namespace webrtc
-
-namespace cricket {
 
 // Checks that the scalability_mode value of each encoding is supported by at
 // least one video codec of the list. If the list is empty, no check is done.
-webrtc::RTCError CheckScalabilityModeValues(
-    const webrtc::RtpParameters& new_parameters,
-    rtc::ArrayView<cricket::Codec> send_codecs,
-    absl::optional<cricket::Codec> send_codec);
+RTCError CheckScalabilityModeValues(const RtpParameters& new_parameters,
+                                    std::span<const Codec> send_codecs,
+                                    std::optional<Codec> send_codec);
 
 // Checks the parameters have valid and supported values, and checks parameters
 // with CheckScalabilityModeValues().
-webrtc::RTCError CheckRtpParametersValues(
-    const webrtc::RtpParameters& new_parameters,
-    rtc::ArrayView<cricket::Codec> send_codecs,
-    absl::optional<cricket::Codec> send_codec);
+RTCError CheckRtpParametersValues(const RtpParameters& new_parameters,
+                                  std::span<const Codec> send_codecs,
+                                  std::optional<Codec> send_codec,
+                                  const FieldTrialsView& field_trials);
 
 // Checks that the immutable values have not changed in new_parameters and
 // checks all parameters with CheckRtpParametersValues().
-webrtc::RTCError CheckRtpParametersInvalidModificationAndValues(
-    const webrtc::RtpParameters& old_parameters,
-    const webrtc::RtpParameters& new_parameters,
-    rtc::ArrayView<cricket::Codec> send_codecs,
-    absl::optional<cricket::Codec> send_codec);
+RTCError CheckRtpParametersInvalidModificationAndValues(
+    const RtpParameters& old_parameters,
+    const RtpParameters& new_parameters,
+    std::span<const Codec> send_codecs,
+    std::optional<Codec> send_codec,
+    const FieldTrialsView& field_trials);
 
 // Checks that the immutable values have not changed in new_parameters and
 // checks parameters (except SVC) with CheckRtpParametersValues(). It should
 // usually be paired with a call to CheckScalabilityModeValues().
-webrtc::RTCError CheckRtpParametersInvalidModificationAndValues(
-    const webrtc::RtpParameters& old_parameters,
-    const webrtc::RtpParameters& new_parameters);
-
-struct RtpCapabilities {
-  RtpCapabilities();
-  ~RtpCapabilities();
-  std::vector<webrtc::RtpExtension> header_extensions;
-};
+RTCError CheckRtpParametersInvalidModificationAndValues(
+    const RtpParameters& old_parameters,
+    const RtpParameters& new_parameters,
+    const FieldTrialsView& field_trials);
 
 class RtpHeaderExtensionQueryInterface {
  public:
@@ -77,14 +76,14 @@ class RtpHeaderExtensionQueryInterface {
 
   // Returns a vector of RtpHeaderExtensionCapability, whose direction is
   // kStopped if the extension is stopped (not used) by default.
-  virtual std::vector<webrtc::RtpHeaderExtensionCapability>
-  GetRtpHeaderExtensions() const = 0;
+  virtual std::vector<RtpHeaderExtensionCapability> GetRtpHeaderExtensions(
+      const FieldTrialsView* field_trials) const = 0;
 };
 
 class VoiceEngineInterface : public RtpHeaderExtensionQueryInterface {
  public:
   VoiceEngineInterface() = default;
-  virtual ~VoiceEngineInterface() = default;
+  ~VoiceEngineInterface() override = default;
 
   VoiceEngineInterface(const VoiceEngineInterface&) = delete;
   VoiceEngineInterface& operator=(const VoiceEngineInterface&) = delete;
@@ -92,90 +91,100 @@ class VoiceEngineInterface : public RtpHeaderExtensionQueryInterface {
   // Initialization
   // Starts the engine.
   virtual void Init() = 0;
+  // Stops the engine.
+  virtual void Terminate() = 0;
 
   // TODO(solenberg): Remove once VoE API refactoring is done.
-  virtual rtc::scoped_refptr<webrtc::AudioState> GetAudioState() const = 0;
+  virtual scoped_refptr<AudioState> GetAudioState() const = 0;
 
   virtual std::unique_ptr<VoiceMediaSendChannelInterface> CreateSendChannel(
-      webrtc::Call* call,
+      const Environment& env,
+      Call* call,
       const MediaConfig& config,
       const AudioOptions& options,
-      const webrtc::CryptoOptions& crypto_options,
-      webrtc::AudioCodecPairId codec_pair_id) {
-    // TODO(hta): Make pure virtual when all downstream has updated
-    RTC_CHECK_NOTREACHED();
-    return nullptr;
-  }
+      const CryptoOptions& crypto_options) = 0;
 
   virtual std::unique_ptr<VoiceMediaReceiveChannelInterface>
-  CreateReceiveChannel(webrtc::Call* call,
+  CreateReceiveChannel(const Environment& env,
+                       Call* call,
                        const MediaConfig& config,
                        const AudioOptions& options,
-                       const webrtc::CryptoOptions& crypto_options,
-                       webrtc::AudioCodecPairId codec_pair_id) {
-    // TODO(hta): Make pure virtual when all downstream has updated
-    RTC_CHECK_NOTREACHED();
-    return nullptr;
-  }
+                       const CryptoOptions& crypto_options) = 0;
 
-  virtual const std::vector<Codec>& send_codecs() const = 0;
-  virtual const std::vector<Codec>& recv_codecs() const = 0;
+  // Legacy: Retrieve list of supported codecs.
+  // + protection codecs, and assigns PT numbers that may have to be
+  // reassigned.
+  // This function is being moved to CodecVendor
+  // TODO: https://issues.webrtc.org/360058654 - remove when all users updated.
+  [[deprecated]] inline const std::vector<Codec>& send_codecs() const {
+    return LegacySendCodecs();
+  }
+  [[deprecated]] inline const std::vector<Codec>& recv_codecs() const {
+    return LegacyRecvCodecs();
+  }
+  virtual const std::vector<Codec>& LegacySendCodecs() const = 0;
+  virtual const std::vector<Codec>& LegacyRecvCodecs() const = 0;
+
+  virtual AudioEncoderFactory* encoder_factory() const = 0;
+  virtual AudioDecoderFactory* decoder_factory() const = 0;
 
   // Starts AEC dump using existing file, a maximum file size in bytes can be
   // specified. Logging is stopped just before the size limit is exceeded.
   // If max_size_bytes is set to a value <= 0, no limit will be used.
-  virtual bool StartAecDump(webrtc::FileWrapper file,
-                            int64_t max_size_bytes) = 0;
+  virtual bool StartAecDump(FileWrapper file, int64_t max_size_bytes) = 0;
 
   // Stops recording AEC dump.
   virtual void StopAecDump() = 0;
 
-  virtual absl::optional<webrtc::AudioDeviceModule::Stats>
-  GetAudioDeviceStats() = 0;
+  virtual std::optional<AudioDeviceModule::Stats> GetAudioDeviceStats() = 0;
 };
 
 class VideoEngineInterface : public RtpHeaderExtensionQueryInterface {
  public:
   VideoEngineInterface() = default;
-  virtual ~VideoEngineInterface() = default;
+  ~VideoEngineInterface() override = default;
 
   VideoEngineInterface(const VideoEngineInterface&) = delete;
   VideoEngineInterface& operator=(const VideoEngineInterface&) = delete;
 
   virtual std::unique_ptr<VideoMediaSendChannelInterface> CreateSendChannel(
-      webrtc::Call* call,
+      const Environment& env,
+      Call* call,
       const MediaConfig& config,
       const VideoOptions& options,
-      const webrtc::CryptoOptions& crypto_options,
-      webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory) {
-    // Default implementation, delete when all is updated
-    RTC_CHECK_NOTREACHED();
-    return nullptr;
-  }
+      const CryptoOptions& crypto_options,
+      VideoBitrateAllocatorFactory* video_bitrate_allocator_factory,
+      VideoMediaSendChannelInterface::EncoderSwitchRequestCallback
+          video_encoder_switch_request_callback = nullptr) = 0;
 
   virtual std::unique_ptr<VideoMediaReceiveChannelInterface>
-  CreateReceiveChannel(webrtc::Call* call,
+  CreateReceiveChannel(const Environment& env,
+                       Call* call,
                        const MediaConfig& config,
                        const VideoOptions& options,
-                       const webrtc::CryptoOptions& crypto_options) {
-    // Default implementation, delete when all is updated
-    RTC_CHECK_NOTREACHED();
-    return nullptr;
-  }
+                       const CryptoOptions& crypto_options) = 0;
 
-  // Retrieve list of supported codecs.
-  virtual std::vector<Codec> send_codecs() const = 0;
-  virtual std::vector<Codec> recv_codecs() const = 0;
-  // As above, but if include_rtx is false, don't include RTX codecs.
-  // TODO(bugs.webrtc.org/13931): Remove default implementation once
-  // upstream subclasses have converted.
-  virtual std::vector<Codec> send_codecs(bool include_rtx) const {
-    RTC_DCHECK(include_rtx);
-    return send_codecs();
+  // Legacy: Retrieve list of supported codecs.
+  // + protection codecs, and assigns PT numbers that may have to be
+  // reassigned.
+  // This functionality is being moved to the CodecVendor class.
+  // TODO: https://issues.webrtc.org/360058654 - deprecate and remove.
+  [[deprecated]] inline std::vector<Codec> send_codecs() const {
+    return LegacySendCodecs();
   }
-  virtual std::vector<Codec> recv_codecs(bool include_rtx) const {
-    RTC_DCHECK(include_rtx);
-    return recv_codecs();
+  [[deprecated]] inline std::vector<Codec> recv_codecs() const {
+    return LegacyRecvCodecs();
+  }
+  virtual std::vector<Codec> LegacySendCodecs() const = 0;
+  virtual std::vector<Codec> LegacyRecvCodecs() const = 0;
+  // As above, but if include_rtx is false, don't include RTX codecs.
+  [[deprecated]] inline std::vector<Codec> send_codecs(bool include_rtx) const {
+    return LegacySendCodecs(include_rtx);
+  }
+  virtual std::vector<Codec> LegacySendCodecs(bool include_rtx) const = 0;
+  virtual std::vector<Codec> LegacyRecvCodecs(bool include_rtx) const = 0;
+  [[deprecated]] inline std::vector<Codec> recv_codecs(bool include_rtx) const {
+    return LegacyRecvCodecs(include_rtx);
   }
 };
 
@@ -187,8 +196,10 @@ class MediaEngineInterface {
  public:
   virtual ~MediaEngineInterface() {}
 
-  // Initialization. Needs to be called on the worker thread.
-  virtual bool Init() = 0;
+  // Init . Needs to be called on the worker thread.
+  virtual void Init() = 0;
+  // Terminate. Needs to be called on the worker thread.
+  virtual void Terminate() = 0;
 
   virtual VoiceEngineInterface& voice() = 0;
   virtual VideoEngineInterface& video() = 0;
@@ -201,15 +212,15 @@ class MediaEngineInterface {
 // Optionally owns a FieldTrialsView trials map.
 class CompositeMediaEngine : public MediaEngineInterface {
  public:
-  CompositeMediaEngine(std::unique_ptr<webrtc::FieldTrialsView> trials,
+  CompositeMediaEngine(std::unique_ptr<FieldTrialsView> trials,
                        std::unique_ptr<VoiceEngineInterface> audio_engine,
                        std::unique_ptr<VideoEngineInterface> video_engine);
   CompositeMediaEngine(std::unique_ptr<VoiceEngineInterface> audio_engine,
                        std::unique_ptr<VideoEngineInterface> video_engine);
   ~CompositeMediaEngine() override;
 
-  // Always succeeds.
-  bool Init() override;
+  void Init() override;
+  void Terminate() override;
 
   VoiceEngineInterface& voice() override;
   VideoEngineInterface& video() override;
@@ -217,21 +228,23 @@ class CompositeMediaEngine : public MediaEngineInterface {
   const VideoEngineInterface& video() const override;
 
  private:
-  const std::unique_ptr<webrtc::FieldTrialsView> trials_;
+  const std::unique_ptr<FieldTrialsView> trials_;
   const std::unique_ptr<VoiceEngineInterface> voice_engine_;
   const std::unique_ptr<VideoEngineInterface> video_engine_;
 };
 
-webrtc::RtpParameters CreateRtpParametersWithOneEncoding();
-webrtc::RtpParameters CreateRtpParametersWithEncodings(StreamParams sp);
+RtpParameters CreateRtpParametersWithOneEncoding();
+RtpParameters CreateRtpParametersWithEncodings(StreamParams sp);
 
 // Returns a vector of RTP extensions as visible from RtpSender/Receiver
 // GetCapabilities(). The returned vector only shows what will definitely be
 // offered by default, i.e. the list of extensions returned from
 // GetRtpHeaderExtensions() that are not kStopped.
-std::vector<webrtc::RtpExtension> GetDefaultEnabledRtpHeaderExtensions(
-    const RtpHeaderExtensionQueryInterface& query_interface);
+std::vector<RtpExtension> GetDefaultEnabledRtpHeaderExtensions(
+    const RtpHeaderExtensionQueryInterface& query_interface,
+    const FieldTrialsView* field_trials);
 
-}  // namespace cricket
+}  //  namespace webrtc
+
 
 #endif  // MEDIA_BASE_MEDIA_ENGINE_H_

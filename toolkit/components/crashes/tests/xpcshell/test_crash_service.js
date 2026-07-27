@@ -89,11 +89,16 @@ async function test_addCrashBase(crashId, allThreads) {
     "c8ad56a2096310f40c8a4b46c890625a740fdd72e409f412933011ff947c5a40"
   );
   Assert.ok(crash.metadata.StackTraces, "The StackTraces field is present.\n");
+  Assert.ok(crash.metadata.CrashEventID, "The CrashEventID field is present.");
 
   try {
-    let stackTraces = crash.metadata.StackTraces;
-    Assert.equal(stackTraces.status, "OK");
-    Assert.ok(stackTraces.crash_info, "The crash_info field is populated.");
+    let stackTraces = JSON.parse(crash.metadata.StackTraces);
+    Assert.equal("error" in stackTraces, false);
+    Assert.ok(stackTraces.crash_type, "The crash_type field is populated.");
+    Assert.ok(
+      stackTraces.crash_address,
+      "The crash_address field is populated."
+    );
     Assert.ok(
       stackTraces.modules && !!stackTraces.modules.length,
       "The module list is populated."
@@ -104,13 +109,15 @@ async function test_addCrashBase(crashId, allThreads) {
     );
 
     if (allThreads) {
-      Assert.ok(
-        stackTraces.threads.length > 1,
+      Assert.greater(
+        stackTraces.threads.length,
+        1,
         "The stack trace contains more than one thread."
       );
     } else {
-      Assert.ok(
-        stackTraces.threads.length == 1,
+      Assert.equal(
+        stackTraces.threads.length,
+        1,
         "The stack trace contains exactly one thread."
       );
     }
@@ -153,8 +160,9 @@ add_task(async function test_addCrash_shutdownOnCrash() {
 
   let crash = await getCrash(crashId);
   Assert.ok(crash, "Crash " + crashId + " has been stored successfully.");
-  Assert.ok(
-    crash.metadata.StackTraces === undefined,
+  Assert.strictEqual(
+    crash.metadata.StackTraces,
+    undefined,
     "The StackTraces field is not present because the minidump " +
       "analyzer did not start.\n"
   );
@@ -206,8 +214,9 @@ add_task(async function test_addCrash_quitting() {
   await addCrash(secondCrashId);
   crash = await getCrash(secondCrashId);
   Assert.ok(crash, "Crash " + secondCrashId + " has been stored successfully.");
-  Assert.ok(
-    crash.metadata.StackTraces === undefined,
+  Assert.strictEqual(
+    crash.metadata.StackTraces,
+    undefined,
     "The StackTraces field is not present because the minidump " +
       "analyzer did not start.\n"
   );

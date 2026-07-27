@@ -59,15 +59,9 @@ add_task(async function test_tokenizer() {
       ],
     },
     {
-      desc: "boundary search restriction char at end",
+      desc: "do not separate boundary search restriction char at end",
       searchString: `test${UrlbarTokenizer.RESTRICT.SEARCH}`,
-      expectedTokens: [
-        { value: "test", type: UrlbarTokenizer.TYPE.TEXT },
-        {
-          value: UrlbarTokenizer.RESTRICT.SEARCH,
-          type: UrlbarTokenizer.TYPE.RESTRICT_SEARCH,
-        },
-      ],
+      expectedTokens: [{ value: "test?", type: UrlbarTokenizer.TYPE.TEXT }],
     },
     {
       desc: "separate restriction char in the middle",
@@ -117,16 +111,12 @@ add_task(async function test_tokenizer() {
       ],
     },
     {
-      desc: "double non-combinable restriction char, single char string",
+      desc: "do not separate boundary search restriction char at end when using using a double non-combinable restriction char with a single-character string",
       searchString: `t${UrlbarTokenizer.RESTRICT.BOOKMARK}${UrlbarTokenizer.RESTRICT.SEARCH}`,
       expectedTokens: [
         {
-          value: `t${UrlbarTokenizer.RESTRICT.BOOKMARK}`,
+          value: `t${UrlbarTokenizer.RESTRICT.BOOKMARK}${UrlbarTokenizer.RESTRICT.SEARCH}`,
           type: UrlbarTokenizer.TYPE.TEXT,
-        },
-        {
-          value: UrlbarTokenizer.RESTRICT.SEARCH,
-          type: UrlbarTokenizer.TYPE.RESTRICT_SEARCH,
         },
       ],
     },
@@ -287,11 +277,85 @@ add_task(async function test_tokenizer() {
       ],
     },
     {
-      desc: "domain",
+      desc: "domain with two dots",
       searchString: "www.mozilla.org",
       expectedTokens: [
         {
           value: "www.mozilla.org",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN_BUT_SEARCH_ALLOWED,
+        },
+      ],
+    },
+    {
+      desc: "domain with two dots and allowSearchSuggestionsForSimpleOrigins = false",
+      searchString: "www.mozilla.org",
+      allowSearchSuggestionsForSimpleOrigins: false,
+      expectedTokens: [
+        {
+          value: "www.mozilla.org",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN,
+        },
+      ],
+    },
+    {
+      desc: "domain with one dot",
+      searchString: "mozilla.org",
+      expectedTokens: [
+        {
+          value: "mozilla.org",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN_BUT_SEARCH_ALLOWED,
+        },
+      ],
+    },
+    {
+      desc: "domain with one dot and allowSearchSuggestionsForSimpleOrigins = false",
+      searchString: "mozilla.org",
+      allowSearchSuggestionsForSimpleOrigins: false,
+      expectedTokens: [
+        {
+          value: "mozilla.org",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN,
+        },
+      ],
+    },
+    {
+      desc: "looks like simple origin",
+      searchString: "mozilla.o",
+      expectedTokens: [
+        {
+          value: "mozilla.o",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN_BUT_SEARCH_ALLOWED,
+        },
+      ],
+    },
+    {
+      desc: "looks like simple origin with allowSearchSuggestionsForSimpleOrigins = false",
+      searchString: "mozilla.o",
+      allowSearchSuggestionsForSimpleOrigins: false,
+      expectedTokens: [
+        {
+          value: "mozilla.o",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN,
+        },
+      ],
+    },
+    {
+      desc: "query ends with dot",
+      searchString: "mozilla.",
+      expectedTokens: [
+        {
+          value: "mozilla.",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN_BUT_SEARCH_ALLOWED,
+        },
+      ],
+    },
+    {
+      desc: "query ends with dot with allowSearchSuggestionsForSimpleOrigins = false",
+      searchString: "mozilla.",
+      allowSearchSuggestionsForSimpleOrigins: false,
+      expectedTokens: [
+        {
+          value: "mozilla.",
           type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN,
         },
       ],
@@ -317,7 +381,10 @@ add_task(async function test_tokenizer() {
       desc: "numeric domain",
       searchString: "test1001.com",
       expectedTokens: [
-        { value: "test1001.com", type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN },
+        {
+          value: "test1001.com",
+          type: UrlbarTokenizer.TYPE.POSSIBLE_ORIGIN_BUT_SEARCH_ALLOWED,
+        },
       ],
     },
     {
@@ -407,12 +474,8 @@ add_task(async function test_tokenizer() {
           type: UrlbarTokenizer.TYPE.POSSIBLE_URL,
         },
         {
-          value: "hi",
+          value: "hi?",
           type: UrlbarTokenizer.TYPE.TEXT,
-        },
-        {
-          value: UrlbarTokenizer.RESTRICT.SEARCH,
-          type: UrlbarTokenizer.TYPE.RESTRICT_SEARCH,
         },
       ],
     },
@@ -440,16 +503,23 @@ add_task(async function test_tokenizer() {
     for (let token of queryContext.expectedTokens) {
       token.lowerCaseValue = token.value.toLocaleLowerCase();
     }
-    let newQueryContext = UrlbarTokenizer.tokenize(queryContext);
-    Assert.equal(
-      queryContext,
-      newQueryContext,
-      "The queryContext object is the same"
-    );
+
+    if (queryContext.hasOwnProperty("allowSearchSuggestionsForSimpleOrigins")) {
+      Services.prefs.setBoolPref(
+        "browser.urlbar.allowSearchSuggestionsForSimpleOrigins",
+        queryContext.allowSearchSuggestionsForSimpleOrigins
+      );
+    }
+
+    let tokens = UrlbarTokenizer.tokenize(queryContext);
     Assert.deepEqual(
-      queryContext.tokens,
+      tokens,
       queryContext.expectedTokens,
       "Check the expected tokens"
+    );
+
+    Services.prefs.clearUserPref(
+      "browser.urlbar.allowSearchSuggestionsForSimpleOrigins"
     );
   }
 });

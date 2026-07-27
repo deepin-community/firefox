@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/WindowsProcessMitigations.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/ipc/ByteBuf.h"
@@ -190,7 +187,7 @@ static bool GetSpecialFolderIcon(nsIFile* aFile, int aFolder, UINT aInfoFlags,
   nsAutoString fileNativePathStr;
   aFile->GetPath(fileNativePathStr);
   ::GetShortPathNameW(fileNativePathStr.get(), fileNativePath,
-                      ArrayLength(fileNativePath));
+                      std::size(fileNativePath));
 
   struct IdListDeleter {
     void operator()(ITEMIDLIST* ptr) { ::CoTaskMemFree(ptr); }
@@ -206,7 +203,7 @@ static bool GetSpecialFolderIcon(nsIFile* aFile, int aFolder, UINT aInfoFlags,
   wchar_t specialNativePath[MAX_PATH];
   ::SHGetPathFromIDListW(idList.get(), specialNativePath);
   ::GetShortPathNameW(specialNativePath, specialNativePath,
-                      ArrayLength(specialNativePath));
+                      std::size(specialNativePath));
 
   if (wcsicmp(fileNativePath, specialNativePath) != 0) {
     return false;
@@ -479,7 +476,7 @@ static nsresult GetIconHandleFromURLBlocking(nsIMozIconURI* aUrl,
 }
 
 static RefPtr<HIconPromise> GetIconHandleFromURLAsync(nsIMozIconURI* aUrl) {
-  RefPtr<HIconPromise::Private> promise = new HIconPromise::Private(__func__);
+  auto promise = MakeRefPtr<HIconPromise::Private>(__func__);
 
   nsAutoCString stockIcon;
   aUrl->GetStockIcon(stockIcon);
@@ -524,8 +521,7 @@ static RefPtr<HIconPromise> GetIconHandleFromURLAsync(nsIMozIconURI* aUrl) {
 
 static RefPtr<nsIconChannel::ByteBufPromise> GetIconBufferFromURLAsync(
     nsIMozIconURI* aUrl) {
-  RefPtr<nsIconChannel::ByteBufPromise::Private> promise =
-      new nsIconChannel::ByteBufPromise::Private(__func__);
+  auto promise = MakeRefPtr<nsIconChannel::ByteBufPromise::Private>(__func__);
 
   GetIconHandleFromURLAsync(aUrl)->Then(
       GetCurrentSerialEventTarget(), __func__,
@@ -568,10 +564,11 @@ nsIconChannel::~nsIconChannel() {
   }
 }
 
-nsresult nsIconChannel::Init(nsIURI* uri) {
+nsresult nsIconChannel::Init(nsIURI* uri, nsILoadInfo* aLoadInfo) {
   NS_ASSERTION(uri, "no uri");
   mUrl = uri;
   mOriginalURI = uri;
+  mLoadInfo = aLoadInfo;
   nsresult rv;
   mPump = do_CreateInstance(NS_INPUTSTREAMPUMP_CONTRACTID, &rv);
   return rv;
@@ -962,16 +959,16 @@ nsIconChannel::GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) {
 
 // nsIRequestObserver methods
 NS_IMETHODIMP nsIconChannel::OnStartRequest(nsIRequest* aRequest) {
-  if (mListener) {
-    return mListener->OnStartRequest(this);
+  if (nsCOMPtr<nsIStreamListener> listener = mListener) {
+    return listener->OnStartRequest(this);
   }
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsIconChannel::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
-  if (mListener) {
-    mListener->OnStopRequest(this, aStatus);
+  if (nsCOMPtr<nsIStreamListener> listener = mListener) {
+    listener->OnStopRequest(this, aStatus);
     mListener = nullptr;
   }
 
@@ -990,8 +987,8 @@ nsIconChannel::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
 NS_IMETHODIMP
 nsIconChannel::OnDataAvailable(nsIRequest* aRequest, nsIInputStream* aStream,
                                uint64_t aOffset, uint32_t aCount) {
-  if (mListener) {
-    return mListener->OnDataAvailable(this, aStream, aOffset, aCount);
+  if (nsCOMPtr<nsIStreamListener> listener = mListener) {
+    return listener->OnDataAvailable(this, aStream, aOffset, aCount);
   }
   return NS_OK;
 }

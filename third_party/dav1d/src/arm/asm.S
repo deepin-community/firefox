@@ -147,7 +147,7 @@ DISABLE_SVE2
  *
  * References:
  * - "ELF for the Arm® 64-bit Architecture"
- *   https: *github.com/ARM-software/abi-aa/blob/master/aaelf64/aaelf64.rst
+ *   https://github.com/ARM-software/abi-aa/blob/master/aaelf64/aaelf64.rst
  * - "Providing protection for complex software"
  *   https://developer.arm.com/architectures/learn-the-architecture/providing-protection-for-complex-software
  */
@@ -193,8 +193,14 @@ DISABLE_SVE2
 
 #endif /* !__ARM_FEATURE_PAC_DEFAULT */
 
+#if defined(__ARM_FEATURE_GCS_DEFAULT) && __ARM_FEATURE_GCS_DEFAULT == 1
+#define GNU_PROPERTY_AARCH64_GCS (1 << 2)
+#else
+#define GNU_PROPERTY_AARCH64_GCS 0 /* No GCS */
+#endif
 
-#if (GNU_PROPERTY_AARCH64_BTI != 0 || GNU_PROPERTY_AARCH64_PAC != 0) && defined(__ELF__)
+
+#if (GNU_PROPERTY_AARCH64_BTI != 0 || GNU_PROPERTY_AARCH64_PAC != 0 || GNU_PROPERTY_AARCH64_GCS != 0) && defined(__ELF__)
         .pushsection .note.gnu.property, "a"
         .balign 8
         .long 4
@@ -203,10 +209,10 @@ DISABLE_SVE2
         .asciz "GNU"
         .long 0xc0000000 /* GNU_PROPERTY_AARCH64_FEATURE_1_AND */
         .long 4
-        .long (GNU_PROPERTY_AARCH64_BTI | GNU_PROPERTY_AARCH64_PAC)
+        .long (GNU_PROPERTY_AARCH64_BTI | GNU_PROPERTY_AARCH64_PAC | GNU_PROPERTY_AARCH64_GCS)
         .long 0
         .popsection
-#endif /* (GNU_PROPERTY_AARCH64_BTI != 0 || GNU_PROPERTY_AARCH64_PAC != 0) && defined(__ELF__) */
+#endif /* (GNU_PROPERTY_AARCH64_BTI != 0 || GNU_PROPERTY_AARCH64_PAC != 0 || GNU_PROPERTY_AARCH64_GCS != 0) && defined(__ELF__) */
 #endif /* ARCH_AARCH64 */
 
 #if ARCH_ARM
@@ -321,6 +327,32 @@ EXTERN\name:
 EXTERN\name:
     .endif
 \name:
+.endm
+
+.macro jumptable name
+#ifdef _WIN32
+// MS armasm64 doesn't seem to be able to create relocations for subtraction
+// of labels in different sections; for armasm64 (and all of Windows for
+// simplicity), write the jump table in the text section, to allow calculating
+// differences at assembly time. See
+// https://developercommunity.visualstudio.com/t/armasm64-unable-to-create-cross-section/10722340
+// for reference. (LLVM can create such relocations, but checking for _WIN32
+// for simplicity, as execute-only memory isn't relevant on Windows at the
+// moment.)
+        function \name
+#else
+// For other platforms, write jump tables in a const data section, to allow
+// working in environments where executable memory isn't readable.
+        const \name
+#endif
+.endm
+
+.macro endjumptable
+#ifdef _WIN32
+        endfunc
+#else
+        endconst
+#endif
 .endm
 
 #ifdef __APPLE__

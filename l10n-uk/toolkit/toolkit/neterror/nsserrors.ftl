@@ -8,8 +8,8 @@
 # gen_aboutneterror_codes.py . If we end up needing fluent attributes or
 # refactoring them in some way, the script will need updating.
 
-psmerr-ssl-disabled = Неможливо встановити безпечне з'єднання через те, що протокол SSL вимкнено.
-psmerr-ssl2-disabled = Неможливо встановити безпечне з'єднання через те, що сайт використовує стару, ненадійну версію протоколу SSL.
+psmerr-ssl-disabled = Неможливо встановити безпечне з'єднання, тому що протокол SSL вимкнено.
+psmerr-ssl2-disabled = Неможливо встановити безпечне з'єднання, тому що сайт використовує застарілу, ненадійну версію протоколу SSL.
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     Ви отримали недійсний сертифікат. Зверніться до адміністратора сервера чи адресата і передайте їм таку інформацію:
@@ -188,7 +188,7 @@ sec-error-crl-invalid = Новий CRL має недійсний формат.
 sec-error-extension-value-invalid = Недійсне значення розширення сертифіката.
 sec-error-extension-not-found = Розширення сертифіката не знайдено.
 sec-error-ca-cert-invalid = Сертифікат видавця недійсний.
-sec-error-path-len-constraint-invalid = Недійсне обмеження довжини сертифіката.
+sec-error-path-len-constraint-invalid = Неприпустиме обмеження довжини сертифіката.
 sec-error-cert-usages-invalid = Недійсне поле використання сертифіката.
 sec-internal-only = **ТІЛЬКИ внутрішній модуль**
 sec-error-invalid-key = Ключ не підтримує запитану операцію.
@@ -285,7 +285,7 @@ sec-error-unsupported-elliptic-curve = Непідтримувана еліпти
 sec-error-unsupported-ec-point-form = Непідтримувана форма точки еліптичної кривої.
 sec-error-unrecognized-oid = Нерозпізнаний ідентифікатор об'єкта.
 sec-error-ocsp-invalid-signing-cert = Недійсний сертифікат підпису OCSP у відповіді OCSP.
-sec-error-revoked-certificate-crl = Сертифікат відкликано у списку відкликаних сертифікатів видавця.
+sec-error-revoked-certificate-crl = Сертифікат відкликано згідно зі списком відкликаних сертифікатів видавця.
 sec-error-revoked-certificate-ocsp = Служба OCSP видавця повідомляє, що сертифікат відкликано.
 sec-error-crl-invalid-version = Список відкликаних сертифікатів видавця має невідомий номер версії.
 sec-error-crl-v1-critical-extension = Список відкликаних сертифікатів V1 видавця має критичне розширення.
@@ -299,7 +299,7 @@ sec-error-token-not-logged-in = Не вдалося виконати опера�
 sec-error-ocsp-responder-cert-invalid = Неправильний сертифікат налаштованого відповідача OCSP.
 sec-error-ocsp-bad-signature = Відповідь OCSP має недійсний підпис.
 sec-error-out-of-search-limits = Пошук перевірки сертифіката вийшов за межі пошуку
-sec-error-invalid-policy-mapping = Відображення політики містить anypolicy
+sec-error-invalid-policy-mapping = Зіставлення політик містить anypolicy
 sec-error-policy-validation-failed = Ланцюжок сертифікатів не проходить перевірку політики
 sec-error-unknown-aia-location-type = Невідомий тип розташування в розширенні сертифіката AIA
 sec-error-bad-http-response = Сервер повернув неправильну відповідь HTTP
@@ -327,12 +327,13 @@ mozilla-pkix-error-signature-algorithm-mismatch = Алгоритм підпис�
 mozilla-pkix-error-ocsp-response-for-cert-missing = Відповідь OCSP не містить стан сертифіката, який перевіряється.
 mozilla-pkix-error-validity-too-long = Сервер надав сертифікат, який дійсний занадто довго.
 mozilla-pkix-error-required-tls-feature-missing = Необхідна функція TLS відсутня.
-mozilla-pkix-error-invalid-integer-encoding = Сервер представив сертифікат, який містить неприпустиме кодування цілого числа. Зазвичай, причинами цього є від'ємні значення серійних номерів, від'ємні значення RSA moduli, а також кодування, які є довшими, ніж необхідно.
+mozilla-pkix-error-invalid-integer-encoding = Сервер представив сертифікат, який містить неприпустиме кодування цілого числа. Зазвичай причинами цього є від'ємні значення серійних номерів, від'ємні значення RSA moduli, а також кодування, що є довшими, ніж необхідно.
 mozilla-pkix-error-empty-issuer-name = Сервер представив сертифікат із порожньою розпізнаваною назвою видавця.
 mozilla-pkix-error-additional-policy-constraint-failed = Під час перевірки цього сертифіката виявлено порушення обмежень додаткової політики.
 mozilla-pkix-error-self-signed-cert = Сертифікат не є надійним, оскільки він самопідписаний.
+mozilla-pkix-error-issuer-no-longer-trusted = Центр сертифікації, який видав сертифікат, не був довіреним під час видачі сертифіката.
 xp-java-remove-principal-error = Не вдалося вилучити довірителя
-xp-java-delete-privilege-error = Не вдалося вилучити привілей
+xp-java-delete-privilege-error = Не вдається видалити привілей
 xp-java-cert-not-exists-error = Цей довіритель не має сертифіката
 xp-sec-fortezza-bad-card = Карта Fortezza не була належним чином ініціалізована. Будь ласка, вилучіть її та поверніть видавцю.
 xp-sec-fortezza-no-card = Не знайдено жодної карти Fortezza

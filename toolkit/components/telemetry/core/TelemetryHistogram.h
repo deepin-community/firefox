@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef TelemetryHistogram_h__
-#define TelemetryHistogram_h__
+#ifndef TelemetryHistogram_h_
+#define TelemetryHistogram_h_
 
 #include "mozilla/TelemetryComms.h"
 #include "mozilla/TelemetryHistogramEnums.h"
@@ -31,40 +30,17 @@ bool CanRecordExtended();
 void SetCanRecordExtended(bool b);
 
 void InitHistogramRecordingEnabled();
-void SetHistogramRecordingEnabled(mozilla::Telemetry::HistogramID aID,
-                                  bool aEnabled);
-
-nsresult SetHistogramRecordingEnabled(const nsACString& id, bool aEnabled);
 
 void Accumulate(mozilla::Telemetry::HistogramID aHistogram, uint32_t aSample);
 void Accumulate(mozilla::Telemetry::HistogramID aHistogram,
                 const nsTArray<uint32_t>& aSamples);
 void Accumulate(mozilla::Telemetry::HistogramID aID, const nsCString& aKey,
                 uint32_t aSample);
-void Accumulate(mozilla::Telemetry::HistogramID aID, const nsCString& aKey,
-                const nsTArray<uint32_t>& aSamples);
-/*
- * Accumulate a sample into the named histogram.
- *
- * Returns NS_OK on success.
- * Returns NS_ERROR_NOT_AVAILABLE if recording Telemetry is disabled.
- * Returns NS_ERROR_FAILURE on other errors.
- */
-nsresult Accumulate(const char* name, uint32_t sample);
-
-/*
- * Accumulate a sample into the named keyed histogram by key.
- *
- * Returns NS_OK on success.
- * Returns NS_ERROR_NOT_AVAILABLE if recording Telemetry is disabled.
- * Returns NS_ERROR_FAILURE on other errors.
- */
-nsresult Accumulate(const char* name, const nsCString& key, uint32_t sample);
 
 void AccumulateCategorical(mozilla::Telemetry::HistogramID aId,
                            const nsCString& aLabel);
 void AccumulateCategorical(mozilla::Telemetry::HistogramID aId,
-                           const nsTArray<nsCString>& aLabels);
+                           const nsCString& aKey, const nsCString& aLabel);
 
 void AccumulateChild(
     mozilla::Telemetry::ProcessID aProcessType,
@@ -90,6 +66,8 @@ nsresult GetKeyedHistogramById(const nsACString& name, JSContext* cx,
 
 const char* GetHistogramName(mozilla::Telemetry::HistogramID id);
 
+uint8_t GetHistogramType(mozilla::Telemetry::HistogramID id);
+
 nsresult CreateHistogramSnapshots(JSContext* aCx,
                                   JS::MutableHandle<JS::Value> aResult,
                                   const nsACString& aStore,
@@ -107,4 +85,4 @@ size_t GetHistogramSizesOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf);
 
 }  // namespace TelemetryHistogram
 
-#endif  // TelemetryHistogram_h__
+#endif  // TelemetryHistogram_h_

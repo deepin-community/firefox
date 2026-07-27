@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +7,7 @@
  */
 
 // [Serializable] is implemented without adding attribute here.
-[Exposed=(Window,DedicatedWorker), Pref="dom.media.webcodecs.enabled"]
+[Exposed=(Window,DedicatedWorker), Func="nsRFPService::ExposeWebCodecsAPI"]
 interface EncodedAudioChunk {
   [Throws]
   constructor(EncodedAudioChunkInit init);
@@ -18,17 +17,14 @@ interface EncodedAudioChunk {
   readonly attribute unsigned long byteLength;
 
   [Throws]
-  undefined copyTo(
-      // bug 1696216: Should be `copyTo(AllowSharedBufferSource destination, ...)`
-      ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) destination);
+  undefined copyTo(AllowSharedBufferSource destination);
 };
 
 dictionary EncodedAudioChunkInit {
   required EncodedAudioChunkType type;
   required [EnforceRange] long long timestamp;    // microseconds
   [EnforceRange] unsigned long long duration;     // microseconds
-  // bug 1696216: Should be AllowSharedBufferSource
-  required ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) data;
+  required AllowSharedBufferSource data;
   sequence<ArrayBuffer> transfer = [];
 };
 

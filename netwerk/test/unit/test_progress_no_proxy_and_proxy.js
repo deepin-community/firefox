@@ -3,6 +3,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
+const {
+  NodeHTTPServer,
+  NodeHTTPSServer,
+  NodeHTTP2Server,
+  NodeHTTPProxyServer,
+  NodeHTTPSProxyServer,
+  NodeHTTP2ProxyServer,
+  with_node_servers,
+} = ChromeUtils.importESModule("resource://testing-common/NodeServer.sys.mjs");
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
+
 // This test can be merged with test_progress.js once HTTP/3 tests are
 // enabled on all plaforms.
 
@@ -195,11 +212,11 @@ add_task(async function test_http2_proxy() {
 });
 
 add_task(async function test_http3() {
-  await http3_setup_tests("h3-29");
+  await http3_setup_tests("h3");
   await chanPromise(
     "https://foo.example.com/" + RESPONSE_LENGTH,
     "foo.example.com",
-    "h3-29"
+    "h3"
   );
   http3_clear_prefs();
 });

@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _NSDATAOBJ_H_
-#define _NSDATAOBJ_H_
+#ifndef NSDATAOBJ_H_
+#define NSDATAOBJ_H_
 
 #include <oleidl.h>
 #include <shldisp.h>
@@ -121,7 +120,9 @@ class nsDataObj : public IDataObject, public IDataObjectAsyncCapability {
   HRESULT GetText(const nsACString& aDF, FORMATETC& aFE, STGMEDIUM& aSTG);
 
  private:
-  HRESULT GetDib(const nsACString& inFlavor, FORMATETC&, STGMEDIUM& aSTG);
+  enum class DibType { Bmp, Png };
+  HRESULT GetDib(const nsACString& inFlavor, FORMATETC&, STGMEDIUM& aSTG,
+                 DibType aDibType);
 
   HRESULT DropImage(FORMATETC& aFE, STGMEDIUM& aSTG);
   HRESULT DropFile(FORMATETC& aFE, STGMEDIUM& aSTG);
@@ -311,4 +312,4 @@ class nsDataObj : public IDataObject, public IDataObjectAsyncCapability {
                       LPFORMATETC aFormat, BOOL aSetData);
 };
 
-#endif  // _NSDATAOBJ_H_
+#endif  // NSDATAOBJ_H_

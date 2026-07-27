@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,10 +15,15 @@
 #  include "Logging.h"
 #endif
 
+#include "mozilla/a11y/DocAccessibleChild.h"
+#ifdef MOZ_ENABLE_SKIA_PDF
+#  include "mozilla/a11y/PdfStructTreeBuilder.h"
+#endif
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Components.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/StaticPrefs_accessibility.h"
 #include "mozilla/dom/Event.h"  // for Event
 #include "nsContentUtils.h"
 #include "nsDocShellLoadTypes.h"
@@ -86,22 +89,20 @@ LocalAccessible* DocManager::FindAccessibleInCache(nsINode* aNode) const {
   return nullptr;
 }
 
-void DocManager::RemoveFromXPCDocumentCache(DocAccessible* aDocument,
-                                            bool aAllowServiceShutdown) {
+void DocManager::RemoveFromXPCDocumentCache(DocAccessible* aDocument) {
   xpcAccessibleDocument* xpcDoc = mXPCDocumentCache.GetWeak(aDocument);
-  if (xpcDoc) {
-    xpcDoc->Shutdown();
-    mXPCDocumentCache.Remove(aDocument);
-
-    if (aAllowServiceShutdown && !HasXPCDocuments()) {
-      MaybeShutdownAccService(nsAccessibilityService::eXPCOM);
-    }
+  if (!xpcDoc) {
+    return;
+  }
+  xpcDoc->Shutdown();
+  mXPCDocumentCache.Remove(aDocument);
+  if (!HasXPCDocuments()) {
+    MaybeShutdownAccService(nsAccessibilityService::eXPCOM, /* aAsync */ true);
   }
 }
 
 void DocManager::NotifyOfDocumentShutdown(DocAccessible* aDocument,
-                                          Document* aDOMDocument,
-                                          bool aAllowServiceShutdown) {
+                                          Document* aDOMDocument) {
   // We need to remove listeners in both cases, when document is being shutdown
   // or when accessibility service is being shut down as well.
   RemoveListeners(aDOMDocument);
@@ -112,19 +113,19 @@ void DocManager::NotifyOfDocumentShutdown(DocAccessible* aDocument,
     return;
   }
 
-  RemoveFromXPCDocumentCache(aDocument, aAllowServiceShutdown);
+  RemoveFromXPCDocumentCache(aDocument);
   mDocAccessibleCache.Remove(aDOMDocument);
 }
 
 void DocManager::RemoveFromRemoteXPCDocumentCache(DocAccessibleParent* aDoc) {
   xpcAccessibleDocument* doc = GetCachedXPCDocument(aDoc);
-  if (doc) {
-    doc->Shutdown();
-    sRemoteXPCDocumentCache->Remove(aDoc);
+  if (!doc) {
+    return;
   }
-
+  doc->Shutdown();
+  sRemoteXPCDocumentCache->Remove(aDoc);
   if (sRemoteXPCDocumentCache && sRemoteXPCDocumentCache->Count() == 0) {
-    MaybeShutdownAccService(nsAccessibilityService::eXPCOM);
+    MaybeShutdownAccService(nsAccessibilityService::eXPCOM, /* aAsync */ true);
   }
 }
 
@@ -171,6 +172,48 @@ bool DocManager::IsProcessingRefreshDriverNotification() const {
     }
   }
   return false;
+}
+#endif
+
+#ifdef MOZ_ENABLE_SKIA_PDF
+void DocManager::NotifyOfPrintDocument(dom::Document* aDoc) {
+  if (!StaticPrefs::accessibility_tagged_pdf_output_enabled()) {
+    return;
+  }
+  if (GetExistingDocAccessible(aDoc)) {
+    MOZ_ASSERT_UNREACHABLE("Print DocAccessible shouldn't already exist!");
+    return;
+  }
+  // Normally, we don't create DocAccessibles for static documents. Print
+  // documents are static clones, so we force creation here.
+  DocAccessible* topDocAcc =
+      CreateDocOrRootAccessible(aDoc, /* aAllowStatic */ true);
+  if (!topDocAcc) {
+    return;
+  }
+  // The accessibility refresh driver won't run for this document. We don't
+  // need it anyway; we just need the initial update.
+  topDocAcc->DoInitialUpdate();
+  // Build accessibility trees for any in-process iframes embedded in this
+  // document being printed. These will be static clones as well. OOP iframes
+  // are requested from the parent process by PdfStructTreeBuilder.
+  AutoTArray<RefPtr<dom::Document>, 8> descendants;
+  aDoc->CollectDescendantDocuments(
+      descendants, dom::Document::IncludeSubResources::No,
+      [](const dom::Document* aDescDoc) { return true; });
+  for (dom::Document* descDoc : descendants) {
+    if (DocAccessible* descDocAcc =
+            CreateDocOrRootAccessible(descDoc, /* aAllowStatic */ true)) {
+      descDocAcc->DoInitialUpdate();
+    }
+  }
+  if (DocAccessibleChild* ipcDoc = topDocAcc->IPCDoc()) {
+    ipcDoc->SendPrinting();
+  } else if (XRE_IsParentProcess()) {
+    if (BrowsingContext* bc = aDoc->GetBrowsingContext()) {
+      PdfStructTreeBuilder::Init(bc);
+    }
+  }
 }
 #endif
 
@@ -431,22 +474,40 @@ void DocManager::RemoveListeners(Document* aDocument) {
                                  TrustedEventsAtCapture());
 }
 
-DocAccessible* DocManager::CreateDocOrRootAccessible(Document* aDocument) {
+DocAccessible* DocManager::CreateDocOrRootAccessible(Document* aDocument,
+                                                     bool aAllowStatic) {
   // Ignore hidden documents, resource documents, static clone
   // (printing) documents and documents without a docshell.
   if (!nsCoreUtils::IsDocumentVisibleConsideringInProcessAncestors(aDocument) ||
-      aDocument->IsResourceDoc() || aDocument->IsStaticDocument() ||
+      aDocument->IsResourceDoc() ||
+      (!aAllowStatic && aDocument->IsStaticDocument()) ||
       !aDocument->IsActive()) {
     return nullptr;
   }
 
-  nsIDocShell* docShell = aDocument->GetDocShell();
-  if (!docShell || docShell->IsInvisible()) {
-    return nullptr;
+  // Don't create a DocAccessible for the transient about:blank that bootstraps
+  // a printing BrowsingContext. It will be replaced by a static clone (filtered
+  // above).
+  if (!aAllowStatic && aDocument->IsUncommittedInitialDocument()) {
+    dom::BrowsingContext* bc = aDocument->GetBrowsingContext();
+    if (bc && bc->Top()->GetIsPrinting()) {
+      return nullptr;
+    }
   }
 
-  nsIWidget* widget = nsContentUtils::WidgetForDocument(aDocument);
-  if (!widget || widget->GetWindowType() == widget::WindowType::Invisible) {
+  if (IPCAccessibilityActive()) {
+    nsIContent* ownerContent = aDocument->GetEmbedderElement();
+    if (ownerContent && ownerContent->IsXULElement()) {
+      // Don't create accessibles for embedded XUL documents in content process,
+      // since they are not used and we don't want to waste resources on them.
+      // We can get here when a XUL document is loaded in a <browser>, <editor>
+      // or <xul:iframe> in content process, which happens in tests.
+      return nullptr;
+    }
+  }
+
+  nsIDocShell* docShell = aDocument->GetDocShell();
+  if (!docShell || docShell->IsInvisible()) {
     return nullptr;
   }
 
@@ -455,6 +516,12 @@ DocAccessible* DocManager::CreateDocOrRootAccessible(Document* aDocument) {
   // prevent a11y focus.
   PresShell* presShell = aDocument->GetPresShell();
   if (!presShell || presShell->IsDestroying()) {
+    return nullptr;
+  }
+
+  nsIWidget* widget = presShell->GetRootWidget();
+  if (!aAllowStatic &&
+      (!widget || widget->GetWindowType() == widget::WindowType::Invisible)) {
     return nullptr;
   }
 
@@ -556,6 +623,7 @@ void DocManager::ClearDocCache() {
 }
 
 void DocManager::RemoteDocAdded(DocAccessibleParent* aDoc) {
+  MOZ_ASSERT(aDoc->IsTopLevel());
   if (!sRemoteDocuments) {
     sRemoteDocuments = new nsTArray<DocAccessibleParent*>;
     ClearOnShutdown(&sRemoteDocuments);
@@ -565,6 +633,12 @@ void DocManager::RemoteDocAdded(DocAccessibleParent* aDoc) {
              "How did we already have the doc!");
   sRemoteDocuments->AppendElement(aDoc);
   ProxyCreated(aDoc);
+  // Fire a reorder event on the OuterDocAccessible.
+  if (LocalAccessible* outerDoc = aDoc->OuterDocOfRemoteBrowser()) {
+    MOZ_ASSERT(outerDoc->Document());
+    auto reorder = MakeRefPtr<AccReorderEvent>(outerDoc);
+    outerDoc->Document()->FireDelayedEvent(reorder);
+  }
 }
 
 DocAccessible* mozilla::a11y::GetExistingDocAccessible(

@@ -1,25 +1,21 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_DocumentOrShadowRoot_h__
-#define mozilla_dom_DocumentOrShadowRoot_h__
+#ifndef mozilla_dom_DocumentOrShadowRoot_h_
+#define mozilla_dom_DocumentOrShadowRoot_h_
 
-#include "mozilla/dom/NameSpaceConstants.h"
 #include "mozilla/IdentifierMapEntry.h"
 #include "mozilla/RelativeTo.h"
 #include "mozilla/ReverseIterator.h"
+#include "mozilla/dom/NameSpaceConstants.h"
 #include "nsClassHashtable.h"
 #include "nsContentListDeclarations.h"
 #include "nsTArray.h"
 #include "nsTHashSet.h"
 
-class nsContentList;
 class nsCycleCollectionTraversalCallback;
 class nsINode;
-class nsINodeList;
 class nsWindowSizes;
 
 namespace mozilla {
@@ -31,9 +27,12 @@ namespace dom {
 
 class Animation;
 class Element;
+class ContentList;
+class CustomElementRegistry;
 class Document;
 class DocumentOrShadowRoot;
 class HTMLInputElement;
+class NodeList;
 class StyleSheetList;
 class ShadowRoot;
 template <typename T>
@@ -78,6 +77,8 @@ class DocumentOrShadowRoot {
     return mAdoptedStyleSheets;
   }
 
+  size_t FindSheetInsertionPointInTree(const StyleSheet&) const;
+
   /**
    * Returns an index for the sheet in relative style order.
    * If there are non-applicable sheets, then this index may
@@ -85,7 +86,7 @@ class DocumentOrShadowRoot {
    *
    * Handles sheets from both mStyleSheets and mAdoptedStyleSheets
    */
-  int32_t StyleOrderIndexOfSheet(const StyleSheet& aSheet) const;
+  size_t StyleOrderIndexOfSheet(const StyleSheet& aSheet) const;
 
   StyleSheetList* StyleSheets();
 
@@ -100,25 +101,24 @@ class DocumentOrShadowRoot {
    *
    * This is useful for stuff like QuerySelector optimization and such.
    */
-  const nsTArray<Element*>* GetAllElementsForId(
+  Span<Element* const> GetAllElementsForId(
       const IdentifierMapEntry::DependentAtomOrString& aElementId) const {
-    IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aElementId);
-    return entry ? &entry->GetIdElements() : nullptr;
+    if (IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aElementId)) {
+      return entry->GetIdElements();
+    }
+    return {};
   }
 
-  already_AddRefed<nsContentList> GetElementsByTagName(
+  already_AddRefed<ContentList> GetElementsByTagName(
       const nsAString& aTagName) {
     return NS_GetContentList(&AsNode(), kNameSpaceID_Unknown, aTagName);
   }
-
-  already_AddRefed<nsContentList> GetElementsByTagNameNS(
+  already_AddRefed<ContentList> GetElementsByTagNameNS(
       const nsAString& aNamespaceURI, const nsAString& aLocalName);
-
-  already_AddRefed<nsContentList> GetElementsByTagNameNS(
+  already_AddRefed<ContentList> GetElementsByTagNameNS(
       const nsAString& aNamespaceURI, const nsAString& aLocalName,
       mozilla::ErrorResult&);
-
-  already_AddRefed<nsContentList> GetElementsByClassName(
+  already_AddRefed<ContentList> GetElementsByClassName(
       const nsAString& aClasses);
 
   ~DocumentOrShadowRoot();
@@ -140,8 +140,8 @@ class DocumentOrShadowRoot {
    */
   Element* ElementFromPointHelper(float aX, float aY,
                                   bool aIgnoreRootScrollFrame,
-                                  bool aFlushLayout,
-                                  ViewportType aViewportType);
+                                  bool aFlushLayout, ViewportType aViewportType,
+                                  bool aPerformRetargeting = true);
 
   void NodesFromRect(float aX, float aY, float aTopSize, float aRightSize,
                      float aBottomSize, float aLeftSize,
@@ -188,7 +188,7 @@ class DocumentOrShadowRoot {
    * @param aId the ID associated the element we want to lookup
    * @return the element associated with |aId|
    */
-  Element* LookupImageElement(const nsAString& aElementId);
+  Element* LookupImageElement(nsAtom* aId);
 
   /**
    * Check that aId is not empty and log a message to the console
@@ -229,6 +229,10 @@ class DocumentOrShadowRoot {
     }
   }
 
+  // https://dom.spec.whatwg.org/#dom-documentorshadowroot-customelementregistry
+  CustomElementRegistry* GetCustomElementRegistry();
+  void SetCustomElementRegistry(CustomElementRegistry&);
+
  protected:
   // Cycle collection helper functions
   void TraverseSheetRefInStylesIfApplicable(
@@ -242,7 +246,7 @@ class DocumentOrShadowRoot {
   void ClearAdoptedStyleSheets();
 
   /**
-   * Clone's the argument's adopted style sheets into this.
+   * Clones the argument's adopted style sheets into this.
    * This should only be used when cloning a static document for printing.
    */
   void CloneAdoptedSheetsFrom(const DocumentOrShadowRoot&);

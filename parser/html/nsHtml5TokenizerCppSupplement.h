@@ -61,6 +61,18 @@ bool nsHtml5Tokenizer::EnsureBufferSpace(int32_t aLength) {
   return true;
 }
 
+MOZ_COLD MOZ_NEVER_INLINE void
+nsHtml5Tokenizer::EnsureBufferSpaceShouldNeverHappen(int32_t aLength) {
+  MOZ_DIAGNOSTIC_ASSERT(false,
+                        "This is never supposed to happen. Please file a bug "
+                        "with steps to reproduce!");
+  if (!EnsureBufferSpace(aLength)) {
+    MOZ_CRASH(
+        "Unrecovable allocation failure in situation that should never happen. "
+        "Please file a bug with steps to reproduce!");
+  }
+}
+
 bool nsHtml5Tokenizer::TemplatePushedOrHeadPopped() {
   if (encodingDeclarationHandler) {
     return encodingDeclarationHandler->TemplatePushedOrHeadPopped();
@@ -94,8 +106,8 @@ void nsHtml5Tokenizer::StartViewSource(const nsAutoString& aTitle) {
   mViewSource->Start(aTitle);
 }
 
-void nsHtml5Tokenizer::StartViewSourceCharacters() {
-  mViewSource->StartCharacters();
+void nsHtml5Tokenizer::StartViewSourceBodyContents() {
+  mViewSource->StartBodyContents();
 }
 
 [[nodiscard]] bool nsHtml5Tokenizer::EndViewSource() {
@@ -107,6 +119,21 @@ void nsHtml5Tokenizer::SetViewSourceOpSink(nsAHtml5TreeOpSink* aOpSink) {
 }
 
 void nsHtml5Tokenizer::RewindViewSource() { mViewSource->Rewind(); }
+
+nsHtml5String nsHtml5Tokenizer::TryAtomizeForSingleDigit() {
+  if (!newAttributesEachTime && strBufLen == 1 && strBuf[0] >= '0' &&
+      strBuf[0] <= '9') {
+    static nsStaticAtom* const digitAtoms[10] = {
+        nsGkAtoms::_0, nsGkAtoms::_1, nsGkAtoms::_2, nsGkAtoms::_3,
+        nsGkAtoms::_4, nsGkAtoms::_5, nsGkAtoms::_6, nsGkAtoms::_7,
+        nsGkAtoms::_8, nsGkAtoms::_9};
+    nsAtom* atom = digitAtoms[strBuf[0] - '0'];
+    nsHtml5String result = nsHtml5String::FromAtom(do_AddRef(atom));
+    clearStrBufAfterUse();
+    return result;
+  }
+  return nullptr;
+}
 
 void nsHtml5Tokenizer::errWarnLtSlashInRcdata() {}
 
@@ -192,26 +219,6 @@ void nsHtml5Tokenizer::maybeErrSlashInEndTag(bool selfClosing) {
   if (mViewSource && selfClosing && endTag) {
     mViewSource->AddErrorToCurrentSlash("maybeErrSlashInEndTag");
   }
-}
-
-char16_t nsHtml5Tokenizer::errNcrNonCharacter(char16_t ch) {
-  if (MOZ_UNLIKELY(mViewSource)) {
-    mViewSource->AddErrorToCurrentNode("errNcrNonCharacter");
-  }
-  return ch;
-}
-
-void nsHtml5Tokenizer::errAstralNonCharacter(int32_t ch) {
-  if (MOZ_UNLIKELY(mViewSource)) {
-    mViewSource->AddErrorToCurrentNode("errNcrNonCharacter");
-  }
-}
-
-char16_t nsHtml5Tokenizer::errNcrControlChar(char16_t ch) {
-  if (MOZ_UNLIKELY(mViewSource)) {
-    mViewSource->AddErrorToCurrentNode("errNcrControlChar");
-  }
-  return ch;
 }
 
 void nsHtml5Tokenizer::errGarbageAfterLtSlash() {
@@ -353,12 +360,6 @@ void nsHtml5Tokenizer::errNcrSurrogate() {
   }
 }
 
-void nsHtml5Tokenizer::errNcrCr() {
-  if (MOZ_UNLIKELY(mViewSource)) {
-    mViewSource->AddErrorToCurrentNode("errNcrCr");
-  }
-}
-
 void nsHtml5Tokenizer::errNcrInC1Range() {
   if (MOZ_UNLIKELY(mViewSource)) {
     mViewSource->AddErrorToCurrentNode("errNcrInC1Range");
@@ -464,12 +465,6 @@ void nsHtml5Tokenizer::errMissingSpaceBeforeDoctypeName() {
 void nsHtml5Tokenizer::errNestedComment() {
   if (MOZ_LIKELY(mViewSource)) {
     mViewSource->AddErrorToCurrentNode("errNestedComment");
-  }
-}
-
-void nsHtml5Tokenizer::errNcrControlChar() {
-  if (MOZ_UNLIKELY(mViewSource)) {
-    mViewSource->AddErrorToCurrentNode("errNcrControlChar");
   }
 }
 

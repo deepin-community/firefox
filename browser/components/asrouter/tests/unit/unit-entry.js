@@ -1,13 +1,12 @@
 import {
-  EventEmitter,
   FakePrefs,
   FakensIPrefService,
   GlobalOverrider,
   FakeConsoleAPI,
   FakeLogger,
-} from "newtab/test/unit/utils";
+  FakeNimbusFeatures,
+} from "tests/unit/utils";
 import Adapter from "enzyme-adapter-react-16";
-import { chaiAssertions } from "newtab/test/schemas/pings";
 import chaiJsonSchema from "chai-json-schema";
 import enzyme from "enzyme";
 import FxMSCommonSchema from "../../content-src/schemas/FxMSCommon.schema.json";
@@ -38,17 +37,13 @@ const files = req.keys();
 // This exposes sinon assertions to chai.assert
 sinon.assert.expose(assert, { prefix: "" });
 
-chai.use(chaiAssertions);
 chai.use(chaiJsonSchema);
 chai.tv4.addSchema("file:///FxMSCommon.schema.json", FxMSCommonSchema);
 
 const overrider = new GlobalOverrider();
 
-const RemoteSettings = name => ({
+const RemoteSettings = _cid => ({
   get: () => {
-    if (name === "attachment") {
-      return Promise.resolve([{ attachment: {} }]);
-    }
     return Promise.resolve([]);
   },
   on: () => {},
@@ -119,9 +114,6 @@ const TEST_GLOBAL = {
   AppConstants: {
     MOZILLA_OFFICIAL: true,
     MOZ_APP_VERSION: "69.0a1",
-    isChinaRepack() {
-      return false;
-    },
     isPlatformAndVersionAtMost() {
       return false;
     },
@@ -133,7 +125,7 @@ const TEST_GLOBAL = {
       prefix: "ASRouter",
     }),
   },
-  AWScreenUtils: {
+  ASRouterScreenUtils: {
     evaluateTargetingAndRemoveScreens() {
       return true;
     },
@@ -147,6 +139,9 @@ const TEST_GLOBAL = {
   BrowserUtils: {
     sendToDeviceEmailsSupported() {
       return true;
+    },
+    isChinaRepack() {
+      return false;
     },
   },
   UpdateUtils: { getUpdateChannel() {} },
@@ -162,13 +157,9 @@ const TEST_GLOBAL = {
     defineLazyGetter(object, name, f) {
       updateGlobalOrObject(object)[name] = f();
     },
-    defineModuleGetter: updateGlobalOrObject,
     defineESModuleGetters: updateGlobalOrObject,
     generateQI() {
       return {};
-    },
-    import() {
-      return global;
     },
     importESModule() {
       return global;
@@ -220,21 +211,11 @@ const TEST_GLOBAL = {
       insert() {},
       markPageAsTyped() {},
       removeObserver() {},
+      pageFrecencyThreshold() {},
     },
     "@mozilla.org/io/string-input-stream;1": {
       createInstance() {
         return {};
-      },
-    },
-    "@mozilla.org/security/hash;1": {
-      createInstance() {
-        return {
-          init() {},
-          updateFromStream() {},
-          finish() {
-            return "0";
-          },
-        };
       },
     },
     "@mozilla.org/updates/update-checker;1": { createInstance() {} },
@@ -282,6 +263,7 @@ const TEST_GLOBAL = {
     importGlobalProperties() {},
     now: () => window.performance.now(),
     cloneInto: o => JSON.parse(JSON.stringify(o)),
+    isInAutomation: true,
   },
   console: {
     ...console,
@@ -364,6 +346,9 @@ const TEST_GLOBAL = {
     getLocalProfileDir() {
       return Promise.resolve("/");
     },
+    toFileURI(path) {
+      return `file://${path}`;
+    },
   },
   PlacesUtils: {
     get bookmarks() {
@@ -405,7 +390,9 @@ const TEST_GLOBAL = {
       get: () => ({ parent: { parent: { path: "appPath" } } }),
     },
     env: {
+      get: () => undefined,
       set: () => undefined,
+      exists: () => false,
     },
     locale: {
       get appLocaleAsBCP47() {
@@ -422,12 +409,6 @@ const TEST_GLOBAL = {
       addObserver() {},
       removeObserver() {},
       notifyObservers() {},
-    },
-    telemetry: {
-      setEventRecordingEnabled: () => {},
-      recordEvent: _eventDetails => {},
-      scalarSet: () => {},
-      keyedScalarAdd: () => {},
     },
     uuid: {
       generateUUID() {
@@ -503,18 +484,26 @@ const TEST_GLOBAL = {
     },
   },
   XPCOMUtils: {
+    declareLazy: declaration => {
+      Object.entries(declaration).forEach(([key, value]) => {
+        if (typeof value === "function") {
+          updateGlobalOrObject(global)[key] = value();
+        } else if (typeof value === "object" && value.pref) {
+          updateGlobalOrObject(global)[key] = value.default;
+        }
+      });
+      return global;
+    },
     defineLazyGlobalGetters: updateGlobalOrObject,
-    defineLazyModuleGetters: updateGlobalOrObject,
     defineLazyServiceGetter: updateGlobalOrObject,
     defineLazyServiceGetters: updateGlobalOrObject,
-    defineLazyPreferenceGetter(object, name) {
-      updateGlobalOrObject(object)[name] = "";
+    defineLazyPreferenceGetter(object, name, _pref, defaultValue = "") {
+      updateGlobalOrObject(object)[name] = defaultValue;
     },
     generateQI() {
       return {};
     },
   },
-  EventEmitter,
   ShellService: {
     doesAppNeedPin: () => false,
     isDefaultBrowser: () => true,
@@ -541,31 +530,11 @@ const TEST_GLOBAL = {
     },
   },
   FX_MONITOR_OAUTH_CLIENT_ID: "fake_client_id",
-  ExperimentAPI: {
-    getExperiment() {},
-    getExperimentMetaData() {},
-    getRolloutMetaData() {},
+  ExperimentAPI: {},
+  FeatureCalloutBroker: {
+    showFeatureCallout() {},
   },
-  NimbusFeatures: {
-    glean: {
-      getVariable() {},
-    },
-    newtab: {
-      getVariable() {},
-      getAllVariables() {},
-      onUpdate() {},
-      offUpdate() {},
-    },
-    pocketNewtab: {
-      getVariable() {},
-      getAllVariables() {},
-      onUpdate() {},
-      offUpdate() {},
-    },
-    cookieBannerHandling: {
-      getVariable() {},
-    },
-  },
+  NimbusFeatures: FakeNimbusFeatures,
   TelemetryEnvironment: {
     setExperimentActive() {},
     currentEnvironment: {
@@ -574,10 +543,6 @@ const TEST_GLOBAL = {
       },
       settings: {},
     },
-  },
-  TelemetryStopwatch: {
-    start: () => {},
-    finish: () => {},
   },
   Sampling: {
     ratioSample(_seed, _ratios) {
@@ -603,8 +568,28 @@ const TEST_GLOBAL = {
   },
   Logger: FakeLogger,
   getFxAccountsSingleton() {},
+  AWEnsureAddonInstalled() {
+    return Promise.resolve("complete");
+  },
+  AWWaitForNimbus() {
+    return Promise.resolve("ready");
+  },
   AboutNewTab: {},
   Glean: {
+    messagingExperiments: {
+      reachCfr: {
+        record() {},
+      },
+      reachFxmsMessage15: {
+        record() {},
+      },
+    },
+    messagingSystem: {
+      messageRequestTime: {
+        start() {},
+        stopAndAccumulate() {},
+      },
+    },
     newtab: {
       opened: {
         record() {},
@@ -725,5 +710,8 @@ overrider.set(TEST_GLOBAL);
 
 describe("asrouter", () => {
   after(() => overrider.restore());
+  console.log(
+    "Loading files from unit-entry.js (msg should show once - bug 1967579)"
+  );
   files.forEach(file => req(file));
 });

@@ -13,13 +13,12 @@ const TAB_URL = URL_ROOT + "resources/service-workers/debug.html";
 add_task(async function () {
   await enableApplicationPanel();
 
-  const { panel, tab, toolbox, commands } = await openNewTabAndApplicationPanel(
-    TAB_URL
-  );
+  const { panel, tab, toolbox, commands } =
+    await openNewTabAndApplicationPanel(TAB_URL);
 
   const doc = panel.panelWin.document;
 
-  selectPage(panel, "service-workers");
+  await selectPage(panel, "service-workers");
 
   info("Wait until the service worker appears in the application panel");
   await waitUntil(() => getWorkerContainers(doc).length === 1);
@@ -42,12 +41,12 @@ add_task(async function () {
 
   // force a pause at the breakpoint
   info("Invoke fetch, expect the service worker script to pause on line 11");
-  await ContentTask.spawn(tab.linkedBrowser, {}, async function () {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     content.wrappedJSObject.fetchFromWorker();
   });
   await waitForPaused(debuggerContext);
   const workerScript = findSource(debuggerContext, "debug-sw.js");
-  assertPausedAtSourceAndLine(debuggerContext, workerScript.id, 11);
+  await assertPausedAtSourceAndLine(debuggerContext, workerScript.id, 11);
   await resume(debuggerContext);
 
   // remove breakpoint

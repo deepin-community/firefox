@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -161,7 +159,7 @@ this.proxy = class extends ExtensionAPIPersistent {
           extensionApi: self,
         }).api(),
 
-        // Leaving as non-persistent.  By itself it's not useful since proxy-error
+        // Leaving as non-persistent. By itself it's not useful since proxy-error
         // is emitted from the proxy filter.
         onError: new EventManager({
           context,
@@ -283,15 +281,21 @@ this.proxy = class extends ExtensionAPIPersistent {
               for (let prop of ["http", "ssl", "socks"]) {
                 let host = value[prop];
                 if (host) {
-                  try {
-                    // Fixup in case a full url is passed.
-                    if (host.includes("://")) {
-                      value[prop] = new URL(host).host;
+                  let valid = true;
+                  // Fixup in case a full url is passed.
+                  if (host.includes("://")) {
+                    host = URL.parse(host)?.host;
+                    if (host) {
+                      value[prop] = host;
                     } else {
-                      // Validate the host value.
-                      new URL(`http://${host}`);
+                      valid = false;
                     }
-                  } catch (e) {
+                  } else {
+                    // Validate the host value.
+                    valid = URL.canParse(`http://${host}`);
+                  }
+
+                  if (!valid) {
                     throw new ExtensionError(
                       `${value[prop]} is not a valid value for ${prop}.`
                     );
@@ -300,9 +304,7 @@ this.proxy = class extends ExtensionAPIPersistent {
               }
 
               if (value.proxyType === "autoConfig" || value.autoConfigUrl) {
-                try {
-                  new URL(value.autoConfigUrl);
-                } catch (e) {
+                if (!URL.canParse(value.autoConfigUrl)) {
                   throw new ExtensionError(
                     `${value.autoConfigUrl} is not a valid value for autoConfigUrl.`
                   );

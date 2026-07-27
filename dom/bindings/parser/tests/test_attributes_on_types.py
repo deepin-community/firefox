@@ -163,11 +163,13 @@ def WebIDLTest(parser, harness):
                 attribute [AllowShared] ArrayBufferView foo;
                 undefined method([AllowShared] ArrayBufferView foo);
                 undefined method2(optional [AllowShared] ArrayBufferView foo);
+                undefined method3([AllowShared] (Int8Array or Int16Array) foo);
             };
             interface C {
                 attribute [AllowShared] ArrayBufferView? foo;
                 undefined method([AllowShared] ArrayBufferView? foo);
                 undefined method2(optional [AllowShared] ArrayBufferView? foo);
+                undefined method3([AllowShared] (Int8Array or Int16Array)? foo);
             };
             interface Setlike {
                 setlike<[AllowShared] ArrayBufferView>;
@@ -202,6 +204,15 @@ def WebIDLTest(parser, harness):
         harness.ok(
             method2[0].type.hasAllowShared(), "foo argument of method2 is [AllowShared]"
         )
+        method3 = B.members[4].signatures()[0][1]
+        harness.ok(
+            method3[0].type.memberTypes[0].hasAllowShared(),
+            "first member of foo argument of method3 is [AllowShared]",
+        )
+        harness.ok(
+            method3[0].type.memberTypes[1].hasAllowShared(),
+            "second member of foo argument of method3 is [AllowShared]",
+        )
         C = results[3]
         harness.ok(C.members[0].type.nullable(), "C.foo is nullable")
         harness.ok(C.members[0].type.hasAllowShared(), "C.foo is [AllowShared]")
@@ -214,6 +225,15 @@ def WebIDLTest(parser, harness):
         harness.ok(method2[0].type.nullable(), "foo argument of method2 is nullable")
         harness.ok(
             method2[0].type.hasAllowShared(), "foo argument of method2 is [AllowShared]"
+        )
+        method3 = C.members[3].signatures()[0][1]
+        harness.ok(
+            method3[0].type.inner.memberTypes[0].hasAllowShared(),
+            "first member of foo argument of method3 is [AllowShared]",
+        )
+        harness.ok(
+            method3[0].type.inner.memberTypes[1].hasAllowShared(),
+            "second member of foo argument of method3 is [AllowShared]",
         )
 
     ATTRIBUTES = [
@@ -348,7 +368,7 @@ def WebIDLTest(parser, harness):
             parser.finish()
         except WebIDL.WebIDLError:
             threw = True
-        harness.ok(not threw, "Template for %s parses without attributes" % name)
+        harness.ok(not threw, f"Template for {name} parses without attributes")
         for attribute, type in ATTRIBUTES:
             parser = parser.reset()
             threw = False
@@ -357,7 +377,7 @@ def WebIDLTest(parser, harness):
                 parser.finish()
             except WebIDL.WebIDLError:
                 threw = True
-            harness.ok(threw, "Should not allow %s on %s" % (attribute, name))
+            harness.ok(threw, f"Should not allow {attribute} on {name}")
 
     parser = parser.reset()
     threw = False
@@ -430,31 +450,29 @@ def WebIDLTest(parser, harness):
         threw = False
         try:
             parser.parse(
-                """
-                typedef [Clamp] %s Foo;
+                f"""
+                typedef [Clamp] {type} Foo;
             """
-                % type
             )
             parser.finish()
         except WebIDL.WebIDLError:
             threw = True
 
-        harness.ok(threw, "Should not allow [Clamp] on %s" % type)
+        harness.ok(threw, f"Should not allow [Clamp] on {type}")
 
         parser = parser.reset()
         threw = False
         try:
             parser.parse(
-                """
-                typedef [EnforceRange] %s Foo;
+                f"""
+                typedef [EnforceRange] {type} Foo;
             """
-                % type
             )
             parser.finish()
         except WebIDL.WebIDLError:
             threw = True
 
-        harness.ok(threw, "Should not allow [EnforceRange] on %s" % type)
+        harness.ok(threw, f"Should not allow [EnforceRange] on {type}")
 
     parser = parser.reset()
     threw = False
@@ -531,6 +549,22 @@ def WebIDLTest(parser, harness):
     try:
         parser.parse(
             """
+            typedef [AllowShared] (ArrayBufferView or DOMString) Foo;
+            """
+        )
+        results = parser.finish()
+    except WebIDL.WebIDLError:
+        threw = True
+    harness.ok(
+        threw,
+        "[AllowShared] be allowed on union only if all member type allow [AllowShared]",
+    )
+
+    parser = parser.reset()
+    threw = False
+    try:
+        parser.parse(
+            """
             interface Foo {
                undefined foo([Clamp] Bar arg);
             };
@@ -544,6 +578,50 @@ def WebIDLTest(parser, harness):
     harness.check(
         results[0].members[0].signatures()[0][1][0].type.hasClamp(),
         True,
+        "Unresolved types with type attributes should correctly resolve with attributes",
+    )
+
+    parser = parser.reset()
+    threw = False
+    try:
+        parser.parse(
+            """
+            interface Foo {
+               undefined foo([AllowShared] Bar arg);
+            };
+            typedef (ArrayBufferView or DOMString) Bar;
+            """
+        )
+        results = parser.finish()
+    except WebIDL.WebIDLError:
+        threw = True
+    harness.ok(
+        threw,
+        "[AllowShared] be allowed on unresolved union only if all member type allow [AllowShared]",
+    )
+
+    parser = parser.reset()
+    threw = False
+    try:
+        parser.parse(
+            """
+            interface Foo {
+               undefined foo([AllowShared] Bar arg);
+            };
+            typedef (Int8Array or Int16Array) Bar;
+            """
+        )
+        results = parser.finish()
+    except WebIDL.WebIDLError:
+        threw = True
+    harness.ok(not threw, "Should allow type attributes on unresolved union types")
+    method = results[0].members[0].signatures()[0][1]
+    harness.ok(
+        method[0].type.memberTypes[0].hasAllowShared(),
+        "Unresolved types with type attributes should correctly resolve with attributes",
+    )
+    harness.ok(
+        method[0].type.memberTypes[1].hasAllowShared(),
         "Unresolved types with type attributes should correctly resolve with attributes",
     )
 

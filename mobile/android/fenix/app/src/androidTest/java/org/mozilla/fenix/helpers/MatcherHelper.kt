@@ -54,9 +54,24 @@ object MatcherHelper {
         return mDevice.findObject(UiSelector().resourceId(resourceId).index(index))
     }
 
+    fun itemWithTextAndIndex(itemText: String, index: Int): UiObject {
+        Log.i(TAG, "Looking for item with text: $itemText and index: $index")
+        return mDevice.findObject(UiSelector().text(itemText).index(index))
+    }
+
+    fun itemWithClassNameAndContainingDescription(className: String, description: String): UiObject {
+        Log.i(TAG, "Looking for item with class name: $className and description: $description")
+        return mDevice.findObject(UiSelector().className(className).descriptionContains(description))
+    }
+
     fun itemWithClassNameAndIndex(className: String, index: Int): UiObject {
         Log.i(TAG, "Looking for item with class name: $className and index: $index")
         return mDevice.findObject(UiSelector().className(className).index(index))
+    }
+
+    fun itemWithDescriptionAndIndex(className: String, index: Int): UiObject {
+        Log.i(TAG, "Looking for item with class name: $className and index: $index")
+        return mDevice.findObject(UiSelector().descriptionContains(className).index(index))
     }
 
     fun checkedItemWithResId(resourceId: String, isChecked: Boolean): UiObject {
@@ -76,7 +91,7 @@ object MatcherHelper {
 
     fun itemWithResIdAndDescription(resourceId: String, description: String): UiObject {
         Log.i(TAG, "Looking for item with resource id: $resourceId and description: $description")
-        return mDevice.findObject(UiSelector().resourceId(resourceId).descriptionContains(description))
+        return mDevice.findObject(UiSelector().descriptionContains(description).resourceId(resourceId))
     }
 
     fun itemWithResIdAndText(resourceId: String, text: String): UiObject {
@@ -87,6 +102,11 @@ object MatcherHelper {
     fun itemWithResIdContainingText(resourceId: String, text: String): UiObject {
         Log.i(TAG, "Looking for item with resource id: $resourceId and containing text: $text")
         return mDevice.findObject(UiSelector().resourceId(resourceId).textContains(text))
+    }
+
+    fun itemWithPackageNameAndDescription(packageName: String, description: String): UiObject {
+        Log.i(TAG, "Looking for item with package name: $packageName and description: $description")
+        return mDevice.findObject(UiSelector().packageName(packageName).descriptionContains(description))
     }
 
     fun assertUIObjectExists(
@@ -146,11 +166,31 @@ object MatcherHelper {
         }
     }
 
-    fun assertItemIsEnabledAndVisible(vararg appItems: UiObject) {
+    fun assertItemIsEnabledAndVisible(vararg appItems: UiObject, isEnabled: Boolean = true) {
         for (appItem in appItems) {
-            Log.i(TAG, "assertItemIsEnabledAndVisible: Trying to verify that ${appItem.selector} is visible and enabled")
-            assertTrue(appItem.waitForExists(waitingTime) && appItem.isEnabled)
-            Log.i(TAG, "assertItemIsEnabledAndVisible: Verified ${appItem.selector} is visible and enabled")
+            if (isEnabled) {
+                Log.i(TAG, "assertItemIsEnabledAndVisible: Trying to verify that ${appItem.selector} is visible and enabled")
+                assertTrue(appItem.waitForExists(waitingTime) && appItem.isEnabled)
+                Log.i(TAG, "assertItemIsEnabledAndVisible: Verified ${appItem.selector} is visible and enabled")
+            } else {
+                Log.i(TAG, "assertItemIsEnabledAndVisible: Trying to verify that ${appItem.selector} is not enabled")
+                assertFalse(appItem.isEnabled)
+                Log.i(TAG, "assertItemIsEnabledAndVisible: Verified ${appItem.selector} is not enabled")
+            }
+        }
+    }
+
+    fun assertItemIsChecked(vararg appItems: UiObject, isChecked: Boolean = true) {
+        for (appItem in appItems) {
+            if (isChecked) {
+                Log.i(TAG, "assertItemIsChecked: Trying to verify that ${appItem.selector} is checked")
+                assertTrue(appItem.isChecked)
+                Log.i(TAG, "assertItemIsChecked: Verified ${appItem.selector} is checked")
+            } else {
+                Log.i(TAG, "assertItemIsChecked: Trying to verify that ${appItem.selector} is not checked")
+                assertFalse(appItem.isChecked)
+                Log.i(TAG, "assertItemIsChecked: Verified ${appItem.selector} is not checked")
+            }
         }
     }
 }

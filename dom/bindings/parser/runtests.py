@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import print_function
 
 import argparse
 import glob
@@ -13,7 +12,7 @@ import traceback
 import WebIDL
 
 
-class TestHarness(object):
+class TestHarness:
     def __init__(self, test, verbose):
         self.test = test
         self.verbose = verbose
@@ -27,22 +26,22 @@ class TestHarness(object):
 
     def finish(self):
         if self.verbose or self.printed_intro:
-            print("Finished test %s" % self.test)
+            print(f"Finished test {self.test}")
 
     def maybe_print_intro(self):
         if not self.printed_intro:
-            print("Starting test %s" % self.test)
+            print(f"Starting test {self.test}")
             self.printed_intro = True
 
     def test_pass(self, msg):
         self.passed += 1
         if self.verbose:
-            print("TEST-PASS | %s" % msg)
+            print(f"TEST-PASS | {msg}")
 
     def test_fail(self, msg):
         self.maybe_print_intro()
         self.failures.append(msg)
-        print("TEST-UNEXPECTED-FAIL | %s" % msg)
+        print(f"TEST-UNEXPECTED-FAIL | {msg}")
 
     def ok(self, condition, msg):
         if condition:
@@ -54,7 +53,7 @@ class TestHarness(object):
         if a == b:
             self.test_pass(msg)
         else:
-            self.test_fail(msg + " | Got %s expected %s" % (a, b))
+            self.test_fail(msg + f" | Got {a} expected {b}")
 
     def should_throw(self, parser, code, msg):
         parser = parser.reset()
@@ -65,7 +64,7 @@ class TestHarness(object):
         except Exception:
             threw = True
 
-        self.ok(threw, "Should have thrown: %s" % msg)
+        self.ok(threw, f"Should have thrown: {msg}")
 
 
 def run_tests(tests, verbose):
@@ -86,7 +85,7 @@ def run_tests(tests, verbose):
         try:
             _test.WebIDLTest.__call__(WebIDL.Parser(), harness)
         except Exception as ex:
-            harness.test_fail("Unhandled exception in test %s: %s" % (testpath, ex))
+            harness.test_fail(f"Unhandled exception in test {testpath}: {ex}")
             traceback.print_exc()
         finally:
             harness.finish()
@@ -97,12 +96,13 @@ def run_tests(tests, verbose):
     if verbose or failed_tests:
         print()
         print("Result summary:")
-        print("Successful: %d" % all_passed)
-        print("Unexpected: %d" % sum(len(failures) for _, failures in failed_tests))
+        print(f"Successful: {all_passed}")
+        failed_count = sum(len(failures) for _, failures in failed_tests)
+        print(f"Unexpected: {failed_count}")
         for test, failures in failed_tests:
-            print("%s:" % test)
+            print(f"{test}:")
             for failure in failures:
-                print("TEST-UNEXPECTED-FAIL | %s" % failure)
+                print(f"TEST-UNEXPECTED-FAIL | {failure}")
     return 1 if failed_tests else 0
 
 

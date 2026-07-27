@@ -1868,8 +1868,8 @@ static int64_t full_pixel_exhaustive_new(const VP9_COMP *cpi, MACROBLOCK *x,
 
   // Check size of proposed first range against magnitude of the centre
   // value used as a starting point.
-  range = VPXMAX(range, (5 * VPXMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4);
-  range = VPXMIN(range, MAX_RANGE);
+  range = clamp(range, (5 * VPXMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4,
+                MAX_RANGE);
   interval = VPXMAX(interval, range / baseline_interval_divisor);
 
   // initial search
@@ -2288,6 +2288,8 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
   MvLimits subpel_mv_limits;
 
   if (scaled_ref_frame) {
+    assert(scaled_ref_frame->y_width == cpi->Source->y_width &&
+           scaled_ref_frame->y_height == cpi->Source->y_height);
     int i;
     // Swap out the reference frame for a version that's been scaled to
     // match the resolution of the current frame, allowing the existing
@@ -2629,8 +2631,8 @@ static int full_pixel_exhaustive(const VP9_COMP *const cpi,
 
   // Check size of proposed first range against magnitude of the centre
   // value used as a starting point.
-  range = VPXMAX(range, (5 * VPXMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4);
-  range = VPXMIN(range, MAX_RANGE);
+  range = clamp(range, (5 * VPXMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4,
+                MAX_RANGE);
   interval = VPXMAX(interval, range / baseline_interval_divisor);
 
   // initial search

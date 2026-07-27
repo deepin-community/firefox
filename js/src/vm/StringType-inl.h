@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -183,6 +181,16 @@ JSString::OwnedChars<CharT>::OwnedChars(JSString::OwnedChars<CharT>&& other)
 }
 
 template <typename CharT>
+JSString::OwnedChars<CharT>& JSString::OwnedChars<CharT>::operator=(
+    JSString::OwnedChars<CharT>&& other) {
+  reset();
+  chars_ = other.chars_;
+  kind_ = other.kind_;
+  other.release();
+  return *this;
+}
+
+template <typename CharT>
 CharT* JSString::OwnedChars<CharT>::release() {
   CharT* chars = chars_.data();
   chars_ = {};
@@ -240,17 +248,16 @@ JSString::OwnedChars<CharT>::OwnedChars(RefPtr<mozilla::StringBuffer>&& buffer,
   buffer.forget(&buf);
 }
 
-MOZ_ALWAYS_INLINE bool JSString::validateLength(JSContext* maybecx,
-                                                size_t length) {
-  return validateLengthInternal<js::CanGC>(maybecx, length);
+MOZ_ALWAYS_INLINE bool JSString::validateLength(JSContext* cx, size_t length) {
+  return validateLengthInternal<js::CanGC>(cx, length);
 }
 
 template <js::AllowGC allowGC>
-MOZ_ALWAYS_INLINE bool JSString::validateLengthInternal(JSContext* maybecx,
+MOZ_ALWAYS_INLINE bool JSString::validateLengthInternal(JSContext* cx,
                                                         size_t length) {
   if (MOZ_UNLIKELY(length > JSString::MAX_LENGTH)) {
     if constexpr (allowGC) {
-      js::ReportOversizedAllocation(maybecx, JSMSG_ALLOC_OVERFLOW);
+      js::ReportOversizedAllocation(cx, JSMSG_ALLOC_OVERFLOW);
     }
     return false;
   }
@@ -295,12 +302,17 @@ inline size_t JSLinearString::maybeMallocCharsOnPromotion(
     chars = reinterpret_cast<const void**>(&d.s.u2.nonInlineCharsLatin1);
   }
 
-  size_t nbytes = length() * sizeof(CharT);
-  if (nursery->maybeMoveBufferOnPromotion(const_cast<void**>(chars), this,
-                                          nbytes, js::MemoryUse::StringContents,
-                                          js::StringBufferArena) ==
-      js::Nursery::BufferMoved) {
-    return nbytes;
+  size_t bytesUsed = length() * sizeof(CharT);
+  size_t bytesCapacity =
+      isExtensible() ? (asExtensible().capacity() * sizeof(CharT)) : bytesUsed;
+  MOZ_ASSERT(bytesUsed <= bytesCapacity);
+
+  if (nursery->maybeMoveNurseryOrMallocBufferOnPromotion(
+          const_cast<void**>(chars), this, bytesUsed, bytesCapacity,
+          js::MemoryUse::StringContents,
+          js::StringBufferArena) == js::Nursery::BufferMoved) {
+    MOZ_ASSERT(allocSize() == bytesCapacity);
+    return bytesCapacity;
   }
 
   return 0;
@@ -339,11 +351,9 @@ inline JSRope::JSRope(JSString* left, JSString* right, size_t length) {
   MOZ_ASSERT_IF(!isLatin1, !JSInlineString::lengthFits<char16_t>(length));
   MOZ_ASSERT_IF(isLatin1, !JSInlineString::lengthFits<JS::Latin1Char>(length));
 
-  if (isLatin1) {
-    setLengthAndFlags(length, INIT_ROPE_FLAGS | LATIN1_CHARS_BIT);
-  } else {
-    setLengthAndFlags(length, INIT_ROPE_FLAGS);
-  }
+  js::CharEncoding encoding = js::CharEncodingFromIsLatin1(isLatin1);
+  uint32_t flags = StringFlags::ropeFlags(encoding);
+  initLengthAndFlags(length, flags);
   d.s.u2.left = left;
   d.s.u3.right = right;
 
@@ -376,11 +386,13 @@ inline JSDependentString::JSDependentString(JSLinearString* base, size_t start,
                                             size_t length) {
   MOZ_ASSERT(start + length <= base->length());
   JS::AutoCheckCannotGC nogc;
-  if (base->hasLatin1Chars()) {
-    setLengthAndFlags(length, INIT_DEPENDENT_FLAGS | LATIN1_CHARS_BIT);
+  js::CharEncoding encoding =
+      js::CharEncodingFromIsLatin1(base->hasLatin1Chars());
+  uint32_t flags = StringFlags::dependentStringFlags(encoding);
+  initLengthAndFlags(length, flags);
+  if (encoding == js::CharEncoding::Latin1) {
     d.s.u2.nonInlineCharsLatin1 = base->latin1Chars(nogc) + start;
   } else {
-    setLengthAndFlags(length, INIT_DEPENDENT_FLAGS);
     d.s.u2.nonInlineCharsTwoByte = base->twoByteChars(nogc) + start;
   }
   base->setDependedOn();
@@ -390,40 +402,81 @@ inline JSDependentString::JSDependentString(JSLinearString* base, size_t start,
   }
 }
 
-MOZ_ALWAYS_INLINE JSLinearString* JSDependentString::new_(
+template <JS::ContractBaseChain contract>
+MOZ_ALWAYS_INLINE JSLinearString* JSDependentString::newImpl_(
     JSContext* cx, JSLinearString* baseArg, size_t start, size_t length,
     js::gc::Heap heap) {
+  // Not passed in as a Handle because `base` is reassigned.
+  JS::Rooted<JSLinearString*> base(cx, baseArg);
+
   // Do not try to make a dependent string that could fit inline.
-  MOZ_ASSERT_IF(baseArg->hasTwoByteChars(),
+  MOZ_ASSERT_IF(base->hasTwoByteChars(),
                 !JSInlineString::lengthFits<char16_t>(length));
-  MOZ_ASSERT_IF(!baseArg->hasTwoByteChars(),
+  MOZ_ASSERT_IF(!base->hasTwoByteChars(),
                 !JSInlineString::lengthFits<JS::Latin1Char>(length));
 
-  /*
-   * Try to avoid long chains of dependent strings. We can't avoid these
-   * entirely, however, due to how ropes are flattened.
-   */
-  if (baseArg->isDependent()) {
-    start += baseArg->asDependent().baseOffset();
-    baseArg = baseArg->asDependent().base();
+  // Invariant: if a tenured dependent string points to chars in the nursery,
+  // then the string must be in the store buffer.
+  //
+  // Refuse to create a chain tenured -> tenured -> nursery (with nursery
+  // chars). The same holds for anything else that might create length > 1
+  // chains of dependent strings.
+  bool mustContract;
+  if constexpr (contract == JS::ContractBaseChain::Contract) {
+    mustContract = true;
+  } else {
+    auto& nursery = cx->runtime()->gc.nursery();
+    mustContract = nursery.isInside(base->nonInlineCharsRaw());
   }
 
-  MOZ_ASSERT(start + length <= baseArg->length());
-
-  JSDependentString* str =
-      cx->newCell<JSDependentString, js::NoGC>(heap, baseArg, start, length);
-  if (str) {
-    return str;
+  if (mustContract) {
+    // Try to avoid long chains of dependent strings. We can't avoid these
+    // entirely, however, due to how ropes are flattened.
+    if (base->isDependent()) {
+      start += base->asDependent().baseOffset();
+      base = base->asDependent().base();
+    }
   }
 
-  JS::Rooted<JSLinearString*> base(cx, baseArg);
-  return cx->newCell<JSDependentString>(heap, base, start, length);
+  MOZ_ASSERT(start + length <= base->length());
+
+  JSDependentString* str;
+  if constexpr (contract == JS::ContractBaseChain::Contract) {
+    return cx->newCell<JSDependentString>(heap, base, start, length);
+  }
+
+  str = cx->newCell<JSDependentString>(heap, base, start, length);
+  if (str && base->isDependent() && base->isTenured()) {
+    // Tenured dependent -> nursery base string edges are problematic for
+    // deduplication if the tenured dependent string can itself have strings
+    // dependent on it. Whenever such a thing can be created, the nursery base
+    // must be marked as non-deduplicatable.
+    JSString* rootBase = base;
+    while (rootBase->isDependent()) {
+      rootBase = rootBase->base();
+    }
+    if (!rootBase->isTenured()) {
+      rootBase->setNonDeduplicatable();
+    }
+  }
+
+  return str;
+}
+
+/* static */
+inline JSLinearString* JSDependentString::new_(JSContext* cx,
+                                               JSLinearString* base,
+                                               size_t start, size_t length,
+                                               js::gc::Heap heap) {
+  return newImpl_<JS::ContractBaseChain::Contract>(cx, base, start, length,
+                                                   heap);
 }
 
 inline JSLinearString::JSLinearString(const char16_t* chars, size_t length,
                                       bool hasBuffer) {
-  uint32_t flags = INIT_LINEAR_FLAGS | (hasBuffer ? HAS_STRING_BUFFER_BIT : 0);
-  setLengthAndFlags(length, flags);
+  uint32_t flags =
+      StringFlags::linearStringFlags(js::CharEncoding::TwoByte, hasBuffer);
+  initLengthAndFlags(length, flags);
   // Check that the new buffer is located in the StringBufferArena.
   checkStringCharsArena(chars, hasBuffer);
   d.s.u2.nonInlineCharsTwoByte = chars;
@@ -431,9 +484,9 @@ inline JSLinearString::JSLinearString(const char16_t* chars, size_t length,
 
 inline JSLinearString::JSLinearString(const JS::Latin1Char* chars,
                                       size_t length, bool hasBuffer) {
-  uint32_t flags = INIT_LINEAR_FLAGS | LATIN1_CHARS_BIT |
-                   (hasBuffer ? HAS_STRING_BUFFER_BIT : 0);
-  setLengthAndFlags(length, flags);
+  uint32_t flags =
+      StringFlags::linearStringFlags(js::CharEncoding::Latin1, hasBuffer);
+  initLengthAndFlags(length, flags);
   // Check that the new buffer is located in the StringBufferArena.
   checkStringCharsArena(chars, hasBuffer);
   d.s.u2.nonInlineCharsLatin1 = chars;
@@ -450,36 +503,22 @@ inline JSLinearString::JSLinearString(
   if (isTenured()) {
     chars.ensureNonNursery();
   }
-  uint32_t flags = INIT_LINEAR_FLAGS;
-  if (chars.hasStringBuffer()) {
-    flags |= HAS_STRING_BUFFER_BIT;
-  }
-  if constexpr (std::is_same_v<CharT, char16_t>) {
-    setLengthAndFlags(chars.length(), flags);
-    d.s.u2.nonInlineCharsTwoByte = chars.data();
-  } else {
-    setLengthAndFlags(chars.length(), flags | LATIN1_CHARS_BIT);
+  constexpr js::CharEncoding encoding = js::CharEncodingFromType<CharT>();
+  uint32_t flags =
+      StringFlags::linearStringFlags(encoding, chars.hasStringBuffer());
+  initLengthAndFlags(chars.length(), flags);
+  if constexpr (encoding == js::CharEncoding::Latin1) {
     d.s.u2.nonInlineCharsLatin1 = chars.data();
+  } else {
+    d.s.u2.nonInlineCharsTwoByte = chars.data();
   }
 }
 
 void JSLinearString::disownCharsBecauseError() {
-  setLengthAndFlags(0, INIT_LINEAR_FLAGS | LATIN1_CHARS_BIT);
+  setLengthAndFlags(
+      0, StringFlags::linearStringFlags(js::CharEncoding::Latin1,
+                                        /* hasStringBuffer = */ false));
   d.s.u2.nonInlineCharsLatin1 = nullptr;
-}
-
-inline JSLinearString* JSDependentString::rootBaseDuringMinorGC() {
-  JSLinearString* root = this;
-  while (MaybeForwarded(root)->hasBase()) {
-    if (root->isForwarded()) {
-      root = js::gc::StringRelocationOverlay::fromCell(root)
-                 ->savedNurseryBaseOrRelocOverlay();
-    } else {
-      // Possibly nursery or tenured string (not an overlay).
-      root = root->nurseryBaseOrRelocOverlay();
-    }
-  }
-  return root;
 }
 
 template <js::AllowGC allowGC, typename CharT>
@@ -563,9 +602,6 @@ inline js::PropertyName* JSLinearString::toPropertyName(JSContext* cx) {
   uint32_t dummy;
   MOZ_ASSERT(!isIndex(&dummy));
 #endif
-  if (isAtom()) {
-    return asAtom().asPropertyName();
-  }
   JSAtom* atom = js::AtomizeString(cx, this);
   if (!atom) {
     return nullptr;
@@ -618,26 +654,31 @@ MOZ_ALWAYS_INLINE JSFatInlineString* JSFatInlineString::new_(
 inline JSThinInlineString::JSThinInlineString(size_t length,
                                               JS::Latin1Char** chars) {
   MOZ_ASSERT(lengthFits<JS::Latin1Char>(length));
-  setLengthAndFlags(length, INIT_THIN_INLINE_FLAGS | LATIN1_CHARS_BIT);
+  uint32_t flags = StringFlags::thinInlineStringFlags(js::CharEncoding::Latin1);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageLatin1;
 }
 
 inline JSThinInlineString::JSThinInlineString(size_t length, char16_t** chars) {
   MOZ_ASSERT(lengthFits<char16_t>(length));
-  setLengthAndFlags(length, INIT_THIN_INLINE_FLAGS);
+  uint32_t flags =
+      StringFlags::thinInlineStringFlags(js::CharEncoding::TwoByte);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageTwoByte;
 }
 
 inline JSFatInlineString::JSFatInlineString(size_t length,
                                             JS::Latin1Char** chars) {
   MOZ_ASSERT(lengthFits<JS::Latin1Char>(length));
-  setLengthAndFlags(length, INIT_FAT_INLINE_FLAGS | LATIN1_CHARS_BIT);
+  uint32_t flags = StringFlags::fatInlineStringFlags(js::CharEncoding::Latin1);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageLatin1;
 }
 
 inline JSFatInlineString::JSFatInlineString(size_t length, char16_t** chars) {
   MOZ_ASSERT(lengthFits<char16_t>(length));
-  setLengthAndFlags(length, INIT_FAT_INLINE_FLAGS);
+  uint32_t flags = StringFlags::fatInlineStringFlags(js::CharEncoding::TwoByte);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageTwoByte;
 }
 
@@ -645,7 +686,8 @@ inline JSExternalString::JSExternalString(
     const char16_t* chars, size_t length,
     const JSExternalStringCallbacks* callbacks) {
   MOZ_ASSERT(callbacks);
-  setLengthAndFlags(length, EXTERNAL_FLAGS);
+  uint32_t flags = StringFlags::externalStringFlags(js::CharEncoding::TwoByte);
+  initLengthAndFlags(length, flags);
   d.s.u2.nonInlineCharsTwoByte = chars;
   d.s.u3.externalCallbacks = callbacks;
 }
@@ -654,7 +696,8 @@ inline JSExternalString::JSExternalString(
     const JS::Latin1Char* chars, size_t length,
     const JSExternalStringCallbacks* callbacks) {
   MOZ_ASSERT(callbacks);
-  setLengthAndFlags(length, EXTERNAL_FLAGS | LATIN1_CHARS_BIT);
+  uint32_t flags = StringFlags::externalStringFlags(js::CharEncoding::Latin1);
+  initLengthAndFlags(length, flags);
   d.s.u2.nonInlineCharsLatin1 = chars;
   d.s.u3.externalCallbacks = callbacks;
 }
@@ -701,16 +744,14 @@ inline js::NormalAtom::NormalAtom(const OwnedChars<CharT>& chars,
   // Check that the new buffer is located in the StringBufferArena
   checkStringCharsArena(chars.data(), chars.hasStringBuffer());
 
-  uint32_t flags = INIT_LINEAR_FLAGS | ATOM_BIT;
-  if (chars.hasStringBuffer()) {
-    flags |= HAS_STRING_BUFFER_BIT;
-  }
+  constexpr js::CharEncoding encoding = js::CharEncodingFromType<CharT>();
+  uint32_t flags =
+      StringFlags::normalAtomFlags(encoding, chars.hasStringBuffer());
+  initLengthAndFlags(chars.length(), flags);
 
   if constexpr (std::is_same_v<CharT, char16_t>) {
-    setLengthAndFlags(chars.length(), flags);
     d.s.u2.nonInlineCharsTwoByte = chars.data();
   } else {
-    setLengthAndFlags(chars.length(), flags | LATIN1_CHARS_BIT);
     d.s.u2.nonInlineCharsLatin1 = chars.data();
   }
 }
@@ -719,15 +760,16 @@ inline js::NormalAtom::NormalAtom(const OwnedChars<CharT>& chars,
 inline js::ThinInlineAtom::ThinInlineAtom(size_t length, JS::Latin1Char** chars,
                                           js::HashNumber hash)
     : NormalAtom(hash) {
-  setLengthAndFlags(length,
-                    INIT_THIN_INLINE_FLAGS | LATIN1_CHARS_BIT | ATOM_BIT);
+  uint32_t flags = StringFlags::thinInlineAtomFlags(js::CharEncoding::Latin1);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageLatin1;
 }
 
 inline js::ThinInlineAtom::ThinInlineAtom(size_t length, char16_t** chars,
                                           js::HashNumber hash)
     : NormalAtom(hash) {
-  setLengthAndFlags(length, INIT_THIN_INLINE_FLAGS | ATOM_BIT);
+  uint32_t flags = StringFlags::thinInlineAtomFlags(js::CharEncoding::TwoByte);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageTwoByte;
 }
 #endif
@@ -736,8 +778,8 @@ inline js::FatInlineAtom::FatInlineAtom(size_t length, JS::Latin1Char** chars,
                                         js::HashNumber hash)
     : hash_(hash) {
   MOZ_ASSERT(lengthFits<JS::Latin1Char>(length));
-  setLengthAndFlags(length,
-                    INIT_FAT_INLINE_FLAGS | LATIN1_CHARS_BIT | ATOM_BIT);
+  uint32_t flags = StringFlags::fatInlineAtomFlags(js::CharEncoding::Latin1);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageLatin1;
 }
 
@@ -745,7 +787,8 @@ inline js::FatInlineAtom::FatInlineAtom(size_t length, char16_t** chars,
                                         js::HashNumber hash)
     : hash_(hash) {
   MOZ_ASSERT(lengthFits<char16_t>(length));
-  setLengthAndFlags(length, INIT_FAT_INLINE_FLAGS | ATOM_BIT);
+  uint32_t flags = StringFlags::fatInlineAtomFlags(js::CharEncoding::TwoByte);
+  initLengthAndFlags(length, flags);
   *chars = d.inlineStorageTwoByte;
 }
 

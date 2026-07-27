@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define LAYOUT_SVG_SVGCONTEXTPAINT_H_
 
 #include "DrawMode.h"
+#include "ImgDrawResult.h"
 #include "gfxMatrix.h"
 #include "gfxPattern.h"
 #include "gfxTypes.h"
@@ -16,10 +15,9 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/gfx/2D.h"
 #include "nsColor.h"
+#include "nsRefPtrHashtable.h"
 #include "nsStyleStruct.h"
 #include "nsTArray.h"
-#include "ImgDrawResult.h"
-#include "nsRefPtrHashtable.h"
 
 class gfxContext;
 
@@ -212,7 +210,7 @@ struct SVGContextPaintImpl : public SVGContextPaint {
 
     already_AddRefed<gfxPattern> GetPattern(
         const DrawTarget* aDrawTarget, float aOpacity,
-        StyleSVGPaint nsStyleSVG::*aFillOrStroke, const gfxMatrix& aCTM,
+        StyleSVGPaint nsStyleSVG::* aFillOrStroke, const gfxMatrix& aCTM,
         imgDrawingParams& aImgParams);
   };
 

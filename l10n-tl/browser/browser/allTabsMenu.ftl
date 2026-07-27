@@ -5,13 +5,13 @@
 # "Search" is a verb, as in "Search through tabs".
 all-tabs-menu-search-tabs =
     .label = Hanapin sa mga tab
-
 all-tabs-menu-new-user-context =
-    .label = Bagong Container Tab
-
+    .label = Bagong container tab
 all-tabs-menu-hidden-tabs =
-    .label = Mga Nakatagong Tab
-
+    .label = Mga nakatagong tab
 all-tabs-menu-manage-user-context =
-    .label = Manage Containers
-    .accesskey = O
+    .label = Pamahalaan ang mga container
+    .accesskey = c
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Mga tab group

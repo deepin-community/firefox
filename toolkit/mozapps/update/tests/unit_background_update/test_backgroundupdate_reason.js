@@ -1,6 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim: sw=2 ts=2 sts=2 et
- * this source code form is subject to the terms of the mozilla public license,
+/* this source code form is subject to the terms of the mozilla public license,
  * v. 2.0. if a copy of the mpl was not distributed with this file, you can
  * obtain one at http://mozilla.org/mpl/2.0/. */
 
@@ -21,7 +19,7 @@ add_setup(async function test_setup() {
 
   // We need to initialize it once, otherwise operations will be stuck in the
   // pre-init queue.
-  Services.fog.initializeFOG();
+  Services.fog.initializeFOG(undefined, "firefox.desktop.background.update");
 });
 
 // Because we want to use the keys from REASON as strings and send these with
@@ -58,9 +56,9 @@ add_task(async function test_reasons_overflow() {
   }
 });
 
-add_task(() => {
+add_task(async () => {
   // `setupTestCommon()` calls `do_test_pending()`; this calls
   // `do_test_finish()`.  The `add_task` schedules this to run after all the
   // other tests have completed.
-  doTestFinish();
+  await doTestFinish();
 });

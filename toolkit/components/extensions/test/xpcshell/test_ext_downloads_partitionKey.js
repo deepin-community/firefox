@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { Downloads } = ChromeUtils.importESModule(
@@ -114,7 +112,6 @@ add_task(function setup() {
     Ci.nsIFile,
     downloadDir
   );
-  Services.prefs.setBoolPref("privacy.partition.network_state", true);
 
   Services.prefs.setIntPref(
     "network.cookie.cookieBehavior",
@@ -128,7 +125,6 @@ add_task(function setup() {
   registerCleanupFunction(() => {
     Services.prefs.clearUserPref("browser.download.folderList");
     Services.prefs.clearUserPref("browser.download.dir");
-    Services.prefs.clearUserPref("privacy.partition.network_state");
     Services.prefs.clearUserPref("network.cookie.cookieBehavior");
     Services.prefs.clearUserPref("network.cookie.cookieBehavior.pbmode");
 
@@ -180,19 +176,11 @@ add_task(async function test() {
 
   // Call download() to check partitionKey of the download channel for the
   // regular browsing mode.
-  await testDownload(
-    TEST_URL,
-    `(http,localhost,${server.identity.primaryPort})`,
-    false
-  );
+  await testDownload(TEST_URL, `(http,localhost)`, false);
   remove(TEST_FILE);
 
   // Call download again for the private browsing mode.
-  await testDownload(
-    TEST_URL,
-    `(http,localhost,${server.identity.primaryPort})`,
-    true
-  );
+  await testDownload(TEST_URL, `(http,localhost)`, true);
   remove(TEST_FILE);
 
   await extension.unload();

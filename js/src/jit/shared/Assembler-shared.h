@@ -1,15 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef jit_shared_Assembler_shared_h
 #define jit_shared_Assembler_shared_h
 
-#include "mozilla/CheckedInt.h"
+#if JS_BITS_PER_WORD == 32
+#  include "mozilla/CheckedInt.h"
+#endif
 #include "mozilla/DebugOnly.h"
 
+#include <bit>
 #include <limits.h>
 #include <utility>  // std::pair
 
@@ -18,6 +19,7 @@
 #include "jit/JitAllocPolicy.h"
 #include "jit/JitCode.h"
 #include "jit/JitContext.h"
+#include "jit/JitSpewer.h"
 #include "jit/Label.h"
 #include "jit/Registers.h"
 #include "jit/RegisterSets.h"
@@ -27,16 +29,15 @@
 #include "wasm/WasmConstants.h"
 
 #if defined(JS_CODEGEN_ARM) || defined(JS_CODEGEN_ARM64) ||      \
-    defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) ||  \
-    defined(JS_CODEGEN_LOONG64) || defined(JS_CODEGEN_WASM32) || \
-    defined(JS_CODEGEN_RISCV64)
+    defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_LOONG64) || \
+    defined(JS_CODEGEN_WASM32) || defined(JS_CODEGEN_RISCV64)
 // Push return addresses callee-side.
 #  define JS_USE_LINK_REGISTER
 #endif
 
-#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
-    defined(JS_CODEGEN_ARM64) || defined(JS_CODEGEN_LOONG64) || \
-    defined(JS_CODEGEN_RISCV64) || defined(JS_CODEGEN_ARM)
+#if defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_ARM64) ||    \
+    defined(JS_CODEGEN_LOONG64) || defined(JS_CODEGEN_RISCV64) || \
+    defined(JS_CODEGEN_ARM)
 // JS_CODELABEL_LINKMODE gives labels additional metadata
 // describing how Bind() should patch them.
 #  define JS_CODELABEL_LINKMODE
@@ -245,11 +246,13 @@ class ImmGCPtr {
   explicit ImmGCPtr(const gc::Cell* ptr) : value(ptr) {
     // Nursery pointers can't be used if the main thread might be currently
     // performing a minor GC.
-    MOZ_ASSERT_IF(ptr && !ptr->isTenured(), !CurrentThreadIsIonCompiling());
+    MOZ_ASSERT_IF(ptr && !ptr->isTenured(),
+                  !CurrentThreadIsOffThreadCompiling());
 
     // wasm shouldn't be creating GC things
     MOZ_ASSERT(!IsCompilingWasm());
   }
+  explicit ImmGCPtr(const JSOffThreadAtom* atom) : ImmGCPtr(atom->raw()) {}
 
  private:
   ImmGCPtr() : value(0) {}
@@ -545,7 +548,7 @@ class MemoryAccessDesc {
   uint32_t align_;
   Scalar::Type type_;
   jit::Synchronization sync_;
-  wasm::BytecodeOffset trapOffset_;
+  wasm::TrapSiteDesc trapDesc_;
   wasm::SimdOp widenOp_;
   enum { Plain, ZeroExtend, Splat, Widen } loadOp_;
   // Used for an assertion in MacroAssembler about offset length
@@ -554,18 +557,18 @@ class MemoryAccessDesc {
  public:
   explicit MemoryAccessDesc(
       uint32_t memoryIndex, Scalar::Type type, uint32_t align, uint64_t offset,
-      BytecodeOffset trapOffset, mozilla::DebugOnly<bool> hugeMemory,
+      wasm::TrapSiteDesc trapDesc, mozilla::DebugOnly<bool> hugeMemory,
       jit::Synchronization sync = jit::Synchronization::None())
       : memoryIndex_(memoryIndex),
         offset_(offset),
         align_(align),
         type_(type),
         sync_(sync),
-        trapOffset_(trapOffset),
+        trapDesc_(trapDesc),
         widenOp_(wasm::SimdOp::Limit),
         loadOp_(Plain),
         hugeMemory_(hugeMemory) {
-    MOZ_ASSERT(mozilla::IsPowerOfTwo(align));
+    MOZ_ASSERT(std::has_single_bit(align));
   }
 
   uint32_t memoryIndex() const {
@@ -596,7 +599,7 @@ class MemoryAccessDesc {
   Scalar::Type type() const { return type_; }
   unsigned byteSize() const { return Scalar::byteSize(type()); }
   jit::Synchronization sync() const { return sync_; }
-  BytecodeOffset trapOffset() const { return trapOffset_; }
+  const TrapSiteDesc& trapDesc() const { return trapDesc_; }
   wasm::SimdOp widenSimdOp() const {
     MOZ_ASSERT(isWidenSimd128Load());
     return widenOp_;
@@ -643,13 +646,15 @@ namespace jit {
 
 // The base class of all Assemblers for all archs.
 class AssemblerShared {
-  wasm::CallSiteVector callSites_;
+  wasm::InliningContext inliningContext_;
+  wasm::CallSites callSites_;
   wasm::CallSiteTargetVector callSiteTargets_;
-  wasm::TrapSiteVectorArray trapSites_;
+  wasm::TrapSites trapSites_;
   wasm::SymbolicAccessVector symbolicAccesses_;
   wasm::TryNoteVector tryNotes_;
   wasm::CodeRangeUnwindInfoVector codeRangesUnwind_;
   wasm::CallRefMetricsPatchVector callRefMetricsPatches_;
+  wasm::AllocSitePatchVector allocSitesPatches_;
 
 #ifdef DEBUG
   // To facilitate figuring out which part of SM created each instruction as
@@ -701,17 +706,22 @@ class AssemblerShared {
   template <typename... Args>
   void append(const wasm::CallSiteDesc& desc, CodeOffset retAddr,
               Args&&... args) {
-    enoughMemory_ &= callSites_.emplaceBack(desc, retAddr.offset());
+    enoughMemory_ &= callSites_.append(desc, retAddr.offset());
     enoughMemory_ &= callSiteTargets_.emplaceBack(std::forward<Args>(args)...);
   }
-  void append(wasm::Trap trap, wasm::TrapSite site) {
-    enoughMemory_ &= trapSites_[trap].append(site);
+  void append(wasm::Trap trap, wasm::TrapMachineInsn insn, uint32_t pcOffset,
+              const wasm::TrapSiteDesc& desc) {
+    enoughMemory_ &= trapSites_.append(trap, insn, pcOffset, desc);
+#ifdef JS_JITSPEW
+    if (JitSpewEnabled(JitSpew_Codegen)) {
+      JitSpew(jit::JitSpew_Codegen, "%06x  # <-- @ w::TrapSiteDesc, kind = %s",
+              pcOffset, NameOfTrap(trap));
+    }
+#endif
   }
   void append(const wasm::MemoryAccessDesc& access, wasm::TrapMachineInsn insn,
-              FaultingCodeOffset assemblerOffsetOfFaultingMachineInsn) {
-    append(wasm::Trap::OutOfBounds,
-           wasm::TrapSite(insn, assemblerOffsetOfFaultingMachineInsn,
-                          access.trapOffset()));
+              FaultingCodeOffset pcOffset) {
+    append(wasm::Trap::OutOfBounds, insn, pcOffset.get(), access.trapDesc());
   }
   void append(wasm::SymbolicAccess access) {
     enoughMemory_ &= symbolicAccesses_.append(access);
@@ -734,10 +744,14 @@ class AssemblerShared {
   void append(wasm::CallRefMetricsPatch patch) {
     enoughMemory_ &= callRefMetricsPatches_.append(patch);
   }
+  void append(wasm::AllocSitePatch patch) {
+    enoughMemory_ &= allocSitesPatches_.append(patch);
+  }
 
-  wasm::CallSiteVector& callSites() { return callSites_; }
+  wasm::InliningContext& inliningContext() { return inliningContext_; }
+  wasm::CallSites& callSites() { return callSites_; }
   wasm::CallSiteTargetVector& callSiteTargets() { return callSiteTargets_; }
-  wasm::TrapSiteVectorArray& trapSites() { return trapSites_; }
+  wasm::TrapSites& trapSites() { return trapSites_; }
   wasm::SymbolicAccessVector& symbolicAccesses() { return symbolicAccesses_; }
   wasm::TryNoteVector& tryNotes() { return tryNotes_; }
   wasm::CodeRangeUnwindInfoVector& codeRangeUnwindInfos() {
@@ -746,6 +760,7 @@ class AssemblerShared {
   wasm::CallRefMetricsPatchVector& callRefMetricsPatches() {
     return callRefMetricsPatches_;
   }
+  wasm::AllocSitePatchVector& allocSitesPatches() { return allocSitesPatches_; }
 };
 
 // AutoCreatedBy pushes and later pops a who-created-these-insns? tag into the
@@ -771,9 +786,117 @@ class MOZ_RAII AutoCreatedBy {
   inline AutoCreatedBy(AssemblerShared& ash, const char* who) {}
   // A user-defined constructor is necessary to stop some compilers from
   // complaining about unused variables.
-  inline ~AutoCreatedBy() {}
+  inline ~AutoCreatedBy() = default;
 };
 #endif
+
+// Base class for architecture specific ABIArgGenerator classes.
+class ABIArgGeneratorShared {
+ protected:
+  ABIKind kind_;
+  uint32_t stackOffset_;
+
+  explicit ABIArgGeneratorShared(ABIKind kind);
+
+ public:
+  ABIKind abi() const { return kind_; }
+  uint32_t stackBytesConsumedSoFar() const { return stackOffset_; }
+};
+
+// [SMDOC] ABI special registers
+//
+// There are a number of special registers that can be used for different
+// purposes during "ABI calls". These are defined per-architecture in their
+// Assembler-XYZ.h header. The documentation for them is centralized here to
+// keep them all in-sync.
+//
+// The WebAssembly and System ABI's are similar but distinct, and so some of
+// these can be used in both contexts and others only in one. This is
+// unfortunate and should be formalized better. See "The WASM ABIs" in
+// WasmFrame.h for documentation on the Wasm ABI.
+//
+// The relevant similarities/differences for ABI registers are that:
+//   1. Wasm functions have special InstanceReg/HeapReg registers.
+//   2. Wasm functions do not have non-volatile registers.
+//   3. Wasm and System ABI have the same integer argument and return registers.
+//   4. Wasm and System ABI may have different FP argument and return registers.
+//      (notably ARM32 softfp and x87 FP are different).
+//
+// TODO: understand and describe the relationship with the various
+// MacroAssembler scratch registers. It looks like all of these must be
+// distinct from the MacroAssembler scratch registers.
+//
+// # InstanceReg
+//
+// Instance pointer argument register for WebAssembly functions in the
+// WebAssembly ABI.
+//
+// This must not alias any other register used for passing function arguments
+// or return values. Preserved by WebAssembly functions.
+//
+// The register must be non-volatile in the system ABI, as some code relies on
+// this to avoid reloading the register.
+//
+// See "The WASM ABIs" in WasmFrame.h for more information.
+//
+// # HeapReg
+//
+// Pointer to the base of (memory 0) for WebAssembly functions in the
+// WebAssembly ABI.
+//
+// This must not alias any other register used for passing function arguments
+// or return values. Preserved by WebAssembly functions.
+//
+// The register must be non-volatile in the system ABI, as some code relies on
+// this to avoid reloading the register.
+//
+// This register is not available on all architectures. It is notably absent
+// from x86.
+//
+// See "The WASM ABIs" in WasmFrame.h for more information.
+//
+// # ABINonArgReg (4 available)
+//
+// A register that can be clobbered in the prologue of a function.
+//
+// They are each distinct and have the following guarantees:
+//   - Will not be a System/Wasm ABI argument register.
+//   - Will not be the InstanceReg or HeapReg.
+//   - Could be a System/Wasm ABI result register.
+//   - Could be a System ABI non-volatile register.
+//
+// # ABINonArgDoubleReg (1 available)
+//
+// A floating-point register that can be clobbered in the prologue of a
+// function. May be volatile or non-volatile.
+//
+// # ABINonArgReturnReg (2 available)
+//
+// A register that can be clobbered in the prologue or epilogue of a function.
+//
+// They are each distinct and have the following guarantees:
+//   - All the guarantees of ABINonArgReg.
+//   - Will not be a System/Wasm ABI return register.
+//   - Will be distinct from ABINonVolatileReg (see below).
+//
+// There are only two of these, and the constraint is x86.
+//
+// # ABINonVolatileReg (1 available)
+//
+// A register that is:
+//   - Non-volatile in the System ABI
+//   - (implied by above) Not an argument or return register.
+//   - Distinct from the ABINonArgReturnReg.
+//
+// # ABINonArgReturnVolatileReg (1 available)
+//
+// A register that can be clobbered in the prologue or epilogue of a system ABI
+// function.
+//
+// They are each distinct and have the following guarantees:
+//   - All the guarantees of ABINonArgReturnReg.
+//   - Will be a volatile register in the System ABI.
+//
 
 }  // namespace jit
 }  // namespace js

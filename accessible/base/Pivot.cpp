@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -328,4 +327,20 @@ uint16_t MustPruneSameDocRule::Match(Accessible* aAcc) {
   }
 
   return nsIAccessibleTraversalRule::FILTER_MATCH;
+}
+
+// ARIA Selected Rule
+
+uint16_t PivotARIASelectedRule::Match(Accessible* aAcc) {
+  uint16_t result = nsIAccessibleTraversalRule::FILTER_IGNORE;
+
+  if (nsAccUtils::MustPrune(aAcc)) {
+    result |= nsIAccessibleTraversalRule::FILTER_IGNORE_SUBTREE;
+  }
+
+  if (aAcc && aAcc->ARIASelected()) {
+    result = nsIAccessibleTraversalRule::FILTER_MATCH;
+  }
+
+  return result;
 }

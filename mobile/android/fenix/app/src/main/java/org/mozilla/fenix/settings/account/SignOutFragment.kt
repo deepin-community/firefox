@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
@@ -21,6 +20,7 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.FragmentSignOutBinding
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
+import com.google.android.material.R as materialR
 
 class SignOutFragment : AppCompatDialogFragment() {
     private lateinit var accountManager: FxaAccountManager
@@ -36,8 +36,7 @@ class SignOutFragment : AppCompatDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         BottomSheetDialog(requireContext(), this.theme).apply {
             setOnShowListener {
-                val bottomSheet =
-                    findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
+                val bottomSheet = findViewById<View>(materialR.id.design_bottom_sheet) as FrameLayout
                 val behavior = BottomSheetBehavior.from(bottomSheet)
                 behavior.state = BottomSheetBehavior.STATE_EXPANDED
             }
@@ -73,7 +72,6 @@ class SignOutFragment : AppCompatDialogFragment() {
                     if (this.isVisible) {
                         dismiss()
                     }
-                    findNavController().popBackStack()
                 }
             }
         }

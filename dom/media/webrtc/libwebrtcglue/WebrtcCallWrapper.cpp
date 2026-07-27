@@ -1,45 +1,33 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebrtcCallWrapper.h"
 
-#include "jsapi/PeerConnectionCtx.h"
 #include "MediaConduitInterface.h"
-#include "TaskQueueWrapper.h"
-
-// libwebrtc includes
-#include "api/environment/environment.h"
-#include "api/environment/environment_factory.h"
-#include "call/rtp_transport_controller_send_factory.h"
+#include "jsapi/PeerConnectionCtx.h"
+#include "libwebrtcglue/WebrtcEnvironmentWrapper.h"
 
 namespace mozilla {
 
 /* static */ RefPtr<WebrtcCallWrapper> WebrtcCallWrapper::Create(
+    RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
     const dom::RTCStatsTimestampMaker& aTimestampMaker,
     UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket,
     const RefPtr<SharedWebrtcState>& aSharedState) {
-  auto eventLog = MakeUnique<webrtc::RtcEventLogNull>();
-  auto taskQueueFactory = MakeUnique<SharedThreadPoolWebRtcTaskQueueFactory>();
   auto videoBitrateAllocatorFactory =
       WrapUnique(webrtc::CreateBuiltinVideoBitrateAllocatorFactory().release());
   RefPtr<WebrtcCallWrapper> wrapper = new WebrtcCallWrapper(
       aSharedState, std::move(videoBitrateAllocatorFactory),
-      std::move(eventLog), std::move(taskQueueFactory), aTimestampMaker,
-      std::move(aShutdownTicket));
-
-  webrtc::Environment env = CreateEnvironment(
-      wrapper->mEventLog.get(), wrapper->mClock.GetRealTimeClockRaw(),
-      wrapper->mTaskQueueFactory.get(), aSharedState->mTrials.get());
+      std::move(aEnvWrapper), aTimestampMaker, std::move(aShutdownTicket));
 
   wrapper->mCallThread->Dispatch(
-      NS_NewRunnableFunction(__func__, [wrapper, aSharedState, env] {
-        webrtc::CallConfig config(env, nullptr);
+      NS_NewRunnableFunction(__func__, [wrapper, aSharedState] {
+        webrtc::CallConfig config(wrapper->mEnvWrapper->Environment(), nullptr);
         config.audio_state =
             webrtc::AudioState::Create(aSharedState->mAudioStateConfig);
-        wrapper->SetCall(WrapUnique(webrtc::Call::Create(config).release()));
+        wrapper->SetCall(
+            WrapUnique(webrtc::Call::Create(std::move(config)).release()));
       }));
 
   return wrapper;
@@ -90,8 +78,7 @@ WebrtcCallWrapper::WebrtcCallWrapper(
     RefPtr<SharedWebrtcState> aSharedState,
     UniquePtr<webrtc::VideoBitrateAllocatorFactory>
         aVideoBitrateAllocatorFactory,
-    UniquePtr<webrtc::RtcEventLog> aEventLog,
-    UniquePtr<webrtc::TaskQueueFactory> aTaskQueueFactory,
+    RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
     const dom::RTCStatsTimestampMaker& aTimestampMaker,
     UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket)
     : mSharedState(std::move(aSharedState)),
@@ -100,7 +87,6 @@ WebrtcCallWrapper::WebrtcCallWrapper(
       mCallThread(mSharedState->mCallWorkerThread),
       mAudioDecoderFactory(mSharedState->mAudioDecoderFactory),
       mVideoBitrateAllocatorFactory(std::move(aVideoBitrateAllocatorFactory)),
-      mEventLog(std::move(aEventLog)),
-      mTaskQueueFactory(std::move(aTaskQueueFactory)) {}
+      mEnvWrapper(std::move(aEnvWrapper)) {}
 
 }  // namespace mozilla

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -35,7 +34,10 @@ already_AddRefed<GLContext> GLContextProviderLinux::CreateForCompositorWidget(
 /*static*/
 already_AddRefed<GLContext> GLContextProviderLinux::CreateHeadless(
     const GLContextCreateDesc& desc, nsACString* const out_failureId) {
-  if (gfxVars::UseEGL()) {
+  if (gfxVars::UseEGL() ||
+      bool(desc.flags & CreateContextFlags::FORBID_HARDWARE)) {
+    // We request EGL if software is required, because we don't know
+    // what X11 is using. It could be software or hardware.
     return sGLContextProviderEGL.CreateHeadless(desc, out_failureId);
 #ifdef MOZ_X11
   } else {

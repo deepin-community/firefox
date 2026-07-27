@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Nastavitve
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Nastavitve …
+menu-application-set-as-default =
+    .label = Nastavi { -brand-shorter-name(sklon: "tozilnik") } kot privzeti brskalnik
 menu-application-services =
     .label = Storitve
 menu-application-hide-this =
@@ -99,6 +92,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Deli
     .accesskey = D
+menu-file-share-qrcode =
+    .label = Ustvari kodo QR …
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Ustvari kodo QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = Priprava strani …
     .accesskey = r
@@ -147,8 +146,6 @@ menu-view-history-button =
     .label = Zgodovina
 menu-view-synced-tabs-sidebar =
     .label = Sinhronizirani zavihki
-menu-view-megalist-sidebar =
-    .label = Gesla
 menu-view-full-zoom =
     .label = Povečava
     .accesskey = P
@@ -256,6 +253,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilni zaznamki
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profili
+menu-profiles-manage-profiles =
+    .label = Upravljanje profilov
+menu-profiles-new-profile =
+    .label = Nov profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (trenutni)
+menu-profiles-menu =
+    .label = Profili
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -264,6 +277,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Prenosi
     .accesskey = P
+menu-tools-extensions-and-themes =
+    .label = Razširitve in teme
+    .accesskey = e
 menu-tools-addons-and-themes =
     .label = Dodatki in teme
     .accesskey = D
@@ -341,7 +357,7 @@ menu-help-exit-troubleshoot-mode =
     .label = Izključi način za odpravljanje težav
     .accesskey = I
 menu-help-switch-device =
-    .label = Preklapljanje na novo napravo
+    .label = Prehod na novo napravo
     .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

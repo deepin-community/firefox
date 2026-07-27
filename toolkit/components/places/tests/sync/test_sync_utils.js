@@ -1,7 +1,3 @@
-ChromeUtils.defineESModuleGetters(this, {
-  Preferences: "resource://gre/modules/Preferences.sys.mjs",
-});
-
 var makeGuid = PlacesUtils.history.makeGuid;
 
 function shuffle(array) {
@@ -200,9 +196,8 @@ add_task(async function test_determineNonSyncableGuids() {
   }
 
   // Filter the visits.
-  let filteredGuids = await PlacesSyncUtils.history.determineNonSyncableGuids(
-    guids
-  );
+  let filteredGuids =
+    await PlacesSyncUtils.history.determineNonSyncableGuids(guids);
 
   let filtered = [TRANSITION_FRAMED_LINK, TRANSITION_DOWNLOAD];
   // Check if the filtered visits are of type TRANSITION_FRAMED_LINK.
@@ -1924,10 +1919,8 @@ add_task(async function test_separator() {
     url: "https://bar.foo",
   });
 
-  let child2Guid = await PlacesSyncUtils.bookmarks.recordIdToGuid(
-    childBmk.recordId
-  );
-  let parentGuid = await await PlacesSyncUtils.bookmarks.recordIdToGuid("menu");
+  let child2Guid = PlacesSyncUtils.bookmarks.recordIdToGuid(childBmk.recordId);
+  let parentGuid = PlacesSyncUtils.bookmarks.recordIdToGuid("menu");
   let separatorGuid =
     PlacesSyncUtils.bookmarks.recordIdToGuid(separatorRecordId);
 
@@ -2159,11 +2152,10 @@ add_task(async function test_remove_partial() {
 });
 
 add_task(async function test_migrateOldTrackerEntries() {
-  let timerPrecision = Preferences.get("privacy.reduceTimerPrecision");
-  Preferences.set("privacy.reduceTimerPrecision", false);
+  Services.prefs.setBoolPref("privacy.reduceTimerPrecision", false);
 
   registerCleanupFunction(function () {
-    Preferences.set("privacy.reduceTimerPrecision", timerPrecision);
+    Services.prefs.clearUserPref("privacy.reduceTimerPrecision");
   });
 
   let unknownBmk = await PlacesUtils.bookmarks.insert({

@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __SANDBOXPRIVATE_H__
-#define __SANDBOXPRIVATE_H__
+#ifndef SANDBOXPRIVATE_H_
+#define SANDBOXPRIVATE_H_
 
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/StaticPrefs_dom.h"
@@ -72,16 +70,20 @@ class SandboxPrivate final : public nsIGlobalObject,
     return GetWrapperPreserveColor();
   }
 
+  nsICookieJarSettings* GetCookieJarSettings() override {
+    MOZ_ASSERT(NS_IsMainThread());
+    return mCookieJarSettings;
+  }
+
   mozilla::StorageAccess GetStorageAccess() final {
     MOZ_ASSERT(NS_IsMainThread());
     if (mozilla::StaticPrefs::dom_serviceWorkers_testing_enabled()) {
       // XXX: This is a hack to workaround bug 1732159 and is not intended
       return mozilla::StorageAccess::eAllow;
     }
-    nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
-        mozilla::net::CookieJarSettings::Create(mPrincipal);
+
     return mozilla::StorageAllowedForServiceWorker(mPrincipal,
-                                                   cookieJarSettings);
+                                                   mCookieJarSettings);
   }
 
   void ForgetGlobalObject(JSObject* obj) { ClearWrapper(obj); }
@@ -115,14 +117,21 @@ class SandboxPrivate final : public nsIGlobalObject,
         aTarget);
   }
 
+  bool IsXPCSandbox() override { return true; }
+
  private:
-  explicit SandboxPrivate(nsIPrincipal* principal) : mPrincipal(principal) {}
+  explicit SandboxPrivate(nsIPrincipal* principal)
+      : mPrincipal(principal),
+        mCookieJarSettings(
+            mozilla::net::CookieJarSettings::Create(mPrincipal)) {}
 
   virtual ~SandboxPrivate() = default;
 
   nsCOMPtr<nsIPrincipal> mPrincipal;
 
+  nsCOMPtr<nsICookieJarSettings> mCookieJarSettings;
+
   RefPtr<JS::loader::ModuleLoaderBase> mModuleLoader;
 };
 
-#endif  // __SANDBOXPRIVATE_H__
+#endif  // SANDBOXPRIVATE_H_

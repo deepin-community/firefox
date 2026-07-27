@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +9,6 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/UniquePtr.h"
 #include "nsCOMPtr.h"
 #include "nsIObserver.h"
 #include "nsIProxyInfo.h"
@@ -24,9 +22,6 @@
 namespace mozilla {
 class OriginAttributes;
 }  // namespace mozilla
-
-const uint32_t kIPCClientCertsSlotTypeModern = 1;
-const uint32_t kIPCClientCertsSlotTypeLegacy = 2;
 
 using mozilla::OriginAttributes;
 
@@ -104,6 +99,9 @@ class nsSSLIOLayerHelpers : public nsIObserver {
 
   mozilla::Mutex mutex MOZ_UNANNOTATED;
   uint32_t mTlsFlags;
+#ifdef DEBUG
+  bool mRegisteredPrefObservers = false;
+#endif
 };
 
 namespace {
@@ -130,6 +128,12 @@ nsresult nsSSLIOLayerAddToSocket(int32_t family, const char* host, int32_t port,
                                  bool forSTARTTLS, uint32_t flags,
                                  uint32_t tlsFlags);
 
+SECStatus abridgedCertificatePass1Decode(const SECItem* input,
+                                         unsigned char* output,
+                                         size_t outputLen, size_t* usedLen);
+SECStatus abridgedCertificateDecode(const SECItem* input, unsigned char* output,
+                                    size_t outputLen, size_t* usedLen);
+
 SECStatus zlibCertificateDecode(const SECItem* input, unsigned char* output,
                                 size_t outputLen, size_t* usedLen);
 
@@ -142,8 +146,7 @@ SECStatus zstdCertificateDecode(const SECItem* input, unsigned char* output,
 extern "C" {
 using FindObjectsCallback = void (*)(uint8_t type, size_t id_len,
                                      const uint8_t* id, size_t data_len,
-                                     const uint8_t* data, uint32_t slotType,
-                                     void* ctx);
+                                     const uint8_t* data, void* ctx);
 void DoFindObjects(FindObjectsCallback cb, void* ctx);
 using SignCallback = void (*)(size_t data_len, const uint8_t* data, void* ctx);
 void DoSign(size_t cert_len, const uint8_t* cert, size_t data_len,

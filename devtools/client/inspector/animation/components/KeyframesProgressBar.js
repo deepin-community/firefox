@@ -7,9 +7,9 @@
 const {
   createRef,
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 
 class KeyframesProgressBar extends PureComponent {
   static get propTypes() {
@@ -89,6 +89,8 @@ class KeyframesProgressBar extends PureComponent {
 
     const timing = Object.assign({}, animation.state, {
       iterations: animation.state.iterationCount || Infinity,
+      duration:
+        animation.state.duration / animation.state.playBackRateMultiplier,
     });
 
     this.simulatedAnimation = simulateAnimationForKeyframesProgressBar(timing);

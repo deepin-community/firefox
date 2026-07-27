@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,28 +8,26 @@
 #ifndef UNICODE
 #  define UNICODE
 #endif
+// clang-format off
 #include <windows.h>
 #include <hidsdi.h>
 #include <stdio.h>
 #include <xinput.h>
+// clang-format on
 
+#include "Gamepad.h"
+#include "mozilla/dom/GamepadPlatformService.h"
+#include "mozilla/dom/GamepadRemapping.h"
+#include "mozilla/ipc/BackgroundParent.h"
 #include "nsITimer.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
 #include "nsWindowsHelpers.h"
 
-#include "mozilla/ArrayUtils.h"
-
-#include "mozilla/ipc/BackgroundParent.h"
-#include "mozilla/dom/GamepadPlatformService.h"
-#include "mozilla/dom/GamepadRemapping.h"
-#include "Gamepad.h"
-
 namespace {
 
 using namespace mozilla;
 using namespace mozilla::dom;
-using mozilla::ArrayLength;
 
 // USB HID usage tables, page 1, 0x30 = X
 const uint32_t kAxisMinimumUsageNumber = 0x30;
@@ -92,7 +88,7 @@ const struct {
                     {XINPUT_GAMEPAD_B, 1},
                     {XINPUT_GAMEPAD_X, 2},
                     {XINPUT_GAMEPAD_Y, 3}};
-const size_t kNumMappings = ArrayLength(kXIButtonMap);
+const size_t kNumMappings = std::size(kXIButtonMap);
 
 enum GamepadType { kNoGamepad = 0, kRawInputGamepad, kXInputGamepad };
 
@@ -101,7 +97,7 @@ class WindowsGamepadService;
 // it will be created and destroyed by background thread and
 // used by gMonitorThread
 WindowsGamepadService* MOZ_NON_OWNING_REF gService = nullptr;
-nsCOMPtr<nsIThread> gMonitorThread = nullptr;
+constinit nsCOMPtr<nsIThread> gMonitorThread;
 static bool sIsShutdown = false;
 
 class Gamepad {
@@ -164,7 +160,7 @@ class XInputLoader {
     // xinput1_3.dll shipped with the DirectX SDK
     const wchar_t* dlls[] = {L"xinput1_4.dll", L"xinput9_1_0.dll",
                              L"xinput1_3.dll"};
-    const size_t kNumDLLs = ArrayLength(dlls);
+    const size_t kNumDLLs = std::size(dlls);
     for (size_t i = 0; i < kNumDLLs; ++i) {
       module = LoadLibraryW(dlls[i]);
       if (module) {
@@ -229,7 +225,7 @@ double ScaleAxis(ULONG value, LONG min, LONG max) {
  * know how to handle.
  */
 bool SupportedUsage(USHORT page, USHORT usage) {
-  for (unsigned i = 0; i < ArrayLength(kUsagePages); i++) {
+  for (unsigned i = 0; i < std::size(kUsagePages); i++) {
     if (page == kUsagePages[i].usagePage && usage == kUsagePages[i].usage) {
       return true;
     }
@@ -307,7 +303,7 @@ static void DirectInputMessageLoopOnceCallback(nsITimer* aTimer,
     aTimer->InitWithNamedFuncCallback(DirectInputMessageLoopOnceCallback,
                                       nullptr, kWindowsGamepadPollInterval,
                                       nsITimer::TYPE_ONE_SHOT,
-                                      "DirectInputMessageLoopOnceCallback");
+                                      "DirectInputMessageLoopOnceCallback"_ns);
   }
 }
 
@@ -327,7 +323,7 @@ class WindowsGamepadService {
     mDirectInputTimer->InitWithNamedFuncCallback(
         DirectInputMessageLoopOnceCallback, nullptr,
         kWindowsGamepadPollInterval, nsITimer::TYPE_ONE_SHOT,
-        "DirectInputMessageLoopOnceCallback");
+        "DirectInputMessageLoopOnceCallback"_ns);
   }
 
   void Startup();
@@ -404,7 +400,7 @@ void WindowsGamepadService::XInputMessageLoopOnceCallback(nsITimer* aTimer,
     aTimer->Cancel();
     aTimer->InitWithNamedFuncCallback(
         XInputMessageLoopOnceCallback, self, kWindowsGamepadPollInterval,
-        nsITimer::TYPE_ONE_SHOT, "XInputMessageLoopOnceCallback");
+        nsITimer::TYPE_ONE_SHOT, "XInputMessageLoopOnceCallback"_ns);
   }
 }
 
@@ -486,7 +482,7 @@ void WindowsGamepadService::ScanForDevices() {
       mIsXInputMonitoring = true;
       mXInputTimer->InitWithNamedFuncCallback(
           XInputMessageLoopOnceCallback, this, kWindowsGamepadPollInterval,
-          nsITimer::TYPE_ONE_SHOT, "XInputMessageLoopOnceCallback");
+          nsITimer::TYPE_ONE_SHOT, "XInputMessageLoopOnceCallback"_ns);
     } else {
       mIsXInputMonitoring = false;
     }
@@ -510,7 +506,8 @@ void WindowsGamepadService::PollXInput() {
     XINPUT_STATE state = {};
 
     if (!mXInput.mXInputGetState ||
-        mXInput.mXInputGetState(i, &state) != ERROR_SUCCESS) {
+        mXInput.mXInputGetState(mGamepads[i].userIndex, &state) !=
+            ERROR_SUCCESS) {
       continue;
     }
 
@@ -675,7 +672,7 @@ bool WindowsGamepadService::GetRawGamepad(HANDLE handle) {
   }
   if (gamepad_name.Length() == 0 || !gamepad_name[0]) {
     const char kUnknown[] = "Unknown Gamepad";
-    gamepad_name.SetLength(ArrayLength(kUnknown));
+    gamepad_name.SetLength(std::size(kUnknown));
     strcpy_s(gamepad_name.Elements(), gamepad_name.Length(), kUnknown);
   }
 
@@ -884,8 +881,8 @@ bool WindowsGamepadService::HandleRawInput(HRAWINPUT handle) {
     }
   }
 
-  BYTE* rawData = raw->data.hid.bRawData;
-  gamepad->remapper->ProcessTouchData(gamepad->gamepadHandle, rawData);
+  gamepad->remapper->ProcessTouchData(
+      gamepad->gamepadHandle, raw->data.hid.bRawData, raw->data.hid.dwSizeHid);
 
   return true;
 }
@@ -980,15 +977,15 @@ void WindowsGamepadService::DevicesChanged(bool aIsStablizing) {
     mDeviceChangeTimer->Cancel();
     mDeviceChangeTimer->InitWithNamedFuncCallback(
         DevicesChangeCallback, this, kDevicesChangedStableDelay,
-        nsITimer::TYPE_ONE_SHOT, "DevicesChangeCallback");
+        nsITimer::TYPE_ONE_SHOT, "DevicesChangeCallback"_ns);
   } else {
     ScanForDevices();
   }
 }
 
 bool RegisterRawInput(HWND hwnd, bool enable) {
-  nsTArray<RAWINPUTDEVICE> rid(ArrayLength(kUsagePages));
-  rid.SetLength(ArrayLength(kUsagePages));
+  nsTArray<RAWINPUTDEVICE> rid(std::size(kUsagePages));
+  rid.SetLength(std::size(kUsagePages));
 
   for (unsigned i = 0; i < rid.Length(); i++) {
     rid[i].usUsagePage = kUsagePages[i].usagePage;

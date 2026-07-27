@@ -1,13 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* eslint-env mozilla/browser-window */
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
-  ScreenshotsOverlay: "resource:///modules/ScreenshotsOverlayChild.sys.mjs",
+  ScreenshotsOverlay:
+    "moz-src:///browser/components/screenshots/ScreenshotsOverlayChild.sys.mjs",
 });
 
 const SCREENSHOTS_PREVENT_CONTENT_EVENTS_PREF =
@@ -115,7 +115,7 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
 
     switch (event.type) {
       case "beforeunload":
-        this.requestCancelScreenshot("navigation");
+        this.requestCancelScreenshot("Navigation");
         break;
       case "resize":
         if (!this.#resizeTask && this.overlay?.initialized) {
@@ -148,8 +148,8 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
         break;
       }
       case "Screenshots:RecordEvent": {
-        let { eventName, reason, args } = event.detail;
-        this.recordTelemetryEvent(eventName, reason, args);
+        let { eventName, args } = event.detail;
+        Glean.screenshots[eventName].record(args);
         break;
       }
       case "Screenshots:ShowPanel":
@@ -177,7 +177,8 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
 
   /**
    * Send a request to copy the screenshots
-   * @param {Object} region The region dimensions of the screenshot to be copied
+   *
+   * @param {object} region The region dimensions of the screenshot to be copied
    */
   requestCopyScreenshot(region) {
     region.devicePixelRatio = this.contentWindow.devicePixelRatio;
@@ -187,7 +188,8 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
 
   /**
    * Send a request to download the screenshots
-   * @param {Object} region The region dimensions of the screenshot to be downloaded
+   *
+   * @param {object} region The region dimensions of the screenshot to be downloaded
    */
   requestDownloadScreenshot(region) {
     region.devicePixelRatio = this.contentWindow.devicePixelRatio;
@@ -220,8 +222,8 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
   /**
    * Resolves when the document is ready to have an overlay injected into it.
    *
-   * @returns {Promise}
-   * @resolves {Boolean} true when document is ready or rejects
+   * @returns {Promise<boolean>}
+   *   Resolves to true when document is ready or rejects.
    */
   documentIsReady() {
     const document = this.document;
@@ -280,7 +282,7 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
   /**
    * Wait until the document is ready and then show the screenshots overlay
    *
-   * @returns {Boolean} true when document is ready and the overlay is shown
+   * @returns {boolean} true when document is ready and the overlay is shown
    * otherwise false
    */
   async startScreenshotsOverlay() {
@@ -423,9 +425,5 @@ export class ScreenshotsComponentChild extends JSWindowActorChild {
       devicePixelRatio,
     };
     return rect;
-  }
-
-  recordTelemetryEvent(type, object, args = {}) {
-    Services.telemetry.recordEvent("screenshots", type, object, null, args);
   }
 }

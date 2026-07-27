@@ -1,6 +1,4 @@
-/* -*- Mode: c++; c-basic-offset: 2; tab-width: 20; indent-tabs-mode: nil; -*-
- * vim: set sw=2 ts=4 expandtab:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -8,7 +6,8 @@
 #define NSWINDOW_H_
 
 #include "AndroidGraphics.h"
-#include "nsBaseWidget.h"
+#include "mozilla/layers/CompositorScrollUpdate.h"
+#include "nsIWidget.h"
 #include "gfxPoint.h"
 #include "nsIUserIdleServiceInternal.h"
 #include "nsTArray.h"
@@ -20,12 +19,12 @@
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/TextRange.h"
-#include "mozilla/UniquePtr.h"
 
 struct ANPEvent;
 
 namespace mozilla {
 class WidgetTouchEvent;
+class MouseInput;
 
 namespace layers {
 class CompositorBridgeChild;
@@ -43,25 +42,21 @@ class NPZCSupport;
 class PlatformCompositorWidgetDelegate;
 }  // namespace widget
 
-namespace ipc {
-class Shmem;
-}  // namespace ipc
-
 namespace a11y {
 class SessionAccessibility;
 }  // namespace a11y
 }  // namespace mozilla
 
-class nsWindow final : public nsBaseWidget {
+class nsWindow final : public nsIWidget {
  private:
   virtual ~nsWindow();
 
  public:
-  using nsBaseWidget::GetWindowRenderer;
+  using nsIWidget::GetWindowRenderer;
 
   nsWindow();
 
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(nsWindow, nsBaseWidget)
+  NS_INLINE_DECL_REFCOUNTING_INHERITED(nsWindow, nsIWidget)
 
   static void InitNatives();
   void OnGeckoViewReady();
@@ -71,11 +66,21 @@ class nsWindow final : public nsBaseWidget {
       bool aIsTopLevel);
 
  private:
+  nsCOMPtr<nsIUserIdleServiceInternal> mIdleService;
+  mozilla::ScreenIntCoord mDynamicToolbarMaxHeight{0};
+  mozilla::LayoutDeviceIntMargin mSafeAreaInsets;
+  mozilla::widget::PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate =
+      nullptr;
+  mozilla::Mutex mDestroyMutex{"nsWindow::mDestroyMutex"};
+  LayoutDeviceIntRect mBounds;
+
   // Unique ID given to each widget, used to map Surfaces to widgets
   // in the CompositorSurfaceManager.
   int32_t mWidgetId;
+  nsSizeMode mSizeMode = nsSizeMode_Normal;
+  bool mIsFullScreen = false;
+  bool mIsVisible = false;
 
- private:
   RefPtr<mozilla::widget::AndroidView> mAndroidView;
 
   // Object that implements native LayerView calls.
@@ -115,7 +120,7 @@ class nsWindow final : public nsBaseWidget {
   static mozilla::TimeStamp GetEventTimeStamp(int64_t aEventTime);
 
   void InitEvent(mozilla::WidgetGUIEvent& event,
-                 LayoutDeviceIntPoint* aPoint = 0);
+                 LayoutDeviceIntPoint* aPoint = nullptr);
 
   void UpdateOverscrollVelocity(const float aX, const float aY);
   void UpdateOverscrollOffset(const float aX, const float aY);
@@ -129,8 +134,10 @@ class nsWindow final : public nsBaseWidget {
   void ShowDynamicToolbar();
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void OnDragEvent(
-      int32_t aAction, int64_t aTime, float aX, float aY,
-      mozilla::jni::Object::Param aDropData);
+      int32_t aAction, float aX, float aY,
+      mozilla::jni::Object::Param aDropData,
+      const mozilla::layers::APZEventResult& aApzResult,
+      const mozilla::MouseInput& aInput);
   void StartDragAndDrop(mozilla::java::sdk::Bitmap::LocalRef aBitmap);
   void UpdateDragImage(mozilla::java::sdk::Bitmap::LocalRef aBitmap);
 
@@ -142,23 +149,19 @@ class nsWindow final : public nsBaseWidget {
   // nsIWidget
   //
 
-  using nsBaseWidget::Create;  // for Create signature not overridden here
-  [[nodiscard]] nsresult Create(nsIWidget* aParent,
-                                nsNativeWidget aNativeParent,
-                                const LayoutDeviceIntRect& aRect,
-                                InitData* aInitData) override;
+  using nsIWidget::Create;  // for Create signature not overridden here
+  [[nodiscard]] nsresult Create(nsIWidget* aParent, const LayoutDeviceIntRect&,
+                                const InitData&) override;
   void Destroy() override;
-  void SetParent(nsIWidget* aNewParent) override;
-  nsIWidget* GetParent(void) override;
+  void DidClearParent(nsIWidget*) override;
   float GetDPI() override;
   double GetDefaultScaleInternal() override;
   void Show(bool aState) override;
   bool IsVisible() const override;
   void ConstrainPosition(DesktopIntPoint&) override;
-  void Move(double aX, double aY) override;
-  void Resize(double aWidth, double aHeight, bool aRepaint) override;
-  void Resize(double aX, double aY, double aWidth, double aHeight,
-              bool aRepaint) override;
+  void Move(const DesktopPoint&) override;
+  void Resize(const DesktopSize&, bool aRepaint) override;
+  void Resize(const DesktopRect&, bool aRepaint) override;
   nsSizeMode SizeMode() override { return mSizeMode; }
   void SetSizeMode(nsSizeMode aMode) override;
   void Enable(bool aState) override;
@@ -166,10 +169,8 @@ class nsWindow final : public nsBaseWidget {
   void Invalidate(const LayoutDeviceIntRect& aRect) override;
   void SetFocus(Raise, mozilla::dom::CallerType aCallerType) override;
   LayoutDeviceIntRect GetScreenBounds() override;
+  LayoutDeviceIntRect GetBounds() override { return mBounds; }
   LayoutDeviceIntPoint WidgetToScreenOffset() override;
-  nsresult DispatchEvent(mozilla::WidgetGUIEvent* aEvent,
-                         nsEventStatus& aStatus) override;
-  nsEventStatus DispatchEvent(mozilla::WidgetGUIEvent* aEvent);
   nsresult MakeFullScreen(bool aFullScreen) override;
   void SetCursor(const Cursor& aDefaultCursor) override;
   void* GetNativeData(uint32_t aDataType) override;
@@ -182,6 +183,7 @@ class nsWindow final : public nsBaseWidget {
   void SetInputContext(const InputContext& aContext,
                        const InputContextAction& aAction) override;
   InputContext GetInputContext() override;
+  void PostHandleKeyEvent(mozilla::WidgetKeyboardEvent* aEvent) override;
 
   WindowRenderer* GetWindowRenderer() override;
 
@@ -198,19 +200,18 @@ class nsWindow final : public nsBaseWidget {
       const uint32_t& aPresShellId, const ScrollableLayerGuid::ViewID& aViewId,
       const mozilla::Maybe<ZoomConstraints>& aConstraints) override;
 
-  nsresult SynthesizeNativeTouchPoint(uint32_t aPointerId,
-                                      TouchPointerState aPointerState,
-                                      LayoutDeviceIntPoint aPoint,
-                                      double aPointerPressure,
-                                      uint32_t aPointerOrientation,
-                                      nsIObserver* aObserver) override;
-  nsresult SynthesizeNativeMouseEvent(LayoutDeviceIntPoint aPoint,
-                                      NativeMouseMessage aNativeMessage,
-                                      mozilla::MouseButton aButton,
-                                      nsIWidget::Modifiers aModifierFlags,
-                                      nsIObserver* aObserver) override;
-  nsresult SynthesizeNativeMouseMove(LayoutDeviceIntPoint aPoint,
-                                     nsIObserver* aObserver) override;
+  nsresult SynthesizeNativeTouchPoint(
+      uint32_t aPointerId, TouchPointerState aPointerState,
+      LayoutDeviceIntPoint aPoint, double aPointerPressure,
+      uint32_t aPointerOrientation,
+      nsISynthesizedEventCallback* aCallback) override;
+  nsresult SynthesizeNativeMouseEvent(
+      LayoutDeviceIntPoint aPoint, NativeMouseMessage aNativeMessage,
+      mozilla::MouseButton aButton, nsIWidget::Modifiers aModifierFlags,
+      nsISynthesizedEventCallback* aCallback) override;
+  nsresult SynthesizeNativeMouseMove(
+      LayoutDeviceIntPoint aPoint,
+      nsISynthesizedEventCallback* aCallback) override;
 
   void SetCompositorWidgetDelegate(CompositorWidgetDelegate* delegate) override;
 
@@ -231,10 +232,8 @@ class nsWindow final : public nsBaseWidget {
   RefPtr<mozilla::a11y::SessionAccessibility> GetSessionAccessibility();
 
   void RecvToolbarAnimatorMessageFromCompositor(int32_t aMessage) override;
-  void UpdateRootFrameMetrics(const ScreenPoint& aScrollOffset,
-                              const CSSToScreenScale& aZoom) override;
-  void RecvScreenPixels(mozilla::ipc::Shmem&& aMem, const ScreenIntSize& aSize,
-                        bool aNeedsYFlip) override;
+  void NotifyCompositorScrollUpdate(
+      const mozilla::layers::CompositorScrollUpdate& aUpdate) override;
   void UpdateDynamicToolbarMaxHeight(mozilla::ScreenIntCoord aHeight) override;
   mozilla::ScreenIntCoord GetDynamicToolbarMaxHeight() const override {
     return mDynamicToolbarMaxHeight;
@@ -242,13 +241,20 @@ class nsWindow final : public nsBaseWidget {
 
   void UpdateDynamicToolbarOffset(mozilla::ScreenIntCoord aOffset);
 
-  mozilla::ScreenIntMargin GetSafeAreaInsets() const override;
-  void UpdateSafeAreaInsets(const mozilla::ScreenIntMargin& aSafeAreaInsets);
+  mozilla::LayoutDeviceIntMargin GetSafeAreaInsets() const override;
+  void UpdateSafeAreaInsets(const mozilla::LayoutDeviceIntMargin&);
 
   void KeyboardHeightChanged(mozilla::ScreenIntCoord aHeight);
 
+  void PipModeChanged(bool aPipMode);
+
   mozilla::jni::NativeWeakPtr<mozilla::widget::NPZCSupport>
   GetNPZCSupportWeakPtr();
+
+  void DoResize(double aX, double aY, double aWidth, double aHeight,
+                bool aRepaint);
+
+  void PerformHapticFeedback(mozilla::HapticFeedbackType aType) override;
 
  protected:
   void BringToFront();
@@ -256,21 +262,9 @@ class nsWindow final : public nsBaseWidget {
   bool IsTopLevel();
 
   void ConfigureAPZControllerThread() override;
-  void DispatchHitTest(const mozilla::WidgetTouchEvent& aEvent);
 
   already_AddRefed<GeckoContentController> CreateRootContentController()
       override;
-
-  bool mIsVisible;
-  nsTArray<nsWindow*> mChildren;
-  nsWindow* mParent;
-
-  nsCOMPtr<nsIUserIdleServiceInternal> mIdleService;
-  mozilla::ScreenIntCoord mDynamicToolbarMaxHeight;
-  mozilla::ScreenIntMargin mSafeAreaInsets;
-
-  nsSizeMode mSizeMode;
-  bool mIsFullScreen;
 
   bool UseExternalCompositingSurface() const override { return true; }
 
@@ -278,19 +272,14 @@ class nsWindow final : public nsBaseWidget {
   static void DumpWindows(const nsTArray<nsWindow*>& wins, int indent = 0);
   static void LogWindow(nsWindow* win, int index, int indent);
 
- private:
   void CreateLayerManager();
   void RedrawAll();
 
-  void OnSizeChanged(const mozilla::gfx::IntSize& aSize);
+  void OnSizeChanged(const mozilla::LayoutDeviceIntSize& aSize);
 
   mozilla::layers::LayersId GetRootLayerId() const;
   RefPtr<mozilla::layers::UiCompositorControllerChild>
   GetUiCompositorControllerChild();
-
-  mozilla::widget::PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate;
-
-  mozilla::Mutex mDestroyMutex;
 
   friend class mozilla::widget::GeckoViewSupport;
   friend class mozilla::widget::LayerViewSupport;

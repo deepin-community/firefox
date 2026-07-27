@@ -77,8 +77,6 @@ using namespace skia_private;
 namespace SkSL {
 namespace {
 
-static constexpr int kInlinedStatementLimit = 2500;
-
 static bool is_scopeless_block(Statement* stmt) {
     return stmt->is<Block>() && !stmt->as<Block>().isScope();
 }
@@ -186,6 +184,24 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
         }
         return args;
     };
+    auto childRemap = [&](const Variable& var) -> const Variable& {
+        // If our variable remapping table contains the passed-in variable...
+        if (std::unique_ptr<Expression>* remap = varMap->find(&var)) {
+            // ... the remapped expression _must_ be another variable reference.
+            // SkSL doesn't allow opaque types to participate in complex expressions.
+            if ((*remap)->is<VariableReference>()) {
+                const VariableReference& remappedRef = (*remap)->as<VariableReference>();
+                return *remappedRef.variable();
+            } else {
+                SkDEBUGFAILF("Child effect '%.*s' remaps to unexpected expression '%s'",
+                             (int)var.name().size(), var.name().data(),
+                             (*remap)->description().c_str());
+            }
+        }
+
+        // There's no remapping for this; return it as-is.
+        return var;
+    };
 
     switch (expression.kind()) {
         case Expression::Kind::kBinary: {
@@ -205,7 +221,7 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
             return ChildCall::Make(*fContext,
                                    pos,
                                    childCall.type().clone(*fContext, symbolTableForExpression),
-                                   childCall.child(),
+                                   childRemap(childCall.child()),
                                    argList(childCall.arguments()));
         }
         case Expression::Kind::kConstructorArray: {
@@ -521,8 +537,8 @@ static bool argument_needs_scratch_variable(const Expression* arg,
     // If the parameter isn't written to within the inline function ...
     const ProgramUsage::VariableCounts& paramUsage = usage.get(*param);
     if (!paramUsage.fWrite) {
-        // ... and can be inlined trivially (e.g. a swizzle, or a constant array index),
-        // or any expression without side effects that is only accessed at most once...
+        // ... and it can be inlined trivially (e.g. a swizzle, or a constant array index),
+        // or it is any expression without side effects that is only accessed at most once...
         if ((paramUsage.fRead > 1) ? Analysis::IsTrivialExpression(*arg)
                                    : !Analysis::HasSideEffects(*arg)) {
             // ... we don't need to copy it at all! We can just use the existing expression.
@@ -631,6 +647,14 @@ Inliner::InlinedCall Inliner::inlineCall(const FunctionCall& call,
     return inlinedCall;
 }
 
+bool Inliner::overInlineStatementLimit() const {
+    // Enforce a limit on inlining to avoid pathological cases. (inliner/ExponentialGrowth.sksl)
+    // Modules, which are entirely built-in SkSL, do not need to be limited in this way.
+    static constexpr int kInlinedStatementLimit = 2500;
+    return !fContext->fConfig->isBuiltinCode() &&
+           fInlinedStatementCounter >= kInlinedStatementLimit;
+}
+
 bool Inliner::isSafeToInline(const FunctionDefinition* functionDef, const ProgramUsage& usage) {
     // A threshold of zero indicates that the inliner is completely disabled, so we can just return.
     if (this->settings().fInlineThreshold <= 0) {
@@ -638,7 +662,7 @@ bool Inliner::isSafeToInline(const FunctionDefinition* functionDef, const Progra
     }
 
     // Enforce a limit on inlining to avoid pathological cases. (inliner/ExponentialGrowth.sksl)
-    if (fInlinedStatementCounter >= kInlinedStatementLimit) {
+    if (this->overInlineStatementLimit()) {
         return false;
     }
 
@@ -654,7 +678,7 @@ bool Inliner::isSafeToInline(const FunctionDefinition* functionDef, const Progra
 
     for (const Variable* param : functionDef->declaration().parameters()) {
         // We don't allow inlining functions with parameters that are written-to, if they...
-        // - are `out` parameters (see skia:11326 for rationale.)
+        // - are `out` parameters (see skbug.com/40042700 for rationale.)
         // - are arrays or structures (introducing temporary copies is non-trivial)
         if ((param->modifierFlags() & ModifierFlag::kOut) ||
             param->type().isArray() ||
@@ -987,7 +1011,7 @@ bool Inliner::candidateCanBeInlined(const InlineCandidate& candidate,
 
     // Even if the function is safe, the arguments we are passing may not be. In particular, we
     // can't make copies of opaque values, so we need to reject inline candidates that would need to
-    // do this. Every call has different arguments, so this part is not cacheable. (skia:13824)
+    // do this. Every call has different arguments, so this part is not cacheable. (skbug.com/40044923)
     const FunctionCall& call = candidate.fCandidateExpr->get()->as<FunctionCall>();
     const ExpressionArray& arguments = call.arguments();
     for (int i = 0; i < arguments.size(); ++i) {
@@ -1086,7 +1110,7 @@ bool Inliner::analyze(const std::vector<std::unique_ptr<ProgramElement>>& elemen
     }
 
     // Enforce a limit on inlining to avoid pathological cases. (inliner/ExponentialGrowth.sksl)
-    if (fInlinedStatementCounter >= kInlinedStatementLimit) {
+    if (this->overInlineStatementLimit()) {
         return false;
     }
 
@@ -1149,7 +1173,7 @@ bool Inliner::analyze(const std::vector<std::unique_ptr<ProgramElement>>& elemen
         statementRemappingTable.set(enclosingStmt,&(*enclosingStmt)->as<Block>().children().back());
 
         // Stop inlining if we've reached our hard cap on new statements.
-        if (fInlinedStatementCounter >= kInlinedStatementLimit) {
+        if (this->overInlineStatementLimit()) {
             break;
         }
 

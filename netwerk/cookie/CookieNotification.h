@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,13 +24,18 @@ class CookieNotification final : public nsICookieNotification {
                               nsICookie* aCookie, const nsACString& aBaseDomain,
                               bool aIsThirdParty = false,
                               nsIArray* aBatchDeletedCookies = nullptr,
-                              uint64_t aBrowsingContextId = 0)
+                              uint64_t aBrowsingContextId = 0,
+                              const nsID* aOperationID = nullptr)
       : mAction(aAction),
         mCookie(aCookie),
         mBaseDomain(aBaseDomain),
         mIsThirdParty(aIsThirdParty),
         mBatchDeletedCookies(aBatchDeletedCookies),
-        mBrowsingContextId(aBrowsingContextId) {};
+        mBrowsingContextId(aBrowsingContextId) {
+    if (aOperationID) {
+      mOperationID = aOperationID->Clone();
+    }
+  };
 
  private:
   nsICookieNotification::Action mAction;
@@ -40,8 +44,13 @@ class CookieNotification final : public nsICookieNotification {
   bool mIsThirdParty;
   nsCOMPtr<nsIArray> mBatchDeletedCookies;
   uint64_t mBrowsingContextId = 0;
+  nsID* mOperationID = nullptr;
 
-  ~CookieNotification() = default;
+  ~CookieNotification() {
+    if (mOperationID) {
+      free(mOperationID);
+    }
+  }
 };
 
 }  // namespace mozilla::net

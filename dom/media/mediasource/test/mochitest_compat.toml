@@ -1,7 +1,10 @@
 [DEFAULT]
+skip-if = [
+  "isolated_process", # Bug 1709948
+]
 subsuite = "media"
 tags = "media-engine-compatible media-gpu"
-prefs = ["media.wmf.hevc.enabled=1"] # for test_MediaSource_hevc_mp4
+prefs = ["media.hevc.enabled=1"] # for test_MediaSource_hevc_mp4
 support-files = [
   "mediasource.js",
   "seek.webm",
@@ -229,9 +232,6 @@ support-files = [
 
 ["test_AudioChange_mp4_WebAudio.html"]
 
-["test_AutoRevocation.html"]
-tags = "firstpartyisolation"
-
 ["test_BufferedSeek.html"]
 
 ["test_BufferedSeek_mp4.html"]
@@ -249,7 +249,10 @@ tags = "firstpartyisolation"
 ["test_EndOfStream_mp4.html"]
 
 ["test_FrameSelection.html"]
-skip-if = ["os == 'android'"] # bug 1341519, bug 1401090
+skip-if = [
+  "os == 'android'", # bug 1341519, bug 1401090
+  "os == 'win' && wmfme", # bug 1341519 - WMFME intermittently stalls seeks with multi-resolution MSE content
+]
 
 ["test_HaveMetadataUnbufferedSeek.html"]
 
@@ -274,11 +277,15 @@ skip-if = ["os == 'android'"] # bug 1341519, bug 1401090
 ["test_MediaSource_flac_mp4.html"]
 
 ["test_MediaSource_hevc_mp4.html"]
-skip-if = ["!mda_gpu"]
+run-if = [
+  "mda_gpu",
+]
 
 ["test_MediaSource_memory_reporting.html"]
 
 ["test_MediaSource_mp4.html"]
+
+["test_AppendMultipleInitOpusAudio.html"]
 
 ["test_MultipleInitSegments.html"]
 
@@ -287,13 +294,19 @@ skip-if = ["!mda_gpu"]
 ["test_OnEvents.html"]
 
 ["test_PlayEventsAutoPlaying.html"]
+skip-if = [
+  "os == 'win' && os_version == '11.26100' && arch == 'x86_64' && ccov",
+  "os == 'win' && os_version == '11.26200' && arch == 'x86_64' && ccov",
+]
 
 ["test_PlayEventsAutoPlaying2.html"]
 
 ["test_RemoveSourceBuffer.html"]
 
 ["test_Seamless_looping_shorter_audio_than_video_MSE.html"]
-skip-if = ["os == 'android' && verify"] # Crash
+skip-if = [
+  "os == 'android' && verify", # Crash
+]
 
 ["test_SeekNoData_mp4.html"]
 

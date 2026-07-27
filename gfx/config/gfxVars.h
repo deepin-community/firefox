@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,14 +16,15 @@
 namespace mozilla::gfx {
 
 class gfxVarReceiver;
+class MOZ_STACK_CLASS gfxVarsCollectUpdates;
 
 // Generator for graphics vars.
 #define GFX_VARS_LIST(_)                                           \
   /* C++ Name,                  Data Type,        Default Value */ \
   _(AllowEglRbab, bool, true)                                      \
+  _(AllowWebGL, bool, true)                                        \
   _(AllowWebgl2, bool, true)                                       \
   _(AllowWebglAccelAngle, bool, true)                              \
-  _(AllowWebglOop, bool, true)                                     \
   _(BrowserTabsRemoteAutostart, bool, false)                       \
   _(ContentBackend, BackendType, BackendType::NONE)                \
   _(SoftwareBackend, BackendType, BackendType::NONE)               \
@@ -33,6 +32,7 @@ class gfxVarReceiver;
     mozilla::gfx::SurfaceFormat::X8R8G8B8_UINT32)                  \
   _(RequiresAcceleratedGLContextForCompositorOGL, bool, false)     \
   _(CanUseHardwareVideoDecoding, bool, false)                      \
+  _(CanUseHardwareVideoEncoding, bool, false)                      \
   _(DXInterop2Blocked, bool, false)                                \
   _(DXNV12Blocked, bool, false)                                    \
   _(DXP010Blocked, bool, false)                                    \
@@ -45,13 +45,14 @@ class gfxVarReceiver;
   _(UseWebRenderTripleBufferingWin, bool, false)                   \
   _(UseWebRenderCompositor, bool, false)                           \
   _(UseWebRenderProgramBinaryDisk, bool, false)                    \
+  _(ShouldWarmUpWebRenderProgramBinaries, bool, false)             \
   _(UseWebRenderOptimizedShaders, bool, false)                     \
   _(UseWebRenderScissoredCacheClears, bool, true)                  \
   _(WebRenderProfilerUI, nsCString, nsCString())                   \
   _(WebglAllowCoreProfile, bool, true)                             \
   _(WebglAllowWindowsNativeGl, bool, false)                        \
   _(WebRenderMaxPartialPresentRects, int32_t, 0)                   \
-  _(WebRenderDebugFlags, int32_t, 0)                               \
+  _(WebRenderDebugFlags, uint64_t, 0)                              \
   _(WebRenderBoolParameters, int32_t, 0)                           \
   _(WebRenderBatchingLookback, int32_t, 10)                        \
   _(WebRenderBlobTileSize, int32_t, 256)                           \
@@ -73,7 +74,6 @@ class gfxVarReceiver;
   _(SystemTextRenderingMode, int32_t, 0)                           \
   _(SystemGDIGamma, float, 1.4f)                                   \
   _(LayersWindowRecordingPath, nsCString, nsCString())             \
-  _(RemoteCanvasEnabled, bool, false)                              \
   _(UseDoubleBufferingWithCompositor, bool, false)                 \
   _(UseGLSwizzle, bool, true)                                      \
   _(ForceSubpixelAAWherePossible, bool, false)                     \
@@ -82,17 +82,26 @@ class gfxVarReceiver;
   _(UseEGL, bool, false)                                           \
   _(DrmRenderDevice, nsCString, nsCString())                       \
   _(UseDMABuf, bool, false)                                        \
+  _(UseDMABufWebGL, bool, true)                                    \
   _(DMABufModifiersXRGB, ArrayOfuint64_t, nsTArray<uint64_t>())    \
   _(DMABufModifiersARGB, ArrayOfuint64_t, nsTArray<uint64_t>())    \
-  _(CodecSupportInfo, nsCString, nsCString())                      \
   _(WebRenderRequiresHardwareDriver, bool, false)                  \
   _(SupportsThreadsafeGL, bool, false)                             \
   _(AllowWebGPU, bool, false)                                      \
+  _(AllowWebGPUExternalTexture, bool, false)                       \
   _(UseVP8HwDecode, bool, false)                                   \
+  _(UseVP8HwEncode, bool, false)                                   \
   _(UseVP9HwDecode, bool, false)                                   \
+  _(UseVP9HwEncode, bool, false)                                   \
   _(UseAV1HwDecode, bool, false)                                   \
+  _(UseAV1HwEncode, bool, false)                                   \
   _(UseH264HwDecode, bool, false)                                  \
+  _(UseH264HwEncode, bool, false)                                  \
+  _(HasWebrtcH264Hw, bool, false)                                  \
+  _(UseHEVCHwDecode, bool, false)                                  \
+  _(UseHEVCHwEncode, bool, false)                                  \
   _(HwDecodedVideoZeroCopy, bool, false)                           \
+  _(UseWMFHWDWM, bool, false)                                      \
   _(UseDMABufSurfaceExport, bool, true)                            \
   _(ReuseDecoderDevice, bool, false)                               \
   _(UseCanvasRenderThread, bool, false)                            \
@@ -104,8 +113,14 @@ class gfxVarReceiver;
   _(WebRenderOverlayVpAutoHDR, bool, false)                        \
   _(WebRenderOverlayVpSuperResolution, bool, false)                \
   _(AllowWebGPUPresentWithoutReadback, bool, false)                \
-  _(GPUProcessEnabled, bool, false)
-
+  _(GPUProcessEnabled, bool, false)                                \
+  _(DMABufModifiersP010, ArrayOfuint64_t, nsTArray<uint64_t>())    \
+  _(DMABufModifiersNV12, ArrayOfuint64_t, nsTArray<uint64_t>())    \
+  _(AllowGLNorm16Textures, bool, false)                            \
+  _(WebRenderLayerCompositorDCompTexture, bool, false)             \
+  _(WebRenderOverlayHDR, bool, false)                              \
+  _(UseWebRenderDCompositionTextureOverlayWin, bool, false)        \
+  _(VideoHDR, bool, false)                                         \
 /* Add new entries above this line. */
 
 // Some graphics settings are computed on the UI process and must be
@@ -131,7 +146,7 @@ class gfxVars final {
   static void Initialize();
   static void Shutdown();
 
-  static void ApplyUpdate(const GfxVarUpdate& aUpdate);
+  static void ApplyUpdate(const nsTArray<GfxVarUpdate>& aUpdate);
   static void AddReceiver(gfxVarReceiver* aReceiver);
   static void RemoveReceiver(gfxVarReceiver* aReceiver);
 
@@ -170,6 +185,10 @@ class gfxVars final {
   static bool IsInitialized() { return sInstance != nullptr; }
 
  private:
+  friend class gfxVarsCollectUpdates;
+  static void StartCollectingUpdates();
+  static void StopCollectingUpdates();
+
   static StaticAutoPtr<gfxVars> sInstance;
   static StaticAutoPtr<nsTArray<VarBase*>> sVarList;
 
@@ -252,6 +271,15 @@ class gfxVars final {
 };
 
 #undef GFX_VARS_LIST
+
+// Helper class that batches changes to gfxVars into a single update to minimize
+// churn for receivers. This is particularly useful for the media processes
+// which reconfigure themselves when gfxVars updates come in.
+class MOZ_STACK_CLASS gfxVarsCollectUpdates final {
+ public:
+  gfxVarsCollectUpdates() { gfxVars::StartCollectingUpdates(); }
+  ~gfxVarsCollectUpdates() { gfxVars::StopCollectingUpdates(); }
+};
 
 }  // namespace mozilla::gfx
 

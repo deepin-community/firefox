@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-use anyhow::{bail, Context as _, Result};
+use anyhow::{anyhow, bail, Context as _, Result};
+use regex::Regex;
 use std::fmt::Write;
 use std::path::Path;
 use std::str;
@@ -34,6 +35,8 @@ pub fn convert<P: AsRef<Path>>(path: P, wast: &str) -> Result<String> {
         err.set_text(wast);
         err
     };
+
+    println!("Processing {} ...", filename.display());
 
     let mut lexer = wast::lexer::Lexer::new(wast);
     // The 'names.wast' spec test has confusable unicode -- disable detection.
@@ -60,6 +63,7 @@ pub fn convert<P: AsRef<Path>>(path: P, wast: &str) -> Result<String> {
             col,
             wast,
             &mut out,
+            None,
         )
         .with_context(|| {
             format!(
@@ -82,70 +86,114 @@ fn convert_directive(
     col: usize,
     wast: &str,
     out: &mut String,
+    escape: Option<&dyn Fn(&str) -> String>,
 ) -> Result<()> {
     use wast::WastDirective::*;
 
-    if col == 1 {
-        writeln!(out, "// {}:{}", filename.display(), line + 1)?;
-    } else {
-        writeln!(out, "// {}:{}:{}", filename.display(), line + 1, col)?;
+    // A local replacement for `writeln!` that automatically applies the
+    // provided escape function.
+    macro_rules! writejs {
+        ($($arg:tt)*) => {{
+            let s = format!($($arg)*);
+            let s = if let Some(escape_fn) = escape {
+                escape_fn(&s)
+            } else {
+                s
+            };
+            writeln!(out, "{}", s)
+        }};
     }
+
+    if col == 1 {
+        writejs!("// {}:{}", filename.display(), line + 1)?;
+    } else {
+        writejs!("// {}:{}:{}", filename.display(), line + 1, col)?;
+    }
+
+    // For full definitions of these directives, see
+    // https://github.com/WebAssembly/spec/blob/main/interpreter/README.md#scripts
     match directive {
-        Wat(wast::QuoteWat::Wat(wast::Wat::Module(module))) => {
+        // (module $M? ...): Instantiate a module with an optional identifier.
+        Module(wast::QuoteWat::Wat(wast::Wat::Module(module))) => {
             let next_instance = current_instance.map(|x| x + 1).unwrap_or(0);
             let module_text = module_to_js_string(&module, wast)?;
 
-            writeln!(
-                out,
-                "let ${} = instantiate(`{}`);",
-                next_instance, module_text
-            )?;
+            writejs!("let ${} = instantiate(`{}`);", next_instance, module_text)?;
             if let Some(id) = module.id {
-                writeln!(
-                    out,
-                    "register(${}, {});",
-                    next_instance,
-                    format!("`{}`", escape_template_name_string(id.name()))
-                )?;
+                writejs!("let ${} = ${};", id.name(), next_instance)?;
             }
 
             *current_instance = Some(next_instance);
         }
-        Wat(wast::QuoteWat::QuoteModule(_, source)) => {
+        // (module quote "..."): Instantiate a module using the given literal text.
+        // Identifiers are not supported.
+        Module(wast::QuoteWat::QuoteModule(_, source)) => {
             let next_instance = current_instance.map(|x| x + 1).unwrap_or(0);
             let module_text = quote_module_to_js_string(source)?;
 
-            writeln!(
-                out,
-                "let ${} = instantiate(`{}`);",
-                next_instance, module_text
-            )?;
+            writejs!("let ${} = instantiate(`{}`);", next_instance, module_text)?;
 
             *current_instance = Some(next_instance);
         }
-        Wat(_) => {
-            write!(out, "// unsupported quote wat")?;
+        Module(..) => bail!("unsupported module definition"),
+
+        // (module definition $M ...): Define and validate, but do not instantiate, a module
+        ModuleDefinition(wast::QuoteWat::Wat(wast::Wat::Module(module))) => {
+            let module_text = module_definition_to_js_string(&module, wast)?;
+            if let Some(id) = module.id {
+                writejs!("let ${} = module(`{}`);", id.name(), module_text)?;
+            } else {
+                writejs!("let _anon_{} = module(`{}`);", line, module_text)?;
+            }
         }
+        ModuleDefinition(..) => bail!("unsupported module definition...definition"),
+
+        // (module instance $I $M): Instantiate a specific module
+        ModuleInstance {
+            span: _,
+            instance: Some(instance),
+            module: Some(module),
+        } => {
+            writejs!(
+                "let ${} = instantiateFromModule(${});",
+                instance.name(),
+                module.name()
+            )?;
+        }
+        ModuleInstance { .. } => bail!("unsupported module instance definition"),
+
+        // (register "a"): Register the current instance
         Register {
             span: _,
             name,
-            module,
+            module: None,
         } => {
-            let instanceish = module
-                .map(|x| format!("`{}`", escape_template_name_string(x.name())))
-                .unwrap_or_else(|| format!("${}", current_instance.unwrap()));
-
-            writeln!(
-                out,
-                "register({}, `{}`);",
-                instanceish,
+            writejs!(
+                "register(${}, `{}`);",
+                current_instance.unwrap(),
                 escape_template_name_string(name)
             )?;
         }
+        // (register "a" $a): Register an item by identifier
+        Register {
+            span: _,
+            name,
+            module: Some(thing),
+        } => {
+            writejs!(
+                "register(${}, `{}`);",
+                thing.name(),
+                escape_template_name_string(name)
+            )?;
+        }
+
+        // (invoke $M? "a" ...args): Call an exported function
         Invoke(i) => {
             let invoke_node = invoke_to_js(current_instance, i)?;
-            writeln!(out, "{};", invoke_node.output(0))?;
+            writejs!("{};", invoke_node.output(0))?;
         }
+
+        // (assert_return ...)
         AssertReturn {
             span: _,
             exec,
@@ -153,8 +201,7 @@ fn convert_directive(
         } => {
             let exec_node = execute_to_js(current_instance, exec, wast)?;
             let expected_node = to_js_value_array(&results, assert_expression_to_js_value)?;
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_return".to_string(),
@@ -164,6 +211,8 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
+        // (assert_trap ...)
         AssertTrap {
             span: _,
             exec,
@@ -174,8 +223,7 @@ fn convert_directive(
                 "`{}`",
                 escape_template_name_string(message)
             )));
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_trap".to_string(),
@@ -185,6 +233,8 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
+        // (assert_exhaustion ...)
         AssertExhaustion {
             span: _,
             call,
@@ -195,8 +245,7 @@ fn convert_directive(
                 "`{}`",
                 escape_template_name_string(message)
             )));
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_exhaustion".to_string(),
@@ -206,6 +255,8 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
+        // (assert_invalid ...)
         AssertInvalid {
             span: _,
             module,
@@ -221,8 +272,7 @@ fn convert_directive(
                 "`{}`",
                 escape_template_name_string(message)
             )));
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_invalid".to_string(),
@@ -232,6 +282,8 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
+        // (assert_malformed ...)
         AssertMalformed {
             module,
             span: _,
@@ -239,7 +291,13 @@ fn convert_directive(
         } => {
             let text = match module {
                 wast::QuoteWat::Wat(wast::Wat::Module(m)) => module_to_js_string(&m, wast)?,
-                wast::QuoteWat::QuoteModule(_, source) => quote_module_to_js_string(source)?,
+                wast::QuoteWat::QuoteModule(_, source) => match quote_module_to_js_string(source) {
+                    Ok(t) => t,
+                    Err(err) => {
+                        writejs!("// ignoring badly-encoded assert_malformed: {:?}", err)?;
+                        return Ok(());
+                    }
+                },
                 other => bail!("unsupported {:?} in assert_malformed", other),
             };
             let exec = Box::new(JSNode::Raw(format!("instantiate(`{}`)", text)));
@@ -247,8 +305,7 @@ fn convert_directive(
                 "`{}`",
                 escape_template_name_string(message)
             )));
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_malformed".to_string(),
@@ -258,6 +315,8 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
+        // (assert_unlinkable ...)
         AssertUnlinkable {
             span: _,
             module,
@@ -272,8 +331,7 @@ fn convert_directive(
                 "`{}`",
                 escape_template_name_string(message)
             )));
-            writeln!(
-                out,
+            writejs!(
                 "{};",
                 JSNode::Assert {
                     name: "assert_unlinkable".to_string(),
@@ -283,14 +341,75 @@ fn convert_directive(
                 .output(0),
             )?;
         }
+
         AssertException { span: _, exec } => {
             // This assert doesn't have a second parameter, so we don't bother
             // formatting it using an Assert node.
             let exec_node = execute_to_js(current_instance, exec, wast)?;
-            writeln!(out, "assert_exception(() => {});", exec_node.output(0))?;
+            writejs!("assert_exception(() => {});", exec_node.output(0))?;
         }
-        Thread(..) => unimplemented!(),
-        Wait { .. } => unimplemented!(),
+        AssertSuspension {
+            span: _,
+            exec,
+            message,
+        } => {
+            let exec_node = execute_to_js(current_instance, exec, wast)?;
+            let expected_node = Box::new(JSNode::Raw(format!(
+                "`{}`",
+                escape_template_name_string(message)
+            )));
+            writejs!(
+                "{};",
+                JSNode::Assert {
+                    name: "assert_suspension".to_string(),
+                    exec: exec_node,
+                    expected: expected_node,
+                }
+                .output(0),
+            )?;
+        }
+        Thread(thread) => {
+            let (shared_module, shared_module_name) = match thread.shared_module {
+                Some(m) => (format!("${}", m.name()), format!("${}", m.name())),
+                None => ("null".to_string(), "__nomodule".to_string()),
+            };
+
+            writejs!(
+                "let ${} = new Thread({}, \"{}\", `",
+                thread.name.name(),
+                shared_module,
+                shared_module_name,
+            )?;
+
+            for directive in thread.directives {
+                let sp = directive.span();
+                let (line, col) = sp.linecol_in(wast);
+                writejs!("")?;
+                convert_directive(
+                    directive,
+                    current_instance,
+                    filename,
+                    line,
+                    col,
+                    wast,
+                    out,
+                    Some(&escape_template_module_string),
+                )
+                .with_context(|| {
+                    format!(
+                        "failed to convert thread directive on {}:{}:{}",
+                        filename.display(),
+                        line + 1,
+                        col
+                    )
+                })?;
+            }
+
+            writejs!("`);")?;
+        }
+        Wait { span: _, thread } => {
+            writejs!("${}.wait();", thread.name())?;
+        }
     }
 
     Ok(())
@@ -300,7 +419,7 @@ fn escape_template_string(text: &str, escape_ascii_lf_tab: bool) -> String {
     let mut escaped = String::new();
     for c in text.chars() {
         match c {
-            '$' => escaped.push_str("$$"),
+            '$' => escaped.push_str("\\$"),
             '\\' => escaped.push_str("\\\\"),
             '`' => escaped.push_str("\\`"),
             c if c.is_ascii_control() && escape_ascii_lf_tab && c != '\n' && c != '\t' => {
@@ -343,39 +462,31 @@ fn span_to_offset(span: wast::token::Span, text: &str) -> Result<usize> {
 }
 
 fn closed_module(module: &str) -> Result<&str> {
-    enum State {
-        Module,
-        QStr,
-        EscapeQStr,
+    if !module.starts_with("module") {
+        bail!("expected module source");
     }
+
+    let mut lexer = wast::lexer::Lexer::new(module);
+    lexer.allow_confusing_unicode(true);
 
     let mut i = 0;
     let mut level = 1;
-    let mut state = State::Module;
 
-    let mut chars = module.chars();
     while level != 0 {
-        let next = match chars.next() {
-            Some(next) => next,
-            None => bail!("was unable to close module"),
-        };
-        match state {
-            State::Module => match next {
-                '(' => level += 1,
-                ')' => level -= 1,
-                '"' => state = State::QStr,
+        match lexer.parse(&mut i) {
+            Ok(Some(tok)) => match tok.kind {
+                wast::lexer::TokenKind::LParen => {
+                    level += 1;
+                }
+                wast::lexer::TokenKind::RParen => {
+                    level -= 1;
+                }
                 _ => {}
             },
-            State::QStr => match next {
-                '"' => state = State::Module,
-                '\\' => state = State::EscapeQStr,
-                _ => {}
-            },
-            State::EscapeQStr => match next {
-                _ => state = State::QStr,
-            },
+            Ok(None) | Err(_) => {
+                return Err(anyhow!("unable to close module"));
+            }
         }
-        i += next.len_utf8();
     }
     return Ok(&module[0..i]);
 }
@@ -402,15 +513,30 @@ fn quote_module_to_js_string(quotes: Vec<(wast::token::Span, &[u8])>) -> Result<
     Ok(escaped)
 }
 
+fn module_definition_to_js_string(module: &wast::core::Module, wast: &str) -> Result<String> {
+    let offset = span_to_offset(module.span, wast)?;
+    let opened_module = &wast[offset..];
+
+    // strip "module definition $M" down to just "module"
+    let pattern = r"^module definition (?:\$[a-zA-Z_$][a-zA-Z0-9_$]* )?(.*)";
+    let re = Regex::new(pattern).expect("Invalid regex pattern");
+    let without_definition = re.replace(opened_module, "module $1");
+
+    Ok(escape_template_module_string(&format!(
+        "({}",
+        closed_module(&without_definition)?
+    )))
+}
+
 fn invoke_to_js(current_instance: &Option<usize>, i: wast::WastInvoke) -> Result<Box<JSNode>> {
-    let instanceish = i
+    let instance = i
         .module
-        .map(|x| format!("`{}`", escape_template_name_string(x.name())))
+        .map(|x| format!("${}", x.name()))
         .unwrap_or_else(|| format!("${}", current_instance.unwrap()));
     let body = to_js_value_array(&i.args, arg_to_js_value)?;
 
     Ok(Box::new(JSNode::Invoke {
-        instance: instanceish,
+        instance: instance,
         name: escape_template_name_string(i.name),
         body: body,
     }))
@@ -432,10 +558,10 @@ fn execute_to_js(
         }
         wast::WastExecute::Get { module, global, .. } => {
             let instanceish = module
-                .map(|x| format!("`{}`", escape_template_name_string(x.name())))
-                .unwrap_or_else(|| format!("${}", current_instance.unwrap()));
+                .map(|x| format!("{}", x.name()))
+                .unwrap_or_else(|| format!("{}", current_instance.unwrap()));
             Ok(Box::new(JSNode::Raw(format!(
-                "get({}, `{}`)",
+                "get(${}, `{}`)",
                 instanceish, global
             ))))
         }
@@ -560,25 +686,25 @@ fn return_value_to_js_value(v: &wast::core::WastRetCore<'_>) -> Result<String> {
         F32(x) => f32_pattern_to_js_value(x),
         F64(x) => f64_pattern_to_js_value(x),
         RefNull(x) => match x {
-            Some(wast::core::HeapType::Abstract { shared: false, ty }) => {
-                match ty {
-                    wast::core::AbstractHeapType::Any => format!("value('anyref', null)"),
-                    wast::core::AbstractHeapType::Exn => format!("value('exnref', null)"),
-                    wast::core::AbstractHeapType::Eq => format!("value('eqref', null)"),
-                    wast::core::AbstractHeapType::Array => format!("value('arrayref', null)"),
-                    wast::core::AbstractHeapType::Struct => format!("value('structref', null)"),
-                    wast::core::AbstractHeapType::I31 => format!("value('i31ref', null)"),
-                    wast::core::AbstractHeapType::None => format!("value('nullref', null)"),
-                    wast::core::AbstractHeapType::Func => format!("value('anyfunc', null)"),
-                    wast::core::AbstractHeapType::NoFunc => format!("value('nullfuncref', null)"),
-                    wast::core::AbstractHeapType::Extern => format!("value('externref', null)"),
-                    wast::core::AbstractHeapType::NoExtern => format!("value('nullexternref', null)"),
-                    other => bail!(
-                        "couldn't convert ref.null {:?} to a js assertion value",
-                        other
-                    ),
-                }
-            }
+            Some(wast::core::HeapType::Abstract { shared: false, ty }) => match ty {
+                wast::core::AbstractHeapType::Any => format!("value('anyref', null)"),
+                wast::core::AbstractHeapType::Exn => format!("value('exnref', null)"),
+                wast::core::AbstractHeapType::Eq => format!("value('eqref', null)"),
+                wast::core::AbstractHeapType::Array => format!("value('arrayref', null)"),
+                wast::core::AbstractHeapType::Struct => format!("value('structref', null)"),
+                wast::core::AbstractHeapType::I31 => format!("value('i31ref', null)"),
+                wast::core::AbstractHeapType::None => format!("value('nullref', null)"),
+                wast::core::AbstractHeapType::Func => format!("value('anyfunc', null)"),
+                wast::core::AbstractHeapType::NoFunc => format!("value('nullfuncref', null)"),
+                wast::core::AbstractHeapType::Extern => format!("value('externref', null)"),
+                wast::core::AbstractHeapType::NoExtern => format!("value('nullexternref', null)"),
+                wast::core::AbstractHeapType::Exn => format!("value('exnref', null)"),
+                wast::core::AbstractHeapType::NoExn => format!("value('nullexnref', null)"),
+                other => bail!(
+                    "couldn't convert ref.null {:?} to a js assertion value",
+                    other
+                ),
+            },
             None => "null".to_string(),
             other => bail!(
                 "couldn't convert ref.null {:?} to a js assertion value",

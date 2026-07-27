@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { TestUtils } = ChromeUtils.importESModule(
@@ -13,6 +11,13 @@ const { AddonTestUtils } = ChromeUtils.importESModule(
 const { ExtensionTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/ExtensionXPCShellUtils.sys.mjs"
 );
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
 
 const { createHttpServer } = AddonTestUtils;
 

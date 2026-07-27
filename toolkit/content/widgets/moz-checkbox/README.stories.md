@@ -13,7 +13,7 @@ More information about this component including design, writing, and localizatio
 
 ## Code
 
-The source for `moz-checkbox` can be found under [toolkit/content/widgets/moz-checkbox/](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/moz-checkbox)
+The source for `moz-checkbox` can be found under [toolkit/content/widgets/moz-checkbox/](https://searchfox.org/firefox-main/source/toolkit/content/widgets/moz-checkbox)
 
 ## When to use `moz-checkbox`
 - Use `moz-checkbox` when you want to allow a user to select at least one option from a list.
@@ -70,7 +70,7 @@ In order to have an icon appear next to the checkbox element, use the `.iconSrc`
 
 ### Setting a description
 
-In order to set a description, use the `discription` attribute.
+In order to set a description, use the `description` attribute.
 In general, the description should be controlled by Fluent (and is the preferred way of handling descriptions).
 
 ```html
@@ -116,4 +116,33 @@ would be used to set a label or a label and a description on the different `moz-
 ```html
 <moz-checkbox data-l10n-id="first-moz-checkbox-id"></moz-checkbox>
 <moz-checkbox data-l10n-id="second-moz-checkbox-id"></moz-checkbox>
+```
+
+### Nested fields
+
+`moz-checkbox` supports nested or dependent fields via a `nested` named slot.
+These fields will be rendered below the checkbox element, and will be indented to
+visually indicate dependence. Any nested fields will mirror the `disabled` state
+of the checkbox and will also become `disabled` whenever the checkbox is not `checked`.
+
+When nesting fields under a checkbox it's important to wrap the elements in a
+`moz-fieldset` to indicate to assistive technologies that the fields are
+related, and to provide a label for the group of controls:
+
+```html
+<moz-fieldset label="Label for the group">
+  <moz-checkbox label="Parent checkbox" value="foo" checked>
+    <moz-checkbox slot="nested" label="Nested checkbox one" value="one"></moz-checkbox>
+    <moz-checkbox slot="nested" label="Nested checkbox two" value="two" checked></moz-checkbox>
+  </moz-checkbox>
+</moz-fieldset>
+```
+
+```html story
+<moz-fieldset label="Label for the group">
+  <moz-checkbox label="Parent checkbox" value="foo" checked>
+    <moz-checkbox slot="nested" label="Nested checkbox one" value="one"></moz-checkbox>
+    <moz-checkbox slot="nested" label="Nested checkbox two" value="two" checked></moz-checkbox>
+  </moz-checkbox>
+</moz-fieldset>
 ```

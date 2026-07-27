@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,9 @@
 
 #include "DOMSVGPointList.h"
 #include "gfx2DGlue.h"
-#include "nsError.h"
 #include "mozilla/dom/DOMMatrix.h"
 #include "mozilla/dom/SVGPointBinding.h"
+#include "nsError.h"
 
 // See the architecture comment in DOMSVGPointList.h.
 
@@ -37,7 +35,8 @@ class MOZ_RAII AutoChangePointNotifier {
   DOMSVGPoint* const mValue;
 };
 
-static SVGAttrTearoffTable<SVGPoint, DOMSVGPoint> sSVGTranslateTearOffTable;
+constinit static SVGAttrTearoffTable<SVGPoint, DOMSVGPoint>
+    sSVGTranslateTearOffTable;
 
 // We could use NS_IMPL_CYCLE_COLLECTION(, except that in Unlink() we need to
 // clear our list's weak ref to us to be safe. (The other option would be to
@@ -71,9 +70,9 @@ float DOMSVGPoint::X() {
   return InternalItem().mX;
 }
 
-void DOMSVGPoint::SetX(float aX, ErrorResult& rv) {
+void DOMSVGPoint::SetX(float aX, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -96,9 +95,9 @@ float DOMSVGPoint::Y() {
   return InternalItem().mY;
 }
 
-void DOMSVGPoint::SetY(float aY, ErrorResult& rv) {
+void DOMSVGPoint::SetY(float aY, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
   auto& val = InternalItem();
@@ -115,18 +114,16 @@ void DOMSVGPoint::SetY(float aY, ErrorResult& rv) {
 
 already_AddRefed<DOMSVGPoint> DOMSVGPoint::MatrixTransform(
     const DOMMatrix2DInit& aMatrix, ErrorResult& aRv) {
-  RefPtr<DOMMatrixReadOnly> matrix =
-      DOMMatrixReadOnly::FromMatrix(GetParentObject(), aMatrix, aRv);
+  auto matrix2D = DOMMatrixReadOnly::ToValidatedMatrixDouble(aMatrix, aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
-  const auto* matrix2D = matrix->GetInternal2D();
-  if (!matrix2D->IsFinite()) {
+  if (!matrix2D.IsFinite()) {
     aRv.ThrowTypeError<MSG_NOT_FINITE>("MatrixTransform matrix");
     return nullptr;
   }
-  auto pt = matrix2D->TransformPoint(InternalItem());
-  return do_AddRef(new DOMSVGPoint(ToPoint(pt)));
+  auto pt = matrix2D.TransformPoint(InternalItem());
+  return MakeAndAddRef<DOMSVGPoint>(ToPoint(pt));
 }
 
 void DOMSVGPoint::InsertingIntoList(DOMSVGPointList* aList, uint32_t aListIndex,
@@ -167,6 +164,7 @@ already_AddRefed<DOMSVGPoint> DOMSVGPoint::GetTranslateTearOff(
   if (!domPoint) {
     domPoint = new DOMSVGPoint(aVal, aSVGSVGElement);
     sSVGTranslateTearOffTable.AddTearoff(aVal, domPoint);
+    domPoint->mIsInTearoffTable = true;
   }
 
   return domPoint.forget();
@@ -198,17 +196,23 @@ void DOMSVGPoint::CleanupWeakRefs() {
   // cycle collected), so we that don't leave behind a pointer to
   // free / soon-to-be-free memory.
   if (nsCOMPtr<DOMSVGPointList> pointList = do_QueryInterface(mOwner)) {
-    MOZ_ASSERT(pointList->mItems[mListIndex] == this,
-               "Clearing out the wrong list index...?");
+    MOZ_RELEASE_ASSERT(pointList->mItems[mListIndex] == this,
+                       "Clearing out the wrong list index...?");
     pointList->mItems[mListIndex] = nullptr;
   }
 
+  if (mIsInTearoffTable) {
+    // Similarly, we must update the tearoff table to remove its (non-owning)
+    // pointer to mVal.
+    MOZ_ASSERT(mVal && mIsTranslatePoint,
+               "Tearoff table should only be used for translate-point objects "
+               "with non-null mVal (see GetTranslateTearOff and its callers)");
+    sSVGTranslateTearOffTable.RemoveTearoff(mVal);
+    mIsInTearoffTable = false;
+  }
+
   if (mVal) {
-    if (mIsTranslatePoint) {
-      // Similarly, we must update the tearoff table to remove its (non-owning)
-      // pointer to mVal.
-      sSVGTranslateTearOffTable.RemoveTearoff(mVal);
-    } else {
+    if (!mIsTranslatePoint) {
       // In this case we own mVal
       delete mVal;
     }

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 // Copyright 2012 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -31,9 +30,9 @@
 #include "mozilla/Casting.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/EndianUtils.h"
-#include "mozilla/FloatingPoint.h"
 #include "mozilla/Likely.h"
-#include "mozilla/MathAlgorithms.h"
+
+#include <bit>
 
 #include "jit/arm/Assembler-arm.h"
 #include "jit/arm/disasm/Constants-arm.h"
@@ -291,6 +290,9 @@ class SimInstruction {
 
   // Test for a nop instruction, which falls under type 1.
   inline bool isNopType1() const { return bits(24, 0) == 0x0120F000; }
+
+  // Test for a yield instruction, which falls under type 1.
+  inline bool isYieldType1() const { return bits(24, 0) == 0x0120F001; }
 
   // Test for a nop instruction, which falls under type 1.
   inline bool isCsdbType1() const { return bits(24, 0) == 0x0120F014; }
@@ -2236,7 +2238,7 @@ int32_t Simulator::processPU(SimInstruction* instr, int num_regs, int reg_size,
 // Addressing Mode 4 - Load and Store Multiple
 void Simulator::handleRList(SimInstruction* instr, bool load) {
   int rlist = instr->rlistValue();
-  int num_regs = mozilla::CountPopulation32(rlist);
+  int num_regs = std::popcount(unsigned(rlist));
 
   intptr_t start_address = 0;
   intptr_t end_address = 0;
@@ -2842,12 +2844,7 @@ void Simulator::decodeType01(SimInstruction* instr) {
       switch (instr->bits(7, 4)) {
         case 1: {  // CLZ
           uint32_t bits = get_register(rm);
-          int leading_zeros = 0;
-          if (bits == 0) {
-            leading_zeros = 32;
-          } else {
-            leading_zeros = mozilla::CountLeadingZeroes32(bits);
-          }
+          int leading_zeros = std::countl_zero(bits);
           set_register(rd, leading_zeros);
           break;
         }
@@ -2861,13 +2858,18 @@ void Simulator::decodeType01(SimInstruction* instr) {
     }
   } else if ((type == 1) && instr->isNopType1()) {
     // NOP.
+  } else if ((type == 1) && instr->isYieldType1()) {
+    AtomicOperations::pause();
   } else if ((type == 1) && instr->isCsdbType1()) {
     // Speculation barrier. (No-op for the simulator)
   } else {
     int rd = instr->rdValue();
     int rn = instr->rnValue();
-    int32_t rn_val = get_register(rn);
-    int32_t shifter_operand = 0;
+    // Use uint32_t here for integer overflow in operations below not to be
+    // undefined behavior, leading to our own calculations of overflow being
+    // messed up by the compiler.
+    uint32_t rn_val = get_register(rn);
+    uint32_t shifter_operand = 0;
     bool shifter_carry_out = 0;
     if (type == 0) {
       shifter_operand = getShiftRm(instr, &shifter_carry_out);
@@ -3197,7 +3199,7 @@ void Simulator::decodeType3(SimInstruction* instr) {
                 // Rev
                 uint32_t rm_val = get_register(instr->rmValue());
 
-                static_assert(MOZ_LITTLE_ENDIAN());
+                static_assert(std::endian::native == std::endian::little);
                 set_register(rd,
                              mozilla::NativeEndian::swapToBigEndian(rm_val));
               } else if (instr->bits(20, 16) == 0b1'1111 &&
@@ -3205,7 +3207,7 @@ void Simulator::decodeType3(SimInstruction* instr) {
                 // Rev16
                 uint32_t rm_val = get_register(instr->rmValue());
 
-                static_assert(MOZ_LITTLE_ENDIAN());
+                static_assert(std::endian::native == std::endian::little);
                 uint32_t hi = mozilla::NativeEndian::swapToBigEndian(
                     uint16_t(rm_val >> 16));
                 uint32_t lo =
@@ -3261,7 +3263,7 @@ void Simulator::decodeType3(SimInstruction* instr) {
                 // Revsh
                 uint32_t rm_val = get_register(instr->rmValue());
 
-                static_assert(MOZ_LITTLE_ENDIAN());
+                static_assert(std::endian::native == std::endian::little);
                 set_register(
                     rd, int32_t(int16_t(mozilla::NativeEndian::swapToBigEndian(
                             uint16_t(rm_val)))));

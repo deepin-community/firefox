@@ -43,12 +43,6 @@ const POLICIES_TESTS = [
     },
   },
 
-  // POLICY: DisableBuiltinPDFViewer
-  {
-    policies: { DisableBuiltinPDFViewer: true },
-    lockedPrefs: { "pdfjs.disabled": true },
-  },
-
   // POLICY: DisableFormHistory
   {
     policies: { DisableFormHistory: true },
@@ -86,6 +80,9 @@ const POLICIES_TESTS = [
         Cryptomining: true,
         Fingerprinting: true,
         EmailTracking: true,
+        SuspectedFingerprinting: true,
+        BaselineExceptions: true,
+        ConvenienceExceptions: true,
         Locked: true,
       },
     },
@@ -94,6 +91,10 @@ const POLICIES_TESTS = [
       "privacy.trackingprotection.fingerprinting.enabled": true,
       "privacy.trackingprotection.emailtracking.enabled": true,
       "privacy.trackingprotection.emailtracking.pbmode.enabled": true,
+      "privacy.fingerprintingProtection": true,
+      "privacy.fingerprintingProtection.pbmode": true,
+      "privacy.trackingprotection.allow_list.baseline.enabled": true,
+      "privacy.trackingprotection.allow_list.convenience.enabled": true,
     },
   },
 
@@ -174,18 +175,6 @@ const POLICIES_TESTS = [
     },
   },
 
-  // POLICY: Certificates (true)
-  {
-    policies: {
-      Certificates: {
-        ImportEnterpriseRoots: true,
-      },
-    },
-    lockedPrefs: {
-      "security.enterprise_roots.enabled": true,
-    },
-  },
-
   // POLICY: Certificates (false)
   {
     policies: {
@@ -227,10 +216,11 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.sessions": true,
       "privacy.clearOnShutdown.siteSettings": true,
       "privacy.clearOnShutdown.offlineApps": true,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": true,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": true,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": true,
       "privacy.clearOnShutdown_v2.cache": true,
       "privacy.clearOnShutdown_v2.siteSettings": true,
+      "privacy.clearOnShutdown_v2.formdata": true,
     },
   },
 
@@ -248,10 +238,11 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.sessions": false,
       "privacy.clearOnShutdown.siteSettings": false,
       "privacy.clearOnShutdown.offlineApps": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
       "privacy.clearOnShutdown_v2.siteSettings": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -269,9 +260,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": true,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -289,9 +281,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": true,
       "privacy.clearOnShutdown_v2.cache": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -309,9 +302,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -329,9 +323,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": true,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
+      "privacy.clearOnShutdown_v2.formdata": true,
     },
   },
 
@@ -349,9 +344,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": true,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": true,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": true,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -369,9 +365,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": true,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -390,10 +387,11 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
       "privacy.clearOnShutdown.siteSettings": true,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
       "privacy.clearOnShutdown_v2.siteSettings": true,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -412,7 +410,7 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
       "privacy.clearOnShutdown.offlineApps": true,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": false,
     },
@@ -437,8 +435,9 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -462,7 +461,8 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -481,9 +481,10 @@ const POLICIES_TESTS = [
       "privacy.clearOnShutdown.formdata": false,
       "privacy.clearOnShutdown.history": false,
       "privacy.clearOnShutdown.sessions": false,
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads": false,
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads": false,
       "privacy.clearOnShutdown_v2.cookiesAndStorage": false,
       "privacy.clearOnShutdown_v2.cache": true,
+      "privacy.clearOnShutdown_v2.formdata": false,
     },
   },
 
@@ -624,12 +625,15 @@ const POLICIES_TESTS = [
   {
     policies: {
       FirefoxHome: {
-        Pocket: false,
+        Stories: false,
+        SponsoredStories: false,
         Locked: true,
       },
     },
     lockedPrefs: {
       "browser.newtabpage.activity-stream.feeds.system.topstories": false,
+      "browser.newtabpage.activity-stream.feeds.section.topstories": false,
+      "browser.newtabpage.activity-stream.showSponsored": false,
     },
   },
 
@@ -771,6 +775,29 @@ const POLICIES_TESTS = [
     },
   },
 
+  // POLICY: LocalNetworkAccess
+  {
+    policies: {
+      LocalNetworkAccess: {
+        Enabled: true,
+      },
+    },
+    unlockedPrefs: {
+      "network.lna.enabled": true,
+    },
+  },
+  {
+    policies: {
+      LocalNetworkAccess: {
+        Enabled: false,
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.lna.enabled": false,
+    },
+  },
+
   // POLICY: EncryptedMediaExtensions
 
   {
@@ -859,6 +886,9 @@ const POLICIES_TESTS = [
         TLS_RSA_WITH_AES_128_CBC_SHA: false,
         TLS_RSA_WITH_AES_256_CBC_SHA: false,
         TLS_RSA_WITH_3DES_EDE_CBC_SHA: false,
+        TLS_CHACHA20_POLY1305_SHA256: false,
+        TLS_AES_128_GCM_SHA256: false,
+        TLS_AES_256_GCM_SHA384: false,
       },
     },
     lockedPrefs: {
@@ -879,6 +909,9 @@ const POLICIES_TESTS = [
       "security.ssl3.rsa_aes_128_sha": true,
       "security.ssl3.rsa_aes_256_sha": true,
       "security.ssl3.deprecated.rsa_des_ede3_sha": true,
+      "security.tls13.chacha20_poly1305_sha256": true,
+      "security.tls13.aes_128_gcm_sha256": true,
+      "security.tls13.aes_256_gcm_sha384": true,
     },
   },
 
@@ -902,6 +935,9 @@ const POLICIES_TESTS = [
         TLS_RSA_WITH_AES_128_CBC_SHA: true,
         TLS_RSA_WITH_AES_256_CBC_SHA: true,
         TLS_RSA_WITH_3DES_EDE_CBC_SHA: true,
+        TLS_CHACHA20_POLY1305_SHA256: true,
+        TLS_AES_128_GCM_SHA256: true,
+        TLS_AES_256_GCM_SHA384: true,
       },
     },
     lockedPrefs: {
@@ -922,6 +958,9 @@ const POLICIES_TESTS = [
       "security.ssl3.rsa_aes_128_sha": false,
       "security.ssl3.rsa_aes_256_sha": false,
       "security.ssl3.deprecated.rsa_des_ede3_sha": false,
+      "security.tls13.chacha20_poly1305_sha256": false,
+      "security.tls13.aes_128_gcm_sha256": false,
+      "security.tls13.aes_256_gcm_sha384": false,
     },
   },
 
@@ -1145,6 +1184,132 @@ const POLICIES_TESTS = [
     },
     lockedPrefs: {
       "dom.security.https_only_mode": true,
+    },
+  },
+
+  // POLICY: SkipTermsOfUse
+  {
+    policies: {
+      SkipTermsOfUse: true,
+    },
+    lockedPrefs: {
+      "termsofuse.acceptedVersion": 999,
+      // "termsofuse.acceptedVersion" is a string of
+      // the timestamp at which the policy was set
+    },
+  },
+
+  // POLICY: VisualSearchEnabled
+  {
+    policies: {
+      VisualSearchEnabled: false,
+    },
+    lockedPrefs: {
+      "browser.search.visualSearch.featureGate": false,
+    },
+  },
+
+  // Bug 1981587
+  {
+    policies: {
+      Preferences: {
+        "security.webauthn.always_allow_direct_attestation": {
+          Value: true,
+          Status: "locked",
+        },
+      },
+    },
+    lockedPrefs: {
+      "security.webauthn.always_allow_direct_attestation": true,
+    },
+  },
+
+  // POLICY: XSLTEnabled
+  {
+    policies: {
+      XSLTEnabled: true,
+    },
+    lockedPrefs: {
+      "dom.xslt.enabled": true,
+    },
+  },
+  {
+    policies: {
+      XSLTEnabled: false,
+    },
+    lockedPrefs: {
+      "dom.xslt.enabled": false,
+    },
+  },
+
+  // AIControls - all features locked via Default.Locked
+  {
+    policies: {
+      AIControls: {
+        Default: { Value: "blocked", Locked: true },
+        Translations: { Value: "available" },
+        PDFAltText: { Value: "available" },
+        SmartTabGroups: { Value: "blocked" },
+        LinkPreviewKeyPoints: { Value: "available" },
+        SidebarChatbot: { Value: "blocked" },
+      },
+    },
+    lockedPrefs: {
+      "browser.ai.control.default": "blocked",
+      "browser.ai.control.translations": "available",
+      "browser.translations.enable": true,
+      "browser.ai.control.pdfjsAltText": "available",
+      "pdfjs.enableAltText": true,
+      "browser.ai.control.smartTabGroups": "blocked",
+      "browser.tabs.groups.smart.userEnabled": false,
+      "browser.ai.control.linkPreviewKeyPoints": "available",
+      "browser.ml.linkPreview.enabled": true,
+      "browser.ai.control.sidebarChatbot": "blocked",
+      "browser.ml.chat.enabled": false,
+      "browser.ml.chat.page": false,
+    },
+  },
+
+  // AIControls - per-feature locked override
+  {
+    policies: {
+      AIControls: {
+        Default: { Value: "blocked", Locked: true },
+        Translations: { Value: "available", Locked: false },
+      },
+    },
+    lockedPrefs: {
+      "browser.ai.control.default": "blocked",
+      "browser.ai.control.pdfjsAltText": "blocked",
+      "pdfjs.enableAltText": false,
+      "browser.ai.control.smartTabGroups": "blocked",
+      "browser.tabs.groups.smart.userEnabled": false,
+      "browser.ai.control.linkPreviewKeyPoints": "blocked",
+      "browser.ml.linkPreview.enabled": false,
+      "browser.ai.control.sidebarChatbot": "blocked",
+      "browser.ml.chat.enabled": false,
+      "browser.ml.chat.page": false,
+    },
+    unlockedPrefs: {
+      "browser.ai.control.translations": "available",
+      "browser.translations.enable": true,
+    },
+  },
+
+  // GenerativeAI
+  {
+    policies: {
+      GenerativeAI: {
+        Enabled: false,
+        Chatbot: true,
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "browser.ml.chat.enabled": true,
+      "browser.ml.chat.page": true,
+      "browser.ml.linkPreview.optin": false,
+      "browser.tabs.groups.smart.userEnabled": false,
     },
   },
 ];

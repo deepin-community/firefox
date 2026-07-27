@@ -43,7 +43,7 @@ fxviewtabrow-save-to-pocket = Sarva in { -pocket-brand-name }
     .accesskey = s
 fxviewtabrow-copy-link = Còpia ligòngiu
     .accesskey = C
-fxviewtabrow-close-tab = Serra s'ischeda
+fxviewtabrow-close-tab = Serra s’ischeda
     .accesskey = S
 fxviewtabrow-move-tab = Move s’ischeda
     .accesskey = M
@@ -53,24 +53,37 @@ fxviewtabrow-move-tab-end = Move a sa fine
     .accesskey = f
 fxviewtabrow-move-tab-window = Move a una ventana noa
     .accesskey = n
+fxviewtabrow-send-to-device = Imbia a su dispositivu
+    .accesskey = I
+fxviewtabrow-send-to-mobile = Imbia a su telèfonu
+    .accesskey = t
 fxviewtabrow-send-tab = Imbia s’ischeda a unu dispositivu
     .accesskey = d
 fxviewtabrow-pin-tab = Apica ischeda
     .accesskey = A
-fxviewtabrow-unpin-tab = Boga s'ischeda
+fxviewtabrow-unpin-tab = Boga s’ischeda
     .accesskey = B
-fxviewtabrow-mute-tab = Pone s'ischeda a sa muda
+fxviewtabrow-mute-tab = Pone s’ischeda a sa muda
     .accesskey = m
-fxviewtabrow-unmute-tab = Ativa s'àudio de s'ischeda
+fxviewtabrow-unmute-tab = Ativa s’àudio de s’ischeda
     .accesskey = A
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Optziones pro { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
-    .title = Pone s'ischeda a sa muda
+    .title = Pone s’ischeda a sa muda
 fxviewtabrow-unmute-tab-button-no-context =
-    .title = Ativa s'àudio de s'ischeda
+    .title = Ativa s’àudio de s’ischeda
+fxviewtabrow-send-to-mobile-connect-device = Connete unu dispositivu pro imbiare ischedas
+fxviewtabrow-send-to-mobile-device-missing2 = Non bides su dispositivu tuo?
+fxviewtabrow-send-to-mobile-not-verified = Contu non verificadu
+fxviewtabrow-send-to-mobile-verify-account = Verìfica su contu tuo
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Identìfica·ti pro imbiare ischedas
+fxviewtabrow-send-to-mobile-turn-on-sync = Ativa sa sincronizatzione pro imbiare ischedas

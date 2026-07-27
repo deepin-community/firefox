@@ -468,11 +468,19 @@ add_task(async function shouldNavigate() {
      * @param {Function} addCallback - Function to add a result to the query.
      */
     async startQuery(context, addCallback) {
-      for (let result of this.results) {
-        result.payload.searchString = context.searchString;
-        result.payload.url = DUMMY_PAGE;
-        addCallback(this, result);
-      }
+      addCallback(
+        this,
+        new UrlbarResult({
+          type: UrlbarUtils.RESULT_TYPE.DYNAMIC,
+          source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+          suggestedIndex: 1,
+          payload: {
+            dynamicType: DYNAMIC_TYPE_NAME,
+            url: DUMMY_PAGE,
+            searchString: context.searchString,
+          },
+        })
+      );
     }
   }
 
@@ -565,26 +573,29 @@ add_task(async function highlighting() {
    */
   class TestHighlightProvider extends TestProvider {
     startQuery(context, addCallback) {
-      let result = Object.assign(
-        new UrlbarResult(
-          UrlbarUtils.RESULT_TYPE.DYNAMIC,
-          UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-          ...UrlbarResult.payloadAndSimpleHighlights(context.tokens, {
-            dynamicType: DYNAMIC_TYPE_NAME,
-            text: ["Test title", UrlbarUtils.HIGHLIGHT.TYPED],
-          })
-        ),
-        { suggestedIndex: 1 }
-      );
+      this._tokens = context.tokens;
+      let result = new UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.DYNAMIC,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        suggestedIndex: 1,
+        payload: {
+          dynamicType: DYNAMIC_TYPE_NAME,
+          text: "Test title",
+        },
+        highlights: {
+          text: UrlbarUtils.HIGHLIGHT.TYPED,
+        },
+      });
       addCallback(this, result);
     }
 
     getViewUpdate(result, _idsByName) {
+      let { value: textContent, highlights } =
+        result.getDisplayableValueAndHighlights("text", {
+          tokens: this._tokens,
+        });
       return {
-        text: {
-          textContent: result.payload.text,
-          highlights: result.payloadHighlights.text,
-        },
+        text: { textContent, highlights },
       };
     }
   }
@@ -793,6 +804,57 @@ add_task(async function hasActionDescendant() {
   });
 });
 
+// Tests whether 'dynamicType' attribute is cleared.
+add_task(async function clear_dynamicType_attribute() {
+  /**
+   * A dummy provider that providers results with a `url` property.
+   */
+  class TestIndex0Provider extends TestProvider {
+    /**
+     * @param {object} context - Data regarding the context of the query.
+     * @param {Function} addCallback - Function to add a result to the query.
+     */
+    async startQuery(context, addCallback) {
+      addCallback(
+        this,
+        new UrlbarResult({
+          type: UrlbarUtils.RESULT_TYPE.DYNAMIC,
+          source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+          suggestedIndex: 0,
+          payload: {
+            dynamicType: DYNAMIC_TYPE_NAME,
+          },
+        })
+      );
+    }
+  }
+
+  await withDynamicTypeProvider(async provider => {
+    // Do a search.
+    await UrlbarTestUtils.promiseAutocompleteResultPopup({
+      window,
+      value: "test",
+      waitForFocus: SimpleTest.waitForFocus,
+    });
+    // Check the dynamicType.
+    let row = await UrlbarTestUtils.waitForAutocompleteResultAt(window, 0);
+    Assert.equal(row.getAttribute("dynamicType"), "test");
+
+    // Unregister the provider to show normal result.
+    let providersManager = ProvidersManager.getInstanceForSap("urlbar");
+    providersManager.unregisterProvider(provider);
+    // Do a search again.
+    await UrlbarTestUtils.promiseAutocompleteResultPopup({
+      window,
+      value: "test",
+      waitForFocus: SimpleTest.waitForFocus,
+    });
+    Assert.ok(!row.hasAttribute("dynamicType"));
+
+    await UrlbarTestUtils.promisePopupClose(window);
+  }, new TestIndex0Provider());
+});
+
 // View templates that contain descendant `.urlbarView-url` and
 // `.urlbarView-action` elements should cause `has-url` and `has-action` to be
 // set on `.urlbarView-row`.
@@ -879,28 +941,19 @@ async function doAttributesTest({
  * Provides a dynamic result.
  */
 class TestProvider extends UrlbarTestUtils.TestProvider {
-  constructor() {
-    super({
-      results: [
-        Object.assign(
-          new UrlbarResult(
-            UrlbarUtils.RESULT_TYPE.DYNAMIC,
-            UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-            {
-              dynamicType: DYNAMIC_TYPE_NAME,
-            }
-          ),
-          { suggestedIndex: 1 }
-        ),
-      ],
-    });
-  }
-
   async startQuery(context, addCallback) {
-    for (let result of this.results) {
-      result.payload.searchString = context.searchString;
-      addCallback(this, result);
-    }
+    addCallback(
+      this,
+      new UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.DYNAMIC,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        suggestedIndex: 1,
+        payload: {
+          dynamicType: DYNAMIC_TYPE_NAME,
+          searchString: context.searchString,
+        },
+      })
+    );
   }
 
   getViewUpdate(result, idsByName) {
@@ -974,12 +1027,13 @@ async function withDynamicTypeProvider(
   }
 
   // Add a provider of the dynamic type.
-  UrlbarProvidersManager.registerProvider(provider);
+  let providersManager = ProvidersManager.getInstanceForSap("urlbar");
+  providersManager.registerProvider(provider);
 
   await callback(provider);
 
   // Clean up.
-  UrlbarProvidersManager.unregisterProvider(provider);
+  providersManager.unregisterProvider(provider);
   if (!provider.getViewTemplate) {
     UrlbarView.removeDynamicViewTemplate(DYNAMIC_TYPE_NAME);
   }

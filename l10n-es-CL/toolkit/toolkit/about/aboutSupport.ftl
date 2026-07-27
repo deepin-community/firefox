@@ -18,6 +18,10 @@ support-addons-type = Tipo
 support-addons-enabled = Activado
 support-addons-version = Versión
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Ubicación
 legacy-user-stylesheets-title = Hojas de estilo de usuario heredadas
 legacy-user-stylesheets-enabled = Activa
 legacy-user-stylesheets-stylesheet-types = Hojas de estilo
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Eficiencia (%)
 place-database-stats-sequentiality-perc = Secuencialidad (%)
 place-database-integrity = Integridad
 place-database-verify-integrity = Verificar integridad
+place-database-last-idle-maintenance-data = Fecha del último mantenimiento inactivo
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Fecha del último vaciamiento
+place-database-last-integrity-corruption-date = Fecha del último caso de corrupción de integridad
 a11y-title = Accesibilidad
 a11y-activated = Activado
 a11y-force-disabled = Prevenir accesibilidad
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Enumerar base de datos
 
 media-codec-support-sw-decoding = Decodificación por software
 media-codec-support-hw-decoding = Decodificación por hardware
+media-codec-support-sw-encoding = Codificación por software
+media-codec-support-hw-encoding = Codificación por hardware
 media-codec-support-codec-name = Nombre del códec
 media-codec-support-supported = Soportado
 media-codec-support-unsupported = No soportado

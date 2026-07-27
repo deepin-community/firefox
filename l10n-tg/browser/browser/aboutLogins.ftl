@@ -107,7 +107,7 @@ about-logins-login-intro-heading-logged-out2 = Воридшавиҳои ниго
 about-logins-login-intro-heading-logged-in = Ягон воридшавии ҳамоҳангшуда ёфт нашуд.
 login-intro-description = Агар шумо воридшавиҳои худро дар дастгоҳҳои гуногун ба { -brand-product-name } сабт карда бошед, дар он сурат шумо дар ин ҷо ба онҳо ҳамин тавр дастрасӣ пайдо мекунед:
 login-intro-instructions-fxa = Эҷод кунед ё ба { -fxaccount-brand-name }-и худ аз дастгоҳе, ки дар он воридшавиҳои шумо нигоҳ дошта шудаанд, ворид шавед.
-about-logins-login-intro-heading-message = Ниҳонвожаҳои худро ба ҷойи бехатар нигоҳ доред
+about-logins-login-intro-heading-message = Ниҳонвожаҳои худро дар ҷойи бехатар нигоҳ доред
 login-intro-description2 = Ҳамаи ниҳонвожаҳое, ки шумо дар «{ -brand-product-name }» нигоҳ медоред, рамзгузорӣ карда шудаанд. Илова бар ин, мо пайдоиши вайронкуниҳоро назорат мекунем ва шуморо огоҳ мекунем, агар онҳо ба шумо таъсир расонанд. <a data-l10n-name="breach-alert-link">Маълумоти бештар</a>
 login-intro-instructions-fxa2 = Эҷод кунед ё ба ҳисоби худ аз дастгоҳе, ки дар он воридшавиҳои шумо нигоҳ дошта шудаанд, ворид шавед.
 login-intro-instructions-fxa-settings = Ба Танзимот > Ҳамоҳангсозӣ > Фаъол кардани ҳамоҳангсозӣ гузаред… Ба «Воридшавиҳо ва ниҳонвожаҳо» аломати қайдро гузоред.
@@ -302,8 +302,8 @@ about-logins-confirm-export-dialog-message2 =
 about-logins-confirm-export-dialog-confirm-button2 = Идома додани содирот
 about-logins-alert-import-title = Воридот анҷом ёфт
 about-logins-alert-import-message = Дидани ҷамъбасти муфассал оид ба воридот
-confirm-discard-changes-dialog-title = Тағйироти захиранашударо бекор мекунед?
-confirm-discard-changes-dialog-message = Ҳамаи тағироти захиранашуда гум мешаванд.
+confirm-discard-changes-dialog-title = Тағйироти сабтнашударо бекор мекунед?
+confirm-discard-changes-dialog-message = Ҳамаи тағироти сабтнашуда гум мешаванд.
 confirm-discard-changes-dialog-confirm-button = Рад кардан
 
 ## Breach Alert notification
@@ -413,9 +413,9 @@ about-logins-import-dialog-items-error =
 about-logins-import-dialog-done = Тайёр
 about-logins-import-dialog-error-title = Хатои воридот
 about-logins-import-dialog-error-conflicting-values-title = Якчанд қимати ихтилофнок барои як воридшавӣ
-about-logins-import-dialog-error-conflicting-values-description = Барои мисол: якчанд номи корбар, ниҳонвожа, нишонии URL ва ғайра барои як воридшавӣ.
+about-logins-import-dialog-error-conflicting-values-description = Барои мисол: якчанд номи корбар, ниҳонвожа, нишонии «URL» ва ғайра барои як воридшавӣ.
 about-logins-import-dialog-error-file-format-title = Формати файл мушкилӣ дорад
-about-logins-import-dialog-error-file-format-description = Унвонҳои сутунҳо нодуруст мебошанд ё вуҷуд надоранд. Мутмаин шавед, ки файл барои номи корбар, ниҳонвожа ва нишонии URL сутунҳоро дар бар мегирад.
+about-logins-import-dialog-error-file-format-description = Унвонҳои сутунҳо нодуруст мебошанд ё вуҷуд надоранд. Мутмаин шавед, ки файл барои номи корбар, ниҳонвожа ва нишонии «URL» сутунҳоро дар бар мегирад.
 about-logins-import-dialog-error-file-permission-title = Файл хонда нашуд
 about-logins-import-dialog-error-file-permission-description = «{ -brand-short-name }» барои хондани ин файл иҷозат надорад. Кӯшиш кунед, ки иҷозатҳои файлро иваз намоед.
 about-logins-import-dialog-error-unable-to-read-title = Файл таҷзия карда намешавад

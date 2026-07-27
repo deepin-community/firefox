@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define mozilla_glean_GleanCounter_h
 
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/glean/bindings/CounterStandalone.h"
 #include "mozilla/glean/bindings/GleanMetric.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
@@ -17,16 +16,10 @@ namespace mozilla::glean {
 
 namespace impl {
 
-class CounterMetric {
+template <CounterType C = CounterType::eBaseOrLabeled>
+class CounterMetric : public CounterStandalone<C> {
  public:
-  constexpr explicit CounterMetric(uint32_t aId) : mId(aId) {}
-
-  /*
-   * Increases the counter by `amount`.
-   *
-   * @param aAmount The amount to increase by. Should be positive.
-   */
-  void Add(int32_t aAmount = 1) const;
+  constexpr explicit CounterMetric(uint32_t aId) : CounterStandalone<C>(aId) {}
 
   /**
    * **Test-only API**
@@ -47,16 +40,15 @@ class CounterMetric {
    */
   Result<Maybe<int32_t>, nsCString> TestGetValue(
       const nsACString& aPingName = nsCString()) const;
-
- private:
-  const uint32_t mId;
 };
 }  // namespace impl
 
 class GleanCounter final : public GleanMetric {
  public:
-  explicit GleanCounter(uint32_t id, nsISupports* aParent)
-      : GleanMetric(aParent), mCounter(id) {}
+  explicit GleanCounter(
+      uint32_t id, nsISupports* aParent,
+      impl::CounterType aType = impl::CounterType::eBaseOrLabeled)
+      : GleanMetric(aParent), mId(id), mType(aType) {}
 
   virtual JSObject* WrapObject(
       JSContext* aCx, JS::Handle<JSObject*> aGivenProto) override final;
@@ -69,7 +61,8 @@ class GleanCounter final : public GleanMetric {
  private:
   virtual ~GleanCounter() = default;
 
-  const impl::CounterMetric mCounter;
+  const uint32_t mId;
+  const impl::CounterType mType;
 };
 
 }  // namespace mozilla::glean

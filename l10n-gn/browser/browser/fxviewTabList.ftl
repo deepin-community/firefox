@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Eguerova ipahápe
     .accesskey = E
 fxviewtabrow-move-tab-window = Eguerova ovetã pyahúpe
     .accesskey = W
+fxviewtabrow-send-to-device = Emondo mba’e’okápe
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Emondo pumbyrýpe
+    .accesskey = n
 fxviewtabrow-send-tab = Emondo Tendayke Mba’e’okápe
     .accesskey = n
 fxviewtabrow-pin-tab = Emboja tendayke
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Emoĩjey tendayke pukue
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Jeporavorã { $tabTitle } peg̃uarã
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Embogue { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Emyandy mba’epu { $tabTitle }-pe g̃uarã
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Emokirirĩ Tendayke
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Emoĩjey mba’epu tendayképe
+fxviewtabrow-send-to-mobile-connect-device = Embojuaju mba’e’oka emondo hag̃ua tendaykeita
+fxviewtabrow-send-to-mobile-device-missing2 = ¿Nderehechái ne mba’e’oka?
+fxviewtabrow-send-to-mobile-not-verified = Mba’ete ojehechajey’ỹva
+fxviewtabrow-send-to-mobile-verify-account = Ehechajey pe mba’ete
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Eike ñandutípe emondo hag̃ua tendayke
+fxviewtabrow-send-to-mobile-turn-on-sync = Emyandy ñembojuehe emondo hag̃ua tendaykeita

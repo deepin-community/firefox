@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AudioEventTimeline.h"
-#include "AudioNodeTrack.h"
 
+#include "AudioNodeTrack.h"
 #include "mozilla/ErrorResult.h"
 
 using mozilla::Span;
@@ -124,14 +122,16 @@ AudioTimelineEvent::AudioTimelineEvent(Type aType,
   MOZ_ASSERT(aType == AudioTimelineEvent::SetValueCurve);
 }
 
-// cppcoreguidelines-pro-type-member-init does not know PodCopy().
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 AudioTimelineEvent::AudioTimelineEvent(const AudioTimelineEvent& rhs)
-    : mType(rhs.mType) {
-  PodCopy(this, &rhs, 1);
-
-  if (rhs.mType == AudioTimelineEvent::SetValueCurve) {
+    : mType(rhs.mType), mTime(rhs.mTime) {
+  if (mType == AudioTimelineEvent::SetValueCurve) {
+    mCurveLength = rhs.mCurveLength;
     mCurve = NewCurveCopy(Span(rhs.mCurve, rhs.mCurveLength));
+    mDuration = rhs.mDuration;
+  } else {
+    mValue = rhs.mValue;
+    mTimeConstant = rhs.mTimeConstant;
+    mPerTickRatio = rhs.mPerTickRatio;
   }
 }
 
@@ -482,7 +482,6 @@ void AudioEventTimeline::GetValuesAtTimeHelperInternal(
       case AudioTimelineEvent::SetTarget:
       case AudioTimelineEvent::SetValueCurve:
         break;
-      case AudioTimelineEvent::SetValue:
       case AudioTimelineEvent::Cancel:
       case AudioTimelineEvent::Track:
         MOZ_ASSERT(false, "Should have been handled earlier.");
@@ -500,7 +499,6 @@ void AudioEventTimeline::GetValuesAtTimeHelperInternal(
       break;
     case AudioTimelineEvent::SetTarget:
       MOZ_FALLTHROUGH_ASSERT("AudioTimelineEvent::SetTarget");
-    case AudioTimelineEvent::SetValue:
     case AudioTimelineEvent::Cancel:
     case AudioTimelineEvent::Track:
       MOZ_ASSERT(false, "Should have been handled earlier.");

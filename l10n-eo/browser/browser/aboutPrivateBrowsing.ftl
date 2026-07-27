@@ -4,7 +4,7 @@
 
 privatebrowsingpage-open-private-window-label = Malfermi privatan fenestron
     .accesskey = p
-about-private-browsing-search-placeholder = Serĉi en la teksaĵo
+about-private-browsing-search-placeholder = Serĉi en la reto
 about-private-browsing-info-title = Vi estas en privata fenestro
 about-private-browsing-search-btn =
     .title = Serĉi en la reto
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Permesi al { -brand-short-
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } zorgas pri kuketaj anoncoj por vi
 about-private-browsing-cookie-banners-promo-body = Ne nun aŭtomate rifuzas plurajn kuketajn anoncojn, tiel ke vi estas malpli spurata kaj vi povas denove sendistre retumi.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Lasu neniun spuron en tiu ĉi aparato
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } forigos viajn kuketojn, historion kaj retejajn datumojn kiam vi fermos ĉiujn viajn privatajn fenestrojn.
 about-private-browsing-felt-privacy-v1-info-link = Kiu povus vidi mian retumon?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = La fermo de ĉiuj privataj fenestroj forigos viajn kuketojn, historion kaj retejajn datumojn.
+about-private-browsing-nova-info-link = Kio plu povus vidi mian retumon?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Via retuma historio ne estos registrita.
+about-private-browsing-nova-info-subheader = Ni viŝos ĉiun serĉon kaj seancon kiam vi fermos tiun ĉi fenestron. La integritaj protektoj de { -brand-short-name }, ekzemple la blokado de spuriloj, ankaŭ ekzistas ĉi tie.

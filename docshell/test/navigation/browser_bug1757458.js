@@ -14,9 +14,10 @@ add_task(async function () {
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: testPage },
     async function (browser) {
-      await ContentTask.spawn(browser, [], async () => {
-        Assert.ok(
-          content.document.getElementById("viewsource").localName == "body",
+      await SpecialPowers.spawn(browser, [], async () => {
+        Assert.equal(
+          content.document.getElementById("viewsource").localName,
+          "body",
           "view-source document's body should have id='viewsource'."
         );
         content.document
@@ -35,9 +36,10 @@ add_task(async function () {
       browser.browsingContext.goBack();
       await pageShownPromise;
 
-      await ContentTask.spawn(browser, [], async () => {
-        Assert.ok(
-          content.document.getElementById("viewsource").localName == "body",
+      await SpecialPowers.spawn(browser, [], async () => {
+        Assert.equal(
+          content.document.getElementById("viewsource").localName,
+          "body",
           "view-source document's body should have id='viewsource'."
         );
       });

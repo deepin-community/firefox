@@ -99,7 +99,7 @@ places-delete-page =
            *[other] Siden fuortsmite
         }
     .accesskey = S
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Behearde blêdwizers
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -268,3 +268,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = It blêdwizer- en skiednissysteem sil net funksjoneel wêze, omdat ien de bestannen fan { -brand-short-name } yn gebrûk is troch in oare applikaasje. Guon feilichheidsprogramma's kinne dit feroarsaakje.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Map diele
+    .badge = Nij

@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 3; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,7 +39,7 @@ const nsLiteralString kSpace(u" ");
 
 nsChromeTreeOwner::nsChromeTreeOwner() : mAppWindow(nullptr) {}
 
-nsChromeTreeOwner::~nsChromeTreeOwner() {}
+nsChromeTreeOwner::~nsChromeTreeOwner() = default;
 
 //*****************************************************************************
 // nsChromeTreeOwner::nsISupports
@@ -224,16 +223,6 @@ nsChromeTreeOwner::GetPersistence(bool* aPersistPosition, bool* aPersistSize,
 }
 
 NS_IMETHODIMP
-nsChromeTreeOwner::GetTabCount(uint32_t* aResult) {
-  if (mAppWindow) {
-    return mAppWindow->GetTabCount(aResult);
-  }
-
-  *aResult = 0;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
 nsChromeTreeOwner::GetHasPrimaryContent(bool* aResult) {
   NS_ENSURE_STATE(mAppWindow);
   return mAppWindow->GetHasPrimaryContent(aResult);
@@ -242,16 +231,6 @@ nsChromeTreeOwner::GetHasPrimaryContent(bool* aResult) {
 //*****************************************************************************
 // nsChromeTreeOwner::nsIBaseWindow
 //*****************************************************************************
-
-NS_IMETHODIMP nsChromeTreeOwner::InitWindow(nativeWindow aParentNativeWindow,
-                                            nsIWidget* parentWidget, int32_t x,
-                                            int32_t y, int32_t cx, int32_t cy) {
-  // Ignore widget parents for now.  Don't think those are a vaild thing to
-  // call.
-  NS_ENSURE_SUCCESS(SetPositionAndSize(x, y, cx, cy, 0), NS_ERROR_FAILURE);
-
-  return NS_OK;
-}
 
 NS_IMETHODIMP nsChromeTreeOwner::Destroy() {
   NS_ENSURE_STATE(mAppWindow);
@@ -331,29 +310,12 @@ nsChromeTreeOwner::GetDimensions(DimensionKind aDimensionKind, int32_t* aX,
   return GetRootShellSize(aCX, aCY);
 }
 
-NS_IMETHODIMP nsChromeTreeOwner::Repaint(bool aForce) {
-  NS_ENSURE_STATE(mAppWindow);
-  return mAppWindow->Repaint(aForce);
-}
-
 NS_IMETHODIMP nsChromeTreeOwner::GetParentWidget(nsIWidget** aParentWidget) {
   NS_ENSURE_STATE(mAppWindow);
   return mAppWindow->GetParentWidget(aParentWidget);
 }
 
 NS_IMETHODIMP nsChromeTreeOwner::SetParentWidget(nsIWidget* aParentWidget) {
-  NS_ASSERTION(false, "You can't call this");
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-NS_IMETHODIMP nsChromeTreeOwner::GetParentNativeWindow(
-    nativeWindow* aParentNativeWindow) {
-  NS_ENSURE_STATE(mAppWindow);
-  return mAppWindow->GetParentNativeWindow(aParentNativeWindow);
-}
-
-NS_IMETHODIMP nsChromeTreeOwner::SetParentNativeWindow(
-    nativeWindow aParentNativeWindow) {
   NS_ASSERTION(false, "You can't call this");
   return NS_ERROR_NOT_IMPLEMENTED;
 }

@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 #include "nsIArray.idl"
 #include "nsISupports.idl"
 #include "nsIDragSession.idl"
-#include "nsIContentPolicy.idl"
 
 webidl DragEvent;
 webidl Node;
@@ -35,7 +33,6 @@ class RemoteDragStartData;
 [ptr] native DataTransferPtr(mozilla::dom::DataTransfer);
 [ptr] native RemoteDragStartDataPtr(mozilla::dom::RemoteDragStartData);
 native EventMessage(mozilla::EventMessage);
-[ptr] native nsIWidgetPtr(nsIWidget);
 
 [scriptable, uuid(ebd6b3a2-af16-43af-a698-3091a087dd62), builtinclass]
 interface nsIDragService : nsISupports
@@ -76,7 +73,7 @@ interface nsIDragService : nsISupports
   [noscript, can_run_script]
   void invokeDragSessionWithImage(in Node aDOMNode,
                                   in nsIPrincipal aPrincipal,
-                                  in nsIContentSecurityPolicy aCsp,
+                                  in nsIPolicyContainer aPolicyContainer,
                                   in nsICookieJarSettings aCookieJarSettings,
                                   in nsIArray aTransferableArray,
                                   in unsigned long aActionType,
@@ -92,7 +89,7 @@ interface nsIDragService : nsISupports
   [noscript, can_run_script]
   void invokeDragSessionWithRemoteImage(in Node aDOMNode,
                                         in nsIPrincipal aPrincipal,
-                                        in nsIContentSecurityPolicy aCsp,
+                                        in nsIPolicyContainer aPolicyContainer,
                                         in nsICookieJarSettings aCookieJarSettings,
                                         in nsIArray aTransferableArray,
                                         in unsigned long aActionType,
@@ -110,7 +107,7 @@ interface nsIDragService : nsISupports
   [noscript, can_run_script]
   void invokeDragSessionWithSelection(in Selection aSelection,
                                       in nsIPrincipal aPrincipal,
-                                      in nsIContentSecurityPolicy aCsp,
+                                      in nsIPolicyContainer aPolicyContainer,
                                       in nsICookieJarSettings aCookieJarSettings,
                                       in nsIArray aTransferableArray,
                                       in unsigned long aActionType,
@@ -193,15 +190,7 @@ interface nsIDragService : nsISupports
    * True if this is a mock nsIDragService, created with
    * createMockDragController().
    */
-  readonly attribute boolean isMockService;
-
-%{ C++
-  bool IsMockService() {
-    bool ret = false;
-    MOZ_ALWAYS_SUCCEEDS(GetIsMockService(&ret));
-    return ret;
-  }
-%}
+  [infallible] readonly attribute boolean isMockService;
 
   /**
    * If this is true, mSessionIsSynthesizedForTests should not become true.
@@ -216,8 +205,3 @@ interface nsIDragService : nsISupports
    */
   [infallible] attribute boolean neverAllowSessionIsSynthesizedForTests;
 };
-
-
-%{ C++
-
-%}

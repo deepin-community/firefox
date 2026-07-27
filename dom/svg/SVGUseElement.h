@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,14 +5,14 @@
 #ifndef DOM_SVG_SVGUSEELEMENT_H_
 #define DOM_SVG_SVGUSEELEMENT_H_
 
+#include "SVGAnimatedLength.h"
+#include "SVGAnimatedString.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/dom/FromParser.h"
 #include "mozilla/dom/IDTracker.h"
 #include "mozilla/dom/SVGGraphicsElement.h"
-#include "mozilla/RefPtr.h"
 #include "nsCOMPtr.h"
 #include "nsStubMutationObserver.h"
-#include "SVGAnimatedLength.h"
-#include "SVGAnimatedString.h"
 #include "nsTArray.h"
 
 class nsIContent;
@@ -64,16 +62,14 @@ class SVGUseElement final : public SVGUseElementBase,
   NS_DECL_NSIMUTATIONOBSERVER_NODEWILLBEDESTROYED
 
   // SVGElement specializations:
-  gfxMatrix PrependLocalTransformsTo(
-      const gfxMatrix& aMatrix,
-      SVGTransformTypes aWhich = eAllTransforms) const override;
+  gfxMatrix ChildToUserSpaceTransform() const override;
   bool HasValidDimensions() const override;
 
   // nsIContent interface
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
-  static nsCSSPropertyID GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
+  static NonCustomCSSPropertyId GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
 
   // WebIDL
   already_AddRefed<DOMSVGAnimatedString> Href();
@@ -82,8 +78,9 @@ class SVGUseElement final : public SVGUseElementBase,
   already_AddRefed<DOMSVGAnimatedLength> Width();
   already_AddRefed<DOMSVGAnimatedLength> Height();
 
-  nsIURI* GetSourceDocURI();
-  const Encoding* GetSourceDocCharacterSet();
+  Document* GetSourceDocument() const;
+  nsIURI* GetSourceDocURI() const;
+  const Encoding* GetSourceDocCharacterSet() const;
   URLExtraData* GetContentURLData() const { return mContentURLData; }
 
   // Updates the internal shadow tree to be an up-to-date clone of the
@@ -160,17 +157,17 @@ class SVGUseElement final : public SVGUseElementBase,
   void TriggerReclone();
   void UnlinkSource();
 
-  enum { ATTR_X, ATTR_Y, ATTR_WIDTH, ATTR_HEIGHT };
-  SVGAnimatedLength mLengthAttributes[4];
-  static LengthInfo sLengthInfo[4];
+  RefPtr<SVGUseElement> mOriginal;  // if we've been cloned, our "real" copy
+  ElementTracker mReferencedElementTracker;
+  RefPtr<URLExtraData> mContentURLData;  // URL data for its anonymous content
 
   enum { HREF, XLINK_HREF };
   SVGAnimatedString mStringAttributes[2];
   static StringInfo sStringInfo[2];
 
-  RefPtr<SVGUseElement> mOriginal;  // if we've been cloned, our "real" copy
-  ElementTracker mReferencedElementTracker;
-  RefPtr<URLExtraData> mContentURLData;  // URL data for its anonymous content
+  enum { ATTR_X, ATTR_Y, ATTR_WIDTH, ATTR_HEIGHT };
+  SVGAnimatedLength mLengthAttributes[4];
+  static LengthInfo sLengthInfo[4];
 };
 
 }  // namespace dom

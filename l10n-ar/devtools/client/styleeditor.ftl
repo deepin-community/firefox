@@ -8,6 +8,8 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = استورد صفحة طُرز ثم ألحقها بالمستند
     .accesskey = س
+styleeditor-filter-input =
+    .placeholder = صَفِّ صفحات الطُرز
 styleeditor-visibility-toggle =
     .tooltiptext = بدّل ظهور صفحة الطُرز
     .accesskey = ح
@@ -33,7 +35,6 @@ styleeditor-find-again =
 styleeditor-go-to-line =
     .label = اقفز إلى سطر…
     .accesskey = ق
-
 # This string is shown in the style sheets list
 # Variables:
 #   $ruleCount (Integer) - The number of rules in the stylesheet.

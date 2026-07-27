@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,39 +26,41 @@ struct Test {
   const char* mResult;
 };
 
-static Chunk kTest1Chunks[] = {Chunk(9, "Hello sir"), Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest1Chunks[] = {Chunk(9, "Hello sir"),
+                                           Chunk(0, nullptr)};
 
-static Chunk kTest2Chunks[] = {Chunk(3, "Hel"), Chunk(3, "lo "),
-                               Chunk(3, "sir"), Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest2Chunks[] = {Chunk(3, "Hel"), Chunk(3, "lo "),
+                                           Chunk(3, "sir"), Chunk(0, nullptr)};
 
-static Chunk kTest3Chunks[] = {Chunk(1, "I"), Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest3Chunks[] = {Chunk(1, "I"), Chunk(0, nullptr)};
 
-static Chunk kTest4Chunks[] = {Chunk(2, "Hi"), Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest4Chunks[] = {Chunk(2, "Hi"), Chunk(0, nullptr)};
 
-static Chunk kTest5Chunks[] = {Chunk(1, "B"), Chunk(2, "ob"),
-                               Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest5Chunks[] = {Chunk(1, "B"), Chunk(2, "ob"),
+                                           Chunk(0, nullptr)};
 
-static Chunk kTest6Chunks[] = {Chunk(2, "Bo"), Chunk(1, "b"),
-                               Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest6Chunks[] = {Chunk(2, "Bo"), Chunk(1, "b"),
+                                           Chunk(0, nullptr)};
 
-static Chunk kTest7Chunks[] = {Chunk(1, "F"),     // Carry over 1
-                               Chunk(4, "iref"),  // Carry over 2
-                               Chunk(2, "ox"),    //            1
-                               Chunk(4, " is "),  //            2
-                               Chunk(2, "aw"),    //            1
-                               Chunk(4, "esom"),  //            2
-                               Chunk(2, "e!"),   Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest7Chunks[] = {Chunk(1, "F"),     // Carry over 1
+                                           Chunk(4, "iref"),  // Carry over 2
+                                           Chunk(2, "ox"),    //            1
+                                           Chunk(4, " is "),  //            2
+                                           Chunk(2, "aw"),    //            1
+                                           Chunk(4, "esom"),  //            2
+                                           Chunk(2, "e!"),   Chunk(0, nullptr)};
 
-static Chunk kTest8Chunks[] = {Chunk(5, "ALL T"),
-                               Chunk(1, "H"),
-                               Chunk(4, "ESE "),
-                               Chunk(2, "WO"),
-                               Chunk(21, "RLDS ARE YOURS EXCEPT"),
-                               Chunk(9, " EUROPA. "),
-                               Chunk(25, "ATTEMPT NO LANDING THERE."),
-                               Chunk(0, nullptr)};
+MOZ_RUNINIT static Chunk kTest8Chunks[] = {
+    Chunk(5, "ALL T"),
+    Chunk(1, "H"),
+    Chunk(4, "ESE "),
+    Chunk(2, "WO"),
+    Chunk(21, "RLDS ARE YOURS EXCEPT"),
+    Chunk(9, " EUROPA. "),
+    Chunk(25, "ATTEMPT NO LANDING THERE."),
+    Chunk(0, nullptr)};
 
-static Test kTests[] = {
+MOZ_RUNINIT static Test kTests[] = {
     // Test 1, test a simple round string in one chunk
     Test(kTest1Chunks, "SGVsbG8gc2ly"),
     // Test 2, test a simple round string split into round chunks
@@ -182,7 +183,7 @@ bool FakeInputStream::NextTest() {
 }
 
 void FakeInputStream::CheckTest(nsACString& aResult) {
-  ASSERT_STREQ(aResult.BeginReading(), mTest->mResult);
+  ASSERT_STREQ(PromiseFlatCString(aResult).get(), mTest->mResult);
 }
 
 void FakeInputStream::CheckTest(nsAString& aResult) {

@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __DetailedPromise_h__
-#define __DetailedPromise_h__
+#ifndef DetailedPromise_h_
+#define DetailedPromise_h_
 
-#include "mozilla/dom/Promise.h"
-#include "mozilla/Telemetry.h"
 #include "EMEUtils.h"
+#include "mozilla/dom/Promise.h"
 
 namespace mozilla::dom {
 
@@ -27,7 +24,6 @@ class DetailedPromise : public Promise {
   template <typename T>
   void MaybeResolve(T&& aArg) {
     EME_LOG("%s promise resolved", mName.get());
-    MaybeReportTelemetry(eStatus::kSucceeded);
     Promise::MaybeResolve(std::forward<T>(aArg));
   }
 
@@ -44,11 +40,11 @@ class DetailedPromise : public Promise {
     Promise::MaybeRejectWith##name(aMessage);                     \
   }                                                               \
   template <int N>                                                \
-  void MaybeRejectWith##name(const char(&aMessage)[N]) {          \
+  void MaybeRejectWith##name(const char (&aMessage)[N]) {         \
     MaybeRejectWith##name(nsLiteralCString(aMessage));            \
   }
 
-#include "mozilla/dom/DOMExceptionNames.h"
+#include "mozilla/dom/DOMExceptionNames.inc"
 
 #undef DOMEXCEPTION
 
@@ -83,22 +79,15 @@ class DetailedPromise : public Promise {
  private:
   explicit DetailedPromise(nsIGlobalObject* aGlobal, const nsACString& aName);
 
-  explicit DetailedPromise(nsIGlobalObject* aGlobal, const nsACString& aName,
-                           Telemetry::HistogramID aSuccessLatencyProbe,
-                           Telemetry::HistogramID aFailureLatencyProbe);
   virtual ~DetailedPromise();
 
   enum eStatus { kSucceeded, kFailed };
-  void MaybeReportTelemetry(eStatus aStatus);
   void LogRejectionReason(uint32_t aErrorCode, const nsACString& aReason);
 
   nsCString mName;
-  bool mResponded;
   TimeStamp mStartTime;
-  Optional<Telemetry::HistogramID> mSuccessLatencyProbe;
-  Optional<Telemetry::HistogramID> mFailureLatencyProbe;
 };
 
 }  // namespace mozilla::dom
 
-#endif  // __DetailedPromise_h__
+#endif  // DetailedPromise_h_

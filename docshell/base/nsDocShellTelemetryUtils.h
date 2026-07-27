@@ -1,12 +1,11 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsDocShellTelemetryUtils_h__
-#define nsDocShellTelemetryUtils_h__
+#ifndef nsDocShellTelemetryUtils_h_
+#define nsDocShellTelemetryUtils_h_
 
-#include "mozilla/Telemetry.h"
+#include "nsLiteralString.h"
 
 namespace mozilla {
 namespace dom {
@@ -16,7 +15,7 @@ namespace dom {
  * will return "errorOther", view the list of errors at
  * docshell/base/nsDocShellTelemetryUtils.cpp.
  */
-Telemetry::LABELS_PAGE_LOAD_ERROR LoadErrorToTelemetryLabel(nsresult aRv);
+nsLiteralCString LoadErrorToTelemetryLabel(nsresult aRv);
 }  // namespace dom
 }  // namespace mozilla
-#endif  // nsDocShellTelemetryUtils_h__
+#endif  // nsDocShellTelemetryUtils_h_

@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Change source language
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Sorry, we don’t support translations from { $language } yet.
+translations-panel-error-unsupported-hint-unknown-2 = Sorry, we don’t support translations from this language yet.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Download languages for offline translation.
 translations-manage-all-language = All languages
 translations-manage-download-button = Download
 translations-manage-delete-button = Delete
-translations-manage-intro = Set your language and site translation preferences and manage languages installed for offline translation.
-translations-manage-install-description = Install languages for offline translation
-translations-manage-language-install-button =
-    .label = Install
-translations-manage-language-install-all-button =
-    .label = Install all
-    .accesskey = I
 translations-manage-intro-2 = Set your language and site translation preferences and manage languages downloaded for offline translation.
 translations-manage-download-description = Download languages for offline translation
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Remove all
     .accesskey = e
-translations-manage-error-install = There was a problem installing the language files. Please try again.
 translations-manage-error-download = There was a problem downloading the language files. Please try again.
 translations-manage-error-delete = There was an error deleting the language files. Please try again.
 translations-manage-error-remove = There was an error removing the language files. Please try again.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = There was a problem translating. Please try again.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Sorry, we don’t support translations from { $language } yet.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Sorry, we don’t support translations from this language yet.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

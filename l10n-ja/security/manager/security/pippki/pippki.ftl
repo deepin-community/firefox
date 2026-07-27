@@ -49,9 +49,6 @@ download-cert-view-cert =
     .label = 証明書を表示
 download-cert-view-text = 認証局の証明書を審査してください
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -86,8 +83,14 @@ client-auth-cert-details-issued-by = 発行者名: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = 格納先: { $storedOn }
-client-auth-cert-remember-box =
-    .label = 今後も同様に処理する
+client-auth-cert-remember-label = 今後も同様に処理する:
+client-auth-cert-remember-never =
+    .label = 今回のみ
+# en-US: Permanently
+client-auth-cert-remember-always =
+    .label = 次回からは確認しない
+client-auth-cert-remember-temporarily =
+    .label = このセッションのみ
 
 ## Set password (p12) dialog
 
@@ -99,6 +102,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = 証明書のバックアップ用パスワード(再入力):
 set-password-reminder = 重要: 証明書のバックアップ用パスワードを忘れてしまうと、バックアップした証明書を復元できなくなります。安全な場所に記録しておいてください。
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = 保護された認証
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = セキュリティデバイスの認証を行ってください ({ $tokenName })。認証方法はデバイスによって異なります (例えば、指紋認証リーダーの使用やキーパッドでのコード入力など)。
 
 ## Protected authentication alert
 

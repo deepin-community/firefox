@@ -5,7 +5,11 @@
 url-classifier-title = ព័ត៌មានអំពីចំណាត់ថ្នាក់ក្រុម URL
 url-classifier-search-title = ស្វែងរក
 url-classifier-search-result-title = លទ្ធផល
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI៖ { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = បញ្ជីតារាង៖{ $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = URL មិនត្រឹមត្រូវ
@@ -25,7 +29,3 @@ url-classifier-cache-refresh-btn = ផ្ទុក​ឡើងវិញ
 url-classifier-cache-clear-btn = សម្អាត
 url-classifier-cache-table-name = ឈ្មោះតារាង
 url-classifier-cache-ncache-entries = ចំនួននៃធាតុឃ្លាំងសម្ងាត់អវិជ្ជមាន
-
-## Variables
-##   $error (string) - Error message
-

@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsAlertsIconListener_h__
-#define nsAlertsIconListener_h__
+#ifndef nsAlertsIconListener_h_
+#define nsAlertsIconListener_h_
 
 #include "nsCOMPtr.h"
 #include "nsIAlertsService.h"
@@ -20,23 +19,21 @@ class nsSystemAlertsService;
 
 struct NotifyNotification;
 
-class nsAlertsIconListener : public nsIAlertNotificationImageListener,
-                             public nsIObserver,
-                             public nsSupportsWeakReference {
+class nsAlertsIconListener : public nsISupports {
  public:
   NS_DECL_ISUPPORTS
-  NS_DECL_NSIALERTNOTIFICATIONIMAGELISTENER
-  NS_DECL_NSIOBSERVER
 
   nsAlertsIconListener(nsSystemAlertsService* aBackend,
+                       nsIAlertNotification* aAlertNotification,
                        const nsAString& aAlertName);
 
-  nsresult InitAlertAsync(nsIAlertNotification* aAlert,
-                          nsIObserver* aAlertListener);
+  nsresult InitAlert(nsIAlertNotification* aAlert, nsIObserver* aAlertListener);
   nsresult Close();
 
   void SendCallback();
+  void SendActionCallback(const nsAString& aActionName);
   void SendClosed();
+  void Disconnect();
 
  protected:
   virtual ~nsAlertsIconListener();
@@ -76,10 +73,12 @@ class nsAlertsIconListener : public nsIAlertNotificationImageListener,
   nsString mAlertName;
 
   RefPtr<nsSystemAlertsService> mBackend;
+  nsCOMPtr<nsIAlertNotification> mAlertNotification;
 
-  bool mAlertHasAction;
-  bool mAlertIsSilent;
-  bool mAlertRequiresInteraction;
+  bool mAlertHasAction = false;
+  bool mAlertIsSilent = false;
+  bool mAlertRequiresInteraction = false;
+  nsTArray<RefPtr<nsIAlertAction>> mActions;
 
   static void* libNotifyHandle;
   static bool libNotifyNotAvail;
@@ -94,10 +93,10 @@ class nsAlertsIconListener : public nsIAlertNotificationImageListener,
   static notify_notification_close_t notify_notification_close;
   static notify_notification_set_hint_t notify_notification_set_hint;
   static notify_notification_set_timeout_t notify_notification_set_timeout;
-  NotifyNotification* mNotification;
-  gulong mClosureHandler;
+  NotifyNotification* mNotification = nullptr;
+  gulong mClosureHandler = 0;
 
-  nsresult ShowAlert(GdkPixbuf* aPixbuf);
+  nsresult ShowAlert(imgIContainer* aImage);
 
   void NotifyFinished();
 };

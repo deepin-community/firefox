@@ -6,6 +6,8 @@ import sys
 import unittest
 from urllib.parse import quote
 
+import mozinfo
+
 from marionette_driver import errors
 from marionette_driver.by import By
 from marionette_harness import MarionetteTestCase

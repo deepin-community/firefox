@@ -4,10 +4,26 @@
 
 "use strict";
 
+const {
+  NodeHTTPProxyServer,
+  NodeHTTPSProxyServer,
+  NodeHTTP2ProxyServer,
+  with_node_servers,
+  NodeHTTPServer,
+  NodeHTTPSServer,
+  NodeHTTP2Server,
+} = ChromeUtils.importESModule("resource://testing-common/NodeServer.sys.mjs");
+
 /* import-globals-from head_cache.js */
 /* import-globals-from head_cookies.js */
 /* import-globals-from head_channels.js */
-/* import-globals-from head_servers.js */
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
 
 const SIZE = 4096;
 const CONTENT = "x".repeat(SIZE);
@@ -53,7 +69,7 @@ add_task(async function test_slow_upload() {
         let sstream = Cc[
           "@mozilla.org/io/string-input-stream;1"
         ].createInstance(Ci.nsIStringInputStream);
-        sstream.data = CONTENT;
+        sstream.setByteStringData(CONTENT);
 
         let mime = Cc[
           "@mozilla.org/network/mime-input-stream;1"

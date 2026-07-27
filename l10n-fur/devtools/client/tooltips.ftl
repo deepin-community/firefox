@@ -10,10 +10,49 @@ learn-more = <span data-l10n-name="link">Plui informazions</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
 ##   $property (string) - A CSS property name e.g. "color".
 ##   $display (string) - A CSS display value e.g. "inline-block".
 
+inactive-css-not-grid-or-flex-container = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è ni un contignidôr flex ni un contignidôr gridele.
+inactive-css-not-grid-or-flex-container-or-multicol-container = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è ni un contignidôr flex ni un contignidôr gridele ni un contignidôr multi-colone.
+inactive-css-not-multicol-container = <strong>{ $property }</strong> nol à efiet su chest element stant che nol è un contignidôr multi-colone.
+inactive-css-column-span = <strong>{ $property }</strong> nol à nissun efiet di spanning su chest element stant che no si cjate intun contignidôr multi-colone.
+inactive-css-not-grid-or-flex-item = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un element gridele o flex.
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item = <strong>{ $property }</strong> nol tocje chest element parcè che nol è un element grid o flex, e nol à une posizion assolude.
+inactive-css-not-grid-or-absolutely-positioned-item = <strong>{ $property }</strong> nol tocje chest element parcè che nol è un element grid e nol à une posizion assolude.
+inactive-css-not-grid-item = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un element gridele.
+inactive-css-not-grid-container = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un contignidôr gridele.
+inactive-css-not-flex-item = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un element flex.
+inactive-css-not-flex-container = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un contignidôr flex.
+inactive-css-not-inline-or-tablecell = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un element “inline” o un element  “table-cell”.
+inactive-css-first-line-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât in pseudo-elements “::first-line”.
+inactive-css-first-letter-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât tai pseudo-elements “::first-letter”.
+inactive-css-placeholder-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât tai pseudo-elements “::placeholder”.
+inactive-css-property-because-of-display = <strong>{ $property }</strong> nol à efiets su chest element stant che il valôr de proprietât “display” al è <strong>{ $display }</strong>.
+inactive-css-not-display-block-on-floated = Il valôr di <strong>display</strong> al è stât cambiât a <strong>block</strong> dal motôr, parcè che l'element al è <strong>floated</strong>.
+inactive-css-not-display-block-on-floated-2 = Il valôr di <strong>display</strong> al è stât modificât in <strong>{ $display }</strong> stant che l’element al è <strong>floated</strong>.
+inactive-css-only-non-grid-or-flex-item = <strong>{ $property }</strong> nol à efiets parcè che nol è pussibil aplicâlu a elements grid o flex.
+inactive-css-not-block = <strong>{ $property }</strong> nol à efiets su chest element parcè che nol è pussibil aplicâlu dome a elements block-level.
+inactive-css-not-block-container = La proprietât <strong>{ $property }</strong> no à efiets su chest element parcè che e ven aplicade dome ai elements block container.
+inactive-css-not-block-flex-grid-container = La proprietât <strong>{ $property }</strong> no à efiets su chest element parè che e ven aplicade dome ai elements container di gjenar block, flex e grid.
+inactive-css-not-floated = <strong>{ $property }</strong> nol à efiets parcè che nol è pussibil aplicâlu a elements floated.
+inactive-css-property-is-impossible-to-override-in-visited = Nol è pussibil passâ parsore di <strong>{ $property }</strong> par vie de restrizion <strong>:visited</strong>.
+inactive-css-position-property-on-unpositioned-box = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è un element posizionât.
+inactive-css-only-replaced-elements = <strong>{ $property }</strong> nol à efiets su chest element stant che si pues aplicâ dome a un element sostituît.
+inactive-text-overflow-when-no-overflow = <strong>{ $property }</strong> nol à efiets su chest element stant che <strong>overflow:hidden</strong> nol è definît.
+inactive-css-no-size-containment = <strong>{ $property }</strong> nol à efiets su chest element stant che nol à limits di dimension.
+inactive-css-not-for-internal-table-elements = <strong>{ $property }</strong> nol à efiets sui elements internis de tabele.
+inactive-css-not-for-internal-table-elements-except-table-cells = <strong>{ $property }</strong> no à efiets sui elements internis de tabele gjavadis lis celis de tabele.
+inactive-css-not-table = <strong>{ $property }</strong> no à efiets su chest element stant che nol è une tabele.
+inactive-css-collapsed-table-borders = <strong>{ $property }</strong> nol à efiets su chest element stant che e je une tabele cun ôrs strenzûts.
+inactive-css-not-table-cell = <strong>{ $property }</strong> nol à efiet su chest element stant che nol è une cele di une tabele.
+inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong> no à efiets su chest element stant che nol scor.
+inactive-css-border-image = <strong>{ $property }</strong> nol à efiets su chest element stant che nol è pussibil aplicâlu ai elements de tabele interne dulà che <strong>border-collapse</strong> al è metût come <strong>collapse</strong> sul element de tabele dal gjenitôr.
+inactive-css-resize = <strong>{ $property }</strong> nol à efiets su chest element stant che si pues aplicâ dome a elements cun valôr di overflow diviers di “visible” e a cualchi element sostituît (par es. textarea).
+inactive-css-ruby-element = <strong>{ $property }</strong> nol à efiets su chest element stant che al è un element pe trascrizion fonetiche (ruby). La sô dimension e je determinade de grandece dal caratar dal test ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
@@ -24,45 +63,9 @@ learn-more = <span data-l10n-name="link">Plui informazions</span>
 ##   $property (string) - A CSS property name e.g. "color".
 ##   $display (string) - A CSS display value e.g. "inline-block".
 
-inactive-css-not-grid-or-flex-container = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è ni un contignidôr flex ni un contignidôr gridele.
-inactive-css-not-grid-or-flex-container-or-multicol-container = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è ni un contignidôr flex ni un contignidôr gridele ni un contignidôr multi-colone.
-inactive-css-not-multicol-container = <strong>{ $property }</strong> nol à efiet su chest element viodût che nol è un contignidôr multi-colone.
-inactive-css-column-span = <strong>{ $property }</strong> nol à nissun efiet di spanning su chest element viodût che no si cjate intun contignidôr multi-colone.
-inactive-css-not-grid-or-flex-item = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un element gridele o flex.
-inactive-css-not-grid-item = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un element gridele.
-inactive-css-not-grid-container = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un contignidôr gridele.
-inactive-css-not-flex-item = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un element flex.
-inactive-css-not-flex-container = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un contignidôr flex.
-inactive-css-not-inline-or-tablecell = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un element “inline” o un element  “table-cell”.
-inactive-css-first-line-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât in pseudo-elements “::first-line”.
-inactive-css-first-letter-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât tai pseudo-elements “::first-letter”.
-inactive-css-placeholder-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât tai pseudo-elements “::placeholder”.
-inactive-css-property-because-of-display = <strong>{ $property }</strong> nol à efiets su chest element viodût che il valôr de proprietât “display” al è <strong>{ $display }</strong>.
-inactive-css-not-display-block-on-floated = Il valôr di <strong>display</strong> al è stât cambiât a <strong>block</strong> dal motôr, parcè che l'element al è <strong>floated</strong>.
-inactive-css-not-display-block-on-floated-2 = Il valôr di <strong>display</strong> al è stât modificât in <strong>{ $display }</strong> viodût che l’element al è <strong>floated</strong>.
-inactive-css-only-non-grid-or-flex-item = <strong>{ $property }</strong> nol à efiets parcè che nol è pussibil aplicâlu a elements grid o flex.
-inactive-css-not-block = <strong>{ $property }</strong> nol à efiets su chest element parcè che nol è pussibil aplicâlu dome a elements block-level.
-inactive-css-not-floated = <strong>{ $property }</strong> nol à efiets parcè che nol è pussibil aplicâlu a elements floated.
-inactive-css-property-is-impossible-to-override-in-visited = Nol è pussibil passâ parsore di <strong>{ $property }</strong> par vie de restrizion <strong>:visited</strong>.
-inactive-css-position-property-on-unpositioned-box = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è un element posizionât.
-inactive-css-only-replaced-elements = <strong>{ $property }</strong> nol à efiets su chest element viodût che si pues aplicâ dome a un element sostituît.
-inactive-text-overflow-when-no-overflow = <strong>{ $property }</strong> nol à efiets su chest element viodût che <strong>overflow:hidden</strong> nol è definît.
-inactive-css-not-for-internal-table-elements = <strong>{ $property }</strong> nol à efiets sui elements internis de tabele.
-inactive-css-not-for-internal-table-elements-except-table-cells = <strong>{ $property }</strong> no à efiets sui elements internis de tabele gjavadis lis celis de tabele.
-inactive-css-not-table = <strong>{ $property }</strong> no à efiets su chest element viodût che nol è une tabele.
-inactive-css-collapsed-table-borders = <strong>{ $property }</strong> nol à efiets su chest element viodût che e je une tabele cun ôrs strenzûts.
-inactive-css-not-table-cell = <strong>{ $property }</strong> nol à efiet su chest element viodût che nol è une cele di une tabele.
-inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong> no à efiets su chest element viodût che nol scor.
-inactive-css-border-image = <strong>{ $property }</strong> nol à efiets su chest element viodût che nol è pussibil aplicâlu ai elements de tabele interne dulà che <strong>border-collapse</strong> al è metût come <strong>collapse</strong> sul element de tabele dal gjenitôr.
-inactive-css-resize = <strong>{ $property }</strong> nol à efiets su chest element viodût che si pues aplicâ dome a elements cun valôr di overflow diviers di “visible” e a cualchi element sostituît (par es. textarea).
-inactive-css-ruby-element = <strong>{ $property }</strong> nol à efiets su chest element viodût che al è un element pe trascrizion fonetiche (ruby). La sô dimension e je determinade de grandece dal caratar dal test ruby.
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
-
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> nol è supuartât su pseudo-elements de categorie “highlight”.
 inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> nol è supuartât tai pseudo-elements “::cue”.
+inactive-css-at-position-try-not-supported = <strong>{ $property }</strong> nol è supuartât tes regulis <strong>@position-try</strong>.
 # Variables:
 #   $lineCount (integer) - The number of lines the element has.
 inactive-css-text-wrap-balance-lines-exceeded =
@@ -71,7 +74,8 @@ inactive-css-text-wrap-balance-lines-exceeded =
        *[other] <strong>{ $property }</strong> nol à efiets su chest element par vie che al à plui di { $lineCount } riis.
     }
 inactive-css-text-wrap-balance-fragmented = <strong>{ $property }</strong> nol à efiets su chest element par vie che al è fruçonât, vâl a dî che il so contignût al è distribuît su plui colonis o pagjinis.
-inactive-css-no-width-height = <strong>{ $property }</strong> nol à efiets su chest element viodût che no si pues configurâ la largjece o la altece.
+inactive-css-no-width-height = <strong>{ $property }</strong> nol à efiets su chest element stant che no si pues configurâ la largjece o la altece.
+inactive-css-no-principal-box = La proprietât <strong>{ $property }</strong> no à efiets su chest element parcè che no cree un ricuadri principâl.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -83,6 +87,8 @@ inactive-css-not-grid-or-flex-or-block-container-fix = Prove a zontâ <strong>di
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Prove a zontâ o <strong>display:grid</strong>, <strong>display:flex</strong> o <strong>columns:2</strong>. { learn-more }
 inactive-css-not-multicol-container-fix = Prove a zontâ <strong>column-count</strong> o <strong>column-width</strong>. { learn-more }
 inactive-css-column-span-fix = Prove a zontâ <strong>column-count</strong> o <strong>column-width</strong> a un dai elements progjenitôr. { learn-more }
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item-fix = Prove a zontâ <strong>position:absolute</strong> al element, opûr <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> o <strong>display:inline-flex</strong> al gjenitôr dal element. { learn-more }
+inactive-css-not-grid-or-absolutely-positioned-item-fix = Prove a zontâ <strong>position:absolute</strong> al element, opûr <strong>display:grid</strong> o <strong>display:inline-grid</strong> al gjenitôr dal element. { learn-more }
 inactive-css-not-grid-or-flex-item-fix-3 = Prove a zontâ <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> o <strong>display:inline-flex</strong> al gjenitôr dal element { learn-more }
 inactive-css-not-grid-item-fix-2 = Prove a zontâ <strong>display:grid</strong> o <strong>display:inline-grid</strong> al gjenitôr dal element. { learn-more }
 inactive-css-not-grid-container-fix = Prove a zontâ <strong>display:grid</strong> o <strong>display:inline-grid</strong>. { learn-more }
@@ -94,10 +100,13 @@ inactive-css-non-replaced-inline-or-table-column-or-column-group-fix = Prove a z
 inactive-css-not-display-block-on-floated-fix = Prove a gjavâ <strong>float</strong> o a zontâ <strong>display:block</strong>. { learn-more }
 inactive-css-only-non-grid-or-flex-item-fix = Prove a modificâ il valôr di  <strong>display</strong> pal contignidôr dal element a un valôr diviers di <strong>flex</strong>, <strong>grid</strong>, <strong>inline-flex</strong>, o <strong>inline-grid</strong>, opûr gjave <strong>float</strong>. { learn-more }
 inactive-css-not-block-fix = Prove a zontâ proprietâts come <strong>display:block</strong> o <strong>float:left</strong>. { learn-more }
+inactive-css-not-block-container-fix = Prove a zontâ <strong>display:block</strong>, <strong>display:inline-block</strong> o <strong>display:flow-root</strong>. { learn-more }
+inactive-css-not-block-flex-grid-container-fix = Prove a zontâ <strong>display:block</strong>, <strong>display:inline-block</strong>, <strong>display:flex</strong>, <strong>display:inline-flex</strong>, <strong>display:grid</strong>, <strong>display:inline-grid</strong> o <strong>display:flow-root</strong>. { learn-more }
 inactive-css-not-floated-fix = Prove a zontâ la proprietât <strong>float</strong> cuntun valôr diviers di <strong>none</strong>. { learn-more }
 inactive-css-position-property-on-unpositioned-box-fix = Prove a configurâ la sô proprietât <strong>position</strong> a alc altri rispiet a <strong>static</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Verifiche di vê zontât la proprietât a un element sostituît. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Prove a zontâ <strong>overflow:hidden</strong>. { learn-more }
+inactive-css-no-size-containment-fix = Prove a meti la proprietât <strong>display</strong> a un valôr diviers di <strong>none</strong>, <strong>contents</strong>, <strong>table</strong> o <strong>inline-table </strong> e verifiche che nol sedi dentri di une tabele o di un segment ruby. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Prove a configurâ la sô proprietât <strong>display</strong> a alc altri rispiet a <strong>table-cell</strong>, <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong> o <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Prove a configurâ la sô proprietât <strong>display</strong> a alc altri rispiet a <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong> o <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-table-fix = Prove a zontâ <strong>display:table</strong> o <strong>display:inline-table</strong>. { learn-more }
@@ -109,6 +118,7 @@ inactive-css-resize-fix = Prove a meti <strong>overflow</strong> a un valôr div
 inactive-css-ruby-element-fix = Prove a modificâ <strong>font-size</strong> de trascrizion fonetiche. { learn-more }
 inactive-css-text-wrap-balance-lines-exceeded-fix = Prove a ridusi il numar di riis. { learn-more }
 inactive-css-text-wrap-balance-fragmented-fix = Evite di distribuî il contignût dal element, par esempli gjavant lis colonis o doprant <strong>page-break-inside:avoid</strong>. { learn-more }
+inactive-css-no-principal-box-fix = Prove a assegnâ un valôr <strong>display</strong> che al creedi un ricuadri principâl, come <strong>block</strong>, <strong>inline-block</strong>, <strong>flex</strong> o <strong>grid</strong>. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why
@@ -132,3 +142,5 @@ css-compatibility-learn-more-message = <span data-l10n-name="link">Plui informaz
 
 # :has() should not be translated
 css-selector-warning-unconstrained-has = Chest seletôr al dopre <strong>:has()</strong> cence vincui, al podarès jessi lent
+# :scope should not be translated
+css-selector-warning-sibling-combinator-after-scope = I seletôrs di stes nivel (“sibling”) dopo <strong>:scope</strong> no varan mai corispondencis

@@ -14,7 +14,7 @@ screenshots-save-page-button = Зберегти всю сторінку
 screenshots-download-button = Завантажити
 screenshots-download-button-tooltip = Завантажити знімок екрана
 screenshots-copy-button = Копіювати
-screenshots-copy-button-tooltip = Копіювати знімки в буфер обміну
+screenshots-copy-button-tooltip = Копіювати знімок в буфер обміну
 screenshots-download-button-title =
     .title = Завантажити знімок екрана
 screenshots-copy-button-title =
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = Копіювати
 screenshots-component-download-button-2 = Завантажити
     .title = Завантажити ({ $shortcut })
     .aria-label = Завантажити
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Знімок екрана
+    .tooltiptext = Зробити знімок екрана ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

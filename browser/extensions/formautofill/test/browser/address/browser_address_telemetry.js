@@ -2,10 +2,6 @@
 
 requestLongerTimeout(3);
 
-const { TelemetryTestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/TelemetryTestUtils.sys.mjs"
-);
-
 const { AddressTelemetry } = ChromeUtils.importESModule(
   "resource://gre/modules/shared/AutofillTelemetry.sys.mjs"
 );
@@ -13,15 +9,8 @@ const { AddressTelemetry } = ChromeUtils.importESModule(
 // Telemetry definitions
 const EVENT_CATEGORY = "address";
 
-const SCALAR_DETECTED_SECTION_COUNT =
-  "formautofill.addresses.detected_sections_count";
-const SCALAR_SUBMITTED_SECTION_COUNT =
-  "formautofill.addresses.submitted_sections_count";
 const SCALAR_AUTOFILL_PROFILE_COUNT =
   "formautofill.addresses.autofill_profiles_count";
-
-const HISTOGRAM_PROFILE_NUM_USES = "AUTOFILL_PROFILE_NUM_USES";
-const HISTOGRAM_PROFILE_NUM_USES_KEY = "address";
 
 // Autofill UI
 const MANAGE_DIALOG_URL = MANAGE_ADDRESSES_DIALOG_URL;
@@ -125,92 +114,21 @@ function getProfiles() {
   return getAddresses();
 }
 
-async function assertTelemetry(expected_content, expected_parent) {
-  let snapshots;
-
-  info(
-    `Waiting for ${expected_content?.length ?? 0} content events and ` +
-      `${expected_parent?.length ?? 0} parent events`
-  );
-
-  await TestUtils.waitForCondition(
-    () => {
-      snapshots = Services.telemetry.snapshotEvents(
-        Ci.nsITelemetry.DATASET_PRERELEASE_CHANNELS,
-        false
-      );
-
-      return (
-        (snapshots.parent?.length ?? 0) >= (expected_parent?.length ?? 0) &&
-        (snapshots.content?.length ?? 0) >= (expected_content?.length ?? 0)
-      );
-    },
-    "Wait for telemetry to be collected",
-    100,
-    100
-  );
-
-  info(JSON.stringify(snapshots, null, 2));
-
-  if (expected_content !== undefined) {
-    expected_content = expected_content.map(
-      ([category, method, object, value, extra]) => {
-        return { category, method, object, value, extra };
+async function assertTelemetry(expected) {
+  for (const [, method, object, , extra] of expected) {
+    const eventMethod = method.replace(/(_[a-z])/g, c => c[1].toUpperCase());
+    const eventObject = object.replace(/(_[a-z])/g, c => c[1].toUpperCase());
+    const eventName =
+      eventMethod + eventObject[0].toUpperCase() + eventObject.substr(1);
+    const events = Glean.address[eventName].testGetValue();
+    Assert.equal(events.length, 1, `Expected 1 event of type ${eventName}.`);
+    if (extra) {
+      const eventExtra = events[0].extra;
+      Assert.ok(!!eventExtra.value, "Flow id is present.");
+      for (const [k, v] of Object.entries(extra)) {
+        Assert.equal(v, eventExtra[k], `Extra ${k} should match.`);
       }
-    );
-
-    let clear = expected_parent === undefined;
-
-    TelemetryTestUtils.assertEvents(
-      expected_content,
-      {
-        category: EVENT_CATEGORY,
-      },
-      { clear, process: "content" }
-    );
-  }
-
-  if (expected_parent !== undefined) {
-    expected_parent = expected_parent.map(
-      ([category, method, object, value, extra]) => {
-        return { category, method, object, value, extra };
-      }
-    );
-    TelemetryTestUtils.assertEvents(
-      expected_parent,
-      {
-        category: EVENT_CATEGORY,
-      },
-      { process: "parent" }
-    );
-  }
-}
-
-function _assertHistogram(snapshot, expectedNonZeroRanges) {
-  // Compute the actual ranges in the format { range1: value1, range2: value2 }.
-  let actualNonZeroRanges = {};
-  for (let [range, value] of Object.entries(snapshot.values)) {
-    if (value > 0) {
-      actualNonZeroRanges[range] = value;
     }
-  }
-
-  // These are stringified to visualize the differences between the values.
-  Assert.equal(
-    JSON.stringify(actualNonZeroRanges),
-    JSON.stringify(expectedNonZeroRanges)
-  );
-}
-
-function assertKeyedHistogram(histogramId, key, expected) {
-  let snapshot = Services.telemetry
-    .getKeyedHistogramById(histogramId)
-    .snapshot();
-
-  if (expected == undefined) {
-    Assert.deepEqual(snapshot, {});
-  } else {
-    _assertHistogram(snapshot[key], expected);
   }
 }
 
@@ -264,18 +182,13 @@ add_setup(async function () {
     ],
   });
 
-  Services.telemetry.setEventRecordingEnabled(EVENT_CATEGORY, true);
-
   Services.telemetry.clearEvents();
   Services.telemetry.clearScalars();
-
-  registerCleanupFunction(() => {
-    Services.telemetry.setEventRecordingEnabled(EVENT_CATEGORY, false);
-  });
 });
 
 add_task(async function test_popup_opened() {
   await setStorage(TEST_PROFILE);
+  Services.fog.testResetFOG();
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: TEST_BASIC_ADDRESS_FORM_URL },
@@ -290,30 +203,18 @@ add_task(async function test_popup_opened() {
   );
 
   const fields = TEST_BASIC_ADDRESS_FORM_FIELDS;
-  await assertTelemetry(undefined, [
+  await assertTelemetry([
     ...formArgs("detected", {}, fields, "true", "false"),
     ...formArgs("popup_shown", { field_name: TEST_FOCUS_NAME_FIELD }),
   ]);
 
-  TelemetryTestUtils.assertScalar(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_DETECTED_SECTION_COUNT,
-    1,
-    "There should be 1 section detected."
-  );
-  TelemetryTestUtils.assertScalarUnset(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_SUBMITTED_SECTION_COUNT,
-    1
-  );
-
   await removeAllRecords();
   Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_popup_opened_form_without_autocomplete() {
   await setStorage(TEST_PROFILE);
+  Services.fog.testResetFOG();
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: TEST_BASIC_ADDRESS_FORM_WITHOUT_AC_URL },
@@ -325,34 +226,17 @@ add_task(async function test_popup_opened_form_without_autocomplete() {
   );
 
   const fields = TEST_BASIC_ADDRESS_FORM_FIELDS;
-  await assertTelemetry(undefined, [
+  await assertTelemetry([
     ...formArgs("detected", {}, fields, "0", "false"),
     ...formArgs("popup_shown", { field_name: TEST_FOCUS_NAME_FIELD }),
   ]);
 
-  TelemetryTestUtils.assertScalar(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_DETECTED_SECTION_COUNT,
-    1,
-    "There should be 1 section detected."
-  );
-  TelemetryTestUtils.assertScalarUnset(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_SUBMITTED_SECTION_COUNT
-  );
-
   await removeAllRecords();
   Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_submit_autofill_profile_new() {
-  async function test_per_command(
-    command,
-    idx,
-    useCount = {},
-    expectChanged = undefined
-  ) {
+  async function test_per_command(command, idx, expectChanged = undefined) {
     await BrowserTestUtils.withNewTab(
       { gBrowser, url: TEST_BASIC_ADDRESS_FORM_URL },
       async function (browser) {
@@ -371,9 +255,8 @@ add_task(async function test_submit_autofill_profile_new() {
         await clickDoorhangerButton(command, idx);
         if (expectChanged !== undefined) {
           await onChanged;
-          TelemetryTestUtils.assertScalar(
-            TelemetryTestUtils.getProcessScalars("parent"),
-            SCALAR_AUTOFILL_PROFILE_COUNT,
+          Assert.equal(
+            Glean.formautofillAddresses.autofillProfilesCount.testGetValue(),
             expectChanged,
             `There should be ${expectChanged} profile(s) stored.`
           );
@@ -381,18 +264,11 @@ add_task(async function test_submit_autofill_profile_new() {
       }
     );
 
-    assertKeyedHistogram(
-      HISTOGRAM_PROFILE_NUM_USES,
-      HISTOGRAM_PROFILE_NUM_USES_KEY,
-      useCount
-    );
-
     await removeAllRecords();
   }
 
   Services.telemetry.clearEvents();
   Services.telemetry.clearScalars();
-  Services.telemetry.getKeyedHistogramById(HISTOGRAM_PROFILE_NUM_USES).clear();
 
   const fields = TEST_BASIC_ADDRESS_FORM_FIELDS;
   const expected_parent = [
@@ -417,38 +293,20 @@ add_task(async function test_submit_autofill_profile_new() {
     ),
   ];
 
-  await test_per_command(MAIN_BUTTON, undefined, { 1: 1 }, 1);
-  await assertTelemetry(undefined, [
+  Services.fog.testResetFOG();
+  await test_per_command(MAIN_BUTTON, undefined, 1);
+  await assertTelemetry([
     ...expected_parent,
     [EVENT_CATEGORY, "show", "capture_doorhanger"],
     [EVENT_CATEGORY, "save", "capture_doorhanger"],
   ]);
 
-  TelemetryTestUtils.assertScalar(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_DETECTED_SECTION_COUNT,
-    1,
-    "There should be 1 sections detected."
-  );
-  TelemetryTestUtils.assertScalar(
-    TelemetryTestUtils.getProcessScalars("parent"),
-    SCALAR_SUBMITTED_SECTION_COUNT,
-    1,
-    "There should be 1 section submitted."
-  );
-
   await removeAllRecords();
   Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_submit_autofill_profile_update() {
-  async function test_per_command(
-    command,
-    idx,
-    useCount = {},
-    expectChanged = undefined
-  ) {
+  async function test_per_command(command, idx, expectChanged = undefined) {
     await setStorage(TEST_PROFILE_2);
     let profiles = await getProfiles();
     Assert.equal(profiles.length, 1, "1 entry in storage");
@@ -479,20 +337,13 @@ add_task(async function test_submit_autofill_profile_update() {
         await clickDoorhangerButton(command, idx);
         if (expectChanged !== undefined) {
           await onChanged;
-          TelemetryTestUtils.assertScalar(
-            TelemetryTestUtils.getProcessScalars("parent"),
-            SCALAR_AUTOFILL_PROFILE_COUNT,
+          Assert.equal(
+            Glean.formautofillAddresses.autofillProfilesCount.testGetValue(),
             expectChanged,
             `There should be ${expectChanged} profile(s) stored.`
           );
         }
       }
-    );
-
-    assertKeyedHistogram(
-      HISTOGRAM_PROFILE_NUM_USES,
-      HISTOGRAM_PROFILE_NUM_USES_KEY,
-      useCount
     );
 
     SpecialPowers.clearUserPref(ENABLED_AUTOFILL_ADDRESSES_PREF);
@@ -501,7 +352,6 @@ add_task(async function test_submit_autofill_profile_update() {
   }
   Services.telemetry.clearEvents();
   Services.telemetry.clearScalars();
-  Services.telemetry.getKeyedHistogramById(HISTOGRAM_PROFILE_NUM_USES).clear();
 
   const fields = TEST_BASIC_ADDRESS_FORM_FIELDS;
   const expected_parent = [
@@ -532,27 +382,28 @@ add_task(async function test_submit_autofill_profile_update() {
     ),
   ];
 
-  await test_per_command(MAIN_BUTTON, undefined, { 1: 1 }, 1);
-  await assertTelemetry(undefined, [
+  Services.fog.testResetFOG();
+  await test_per_command(MAIN_BUTTON, undefined, 1);
+  await assertTelemetry([
     ...expected_parent,
     [EVENT_CATEGORY, "show", "update_doorhanger"],
     [EVENT_CATEGORY, "update", "update_doorhanger"],
   ]);
 
-  await test_per_command(SECONDARY_BUTTON, undefined, { 0: 1 });
-  await assertTelemetry(undefined, [
+  Services.fog.testResetFOG();
+  await test_per_command(SECONDARY_BUTTON);
+  await assertTelemetry([
     ...expected_parent,
     [EVENT_CATEGORY, "show", "update_doorhanger"],
     [EVENT_CATEGORY, "cancel", "update_doorhanger"],
   ]);
 
   await removeAllRecords();
-  Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_removingAutofillProfilesViaKeyboardDelete() {
   await setStorage(TEST_PROFILE);
+  Services.fog.testResetFOG();
 
   let win = window.openDialog(MANAGE_DIALOG_URL, null, DIALOG_SIZE);
   await waitForFocusAndFormReady(win);
@@ -567,18 +418,16 @@ add_task(async function test_removingAutofillProfilesViaKeyboardDelete() {
 
   win.close();
 
-  await assertTelemetry(undefined, [
+  await assertTelemetry([
     [EVENT_CATEGORY, "show", "manage"],
     [EVENT_CATEGORY, "delete", "manage"],
   ]);
 
   await removeAllRecords();
-  Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_saveAutofillProfile() {
-  Services.telemetry.clearEvents();
+  Services.fog.testResetFOG();
 
   await testDialog(EDIT_DIALOG_URL, win => {
     // TODP: Default to US because the layout will be different
@@ -598,7 +447,7 @@ add_task(async function test_saveAutofillProfile() {
     win.document.querySelector("#save").click();
   });
 
-  await assertTelemetry(undefined, [[EVENT_CATEGORY, "add", "manage"]]);
+  await assertTelemetry([[EVENT_CATEGORY, "add", "manage"]]);
 
   await removeAllRecords();
   Services.telemetry.clearEvents();
@@ -606,7 +455,7 @@ add_task(async function test_saveAutofillProfile() {
 });
 
 add_task(async function test_editAutofillProfile() {
-  Services.telemetry.clearEvents();
+  Services.fog.testResetFOG();
 
   await setStorage(TEST_PROFILE);
 
@@ -625,74 +474,30 @@ add_task(async function test_editAutofillProfile() {
     }
   );
 
-  await assertTelemetry(undefined, [
+  await assertTelemetry([
     [EVENT_CATEGORY, "show_entry", "manage"],
     [EVENT_CATEGORY, "edit", "manage"],
   ]);
 
   await removeAllRecords();
-  Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_histogram() {
-  Services.telemetry.getKeyedHistogramById(HISTOGRAM_PROFILE_NUM_USES).clear();
-
   await setStorage(TEST_PROFILE_1, TEST_PROFILE_2, TEST_PROFILE_3);
   let profiles = await getProfiles();
   Assert.equal(profiles.length, 3, "3 entry in storage");
 
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 0: 3 }
-  );
-
   await openTabAndUseAutofillProfile(0, TEST_PROFILE_1);
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 0: 2, 1: 1 }
-  );
 
   await openTabAndUseAutofillProfile(1, TEST_PROFILE_2);
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 0: 1, 1: 2 }
-  );
 
   await openTabAndUseAutofillProfile(0, TEST_PROFILE_2);
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 0: 1, 1: 1, 2: 1 }
-  );
 
   await openTabAndUseAutofillProfile(1, TEST_PROFILE_1);
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 0: 1, 2: 2 }
-  );
 
   await openTabAndUseAutofillProfile(2, TEST_PROFILE_3);
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    { 1: 1, 2: 2 }
-  );
 
   await removeAllRecords();
-
-  assertKeyedHistogram(
-    HISTOGRAM_PROFILE_NUM_USES,
-    HISTOGRAM_PROFILE_NUM_USES_KEY,
-    undefined
-  );
-
-  Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_click_doorhanger_menuitems() {
@@ -711,6 +516,7 @@ add_task(async function test_click_doorhanger_menuitems() {
 
   const fields = TEST_BASIC_ADDRESS_FORM_FIELDS;
   for (const TEST of TESTS) {
+    Services.fog.testResetFOG();
     await BrowserTestUtils.withNewTab(
       { gBrowser, url: TEST_BASIC_ADDRESS_FORM_URL },
       async function (browser) {
@@ -744,18 +550,16 @@ add_task(async function test_click_doorhanger_menuitems() {
       ),
     ];
 
-    await assertTelemetry(undefined, [
+    await assertTelemetry([
       ...expected_parent,
       [EVENT_CATEGORY, "show", "capture_doorhanger"],
       [EVENT_CATEGORY, TEST.expectedEvt, "capture_doorhanger"],
     ]);
-
-    Services.telemetry.clearEvents();
-    Services.telemetry.clearScalars();
   }
 });
 
 add_task(async function test_show_edit_doorhanger() {
+  Services.fog.testResetFOG();
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: TEST_BASIC_ADDRESS_FORM_URL },
     async function (browser) {
@@ -792,7 +596,7 @@ add_task(async function test_show_edit_doorhanger() {
     ),
   ];
 
-  await assertTelemetry(undefined, [
+  await assertTelemetry([
     ...expected_parent,
     [EVENT_CATEGORY, "show", "capture_doorhanger"],
     [EVENT_CATEGORY, "show", "edit_doorhanger"],
@@ -800,8 +604,6 @@ add_task(async function test_show_edit_doorhanger() {
   ]);
 
   await removeAllRecords();
-  Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
 });
 
 add_task(async function test_clear_autofill_profile_autofill() {

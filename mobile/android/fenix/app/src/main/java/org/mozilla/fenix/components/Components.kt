@@ -4,21 +4,50 @@
 
 package org.mozilla.fenix.components
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.net.ConnectivityManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.getSystemService
 import com.google.android.play.core.review.ReviewManagerFactory
+import kotlinx.coroutines.MainScope
+import mozilla.components.concept.ai.controls.AIFeatureBlock
+import mozilla.components.concept.ai.controls.AIFeatureRegistry
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.amo.AMOAddonsProvider
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
+import mozilla.components.feature.summarize.PageSummaryFeature
+import mozilla.components.feature.summarize.settings.SummarizationSettings
+import mozilla.components.lib.ai.controls.AIFeatureBlockStorage
+import mozilla.components.lib.ai.controls.dataStore
+import mozilla.components.lib.ai.controls.default
+import mozilla.components.lib.crash.store.CrashAction
+import mozilla.components.lib.crash.store.CrashMiddleware
+import mozilla.components.lib.integrity.googleplay.GooglePlayIntegrityClient
+import mozilla.components.lib.integrity.googleplay.GoogleProjectNumber
+import mozilla.components.lib.integrity.googleplay.IntegrityManagerProvider
+import mozilla.components.lib.integrity.googleplay.TokenProviderFactory
+import mozilla.components.lib.llm.mlpa.MlpaTokenStorage
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
+import mozilla.components.service.fxrelay.eligibility.RelayEligibilityStore
+import mozilla.components.service.fxrelay.eligibility.middlewares.ClearLastUsedMiddleware
+import mozilla.components.support.base.android.DefaultProcessInfoProvider
 import mozilla.components.support.base.android.NotificationsDelegate
+import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.base.worker.Frequency
+import mozilla.components.support.remotesettings.DefaultRemoteSettingsSyncScheduler
+import mozilla.components.support.remotesettings.RemoteSettingsServer
+import mozilla.components.support.remotesettings.RemoteSettingsService
+import mozilla.components.support.remotesettings.into
+import mozilla.components.support.utils.BuildManufacturerChecker
+import mozilla.components.support.utils.ClipboardHandler
+import mozilla.components.support.utils.ext.packageManagerCompatHelper
+import mozilla.components.support.utils.ext.packageManagerWrapper
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.FeatureFlags
@@ -26,26 +55,64 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.autofill.AutofillConfirmActivity
 import org.mozilla.fenix.autofill.AutofillSearchActivity
 import org.mozilla.fenix.autofill.AutofillUnlockActivity
+import org.mozilla.fenix.browser.relay.ErrorMessages
+import org.mozilla.fenix.browser.relay.RelayFeatureIntegration
+import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.components.appstate.setup.checklist.SetupChecklistState
+import org.mozilla.fenix.components.appstate.setup.checklist.getSetupChecklistCollection
+import org.mozilla.fenix.components.appstate.sports.SportsWidgetState
+import org.mozilla.fenix.components.ipprotection.IPProtection
+import org.mozilla.fenix.components.llm.Llm
+import org.mozilla.fenix.components.llm.ext.accessTokenProvider
 import org.mozilla.fenix.components.metrics.MetricsMiddleware
+import org.mozilla.fenix.crashes.CrashReportingAppMiddleware
+import org.mozilla.fenix.crashes.SettingsCrashReportCache
 import org.mozilla.fenix.datastore.pocketStoriesSelectedCategoriesDataStore
+import org.mozilla.fenix.distributions.DefaultDistributionBrowserStoreProvider
+import org.mozilla.fenix.distributions.DefaultDistributionProviderChecker
+import org.mozilla.fenix.distributions.DefaultDistributionSettings
+import org.mozilla.fenix.distributions.DistributionIdManager
 import org.mozilla.fenix.ext.asRecentTabs
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.filterState
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.sort
-import org.mozilla.fenix.home.PocketUpdatesMiddleware
+import org.mozilla.fenix.home.PocketMiddleware
+import org.mozilla.fenix.home.SettingsBackedPocketSettings
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.blocklist.BlocklistMiddleware
+import org.mozilla.fenix.home.middleware.HomeTelemetryMiddleware
+import org.mozilla.fenix.home.setup.store.DefaultSetupChecklistRepository
+import org.mozilla.fenix.home.setup.store.SetupChecklistPreferencesMiddleware
+import org.mozilla.fenix.home.setup.store.SetupChecklistTelemetryMiddleware
+import org.mozilla.fenix.home.sports.SportsWidgetMiddleware
+import org.mozilla.fenix.home.sports.WorldCupMatchesRepository
+import org.mozilla.fenix.home.sports.client.AppServicesWorldCupMatchesClient
+import org.mozilla.fenix.home.sports.client.mockWorldCupBaseHost
+import org.mozilla.fenix.ipprotection.IPProtectionManager
+import org.mozilla.fenix.ipprotection.store.DefaultIPProtectionPromptRepository
 import org.mozilla.fenix.messaging.state.MessagingMiddleware
+import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.onboarding.FenixOnboarding
+import org.mozilla.fenix.perf.AppLinkIntentLaunchTypeProvider
 import org.mozilla.fenix.perf.AppStartReasonProvider
 import org.mozilla.fenix.perf.StartupActivityLog
 import org.mozilla.fenix.perf.StartupStateProvider
 import org.mozilla.fenix.perf.StrictModeManager
 import org.mozilla.fenix.perf.lazyMonitored
-import org.mozilla.fenix.utils.ClipboardHandler
+import org.mozilla.fenix.reviewprompt.ReviewPromptMiddleware
+import org.mozilla.fenix.search.VoiceSearchAIControlFeature
+import org.mozilla.fenix.settings.ai.AIControlsSearchProvider
+import org.mozilla.fenix.settings.datachoices.DataChoicesSearchProvider
+import org.mozilla.fenix.settings.labs.FirefoxLabsSettingsSearchProvider
+import org.mozilla.fenix.settings.pagesummaries.PageSummariesSettingsSearchProvider
+import org.mozilla.fenix.settings.settingssearch.DefaultFenixSettingsIndexer
+import org.mozilla.fenix.termsofuse.TermsOfUseManager
+import org.mozilla.fenix.termsofuse.store.DefaultTermsOfUsePromptRepository
 import org.mozilla.fenix.utils.Settings
+import org.mozilla.fenix.utils.getApplicationInstalledTime
+import org.mozilla.fenix.utils.isLargeScreenSize
 import org.mozilla.fenix.wifi.WifiConnectionMonitor
 import java.util.concurrent.TimeUnit
 
@@ -63,6 +130,7 @@ class Components(private val context: Context) {
         BackgroundServices(
             context,
             push,
+            context.settings(),
             analytics.crashReporter,
             core.lazyHistoryStorage,
             core.lazyBookmarksStorage,
@@ -72,32 +140,33 @@ class Components(private val context: Context) {
             strictMode,
         )
     }
-    val services by lazyMonitored { Services(context, backgroundServices.accountManager) }
-    val core by lazyMonitored { Core(context, analytics.crashReporter, strictMode) }
+    val services by lazyMonitored { Services(context, core.store, backgroundServices.accountManager) }
+    val core by lazyMonitored {
+        Core(context, analytics.crashReporter, strictMode, performance.visualCompletenessQueue)
+    }
 
-    @Suppress("Deprecation")
     val useCases by lazyMonitored {
         UseCases(
-            context,
-            core.engine,
-            core.store,
-            core.webAppShortcutManager,
-            core.topSitesStorage,
-            core.bookmarksStorage,
-            core.historyStorage,
-            backgroundServices.syncedTabsCommands,
-            appStore,
-            core.client,
-            strictMode,
+            context = context,
+            crashReporter = lazyMonitored { analytics.crashReporter },
+            engine = lazyMonitored { core.engine },
+            store = lazyMonitored { core.store },
+            shortcutManager = lazyMonitored { core.webAppShortcutManager },
+            topSitesStorage = lazyMonitored { core.topSitesStorage },
+            bookmarksStorage = lazyMonitored { core.bookmarksStorage },
+            historyStorage = lazyMonitored { core.historyStorage },
+            syncedTabsCommands = lazyMonitored { backgroundServices.syncedTabsCommands },
+            adsClientProvider = ads.lazyAdsClientProvider,
+            appStore = lazyMonitored { appStore },
+            client = lazyMonitored { core.client },
+            strictMode = lazyMonitored { strictMode },
         )
     }
 
     private val notificationManagerCompat = NotificationManagerCompat.from(context)
 
     val notificationsDelegate: NotificationsDelegate by lazyMonitored {
-        NotificationsDelegate(
-            notificationManagerCompat,
-        )
+        NotificationsDelegate(notificationManagerCompat)
     }
 
     val intentProcessors by lazyMonitored {
@@ -124,8 +193,8 @@ class Components(private val context: Context) {
             )
         }
         // Use build config otherwise
-        else if (!BuildConfig.AMO_COLLECTION_USER.isNullOrEmpty() &&
-            !BuildConfig.AMO_COLLECTION_NAME.isNullOrEmpty()
+        else if (BuildConfig.AMO_COLLECTION_USER.isNotEmpty() &&
+            BuildConfig.AMO_COLLECTION_NAME.isNotEmpty()
         ) {
             AMOAddonsProvider(
                 context,
@@ -155,30 +224,67 @@ class Components(private val context: Context) {
         )
     }
 
+    @Suppress("MagicNumber")
+    val remoteSettingsSyncScheduler by lazyMonitored {
+        DefaultRemoteSettingsSyncScheduler(
+            context,
+            Frequency(2, TimeUnit.HOURS),
+        )
+    }
+
     val addonManager by lazyMonitored {
         AddonManager(core.store, core.engine, addonsProvider, addonUpdater)
     }
 
-    val analytics by lazyMonitored { Analytics(context, performance.visualCompletenessQueue.queue) }
-    val nimbus by lazyMonitored { NimbusComponents(context) }
+    val analytics by lazyMonitored { Analytics(context, nimbus, performance.visualCompletenessQueue) }
+
+    val remoteSettingsService = lazyMonitored {
+        RemoteSettingsService(
+            context,
+            when (context.settings().remoteSettingsServer) {
+                context.getString(R.string.remote_settings_server_prod) -> RemoteSettingsServer.Prod.into()
+                context.getString(R.string.remote_settings_server_dev) -> RemoteSettingsServer.Dev.into()
+                context.getString(R.string.remote_settings_server_stage) -> RemoteSettingsServer.Stage.into()
+                context.getString(R.string.remote_settings_server_prod_v2) -> RemoteSettingsServer.ProdV2.into()
+                context.getString(R.string.remote_settings_server_dev_v2) -> RemoteSettingsServer.DevV2.into()
+                context.getString(R.string.remote_settings_server_stage_v2) -> RemoteSettingsServer.StageV2.into()
+                else -> RemoteSettingsServer.Prod.into()
+            },
+            channel = BuildConfig.BUILD_TYPE,
+            // Need to send this value separately, since `isLargeScreenSize()` is a fenix extension
+            isLargeScreenSize = context.isLargeScreenSize(),
+        )
+    }
+    val nimbus: NimbusComponents by lazyMonitored {
+        NimbusComponents(
+            context = context,
+            engine = lazyMonitored { core.engine },
+            remoteSettingsService = remoteSettingsService.value.remoteSettingsService,
+        )
+    }
     val publicSuffixList by lazyMonitored { PublicSuffixList(context) }
     val clipboardHandler by lazyMonitored { ClipboardHandler(context) }
     val performance by lazyMonitored { PerformanceComponent() }
     val push by lazyMonitored { Push(context, analytics.crashReporter) }
     val wifiConnectionMonitor by lazyMonitored { WifiConnectionMonitor(context as Application) }
-    val strictMode by lazyMonitored { StrictModeManager(Config, this) }
 
+    val strictMode by lazyMonitored {
+        StrictModeManager(
+            Config.channel.isDebug,
+            this,
+            BuildManufacturerChecker(),
+        )
+    }
     val settings by lazyMonitored { Settings(context) }
     val fenixOnboarding by lazyMonitored { FenixOnboarding(context) }
 
-    val reviewPromptController by lazyMonitored {
-        ReviewPromptController(
+    val playStoreReviewPromptController by lazyMonitored {
+        PlayStoreReviewPromptController(
             manager = ReviewManagerFactory.create(context),
-            reviewSettings = FenixReviewSettings(settings),
+            numberOfAppLaunches = { settings.numberOfAppLaunches },
         )
     }
 
-    @delegate:SuppressLint("NewApi")
     val autofillConfiguration by lazyMonitored {
         AutofillConfiguration(
             storage = core.passwordsStorage,
@@ -191,9 +297,15 @@ class Components(private val context: Context) {
         )
     }
 
-    val appStartReasonProvider by lazyMonitored { AppStartReasonProvider() }
+    val appStartReasonProvider by lazyMonitored {
+        AppStartReasonProvider(
+            processInfoProvider = DefaultProcessInfoProvider(),
+        )
+    }
     val startupActivityLog by lazyMonitored { StartupActivityLog() }
     val startupStateProvider by lazyMonitored { StartupStateProvider(startupActivityLog, appStartReasonProvider) }
+
+    val appLinkIntentLaunchTypeProvider by lazyMonitored { AppLinkIntentLaunchTypeProvider(appStartReasonProvider) }
 
     val appStore by lazyMonitored {
         val blocklistHandler = BlocklistHandler(settings)
@@ -204,7 +316,6 @@ class Components(private val context: Context) {
                 expandedCollections = emptySet(),
                 topSites = core.topSitesStorage.cachedTopSites.sort(),
                 bookmarks = emptyList(),
-                showCollectionPlaceholder = settings.showCollectionsPlaceholderOnHome,
                 // Provide an initial state for recent tabs to prevent re-rendering on the home screen.
                 //  This will otherwise cause a visual jump as the section gets rendered from no state
                 //  to some state.
@@ -214,23 +325,230 @@ class Components(private val context: Context) {
                     emptyList()
                 },
                 recentHistory = emptyList(),
+                setupChecklistState = setupChecklistState(),
+                sportsWidgetState = setupSportsWidgetState(),
             ).run { filterState(blocklistHandler) },
             middlewares = listOf(
+                ProfileMarkerMiddleware(markerName = "AppStore", profiler = core.engine.profiler),
+                LogMiddleware(tag = "AppStore", shouldIncludeDetailedData = { Config.channel.isDebug }),
                 BlocklistMiddleware(blocklistHandler),
-                PocketUpdatesMiddleware(
-                    core.pocketStoriesService,
+                PocketMiddleware(
+                    lazyMonitored { core.pocketStoriesService },
                     context.pocketStoriesSelectedCategoriesDataStore,
+                    SettingsBackedPocketSettings(settings),
+                    performance.visualCompletenessQueue,
                 ),
                 MessagingMiddleware(
                     controller = nimbus.messaging,
                     settings = settings,
                 ),
-                MetricsMiddleware(metrics = analytics.metrics),
+                MetricsMiddleware(
+                    metrics = analytics.metrics,
+                    nimbusEventStore = nimbus.events,
+                ),
+                CrashReportingAppMiddleware(
+                    CrashMiddleware(
+                        cache = SettingsCrashReportCache(settings),
+                        crashReporter = analytics.crashReporter,
+                        currentTimeInMillis = { System.currentTimeMillis() },
+                    ),
+                ),
+                HomeTelemetryMiddleware(),
+                SetupChecklistPreferencesMiddleware(DefaultSetupChecklistRepository(context)),
+                SetupChecklistTelemetryMiddleware(),
+                ReviewPromptMiddleware(
+                    continuousOnboardingInProgress = {
+                        val continuousOnboardingCompleted = settings.seventhDayOnboardingCompletedTimestamp != -1L
+                        settings.continuousOnboardingFeatureEnabled && !continuousOnboardingCompleted
+                    },
+                    shouldUseNewTriggerCriteria = { settings.newReviewPromptTriggerCriteriaEnabled },
+                    shouldShowCustomPrompt = { settings.customReviewPromptUiEnabled && settings.isTelemetryEnabled },
+                    disableCustomPrompt = { settings.customReviewPromptUiEnabled = false },
+                    createJexlHelper = nimbus::createJexlHelper,
+                    nimbusEventStore = nimbus.events,
+                ).also {
+                    settings.migrateLastReviewPromptTimePrefIfNeeded(nimbus.events)
+                },
+                AppVisualCompletenessMiddleware(performance.visualCompletenessQueue),
+                SportsWidgetMiddleware(
+                    sportsRepository = WorldCupMatchesRepository(
+                        client = AppServicesWorldCupMatchesClient(
+                            baseHostProvider = {
+                                if (settings.useMockWorldCupServer) {
+                                    mockWorldCupBaseHost(settings.mockWorldCupServerSession)
+                                } else {
+                                    null
+                                }
+                            },
+                        ),
+                    ),
+                    connectivityManager = requireNotNull(context.getSystemService<ConnectivityManager>()) {
+                        "ConnectivityManager unavailable"
+                    },
+                    fetchMinIntervalSeconds = settings.sportsWidgetFetchThrottleSeconds,
+                    bypassThrottle = { settings.useMockWorldCupServer },
+                ),
+            ),
+        ).also {
+            it.dispatch(AppAction.SetupChecklistAction.Init)
+            it.dispatch(AppAction.CrashActionWrapper(CrashAction.Initialize))
+        }
+    }
+
+    private fun setupChecklistState() = if (settings.showSetupChecklist) {
+        val type = FxNimbus.features.setupChecklist.value().setupChecklistType
+        SetupChecklistState(
+            checklistItems = getSetupChecklistCollection(
+                settings = settings,
+                collection = type,
+                tabStripEnabled = settings.isTabStripEnabled,
+            ),
+        )
+    } else {
+        null
+    }
+
+    private fun setupSportsWidgetState() = SportsWidgetState(
+        countriesSelected = settings.sportsSelectedCountries,
+        hasSkippedFollowTeam = settings.hasSkippedSportsFollowTeam,
+        isVisible = settings.showHomepageSportsWidget,
+        isFeatureEnabled = settings.enableHomepageSportsWidget,
+        isCountdownWidgetVisible = settings.showHomepageCountdownWidget,
+        forceOneWeekToWorldCup = settings.forceOneWeekToWorldCup,
+    )
+
+    val fxSuggest by lazyMonitored { FxSuggest(context, remoteSettingsService.value, analytics.crashReporter) }
+
+    val distributionIdManager by lazyMonitored {
+        DistributionIdManager(
+            packageManager = context.packageManagerWrapper,
+            browserStoreProvider = DefaultDistributionBrowserStoreProvider(core.store),
+            distributionProviderChecker = DefaultDistributionProviderChecker(context),
+            distributionSettings = DefaultDistributionSettings(settings),
+            metricController = analytics.metrics,
+        )
+    }
+
+    val integrityClient by lazyMonitored {
+        GooglePlayIntegrityClient(
+            TokenProviderFactory.create(
+                IntegrityManagerProvider.create(context),
+                GoogleProjectNumber.create(BuildConfig.GPS_INTEGRITY_TOKEN),
+            ),
+            clientUUID,
+        )
+    }
+
+    val termsOfUsePromptRepository by lazyMonitored {
+        DefaultTermsOfUsePromptRepository(settings)
+    }
+
+    val termsOfUseManager by lazyMonitored {
+        TermsOfUseManager(termsOfUsePromptRepository)
+    }
+
+    val settingsIndexer by lazyMonitored {
+        DefaultFenixSettingsIndexer(
+            context = context,
+            additionalProviders = listOf(
+                DataChoicesSearchProvider,
+                AIControlsSearchProvider,
+                PageSummariesSettingsSearchProvider(
+                    summarizationFeatureConfiguration = core.summarizeFeatureSettings,
+                ),
+                FirefoxLabsSettingsSearchProvider(
+                    isLabsEnabled = { context.settings().enableFirefoxLabs },
+                ),
             ),
         )
     }
 
-    val fxSuggest by lazyMonitored { FxSuggest(context) }
+    val ipProtectionPromptRepository by lazyMonitored {
+        DefaultIPProtectionPromptRepository(
+            settings = settings,
+            installedTimeMillis = {
+                getApplicationInstalledTime(
+                    packageManagerCompatHelper = context.packageManagerCompatHelper,
+                    packageName = context.packageName,
+                    logger = Logger("DefaultIPProtectionPromptRepository"),
+                )
+            },
+        )
+    }
+
+    val ipProtectionManager by lazyMonitored {
+        IPProtectionManager(ipProtectionPromptRepository)
+    }
+
+    val ads by lazyMonitored {
+        Ads(context = context)
+    }
+
+    val relayEligibilityStore by lazyMonitored {
+        RelayEligibilityStore(middleware = listOf(ClearLastUsedMiddleware()))
+    }
+
+    val relayFeatureIntegration by lazyMonitored {
+        RelayFeatureIntegration(
+            engine = core.engine,
+            accountManager = backgroundServices.accountManager,
+            store = relayEligibilityStore,
+            appStore = appStore,
+            errorMessages = ErrorMessages(
+                maxMasksReached = context.getString(R.string.email_masks_max_free_tier_reached),
+                errorRetrievingMasks = context.getString(R.string.email_masks_error_retrieving_masks),
+            ),
+        )
+    }
+
+    val aiFeatureBlockStorage by lazyMonitored {
+        AIFeatureBlockStorage.dataStore(context)
+    }
+
+    val aiFeatureRegistry by lazyMonitored {
+        AIFeatureRegistry.default(scope = MainScope(), context = context).also {
+            if (settings.shakeToSummarizeFeatureFlagEnabled) {
+                it.register(PageSummaryFeature(SummarizationSettings.dataStore(context)))
+            }
+            it.register(
+                VoiceSearchAIControlFeature(
+                    settings = context.settings(),
+                    onUpdateWidget = { VoiceSearchAIControlFeature.updateWidget(context) },
+                ),
+            )
+        }
+    }
+
+    @Suppress("unused")
+    val aiControlsFeatureBlock by lazyMonitored {
+        AIFeatureBlock.default(
+            storage = aiFeatureBlockStorage,
+            registry = aiFeatureRegistry,
+        )
+    }
+
+    val llm: Llm by lazyMonitored {
+        Llm(
+            client = core.client,
+            storage = MlpaTokenStorage.sharedPrefs(context),
+            fxaTokenProvider = backgroundServices.accountManager.accessTokenProvider,
+            integrityClient = integrityClient,
+            userIdProvider = clientUUID,
+        )
+    }
+
+    val clientUUID by lazyMonitored { ClientUUID.build(context) }
+
+    val ipProtection by lazyMonitored {
+        IPProtection(
+            engine = core.engine,
+            browserStore = core.store,
+            syncStore = backgroundServices.syncStore,
+            lazyFxaAccountManager = lazy { backgroundServices.accountManager },
+            settings = settings,
+            context = context,
+        )
+    }
 }
 
 /**
@@ -238,4 +556,5 @@ class Components(private val context: Context) {
  */
 val components: Components
     @Composable
+    @ReadOnlyComposable
     get() = LocalContext.current.components

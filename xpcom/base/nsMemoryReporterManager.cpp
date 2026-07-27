@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,23 +18,19 @@
 #include "nsIOService.h"
 #include "nsIGlobalObject.h"
 #include "nsIXPConnect.h"
-#ifdef MOZ_GECKO_PROFILER
-#  include "GeckoProfilerReporter.h"
-#endif
+#include "GeckoProfilerReporter.h"
 #if defined(XP_UNIX) || defined(MOZ_DMD)
 #  include "nsMemoryInfoDumper.h"
 #endif
 #include "nsNetCID.h"
 #include "nsThread.h"
 #include "VRProcessManager.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/MemoryReportingProcess.h"
-#include "mozilla/PodOperations.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_memory.h"
 #include "mozilla/RDDProcessManager.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Services.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/XpcomMetrics.h"
 #include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/dom/MemoryReportTypes.h"
 #include "mozilla/dom/ContentParent.h"
@@ -417,7 +411,7 @@ static void XMappingIter(int64_t& aVsize, int64_t& aResident,
                                                                 bool aDoPurge) {
 #  ifdef HAVE_JEMALLOC_STATS
   if (aDoPurge) {
-    Telemetry::AutoTimer<Telemetry::MEMORY_FREE_PURGED_PAGES_MS> timer;
+    auto timer = glean::memory::free_purged_pages.Measure();
     jemalloc_purge_freed_pages();
   }
 #  endif
@@ -584,6 +578,8 @@ static bool InSharedRegion(mach_vm_address_t aAddr, cpu_type_t aType) {
 #  include <psapi.h>
 #  include <algorithm>
 
+#  include "nsTHashMap.h"
+
 #  define HAVE_VSIZE_AND_RESIDENT_REPORTERS 1
 [[nodiscard]] static nsresult VsizeDistinguishedAmount(int64_t* aN) {
   MEMORYSTATUSEX s;
@@ -741,43 +737,21 @@ struct SegmentKind {
   DWORD mType;
   DWORD mProtect;
   int mIsStack;
+
+  PLDHashNumber Hash() const {
+    return mozilla::HashGeneric(mState, mType, mProtect, mIsStack);
+  }
+
+  bool operator==(const SegmentKind& aOther) const {
+    return mState == aOther.mState && mType == aOther.mType &&
+           mProtect == aOther.mProtect && mIsStack == aOther.mIsStack;
+  }
 };
 
-struct SegmentEntry : public PLDHashEntryHdr {
-  static PLDHashNumber HashKey(const void* aKey) {
-    auto kind = static_cast<const SegmentKind*>(aKey);
-    return mozilla::HashGeneric(kind->mState, kind->mType, kind->mProtect,
-                                kind->mIsStack);
-  }
-
-  static bool MatchEntry(const PLDHashEntryHdr* aEntry, const void* aKey) {
-    auto kind = static_cast<const SegmentKind*>(aKey);
-    auto entry = static_cast<const SegmentEntry*>(aEntry);
-    return kind->mState == entry->mKind.mState &&
-           kind->mType == entry->mKind.mType &&
-           kind->mProtect == entry->mKind.mProtect &&
-           kind->mIsStack == entry->mKind.mIsStack;
-  }
-
-  static void InitEntry(PLDHashEntryHdr* aEntry, const void* aKey) {
-    auto kind = static_cast<const SegmentKind*>(aKey);
-    auto entry = static_cast<SegmentEntry*>(aEntry);
-    entry->mKind = *kind;
-    entry->mCount = 0;
-    entry->mSize = 0;
-  }
-
-  static const PLDHashTableOps Ops;
-
-  SegmentKind mKind;  // The segment kind.
-  uint32_t mCount;    // The number of segments of this kind.
-  size_t mSize;       // The combined size of segments of this kind.
+struct SegmentStats {
+  uint32_t mCount = 0;
+  size_t mSize = 0;
 };
-
-/* static */ const PLDHashTableOps SegmentEntry::Ops = {
-    SegmentEntry::HashKey, SegmentEntry::MatchEntry,
-    PLDHashTable::MoveEntryStub, PLDHashTable::ClearEntryStub,
-    SegmentEntry::InitEntry};
 
 class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
   ~WindowsAddressSpaceReporter() {}
@@ -791,7 +765,7 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
     // there were and their aggregate sizes. We use a hash table for this
     // because there are a couple of dozen different kinds possible.
 
-    PLDHashTable table(&SegmentEntry::Ops, sizeof(SegmentEntry));
+    nsTHashMap<nsGenericHashKey<SegmentKind>, SegmentStats> table;
     MEMORY_BASIC_INFORMATION info = {0};
     bool isPrevSegStackGuard = false;
     for (size_t currentAddress = 0;;) {
@@ -811,12 +785,9 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
                      type == MEM_PRIVATE && protect == PAGE_READWRITE;
 
       SegmentKind kind = {state, type, protect, isStack ? 1 : 0};
-      auto entry =
-          static_cast<SegmentEntry*>(table.Add(&kind, mozilla::fallible));
-      if (entry) {
-        entry->mCount += 1;
-        entry->mSize += size;
-      }
+      SegmentStats& stats = table.LookupOrInsert(kind);
+      stats.mCount += 1;
+      stats.mSize += size;
 
       isPrevSegStackGuard = info.State == MEM_COMMIT &&
                             info.Type == MEM_PRIVATE &&
@@ -834,7 +805,7 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
     // Then iterate over the hash table and report the details for each segment
     // kind.
 
-    for (auto iter = table.Iter(); !iter.Done(); iter.Next()) {
+    for (auto& entry : table) {
       // For each range of pages, we consider one or more of its State, Type
       // and Protect values. These are documented at
       // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366775%28v=vs.85%29.aspx
@@ -846,11 +817,9 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
       bool doType = false;
       bool doProtect = false;
 
-      auto entry = static_cast<const SegmentEntry*>(iter.Get());
-
       nsCString path("address-space");
 
-      switch (entry->mKind.mState) {
+      switch (entry.GetKey().mState) {
         case MEM_FREE:
           path.AppendLiteral("/free");
           break;
@@ -873,7 +842,7 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
       }
 
       if (doType) {
-        switch (entry->mKind.mType) {
+        switch (entry.GetKey().mType) {
           case MEM_IMAGE:
             path.AppendLiteral("/image");
             break;
@@ -894,7 +863,7 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
       }
 
       if (doProtect) {
-        DWORD protect = entry->mKind.mProtect;
+        DWORD protect = entry.GetKey().mProtect;
         // Basic attributes. Exactly one of these should be set.
         if (protect & PAGE_EXECUTE) {
           path.AppendLiteral("/execute");
@@ -933,17 +902,17 @@ class WindowsAddressSpaceReporter final : public nsIMemoryReporter {
         }
 
         // Annotate likely stack segments, too.
-        if (entry->mKind.mIsStack) {
+        if (entry.GetKey().mIsStack) {
           path.AppendLiteral("+stack");
         }
       }
 
       // Append the segment count.
-      path.AppendPrintf("(segments=%u)", entry->mCount);
+      path.AppendPrintf("(segments=%" PRIu32 ")", entry.GetData().mCount);
 
       aHandleReport->Callback(""_ns, path, KIND_OTHER, UNITS_BYTES,
-                              entry->mSize, "From MEMORY_BASIC_INFORMATION."_ns,
-                              aData);
+                              entry.GetData().mSize,
+                              "From MEMORY_BASIC_INFORMATION."_ns, aData);
     }
 
     return NS_OK;
@@ -1680,7 +1649,7 @@ class AndroidMemoryReporter final : public nsIMemoryReporter {
   NS_IMETHOD
   CollectReports(nsIHandleReportCallback* aHandleReport, nsISupports* aData,
                  bool aAnonymize) override {
-    if (!jni::IsAvailable() || jni::GetAPIVersion() < 23) {
+    if (!jni::IsAvailable()) {
       return NS_OK;
     }
 
@@ -1732,72 +1701,80 @@ nsMemoryReporterManager::Init() {
   }
   isInited = true;
 
+  {
+    // Add a series of low-level reporters meant to be executed in order and
+    // before any other reporters. These reporters are never released until
+    // the manager dies (at process shutdown). Note that this currently only
+    // works for reporters expecting to be executed sync.
+    //
+    // Note that we explicitly handle our self-reporting inside
+    // GetReportsForThisProcessExtended, such that we do not need to register
+    // ourself to any array/table here.
+
+    mozilla::MutexAutoLock autoLock(mMutex);
+
 #ifdef HAVE_JEMALLOC_STATS
-  RegisterStrongReporter(new JemallocHeapReporter());
+    mStrongEternalReporters->AppendElement(new JemallocHeapReporter());
 #endif
 
 #ifdef HAVE_VSIZE_AND_RESIDENT_REPORTERS
-  RegisterStrongReporter(new VsizeReporter());
-  RegisterStrongReporter(new ResidentReporter());
+    mStrongEternalReporters->AppendElement(new VsizeReporter());
+    mStrongEternalReporters->AppendElement(new ResidentReporter());
 #endif
 
 #ifdef HAVE_VSIZE_MAX_CONTIGUOUS_REPORTER
-  RegisterStrongReporter(new VsizeMaxContiguousReporter());
+    mStrongEternalReporters->AppendElement(new VsizeMaxContiguousReporter());
 #endif
 
 #ifdef HAVE_RESIDENT_PEAK_REPORTER
-  RegisterStrongReporter(new ResidentPeakReporter());
+    mStrongEternalReporters->AppendElement(new ResidentPeakReporter());
 #endif
 
 #ifdef HAVE_RESIDENT_UNIQUE_REPORTER
-  RegisterStrongReporter(new ResidentUniqueReporter());
+    mStrongEternalReporters->AppendElement(new ResidentUniqueReporter());
 #endif
 
 #ifdef HAVE_PAGE_FAULT_REPORTERS
-  RegisterStrongReporter(new PageFaultsSoftReporter());
-  RegisterStrongReporter(new PageFaultsHardReporter());
+    mStrongEternalReporters->AppendElement(new PageFaultsSoftReporter());
+    mStrongEternalReporters->AppendElement(new PageFaultsHardReporter());
 #endif
 
 #ifdef HAVE_PRIVATE_REPORTER
-  RegisterStrongReporter(new PrivateReporter());
+    mStrongEternalReporters->AppendElement(new PrivateReporter());
 #endif
 
 #ifdef HAVE_SYSTEM_HEAP_REPORTER
-  RegisterStrongReporter(new SystemHeapReporter());
+    mStrongEternalReporters->AppendElement(new SystemHeapReporter());
 #endif
 
-  RegisterStrongReporter(new AtomTablesReporter());
+    mStrongEternalReporters->AppendElement(new AtomTablesReporter());
 
-  RegisterStrongReporter(new ThreadsReporter());
+    mStrongEternalReporters->AppendElement(new ThreadsReporter());
 
 #ifdef DEBUG
-  RegisterStrongReporter(new DeadlockDetectorReporter());
+    mStrongEternalReporters->AppendElement(new DeadlockDetectorReporter());
 #endif
 
-#ifdef MOZ_GECKO_PROFILER
-  // We have to register this here rather than in profiler_init() because
-  // profiler_init() runs prior to nsMemoryReporterManager's creation.
-  RegisterStrongReporter(new GeckoProfilerReporter());
-#endif
+    // We have to register this here rather than in profiler_init() because
+    // profiler_init() runs prior to nsMemoryReporterManager's creation.
+    mStrongEternalReporters->AppendElement(new GeckoProfilerReporter());
 
 #ifdef MOZ_DMD
-  RegisterStrongReporter(new mozilla::dmd::DMDReporter());
+    mStrongEternalReporters->AppendElement(new mozilla::dmd::DMDReporter());
 #endif
 
 #ifdef XP_WIN
-  RegisterStrongReporter(new WindowsAddressSpaceReporter());
+    mStrongEternalReporters->AppendElement(new WindowsAddressSpaceReporter());
 #endif
 
 #ifdef MOZ_WIDGET_ANDROID
-  RegisterStrongReporter(new AndroidMemoryReporter());
+    mStrongEternalReporters->AppendElement(new AndroidMemoryReporter());
 #endif
+  }  // autoLock(mMutex);
 
 #ifdef XP_UNIX
   nsMemoryInfoDumper::Initialize();
 #endif
-
-  // Report our own memory usage as well.
-  RegisterWeakReporter(this);
 
   return NS_OK;
 }
@@ -1805,8 +1782,10 @@ nsMemoryReporterManager::Init() {
 nsMemoryReporterManager::nsMemoryReporterManager()
     : mMutex("nsMemoryReporterManager::mMutex"),
       mIsRegistrationBlocked(false),
+      mStrongEternalReporters(new StrongReportersArray()),
       mStrongReporters(new StrongReportersTable()),
       mWeakReporters(new WeakReportersTable()),
+      mSavedStrongEternalReporters(nullptr),
       mSavedStrongReporters(nullptr),
       mSavedWeakReporters(nullptr),
       mNextGeneration(1),
@@ -1820,8 +1799,8 @@ nsMemoryReporterManager::nsMemoryReporterManager()
 }
 
 nsMemoryReporterManager::~nsMemoryReporterManager() {
-  delete mStrongReporters;
-  delete mWeakReporters;
+  NS_ASSERTION(!mSavedStrongEternalReporters,
+               "failed to restore eternal reporters");
   NS_ASSERTION(!mSavedStrongReporters, "failed to restore strong reporters");
   NS_ASSERTION(!mSavedWeakReporters, "failed to restore weak reporters");
 }
@@ -1832,8 +1811,12 @@ nsMemoryReporterManager::CollectReports(nsIHandleReportCallback* aHandleReport,
   size_t n = MallocSizeOf(this);
   {
     mozilla::MutexAutoLock autoLock(mMutex);
+    n += mStrongEternalReporters->ShallowSizeOfIncludingThis(MallocSizeOf);
     n += mStrongReporters->ShallowSizeOfIncludingThis(MallocSizeOf);
     n += mWeakReporters->ShallowSizeOfIncludingThis(MallocSizeOf);
+    // Note that we do not include the mSaved<X>Reporters here, as during
+    // normal operations they are always nullptr and during testing we want to
+    // hide the saved variants entirely.
   }
 
   MOZ_COLLECT_REPORT("explicit/memory-reporter-manager", KIND_HEAP, UNITS_BYTES,
@@ -1983,9 +1966,9 @@ nsresult nsMemoryReporterManager::StartGettingReports() {
   if (!s->mChildrenPending.IsEmpty()) {
     nsCOMPtr<nsITimer> timer;
     rv = NS_NewTimerWithFuncCallback(
-        getter_AddRefs(timer), TimeoutCallback, this, kTimeoutLengthMS,
-        nsITimer::TYPE_ONE_SHOT,
-        "nsMemoryReporterManager::StartGettingReports");
+        getter_AddRefs(timer), TimeoutCallback, this,
+        StaticPrefs::memory_reporter_timeout(), nsITimer::TYPE_ONE_SHOT,
+        "nsMemoryReporterManager::StartGettingReports"_ns);
     if (NS_WARN_IF(NS_FAILED(rv))) {
       FinishReporting();
       return rv;
@@ -2056,11 +2039,26 @@ nsMemoryReporterManager::GetReportsForThisProcessExtended(
   {
     mozilla::MutexAutoLock autoLock(mMutex);
 
+    // We process our own, most sensible reporters before anyone else to avoid
+    // them measuring changes caused by other reporters' dynamic structures.
+    // Note that all eternal reporters need to be sync, too.
+    for (const auto& entry : *mStrongEternalReporters) {
+      DispatchReporter(entry, false, aHandleReport, aHandleReportData,
+                       aAnonymize);
+    }
+    // Process our self-reporting (not in any array/table). Note that when
+    // we test, we expect to execute only reporters in the swapped-in tables.
+    if (!mIsRegistrationBlocked) {
+      DispatchReporter(this, false, aHandleReport, aHandleReportData,
+                       aAnonymize);
+    }
+
+    // Now process additional reporters. Note that these are executed in an
+    // unforeseeable order (due to the hashtables being keyed on pointers).
     for (const auto& entry : *mStrongReporters) {
       DispatchReporter(entry.GetKey(), entry.GetData(), aHandleReport,
                        aHandleReportData, aAnonymize);
     }
-
     for (const auto& entry : *mWeakReporters) {
       nsCOMPtr<nsIMemoryReporter> reporter = entry.GetKey();
       DispatchReporter(reporter, entry.GetData(), aHandleReport,
@@ -2435,12 +2433,15 @@ nsMemoryReporterManager::BlockRegistrationAndHideExistingReporters() {
   mIsRegistrationBlocked = true;
 
   // Hide the existing reporters, saving them for later restoration.
+  MOZ_ASSERT(!mSavedStrongEternalReporters);
   MOZ_ASSERT(!mSavedStrongReporters);
   MOZ_ASSERT(!mSavedWeakReporters);
-  mSavedStrongReporters = mStrongReporters;
-  mSavedWeakReporters = mWeakReporters;
-  mStrongReporters = new StrongReportersTable();
-  mWeakReporters = new WeakReportersTable();
+  mSavedStrongEternalReporters.swap(mStrongEternalReporters);
+  mSavedStrongReporters.swap(mStrongReporters);
+  mSavedWeakReporters.swap(mWeakReporters);
+  mStrongEternalReporters.reset(new StrongReportersArray());
+  mStrongReporters.reset(new StrongReportersTable());
+  mWeakReporters.reset(new WeakReportersTable());
 
   return NS_OK;
 }
@@ -2454,12 +2455,9 @@ nsMemoryReporterManager::UnblockRegistrationAndRestoreOriginalReporters() {
   }
 
   // Banish the current reporters, and restore the hidden ones.
-  delete mStrongReporters;
-  delete mWeakReporters;
-  mStrongReporters = mSavedStrongReporters;
-  mWeakReporters = mSavedWeakReporters;
-  mSavedStrongReporters = nullptr;
-  mSavedWeakReporters = nullptr;
+  mStrongEternalReporters = std::move(mSavedStrongEternalReporters);
+  mStrongReporters = std::move(mSavedStrongReporters);
+  mWeakReporters = std::move(mSavedWeakReporters);
 
   mIsRegistrationBlocked = false;
   return NS_OK;
@@ -2760,6 +2758,17 @@ class MinimizeMemoryUsageRunnable : public Runnable {
     }
 
     if (mRemainingIters == 0) {
+#ifdef MOZ_MEMORY
+      // The nsMemoryPressureWatcher observes "memory-pressure" and dispatches
+      // a nsJemallocFreeDirtyPagesRunnable that will be run after the other
+      // observers have been called. If those observers did synchronously
+      // whatever they want to do without dispatching other runnables to the
+      // main thread, this is guaranteeing that the last thing to run before
+      // coming here was that nsJemallocFreeDirtyPagesRunnable. But for
+      // paranoia we do another purge here which ideally is a no-op.
+      jemalloc_free_dirty_pages();
+#endif
+
       os->NotifyObservers(nullptr, "after-minimize-memory-usage",
                           u"MinimizeMemoryUsageRunnable");
       if (mCallback) {
@@ -2860,17 +2869,15 @@ namespace mozilla {
     return NS_ERROR_FAILURE;                  \
   }
 
-nsresult RegisterStrongMemoryReporter(nsIMemoryReporter* aReporter) {
-  // Hold a strong reference to the argument to make sure it gets released if
-  // we return early below.
+nsresult RegisterStrongMemoryReporter(
+    already_AddRefed<nsIMemoryReporter> aReporter) {
   nsCOMPtr<nsIMemoryReporter> reporter = aReporter;
   GET_MEMORY_REPORTER_MANAGER(mgr)
   return mgr->RegisterStrongReporter(reporter);
 }
 
-nsresult RegisterStrongAsyncMemoryReporter(nsIMemoryReporter* aReporter) {
-  // Hold a strong reference to the argument to make sure it gets released if
-  // we return early below.
+nsresult RegisterStrongAsyncMemoryReporter(
+    already_AddRefed<nsIMemoryReporter> aReporter) {
   nsCOMPtr<nsIMemoryReporter> reporter = aReporter;
   GET_MEMORY_REPORTER_MANAGER(mgr)
   return mgr->RegisterStrongAsyncReporter(reporter);

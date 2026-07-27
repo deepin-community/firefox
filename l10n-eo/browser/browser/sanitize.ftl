@@ -59,10 +59,7 @@ history-section-label = Historio
 item-history-and-downloads =
     .label = Retuma kaj elŝuta historio
     .accesskey = e
-item-history-form-data-downloads =
-    .label = Historio
-    .accesskey = H
-item-history-form-data-downloads-description = Viŝi retejan kaj elŝutan historion, konservitajn formularajn informojn kaj serĉojn
+item-history-and-downloads-description2 = Viŝi serĉan kaj elŝutan historion
 item-cookies =
     .label = Kuketoj
     .accesskey = K
@@ -80,8 +77,8 @@ item-active-logins =
     .label = Aktivaj akreditadoj
     .accesskey = A
 item-cache =
-    .label = Staplo
-    .accesskey = A
+    .label = Stokejo
+    .accesskey = S
 # Variables:
 #   $amount (Number) - Amount of cached data
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Retejaj agordoj
     .accesskey = a
+item-formdata-prefs =
+    .label = Konservitaj informoj de formularoj
+    .accesskey = f
+item-formdata-description = Viŝi aferojn kiel nomojn, retpoŝtajn adresojn kaj aliajn elementojn, kiujn vi tajpis en formularoj
 item-site-prefs-description = Tio ĉi remetas la originalajn permesojn kaj preferojn por retejoj
 data-section-label = Datumoj
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = La tuta historio estos forviŝita.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Ĉiuj elektitaj elementoj estos forviŝitaj.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Kalkulo…

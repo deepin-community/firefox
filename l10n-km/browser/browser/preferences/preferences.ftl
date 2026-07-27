@@ -10,17 +10,29 @@ pane-general-title = ទូទៅ
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = ទំព័រដើម
+pane-search-title2 = ស្វែងរក
+    .title = ស្វែងរក
+pane-privacy-title3 = ឯកជន​ភាព & សុវត្ថិភាព
+    .title = ឯកជន​ភាព & សុវត្ថិភាព
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = ស្វែងរក
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = ឯកជន​ភាព & សុវត្ថិភាព
 pane-privacy-title = ឯកជន​ភាព & សុវត្ថិភាព
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } ជំនួយ
+    .title = { -brand-short-name } ជំនួយ
+addons-button-label2 = ផ្នែកបន្ថែមនិងរចនាប័ទ្ម
+    .title = ផ្នែកបន្ថែមនិងរចនាប័ទ្ម
 help-button-label = { -brand-short-name } ជំនួយ
 addons-button-label = ផ្នែកបន្ថែមនិងរចនាប័ទ្ម
 focus-search =
@@ -72,6 +84,18 @@ set-as-my-default-browser =
     .accesskey = D
 disable-extension =
     .label = បិទ​ផ្នែក​បន្ថែម
+preferences-profiles-group-header =
+    .heading = ប្រវត្តិរូប
+preferences-profiles-header = ប្រវត្តិរូប
+preferences-manage-profiles-button =
+    .label = គ្រប់គ្រងប្រវត្តិរូប
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = ប្រវត្តិរូបដែលត្រូវចម្លង
+tabs-group-header2 =
+    .label = ផ្ទាំង
 tabs-group-header = ផ្ទាំង
 ctrl-tab-recently-used-order =
     .label = ប៊ូតុង​ Ctrl+Tab មាន​មុខងារ​ចូល​មើល​ផ្ទាំង​ដែល​បើក​ថ្មីៗ​ម្ដង​មួយ​ៗ
@@ -93,6 +117,8 @@ browser-containers-settings =
     .label = ការ​កំណត់...
     .accesskey = i
 containers-disable-alert-title = បិទ​ផ្ទាំង​ឧបករណ៍​ផ្ទុក​ទាំងអស់មែន​ទេ?
+startup-group =
+    .label = ចាប់ផ្ដើម​ឡើង
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -105,7 +131,7 @@ containers-disable-alert-ok-button = បិទ​ផ្ទាំង​ឧបក�
 containers-disable-alert-cancel-button = បន្ត​បើក
 containers-remove-alert-title = លុប​ប្រអប់​នេះ​ចេញ?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg = បើ​អ្នក​លុប​​ឧបករណ៍​ផ្ទុក​​នេះ​ចេញ​ឥឡូវ​នេះ ឧបករណ៍​ផ្ទុក { $count } នឹង​ត្រូវបាន​​បិទ។ តើ​អ្នក​ពិត​ជា​ចង់​លុប​​ឧបករណ៍​ផ្ទុក​​នេះ​ចេញ​មែនទេ?
 containers-remove-ok-button = លុប​ប្រអប់​នេះ​ចេញ
 containers-remove-cancel-button = កុំ​លុប​ប្រអប់​នេះ​ចេញ​អី
@@ -113,6 +139,8 @@ containers-remove-cancel-button = កុំ​លុប​ប្រអប់​�
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ភាសា និង​ការបង្ហាញ
+preferences-web-appearance-choice-light = ភ្លឺ
+preferences-web-appearance-choice-dark = ងងឹត
 default-font = ពុម្ព​អក្សរ​លំនាំដើម
     .accesskey = D
 default-font-size = ទំហំ
@@ -136,6 +164,20 @@ translate-attribution = ការ​បកប្រែ​ដោយ <img data-l10
 translate-exceptions =
     .label = ករណី​លើកលែង…
     .accesskey = x
+settings-translations-subpage-no-languages-downloaded =
+    .label = គ្មានភាសាណាមួយត្រូវបានទាញយកទេ
+settings-translations-subpage-no-languages-added =
+    .label = គ្មានភាសាណាមួយត្រូវបានបន្ថែមទេ
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = លុប { $language } ({ $size }MB)?
+settings-translations-subpage-download-delete-button =
+    .label = លុប
+settings-translations-subpage-download-cancel-button =
+    .label = បោះបង់
+settings-translations-subpage-no-sites-added =
+    .label = គ្មានគេហទំព័រណាមួយត្រូវបានបន្ថែមទេ
 check-user-spelling =
     .label = ពិនិត្យ​​អក្ខរាវិរុទ្ធ​ពេល​វាយ
     .accesskey = t
@@ -143,6 +185,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = ឯកសារ និងកម្មវិធី
+download-save-files-header =
+    .label = រក្សា​ទុក​ឯកសារ​ទៅ
+download-save-where-3 =
+    .aria-label = រក្សា​ទុក​ឯកសារ​ទៅ
 download-header = ទាញ​យក
 download-save-where = រក្សា​ទុក​ឯកសារ​ទៅ
     .accesskey = ក
@@ -167,9 +213,11 @@ applications-filter =
 applications-type-column =
     .label = ប្រភេទ​មាតិកា
     .accesskey = ក
+applications-type-heading = ប្រភេទ​មាតិកា
 applications-action-column =
     .label = អំពើ
     .accesskey = ព
+applications-action-heading = អំពើ
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = ឯកសារ { $extension }
@@ -191,11 +239,11 @@ applications-manage-app =
 applications-always-ask =
     .label = សួរ​ជានិច្ច
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = ប្រើ { $plugin-name } (ក្នុង { -brand-short-name })
 
@@ -216,8 +264,10 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = ខ្លឹមសារ​ការគ្រប់គ្រងសិទ្ធិឌីជីថល (DRM)
 drm-content-header = ខ្លឹមសារ​ការគ្រប់គ្រងសិទ្ធិឌីជីថល (DRM)
 play-drm-content =
     .label = លេងខ្លឹមសារ​ដែលគ្រប់គ្រងដោយ DRM
@@ -225,7 +275,12 @@ play-drm-content =
 play-drm-content-learn-more = ស្វែងយល់​​បន្ថែម
 update-application-title = បច្ចុប្បន្នភាព { -brand-short-name }
 update-application-description = រក្សា { -brand-short-name } ឱ្យ​ថ្មីៗ​ជានិច្ច ដើម្បី​ដំណើរការ​​មាន​ប្រសិទ្ធភាព ស្ថេរភាព និងសុវត្ថិភាពបំផុត។
+# Variables:
+# $version (string) - Firefox version
 update-application-version = កំណែ { $version } <a data-l10n-name="learn-more">អ្វី​ដែល​ថ្មី</a>
+update-history-2 =
+    .label = បង្ហាញ​ប្រវត្តិ​បច្ចុប្បន្នភាព
+    .accesskey = p
 update-history =
     .label = បង្ហាញ​ប្រវត្តិ​បច្ចុប្បន្នភាព...
     .accesskey = p
@@ -259,11 +314,13 @@ performance-limit-content-process-option = ដែនកំណត់​ដំណ�
 performance-limit-content-process-enabled-desc = ដំណើរការ​មាតិកា​បន្ថែម​អាច​ធ្វើឲ្យ​ដំណើរការ​ប្រសើរ​ឡើង​នៅពេល​ប្រើ​ផ្ទាំង​ច្រើន ប៉ុន្តែ​វា​នឹង​ប្រើ​អង្គ​ចងចាំ​ច្រើន​ដែរ។
 performance-limit-content-process-blocked-desc = ការ​កែប្រែ​ចំនួន​ដំណើរការ​មាតិកា គឺ​អាច​ធ្វើ​ទៅ​បានតែ​ជាមួយ { -brand-short-name } ពហុ​ដំណើរការ​ប៉ុណ្ណោះ។ <a data-l10n-name="learn-more">ស្វែងយល់​ពី​របៀប​ពិនិត្យមើល ប្រសិនបើ​បាន​បើក​ពហុ​ដំណើរការ</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (លំនាំដើម)
+performance-group =
+    .label = ដំណើរការ
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = រក​មើល
 browsing-use-autoscroll =
@@ -282,6 +339,8 @@ browsing-search-on-start-typing =
     .label = ស្វែងរក​​អក្សរ នៅ​ពេល​អ្នក​ចាប់ផ្ដើម​វាយ
     .accesskey = x
 browsing-cfr-recommendations-learn-more = ស្វែងយល់​បន្ថែម
+browsing-group =
+    .label = រក​មើល
 
 ## General Section - Proxy
 
@@ -294,13 +353,23 @@ network-proxy-connection-settings =
 
 ## Home Section
 
-home-new-windows-tabs-header = វីនដូ និងផ្ទាំងថ្មី
-home-new-windows-tabs-description2 = ជ្រើសអ្វីដែលអ្នកឃើញនៅពេលអ្នកបើកគេហទំព័រ, វីនដូថ្មី, និងផ្ទាំងថ្មី។
+home-new-windows-tabs-header = បង្អួច និងផ្ទាំងថ្មី
+home-new-windows-tabs-description2 = ជ្រើសអ្វីដែលអ្នកឃើញនៅពេលអ្នកបើកគេហទំព័រ បង្អួចថ្មី និងផ្ទាំងថ្មី។
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = ដាក់​ជា​លំនាំ​ដើម
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = ទំព័រដើម និងវីនដូថ្មី
+home-homepage-new-windows =
+    .label = បង្អួចថ្មី
 home-newtabs-mode-label = ផ្ទាំងថ្មី
+home-homepage-new-tabs =
+    .label = ផ្ទាំងថ្មី
 home-restore-defaults =
     .label = ស្ដារ​លំនាំ​ដើម
     .accesskey = R
@@ -325,13 +394,21 @@ choose-bookmark =
     .label = ប្រើ​ចំណាំ…
     .accesskey = ច
 
+## Custom Homepage subpage
+
+home-custom-homepage-delete-address-button =
+    .aria-label = លុបអាសយដ្ឋាន
+    .title = លុបអាសយដ្ឋាន
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with-prompt)
+home-custom-homepage-bookmarks-button =
+    .label = ចំណាំ…
+
 ## Home Section - Firefox Home Content Customization
 
 home-prefs-search-header =
     .label = ការស្វែងរកតាម​អ៊ីនធឺណិត
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = បានណែនាំដោយ { $provider }
@@ -355,6 +432,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = អត្ថបទសង្ខេប
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -375,6 +454,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = បង្ហាញការណែនាំ​ស្វែងរកនៅក្នុងលទ្ធផលរបារអាសយដ្ឋាន
     .accesskey = I
+search-suggestions-cant-show-2 =
+    .message = សំណើ​ស្វែងរក​នឹង​​មិន​បង្ហាញ​នៅ​ក្នុង​លទ្ធផល​របារ​ទីតាំង​​ទេ ព្រោះ​អ្នក​បាន​កំណត់​រចនាសម្ព័ន្ធ { -brand-short-name } មិន​ដែល​ឲ្យ​ចងចាំ​ប្រវត្តិ។
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -399,13 +480,19 @@ search-find-more-link = រកម៉ាស៊ីនស្វែងរកបន�
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = ពាក្យ​គន្លឹះ​ស្ទួន
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = អ្នក​បានជ្រើស​រើស​ពាក្យ​គន្លឹះ ដែល​បច្ចុប្បន្ន​នេះ​​​​កំពុង​ប្រើ​ដោយ "{ $name }"។ សូម​ជ្រើសរើស​ពាក្យ​គន្លឹះ​ផ្សេង​ទៀត។
 search-keyword-warning-bookmark = អ្នក​បាន​ជ្រើសរើស​ពាក្យ​គន្លឹះ​ដែល​ត្រូវ​បាន​ប្រើ​បច្ចុប្បន្ន​ដោយ​ចំណាំ ។ សូម​ជ្រើស​មួយ​ផ្សេង​ទៀត ។
+search-engine-group =
+    .label = ម៉ាស៊ីន​ស្វែងរក​លំនាំដើម
+search-default-engine =
+    .aria-label = ម៉ាស៊ីន​ស្វែងរក​លំនាំដើម
 
 ## Containers Section
 
 containers-header = ផ្ទាំង​ប្រអប់​ផ្ទុក
+containers-section-header =
+    .heading = ផ្ទាំង​ប្រអប់​ផ្ទុក
 containers-add-button =
     .label = បន្ថែម​ប្រអប់​ផ្ទុក​ថ្មី
     .accesskey = A
@@ -433,11 +520,17 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = ប្តូរ​​រូប​ប្រូ​ហ្វាល់
     .alt = ប្តូរ​​រូប​ប្រូ​ហ្វាល់
+sync-profile-picture-account-problem =
+    .alt = រូបភាពប្រវត្តិរូបគណនី
 sync-manage-account = គ្រប់គ្រង​គណនី
+    .accesskey = o
+sync-manage-account2 =
+    .label = គ្រប់គ្រង​គណនី
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } មិន​ត្រូវ​បាន​ផ្ទៀងផ្ទាត់។
 sync-signedin-login-failure = សូម​ចូល​ដើម្បី​តភ្ជាប់​ឡើង​វិញ { $email }
@@ -456,9 +549,16 @@ sync-sign-in =
 
 ## Sync section - enabling or disabling sync.
 
+prefs-sync-now =
+    .labelnotsyncing = ធ្វើ​សមកាលកម្ម​ឥឡូវ
+    .accesskeynotsyncing = N
+    .labelsyncing = កំពុងធ្វើ​សមកាលកម្ម​…
 
 ## The list of things currently syncing.
 
+sync-currently-syncing-bookmarks = ចំណាំ
+sync-currently-syncing-history = ប្រវត្តិ
+sync-currently-syncing-passwords = ពាក្យ​សម្ងាត់
 
 ## The "Choose what to sync" dialog.
 
@@ -472,6 +572,10 @@ sync-engine-tabs =
     .label = ផ្ទាំងដែលបើក
     .tooltiptext = បញ្ជីអ្វីដែលបានបើកនៅលើឧបករណ៍ដែលបានធ្វើសមកាលកម្មទាំងអស់
     .accesskey = ផ
+sync-engine-passwords =
+    .label = ពាក្យ​សម្ងាត់
+    .tooltiptext = ពាក្យសម្ងាត់ដែលអ្នកបានរក្សាទុក
+    .accesskey = P
 sync-engine-addresses =
     .label = អាសយដ្ឋាន
     .tooltiptext = អាសយដ្ឋានប្រៃសណីយ៍ដែលអ្នកបានរក្សាទុក (ផ្ទៃតុតែប៉ុណ្ណោះ)
@@ -488,6 +592,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = ឈ្មោះ​ឧបករណ៍
+sync-device-name-header-2 =
+    .label = ឈ្មោះ​ឧបករណ៍
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ឈ្មោះ​ឧបករណ៍
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ប្ដូរ​ឈ្មោះ​ឧបករណ៍
+    .accesskey = h
 sync-device-name-change =
     .label = ប្ដូរ​ឈ្មោះ​ឧបករណ៍…
     .accesskey = h
@@ -514,29 +628,60 @@ privacy-header = ឯកជនភាព​កម្មវិធី​រុករ
 
 ## Privacy Section - Logins and Passwords
 
+# The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
+pane-privacy-logins-and-passwords-header = ការចូល និងពាក្យសម្ងាត់
+    .searchkeywords = { -lockwise-brand-short-name }
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = ស្នើឱ្យរក្សាទុកការចូលនិងពាក្យសម្ងាត់សម្រាប់វេបសាយ
     .accesskey = ម
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = ពាក្យ​សម្ងាត់
+    .searchkeywords = ចូល
+forms-passwords-header =
+    .label = ពាក្យ​សម្ងាត់
+    .aria-label = ពាក្យ​សម្ងាត់
 forms-exceptions =
     .label = ករណី​លើកលែង…
     .accesskey = x
 forms-saved-logins =
     .label = ការ​ចូល​ដែល​បាន​រក្សាទុក...
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = ផ្លាស់ប្ដូរ​ពាក្យ​សម្ងាត់​មេ…
     .accesskey = M
+forms-primary-pw-change =
+    .label = ប្តូរពាក្យសម្ងាត់ចម្បង...
+    .accesskey = P
 forms-master-pw-fips-desc = បាន​បរាជ័យ​ក្នុង​ការ​ផ្លាស់ប្ដូរ​ពាក្យសម្ងាត់
 
 ## OS Authentication dialog
 
+# This message can be seen by trying to add a Primary Password.
+# The macOS strings are preceded by the operating system with "Firefox is trying to "
+# and includes subtitle of "Enter password for the user "xxx" to allow this." These
+# notes are only valid for English. Please test in your locale.
+primary-password-os-auth-dialog-message-macosx = បង្កើតពាក្យសម្ងាត់ចម្បង
 
 ## Privacy section - Autofill
 
+payments-delete-payment-prompt-title = លុបវិធីសាស្ត្រទូទាត់នេះ?
+payments-delete-payment-prompt-confirm-button = លុប
+payments-delete-payment-prompt-cancel-button = បោះបង់
+payments-delete-payment-button-label =
+    .aria-label = លុប
+addreses-delete-address-button-label =
+    .aria-label = លុប
+addresses-delete-address-prompt-title = លុបអាសយដ្ឋាននេះ?
+addresses-delete-address-prompt-confirm-button = លុប
+addresses-delete-address-prompt-cancel-button = បោះបង់
 
 ## Privacy Section - History
 
@@ -558,6 +703,12 @@ history-remember-option-never =
     .label = កុំ​ចងចាំ​ប្រវត្តិ
 history-remember-option-custom =
     .label = ប្រើ​ការ​កំណត់​ផ្ទាល់ខ្លួន​សម្រាប់​ប្រវត្តិ
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } នឹងចងចាំការរុករក ការទាញយក សំណុំបែបបទ និងប្រវត្តិស្វែងរករបស់អ្នក។
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } នឹង​ប្រើ​ការ​កំណត់​ដូច​គ្នា​ជា​ការ​​រក​មើល​ឯកជន ហើយ​នឹង​មិន​ចងចាំ​ប្រវត្តិ​ណាមួយ ពេល​ដែល​អ្នក​រក​មើល​តំបន់​បណ្ដាញ​នោះ​ទេ ។
 history-remember-description = { -brand-short-name } នឹងចងចាំការរុករក ការទាញយក សំណុំបែបបទ និងប្រវត្តិស្វែងរករបស់អ្នក។
 history-dontremember-description = { -brand-short-name } នឹង​ប្រើ​ការ​កំណត់​ដូច​គ្នា​ជា​ការ​​រក​មើល​ឯកជន ហើយ​នឹង​មិន​ចងចាំ​ប្រវត្តិ​ណាមួយ ពេល​ដែល​អ្នក​រក​មើល​តំបន់​បណ្ដាញ​នោះ​ទេ ។
 history-private-browsing-permanent =
@@ -578,16 +729,24 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = សម្អាតប្រវត្តិ...
     .accesskey = s
+history-group =
+    .label = ប្រវត្តិ
 
 ## Privacy Section - Site Data
 
 sitedata-header = ខូឃី និងទិន្នន័យ​គេហទំព័រ
 sitedata-total-size-calculating = កំពុងគណនាទិន្នន័យតំបន់បណ្តាញ និងទំហំឃ្លាំងសម្ងាត់…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = ខុកឃី ទិន្នន័យវិបសាយ និងឃ្លាំងសម្ងាត់ដែលបានផ្ទុករបស់អ្នកបច្ចុប្បន្នកំពុងប្រើទំហំថាស { $value } { $unit }។
 sitedata-learn-more = ស្វែងយល់​បន្ថែម
+sitedata-delete-on-close =
+    .label = លុបខូគី និងទិន្នន័យគេហទំព័រ នៅពេលដែល { -brand-short-name } ត្រូវបានបិទ
+    .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = ដោយផ្អែកលើការកំណត់ប្រវត្តិរបស់អ្នក { -brand-short-name } លុបខូគី និងទិន្នន័យគេហទំព័រចេញពីវគ្គរបស់អ្នក នៅពេលអ្នកបិទកម្មវិធីរុករក។
+sitedata-delete-on-close-private-browsing2 = ដោយផ្អែកលើការកំណត់ប្រវត្តិរបស់អ្នក { -brand-short-name } លុបខូគី និងទិន្នន័យគេហទំព័រចេញពីវគ្គរបស់អ្នក នៅពេលអ្នកបិទកម្មវិធីរុករក។
 # This label means 'type of content that is blocked', and is followed by a drop-down list with content types below.
 # The list items are the strings named sitedata-block-*-option*.
 sitedata-block-desc = ប្រភេទខ្លឹមផ្សាដែលបានទប់ស្កាត់
@@ -598,14 +757,10 @@ sitedata-clear =
 sitedata-settings =
     .label = គ្រប់គ្រងទិន្នន័យ...
     .accesskey = M
+cookies-site-data-group =
+    .label = ខូឃី និងទិន្នន័យ​គេហទំព័រ
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = របារអាសយដ្ឋាន
 addressbar-suggest = នៅពេលប្រើប្រាស់​របារអាសយដ្ឋាន ណែនាំ
@@ -644,9 +799,6 @@ content-blocking-cookies-label =
     .label = ​ខូគី
     .accesskey = ខ
 
-## Privacy Section - Tracking
-
-
 ## Privacy Section - Permissions
 
 permissions-header = ការ​អនុញ្ញាត
@@ -679,12 +831,21 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = ករណី​លើកលែង…
     .accesskey = E
+permissions-location2 =
+    .label = ទីតាំង
+permissions-camera2 =
+    .label = កាមេរ៉ា
+permissions-microphone2 =
+    .label = មីក្រូហ្វូន
+permissions-notification2 =
+    .label = ការ​ជូនដំណឹង
 
 ## Privacy Section - Data Collection
 
 collection-header = ការប្រមូល និងការប្រើប្រាស់ទិន្នន័យ { -brand-short-name }
 collection-description = យើងខិតខំផ្តល់ជូនអ្នកនូវជម្រើស និងប្រមូលតែ​អ្វីដែលយើងត្រូវការ ដើម្បីផ្តល់ និងកែលម្អ { -brand-short-name } សម្រាប់មនុស្សគ្រប់គ្នា​​ប៉ុណ្ណោះ។ យើងតែងតែសុំការអនុញ្ញាត មុនពេលទទួលបានព័ត៌មានផ្ទាល់ខ្លួន។
 collection-privacy-notice = ការជូនដំណឹង​អំពី​ឯកជនភាព
+collection-health-report-telemetry-disabled = អ្នកលែងអនុញ្ញាតឱ្យ { -vendor-short-name } ចាប់យកទិន្នន័យបច្ចេកទេស និងអន្តរកម្មទៀតហើយ។ ទិន្នន័យពីមុនទាំងអស់នឹងត្រូវបានលុបចោលក្នុងរយៈពេល 30 ថ្ងៃ។
 collection-health-report =
     .label = អនុញ្ញាតឲ្យ { -brand-short-name } ផ្ញើទិន្នន័យបច្ចេកទេស និងអន្តរកម្មទៅ { -vendor-short-name }
     .accesskey = r
@@ -692,9 +853,8 @@ collection-health-report-link = ស្វែងយល់​​បន្ថែម
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = ការ​រាយការណ៍​ទិន្នន័យ​ត្រូវ​បាន​បិទ​សម្រាប់​ការ​កំណត់​រចនាសម្ព័ន្ធ​កំណែ​នេះ
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-health-report-telemetry-disabled =
+    .message = អ្នកលែងអនុញ្ញាតឱ្យ { -vendor-short-name } ចាប់យកទិន្នន័យបច្ចេកទេស និងអន្តរកម្មទៀតហើយ។ ទិន្នន័យពីមុនទាំងអស់នឹងត្រូវបានលុបចោលក្នុងរយៈពេល 30 ថ្ងៃ។
 
 ## Privacy Section - Security
 ##
@@ -726,15 +886,15 @@ certs-view =
 certs-devices =
     .label = ឧបករណ៍​សុវត្ថិភាព…
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = បើក FIPS
 
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = ផ្ទៃតុ
 downloads-folder-name = ទាញ​យក
 choose-download-folder-title = ជ្រើស​ថត​ទាញ​យក ៖
+
+## AI controls page
+
+preferences-ai-controls-block-confirmation-cancel =
+    .label = បោះបង់

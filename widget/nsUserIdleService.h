@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsUserIdleService_h__
-#define nsUserIdleService_h__
+#ifndef nsUserIdleService_h_
+#define nsUserIdleService_h_
 
 #include "nsIUserIdleServiceInternal.h"
 #include "nsCOMPtr.h"
@@ -109,10 +106,10 @@ class nsUserIdleServiceDaily : public nsIObserver,
 class nsUserIdleService : public nsIUserIdleServiceInternal {
  public:
   NS_DECL_ISUPPORTS
-  NS_DECL_NSIUSERIDLESERVICE NS_DECL_NSIUSERIDLESERVICEINTERNAL
+ NS_DECL_NSIUSERIDLESERVICE NS_DECL_NSIUSERIDLESERVICEINTERNAL
 
-      protected : static already_AddRefed<nsUserIdleService>
-                  GetInstance();
+     protected : static already_AddRefed<nsUserIdleService>
+                 GetInstance();
 
   nsUserIdleService();
   virtual ~nsUserIdleService();
@@ -215,4 +212,4 @@ class nsUserIdleService : public nsIUserIdleServiceInternal {
   void IdleTimerCallback(void);
 };
 
-#endif  // nsUserIdleService_h__
+#endif  // nsUserIdleService_h_

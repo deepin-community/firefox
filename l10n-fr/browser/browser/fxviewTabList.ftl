@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Déplacer vers la fin
     .accesskey = f
 fxviewtabrow-move-tab-window = Déplacer vers une nouvelle fenêtre
     .accesskey = v
+fxviewtabrow-send-to-device = Envoyer à un appareil
+    .accesskey = E
+fxviewtabrow-send-to-mobile = Envoyer à un mobile
+    .accesskey = E
 fxviewtabrow-send-tab = Envoyer l’onglet à un appareil
     .accesskey = E
 fxviewtabrow-pin-tab = Épingler l’onglet
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Réactiver le son de l’onglet
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Options pour { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Couper le son de { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Réactiver le son de { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Couper le son de l’onglet
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Réactiver le son de l’onglet
+fxviewtabrow-send-to-mobile-connect-device = Connectez un appareil pour envoyer des onglets
+fxviewtabrow-send-to-mobile-device-missing2 = Vous ne voyez pas votre appareil ?
+fxviewtabrow-send-to-mobile-not-verified = Le compte n’est pas confirmé
+fxviewtabrow-send-to-mobile-verify-account = Confirmer votre compte
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Connectez-vous pour envoyer des onglets
+fxviewtabrow-send-to-mobile-turn-on-sync = Activez la synchronisation pour envoyer des onglets

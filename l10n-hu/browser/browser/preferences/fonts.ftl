@@ -3,8 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 fonts-window =
-    .title = Betűk
-
+    .title = Betűkészletek
 fonts-window-close =
     .key = w
 
@@ -12,7 +11,6 @@ fonts-window-close =
 
 fonts-langgroup-header = Betűkészletek ehhez:
     .accesskey = k
-
 fonts-langgroup-arabic =
     .label = Arab
 fonts-langgroup-armenian =
@@ -28,7 +26,7 @@ fonts-langgroup-trad-chinese =
 fonts-langgroup-cyrillic =
     .label = Cirill
 fonts-langgroup-devanagari =
-    .label = Devanagari
+    .label = Dévanágari
 fonts-langgroup-ethiopic =
     .label = Etióp
 fonts-langgroup-georgian =
@@ -53,13 +51,13 @@ fonts-langgroup-korean =
 fonts-langgroup-latin =
     .label = latin
 fonts-langgroup-malayalam =
-    .label = Malayalam
+    .label = Malajálam
 fonts-langgroup-math =
     .label = Matematika
 fonts-langgroup-odia =
     .label = Odia
 fonts-langgroup-sinhala =
-    .label = Sinhala
+    .label = Szingaléz
 fonts-langgroup-tamil =
     .label = Tamil
 fonts-langgroup-telugu =
@@ -77,42 +75,27 @@ fonts-langgroup-other =
 
 fonts-proportional-header = Változó szélességű
     .accesskey = V
-
 fonts-default-serif =
     .label = Talpas
 fonts-default-sans-serif =
     .label = Talpatlan
-
 fonts-proportional-size = Méret
     .accesskey = M
-
 fonts-serif = Talpas
     .accesskey = T
-
 fonts-sans-serif = Talpatlan
     .accesskey = n
-
 fonts-monospace = Fix szélességű
     .accesskey = F
-
 fonts-monospace-size = Méret
     .accesskey = r
-
 fonts-minsize = Legkisebb betűméret
     .accesskey = L
-
 fonts-minsize-none =
     .label = Nincs
-
 fonts-allow-own =
     .label = Az oldalak a saját maguk által kiválasztott betűket használhatják a fent megadottak helyett
     .accesskey = d
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
-
 # Variables:
 #   $name {string, "Arial"} - Name of the default font
 fonts-label-default =

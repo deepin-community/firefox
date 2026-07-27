@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -55,6 +53,14 @@ class Compatibility {
    */
   static bool IsVisperoShared() { return !!(sConsumers & VISPEROSHARED); }
 
+  /*
+   * Returns true if the instantiator is a known screen reader.
+   */
+  static bool IsKnownScreenReader() {
+    return IsJAWS() || IsDolphin() || IsVisperoShared() ||
+           !!(sConsumers & NVDA);
+  }
+
   /**
    * Return a string describing sConsumers suitable for about:support.
    * Exposed through nsIXULRuntime.accessibilityInstantiator.
@@ -89,6 +95,14 @@ class Compatibility {
     return A11ySuppressionReasons() != SuppressionReasons::None;
   }
   static SuppressionReasons A11ySuppressionReasons();
+
+  /**
+   * Returns true if Gecko's native UI Automation implementation is enabled.
+   * This is primarily configured via the accessibility.uia.enable pref.
+   * However, it might be disabled if Gecko detects known incompatible clients
+   * which would otherwise break.
+   */
+  static bool IsUiaEnabled();
 
  private:
   Compatibility();

@@ -1,9 +1,8 @@
-// |reftest| shell-option(--enable-float16array) skip-if(!this.hasOwnProperty('Float16Array')||!xulRuntime.shell) -- Float16Array is not enabled unconditionally, requires shell-options
 // Copyright (C) 2024 Kevin Gibbons. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
 /*---
-esid: sec-dataview.prototype.getFloat16
+esid: sec-dataview.prototype.getfloat16
 description: >
   ToIndex conversions on byteOffset
 features: [Float16Array, DataView.prototype.setUint8]

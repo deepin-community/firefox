@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Гузоштан ба поён
     .accesskey = П
 fxviewtabrow-move-tab-window = Гузоштан ба равзанаи нав
     .accesskey = Р
+fxviewtabrow-send-to-device = Фиристодан ба дастгоҳ
+    .accesskey = д
+fxviewtabrow-send-to-mobile = Фиристодан ба дастгоҳи мобилӣ
+    .accesskey = Ф
 fxviewtabrow-send-tab = Фиристодани варақа ба дастгоҳ
     .accesskey = Ф
 fxviewtabrow-pin-tab = Васл кардани варақа
@@ -68,9 +72,17 @@ fxviewtabrow-unmute-tab = Фаъол кардани садо дар варақа
 fxviewtabrow-options-menu-button =
     .title = Имконот барои «{ $tabTitle }»
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Хомӯш кардани садо дар варақа
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Фаъол кардани садо дар варақа
+fxviewtabrow-send-to-mobile-device-missing2 = Дастгоҳи худро намебинед?
+fxviewtabrow-send-to-mobile-not-verified = Ҳисоб тасдиқ нашудааст
+fxviewtabrow-send-to-mobile-verify-account = Ҳисоби худро тасдиқ кунед
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Барои фиристодани варақаҳо ворид шавед
+fxviewtabrow-send-to-mobile-turn-on-sync = Барои фиристодани варақаҳо ҳамоҳангсозиро фаъол созед

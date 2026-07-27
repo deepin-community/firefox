@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -38,7 +36,7 @@ static void die(const char* message) {
 }
 
 #ifdef XP_LINUX
-static size_t sPageSize = []() { return sysconf(_SC_PAGESIZE); }();
+MOZ_RUNINIT static size_t sPageSize = []() { return sysconf(_SC_PAGESIZE); }();
 #endif
 
 /* We don't want to be using malloc() to allocate our internal tracking
@@ -380,17 +378,6 @@ MOZ_BEGIN_EXTERN_C
 #define MALLOC_DECL(name, return_type, ...) return_type name(__VA_ARGS__);
 #define MALLOC_FUNCS MALLOC_FUNCS_JEMALLOC
 #include "malloc_decls.h"
-
-#ifdef ANDROID
-
-/* mozjemalloc and jemalloc use pthread_atfork, which Android doesn't have.
- * While gecko has one in libmozglue, the replay program can't use that.
- * Since we're not going to fork anyways, make it a dummy function. */
-int pthread_atfork(void (*aPrepare)(void), void (*aParent)(void),
-                   void (*aChild)(void)) {
-  return 0;
-}
-#endif
 
 MOZ_END_EXTERN_C
 
@@ -1077,7 +1064,7 @@ class Replay {
 #endif  // XP_LINUX
 };
 
-static Replay replay;
+MOZ_RUNINIT static Replay replay;
 
 int main(int argc, const char* argv[]) {
   size_t first_pid = 0;

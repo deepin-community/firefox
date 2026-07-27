@@ -17,17 +17,21 @@ import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
+import org.mozilla.fenix.home.logo.LogoController
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStoriesController
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
 import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
+import org.mozilla.fenix.home.search.HomeSearchController
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.home.sessioncontrol.SessionControlInteractor
+import org.mozilla.fenix.home.sports.SportsController
+import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerController
 import org.mozilla.fenix.home.toolbar.ToolbarController
-import org.mozilla.fenix.search.toolbar.SearchSelectorController
+import org.mozilla.fenix.home.topsites.controller.TopSiteController
 
 class SessionControlInteractorTest {
 
@@ -37,8 +41,12 @@ class SessionControlInteractorTest {
     private val bookmarksController: BookmarksController = mockk(relaxed = true)
     private val pocketStoriesController: PocketStoriesController = mockk(relaxed = true)
     private val privateBrowsingController: PrivateBrowsingController = mockk(relaxed = true)
-    private val searchSelectorController: SearchSelectorController = mockk(relaxed = true)
     private val toolbarController: ToolbarController = mockk(relaxed = true)
+    private val homeSearchController: HomeSearchController = mockk(relaxed = true)
+    private val topSiteController: TopSiteController = mockk(relaxed = true)
+    private val privacyNoticeBannerController: PrivacyNoticeBannerController = mockk(relaxed = true)
+    private val logoController: LogoController = mockk(relaxed = true)
+    private val sportsController: SportsController = mockk(relaxed = true)
 
     // Note: the recent visits tests are handled in [RecentVisitsInteractorTest] and [RecentVisitsControllerTest]
     private val recentVisitsController: RecentVisitsController = mockk(relaxed = true)
@@ -55,8 +63,12 @@ class SessionControlInteractorTest {
             recentVisitsController,
             pocketStoriesController,
             privateBrowsingController,
-            searchSelectorController,
             toolbarController,
+            homeSearchController,
+            topSiteController,
+            privacyNoticeBannerController,
+            logoController,
+            sportsController,
         )
     }
 
@@ -130,27 +142,15 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun onPaste() {
-        interactor.onPaste("text")
-        verify { toolbarController.handlePaste("text") }
-    }
-
-    @Test
-    fun onPasteAndGo() {
-        interactor.onPasteAndGo("text")
-        verify { toolbarController.handlePasteAndGo("text") }
-    }
-
-    @Test
     fun onNavigateSearch() {
         interactor.onNavigateSearch()
         verify { toolbarController.handleNavigateSearch() }
     }
 
     @Test
-    fun onRemoveCollectionsPlaceholder() {
-        interactor.onRemoveCollectionsPlaceholder()
-        verify { controller.handleRemoveCollectionsPlaceholder() }
+    fun onHomeContentFocusedWhileSearchIsActive() {
+        interactor.onHomeContentFocusedWhileSearchIsActive()
+        verify { homeSearchController.handleHomeContentFocusedWhileSearchIsActive() }
     }
 
     @Test
@@ -190,12 +190,6 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun `WHEN tapping on the customize home button THEN openCustomizeHomePage`() {
-        interactor.openCustomizeHomePage()
-        verify { controller.handleCustomizeHomeTapped() }
-    }
-
-    @Test
     fun `WHEN Show All bookmarks button is clicked THEN the click is handled`() {
         interactor.onShowAllBookmarksClicked()
         verify { bookmarksController.handleShowAllBookmarksClicked() }
@@ -212,35 +206,35 @@ class SessionControlInteractorTest {
     @Test
     fun `WHEN onSettingsClicked is called THEN handleTopSiteSettingsClicked is called`() {
         interactor.onSettingsClicked()
-        verify { controller.handleTopSiteSettingsClicked() }
+        verify { topSiteController.handleTopSiteSettingsClicked() }
     }
 
     @Test
     fun `WHEN onSponsorPrivacyClicked is called THEN handleSponsorPrivacyClicked is called`() {
         interactor.onSponsorPrivacyClicked()
-        verify { controller.handleSponsorPrivacyClicked() }
+        verify { topSiteController.handleSponsorPrivacyClicked() }
     }
 
     @Test
     fun `WHEN a top site is long clicked THEN the click is handled`() {
         val topSite: TopSite = mockk()
         interactor.onTopSiteLongClicked(topSite)
-        verify { controller.handleTopSiteLongClicked(topSite) }
+        verify { topSiteController.handleTopSiteLongClicked(topSite) }
     }
 
     @Test
     fun `GIVEN a PocketStoriesInteractor WHEN a story is shown THEN handle it in a PocketStoriesController`() {
         val shownStory: PocketStory = mockk()
-        val storyGridLocation = 1 to 2
+        val storyPosition = Triple(1, 2, 3)
 
-        interactor.onStoryShown(shownStory, storyGridLocation)
+        interactor.onStoryShown(shownStory, storyPosition)
 
-        verify { pocketStoriesController.handleStoryShown(shownStory, storyGridLocation) }
+        verify { pocketStoriesController.handleStoryShown(shownStory, storyPosition) }
     }
 
     @Test
     fun `GIVEN a PocketStoriesInteractor WHEN stories are shown THEN handle it in a PocketStoriesController`() {
-        val shownStories: List<PocketStory> = mockk()
+        val shownStories: List<PocketStory> = emptyList()
 
         interactor.onStoriesShown(shownStories)
 
@@ -259,29 +253,11 @@ class SessionControlInteractorTest {
     @Test
     fun `GIVEN a PocketStoriesInteractor WHEN a story is clicked THEN handle it in a PocketStoriesController`() {
         val clickedStory: PocketStory = mockk()
-        val storyGridLocation = 1 to 2
+        val storyPosition = Triple(1, 2, 3)
 
-        interactor.onStoryClicked(clickedStory, storyGridLocation)
+        interactor.onStoryClicked(clickedStory, storyPosition)
 
-        verify { pocketStoriesController.handleStoryClicked(clickedStory, storyGridLocation) }
-    }
-
-    @Test
-    fun `GIVEN a PocketStoriesInteractor WHEN discover more clicked THEN handle it in a PocketStoriesController`() {
-        val link = "http://getpocket.com/explore"
-
-        interactor.onDiscoverMoreClicked(link)
-
-        verify { pocketStoriesController.handleDiscoverMoreClicked(link) }
-    }
-
-    @Test
-    fun `GIVEN a PocketStoriesInteractor WHEN learn more clicked THEN handle it in a PocketStoriesController`() {
-        val link = "https://www.mozilla.org/en-US/firefox/pocket/"
-
-        interactor.onLearnMoreClicked(link)
-
-        verify { pocketStoriesController.handleLearnMoreClicked(link) }
+        verify { pocketStoriesController.handleStoryClicked(clickedStory, storyPosition) }
     }
 
     @Test
@@ -290,5 +266,49 @@ class SessionControlInteractorTest {
         every { appState.bookmarks } returns emptyList()
         interactor.reportSessionMetrics(appState)
         verify { controller.handleReportSessionMetrics(appState) }
+    }
+
+    @Test
+    fun `GIVEN a set of country codes WHEN countries are selected THEN sports controller handles the selection`() {
+        val countryCodes = setOf("US", "JP", "BR")
+        interactor.onCountriesSelected(countryCodes)
+        verify { sportsController.handleCountriesSelected(countryCodes) }
+    }
+
+    @Test
+    fun `GIVEN an empty set WHEN countries are selected THEN sports controller handles the empty selection`() {
+        val countryCodes = emptySet<String>()
+        interactor.onCountriesSelected(countryCodes)
+        verify { sportsController.handleCountriesSelected(countryCodes) }
+    }
+
+    @Test
+    fun `WHEN the follow team flow is skipped THEN sports controller handles the skip`() {
+        interactor.onSkippedFollowTeam()
+        verify { sportsController.handleSkippedFollowTeam() }
+    }
+
+    @Test
+    fun `WHEN the sports widget is dismissed THEN sports controller handles the dismissal`() {
+        interactor.onSportsWidgetDismissed()
+        verify { sportsController.handleSportsWidgetDismissed() }
+    }
+
+    @Test
+    fun `WHEN the countdown widget is dismissed THEN sports controller handles the dismissal`() {
+        interactor.onCountdownWidgetDismissed()
+        verify { sportsController.handleCountdownWidgetDismissed() }
+    }
+
+    @Test
+    fun `WHEN the get custom wallpaper menu item is clicked THEN sports controller handles the navigation`() {
+        interactor.onGetCustomWallpaperClicked()
+        verify { sportsController.handleOnGetCustomWallpaperClicked() }
+    }
+
+    @Test
+    fun `WHEN the share menu item is clicked THEN sports controller handles the share`() {
+        interactor.onSportsWidgetShareClicked()
+        verify { sportsController.handleSportsWidgetShareClicked() }
     }
 }

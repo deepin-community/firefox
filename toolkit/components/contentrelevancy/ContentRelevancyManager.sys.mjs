@@ -11,15 +11,23 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource://gre/modules/contentrelevancy/private/InputUtils.sys.mjs",
   AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
-  RelevancyStore: "resource://gre/modules/RustRelevancy.sys.mjs",
-  InterestVector: "resource://gre/modules/RustRelevancy.sys.mjs",
+  Interest:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustRelevancy.sys.mjs",
+  InterestVector:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustRelevancy.sys.mjs",
+  RelevancyStore:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustRelevancy.sys.mjs",
+  SharedRemoteSettingsService:
+    "resource://gre/modules/RustSharedRemoteSettingsService.sys.mjs",
+  score:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustRelevancy.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "timerManager",
   "@mozilla.org/updates/timer-manager;1",
-  "nsIUpdateTimerManager"
+  Ci.nsIUpdateTimerManager
 );
 
 // Constants used by `nsIUpdateTimerManager` for a cross-session timer.
@@ -61,6 +69,10 @@ function setupLogging() {
 setupLogging();
 
 class RelevancyManager {
+  get TIMER_ID() {
+    return TIMER_ID;
+  }
+
   get initialized() {
     return this.#initialized;
   }
@@ -73,14 +85,17 @@ class RelevancyManager {
    * Note that this should be called once only. `#enable` and `#disable` can be
    * used to toggle the feature once the manager is initialized.
    */
-  init() {
+  init(rustRelevancyStore = lazy.RelevancyStore) {
     if (this.initialized) {
       return;
     }
 
     lazy.log.info("Initializing the manager");
 
-    this.#storeManager = new RustRelevancyStoreManager(this.#storePath);
+    this.#storeManager = new RustRelevancyStoreManager(
+      this.#storePath,
+      rustRelevancyStore
+    );
     if (this.shouldEnable) {
       this.#enable();
     }
@@ -90,6 +105,21 @@ class RelevancyManager {
     // This will handle both Nimbus updates and pref changes.
     lazy.NimbusFeatures.contentRelevancy.onUpdate(this._nimbusUpdateCallback);
     this.#initialized = true;
+
+    if (lazy.AsyncShutdown.profileChangeTeardown.isClosed) {
+      // Corner case, where we're already in the shutdown phase while being constructed.  In this
+      // case, uninitialize immediately to deregister callback handlers
+      // (https://bugzilla.mozilla.org/show_bug.cgi?id=1990569#c11)
+      this.uninit();
+    } else {
+      // If we're not in the above corner case, then register a shutdown blocker to uninitialize.
+      // Interrupt sooner prior to the `profile-before-change` phase to allow
+      // all the in-progress IOs to exit.
+      lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
+        "ContentRelevancyManager: Interrupt IO operations on relevancy store",
+        () => this.uninit()
+      );
+    }
   }
 
   uninit() {
@@ -101,10 +131,13 @@ class RelevancyManager {
 
     lazy.NimbusFeatures.contentRelevancy.offUpdate(this._nimbusUpdateCallback);
     Services.prefs.removeObserver(PREF_LOG_ENABLED, this);
+    this.interrupt();
     this.#disable();
+    this.#storeManager.shutdown();
     this.#storeManager = null;
 
     this.#initialized = false;
+    this.#interestVector = null;
   }
 
   /**
@@ -116,6 +149,13 @@ class RelevancyManager {
         NIMBUS_VARIABLE_ENABLED
       ) ?? false
     );
+  }
+
+  /**
+   * Whether or not the manager is initialized and enabled.
+   */
+  get enabled() {
+    return this.initialized && this.#storeManager.enabled;
   }
 
   #startUpTimer() {
@@ -156,13 +196,6 @@ class RelevancyManager {
 
   #enable() {
     this.#storeManager.enable();
-    this._shutdownBlocker = () => this.interrupt();
-    // Interrupt sooner prior to the `profile-before-change` phase to allow
-    // all the in-progress IOs to exit.
-    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-      "ContentRelevancyManager: Interrupt IO operations on relevancy store",
-      this._shutdownBlocker
-    );
     this.#startUpTimer();
   }
 
@@ -172,12 +205,6 @@ class RelevancyManager {
    * called.
    */
   #disable() {
-    if (this._shutdownBlocker) {
-      lazy.AsyncShutdown.profileChangeTeardown.removeBlocker(
-        this._shutdownBlocker
-      );
-      this._shutdownBlocker = null;
-    }
     lazy.timerManager.unregisterTimer(TIMER_ID);
     this.#storeManager.disable();
   }
@@ -253,6 +280,7 @@ class RelevancyManager {
       timerId = Glean.relevancyClassify.duration.start();
 
       const interestVector = await this.#classifyUrls(urls);
+      this.#interestVector = interestVector;
       const sortedVector = Object.entries(interestVector).sort(
         ([, a], [, b]) => b - a // descending
       );
@@ -356,10 +384,83 @@ class RelevancyManager {
       ) ??
       false
     ) {
+      await this.#storeManager.store.ensureInterestDataPopulated();
       interestVector = await this.#storeManager.store.ingest(urls);
     }
 
     return interestVector;
+  }
+
+  /**
+   * Get the user interest vector from the relevancy store.
+   *
+   * Note:
+   *   - It will return "null" if the vector couldn't be fetched from
+   *     the relevancy store or the store is not enabled.
+   *   - The fetched interest vector will be cached for future acesses.
+   *     the cache will be automatically updated upon the next interest
+   *     classification.
+   *
+   * @returns {InterestVector}
+   *   An interest vector.
+   */
+  async getUserInterestVector() {
+    if (!this.enabled) {
+      return null;
+    }
+
+    if (this.#interestVector !== null) {
+      return this.#interestVector;
+    }
+
+    try {
+      this.#interestVector =
+        await this.#storeManager.store.userInterestVector();
+    } catch (error) {
+      lazy.log.error(
+        "Failed to fetch the interest vector: " + (error.reason ?? error)
+      );
+    }
+
+    return this.#interestVector;
+  }
+
+  /**
+   * Generate a score for a given interest array based on the user interest vector.
+   *
+   * @param {Array<Interest>} interests
+   *   Whether or not to adjust `interests` for off-by-1 encoding difference
+   *   between the UniFFI binding and the true source. This flag will be
+   *   ignored if `Interest.INCONCLUSIVE == 0` meaning the encoding behavior
+   *   gets unified in UniFFI.
+   * @returns {number}
+   *   A relevance score ranges from 0 to 1. A higher score indicating the content
+   *   is more relevant to the user.
+   * @throws {Error}
+   *   Thrown for any store errors or invalid interest parameters.
+   */
+  async score(interests) {
+    const userInterestVector = await this.getUserInterestVector();
+    if (userInterestVector === null) {
+      throw new Error("User interest vector not ready");
+    }
+
+    // Copy it for mutation below.
+    let newInterests = [...interests];
+
+    // `INCONCLUSIVE` is excluded from scoring.
+    newInterests = newInterests.filter(
+      item => item !== lazy.Interest.INCONCLUSIVE
+    );
+
+    let relevanceScore;
+    try {
+      relevanceScore = lazy.score(userInterestVector, newInterests);
+    } catch (error) {
+      throw new Error("Invalid interest value");
+    }
+
+    return relevanceScore;
   }
 
   /**
@@ -392,6 +493,9 @@ class RelevancyManager {
   // Whether or not there is an in-progress classification. Used to prevent
   // duplicate classification tasks.
   #isInProgress = false;
+
+  // The inferred user interest vector
+  #interestVector = null;
 }
 
 /**
@@ -403,7 +507,10 @@ class RustRelevancyStoreManager {
     if (rustRelevancyStore === undefined) {
       rustRelevancyStore = lazy.RelevancyStore;
     }
-    this.#store = rustRelevancyStore.init(path);
+    this.#store = rustRelevancyStore.init(
+      path,
+      lazy.SharedRemoteSettingsService.rustService()
+    );
   }
 
   get store() {
@@ -418,11 +525,14 @@ class RustRelevancyStoreManager {
   }
 
   disable() {
+    this.enabled = false;
+  }
+
+  shutdown() {
     // Calling `close()` makes the store release all resources.  In particular, it closes all
     // database connections until a read/write method is called.  The `store` method ensures that
     // this won't happen before `enable` is called.
     this.#store.close();
-    this.enabled = false;
   }
 
   // The `RustRelevancy` store.

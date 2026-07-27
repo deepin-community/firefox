@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_net_DNSPacket_h__
-#define mozilla_net_DNSPacket_h__
+#ifndef mozilla_net_DNSPacket_h_
+#define mozilla_net_DNSPacket_h_
 
 #include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
@@ -77,11 +77,12 @@ class DNSPacket {
                              const nsACString& aOriginHost);
   void SetNativePacket(bool aNative) { mNativePacket = aNative; }
 
- protected:
-  nsresult PassQName(unsigned int& index, const unsigned char* aBuffer);
   static nsresult GetQname(nsACString& aQname, unsigned int& aIndex,
                            const unsigned char* aBuffer,
                            unsigned int aBodySize);
+
+ protected:
+  nsresult PassQName(unsigned int& index, const unsigned char* aBuffer);
   static nsresult ParseSvcParam(unsigned int svcbIndex, uint16_t key,
                                 SvcFieldValue& field, uint16_t length,
                                 const unsigned char* aBuffer);
@@ -104,4 +105,4 @@ class DNSPacket {
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // mozilla_net_DNSPacket_h__
+#endif  // mozilla_net_DNSPacket_h_

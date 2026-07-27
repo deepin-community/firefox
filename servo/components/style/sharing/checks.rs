@@ -8,7 +8,8 @@
 
 use crate::bloom::StyleBloom;
 use crate::context::SharedStyleContext;
-use crate::dom::TElement;
+use crate::dom::{TElement, TShadowRoot};
+use crate::properties::ComputedValues;
 use crate::sharing::{StyleSharingCandidate, StyleSharingTarget};
 use selectors::matching::SelectorCaches;
 
@@ -53,10 +54,13 @@ where
     true
 }
 
-/// Whether two elements have the same same style attribute (by pointer identity).
+/// Whether two elements have the same style attribute.
+///
+/// First checks pointer identity (fast path), then falls back to value comparison.
 pub fn have_same_style_attribute<E>(
     target: &mut StyleSharingTarget<E>,
     candidate: &mut StyleSharingCandidate<E>,
+    shared_context: &SharedStyleContext,
 ) -> bool
 where
     E: TElement,
@@ -64,7 +68,13 @@ where
     match (target.style_attribute(), candidate.style_attribute()) {
         (None, None) => true,
         (Some(_), None) | (None, Some(_)) => false,
-        (Some(a), Some(b)) => &*a as *const _ == &*b as *const _,
+        (Some(a), Some(b)) => {
+            if std::ptr::eq(&*a, &*b) {
+                return true;
+            }
+            let guard = shared_context.guards.author;
+            *a.read_with(guard) == *b.read_with(guard)
+        },
     }
 }
 
@@ -131,6 +141,46 @@ where
     for_element == for_candidate
 }
 
+/// Whether the given element and a candidate have the same values for the the
+/// attributes used in an `attr()` function.
+#[inline]
+pub fn have_same_referenced_attrs<E>(
+    target: &StyleSharingTarget<E>,
+    candidate: &StyleSharingCandidate<E>,
+) -> bool
+where
+    E: TElement,
+{
+    // The candidate must be styled in order to be in the cache.
+    let borrowed_data = candidate.element.borrow_data().unwrap();
+    let styles = &borrowed_data.styles;
+
+    let check_style = |style: &ComputedValues| {
+        let Some(ref attrs) = style.attribute_references else {
+            return true;
+        };
+        attrs.iter().all(|(name, namespaces)| {
+            namespaces.iter().all(|namespace| {
+                target.get_attr(name, namespace) == candidate.get_attr(name, namespace)
+            })
+        })
+    };
+
+    if !check_style(styles.primary()) {
+        return false;
+    }
+
+    for pseudo_styles in styles.pseudos.as_array() {
+        let Some(ref styles) = pseudo_styles else {
+            continue;
+        };
+        if !check_style(styles) {
+            return false;
+        }
+    }
+    true
+}
+
 /// Whether a given element and a candidate share a set of scope activations
 /// for revalidation.
 #[inline]
@@ -181,5 +231,24 @@ where
     match candidate_id {
         Some(id) => stylist.may_have_rules_for_id(id, candidate),
         None => false,
+    }
+}
+
+/// Returns whether the cascade data of the given shadow roots is the same.
+#[inline]
+pub fn shadow_root_style_data_equals<S>(l: Option<S>, r: Option<S>) -> bool
+where
+    S: TShadowRoot,
+{
+    if l == r {
+        return true;
+    }
+    let (Some(l), Some(r)) = (l, r) else {
+        return false;
+    };
+    match (l.style_data(), r.style_data()) {
+        (Some(l), Some(r)) => std::ptr::eq(l, r),
+        (None, None) => true,
+        _ => false,
     }
 }

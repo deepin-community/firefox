@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -103,6 +102,10 @@ function run_test() {
 
   // We always resolve localhost as it's hardcoded without the following pref:
   Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+  Services.prefs.setBoolPref(
+    "network.proxy.testing_localhost_is_secure_when_hijacked",
+    false
+  );
 
   gHttpServer.start(-1);
 
@@ -115,6 +118,9 @@ function run_test() {
 
   gServerSocket.init(-1, true, -1);
   Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+  Services.prefs.clearUserPref(
+    "network.proxy.testing_localhost_is_secure_when_hijacked"
+  );
 
   run_next_test();
 }

@@ -5,11 +5,16 @@
 url-classifier-title = URL sınıflandırıcısı bilgileri
 url-classifier-search-title = Arama
 url-classifier-search-result-title = Sonuçlar
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Tablo listesi: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = Geçersiz URL
 url-classifier-search-error-no-features = Hiçbir özellik seçilmedi
+url-classifier-search-error-no-results = Bu URL için kayıt bulunamadı
 url-classifier-search-btn = Aramaya başla
 url-classifier-search-features = Özellikler
 url-classifier-search-listType = Liste türü
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Safe Browsing log modülleri
 url-classifier-debug-modules = Geçerli log modülleri
 url-classifier-debug-sbjs-modules = Safe Browsing JS logu
 url-classifier-debug-file = Geçerli log dosyası
-
 url-classifier-trigger-update = Güncellemeyi tetikle
 url-classifier-not-available = Yok
 url-classifier-disable-sbjs-log = Safe Browsing JS logunu kapat

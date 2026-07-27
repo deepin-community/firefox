@@ -4,14 +4,12 @@
 
 about-reader-loading = Зареждане…
 about-reader-load-error = Отварянето на статията е неуспешно
-
 about-reader-color-scheme-light = Светла
     .title = Светла тема
 about-reader-color-scheme-dark = Тъмна
     .title = Тъмна тема
 about-reader-color-scheme-sepia = Сепия
     .title = Тема сепия
-
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -23,7 +21,7 @@ about-reader-estimated-read-time =
        *[other] { $range } минути
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Намалява размера на текста
@@ -41,7 +39,7 @@ about-reader-toolbar-lineheightplus =
 ## These are the styles of typeface that are options in the reader view controls.
 
 about-reader-font-type-serif = Серифен
-about-reader-font-type-sans-serif = Несерифен
+about-reader-font-type-sans-serif = Безсерифен
 
 ## Reader View toolbar buttons
 

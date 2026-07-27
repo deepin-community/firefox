@@ -6,9 +6,13 @@ package org.mozilla.focus.fragment.onboarding
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import org.mozilla.focus.R
 
+/**
+ * Storage for onboarding-related state.
+ */
 class OnboardingStorage(val context: Context) {
 
     /**
@@ -22,12 +26,11 @@ class OnboardingStorage(val context: Context) {
         onBoardingStep: OnboardingStep,
     ) {
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
-        with(sharedPref.edit()) {
+        sharedPref.edit {
             putString(
                 context.getString(R.string.pref_key_onboarding_step),
                 context.getString(onBoardingStep.prefId),
             )
-            apply()
         }
     }
 

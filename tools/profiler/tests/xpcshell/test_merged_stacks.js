@@ -17,7 +17,7 @@ add_task(async () => {
   // functionA -> functionB -> functionC
   const sampleIndex = await functionA();
 
-  const profile = await stopNowAndGetProfile();
+  const profile = await ProfilerTestUtils.stopNowAndGetProfile();
   const [thread] = profile.threads;
   const { samples } = thread;
 
@@ -41,17 +41,20 @@ add_task(async () => {
       nativeStack,
       // The following regexes match a string similar to:
       //
-      // "functionA (/gecko/obj/_tests/xpcshell/tools/profiler/tests/xpcshell/test_merged_stacks.js:47:0)"
+      // "functionA (/gecko/obj/_tests/xpcshell/tools/profiler/tests/xpcshell/test_merged_stacks.js:47:0)[0]"
       // or
-      // "functionA (test_merged_stacks.js:47:0)"
+      // "functionA (test_merged_stacks.js:47:0)[0]"
+      //
+      // Note: The [N] suffix is the source index in the sources table.
       //
       //          this matches the script location
       //          |                          match the line number
       //          |                          |   match the column number
-      //          v                          v   v
-      /^functionA \(.*test_merged_stacks\.js:\d+:\d+\)$/,
-      /^functionB \(.*test_merged_stacks\.js:\d+:\d+\)$/,
-      /^functionC \(.*test_merged_stacks\.js:\d+:\d+\)$/,
+      //          |                          |   |   match source index
+      //          v                          v   v   v
+      /^functionA \(.*test_merged_stacks\.js:\d+:\d+\)\[\d+\]$/,
+      /^functionB \(.*test_merged_stacks\.js:\d+:\d+\)\[\d+\]$/,
+      /^functionC \(.*test_merged_stacks\.js:\d+:\d+\)\[\d+\]$/,
       // After the JS frames, then there are a bunch of arbitrary native stack frames
       // that run.
       nativeStack,
@@ -70,5 +73,5 @@ async function functionB() {
 }
 
 async function functionC() {
-  return captureAtLeastOneJsSample();
+  return ProfilerTestUtils.captureAtLeastOneJsSample();
 }

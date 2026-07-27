@@ -1,7 +1,12 @@
-use crate::errors::CpuInfoError;
-use crate::minidump_format::*;
-use std::io::{BufRead, BufReader};
-use std::path;
+use {
+    super::CpuInfoError,
+    crate::minidump_format::*,
+    failspot::failspot,
+    std::{
+        io::{BufRead, BufReader},
+        path,
+    },
+};
 
 type Result<T> = std::result::Result<T, CpuInfoError>;
 
@@ -44,6 +49,11 @@ pub fn write_cpu_information(sys_info: &mut MDRawSystemInfo) -> Result<()> {
         MDCPUArchitecture::PROCESSOR_ARCHITECTURE_AMD64
     } as u16;
 
+    failspot!(
+        CpuInfoFileOpen
+        bail(std::io::Error::other("test requested cpuinfo file failure"))
+    );
+
     let cpuinfo_file = std::fs::File::open(path::PathBuf::from("/proc/cpuinfo"))?;
 
     let mut vendor_id = String::new();
@@ -84,7 +94,7 @@ pub fn write_cpu_information(sys_info: &mut MDRawSystemInfo) -> Result<()> {
 
             // special case for vendor_id
             if field == vendor_id_name && !value.is_empty() {
-                vendor_id = value.to_owned();
+                vendor_id = value.into();
             }
         }
     }
@@ -102,7 +112,7 @@ pub fn write_cpu_information(sys_info: &mut MDRawSystemInfo) -> Result<()> {
     {
         sys_info.processor_level = cpu_info_table[3].value as u16;
         sys_info.processor_revision =
-            (cpu_info_table[1].value << 8 | cpu_info_table[2].value) as u16;
+            ((cpu_info_table[1].value << 8) | cpu_info_table[2].value) as u16;
     }
     if !vendor_id.is_empty() {
         let vendor_id = vendor_id.as_bytes();

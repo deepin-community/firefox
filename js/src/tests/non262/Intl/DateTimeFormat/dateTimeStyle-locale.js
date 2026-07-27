@@ -1,5 +1,3 @@
-// |reftest| skip-if(!this.hasOwnProperty("Intl"))
-
 const msPerHour = 60 * 60 * 1000;
 const tzOffset = 8 * msPerHour;
 
@@ -38,7 +36,7 @@ const dateStyles = {
     medium: "2024/01/01",
     short: "2024/01/01",
   },
-  ar: {
+  "ar-EG": {
     full: "الاثنين، ١ يناير ٢٠٢٤",
     long: "١ يناير ٢٠٢٤",
     medium: "٠١‏/٠١‏/٢٠٢٤",
@@ -84,12 +82,12 @@ const timeStyles = {
     short: "12:30",
   },
   ja: {
-    full: "12時30分45秒 アメリカ太平洋標準時",
+    full: "12時30分45秒 米国太平洋標準時",
     long: "12:30:45 GMT-8",
     medium: "12:30:45",
     short: "12:30",
   },
-  ar: {
+  "ar-EG": {
     full: "١٢:٣٠:٤٥ م توقيت المحيط الهادي الرسمي",
     long: "١٢:٣٠:٤٥ م غرينتش-٨",
     medium: "١٢:٣٠:٤٥ م",

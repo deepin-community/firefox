@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef TlsHandshaker_h__
-#define TlsHandshaker_h__
+#ifndef TlsHandshaker_h_
+#define TlsHandshaker_h_
 
 #include "nsITlsHandshakeListener.h"
 
@@ -60,6 +59,7 @@ class TlsHandshaker : public nsITlsHandshakeCallbackListener {
   void SetNPNComplete() { mNPNComplete = true; }
   void NotifyClose() {
     mTlsHandshakeComplitionPending = false;
+    mNPNComplete = true;
     mOwner = nullptr;
   }
 
@@ -67,11 +67,13 @@ class TlsHandshaker : public nsITlsHandshakeCallbackListener {
   virtual ~TlsHandshaker();
 
   void Check0RttEnabled(nsITLSSocketControl* ssl);
+  void ReportSecureConnectionStart();
 
   // SPDY related
   bool mSetupSSLCalled{false};
   bool mNPNComplete{false};
 
+  bool mSecureConnectionStartReported{false};
   bool mTlsHandshakeComplitionPending{false};
   // Helper variable for 0RTT handshake;
   // Possible 0RTT has been checked.
@@ -95,4 +97,4 @@ class TlsHandshaker : public nsITlsHandshakeCallbackListener {
 
 }  // namespace mozilla::net
 
-#endif  // TlsHandshaker_h__
+#endif  // TlsHandshaker_h_

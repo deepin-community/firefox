@@ -11,14 +11,12 @@ use std::{
 };
 
 #[cfg(windows)]
-use winapi::shared::minwindef::UINT;
-#[cfg(windows)]
-use winapi::um::timeapi::{timeBeginPeriod, timeEndPeriod};
+use windows::Win32::Media::{timeBeginPeriod, timeEndPeriod};
 
 /// A quantized `Duration`.  This currently just produces 16 discrete values
 /// corresponding to whole milliseconds.  Future implementations might choose
 /// a different allocation, such as a logarithmic scale.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Period(u8);
 
 impl Period {
@@ -26,8 +24,8 @@ impl Period {
     const MIN: Self = Self(1);
 
     #[cfg(windows)]
-    fn as_uint(self) -> UINT {
-        UINT::from(self.0)
+    fn as_u32(self) -> u32 {
+        u32::from(self.0)
     }
 
     #[cfg(target_os = "macos")]
@@ -72,7 +70,7 @@ impl PeriodSet {
     fn min(&self) -> Option<Period> {
         for (i, v) in self.counts.iter().enumerate() {
             if *v > 0 {
-                return Some(Period(u8::try_from(i).unwrap() + Period::MIN.0));
+                return Some(Period(u8::try_from(i).ok()? + Period::MIN.0));
             }
         }
         None
@@ -80,9 +78,9 @@ impl PeriodSet {
 }
 
 #[cfg(target_os = "macos")]
-#[allow(non_camel_case_types)]
+#[expect(non_camel_case_types, reason = "These are C types.")]
 mod mac {
-    use std::{mem::size_of, ptr::addr_of_mut};
+    use std::ptr::addr_of_mut;
 
     // These are manually extracted from the many bindings generated
     // by bindgen when provided with the simple header:
@@ -112,7 +110,7 @@ mod mac {
     }
     type mach_timebase_info_t = *mut mach_timebase_info;
     type mach_timebase_info_data_t = mach_timebase_info;
-    extern "C" {
+    unsafe extern "C" {
         fn mach_timebase_info(info: mach_timebase_info_t) -> kern_return_t;
     }
 
@@ -126,14 +124,14 @@ mod mac {
     }
 
     const THREAD_TIME_CONSTRAINT_POLICY: thread_policy_flavor_t = 2;
-    #[allow(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_truncation, reason = "These are C types.")]
     const THREAD_TIME_CONSTRAINT_POLICY_COUNT: mach_msg_type_number_t =
         (size_of::<thread_time_constraint_policy>() / size_of::<integer_t>())
             as mach_msg_type_number_t;
 
     // These function definitions are taken from a comment in <thread_policy.h>.
     // Why they are inaccessible is unknown, but they work as declared.
-    extern "C" {
+    unsafe extern "C" {
         fn thread_policy_set(
             thread: thread_t,
             flavor: thread_policy_flavor_t,
@@ -153,7 +151,7 @@ mod mac {
     type __darwin_pthread_t = *mut _opaque_pthread_t;
     type pthread_t = __darwin_pthread_t;
 
-    extern "C" {
+    unsafe extern "C" {
         fn pthread_self() -> pthread_t;
         fn pthread_mach_thread_np(thread: pthread_t) -> mach_port_t;
     }
@@ -174,14 +172,18 @@ mod mac {
         const NANOS_PER_MSEC: f64 = 1_000_000.0;
         let mut timebase_info = mach_timebase_info_data_t::default();
         unsafe {
-            mach_timebase_info(&mut timebase_info);
+            mach_timebase_info(&raw mut timebase_info);
         }
         f64::from(timebase_info.denom) * NANOS_PER_MSEC / f64::from(timebase_info.numer)
     }
 
     /// Create a realtime policy and set it.
     pub fn set_realtime(base: f64) {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "These are C types."
+        )]
         let policy = thread_time_constraint_policy {
             period: base as u32, // Base interval
             computation: (base * 0.5) as u32,
@@ -201,8 +203,8 @@ mod mac {
                 pthread_mach_thread_np(pthread_self()),
                 THREAD_TIME_CONSTRAINT_POLICY,
                 addr_of_mut!(policy).cast(), // horror!
-                &mut count,
-                &mut get_default,
+                &raw mut count,
+                &raw mut get_default,
             )
         };
         policy
@@ -299,23 +301,29 @@ impl Time {
     #[cfg(target_os = "windows")]
     fn start(&self) {
         if let Some(p) = self.active {
-            _ = unsafe { timeBeginPeriod(p.as_uint()) };
+            _ = unsafe { timeBeginPeriod(p.as_u32()) };
         }
     }
 
     #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
-    #[allow(clippy::unused_self)]
+    #[expect(
+        clippy::unused_self,
+        reason = "Not used on platforms other than macOS and Windows."
+    )]
     const fn start(&self) {}
 
     #[cfg(windows)]
     fn stop(&self) {
         if let Some(p) = self.active {
-            _ = unsafe { timeEndPeriod(p.as_uint()) };
+            _ = unsafe { timeEndPeriod(p.as_u32()) };
         }
     }
 
     #[cfg(not(target_os = "windows"))]
-    #[allow(clippy::unused_self)]
+    #[expect(
+        clippy::unused_self,
+        reason = "Not used on platforms other than Windows."
+    )]
     const fn stop(&self) {}
 
     fn update(&mut self) {
@@ -372,12 +380,78 @@ impl Drop for Time {
     }
 }
 
-// Only run these tests in CI on platforms other than MacOS and Windows, where the timer
-// inaccuracies are too high to pass the tests.
-#[cfg(all(
-    test,
-    not(all(any(target_os = "macos", target_os = "windows"), feature = "ci"))
-))]
+// Unit tests for Period and PeriodSet data structures (platform-independent)
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod unit_tests {
+    use std::time::Duration;
+
+    use super::{Period, PeriodSet};
+
+    #[test]
+    fn period_from_duration() {
+        assert_eq!(Period::from(Duration::from_millis(0)), Period::MIN);
+        assert_eq!(Period::from(Duration::from_millis(1)), Period::MIN);
+        assert_eq!(Period::from(Duration::from_millis(5)), Period(5));
+        assert_eq!(Period::from(Duration::from_millis(16)), Period::MAX);
+        assert_eq!(Period::from(Duration::from_millis(100)), Period::MAX);
+    }
+
+    #[test]
+    fn period_set_add_remove_min() {
+        let mut ps = PeriodSet::default();
+        assert!(ps.min().is_none());
+
+        ps.add(Period(5));
+        assert_eq!(ps.min(), Some(Period(5)));
+
+        ps.add(Period(3));
+        assert_eq!(ps.min(), Some(Period(3)));
+
+        ps.add(Period(5)); // Add another 5
+        ps.remove(Period(3));
+        assert_eq!(ps.min(), Some(Period(5)));
+
+        ps.remove(Period(5));
+        assert_eq!(ps.min(), Some(Period(5))); // Still one 5 left
+
+        ps.remove(Period(5));
+        assert!(ps.min().is_none());
+    }
+
+    #[test]
+    fn period_set_max_ignored() {
+        let mut ps = PeriodSet::default();
+        ps.add(Period::MAX);
+        assert!(ps.min().is_none()); // MAX not tracked
+
+        ps.add(Period(5));
+        assert_eq!(ps.min(), Some(Period(5)));
+
+        ps.remove(Period::MAX); // Should not panic
+        assert_eq!(ps.min(), Some(Period(5)));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn period_scaled() {
+        assert_eq!(Period(5).scaled(2.0).to_bits(), 10.0_f64.to_bits());
+        assert_eq!(Period(4).scaled(0.5).to_bits(), 2.0_f64.to_bits());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn period_as_u32() {
+        assert_eq!(Period(5).as_u32(), 5);
+        assert_eq!(Period::MIN.as_u32(), 1);
+    }
+}
+
+// Only run these tests in CI on Linux, where the timer accuracies are OK enough to pass the tests,
+// but only when not running sanitizers.
+#[cfg(all(target_os = "linux", not(neqo_sanitize)))]
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod test {
     use std::{
         thread::{sleep, spawn},
@@ -386,11 +460,18 @@ mod test {
 
     use super::Time;
 
-    const ONE: Duration = Duration::from_millis(1);
-    const ONE_AND_A_BIT: Duration = Duration::from_micros(1500);
+    #[cfg(not(target_arch = "aarch64"))]
+    const ONE_MS: Duration = Duration::from_millis(1);
+    const FIVE_MS: Duration = Duration::from_millis(5);
+    #[cfg(not(target_arch = "aarch64"))]
+    const ONE_MS_AND_A_BIT: Duration = Duration::from_micros(1500);
     /// A limit for when high resolution timers are disabled.
     const GENEROUS: Duration = Duration::from_millis(30);
 
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "This test needs to run in real time"
+    )]
     fn validate_delays(max_lag: Duration) -> Result<(), ()> {
         const DELAYS: &[u64] = &[1, 2, 3, 5, 8, 10, 12, 15, 20, 25, 30];
         let durations = DELAYS.iter().map(|&d| Duration::from_millis(d));
@@ -399,9 +480,9 @@ mod test {
         for d in durations {
             sleep(d);
             let e = Instant::now();
-            let actual = e - s;
-            let lag = actual - d;
-            println!("sleep({d:?}) \u{2192} {actual:?} \u{394}{lag:?}");
+            let actual = e.saturating_duration_since(s);
+            let lag = actual.saturating_sub(d);
+            println!("sleep({d:>4?}) \u{2192} {actual:>11.6?} \u{394}{lag:>10?}");
             if lag > max_lag {
                 return Err(());
             }
@@ -410,13 +491,33 @@ mod test {
         Ok(())
     }
 
-    /// Validate the delays twice.  Sometimes the first run can stall.
+    /// Validate the delays multiple times.  Sometimes a run can stall.
     /// Reliability in CI is more important than reliable timers.
+    /// Any failure results in enqueing two additional checks,
+    /// up to a limit that is determined based on how small `max_lag` is.
+    /// If the count exceeds that limit, fail the test.
     fn check_delays(max_lag: Duration) {
-        if validate_delays(max_lag).is_err() {
+        let max_loops = if max_lag < FIVE_MS {
+            5
+        } else if max_lag < GENEROUS {
+            3
+        } else {
+            1
+        };
+
+        let mut count = 1;
+        while count <= max_loops {
+            if validate_delays(max_lag).is_ok() {
+                count -= 1;
+            } else {
+                count += 1;
+            }
+            if count == 0 {
+                return;
+            }
             sleep(Duration::from_millis(50));
-            validate_delays(max_lag).unwrap();
         }
+        panic!("timers slipped too often");
     }
 
     /// Note that you have to run this test alone or other tests will
@@ -426,10 +527,11 @@ mod test {
         check_delays(GENEROUS);
     }
 
+    #[cfg(not(target_arch = "aarch64"))] // This test is flaky on linux/arm.
     #[test]
     fn one_ms() {
-        let _hrt = Time::get(ONE);
-        check_delays(ONE_AND_A_BIT);
+        let _hrt = Time::get(ONE_MS);
+        check_delays(ONE_MS_AND_A_BIT);
     }
 
     #[test]
@@ -441,6 +543,7 @@ mod test {
         thr.join().unwrap();
     }
 
+    #[cfg(not(target_arch = "aarch64"))] // This test is flaky on linux/arm.
     #[test]
     fn one_ms_multi() {
         let thr = spawn(move || {
@@ -450,24 +553,27 @@ mod test {
         thr.join().unwrap();
     }
 
+    #[cfg(not(target_arch = "aarch64"))] // This test is flaky on linux/arm.
     #[test]
     fn mixed_multi() {
         let thr = spawn(move || {
             one_ms();
         });
         let _hrt = Time::get(Duration::from_millis(4));
-        check_delays(Duration::from_millis(5));
+        check_delays(FIVE_MS);
         thr.join().unwrap();
     }
 
+    #[cfg(not(target_arch = "aarch64"))] // This test is flaky on linux/arm.
     #[test]
     fn update() {
         let mut hrt = Time::get(Duration::from_millis(4));
-        check_delays(Duration::from_millis(5));
-        hrt.update(ONE);
-        check_delays(ONE_AND_A_BIT);
+        check_delays(FIVE_MS);
+        hrt.update(ONE_MS);
+        check_delays(ONE_MS_AND_A_BIT);
     }
 
+    #[cfg(not(target_arch = "aarch64"))] // This test is flaky on linux/arm.
     #[test]
     fn update_multi() {
         let thr = spawn(move || {
@@ -481,5 +587,12 @@ mod test {
     fn max() {
         let _hrt = Time::get(Duration::from_secs(1));
         check_delays(GENEROUS);
+    }
+
+    #[test]
+    #[should_panic(expected = "timers slipped too often")]
+    fn slip() {
+        // This amount of timer resolution should be unachievable.
+        check_delays(Duration::from_nanos(1));
     }
 }

@@ -1,22 +1,16 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "WebGLContext.h"
-
 #include <algorithm>
-#include "GLSLANG/ShaderLang.h"
+
 #include "CanvasUtils.h"
-#include "gfxEnv.h"
 #include "GLContext.h"
-#include "jsfriendapi.h"
-#include "mozilla/CheckedInt.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/StaticPrefs_webgl.h"
-#include "nsPrintfCString.h"
+#include "GLSLANG/ShaderLang.h"
 #include "WebGLBuffer.h"
+#include "WebGLContext.h"
 #include "WebGLContextUtils.h"
+#include "WebGLFormats.h"
 #include "WebGLFramebuffer.h"
 #include "WebGLProgram.h"
 #include "WebGLRenderbuffer.h"
@@ -25,6 +19,11 @@
 #include "WebGLTexture.h"
 #include "WebGLValidateStrings.h"
 #include "WebGLVertexArray.h"
+#include "gfxEnv.h"
+#include "jsfriendapi.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_webgl.h"
+#include "nsPrintfCString.h"
 
 ////////////////////
 // Minimum value constants defined in GLES 2.0.25 $6.2 "State Tables":
@@ -240,6 +239,12 @@ static webgl::Limits MakeLimits(const WebGLContext& webgl) {
   if (webgl.IsWebGL2() ||
       limits.supportedExtensions[WebGLExtensionID::WEBGL_draw_buffers]) {
     gl.GetUIntegerv(LOCAL_GL_MAX_DRAW_BUFFERS, &limits.maxColorDrawBuffers);
+    // The driver may report `MAX_DRAW_BUFFERS` larger than the compile-time
+    // `webgl::kMaxDrawBuffers` that sizes all per-color-buffer host state (e.g.
+    // `WebGLFramebuffer::mColorAttachments`). Clamp so attachment indices
+    // derived from this limit can never exceed those fixed-size arrays.
+    limits.maxColorDrawBuffers =
+        std::min(limits.maxColorDrawBuffers, uint32_t{webgl::kMaxDrawBuffers});
   }
 
   if (limits.supportedExtensions[WebGLExtensionID::EXT_disjoint_timer_query]) {
@@ -607,7 +612,7 @@ bool WebGLContext::ValidateFramebufferTarget(GLenum target) const {
       break;
   }
 
-  if (MOZ_LIKELY(isValid)) {
+  if (isValid) [[likely]] {
     return true;
   }
 

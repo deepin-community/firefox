@@ -6,7 +6,7 @@
 const {
   Component,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 loader.lazyRequireGetter(
   this,
   "PropTypes",
@@ -15,7 +15,7 @@ loader.lazyRequireGetter(
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
   connect,
-} = require("resource://devtools/client/shared/redux/visibility-handler-connect.js");
+} = require("resource://devtools/client/shared/vendor/react-redux.js");
 
 const actions = require("resource://devtools/client/webconsole/actions/index.js");
 const {
@@ -83,7 +83,7 @@ loader.lazyGetter(this, "ChromeDebugToolbar", () =>
   )
 );
 
-const l10n = require("resource://devtools/client/webconsole/utils/l10n.js");
+const l10n = require("resource://devtools/shared/webconsole/l10n.js");
 const {
   Utils: WebConsoleUtils,
 } = require("resource://devtools/client/webconsole/utils.js");
@@ -121,9 +121,10 @@ class App extends Component {
       filterBarDisplayMode: PropTypes.oneOf([
         ...Object.values(FILTERBAR_DISPLAY_MODES),
       ]).isRequired,
-      showEvaluationContextSelector: PropTypes.bool,
     };
   }
+
+  #abortController = new AbortController();
 
   constructor(props) {
     super(props);
@@ -135,7 +136,13 @@ class App extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener("blur", this.onBlur);
+    window.addEventListener("blur", this.onBlur, {
+      signal: this.#abortController.signal,
+    });
+  }
+
+  componentWillUnmount() {
+    this.#abortController.abort();
   }
 
   onBlur() {
@@ -150,7 +157,7 @@ class App extends Component {
       (isMacOS && event.key === "r" && event.ctrlKey === true)
     ) {
       const initialValue =
-        webConsoleUI.jsterm && webConsoleUI.jsterm.getSelectedText();
+        webConsoleUI.jsterm && webConsoleUI.jsterm.editor.getSelectedText();
 
       dispatch(
         actions.reverseSearchInputToggle({ initialValue, access: "keyboard" })
@@ -275,7 +282,9 @@ class App extends Component {
       }
     };
 
-    input.addEventListener("keyup", pasteKeyUpHandler);
+    input.addEventListener("keyup", pasteKeyUpHandler, {
+      signal: this.#abortController.signal,
+    });
   }
 
   renderChromeDebugToolbar() {
@@ -308,7 +317,6 @@ class App extends Component {
       reverseSearchInputVisible,
       serviceContainer,
       webConsoleUI,
-      showEvaluationContextSelector,
       inputEnabled,
     } = this.props;
 
@@ -323,7 +331,6 @@ class App extends Component {
           dispatch,
           reverseSearchInputVisible,
           serviceContainer,
-          showEvaluationContextSelector,
           webConsoleUI,
         })
       : null;
@@ -503,7 +510,6 @@ const mapStateToProps = state => ({
   filterBarDisplayMode: state.ui.filterBarDisplayMode,
   eagerEvaluationEnabled: state.prefs.eagerEvaluation,
   autocomplete: state.prefs.autocomplete,
-  showEvaluationContextSelector: state.ui.showEvaluationContextSelector,
 });
 
 const mapDispatchToProps = dispatch => ({

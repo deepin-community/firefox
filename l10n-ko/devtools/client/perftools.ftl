@@ -32,12 +32,34 @@ perftools-description-intro =
 perftools-description-local-build =
     직접 컴파일한 빌드를 프로파일링하는 경우
     이 컴퓨터에서 빌드의 objdir을 아래 목록에 추가하여 
-    기호 정보를 조회하는데 사용할 수 있습니다.
+    기호 정보를 조회하는 데 사용할 수 있습니다.
+perftools-pick-local-build-directory = 빌드 디렉터리 선택
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = 샘플링 간격:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -69,6 +91,14 @@ perftools-button-add-directory = 디렉터리 추가
 perftools-button-remove-directory = 선택 항목 삭제
 perftools-button-edit-settings = 설정 편집…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = 작업 더보기
+perftools-menu-more-actions-restart-with-profiling = 시작 프로파일링을 활성화하고 { -brand-shorter-name } 다시 시작
+perftools-menu-more-actions-copy-for-startup = 시작 프로파일링을 위한 환경 변수 복사
+perftools-menu-more-actions-copy-for-perf-tests = 성능 테스트를 위해 매개 변수 복사
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -92,7 +122,7 @@ perftools-thread-socket-thread =
 perftools-thread-img-decoder =
     .title = 이미지 디코딩 스레드
 perftools-thread-dns-resolver =
-    .title = 이 스레드에서 DNS 확인 발생
+    .title = 이 스레드에서 DNS 해석이 수행됨
 perftools-thread-task-controller =
     .title = TaskController 스레드 풀 스레드
 perftools-thread-jvm-gecko =
@@ -112,7 +142,7 @@ perftools-thread-jvm-pool =
 
 perftools-record-all-registered-threads = 위의 선택 사항을 무시하고 등록된 모든 스레드를 기록
 perftools-tools-threads-input-label =
-    .title = 이러한 스레드 이름은 프로파일러에서 스레드의 프로파일링을 활성화하는데 사용되는 쉼표로 구분된 목록입니다. 이름은 포함할 스레드 이름과 부분적으로 일치해야 합니다. 공백에 민감합니다.
+    .title = 이러한 스레드 이름은 프로파일러에서 스레드의 프로파일링을 활성화하는 데 사용되는 쉼표로 구분된 목록입니다. 이름은 포함할 스레드 이름과 부분적으로 일치해야 합니다. 공백에 민감합니다.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -141,14 +171,17 @@ perftools-presets-graphics-label = 그래픽
 perftools-presets-graphics-description = { -brand-shorter-name }의 그래픽 버그를 조사하기 위한 프리셋입니다.
 perftools-presets-media-label = 미디어
 perftools-presets-media-description2 = { -brand-shorter-name }의 오디오 및 비디오 버그를 조사하기 위한 프리셋입니다.
+perftools-presets-ml-label = 기계 학습
+perftools-presets-ml-description2 = { -brand-shorter-name }의 기계 학습 버그를 조사하기 위한 프리셋입니다.
 perftools-presets-networking-label = 네트워킹
 perftools-presets-networking-description = { -brand-shorter-name }의 네트워킹 버그를 조사하기 위한 프리셋입니다.
+perftools-presets-networking-with-logs-label = 로그를 포함한 네트워킹
+perftools-presets-networking-with-logs-description = 네트워킹 로그를 포함하여 { -brand-shorter-name }의 네트워킹 버그를 조사하기 위한 프리셋입니다. 이러한 로그에는 방문한 URL과 같은 민감한 정보가 포함되어 있을 수 있습니다.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = 전력
 perftools-presets-power-description = 오버헤드가 낮은 { -brand-shorter-name }의 전력 사용 버그를 조사하기 위한 프리셋입니다.
 perftools-presets-debug-label = 디버그
 perftools-presets-debug-description = { -brand-shorter-name }에서 디버깅을 위한 프리셋입니다. 오버헤드가 높으므로 성능 작업에 사용하지 말고 브라우저 동작을 이해하는 데 중점을 두는 데 사용하세요.
+perftools-presets-web-compat-label = 웹 호환성
+perftools-presets-web-compat-description = 웹 사이트에서 성능 추적보다 웹 호환성 문제를 디버깅하는 데 권장되는 프리셋입니다.
 perftools-presets-custom-label = 사용자 지정
-
-##
-

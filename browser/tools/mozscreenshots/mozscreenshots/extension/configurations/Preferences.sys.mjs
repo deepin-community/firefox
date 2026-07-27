@@ -51,7 +51,7 @@ let prefHelper = async function (primary, customFn = null) {
   let selectedBrowser = browserWindow.gBrowser.selectedBrowser;
 
   // close any dialog that might still be open
-  await selectedBrowser.ownerGlobal.SpecialPowers.spawn(
+  await selectedBrowser.documentGlobal.SpecialPowers.spawn(
     selectedBrowser,
     [],
     async function () {
@@ -105,27 +105,31 @@ function paintPromise(browserWindow) {
 }
 
 async function browsingGroup(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {
-      content.document.getElementById("browsingGroup").scrollIntoView();
+      content.document
+        .querySelector('setting-group[groupid="browsing"]')
+        .scrollIntoView();
     }
   );
 }
 
 async function cacheGroup(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {
-      content.document.getElementById("cacheGroup").scrollIntoView();
+      content.document
+        .querySelector('setting-group[groupid="cookiesAndSiteData"]')
+        .scrollIntoView();
     }
   );
 }
 
 async function connectionDialog(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {
@@ -135,7 +139,7 @@ async function connectionDialog(aBrowser) {
 }
 
 async function clearRecentHistoryDialog(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {
@@ -145,7 +149,7 @@ async function clearRecentHistoryDialog(aBrowser) {
 }
 
 async function certManager(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {
@@ -155,7 +159,7 @@ async function certManager(aBrowser) {
 }
 
 async function deviceManager(aBrowser) {
-  await aBrowser.ownerGlobal.SpecialPowers.spawn(
+  await aBrowser.documentGlobal.SpecialPowers.spawn(
     aBrowser,
     [],
     async function () {

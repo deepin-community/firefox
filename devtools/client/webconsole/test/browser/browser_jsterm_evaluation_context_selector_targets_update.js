@@ -13,7 +13,6 @@ const IFRAME_PATH = `${FILE_FOLDER}/test-console-evaluation-context-selector-chi
 
 add_task(async function () {
   await pushPref("devtools.popups.debug", true);
-  await pushPref("devtools.webconsole.input.context", true);
 
   const hud = await openNewTabWithIframesAndConsole(TEST_URI, [
     `https://example.net/${IFRAME_PATH}?id=iframe-1`,
@@ -22,15 +21,6 @@ add_task(async function () {
   const evaluationContextSelectorButton = hud.ui.outputNode.querySelector(
     ".webconsole-evaluation-selector-button"
   );
-
-  if (!isFissionEnabled() && !isEveryFrameTargetEnabled()) {
-    is(
-      evaluationContextSelectorButton,
-      null,
-      "context selector is only displayed when Fission or EFT is enabled"
-    );
-    return;
-  }
 
   is(
     evaluationContextSelectorButton.innerText,
@@ -65,7 +55,7 @@ add_task(async function () {
   ]);
 
   info("Add another iframe");
-  ContentTask.spawn(gBrowser.selectedBrowser, [IFRAME_PATH], function (path) {
+  SpecialPowers.spawn(gBrowser.selectedBrowser, [IFRAME_PATH], function (path) {
     const iframe = content.document.createElement("iframe");
     iframe.src = `https://test1.example.org/${path}?id=iframe-2`;
     content.document.body.append(iframe);
@@ -115,7 +105,7 @@ add_task(async function () {
   ok(true, "The context was set to the selected iframe document");
 
   info("Remove the first iframe from the content document");
-  ContentTask.spawn(gBrowser.selectedBrowser, [], function () {
+  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.document.querySelector("iframe").remove();
   });
 
@@ -151,7 +141,7 @@ add_task(async function () {
   ok(true, "The context was set to the selected iframe document");
 
   info("Remove the second iframe from the content document");
-  ContentTask.spawn(gBrowser.selectedBrowser, [], function () {
+  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.document.querySelector("iframe").remove();
   });
 
@@ -170,7 +160,7 @@ add_task(async function () {
   info("Open a popup");
   const originalTab = gBrowser.selectedTab;
   let onSwitchedHost = hud.toolbox.once("host-changed");
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
     [IFRAME_PATH],
     function (path) {
@@ -222,7 +212,7 @@ add_task(async function () {
 
   info("Open a second popup and reload the original tab");
   onSwitchedHost = hud.toolbox.once("host-changed");
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     originalTab.linkedBrowser,
     [IFRAME_PATH],
     function (path) {

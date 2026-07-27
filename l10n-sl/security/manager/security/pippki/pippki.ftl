@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Ogled
 download-cert-view-text = Preveri digitalno potrdilo overitelja
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Izdal: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Shranjeno na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Zapomni si to odločitev
+client-auth-cert-remember-label = Zapomni si to odločitev:
+client-auth-cert-remember-never =
+    .label = enkrat
+client-auth-cert-remember-always =
+    .label = trajno
+client-auth-cert-remember-temporarily =
+    .label = za to sejo
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Geslo varnostne kopije digitalnega potrdila (ponovno):
 set-password-reminder = Pomembno: Če pozabite geslo varnostne kopije digitalnega potrdila, je pozneje ne boste mogli obnoviti. Geslo shranite na varnem mestu.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Zaščiteno overjanje
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Overite se varnostni napravi ({ $tokenName }). Kako to storite, je odvisno od naprave (na primer z uporabo bralnika prstnih odtisov ali z vtipkanjem kode).
 
 ## Protected authentication alert
 

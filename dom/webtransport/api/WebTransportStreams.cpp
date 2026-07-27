@@ -1,18 +1,16 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/WebTransportStreams.h"
 
-#include "mozilla/dom/WebTransportLog.h"
+#include "mozilla/Result.h"
 #include "mozilla/dom/Promise-inl.h"
 #include "mozilla/dom/WebTransport.h"
 #include "mozilla/dom/WebTransportBidirectionalStream.h"
+#include "mozilla/dom/WebTransportLog.h"
 #include "mozilla/dom/WebTransportReceiveStream.h"
 #include "mozilla/dom/WebTransportSendStream.h"
-#include "mozilla/Result.h"
 
 using namespace mozilla::ipc;
 
@@ -36,7 +34,8 @@ WebTransportIncomingStreamsAlgorithms::
 
 already_AddRefed<Promise>
 WebTransportIncomingStreamsAlgorithms::PullCallbackImpl(
-    JSContext* aCx, ReadableStreamController& aController, ErrorResult& aRv) {
+    JSContext* aCx, ReadableStreamControllerBase& aController,
+    ErrorResult& aRv) {
   // https://w3c.github.io/webtransport/#pullbidirectionalstream and
   // https://w3c.github.io/webtransport/#pullunidirectionalstream
 

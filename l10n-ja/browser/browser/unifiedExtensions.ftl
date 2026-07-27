@@ -11,6 +11,15 @@
 unified-extensions-header-title = 拡張機能
 unified-extensions-manage-extensions =
     .label = 拡張機能を管理
+unified-extensions-discover-extensions =
+    .label = 拡張機能を探す
+unified-extensions-empty-reason-private-browsing-not-allowed = 拡張機能はインストールされていますが、プライベートウィンドウでは無効になっています
+unified-extensions-empty-reason-extension-not-enabled = 拡張機能はインストールされていますが、無効になっています
+# In this headline, “Level up” means to enhance your browsing experience.
+unified-extensions-empty-reason-zero-extensions-onboarding = 拡張機能でブラウザーをレベルアップ
+unified-extensions-empty-content-explain-enable2 = [{ unified-extensions-manage-extensions.label }] を選択し、設定で拡張機能を有効にしてください。
+unified-extensions-empty-content-explain-manage2 = [{ unified-extensions-manage-extensions.label }] を選択し、設定で拡張機能を管理してください。
+unified-extensions-empty-content-explain-extensions-onboarding = 見た目や動作を変更したり、プライバシーやセキュリティを強化したりして、{ -brand-short-name } をパーソナライズしませんか？
 
 ## An extension in the main list
 
@@ -21,6 +30,12 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = { $extensionName } のメニューを開く
 unified-extensions-item-message-manage = 拡張機能を管理
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked2 = { $extensionName } は制限されています。使用すると危険を伴う可能性があります。
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } は Mozilla のポリシーに違反しています。使用すると危険を伴う可能性があります。
 
 ## Extension's context menu
 
@@ -47,3 +62,53 @@ unified-extensions-mb-quarantined-domain-message-3 =
     .message = ユーザーのデータを保護するため、一部の拡張機能はこのサイトのデータの読み取りと変更ができません。{ -vendor-short-name } により制限されたサイトを許可するには、その拡張機能の設定から変更してください。
 unified-extensions-mb-quarantined-domain-learn-more = 詳細情報
     .aria-label = 詳細情報: 一部の拡張機能は許可されていません
+unified-extensions-mb-about-addons-link = 拡張機能の設定を開く
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single2 =
+    .heading = { $extensionName } は無効です
+    .message =
+        この拡張機能は制限されているため無効になっています。
+        設定で有効にできますが、危険を伴う可能性があります。
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } は無効です
+    .message =
+        この拡張機能は Mozilla のポリシーに違反しているため無効になっています。
+        設定で有効にできますが、危険を伴う可能性があります。
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } は無効です
+    .message = この拡張機能は Mozilla のポリシーに違反しているため無効になっています。
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple2 =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } 個の拡張機能が無効です
+        }
+    .message =
+        複数の拡張機能が制限されているため無効になっています。
+        設定で有効にできますが、危険を伴う可能性があります。
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } 個の拡張機能が無効です
+        }
+    .message =
+        複数の拡張機能が Mozilla のポリシーに違反しているため無効になっています。
+        設定で有効にできますが、危険を伴う可能性があります。
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } 個の拡張機能が無効です
+        }
+    .message = 複数の拡張機能が Mozilla のポリシーに違反しているため無効になっています。
+unified-extensions-notice-safe-mode =
+    .message = トラブルシューティングモードによりすべての拡張機能が無効になっています。

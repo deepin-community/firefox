@@ -1,11 +1,8 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/EncodedAudioChunk.h"
-#include "mozilla/dom/EncodedAudioChunkBinding.h"
 
 #include <utility>
 
@@ -14,6 +11,8 @@
 #include "mozilla/CheckedInt.h"
 #include "mozilla/Logging.h"
 #include "mozilla/PodOperations.h"
+#include "mozilla/dom/BufferSourceBinding.h"
+#include "mozilla/dom/EncodedAudioChunkBinding.h"
 #include "mozilla/dom/StructuredCloneHolder.h"
 #include "mozilla/dom/StructuredCloneTags.h"
 #include "mozilla/dom/WebCodecsUtils.h"
@@ -109,6 +108,13 @@ already_AddRefed<MediaRawData> EncodedAudioChunkData::TakeData() {
   return sample.forget();
 }
 
+nsCString EncodedAudioChunkData::ToString() const {
+  return nsFmtCString(
+      "EncodedAudioChunkData[bytes: {}, type: {}, ts: {}, dur: {}]",
+      mBuffer ? mBuffer->Length() : 0, GetEnumString(mType).get(), mTimestamp,
+      mDuration ? std::to_string(*mDuration).c_str() : "none");
+}
+
 EncodedAudioChunk::EncodedAudioChunk(
     nsIGlobalObject* aParent, already_AddRefed<MediaAlignedByteBuffer> aBuffer,
     const EncodedAudioChunkType& aType, int64_t aTimestamp,
@@ -170,10 +176,14 @@ already_AddRefed<EncodedAudioChunk> EncodedAudioChunk::Constructor(
         return buf;
       });
 
+  if (aRv.Failed()) {
+    return nullptr;
+  }
+
   RefPtr<EncodedAudioChunk> chunk(new EncodedAudioChunk(
       global, buffer.forget(), aInit.mType, aInit.mTimestamp,
       OptionalToMaybe(aInit.mDuration)));
-  return aRv.Failed() ? nullptr : chunk.forget();
+  return chunk.forget();
 }
 
 EncodedAudioChunkType EncodedAudioChunk::Type() const {
@@ -201,9 +211,8 @@ uint32_t EncodedAudioChunk::ByteLength() const {
 }
 
 // https://w3c.github.io/webcodecs/#dom-encodedaudiochunk-copyto
-void EncodedAudioChunk::CopyTo(
-    const MaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aDestination,
-    ErrorResult& aRv) {
+void EncodedAudioChunk::CopyTo(const AllowSharedBufferSource& aDestination,
+                               ErrorResult& aRv) {
   AssertIsOnOwningThread();
 
   ProcessTypedArraysFixed(aDestination, [&](const Span<uint8_t>& aData) {

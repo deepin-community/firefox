@@ -98,7 +98,7 @@ places-delete-page =
            *[other] 刪除頁面
         }
     .accesskey = D
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = 受管理的書籤
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -262,3 +262,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = 因為 { -brand-short-name } 的檔案被其他程式鎖定，書籤與瀏覽記錄將無法使用。某些安全軟體會導致這個問題。
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = 分享資料夾
+    .badge = 新功能

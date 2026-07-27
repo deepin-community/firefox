@@ -5,14 +5,11 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  ContextDescriptorType:
-    "chrome://remote/content/shared/messagehandler/MessageHandler.sys.mjs",
   Log: "chrome://remote/content/shared/Log.sys.mjs",
   SessionDataCategory:
     "chrome://remote/content/shared/messagehandler/sessiondata/SessionData.sys.mjs",
   SessionDataMethod:
     "chrome://remote/content/shared/messagehandler/sessiondata/SessionData.sys.mjs",
-  TabManager: "chrome://remote/content/shared/TabManager.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "logger", () => lazy.Log.get());
@@ -77,7 +74,7 @@ export class EventsDispatcher {
 
     const listeners = this.#listenersByEventName.get(name);
     for (const { contextDescriptor } of listeners.values()) {
-      if (this.#matchesContext(contextInfo, contextDescriptor)) {
+      if (this.#matchesRelatedContexts([contextInfo], contextDescriptor)) {
         return true;
       }
     }
@@ -150,7 +147,13 @@ export class EventsDispatcher {
    */
   async update(subscriptions) {
     const sessionDataItemUpdates = [];
-    subscriptions.forEach(({ event, contextDescriptor, callback, enable }) => {
+    subscriptions.forEach(subscription => {
+      // Skip invalid subscriptions
+      if (subscription === null) {
+        return;
+      }
+
+      const { event, contextDescriptor, callback, enable } = subscription;
       if (enable) {
         // Setup listeners.
         if (!this.#listenersByEventName.has(event)) {
@@ -222,27 +225,21 @@ export class EventsDispatcher {
     };
   }
 
-  #matchesContext(contextInfo, contextDescriptor) {
-    if (contextDescriptor.type === lazy.ContextDescriptorType.All) {
-      return true;
-    }
+  #matchesRelatedContexts(relatedContexts, contextDescriptor) {
+    const browsingContexts = relatedContexts.map(contextInfo =>
+      BrowsingContext.get(contextInfo.contextId)
+    );
 
-    if (
-      contextDescriptor.type === lazy.ContextDescriptorType.TopBrowsingContext
-    ) {
-      const eventBrowsingContext = lazy.TabManager.getBrowsingContextById(
-        contextInfo.contextId
-      );
-      return eventBrowsingContext?.browserId === contextDescriptor.id;
-    }
-
-    return false;
+    return this.#messageHandler.contextsMatchDescriptor(
+      browsingContexts,
+      contextDescriptor
+    );
   }
 
-  #onMessageHandlerEvent = (name, event, contextInfo) => {
+  #onMessageHandlerEvent = (name, event, relatedContexts) => {
     const listeners = this.#listenersByEventName.get(name);
     for (const { callbacks, contextDescriptor } of listeners.values()) {
-      if (!this.#matchesContext(contextInfo, contextDescriptor)) {
+      if (!this.#matchesRelatedContexts(relatedContexts, contextDescriptor)) {
         continue;
       }
 

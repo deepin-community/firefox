@@ -212,7 +212,77 @@ bar-tooltip-cryptominer =
     .title = Ťažba kryptomien
     .aria-label =
         { $count ->
-            [one] Jeden pokus o ťažbu kryptomien
-            [few] { $count } pokusy o ťažbu kryptomien
-           *[other] { $count } pokusov o ťažbu kryptomien
-        } ({ $percentage }%)
+            [one] Jeden pokus o ťažbu kryptomien ({ $percentage }%)
+            [few] { $count } pokusy o ťažbu kryptomien ({ $percentage }%)
+           *[other] { $count } pokusov o ťažbu kryptomien ({ $percentage }%)
+        }
+# Privacy Metrics Card
+privacy-metrics-title = Ochrana súkromia
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } zablokovanie tento týždeň
+        [few] { $count } zablokovania tento týždeň
+        [many] { $count } zablokovaní tento týždeň
+       *[other] { $count } zablokovaní tento týždeň
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } sledovací prvok
+        [few] { $count } sledovacie prvky
+        [many] { $count } sledovacích prvkov
+       *[other] { $count } sledovacích prvkov
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } čítačka digitálnych odtlačkov
+        [few] { $count } čítačky digitálnych odtlačkov
+        [many] { $count } čítačiek digitálnych odtlačkov
+       *[other] { $count } čítačiek digitálnych odtlačkov
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } sledovací súbor cookie
+        [few] { $count } sledovacie súbory cookie
+        [many] { $count } sledovacích súborov cookie
+       *[other] { $count } sledovacích súborov cookie
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } sledovací prvok sociálnych sietí
+        [few] { $count } sledovacie prvky sociálnych sietí
+        [many] { $count } sledovacích prvkov sociálnych sietí
+       *[other] { $count } sledovacích prvkov sociálnych sietí
+    }
+privacy-metrics-empty = Tento týždeň neboli zablokované žiadne sledovacie prvky. { -brand-short-name } vás počas prehliadania chráni pred nasledujúcimi hrozbami.
+privacy-metrics-loading = Načítavajú sa štatistiky ochrany…
+privacy-metrics-error = Nepodarilo sa načítať štatistiky ochrany.
+privacy-metrics-private-window = Prehliadač { -brand-short-name } naďalej blokuje sledovacie prvky v súkromných oknách, ale neukladá si informácie o tom, čo bolo zablokované.
+
+## VPN promo card and banner
+
+protections-vpn-title = Preneste ochranu súkromia za hranice prehliadača
+protections-vpn-header-content = Chráňte celé svoje zariadenie pomocou { -mozilla-vpn-brand-name }. Jedným ťuknutím zašifrujete všetku prevádzku a skryjete svoju polohu.
+protections-get-vpn-link = Získajte { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: predplatená
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [one] Používaním { -mozilla-vpn-brand-name } šifrujete všetku vašu prevádzku a skryjete vašu polohu – až na { $count } zariadení. Využite svoje predplatné naplno – aplikáciu získate v <a data-l10n-name="playstore-link">Obchode Google Play</a> alebo <a data-l10n-name="appstore-link">Apple App Store</a>.
+        [few] Používaním { -mozilla-vpn-brand-name } šifrujete všetku vašu prevádzku a skryjete vašu polohu – až na { $count } zariadeniach. Využite svoje predplatné naplno – aplikáciu získate v <a data-l10n-name="playstore-link">Obchode Google Play</a> alebo <a data-l10n-name="appstore-link">Apple App Store</a>.
+        [many] Používaním { -mozilla-vpn-brand-name } šifrujete všetku vašu prevádzku a skryjete vašu polohu – až na { $count } zariadeniach. Využite svoje predplatné naplno – aplikáciu získate v <a data-l10n-name="playstore-link">Obchode Google Play</a> alebo <a data-l10n-name="appstore-link">Apple App Store</a>.
+       *[other] Používaním { -mozilla-vpn-brand-name } šifrujete všetku vašu prevádzku a skryjete vašu polohu – až na { $count } zariadeniach. Využite svoje predplatné naplno – aplikáciu získate v <a data-l10n-name="playstore-link">Obchode Google Play</a> alebo <a data-l10n-name="appstore-link">Apple App Store</a>.
+    }
+protections-vpn-banner-header = Ochrana, ktorá presahuje rámec prehliadača
+protections-vpn-banner-content = Vyskúšajte { -mozilla-vpn-brand-name } bez rizika a presvedčte sa, prečo TechRadar hovorí, že „jej rýchlosť, jednoduchosť a nízka mesačná cena ju robia užitočnou.“
+protections-vpn-banner-link = Získajte { -mozilla-vpn-brand-name }

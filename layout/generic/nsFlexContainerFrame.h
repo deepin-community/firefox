@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* rendering object for CSS "display: flex" and "display: -webkit-box" */
 
-#ifndef nsFlexContainerFrame_h___
-#define nsFlexContainerFrame_h___
+#ifndef nsFlexContainerFrame_h_
+#define nsFlexContainerFrame_h_
 
 #include <tuple>
 
+#include "mozilla/IntrinsicISizesCache.h"
 #include "mozilla/dom/FlexBinding.h"
 #include "nsContainerFrame.h"
 #include "nsILineIterator.h"
@@ -89,7 +88,7 @@ class MOZ_STACK_CLASS FlexboxAxisInfo final {
   // Helpers for constructor which determine the orientation of our axes, based
   // on legacy box properties (-webkit-box-orient, -webkit-box-direction) or
   // modern flexbox properties (flex-direction, flex-wrap) depending on whether
-  // the flex container is a "legacy box" (as determined by IsLegacyBox).
+  // the flex container is a "legacy webkit box".
   void InitAxesFromLegacyProps(const nsIFrame* aFlexContainer);
   void InitAxesFromModernProps(const nsIFrame* aFlexContainer);
 };
@@ -99,8 +98,7 @@ class MOZ_STACK_CLASS FlexboxAxisInfo final {
  * "display: flex" or "display: inline-flex".
  *
  * We also use this class for elements with "display: -webkit-box" or
- * "display: -webkit-inline-box" (but not "-moz-box" / "-moz-inline-box" --
- * those are rendered with old-school XUL frame classes).
+ * "display: -webkit-inline-box".
  *
  * Note: we represent the -webkit-box family of properties (-webkit-box-orient,
  * -webkit-box-flex, etc.) as aliases for their -moz equivalents.  And for
@@ -147,7 +145,7 @@ class nsFlexContainerFrame final : public nsContainerFrame,
               const ReflowInput& aReflowInput,
               nsReflowStatus& aStatus) override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
 #ifdef DEBUG_FRAME_DUMP
@@ -175,6 +173,14 @@ class nsFlexContainerFrame final : public nsContainerFrame,
   mozilla::StyleAlignFlags CSSAlignmentForAbsPosChild(
       const ReflowInput& aChildRI,
       mozilla::LogicalAxis aLogicalAxis) const override;
+
+  // Return aFlexItem's used 'align-self' value and the associated flags
+  // (safe/unsafe).
+  //
+  // Note: This method guarantees not to return StyleAlignFlags::NORMAL because
+  // it converts NORMAL to STRETCH.
+  std::pair<mozilla::StyleAlignFlags, mozilla::StyleAlignFlags>
+  UsedAlignSelfAndFlagsForItem(const nsIFrame* aFlexItem) const;
 
   /**
    * Helper function to calculate packing space and initial offset of alignment
@@ -261,7 +267,8 @@ class nsFlexContainerFrame final : public nsContainerFrame,
   int32_t GetNumLines() const final;
   bool IsLineIteratorFlowRTL() final;
   mozilla::Result<LineInfo, nsresult> GetLine(int32_t aLineNumber) final;
-  int32_t FindLineContaining(nsIFrame* aFrame, int32_t aStartLine = 0) final;
+  int32_t FindLineContaining(const nsIFrame* aFrame,
+                             int32_t aStartLine = 0) final;
   NS_IMETHOD FindFrameAt(int32_t aLineNumber, nsPoint aPos,
                          nsIFrame** aFrameFound, bool* aPosIsBeforeFirstFrame,
                          bool* aPosIsAfterLastFrame) final;
@@ -425,6 +432,25 @@ class nsFlexContainerFrame final : public nsContainerFrame,
   void ResolveAutoFlexBasisAndMinSize(FlexItem& aFlexItem,
                                       const ReflowInput& aItemReflowInput,
                                       const FlexboxAxisTracker& aAxisTracker);
+
+  /**
+   * Partially resolves "min-[width|height]:auto" and returns the resulting
+   * value. By "partially", I mean we don't consider the min-content size (but
+   * we do consider the main-size and main max-size properties, and the
+   * preferred aspect ratio). The caller is responsible for computing &
+   * considering the min-content size in combination with the partially-resolved
+   * value that this function returns.
+   *
+   * Basically, this function gets the specified size suggestion; if not, the
+   * transferred size suggestion; if both sizes do not exist, return
+   * nscoord_MAX.
+   *
+   * Spec reference: https://drafts.csswg.org/css-flexbox-1/#min-size-auto
+   * (Helper for ResolveAutoFlexBasisAndMinSize().)
+   */
+  nscoord PartiallyResolveAutoMinSize(
+      const FlexItem& aFlexItem, const ReflowInput& aItemReflowInput,
+      const FlexboxAxisTracker& aAxisTracker) const;
 
   /**
    * This method:
@@ -650,14 +676,13 @@ class nsFlexContainerFrame final : public nsContainerFrame,
   /**
    * Helper to implement IntrinsicISize().
    */
-  nscoord ComputeIntrinsicISize(gfxContext* aContext,
+  nscoord ComputeIntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                                 mozilla::IntrinsicISizeType aType);
 
   /**
    * Cached values to optimize IntrinsicISize().
    */
-  nscoord mCachedMinISize = NS_INTRINSIC_ISIZE_UNKNOWN;
-  nscoord mCachedPrefISize = NS_INTRINSIC_ISIZE_UNKNOWN;
+  mozilla::IntrinsicISizesCache mCachedIntrinsicSizes;
 
   /**
    * Cached baselines computed in our last reflow to optimize
@@ -670,4 +695,4 @@ class nsFlexContainerFrame final : public nsContainerFrame,
   nscoord mLastBaseline = NS_INTRINSIC_ISIZE_UNKNOWN;
 };
 
-#endif /* nsFlexContainerFrame_h___ */
+#endif /* nsFlexContainerFrame_h_ */

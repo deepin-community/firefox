@@ -25,7 +25,14 @@ const OPEN_CLOSE_BODY = {
   "(": ")",
 };
 
-const NO_AUTOCOMPLETE_PREFIXES = ["var", "const", "let", "function", "class"];
+const NO_AUTOCOMPLETE_PREFIXES = [
+  "var",
+  "const",
+  "let",
+  "function",
+  "class",
+  "using",
+];
 const OPERATOR_CHARS_SET = new Set(";,:=<>+-*%|&^~!".split(""));
 
 /**
@@ -81,11 +88,25 @@ exports.analyzeInputString = function (str, timeout = 2500) {
       };
     }
 
-    currentIndex += 1;
+    currentIndex += c.length;
     let resetLastStatement = false;
     const isWhitespaceChar = c.trim() === "";
     switch (state) {
+      case STATE_SLASH:
+        if (c == "/") {
+          state = STATE_INLINE_COMMENT;
+          break;
+        } else if (c == "*") {
+          state = STATE_MULTILINE_COMMENT;
+          break;
+        } else {
+          lastStatement = "";
+          state = STATE_NORMAL;
+        }
+      // fall through
+
       // Normal JS state.
+      // eslint-disable-next-line no-fallthrough
       case STATE_NORMAL:
         if (lastStatement.endsWith("?.") && /\d/.test(c)) {
           // If the current char is a number, the engine will consider we're not
@@ -203,16 +224,6 @@ exports.analyzeInputString = function (str, timeout = 2500) {
             err: "unterminated string literal",
           };
         } else if (c == "'") {
-          state = STATE_NORMAL;
-        }
-        break;
-      case STATE_SLASH:
-        if (c == "/") {
-          state = STATE_INLINE_COMMENT;
-        } else if (c == "*") {
-          state = STATE_MULTILINE_COMMENT;
-        } else {
-          lastStatement = "";
           state = STATE_NORMAL;
         }
         break;
@@ -356,6 +367,7 @@ exports.analyzeInputString = function (str, timeout = 2500) {
 /**
  * Checks whether the analyzed input string is in an appropriate state to autocomplete, e.g. not
  * inside a string, or declaring a variable.
+ *
  * @param {object} inputAnalysisState The analyzed string to check
  * @returns {boolean} Whether the input should be autocompleted
  */
@@ -391,6 +403,7 @@ exports.shouldInputBeAutocompleted = function (inputAnalysisState) {
 
 /**
  * Checks whether the analyzed input string is in an appropriate state to be eagerly evaluated.
+ *
  * @param {object} inputAnalysisState
  * @returns {boolean} Whether the input should be eagerly evaluated
  */

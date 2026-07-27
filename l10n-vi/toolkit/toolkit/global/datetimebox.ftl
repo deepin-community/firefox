@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## Placeholders for date and time inputs
 
 datetime-year-placeholder = yyyy
@@ -31,7 +32,7 @@ datetime-millisecond =
 datetime-dayperiod =
     .aria-label = SA/CH
 
-## Calendar button for input type=date
+## Date/time picker buttons
 
 
 # This label is used by screenreaders and other assistive technology
@@ -40,3 +41,5 @@ datetime-dayperiod =
 
 datetime-calendar =
     .aria-label = Lịch
+datetime-time =
+    .aria-label = Thời gian

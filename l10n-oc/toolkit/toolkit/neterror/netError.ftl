@@ -23,6 +23,8 @@ neterror-override-exception-button = Acceptar lo risc e contunhar
 neterror-pref-reset-button = Restablir los paramètres per defaut
 neterror-return-to-previous-page-button = Tornar en arrièr
 neterror-return-to-previous-page-recommended-button = Tornar (recomandat)
+neterror-try-again-button-2 = Tornar ensajar
+    .accesskey = T
 neterror-try-again-button = Tornar ensajar
 neterror-add-exception-button = Totjorn contunhar per aqueste site
 neterror-settings-button = Modificar los paramètres DNS
@@ -49,6 +51,7 @@ neterror-dns-not-found-hint-header = <strong>Se l’adreça picada èra corrèct
 neterror-dns-not-found-hint-try-again = Tornar ensajar mai tard
 neterror-dns-not-found-hint-check-network = Verificar la connexion Internet
 neterror-dns-not-found-hint-firewall = Verificar que { -brand-short-name } a l’autorizacion d’accedir al Web (vòstra connexion poiriá èsser efectiva, mas protegida per un parafuòc)
+neterror-dns-not-found-offline-hint-header = <strong>Qué podètz far ?</strong>
 
 ## TRR-only specific messages
 ## Variables:
@@ -56,6 +59,7 @@ neterror-dns-not-found-hint-firewall = Verificar que { -brand-short-name } a l�
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-trr-only-reason = { -brand-short-name } pòt pas protegir vòstra requèsta per aquesta adreça de site amb nòstre resolvador DNS de fisança. Vaquí perque :
+neterror-dns-not-found-trr-only-reason2 = { -brand-short-name } pòt pas protegir vòstra requèsta per aquesta adreça de site amb nòstre resolvador DNS segur. Vaquí perque :
 neterror-dns-not-found-trr-third-party-warning2 = Podètz contunhar amb vòstre servidor DNS per defaut. Pasmens, un tèrç poiriá s’assabentar dels sites que consultatz.
 neterror-dns-not-found-trr-only-could-not-connect = { -brand-short-name } a pas pogut se connectar a { $trrDomain }.
 neterror-dns-not-found-trr-only-timeout = La connexion a { $trrDomain } a pres mai de temps que previst.
@@ -145,3 +149,14 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se coneissètz pas <b>{ $mi
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> utiliza una estrategia de seguretat HTTP Strict Transport Security (HSTS), valent a dire que { -brand-short-name } per i accedir sonque amb una connexion securizada. Podètz pas apondre d’excepcion per consultar aqueste site.
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-net-timeout-intro = Lo servidor a l’adreça <strong>{ $hostname }</strong> tarda tròp a respondre.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = Lo servidor a l’adreça <strong>{ $hostname }</strong> a enviat una error : { $responsestatus } { $responsestatustext }
+fp-neterror-denied-port-access = Aquesta adreça utiliza un pòrt ret pas costumièr per la navegacion Web. Per mesura de seguretat, { -brand-short-name } a abandonat la requèsta.

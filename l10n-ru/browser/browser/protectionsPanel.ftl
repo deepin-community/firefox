@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Больше информации об улучшенной защите от отслеживания
 protections-panel-etp-on-header = Улучшенная защита от отслеживания на этом сайте ВКЛЮЧЕНА
 protections-panel-etp-off-header = Улучшенная защита от отслеживания на этом сайте ОТКЛЮЧЕНА
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Сайт не работает?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Сайт не работает?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Улучшенная защита от отслеживания
     .description = Отключена для этого сайта
     .aria-label = Улучшенная защита от отслеживания: Отключена для { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Сайт не работает?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Сайт не работает?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,24 @@ protections-panel-content-blocking-fingerprinters-label = Сборщики ци�
 protections-panel-blocking-label = Блокируются
 protections-panel-not-blocking-label = Разрешены
 protections-panel-not-found-label = Ничего не найдено
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } блокирует отслеживающее содержимое, пока вы находитесь на этом сайте, пока вы это не разрешите.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Разрешить { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Трекеры и содержимое { $trackername } заблокированы
+smartblock-placeholder-desc = Ваши настройки { -brand-short-name } заблокировали это содержимое от отслеживания вас между сайтами и от использования в рекламе.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Разрешить на { $websitehost }
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = Содержимое из заблокированного встроенного элемента
 
 ##
 
@@ -108,7 +126,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Сообщить о неработающем сайте
 protections-panel-content-blocking-breakage-report-view-description = Блокировка некоторых трекеров может вызывать проблемы с некоторыми веб-сайтами. Сообщая о таких проблемах, вы помогаете сделать { -brand-short-name } лучше для всех и каждого. При отправке сообщения в Mozilla будет отправлен адрес сайта, а также информация о настройках вашего браузера. <label data-l10n-name="learn-more">Подробнее</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Блокировка некоторых трекеров может вызывать проблемы с некоторыми веб-сайтами. Сообщая о таких проблемах, вы помогаете сделать { -brand-short-name } лучше для всех и каждого. При отправке сообщения в { -vendor-short-name } будет отправлен адрес сайта, а также информация о настройках вашего браузера.
 protections-panel-content-blocking-breakage-report-view-collection-url = Адрес страницы
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = Адрес страницы

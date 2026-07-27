@@ -15,3 +15,5 @@ places-bookmarks-restore-format-error = Genia de archìviu non cumpatìbile.
 places-bookmarks-restore-parse-error = Impossìbile protzessare s'archìviu de còpia de seguresa.
 places-bookmarks-import = Importa archìviu de sinnalibros
 places-bookmarks-export = Esporta archìviu de sinnalibros
+places-bookmarks-paste-error-title = URL non vàlidos agatados
+places-bookmarks-paste-error-message-header = No at fatu a agiùnghere is URL imbenientes a is sinnalibros. Proa a controllare su formadu e a ddos torrare a agiùnghere.

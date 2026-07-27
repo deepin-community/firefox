@@ -4,7 +4,7 @@
 
 printui-title = Տպել
 # Dialog title to prompt the user for a filename to save print to PDF.
-printui-save-to-pdf-title = Պահպանել որպես
+printui-save-to-pdf-title = Պահել որպես
 # Variables
 # $sheetCount (integer) - Number of paper sheets
 printui-sheets-count =
@@ -41,11 +41,11 @@ printui-scale-fit-to-page-width = Տեղավորել էջի լայնությամ
 printui-scale-pcent = Սանդղում
 # Section title (noun) for the two-sided print options
 printui-two-sided-printing = Երկկողմանի տպագրություն
-printui-two-sided-printing-off = Անջ.
+printui-two-sided-printing-off = Անջատել
 # Section title for miscellaneous print options
 printui-options = Ընտրանքներ
-printui-headers-footers-checkbox = Տպել էջագլուխները և էջատակները
-printui-backgrounds-checkbox = Տպել խորքերը
+printui-headers-footers-checkbox = Տպել էջագլուխները և էջատակերը
+printui-backgrounds-checkbox = Տպել ետնապատկերները
 
 ## The "Format" section, select a version of the website to print. Radio
 ## options to select between the original page, selected text only, or a version
@@ -57,6 +57,8 @@ printui-source-label = Ձևաչափ
 printui-source-radio = Բնօրինակ
 # Option for printing just the content a user selected prior to printing.
 printui-selection-radio = Ընտրում
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Պարզեցված
 
 ##
 
@@ -69,7 +71,7 @@ printui-margins-min = Նվազագույն
 printui-margins-none = Չկա
 printui-margins-custom-inches = Ընտրված (դյույմ)
 printui-margins-custom-mm = Հարմարեցված (մմ)
-printui-system-dialog-link = Տպելիս օգտագործել համակարգի երկխոսությունը…
+printui-system-dialog-link = Տպելու համակարգի պատուհանը…
 printui-primary-button = Տպել
 printui-cancel-button = Չեղարկել
 printui-close-button = Փակել
@@ -82,10 +84,4 @@ printui-pages-per-sheet = Էջեր թերթում
 # This is shown next to the Print button with an indefinite loading spinner
 # when the user prints a page and it is being sent to the printer.
 printui-print-progress-indicator = Տպում է…
-printui-print-progress-indicator-saving = Պահպանում է...
-
-## Paper sizes that may be supported by the Save to PDF destination:
-
-
-## Error messages shown when a user has an invalid input
-
+printui-print-progress-indicator-saving = Պահում է...

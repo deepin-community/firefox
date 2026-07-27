@@ -56,13 +56,12 @@ loader.lazyRequireGetter(
  * ResponsiveUIManager is the external API for the browser UI, etc. to use when
  * opening and closing the responsive UI.
  */
-class ResponsiveUIManager {
+class ResponsiveUIManager extends EventEmitter {
   constructor() {
+    super();
     this.activeTabs = new Map();
 
     this.handleMenuCheck = this.handleMenuCheck.bind(this);
-
-    EventEmitter.decorate(this);
   }
 
   get telemetry() {
@@ -151,7 +150,7 @@ class ResponsiveUIManager {
     const hasToolbox = !!toolbox;
 
     if (hasToolbox) {
-      this.telemetry.scalarAdd("devtools.responsive.toolbox_opened_first", 1);
+      Glean.devtoolsResponsive.toolboxOpenedFirst.add(1);
     }
 
     this.telemetry.recordEvent("activate", "responsive_design", null, {
@@ -164,11 +163,7 @@ class ResponsiveUIManager {
     if (!trigger) {
       trigger = "unknown";
     }
-    this.telemetry.keyedScalarAdd(
-      "devtools.responsive.open_trigger",
-      trigger,
-      1
-    );
+    Glean.devtoolsResponsive.openTrigger[trigger].add(1);
   }
 
   /**
@@ -240,7 +235,7 @@ class ResponsiveUIManager {
    * @return boolean
    */
   isActiveForWindow(window) {
-    return [...this.activeTabs.keys()].some(t => t.ownerGlobal === window);
+    return [...this.activeTabs.keys()].some(t => t.documentGlobal === window);
   }
 
   /**
@@ -271,12 +266,12 @@ class ResponsiveUIManager {
     }
   }
 
-  async setMenuCheckFor(tab, window = tab.ownerGlobal) {
+  async setMenuCheckFor(tab, window = tab.documentGlobal) {
     await startup(window);
 
     const menu = window.document.getElementById("menu_responsiveUI");
     if (menu) {
-      menu.setAttribute("checked", this.isActiveForTab(tab));
+      menu.toggleAttribute("checked", this.isActiveForTab(tab));
     }
   }
 

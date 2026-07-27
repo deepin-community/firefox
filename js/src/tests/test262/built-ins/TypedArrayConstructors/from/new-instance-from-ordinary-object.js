@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -15,7 +14,7 @@ var source = {
   length: 4
 };
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var result = TA.from(source);
 
   assert.sameValue(result.length, 4);
@@ -28,7 +27,7 @@ testWithTypedArrayConstructors(function(TA) {
 },
 floatArrayConstructors);
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var result = TA.from(source);
 
   assert.sameValue(result.length, 4);

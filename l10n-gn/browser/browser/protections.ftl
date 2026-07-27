@@ -203,3 +203,51 @@ bar-tooltip-cryptominer =
             [one] { $count } criptominero ({ $percentage }%)
            *[other] { $count } criptomineros ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Ñemiguáva ñemo’ã
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } ojejoko ko arapokõindýpe
+       *[other] { $count } ojejoko ko arapokõindýpe
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } tapykuehoha
+       *[other] { $count } tapykuehohaita
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } mokuãhũ juhuha
+       *[other] { $count } mokuãhũita juhuha
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } kookie rapykuehoha
+       *[other] { $count } kookieita rapykuehoha
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } tapykuehoha tekohagua
+       *[other] { $count } tapykuehohaita tekohagua
+    }
+privacy-metrics-loading = Henyhẽhína mbopapapy ñemo’ãgua…
+privacy-metrics-error = Ndaikatúi henyhẽ mbopapapy ñemo’ãgua.
+privacy-metrics-private-window = { -brand-short-name } ojoko gueteri tapykuehohaita ovetã ñemiguápe, hákatu noñongatúi pe jokopyre rapykuere.
+
+## VPN promo card and banner
+
+protections-vpn-title = Eraha tekoñemi ñemo’ã mombyryve kundaháragui
+protections-get-vpn-link = Ereko { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: Mboheraguapypyre
+protections-vpn-banner-header = Ñemo’ã ohovéva pe kundaháragui.
+protections-vpn-banner-link = Ereko { -mozilla-vpn-brand-name }

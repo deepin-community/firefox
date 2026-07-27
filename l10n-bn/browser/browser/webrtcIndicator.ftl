@@ -3,16 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Note: This is currently placed under browser/base/content so that we can
-# get the strings to appear without having our localization community need
-# to go through and translate everything. Once these strings are ready for
-# translation, we'll move it to the locales folder.
-
-
-## These strings are used so that the window has a title in tools that
-## enumerate/look for window titles. It is not normally visible anywhere.
-
-
 ## Used as list items in sharing menu
 
 webrtc-item-camera = ক্যামেরা
@@ -27,7 +17,6 @@ webrtc-item-browser = ট্যাব
 
 # This is used for the website origin for the sharing menu if no readable origin could be deduced from the URL.
 webrtc-sharing-menuitem-unknown-host = অজানা মূল
-
 # Variables:
 #   $origin (String): The website origin (e.g. www.mozilla.org)
 #   $itemList (String): A formatted list of items (e.g. "camera, microphone and tab audio")
@@ -36,11 +25,6 @@ webrtc-sharing-menuitem =
 webrtc-sharing-menu =
     .label = ট্যাব শেয়ারিং dডিভাইসগুলি
     .accesskey = d
-
-## These strings will display as a tooltip on supported systems where we show
-## device sharing state in the OS notification area. We do not use these strings
-## on macOS, as global menu bar items do not have native tooltips.
-
 
 ## Tooltips used by the legacy global sharing indicator
 
@@ -62,14 +46,13 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
     .label = শেয়ারিং নিয়ন্ত্রণ করুন
 webrtc-indicator-menuitem-control-sharing-on =
     .label = "{ $streamTitle }" এ শেয়ারিং নিয়ন্ত্রণ করুন
-
 webrtc-indicator-menuitem-sharing-camera-with =
     .label = "{ $streamTitle }" এর সঙ্গে ক্যামেরা শেয়ার করা হচ্ছে
 webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
@@ -78,7 +61,6 @@ webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে ক্যামেরা শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে ক্যামেরা শেয়ার করা হচ্ছে
         }
-
 webrtc-indicator-menuitem-sharing-microphone-with =
     .label = "{ $streamTitle }" এর সঙ্গে মাইক্রোফোন শেয়ার করা হচ্ছে
 webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
@@ -87,7 +69,6 @@ webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে মাইক্রোফোন শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে মাইক্রোফোন শেয়ার করা হচ্ছে
         }
-
 webrtc-indicator-menuitem-sharing-application-with =
     .label = "{ $streamTitle }" এর সাথে অ্যাপ্লিকেশন শেয়ার করা হচ্ছে
 webrtc-indicator-menuitem-sharing-application-with-n-tabs =
@@ -96,7 +77,6 @@ webrtc-indicator-menuitem-sharing-application-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে একটি অ্যাপ্লিকেশন শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে অ্যাপ্লিকেশনসমূহ শেয়ার করা হচ্ছে
         }
-
 webrtc-indicator-menuitem-sharing-screen-with =
     .label = "{ $streamTitle }" এর সঙ্গে স্ক্রীন শেয়ার করা হচ্ছে
 webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
@@ -105,7 +85,6 @@ webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে স্ক্রীন শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে স্ক্রীন শেয়ার করা হচ্ছে
         }
-
 webrtc-indicator-menuitem-sharing-window-with =
     .label = "{ $streamTitle }" এর সঙ্গে উইন্ডো শেয়ার করা হচ্ছে
 webrtc-indicator-menuitem-sharing-window-with-n-tabs =
@@ -114,7 +93,6 @@ webrtc-indicator-menuitem-sharing-window-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে উইন্ডো শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে উইন্ডো শেয়ার করা হচ্ছে
         }
-
 webrtc-indicator-menuitem-sharing-browser-with =
     .label = "{ $streamTitle }" এর সঙ্গে ট্যাব শেয়ার করা হচ্ছে
 # This message is shown when the contents of a tab is shared during a WebRTC
@@ -125,15 +103,6 @@ webrtc-indicator-menuitem-sharing-browser-with-n-tabs =
             [one] { $tabCount } ট্যাবের সাথে একটি ট্যাব শেয়ার করা হচ্ছে
            *[other] { $tabCount } ট্যাবের সাথে ট্যাবসমূহ শেয়ার করা হচ্ছে
         }
-
-## Variables:
-##   $origin (String): the website origin (e.g. www.mozilla.org).
-
-
-## Variables:
-##   $origin (String): the first party origin.
-##   $thirdParty (String): the third party origin.
-
 
 ##
 
@@ -161,7 +130,6 @@ webrtc-action-allow =
 ##
 
 webrtc-remember-allow-checkbox = এই সিদ্ধান্ত মনে রাখা হবে
-
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } আপনার পর্দা ব্যবহারের স্থায়ী অনুমতি দেয় না।
 webrtc-reason-for-no-permanent-allow-audio = কোন ট্যাব শেয়ার করা হবে সেটা না জেনে { -brand-short-name } আপনার ট্যাবের অডিও অ্যাক্সেস অনুমতি দিতে পারে না।
 webrtc-reason-for-no-permanent-allow-insecure = এই সাইটে আপনার সংযোগটি নিরাপদ নয়। আপনার সুরক্ষার জন্য, { -brand-short-name } শুধুমাত্র এই সেশনের জন্য প্রবেশাধিকার অনুমোদন করবে।

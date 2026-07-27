@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 """Generic logging classes and functionalities for single and multi file logging.
 Capturing console output and providing general logging functionalities.
 
@@ -30,8 +28,6 @@ import sys
 import time
 import traceback
 from datetime import datetime
-
-from six import binary_type
 
 # Define our own FATAL_LEVEL
 FATAL_LEVEL = logging.CRITICAL + 10
@@ -66,7 +62,7 @@ logging.Formatter.converter = time.gmtime
 
 
 # LogMixin {{{1
-class LogMixin(object):
+class LogMixin:
     """This is a mixin for any object to access similar logging functionality
 
     The logging functionality described here is specially useful for those
@@ -364,7 +360,7 @@ class OutputParser(LogMixin):
             if not line or line.isspace():
                 continue
 
-            if isinstance(line, binary_type):
+            if isinstance(line, bytes):
                 line = line.decode("utf-8", "replace")
 
             line = line.rstrip()
@@ -372,7 +368,7 @@ class OutputParser(LogMixin):
 
 
 # BaseLogger {{{1
-class BaseLogger(object):
+class BaseLogger:
     """Base class in charge of logging handling logic such as creating logging
     files, dirs, attaching to the console output and managing its output.
 
@@ -628,7 +624,7 @@ class SimpleFileLogger(BaseLogger):
         log_format="%(asctime)s %(levelname)8s - %(message)s",
         logger_name="Simple",
         log_dir="logs",
-        **kwargs
+        **kwargs,
     ):
         """SimpleFileLogger constructor. Calls its superclass constructor,
         creates a new logger instance and log an init message.
@@ -649,7 +645,7 @@ class SimpleFileLogger(BaseLogger):
             logger_name=logger_name,
             log_format=log_format,
             log_dir=log_dir,
-            **kwargs
+            **kwargs,
         )
         self.new_logger()
         self.init_message()
@@ -675,7 +671,7 @@ class MultiFileLogger(BaseLogger):
         log_format="%(asctime)s %(levelname)8s - %(message)s",
         log_dir="logs",
         log_to_raw=True,
-        **kwargs
+        **kwargs,
     ):
         """MultiFileLogger constructor. Calls its superclass constructor,
         creates a new logger instance and log an init message.
@@ -699,7 +695,7 @@ class MultiFileLogger(BaseLogger):
             log_format=log_format,
             log_to_raw=log_to_raw,
             log_dir=log_dir,
-            **kwargs
+            **kwargs,
         )
 
         self.new_logger()
@@ -733,7 +729,7 @@ class ConsoleLogger(BaseLogger):
         log_format="%(levelname)8s - %(message)s",
         log_date_format="%H:%M:%S",
         logger_name="Console",
-        **kwargs
+        **kwargs,
     ):
         """ConsoleLogger constructor. Calls its superclass constructor,
         creates a new logger instance and log an init message.

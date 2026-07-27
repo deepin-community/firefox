@@ -36,10 +36,17 @@ certificate-viewer-key-size = Mărime cheie
 certificate-viewer-inc-locality = Sediu social
 certificate-viewer-locality = Localitate
 certificate-viewer-location = Loc
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Denumire jurnal
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID de jurnal
 certificate-viewer-method = Metodă
 certificate-viewer-modulus = Modul
 certificate-viewer-name = Denumire
+certificate-viewer-surname = Nume de familie
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Nume de botez
 certificate-viewer-not-after = Nu după
 certificate-viewer-not-before = Nu înainte
 certificate-viewer-organization = Organizație
@@ -81,8 +88,7 @@ certificate-viewer-authority-info-aia = Informații despre autoritate (AIA)
 certificate-viewer-certificate-policies = Politicile certificatului
 certificate-viewer-embedded-scts = SCT înglobate
 certificate-viewer-crl-endpoints = Puncte de sfârșit CRL
-
-# This message is used as a row header in the Miscellaneous section. 
+# This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Descărcare
 # This message is used to replace boolean values (true/false) in several certificate fields, e.g. Certificate Authority
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (lanț)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Această extensie a fost marcată drept critică, iar clienții trebuie să respingă certificatul dacă nu îl înțeleg.
@@ -109,6 +114,11 @@ certificate-viewer-export = Exportă
     .download = { $fileName }.pem
 
 ##
+
+# Label for a tab where we haven't found a better label:
+certificate-viewer-unknown-group-label = (necunoscut)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

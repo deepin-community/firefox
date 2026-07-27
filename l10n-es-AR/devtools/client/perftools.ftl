@@ -33,11 +33,33 @@ perftools-description-local-build =
     Si está perfilando una compilación que hecha por usted mismo en esta
     máquina, agregue el objdir de la misma a la lista de abajo para que
     pueda utilizarse para buscar información del símbolo.
+perftools-pick-local-build-directory = Seleccionar directorio de compilación
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Intervalo de muestreo:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -68,6 +90,14 @@ perftools-button-restart = Reiniciar
 perftools-button-add-directory = Agregar un directorio
 perftools-button-remove-directory = Eliminar la selección
 perftools-button-edit-settings = Editar la configuración…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Más acciones
+perftools-menu-more-actions-restart-with-profiling = Reiniciar { -brand-shorter-name } con el perfilado de inicio habilitado
+perftools-menu-more-actions-copy-for-startup = Copiar variables de entorno para el perfilado de inicio
+perftools-menu-more-actions-copy-for-perf-tests = Copiar parámetros para pruebas de rendimiento
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -136,19 +166,22 @@ perftools-onboarding-close-button =
 perftools-presets-web-developer-label = Desarrollador web
 perftools-presets-web-developer-description = Configuración recomendada para depuración de la mayoría de aplicaciones web, con poca sobrecarga.
 perftools-presets-firefox-label = { -brand-shorter-name }
-perftools-presets-firefox-description = Configuración preestablecida recomendada para crear perfiles de { -brand-shorter-name }.
+perftools-presets-firefox-description = Valor predeterminado recomendado para el perfilado de { -brand-shorter-name }
 perftools-presets-graphics-label = Gráficos
 perftools-presets-graphics-description = Preestablecido para investigar errores gráficos en { -brand-shorter-name }.
 perftools-presets-media-label = Medios
 perftools-presets-media-description2 = Preestablecido para investigar errores de audio y video en { -brand-shorter-name }.
+perftools-presets-ml-label = Machine Learning
+perftools-presets-ml-description2 = Preestablecido para investigar problemas de machine learning en { -brand-shorter-name }.
 perftools-presets-networking-label = Red
 perftools-presets-networking-description = Preestablecido para investigar errores de red en { -brand-shorter-name }.
+perftools-presets-networking-with-logs-label = Redes con registros
+perftools-presets-networking-with-logs-description = Preestablecido para investigar errores de red en { -brand-shorter-name }, incluidos los registros de red. Estos registros pueden contener información confidencial, como las URL visitadas.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Energía
 perftools-presets-power-description = Preestablecido para investigar errores de uso de energía en { -brand-shorter-name }, con poco consumo.
 perftools-presets-debug-label = Depurar
 perftools-presets-debug-description = Preestablecido para depuración en { -brand-shorter-name } Alta sobrecarga, no la use para mejorar el rendimiento sino para enfocarse en comprender el comportamiento del navegador.
+perftools-presets-web-compat-label = Compatibilidad web
+perftools-presets-web-compat-description = Ajuste preestablecido recomendado para depurar problemas de compatibilidad web en sitios, en lugar de rastrear el rendimiento.
 perftools-presets-custom-label = Personalizado
-
-##
-

@@ -119,6 +119,8 @@ private-browsing-description2 =
     { -brand-short-name } přidawaće, po standardźe w priwatnych woknach njefunguja. Chibazo
     dowoleće to w nastajenjach, rozšěrjenje w priwatnym modusu njefunguje a nima přistup k wašim
     aktiwitam online. Smy tutu změnu sčinili, zo by waš priwatny modus priwatny wóstał. <label data-l10n-name="private-browsing-learn-more">Zhońće wjace wo rjadowanju nastajenjow rozšěrjenja.</label>
+aboutaddons-sidebar =
+    .heading = Přidatki
 addon-category-discover = Doporučenja
 addon-category-discover-title =
     .title = Doporučenja
@@ -169,6 +171,8 @@ extensions-warning-update-security-button = Zmóžnić
 extensions-warning-imported-addons2 =
     .message = Prošu dokónčće instalaciju rozšěrjenjow, kotrež su so do { -brand-short-name } importowali.
 extensions-warning-imported-addons-button = Rozšěrjenja instalować
+extensions-warning-safe-mode3 =
+    .message = Wšě přidatki su so přez modus za rozrisowanje problemow znjemóžnili.
 
 ## Strings connected to add-on updates
 
@@ -204,6 +208,10 @@ addon-updates-manual-updates-found = K dispoziciji stejace aktualizacije sej wob
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Přidatk z dataje instalować…
+    .accesskey = P
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Přidatk z dataje instalować abo aktualizować…
     .accesskey = P
 addon-install-from-file-dialog-title = Přidatk za instalaciju wubrać
 addon-install-from-file-filter-name = Přidatki
@@ -269,6 +277,19 @@ discopane-notice-recommendations = Někotre z tutych doporučenjow su personaliz
 discopane-notice-recommendations2 =
     .message = Někotre z tutych doporučenjow su personalizowane. Bazuja na rozšěrjenjach, kotrež sće instalował, profilowych nastajenjach a wužiwanskej statistice.
 discopane-notice-learn-more = Dalše informacije
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Waše drasty barbowych kombinacijow su so wotstronili.
+    .message =
+        { -brand-product-name } je swoju zběrku barbowych kombinacijow zaktualizował. Smy stare wersije
+        z wašeje lisćiny „Składowane drasty“ wotstronili. Wobstarajće sej nowe wersije ze
+        sydła přidatkow
+colorway-removal-notice-learn-more = Dalše informacije
+colorway-removal-notice-button = Wobstarajće sej zaktualizowane drasty barbowych kombinacijow
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Waše kontrastowe nastajenja Windows drasty { -brand-short-name } přepisuja. Znjemóžńće tute nastajenja, zo byšće drasty w { -brand-short-name } wužiwał.
 privacy-policy = Prawidła priwatnosće
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -289,6 +310,16 @@ find-more-themes = Dalše drasty pytać
 # used for screen readers.
 addon-options-button =
     .aria-label = Dalše nastajenja
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Rozšěrjenja a drasty wam zmóžnjeja, { -brand-product-name } přiměrić. Móža priwatnosć  powyšić,
+    produktiwitu powyšić, medije polěpšić, napohlad { -brand-product-name } změnić a
+    wjele wjace. Tute małe programy so husto wot třećich wuwiwaja. Tu je
+    wuběr, kotryž Firefox <a data-l10n-name="learn-more-trigger">doporučuje</a> za
+    wurjadnu wěstotu, wurjadny wukon a wurjadnu funkcionalnosć.
 
 ## Add-on actions
 
@@ -377,6 +408,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = W priwatnych woknach dowoleny
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = W priwatnych woknach dowoleny
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -416,6 +451,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tute rozšěrjenje je so přepruwowało, zo by našim standardam za wěstotu a wukon wotpowědowało.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficielny rozšěrjenje, wuwite wot Mozilla. Spjelnja wěstotne a wukonowe standardy.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Tute rozšěrjenje je so přepruwowało, zo by standardam za wěstotu a wukon wotpowědowało.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox jenož rozšěrjenja doporučuje, kotrež standardam za wěstotu a wukon wotpowěduja.
 
 ##
 
@@ -423,10 +476,18 @@ available-updates-heading = K dispoziciji stejace aktualizacije
 recent-updates-heading = Najnowše aktualizacije
 release-notes-loading = Začituje so…
 release-notes-error = Při začitowanju wersijowych informacijow je bohužel zmylk wustupił.
+addon-permissions-heading = Prawa
+addon-permissions-empty2 = Tute rozšěrjenje sej prawa njewužaduje.
+addon-permissions-required-label = Trěbny:
+addon-permissions-optional-label = Na přeće:
 addon-permissions-empty = Tute rozšěrjenje sej prawa njewužaduje
 addon-permissions-required = Trěbne prawa za jadrowu funkcionalnosć:
 addon-permissions-optional = Opcionalne prawa za přidatu funkcionalnosć:
 addon-permissions-learnmore = Dalše informacije wo prawach
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Někotre prawa so wot wašeje organizacije rjaduja.
 recommended-extensions-heading = Doporučene rozšěrjenja
 recommended-themes-heading = Doporučene drasty
 # Variables:
@@ -450,6 +511,9 @@ shortcuts-heading = Tastowe skrótšenki rozšěrjenjow rjadować
 default-heading-search-label = Dalše přidatki pytać
 addons-heading-search-input =
     .placeholder = Na addons.mozilla.org pytać
+addons-heading-search-button =
+    .title = addons.mozilla.org přepytać
+    .aria-label = addons.mozilla.org přepytać
 addon-page-options-button =
     .title = Nastroje za wšě přidatki
 
@@ -472,14 +536,32 @@ details-notification-unsigned-and-disabled-link = Dalše informacije
 details-notification-unsigned = { $name } njeda so za wužiwanje w { -brand-short-name } wobkrućić. Pokročujće z kedźbliwosću.
 details-notification-unsigned2 =
     .message = { $name } njeda so za wužiwanje w { -brand-short-name } wobkrućić. Pokročujće z kedźbliwosću.
+details-notification-hard-blocked-extension =
+    .message = Tute rozšěrjenje je přeńdźenja přećiwo prawidłam Mozilla dla zablokowane a je so znjemóžniło.
+details-notification-hard-blocked-other =
+    .message = Tutón přidatk je přeńdźenja přećiwo prawidłam Mozilla dla zablokowany a je so znjemóžnił.
 details-notification-unsigned-link = Dalše informacije
 details-notification-blocked = { $name } je so dla problemow wěstoty abo stabilnosće znjemóžnił.
-details-notification-blocked2 =
-    .message = { $name } je so dla problemow wěstoty abo stabilnosće znjemóžnił.
+details-notification-blocked-link2 = Hlejće podrobnosće
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Tute rozšěrjenje je wobmjezowane a je so znjemóžniło. Móžeće jo zmóžnić, ale to je snano riskantne.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Tute rozšěrjenje je wobmjezowane. Jeho wužiwanje móže riskantne być.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Tutón přidatk je wobmjezowany a je so znjemóžnił. Móžeće jón zmóžnić, ale to je snano riskantne.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Tutón přidatk je wobmjezowany. Jeho wužiwanje móže riskantne być.
+details-notification-soft-blocked-extension-disabled =
+    .message = Tute rozšěrjenje je přeńdźenja přećiwo prawidłam Mozilla dla wobmjezowane a je so znjemóžniło. Móžeće jo zmóžnić, ale to je snano riskantne.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tute rozšěrjenje so přećiwo prawidłam Mozilla přeńdźe. Je riskantne jo wužiwać.
+details-notification-soft-blocked-other-disabled =
+    .message = Tutón přidatk je přeńdźenja přećiwo prawidłam Mozilla dla wobmjezowany a je so znjemóžnił. Móžeće jo zmóžnić, ale to je snano riskantne.
+details-notification-soft-blocked-other-enabled =
+    .message = Tutón přidatk so přećiwo prawidłam Mozilla přeńdźe. Je riskantne jón wužiwać.
+details-notification-softblocked-link2 = Hlejće podrobnosće
 details-notification-blocked-link = Dalše informacije
 details-notification-softblocked = { $name } je za to znaty, zo problemy wěstoty abo stabilnosće zawinuje.
-details-notification-softblocked2 =
-    .message = { $name } je za to znaty, zo problemy wěstoty abo stabilnosće zawinuje.
 details-notification-softblocked-link = Dalše informacije
 details-notification-gmp-pending = { $name } budźe so bórze instalować.
 details-notification-gmp-pending2 =
@@ -493,3 +575,46 @@ plugins-openh264-name = OpenH264 Video Codec wot Cisco Systems, Inc.
 plugins-openh264-description = Tutón tykač so wot Mozilla awtomatisce instaluje, zo by specifikaciji WebRTC wotpowědował a wołanja WebRTC z gratami zmóžnił, kotrež sej widejocodec H.264 wužaduja. Wopytajće http://www.openh264.org/, zo byšće sej codecowy žórłowy kod wobhladał a wjace wo implementaciji zhonił.
 plugins-widevine-name = Modul Widevine za dekodowanje wobsaha wot Google Inc.
 plugins-widevine-description = Tutón tykač wothrawanje zaklučowanych medijow po specifikaciji za rozšěrjenja zaklučowanych medijow zmóžnja. Zaklučowane medije so zwjetša wot sydła k škitu před kopěrowanjom premijoweho medijoweho wobsaha wužiwaja. Wopytajće https://www.w3.org/TR/encrypted-media/ za dalše informacije wo rozšěrjenjach zaklučowanych medijow.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Trěbne hromadźenje datow:
+addon-permissions-optional-data-collection = Opcionalne hromadźenje datow:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Prawa a daty
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Přez rozšěrjenje { $extensionName } wužiwany
+addon-permissions-data-collection-heading = Hromadźenje datow
+addon-permissions-data-collection-empty = Wuwiwar praji, zo tute rozšěrjenje hromadźenje datow njetrjeba.
+addon-data-collection-provided = Wot wuwiwarja rozšěrjenja podate informacije
+addon-data-collection-learnmore = Zhońće wjace wo hromadźenju datow
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } to w about:inference wužiwa
+mlmodel-link-preview = { -brand-short-name } to wužiwa, zo by klučowe dypki generěrował, hdyž sej přehlad wotkazow wobhladujeće
+mlmodel-pdfjs = { -brand-short-name } to wužiwa, zo by alternatiwny tekst za wobrazy wutworił, kotrež datajam PDF přidawaće
+mlmodel-smart-tab-topic-engine = { -brand-short-name } to wužiwa, zo by mjeno za waše skupiny rajtarkow namjetował
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } to wužiwa, zo by rajtarki za waše skupiny rajtarkow namjetował
+mlmodel-formfill-engine = { -brand-short-name } to wužiwa, zo by adresowe formulary wupjelnił.
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = KI na graće
+addon-category-mlmodel-title =
+    .title = KI na graće
+mlmodel-heading = Modele KI na graće rjadować
+mlmodel-description = Někotre funkcije a rozšěrjenja w { -brand-short-name } so přez modele KI podpěruja, kotrež lokalnje na wašim graće funguja. Tute wašnje postupowanja wašu priwatnosć škita a, we wjele padach, wukon pospěšuje. <a data-l10n-name="learn-more">Dalše informacije</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Wotstronić
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Datajowa wulkosć
+mlmodel-addon-detail-last-used-label = Posledni raz wužity
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Wužity wot
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Modelowa karta
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Na Hugging Face pokazać

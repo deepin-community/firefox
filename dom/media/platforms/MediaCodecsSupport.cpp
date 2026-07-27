@@ -1,36 +1,41 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "MediaCodecsSupport.h"
+
 #include <array>
 
-#ifdef MOZ_AV1
-#  include "AOMDecoder.h"
-#endif
-#include "MediaCodecsSupport.h"
+#include "AOMDecoder.h"
 #include "MP4Decoder.h"
+#include "PDMFactory.h"
+#include "PEMFactory.h"
 #include "PlatformDecoderModule.h"
 #include "VPXDecoder.h"
+#include "VideoUtils.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "nsTHashMap.h"
-#include "VideoUtils.h"
 
 using MediaCodecsSupport = mozilla::media::MediaCodecsSupport;
 
 namespace mozilla::media {
 
 static StaticAutoPtr<MCSInfo> sInstance;
-static StaticMutex sInitMutex;
-static StaticMutex sUpdateMutex;
+static StaticMutex sMutex;
 
 #define CODEC_SUPPORT_LOG(msg, ...) \
   MOZ_LOG(sPDMLog, LogLevel::Debug, ("MediaCodecsSupport, " msg, ##__VA_ARGS__))
 
+/* static */
+MediaCodecsSupported MCSInfo::GetSupportFromFactory(
+    bool aForceRefresh /* = false */) {
+  return PDMFactory::Supported(aForceRefresh) +
+         PEMFactory::Supported(aForceRefresh);
+}
+
 void MCSInfo::AddSupport(const MediaCodecsSupported& aSupport) {
-  StaticMutexAutoLock lock(sUpdateMutex);
-  MCSInfo* instance = GetInstance();
+  StaticMutexAutoLock lock(sMutex);
+  MCSInfo* instance = GetInstance(lock);
   if (!instance) {
     CODEC_SUPPORT_LOG("Can't add codec support without a MCSInfo instance!");
     return;
@@ -39,8 +44,8 @@ void MCSInfo::AddSupport(const MediaCodecsSupported& aSupport) {
 }
 
 MediaCodecsSupported MCSInfo::GetSupport() {
-  StaticMutexAutoLock lock(sUpdateMutex);
-  MCSInfo* instance = GetInstance();
+  StaticMutexAutoLock lock(sMutex);
+  MCSInfo* instance = GetInstance(lock);
   if (!instance) {
     CODEC_SUPPORT_LOG("Can't get codec support without a MCSInfo instance!");
     return MediaCodecsSupported{};
@@ -49,8 +54,8 @@ MediaCodecsSupported MCSInfo::GetSupport() {
 }
 
 void MCSInfo::ResetSupport() {
-  StaticMutexAutoLock lock(sUpdateMutex);
-  MCSInfo* instance = GetInstance();
+  StaticMutexAutoLock lock(sMutex);
+  MCSInfo* instance = GetInstance(lock);
   if (!instance) {
     CODEC_SUPPORT_LOG("Can't reset codec support without a MCSInfo instance!");
     return;
@@ -71,6 +76,19 @@ DecodeSupportSet MCSInfo::GetDecodeSupportSet(
   return support;
 }
 
+EncodeSupportSet MCSInfo::GetEncodeSupportSet(
+    const MediaCodec& aCodec, const MediaCodecsSupported& aSupported) {
+  EncodeSupportSet support;
+  const auto supportInfo = GetCodecDefinition(aCodec);
+  if (aSupported.contains(supportInfo.swEncodeSupport)) {
+    support += EncodeSupport::SoftwareEncode;
+  }
+  if (aSupported.contains(supportInfo.hwEncodeSupport)) {
+    support += EncodeSupport::HardwareEncode;
+  }
+  return support;
+}
+
 MediaCodecsSupported MCSInfo::GetDecodeMediaCodecsSupported(
     const MediaCodec& aCodec, const DecodeSupportSet& aSupportSet) {
   MediaCodecsSupported support;
@@ -82,6 +100,28 @@ MediaCodecsSupported MCSInfo::GetDecodeMediaCodecsSupported(
     support += supportInfo.hwDecodeSupport;
   }
   if (aSupportSet.contains(DecodeSupport::UnsureDueToLackOfExtension)) {
+    // Every codec reaching this arm must declare a real lack-of-extension
+    // entry in GetAllCodecDefinitions.
+    MOZ_ASSERT(supportInfo.lackOfHWExtenstion != MediaCodecsSupport::SENTINEL);
+    support += supportInfo.lackOfHWExtenstion;
+  }
+  return support;
+}
+
+MediaCodecsSupported MCSInfo::GetEncodeMediaCodecsSupported(
+    const MediaCodec& aCodec, const EncodeSupportSet& aSupportSet) {
+  MediaCodecsSupported support;
+  const auto supportInfo = GetCodecDefinition(aCodec);
+  if (aSupportSet.contains(EncodeSupport::SoftwareEncode)) {
+    support += supportInfo.swEncodeSupport;
+  }
+  if (aSupportSet.contains(EncodeSupport::HardwareEncode)) {
+    support += supportInfo.hwEncodeSupport;
+  }
+  if (aSupportSet.contains(EncodeSupport::UnsureDueToLackOfExtension)) {
+    // Every codec reaching this arm must declare a real lack-of-extension
+    // entry in GetAllCodecDefinitions.
+    MOZ_ASSERT(supportInfo.lackOfHWExtenstion != MediaCodecsSupport::SENTINEL);
     support += supportInfo.lackOfHWExtenstion;
   }
   return support;
@@ -99,11 +139,24 @@ bool MCSInfo::SupportsHardwareDecode(
       aSupportedCodecs.contains(GetCodecDefinition(aCodec).hwDecodeSupport));
 }
 
+bool MCSInfo::SupportsSoftwareEncode(
+    const MediaCodecsSupported& aSupportedCodecs, const MediaCodec& aCodec) {
+  return (
+      aSupportedCodecs.contains(GetCodecDefinition(aCodec).swEncodeSupport));
+}
+
+bool MCSInfo::SupportsHardwareEncode(
+    const MediaCodecsSupported& aSupportedCodecs, const MediaCodec& aCodec) {
+  return (
+      aSupportedCodecs.contains(GetCodecDefinition(aCodec).hwEncodeSupport));
+}
+
 void MCSInfo::GetMediaCodecsSupportedString(
     nsCString& aSupportString, const MediaCodecsSupported& aSupportedCodecs) {
   CodecDefinition supportInfo;
   aSupportString = ""_ns;
-  MCSInfo* instance = GetInstance();
+  StaticMutexAutoLock lock(sMutex);
+  MCSInfo* instance = GetInstance(lock);
   if (!instance) {
     CODEC_SUPPORT_LOG("Can't get codec support string w/o a MCSInfo instance!");
     return;
@@ -120,11 +173,19 @@ void MCSInfo::GetMediaCodecsSupportedString(
     aSupportString.Append(supportInfo.commonName);
     bool foundSupport = false;
     if (aSupportedCodecs.contains(it.swDecodeSupport)) {
-      aSupportString.Append(" SW"_ns);
+      aSupportString.Append(" SWDEC"_ns);
       foundSupport = true;
     }
     if (aSupportedCodecs.contains(it.hwDecodeSupport)) {
-      aSupportString.Append(" HW"_ns);
+      aSupportString.Append(" HWDEC"_ns);
+      foundSupport = true;
+    }
+    if (aSupportedCodecs.contains(it.swEncodeSupport)) {
+      aSupportString.Append(" SWENC"_ns);
+      foundSupport = true;
+    }
+    if (aSupportedCodecs.contains(it.hwEncodeSupport)) {
+      aSupportString.Append(" HWENC"_ns);
       foundSupport = true;
     }
     if (aSupportedCodecs.contains(it.lackOfHWExtenstion)) {
@@ -142,8 +203,7 @@ void MCSInfo::GetMediaCodecsSupportedString(
   }
 }
 
-MCSInfo* MCSInfo::GetInstance() {
-  StaticMutexAutoLock lock(sInitMutex);
+MCSInfo* MCSInfo::GetInstance(const StaticMutexAutoLock& /* unused */) {
   if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
     CODEC_SUPPORT_LOG("In XPCOM shutdown - not returning MCSInfo instance!");
     return nullptr;
@@ -168,13 +228,10 @@ MCSInfo::MCSInfo() {
   }
 
   GetMainThreadSerialEventTarget()->Dispatch(
-      NS_NewRunnableFunction("MCSInfo::MCSInfo", [&] {
-        // Ensure hash tables freed on shutdown
+      NS_NewRunnableFunction("MCSInfo::MCSInfo", [] {
         RunOnShutdown(
-            [&] {
-              mHashTableMCS.reset();
-              mHashTableString.reset();
-              mHashTableCodec.reset();
+            [] {
+              StaticMutexAutoLock lock(sMutex);
               sInstance = nullptr;
             },
             ShutdownPhase::XPCOMShutdown);
@@ -183,7 +240,8 @@ MCSInfo::MCSInfo() {
 
 CodecDefinition MCSInfo::GetCodecDefinition(const MediaCodec& aCodec) {
   CodecDefinition info;
-  MCSInfo* instance = GetInstance();
+  StaticMutexAutoLock lock(sMutex);
+  MCSInfo* instance = GetInstance(lock);
   if (!instance) {
     CODEC_SUPPORT_LOG("Can't get codec definition without a MCSInfo instance!");
   } else if (!instance->mHashTableCodec->Get(aCodec, &info)) {
@@ -201,6 +259,18 @@ MediaCodecsSupport MCSInfo::GetMediaCodecsSupportEnum(
   }
   if (aSupport == DecodeSupport::HardwareDecode) {
     return cd.hwDecodeSupport;
+  }
+  return MediaCodecsSupport::SENTINEL;
+}
+
+MediaCodecsSupport MCSInfo::GetMediaCodecsSupportEnum(
+    const MediaCodec& aCodec, const EncodeSupport& aSupport) {
+  const CodecDefinition cd = GetCodecDefinition(aCodec);
+  if (aSupport == EncodeSupport::SoftwareEncode) {
+    return cd.swEncodeSupport;
+  }
+  if (aSupport == EncodeSupport::HardwareEncode) {
+    return cd.hwEncodeSupport;
   }
   return MediaCodecsSupport::SENTINEL;
 }
@@ -233,14 +303,12 @@ MediaCodec MCSInfo::GetMediaCodecFromMimeType(const nsACString& aMimeType) {
   if (MP4Decoder::IsHEVC(aMimeType)) {
     return MediaCodec::HEVC;
   }
-#ifdef MOZ_AV1
   if (AOMDecoder::IsAV1(aMimeType)) {
     return MediaCodec::AV1;
   }
   if (aMimeType.EqualsLiteral("video/av01")) {
     return MediaCodec::AV1;
   }
-#endif
   // TODO: Should this be Android only?
 #ifdef ANDROID
   if (aMimeType.EqualsLiteral("video/x-vnd.on2.vp8")) {
@@ -275,47 +343,42 @@ MediaCodec MCSInfo::GetMediaCodecFromMimeType(const nsACString& aMimeType) {
   return MediaCodec::SENTINEL;
 }
 
+#define MEDIA_CODEC_DEF_ENTRY_META(name, mimeType, lackOfExt) \
+  {MediaCodec::name,                                          \
+   #name,                                                     \
+   mimeType,                                                  \
+   MediaCodecsSupport::name##SoftwareDecode,                  \
+   MediaCodecsSupport::name##HardwareDecode,                  \
+   MediaCodecsSupport::name##SoftwareEncode,                  \
+   MediaCodecsSupport::name##HardwareEncode,                  \
+   MediaCodecsSupport::lackOfExt}
+
+#define MEDIA_CODEC_DEF_ENTRY(name, mimeType) \
+  MEDIA_CODEC_DEF_ENTRY_META(name, mimeType, SENTINEL)
+
+#define MEDIA_CODEC_DEF_ENTRY_LACKOFEXT(name, mimeType) \
+  MEDIA_CODEC_DEF_ENTRY_META(name, mimeType, name##LackOfExtension)
+
 std::array<CodecDefinition, 13> MCSInfo::GetAllCodecDefinitions() {
   static constexpr std::array<CodecDefinition, 13> codecDefinitions = {
-      {{MediaCodec::H264, "H264", "video/avc",
-        MediaCodecsSupport::H264SoftwareDecode,
-        MediaCodecsSupport::H264HardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::VP9, "VP9", "video/vp9",
-        MediaCodecsSupport::VP9SoftwareDecode,
-        MediaCodecsSupport::VP9HardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::VP8, "VP8", "video/vp8",
-        MediaCodecsSupport::VP8SoftwareDecode,
-        MediaCodecsSupport::VP8HardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::AV1, "AV1", "video/av1",
-        MediaCodecsSupport::AV1SoftwareDecode,
-        MediaCodecsSupport::AV1HardwareDecode,
-        MediaCodecsSupport::AV1LackOfExtension},
-       {MediaCodec::HEVC, "HEVC", "video/hevc",
-        MediaCodecsSupport::HEVCSoftwareDecode,
-        MediaCodecsSupport::HEVCHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::AAC, "AAC", "audio/mp4a-latm",
-        MediaCodecsSupport::AACSoftwareDecode,
-        MediaCodecsSupport::AACHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::MP3, "MP3", "audio/mpeg",
-        MediaCodecsSupport::MP3SoftwareDecode,
-        MediaCodecsSupport::MP3HardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::Opus, "Opus", "audio/opus",
-        MediaCodecsSupport::OpusSoftwareDecode,
-        MediaCodecsSupport::OpusHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::Vorbis, "Vorbis", "audio/vorbis",
-        MediaCodecsSupport::VorbisSoftwareDecode,
-        MediaCodecsSupport::VorbisHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::FLAC, "FLAC", "audio/flac",
-        MediaCodecsSupport::FLACSoftwareDecode,
-        MediaCodecsSupport::FLACHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::Wave, "Wave", "audio/x-wav",
-        MediaCodecsSupport::WaveSoftwareDecode,
-        MediaCodecsSupport::WaveHardwareDecode, MediaCodecsSupport::SENTINEL},
-       {MediaCodec::SENTINEL, "Undefined codec name",
-        "Undefined MIME type string", MediaCodecsSupport::SENTINEL,
-        MediaCodecsSupport::SENTINEL}}};
+      {MEDIA_CODEC_DEF_ENTRY(H264, "video/avc"),
+       MEDIA_CODEC_DEF_ENTRY(VP9, "video/vp9"),
+       MEDIA_CODEC_DEF_ENTRY(VP8, "video/vp8"),
+       MEDIA_CODEC_DEF_ENTRY_LACKOFEXT(AV1, "video/av1"),
+       MEDIA_CODEC_DEF_ENTRY_LACKOFEXT(HEVC, "video/hevc"),
+       MEDIA_CODEC_DEF_ENTRY(AAC, "audio/mp4a-latm"),
+       MEDIA_CODEC_DEF_ENTRY(MP3, "audio/mpeg"),
+       MEDIA_CODEC_DEF_ENTRY(Opus, "audio/opus"),
+       MEDIA_CODEC_DEF_ENTRY(Vorbis, "audio/vorbis"),
+       MEDIA_CODEC_DEF_ENTRY(FLAC, "audio/flac"),
+       MEDIA_CODEC_DEF_ENTRY(Wave, "audio/x-wav")}};
   return codecDefinitions;
 }
+
+#undef MEDIA_CODEC_DEF_ENTRY_LACKOFEXT
+#undef MEDIA_CODEC_DEF_ENTRY
+#undef MEDIA_CODEC_DEF_ENTRY_META
+
 }  // namespace mozilla::media
 
 #undef CODEC_SUPPORT_LOG

@@ -1,12 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLPictureElement.h"
-#include "mozilla/dom/HTMLPictureElementBinding.h"
+
 #include "mozilla/dom/HTMLImageElement.h"
+#include "mozilla/dom/HTMLPictureElementBinding.h"
 #include "mozilla/dom/HTMLSourceElement.h"
 
 // Expand NS_IMPL_NS_NEW_HTML_ELEMENT(Picture) to add pref check.
@@ -28,7 +27,9 @@ HTMLPictureElement::~HTMLPictureElement() = default;
 
 NS_IMPL_ELEMENT_CLONE(HTMLPictureElement)
 
-void HTMLPictureElement::RemoveChildNode(nsIContent* aKid, bool aNotify) {
+void HTMLPictureElement::RemoveChildNode(
+    nsIContent* aKid, bool aNotify, const BatchRemovalState* aState,
+    nsINode* aNewParent, MutationEffectOnScript aMutationEffectOnScript) {
   MOZ_ASSERT(aKid);
 
   if (auto* img = HTMLImageElement::FromNode(aKid)) {
@@ -45,13 +46,15 @@ void HTMLPictureElement::RemoveChildNode(nsIContent* aKid, bool aNotify) {
     }
   }
 
-  nsGenericHTMLElement::RemoveChildNode(aKid, aNotify);
+  nsGenericHTMLElement::RemoveChildNode(aKid, aNotify, aState, aNewParent,
+                                        aMutationEffectOnScript);
 }
 
-void HTMLPictureElement::InsertChildBefore(nsIContent* aKid,
-                                           nsIContent* aBeforeThis,
-                                           bool aNotify, ErrorResult& aRv) {
-  nsGenericHTMLElement::InsertChildBefore(aKid, aBeforeThis, aNotify, aRv);
+void HTMLPictureElement::InsertChildBefore(
+    nsIContent* aKid, nsIContent* aBeforeThis, bool aNotify, ErrorResult& aRv,
+    nsINode* aOldParent, MutationEffectOnScript aMutationEffectOnScript) {
+  nsGenericHTMLElement::InsertChildBefore(aKid, aBeforeThis, aNotify, aRv,
+                                          aOldParent, aMutationEffectOnScript);
   if (aRv.Failed() || !aKid) {
     return;
   }

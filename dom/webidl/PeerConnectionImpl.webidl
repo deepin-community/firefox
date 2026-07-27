@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -123,7 +122,7 @@ interface PeerConnectionImpl  {
 
   /* Data channels */
   [Throws]
-  RTCDataChannel createDataChannel(DOMString label, DOMString protocol,
+  RTCDataChannel createDataChannel(UTF8String label, UTF8String protocol,
     unsigned short type, boolean ordered,
     unsigned short maxTime, unsigned short maxNum,
     boolean externalNegotiated, unsigned short stream);

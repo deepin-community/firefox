@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +6,8 @@
 #define mozilla_image_ImageUtils_h
 
 #include "FrameTimeout.h"
+#include "Orientation.h"
 #include "mozilla/image/SurfaceFlags.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/RefPtr.h"
@@ -33,10 +32,11 @@ class SourceBuffer;
  * The type of decoder; this is usually determined from a MIME type using
  * DecoderFactory::GetDecoderType() or ImageUtils::GetDecoderType().
  */
-enum class DecoderType {
+enum class DecoderType : uint8_t {
   PNG,
   GIF,
   JPEG,
+  JPEG_PDF,
   BMP,
   BMP_CLIPBOARD,
   ICO,
@@ -48,6 +48,7 @@ enum class DecoderType {
 };
 
 struct DecodeMetadataResult {
+  CopyableTArray<OrientedIntSize> mNativeSizes;
   int32_t mWidth = 0;
   int32_t mHeight = 0;
   int32_t mRepetitions = -1;
@@ -126,7 +127,7 @@ class ImageUtils {
  public:
   static already_AddRefed<AnonymousDecoder> CreateDecoder(
       SourceBuffer* aSourceBuffer, DecoderType aType,
-      SurfaceFlags aSurfaceFlags);
+      const Maybe<gfx::IntSize>& aOutputSize, SurfaceFlags aSurfaceFlags);
 
   static DecoderType GetDecoderType(const nsACString& aMimeType);
 

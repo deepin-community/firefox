@@ -1,5 +1,24 @@
 "use strict";
 
+const { ASRouterScreenUtils } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/ASRouterScreenUtils.sys.mjs"
+);
+
+const { ASRouterTargeting } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/ASRouterTargeting.sys.mjs"
+);
+
+const { OnboardingMessageProvider } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/OnboardingMessageProvider.sys.mjs"
+);
+
+function makeSplashScreen() {
+  const message = OnboardingMessageProvider.getPreonboardingMessages().find(
+    m => m.id === "NEW_USER_TOU_ONBOARDING"
+  );
+  return message.screens.find(s => s.id === "TOU_ONBOARDING_LOADING");
+}
+
 const TEST_DEFAULT_CONTENT = [
   {
     id: "AW_STEP1",
@@ -50,27 +69,16 @@ const TEST_DEFAULT_CONTENT = [
 ];
 
 const TEST_DEFAULT_JSON = JSON.stringify(TEST_DEFAULT_CONTENT);
-async function openAboutWelcome() {
-  await setAboutWelcomePref(true);
-  await setAboutWelcomeMultiStage(TEST_DEFAULT_JSON);
 
-  let tab = await BrowserTestUtils.openNewForegroundTab(
-    gBrowser,
-    "about:welcome",
-    true
-  );
-  registerCleanupFunction(() => {
-    BrowserTestUtils.removeTab(tab);
+add_setup(async () => {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.backup.restore.enabled", false]],
   });
-  return tab.linkedBrowser;
-}
+});
 
 add_task(async function second_screen_filtered_by_targeting() {
   const sandbox = sinon.createSandbox();
-  let browser = await openAboutWelcome();
-  let aboutWelcomeActor = await getAboutWelcomeParent(browser);
-  // Stub AboutWelcomeParent Content Message Handler
-  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+  let browser = await openAboutWelcome(TEST_DEFAULT_JSON);
 
   await test_screen_content(
     browser,
@@ -127,17 +135,6 @@ add_task(async function test_aboutwelcome_mr_template_easy_setup_default() {
     ]
   );
 
-  await onButtonClick(browser, ".action-buttons button.secondary");
-
-  await test_screen_content(
-    browser,
-    "renders mobile download screen",
-    //Expected selectors:
-    ["main.AW_MOBILE_DOWNLOAD"],
-    //Unexpected selectors:
-    ["main.AW_IMPORT_SETTINGS_EMBEDDED"]
-  );
-
   await cleanup();
   await popPrefs();
   sandbox.restore();
@@ -191,6 +188,7 @@ add_task(
       ["messaging-system-action.showEmbeddedImport", false]
     );
     sandbox.stub(ShellService, "doesAppNeedPin").returns(false);
+    sandbox.stub(ShellService, "doesAppNeedStartMenuPin").returns(false);
     sandbox.stub(ShellService, "isDefaultBrowser").returns(false);
 
     await clearHistoryAndBookmarks();
@@ -211,16 +209,6 @@ add_task(
       ]
     );
 
-    await onButtonClick(browser, ".action-buttons button.secondary");
-    await test_screen_content(
-      browser,
-      "renders mobile download screen",
-      //Expected selectors:
-      ["main.AW_MOBILE_DOWNLOAD"],
-      //Unexpected selectors:
-      ["main.AW_IMPORT_SETTINGS_EMBEDDED"]
-    );
-
     await cleanup();
     await popPrefs();
     sandbox.restore();
@@ -238,6 +226,7 @@ add_task(async function test_aboutwelcome_mr_template_easy_setup_only_import() {
     ["messaging-system-action.showEmbeddedImport", false]
   );
   sandbox.stub(ShellService, "doesAppNeedPin").returns(false);
+  sandbox.stub(ShellService, "doesAppNeedStartMenuPin").returns(false);
   sandbox.stub(ShellService, "isDefaultBrowser").returns(true);
 
   await clearHistoryAndBookmarks();
@@ -258,17 +247,102 @@ add_task(async function test_aboutwelcome_mr_template_easy_setup_only_import() {
     ]
   );
 
-  await onButtonClick(browser, ".action-buttons button.secondary");
-  await test_screen_content(
-    browser,
-    "renders mobile download screen",
-    //Expected selectors:
-    ["main.AW_MOBILE_DOWNLOAD"],
-    //Unexpected selectors:
-    ["main.AW_IMPORT_SETTINGS_EMBEDDED"]
-  );
-
   await cleanup();
   await popPrefs();
   sandbox.restore();
+});
+
+add_task(
+  async function test_splash_screen_removed_when_experiments_gate_disabled() {
+    await SpecialPowers.pushPrefEnv({
+      set: [["browser.aboutwelcome.experimentsGate.enabled", false]],
+    });
+
+    const result = await ASRouterScreenUtils.evaluateTargetingAndRemoveScreens([
+      makeSplashScreen(),
+    ]);
+    Assert.equal(
+      result.length,
+      0,
+      "Splash screen removed when experimentsGate.enabled is false"
+    );
+
+    await SpecialPowers.popPrefEnv();
+  }
+);
+
+add_task(
+  async function test_splash_screen_kept_when_experiments_gate_enabled() {
+    await SpecialPowers.pushPrefEnv({
+      set: [
+        ["browser.aboutwelcome.experimentsGate.enabled", true],
+        ["browser.aboutwelcome.experimentsGate.skipSplashIfLoaded", false],
+      ],
+    });
+
+    const result = await ASRouterScreenUtils.evaluateTargetingAndRemoveScreens([
+      makeSplashScreen(),
+    ]);
+    Assert.equal(
+      result.length,
+      1,
+      "Splash screen kept when experimentsGate.enabled is true"
+    );
+
+    await SpecialPowers.popPrefEnv();
+  }
+);
+
+add_task(
+  async function test_splash_screen_removed_when_nimbus_already_loaded() {
+    const sandbox = sinon.createSandbox();
+    sandbox
+      .stub(ASRouterTargeting.Environment, "experimentsLoaded")
+      .get(() => true);
+
+    await SpecialPowers.pushPrefEnv({
+      set: [
+        ["browser.aboutwelcome.experimentsGate.enabled", true],
+        ["browser.aboutwelcome.experimentsGate.skipSplashIfLoaded", true],
+      ],
+    });
+
+    const result = await ASRouterScreenUtils.evaluateTargetingAndRemoveScreens([
+      makeSplashScreen(),
+    ]);
+    Assert.equal(
+      result.length,
+      0,
+      "Splash screen removed when skipSplashIfLoaded is true and Nimbus is already loaded"
+    );
+
+    sandbox.restore();
+    await SpecialPowers.popPrefEnv();
+  }
+);
+
+add_task(async function test_splash_screen_kept_when_nimbus_not_yet_loaded() {
+  const sandbox = sinon.createSandbox();
+  sandbox
+    .stub(ASRouterTargeting.Environment, "experimentsLoaded")
+    .get(() => false);
+
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["browser.aboutwelcome.experimentsGate.enabled", true],
+      ["browser.aboutwelcome.experimentsGate.skipSplashIfLoaded", true],
+    ],
+  });
+
+  const result = await ASRouterScreenUtils.evaluateTargetingAndRemoveScreens([
+    makeSplashScreen(),
+  ]);
+  Assert.equal(
+    result.length,
+    1,
+    "Splash screen kept when skipSplashIfLoaded is true but Nimbus has not loaded yet"
+  );
+
+  sandbox.restore();
+  await SpecialPowers.popPrefEnv();
 });

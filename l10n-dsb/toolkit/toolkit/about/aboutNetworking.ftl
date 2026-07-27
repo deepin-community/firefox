@@ -12,6 +12,13 @@ about-networking-dns-trr-url = DoH URL
 about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-sufiks
 about-networking-websockets = Websokety
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Póchad
+about-networking-alt-svc-alternate = Alternatiwny
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Pśeglědany
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Izolaciski kluc
 about-networking-refresh = Aktualizěrowaś
 about-networking-auto-refresh = Kužde 3 sekundy aktualizěrowaś
 about-networking-hostname = Hostmě
@@ -39,6 +46,7 @@ about-networking-dns-lookup = DNS-pytanje
 about-networking-dns-lookup-button = Rozeznaś
 about-networking-dns-domain = Domena:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP-RRs
 about-networking-rcwn = Statistika RCWN
 about-networking-rcwn-status = Status RCWN
@@ -53,8 +61,8 @@ about-networking-rcwn-perf-entry-open = Zapisk wócynjony
 about-networking-rcwn-avg-short = Krotki pśerězk
 about-networking-rcwn-avg-long = Dłujki pśerězk
 about-networking-rcwn-std-dev-long = Dłujke standardne wótchylenje
-about-networking-rcwn-cache-slow = Pomałe licenje pufrowaś
-about-networking-rcwn-cache-not-slow = Pomałe licenje njepufrowaś
+about-networking-rcwn-cache-slow = Pómałe licenje pufrowaś
+about-networking-rcwn-cache-not-slow = Pómałe licenje njepufrowaś
 about-networking-networkid = Seśowy ID
 about-networking-networkid-id = Seśowy ID
 # Note: do not translate about:logging, as it is a URL.
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Toś ten bok jo se pśesunuła do <a data
 
 about-networking-networkid-is-up = Wótkaz jo pśepadnjony
 about-networking-networkid-status-known = Wótkazowy status jo znaty
-
-##
-

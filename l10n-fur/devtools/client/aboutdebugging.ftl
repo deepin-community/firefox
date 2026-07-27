@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Operazion di debug - runtime / { $sele
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Chest { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Chest { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Chest { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Configurazion
+about-debugging-sidebar-setup-title =
+    .title = Configurazion
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Servizi Push
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Origjin
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Pal moment la ispezion dal Service Worker e je disativade pe version multiprocès di { -brand-shorter-name }
@@ -325,6 +336,9 @@ about-debugging-multiprocess-toolbox-name = Cassele dai imprescj multiprocès
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Procès principâl e procès pai contignûts pal navigadôr di destinazion
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Siere il messaç
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Siere il messaç

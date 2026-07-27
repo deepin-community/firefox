@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHttpRequestHead_h__
-#define nsHttpRequestHead_h__
+#ifndef nsHttpRequestHead_h_
+#define nsHttpRequestHead_h_
 
 #include "nsHttp.h"
 #include "nsHttpHeaderArray.h"
@@ -22,6 +21,8 @@ struct ParamTraits;
 
 namespace mozilla {
 namespace net {
+
+class DictionaryCacheEntry;
 
 //-----------------------------------------------------------------------------
 // nsHttpRequestHead represents the request line and headers from an HTTP
@@ -54,6 +55,8 @@ class nsHttpRequestHead {
   void SetVersion(HttpVersion version);
   void SetRequestURI(const nsACString& s);
   void SetPath(const nsACString& s);
+  // keep a ref to the dictionary we offered, if any
+  void SetDictionary(DictionaryCacheEntry* aDict);
   uint32_t HeaderCount();
 
   // Using this function it is possible to itereate through all headers
@@ -101,6 +104,7 @@ class nsHttpRequestHead {
     kMethod_Custom,
     kMethod_Get,
     kMethod_Post,
+    kMethod_Patch,
     kMethod_Options,
     kMethod_Connect,
     kMethod_Head,
@@ -115,6 +119,7 @@ class nsHttpRequestHead {
   bool EqualsMethod(ParsedMethodType aType);
   bool IsGet() { return EqualsMethod(kMethod_Get); }
   bool IsPost() { return EqualsMethod(kMethod_Post); }
+  bool IsPatch() { return EqualsMethod(kMethod_Patch); }
   bool IsOptions() { return EqualsMethod(kMethod_Options); }
   bool IsConnect() { return EqualsMethod(kMethod_Connect); }
   bool IsHead() { return EqualsMethod(kMethod_Head); }
@@ -134,14 +139,15 @@ class nsHttpRequestHead {
   nsCString mRequestURI MOZ_GUARDED_BY(mRecursiveMutex);
   nsCString mPath MOZ_GUARDED_BY(mRecursiveMutex);
 
+  RefPtr<DictionaryCacheEntry> mDict MOZ_GUARDED_BY(mRecursiveMutex);
+
   nsCString mOrigin MOZ_GUARDED_BY(mRecursiveMutex);
   ParsedMethodType mParsedMethod MOZ_GUARDED_BY(mRecursiveMutex){kMethod_Get};
   bool mHTTPS MOZ_GUARDED_BY(mRecursiveMutex){false};
 
   // We are using RecursiveMutex instead of a Mutex because VisitHeader
   // function calls nsIHttpHeaderVisitor::VisitHeader while under lock.
-  mutable RecursiveMutex mRecursiveMutex MOZ_UNANNOTATED{
-      "nsHttpRequestHead.mRecursiveMutex"};
+  mutable RecursiveMutex mRecursiveMutex{"nsHttpRequestHead.mRecursiveMutex"};
 
   // During VisitHeader we sould not allow call to SetHeader.
   bool mInVisitHeaders MOZ_GUARDED_BY(mRecursiveMutex){false};
@@ -152,4 +158,4 @@ class nsHttpRequestHead {
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // nsHttpRequestHead_h__
+#endif  // nsHttpRequestHead_h_

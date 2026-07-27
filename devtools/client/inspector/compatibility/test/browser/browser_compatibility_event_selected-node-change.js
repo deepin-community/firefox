@@ -8,11 +8,11 @@
 const TEST_URI = `
   <style>
   body {
-    ruby-align: center;
+    overflow-anchor: auto;
   }
 
   .has-issue {
-    scrollbar-width: thin;
+    user-select: auto;
     user-modify: read-only;
   }
 
@@ -31,12 +31,12 @@ const TEST_DATA_SELECTED = [
     selector: ".has-issue",
     expectedIssues: [
       {
-        property: "scrollbar-width",
-        url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+        property: "user-select",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
       },
       {
         property: "user-modify",
-        url: "https://developer.mozilla.org/docs/Web/CSS/user-modify",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-modify",
       },
     ],
   },
@@ -48,8 +48,8 @@ const TEST_DATA_SELECTED = [
     selector: "body",
     expectedIssues: [
       {
-        property: "ruby-align",
-        url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+        property: "overflow-anchor",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
       },
     ],
   },
@@ -57,16 +57,16 @@ const TEST_DATA_SELECTED = [
 
 const TEST_DATA_ALL = [
   {
-    property: "ruby-align",
-    url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+    property: "overflow-anchor",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
   },
   {
-    property: "scrollbar-width",
-    url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+    property: "user-select",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
   },
   {
     property: "user-modify",
-    url: "https://developer.mozilla.org/docs/Web/CSS/user-modify",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-modify",
   },
 ];
 

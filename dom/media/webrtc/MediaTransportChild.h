@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _MTRANSPORTCHILD_H__
-#define _MTRANSPORTCHILD_H__
+#ifndef MTRANSPORTCHILD_H_
+#define MTRANSPORTCHILD_H_
 
-#include "mozilla/dom/PMediaTransportChild.h"
 #include "mozilla/Mutex.h"
+#include "mozilla/dom/PMediaTransportChild.h"
 
 namespace mozilla {
 class MediaTransportHandlerIPC;
@@ -19,20 +19,22 @@ class MediaTransportChild : public dom::PMediaTransportChild {
   explicit MediaTransportChild(MediaTransportHandlerIPC* aUser);
 
   mozilla::ipc::IPCResult RecvOnCandidate(const string& transportId,
-                                          const CandidateInfo& candidateInfo);
+                                          CandidateInfo&& candidateInfo);
+  mozilla::ipc::IPCResult RecvOnCandidateError(
+      IceCandidateErrorInfo&& errorInfo);
   mozilla::ipc::IPCResult RecvOnAlpnNegotiated(const string& alpn);
-  mozilla::ipc::IPCResult RecvOnGatheringStateChange(const string& transportId,
-                                                     const int& state);
-  mozilla::ipc::IPCResult RecvOnConnectionStateChange(const string& transportId,
-                                                      const int& state);
-  mozilla::ipc::IPCResult RecvOnPacketReceived(const string& transportId,
-                                               const MediaPacket& packet);
+  mozilla::ipc::IPCResult RecvOnGatheringStateChange(
+      const string& transportId, const RTCIceGathererState& state);
+  mozilla::ipc::IPCResult RecvOnConnectionStateChange(
+      const string& transportId, const RTCIceTransportState& state);
+  mozilla::ipc::IPCResult RecvOnPacketReceived(string&& transportId,
+                                               MediaPacket&& packet);
   mozilla::ipc::IPCResult RecvOnEncryptedSending(const string& transportId,
-                                                 const MediaPacket& packet);
+                                                 MediaPacket&& packet);
   mozilla::ipc::IPCResult RecvOnStateChange(const string& transportId,
-                                            const int& state);
-  mozilla::ipc::IPCResult RecvOnRtcpStateChange(const string& transportId,
-                                                const int& state);
+                                            const TransportLayerState& state);
+  mozilla::ipc::IPCResult RecvOnRtcpStateChange(
+      const string& transportId, const TransportLayerState& state);
 
  private:
   virtual ~MediaTransportChild();

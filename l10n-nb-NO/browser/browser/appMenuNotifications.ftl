@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Avvis
     .secondarybuttonaccesskey = A
 appmenu-update-restart-message2 = Få den siste versjonen av { -brand-shorter-name }. Åpne faner og vinduer blir gjenopprettet.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Angre
+    .secondarybuttonaccesskey = A
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } kan ikke oppdateres automatisk til den seneste versjonen.
     .buttonlabel = Oppdater { -brand-shorter-name } likevel
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ikke nå
     .secondarybuttonaccesskey = n
 appmenu-update-other-instance-message = En ny { -brand-shorter-name }-oppdatering er tilgjengelig, men den kan ikke installeres fordi en annen versjon av { -brand-shorter-name } kjører. Lukk den for å fortsette oppdateringen, eller velg å oppdatere uansett (den andre versjon fungerer kanskje ikke riktig før du starter den på nytt).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
 appmenu-addon-post-install-message3 = Behandle utvidelser og temaer via applikasjonsmenyen.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Oppdater tillatelser og datainnstillinger når som helst i <a data-l10n-name="settings-link">innstillingene for utvidelsen</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Fest utvidelsen til verktøylinjen
+    .accesskey = F
 appmenu-addon-post-install-incognito-checkbox =
     .label = Tillat at denne utvidelsen kjøres i private vindu
     .accesskey = a
-    
 appmenu-new-tab-controlled-changes =
     .label = Din ny fane-side har blitt endret.
     .buttonlabel = Behold endringer

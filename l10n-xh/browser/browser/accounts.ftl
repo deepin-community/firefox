@@ -15,17 +15,6 @@ account-verify = Qinisekisa { $email }
 
 account-send-to-all-devices-titlecase = Thumela Kuzo Zonke iZixhobo
 
-## Displayed in the Send Tabs context menu when right clicking a tab, a page or a link
-## and the account has only 1 device connected.
-
-
-## Displayed in the Send Tabs context menu when right clicking a tab, a page or a link
-## and the Sync account is unverified. Redirects to the Sync preferences page.
-
-
-## These strings are used in a notification shown when a new device joins the Firefox account.
-
-
 ## These strings are used in a notification shown when we're opening
 ## a single tab another device sent us to display.
 ## The body for this notification is the URL of the received tab.
@@ -41,7 +30,6 @@ account-single-tab-arriving-from-device-title = Ithebhu evela kwi-{ $deviceName 
 ##   $tabCount (Number): the number of tabs received
 
 account-multiple-tabs-arriving-title = IiThebhu ziFunyenwe
-
 # Variables:
 #   $deviceName (String): the device name.
 account-multiple-tabs-arriving-from-single-device =

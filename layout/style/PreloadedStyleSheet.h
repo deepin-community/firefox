@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,9 +7,9 @@
 #ifndef mozilla_PreloadedStyleSheet_h
 #define mozilla_PreloadedStyleSheet_h
 
-#include "mozilla/css/SheetParsingMode.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/Result.h"
+#include "mozilla/css/SheetParsingMode.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsICSSLoaderObserver.h"
@@ -33,9 +31,7 @@ class PreloadedStyleSheet : public nsIPreloadedStyleSheet {
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_CLASS(PreloadedStyleSheet)
 
-  // *aResult is not addrefed, since the PreloadedStyleSheet holds a strong
-  // reference to the sheet.
-  nsresult GetSheet(StyleSheet** aResult);
+  Result<StyleSheet*, nsresult> GetSheet();
 
   nsresult Preload();
   nsresult PreloadAsync(NotNull<dom::Promise*> aPromise);

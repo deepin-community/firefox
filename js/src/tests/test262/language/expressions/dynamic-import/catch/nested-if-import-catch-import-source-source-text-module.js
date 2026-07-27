@@ -1,4 +1,4 @@
-// |reftest| skip async -- source-phase-imports is not supported
+// |reftest| shell-option(--enable-source-phase-imports) skip-if(!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('source-phase-imports'))||!xulRuntime.shell) async -- source-phase-imports is not enabled unconditionally, requires shell-options
 // This file was procedurally generated from the following sources:
 // - src/dynamic-import/import-source-source-text-module.case
 // - src/dynamic-import/catch/nested-if.template
@@ -24,7 +24,7 @@ info: |
 
     16.2.1.7.2 GetModuleSource ( )
     Source Text Module Record provides a GetModuleSource implementation that always returns an abrupt completion indicating that a source phase import is not available.
-    1. Throw a ReferenceError exception.
+    1. Throw a SyntaxError exception.
 
     Import Calls
 
@@ -50,7 +50,7 @@ info: |
 if (true) {
   import.source('./empty_FIXTURE.js').catch(error => {
 
-    assert.sameValue(error.name, 'ReferenceError');
+    assert.sameValue(error.name, 'SyntaxError');
 
   }).then($DONE, $DONE);
 }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,6 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "nsIObserverService.h"
-#include "NSPRLogModulesParser.h"
 #include "nsString.h"
 #include "nsXULAppAPI.h"
 #include "prenv.h"
@@ -25,7 +22,6 @@ static const char kLoggingPrefLogFile[] = "logging.config.LOG_FILE";
 static const char kLoggingPrefAddTimestamp[] = "logging.config.add_timestamp";
 static const char kLoggingPrefSync[] = "logging.config.sync";
 static const char kLoggingPrefStacks[] = "logging.config.profilerstacks";
-static const char kLoggingPrefLogModules[] = "logging.config.modules";
 
 namespace mozilla {
 
@@ -78,7 +74,7 @@ static void LoadPrefValue(const char* aName) {
         prefValue.AppendLiteral(MOZ_LOG_PID_TOKEN);
       }
 
-      LogModule::SetLogFile(prefValue.BeginReading());
+      LogModule::SetLogFile(prefValue.get());
     } else if (prefName.EqualsLiteral(kLoggingPrefAddTimestamp)) {
       bool addTimestamp = Preferences::GetBool(aName, false);
       LogModule::SetAddTimestamp(addTimestamp);
@@ -88,33 +84,6 @@ static void LoadPrefValue(const char* aName) {
     } else if (prefName.EqualsLiteral(kLoggingPrefStacks)) {
       bool captureStacks = Preferences::GetBool(aName, false);
       LogModule::SetCaptureStacks(captureStacks);
-    } else if (prefName.EqualsLiteral(kLoggingPrefLogModules)) {
-      // The content of the preference will be parsed as a MOZ_LOG string, then
-      // the corresponding log modules (if any) will be enabled, others will be
-      // disabled.
-      LogModule::DisableModules();
-      LogModule::SetCaptureStacks(false);
-
-      const char* modulesFromEnv = PR_GetEnv("MOZ_LOG");
-      const bool hasModulesEnv = modulesFromEnv && modulesFromEnv[0];
-
-      rv = Preferences::GetCString(aName, prefValue);
-      const bool hasModulesPref = NS_SUCCEEDED(rv) && !prefValue.IsEmpty();
-
-      if (hasModulesEnv || hasModulesPref) {
-        NSPRLogModulesParser(
-            hasModulesPref ? prefValue.BeginReading() : modulesFromEnv,
-            [](const char* aName, LogLevel aLevel, int32_t aValue) mutable {
-              // Only the special string "profilerstacks" is taken into account,
-              // because we're especially interested in usage with the Firefox
-              // Profiler.
-              if (strcmp(aName, "profilerstacks") == 0) {
-                LogModule::SetCaptureStacks(true);
-              } else {
-                LogModule::Get(aName)->SetLevel(aLevel);
-              }
-            });
-      }
     }
   }
 

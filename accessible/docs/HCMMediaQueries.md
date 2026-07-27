@@ -55,7 +55,7 @@ Firefox's chrome style sheets (including those in our `about:` pages) are not pr
 
 Where possible, we prefer color overriding for `prefers-contrast` and `forced-colors` take place in one block at the `root` level rather than in many blocks on an element-by-element basis. We encourage developers to use [design systems tokens](https://searchfox.org/mozilla-central/rev/c130c69b7b863d5e28ab9524b65c27c7a9507c48/toolkit/themes/shared/design-system/tokens-shared.css) with semantic naming when overriding. Consider the following.
 
-```css
+```text
 :root {
   --page-background: #cccccc;
   --page-text-color: #000000;
@@ -76,7 +76,7 @@ Here, we've defined one set of color variables on `:root` and subsequently overr
 
 Though `forced-colors` overriding doesn't happen in Firefox chrome style sheets, our style system _does_ force all instances of `transparent` to the [default color](https://searchfox.org/mozilla-central/rev/655f49c541108e3d0a232aa7173fbcb9af88d80b/servo/components/style/properties/cascade.rs#468-481) for a color attribute (usually `CanvasText`). This allows us to specify styles that appear only in forced-colors mode without an additional CSS keyword. It is also sometimes beneficial to define vars at the `:root` level with an initial value (eg. `transparent`, `0px`, `none`) so the vars exist for HCM overriding later (see: `--dialog-border-width`).
 
-```css
+```text
 :root {
   /* ... */
   --dialog-background: #ffffff;
@@ -105,31 +105,33 @@ Though `forced-colors` overriding doesn't happen in Firefox chrome style sheets,
 
 In general, it is best to do overriding at the `:root` level, even if additional variables are required. It is _not_ recommended to do overriding on a class-by-class or element-by-element basis, like below:
 
-```css
+```text
 :root {
   /* ... */
   --button-background: #ffffff;
-  --button-color: #bbbbbb;
+  --button-text-color: #bbbbbb;
 
   @media (forced-colors) {
     /* ... */
     --button-background: ButtonFace;
-    --button-color: ButtonText;
-    --button-border-color: var(--button-color);
+    --button-text-color: ButtonText;
+    --button-border-color: var(--button-text-color);
   }
 }
 
 @media (forced-colors) {
   /* BAD: These rules are generic and should be outside of a @media block */
   .destroyButton {
-    color: var(--button-color);
+    color: var(--button-text-color);
     background-color: var(--button-background);
     border: 1px solid var(--button-border-color);
   }
 }
 
 @media (not (forced-colors)) {
-  /* BAD: These rules are generic and should be outside of a @media block */
+  /* BAD: Element-level styling should not be placed in media query blocks.
+   * See "Scoping token overrides with @media (not (forced-colors))" below
+   * for when this pattern IS appropriate. */
   .destroyButton {
     color: var(--light-grey-20);
     background-color: var(--red-60);
@@ -137,6 +139,45 @@ In general, it is best to do overriding at the `:root` level, even if additional
 }
 /*...*/
 ```
+
+## Scoping token overrides with `@media (not (forced-colors))`
+
+When you introduce a custom override for a CSS variable that **already has a `@media (forced-colors)` value in the design system token layer**, wrapping your override in `@media (not (forced-colors))` prevents it from replacing that value. When forced-colors is active, the scoped declaration does not apply at all, leaving the token layer's system-color value as the only one in effect — no extra forced-colors handling required.
+
+Consider a variable that already has a forced-colors override in the token layer:
+
+```css
+:root {
+  --page-background: #f0f0f0;
+
+  @media (forced-colors) {
+    --page-background: Canvas;
+  }
+}
+```
+
+A component author later adds a dark-mode-aware override:
+
+```text
+/* BAD: replaces the token layer's Canvas value for forced-colors users */
+:root {
+  --page-background: light-dark(#f0f0f0, #1a1a1a);
+}
+
+/* GOOD: only applies when forced-colors is not active, so forced-colors
+ * users still get the Canvas value from the token layer above */
+@media (not (forced-colors)) {
+  :root {
+    --page-background: light-dark(#f0f0f0, #1a1a1a);
+  }
+}
+```
+
+When choosing between `@media (not (forced-colors))` and `@media (not (prefers-contrast))` you need to consider a few things:
+- Do defaults exist for the tokens you're overriding in *both* the prefers-contrast layer and the forced-colors layer? Or are defaults only specified in a single layer? Remember: the goal of this override strategy is to reveal the defeault token values.
+- Do your new token values increase contrast? If so, they could be more valuable to `prefers-contrast` users than the existing token defaults. You should consider exempting `forced-colors` users only.
+
+In most cases, `(not (forced-colors))` is the right choice: it leaves the existing token layer's forced-colors handling in effect, while users who have only a contrast preference (and no active forced-colors mode) continue to benefit from non-system-color visual enhancements.
 
 ## Putting it all together!
 
@@ -171,7 +212,7 @@ The majority of our site styling is done via color overriding on the root block.
 How might we adapt this website for users who prefer increased contrast? What about for users with forced colors?
 
 Let's start with users who prefer increased contrast. We might decide to make the background and foreground easier to read by making the foreground text lighter, increasing the contrast ratio. We might also remove the note's opacity and darken its text color. We don't need to remove the note's golden background, since prefers-contrast doesn't require a reduced color palette.
-```css
+```text
 :root {
   /* ... */
   @media (prefers-contrast) and (not (forced-colors)) {
@@ -185,7 +226,7 @@ Let's start with users who prefer increased contrast. We might decide to make th
 }
 ```
 To address these same issues in forced-colors mode, we should replace the colors with the semantically appropriate system color. Unlike our work in the `prefers-contrast` block above, we do need to modify the note's background, since `gold` is not a system color. We might end up with something like this:
-```css
+```text
 :root {
   /* ... */
   @media (forced-colors) {
@@ -203,7 +244,7 @@ To address these same issues in forced-colors mode, we should replace the colors
 ```
 
 After this change, you'll notice our page background, table background, and note background all share the same color. This makes them difficult to differentiate. To address this, we can add a contrasting border and override the previously transparent `--border-color` variable and its corresponding `--border-size`. This var applies to content areas but not controls.
-```css
+```text
 :root {
   /* ... */
   @media (forced-colors) {
@@ -223,7 +264,7 @@ After this change, you'll notice our page background, table background, and note
 ```
 
 Next, let's look at the controls this page uses for the web form. We've got an input, a checkbox, a submit button, and a clear button. In the prefers-contrast case, we should ensure the controls contrast from the background as much as possible. It's possible to do this via color alone, but it can help to add borders for additional contrast. Here, again, we don't need to get rid of the clear button's `tomato` background, but we can update it to something brighter.
-```css
+```text
 :root {
   /* ... */
   @media (prefers-contrast) and (not (forced-colors)) {
@@ -242,7 +283,7 @@ Next, let's look at the controls this page uses for the web form. We've got an i
 ```
 
 Finally, let's style the page's controls for `forced-colors`. Unlike in prefers-contrast, we can't use color to differentiate between the submit button and the clear form button -- both should inherit from our button CSS system colors.
-```css
+```text
 :root {
   /* ... */
   @media (forced-colors) {
@@ -268,7 +309,7 @@ Finally, let's style the page's controls for `forced-colors`. Unlike in prefers-
 ```
 
 If we wanted to make the submit button stand out as a primary button, we could invert the styling on that button in particular. Something like:
-```css
+```text
 :root {
   /* ... */
   @media (forced-colors) {

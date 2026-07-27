@@ -1,12 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/DeprecationReportBody.h"
-#include "mozilla/dom/ReportingBinding.h"
+
+#include "js/Date.h"
 #include "mozilla/JSONWriter.h"
+#include "mozilla/dom/ReportingBinding.h"
 
 namespace mozilla::dom {
 
@@ -34,8 +34,13 @@ JSObject* DeprecationReportBody::WrapObject(JSContext* aCx,
 
 void DeprecationReportBody::GetId(nsAString& aId) const { aId = mId; }
 
-Nullable<uint64_t> DeprecationReportBody::GetAnticipatedRemoval() const {
-  return mDate;
+void DeprecationReportBody::GetAnticipatedRemoval(
+    JSContext* aCx, JS::MutableHandle<JSObject*> aResult) const {
+  if (!mDate.IsNull()) {
+    JSObject* date =
+        JS::NewDateObject(aCx, JS::TimeClip(int64_t(mDate.Value())));
+    aResult.set(date);
+  }
 }
 
 void DeprecationReportBody::GetMessage(nsAString& aMessage) const {

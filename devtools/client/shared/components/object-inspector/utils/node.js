@@ -4,16 +4,16 @@
 
 const {
   maybeEscapePropertyName,
-} = require("resource://devtools/client/shared/components/reps/reps/rep-utils.js");
-const ArrayRep = require("resource://devtools/client/shared/components/reps/reps/array.js");
-const GripArrayRep = require("resource://devtools/client/shared/components/reps/reps/grip-array.js");
-const GripMap = require("resource://devtools/client/shared/components/reps/reps/grip-map.js");
-const GripEntryRep = require("resource://devtools/client/shared/components/reps/reps/grip-entry.js");
-const ErrorRep = require("resource://devtools/client/shared/components/reps/reps/error.js");
-const BigIntRep = require("resource://devtools/client/shared/components/reps/reps/big-int.js");
+} = ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/rep-utils.mjs", {global: "current"});
+const ArrayRep = ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/array.mjs", {global: "current"});
+const GripArrayRep = ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/grip-array.mjs", {global: "current"});
+const GripMap =  ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/grip-map.mjs", {global: "current"});
+const GripEntryRep =  ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/grip-entry.mjs", {global: "current"});
+const ErrorRep =  ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/error.mjs", {global: "current"});
+const BigIntRep =  ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/big-int.mjs", {global: "current"});
 const {
   isLongString,
-} = require("resource://devtools/client/shared/components/reps/reps/string.js");
+} = ChromeUtils.importESModule("resource://devtools/client/shared/components/reps/reps/string.mjs", {global: "current"});
 
 const MAX_NUMERICAL_PROPERTIES = 100;
 
@@ -33,7 +33,8 @@ const NODE_TYPES = {
   SET: Symbol("<set>"),
   PROTOTYPE: Symbol("<prototype>"),
   BLOCK: Symbol("☲"),
-  PRIMITIVE_VALUE: Symbol("<primitive value>")
+  PRIMITIVE_VALUE: Symbol("<primitive value>"),
+  GLOBAL: Symbol("<global>"),
 };
 
 let WINDOW_PROPERTIES = {};
@@ -200,6 +201,10 @@ function nodeIsProxy(item) {
 
 function nodeIsPrototype(item) {
   return getType(item) === NODE_TYPES.PROTOTYPE;
+}
+
+function nodeIsGlobal(item) {
+  return getType(item) === NODE_TYPES.GLOBAL;
 }
 
 function nodeIsWindow(item) {
@@ -497,7 +502,7 @@ function makeDefaultPropsBucket(propertiesNames, parent, ownProperties) {
     ownProperties
   );
 
-  if (defaultProperties.length > 0) {
+  if (defaultProperties.length) {
     const defaultPropertiesNode = createNode({
       parent,
       name: "<default properties>",
@@ -544,6 +549,7 @@ function makeNodesForOwnProps(propertiesNames, parent, ownProperties) {
   });
 }
 
+// eslint-disable-next-line complexity
 function makeNodesForProperties(objProps, parent) {
   const {
     ownProperties = {},
@@ -551,6 +557,7 @@ function makeNodesForProperties(objProps, parent) {
     privateProperties,
     prototype,
     safeGetterValues,
+    global,
   } = objProps;
 
   const parentValue = getValue(parent);
@@ -679,6 +686,11 @@ function makeNodesForProperties(objProps, parent) {
     nodes.push(makeNodeForPrototype(objProps, parent));
   }
 
+  // Add the global if it exists and is not null
+  if (global && global.type !== "null") {
+    nodes.push(makeNodeForGlobal(objProps, parent));
+  }
+
   return nodes;
 }
 
@@ -710,6 +722,25 @@ function makeNodeForPrototype(objProps, parent) {
         front: prototype.getGrip ? prototype : null,
       },
       type: NODE_TYPES.PROTOTYPE,
+    });
+  }
+
+  return null;
+}
+
+function makeNodeForGlobal(objProps, parent) {
+  const { global } = objProps || {};
+
+  // Add the global if it exists and is not null
+  if (global && global.type !== "null") {
+    return createNode({
+      parent,
+      name: "<global>",
+      contents: {
+        value: global.getGrip ? global.getGrip() : global,
+        front: global.getGrip ? global : null,
+      },
+      type: NODE_TYPES.GLOBAL,
     });
   }
 
@@ -1039,6 +1070,7 @@ module.exports = {
   nodeHasFullText,
   nodeIsFunction,
   nodeIsGetter,
+  nodeIsGlobal,
   nodeIsMapEntry,
   nodeIsMissingArguments,
   nodeIsObject,

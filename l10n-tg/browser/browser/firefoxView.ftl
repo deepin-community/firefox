@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Пӯшидан
     .aria-label = Пӯшидан
-firefoxview-empty-state-icon =
-    .alt = Диққат:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ҳоли ҳозир
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% иҷро шуд
 firefoxview-tabpickup-step-signin-header = Байни дастгоҳҳо бе халал гузаред
 firefoxview-tabpickup-step-signin-description = Барои аз ин ҷо ба даст овардани варақаҳои браузери телефони худ, аввал ворид шавед ё ҳисоберо эҷод намоед.
 firefoxview-tabpickup-step-signin-primarybutton = Идома додан
-firefoxview-syncedtabs-signin-header = Варақаҳоро аз ҷойҳои дилхоҳ ба даст оред
-firefoxview-syncedtabs-signin-description = Барои дидани варақаҳои худ аз ҳар ҷое, ки шумо аз «{ -brand-product-name }» истифода мебаред, ба ҳисоби худ ворид шавед. Агар шумо ҳисоб надошта бошед, мо ба шумо ҳангоми иҷрои қадамҳои сабти ном мусоидат менамоем.
-firefoxview-syncedtabs-signin-primarybutton = Ворид шавед ё сабти ном кунед
+firefoxview-syncedtabs-signin-header-2 = «{ -brand-product-name }»-и шумо дар ҳамаи дастгоҳҳои шумо
+firefoxview-syncedtabs-signin-description-2 = Барои дидани варақаҳое, ки шумо дар телефон ва дастгоҳҳои дигари худ кушодаед, ба ҳисоби худ ворид шавед ё ҳисоберо эҷод намоед. Ба воситаи ҳисоб шумо, инчунин, метавонед ниҳонвожаҳо, таърихи тамошо ва чизҳои дигарро ҳамоҳанг созед.
+firefoxview-syncedtabs-signin-primarybutton-2 = Ворид шудан
 firefoxview-tabpickup-adddevice-header = Ҳамоҳангсозии { -brand-product-name } дар телефон ва планшет
 firefoxview-tabpickup-adddevice-description = Браузери «{ -brand-product-name }»-ро барои телефони моболии худ боргирӣ кунед ва дар он ҷо ворид шавед.
 firefoxview-tabpickup-adddevice-learn-how = Бифаҳмед, ки чӣ тавр
 firefoxview-tabpickup-adddevice-primarybutton = Браузери «{ -brand-product-name }»-ро дар телефони мобилии худ насб кунед
-firefoxview-syncedtabs-adddevice-header = Дар дастгоҳҳои дигари худ ба «{ -brand-product-name }» ворид шавед
-firefoxview-syncedtabs-adddevice-description = Барои дидани варақаҳои худ аз ҳар ҷое, ки шумо аз «{ -brand-product-name }» истифода мебаред, дар ҳамаи дастгоҳҳои худ ворид шавед. Барои тарзи <a data-l10n-name="url">пайваст кардани дастгоҳҳои иловагӣ</a> маълумоти бештар гиред.
+firefoxview-syncedtabs-adddevice-header-2 = Варақаҳоро аз ҷойҳои дилхоҳ ба даст оред
+firefoxview-syncedtabs-adddevice-description-2 = Барои дидани варақаҳо дар ин ҷой, ба «{ -brand-product-name }» дар телефон ё компютери дигари худ ворид шавед. Маълумот гиред, ки чӣ тавр метавонед <a data-l10n-name="url">дастгоҳҳои иловагиро пайваст намоед</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Браузери «{ -brand-product-name }»-ро барои дастгоҳи мобилӣ кӯшиш кунед
 firefoxview-tabpickup-synctabs-header = Фаъол кардани ҳамоҳангсозӣ варақаҳо
 firefoxview-tabpickup-synctabs-description = Иҷозат диҳед, ки «{ -brand-short-name }» варақаҳоро байни дастгоҳҳо мубодила кунад.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Бифаҳмед, ки чӣ тавр
 firefoxview-tabpickup-synctabs-primarybutton = Ҳамоҳангсозии варақаҳои кушодашуда
 firefoxview-syncedtabs-synctabs-header = Танзимоти ҳамоҳангсозиро навсозӣ кунед
 firefoxview-syncedtabs-synctabs-description = Барои дидани варақаҳои худ аз дастгоҳҳои дигар, шумо бояд варақаҳои кушодаи худро ҳамоҳанг созед.
-firefoxview-syncedtabs-synctabs-checkbox = Иҷозат додан барои ҳамоҳангсозии варақаҳои кушода
 firefoxview-syncedtabs-loading-header = Дар ҳоли ҳамоҳангсозӣ
 firefoxview-syncedtabs-loading-description = Вақте ки раванд ба анҷом мерасад, шумо ҳамаи варақаҳоеро, ки дар дастгоҳҳои дигар кушодаед, дар ин ҷой мебинед. Ба наздикӣ ба ин ҷой баргардед.
 firefoxview-tabpickup-fxa-admin-disabled-header = Ташкилоти шумо имкони ҳамоҳангсозиро ғайрифаъол кард
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Пӯшидашудаи охирин
 firefoxview-closed-tabs-description2 = Аз нав кушодани ҳамаи варақаҳое, ки шумо дар ин равзана маҳкам кардед.
 firefoxview-closed-tabs-placeholder-header = Ягон варақаи ба наздикӣ пӯшидашуда нест
 firefoxview-closed-tabs-placeholder-body = Вақте ки шумо варақаеро дар ин равзана мепӯшед, шумо метавонед онро аз ин ҷо барқарор кунед.
-firefoxview-closed-tabs-placeholder-body2 = Вақте ки шумо варақаеро мепӯшед, шумо метавонед онро аз ин ҷо барқарор кунед.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -105,10 +101,10 @@ firefoxview-collapse-button-show =
     .title = Намоиш додани рӯйхат
 firefoxview-collapse-button-hide =
     .title = Пинҳон кардани рӯйхат
-firefoxview-overview-nav = Тамошокунии охирин
-    .title = Тамошокунии охирин
-firefoxview-overview-header = Тамошокунии охирин
-    .title = Тамошокунии охирин
+firefoxview-overview-nav = Тамошобинии охирин
+    .title = Тамошобинии охирин
+firefoxview-overview-header = Тамошобинии охирин
+    .title = Тамошобинии охирин
 
 ## History in this context refers to browser history
 
@@ -148,10 +144,8 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Равзанаи { $winID } (Ҷорӣ)
-firefoxview-opentabs-focus-tab =
-    .title = Ба ин варақа гузаштан
 firefoxview-show-more = Бештар нишон диҳед
-firefoxview-show-less = Камтар нишон диҳед
+firefoxview-show-less = Камтар нишон додан
 firefoxview-show-all = Ҳамаро намоиш додан
 firefoxview-search-text-box-clear-button =
     .title = Пок кардан
@@ -161,12 +155,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Ҷустуҷӯ дар таърих
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Ҷустуҷӯ дар хатбаракҳо
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Ҷустуҷӯи варақаҳои ба наздикӣ пӯшидашуда
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Ҷустуҷӯ дар варақаҳои ҳамоҳангшуда
+firefoxview-search-text-box-tabs =
+    .placeholder = Ҷустуҷӯ дар варақаҳо
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Ҷустуҷӯ дар варақаҳои кушодашуда
@@ -189,10 +186,6 @@ firefoxview-sort-history-by-date-label = Мураттаб кардан аз рӯ
 firefoxview-sort-history-by-site-label = Мураттаб кардан аз рӯи сомона
 firefoxview-sort-open-tabs-by-recency-label = Мураттаб кардан аз рӯи фаъолияти охирин
 firefoxview-sort-open-tabs-by-order-label = Мураттаб кардан аз рӯи тартиби варақаҳо
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Гузариш ба { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,12 +202,11 @@ firefoxview-history-site-localhost = (файлҳои маҳаллӣ)
 ##
 
 firefoxview-show-all-history = Намоиш додани таърихи пурра
-firefoxview-view-more-browsing-history = Таърихи тамошокунии худро бештар аз назар гузаронед
 
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Ба он ҷое, ки шумо будед, баргардед
-firefoxview-history-empty-description = Бо гузашти вақти тамошокунӣ, саҳифаҳое, ки шумо боздид мекунед, дар ин рӯйхат намоиш дода мешаванд.
+firefoxview-history-empty-description = Бо гузашти вақти тамошобинӣ, саҳифаҳое, ки шумо боздид мекунед, дар ин рӯйхат намоиш дода мешаванд.
 firefoxview-history-empty-description-two = Муҳофизати махфияти шумо дар маркази диққати фаъолияти мо қарор дорад. Бинобар ин, шумо метавонед фаъолиятеро, ки «{ -brand-short-name }» дар хотир медорад, тавассути <a data-l10n-name="history-settings-url">танзимоти таърихи</a> худ идора намоед.
 
 ##
@@ -225,9 +217,8 @@ firefoxview-choose-browser-button = Браузерро интихоб намое
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Ягон маълумот нест
-firefoxview-dont-remember-history-empty-description = Муҳофизати махфияти шумо дар маркази диққати фаъолияти мо қарор дорад. Бинобар ин, шумо метавонед фаъолиятеро, ки «{ -brand-short-name }» дар хотир медорад, идора намоед.
-firefoxview-dont-remember-history-empty-description-two = Мувофиқи танзимоти ҷории шумо, вақте ки шумо дар Интернет кор мекунед, «{ -brand-short-name }» фаъолияти шуморо дар хотир намедорад. Барои иваз кардани ин танзим, <a data-l10n-name="history-settings-url-two">танзимоти таърихи худро иваз кунед, то таърихи шумо тавонад дар хотир нигоҳ дошта шавад</a>.
+firefoxview-dont-remember-history-empty-header-2 = Шумо идора мекунед, ки чӣ дар ҳофизаи «{ -brand-short-name }» нигоҳ дошта мешавад
+firefoxview-dont-remember-history-empty-description-one = Дар айни замон, «{ -brand-short-name }» фаъолияти тамошои шуморо дар браузер дар хотир намедорад. Барои иваз кардани ин вазъият, <a data-l10n-name="history-settings-url-two">танзимоти таърихи худро навсозӣ кунед</a>.
 
 ##
 
@@ -239,13 +230,13 @@ firefoxview-import-history-close-button =
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
 firefoxview-import-history-header = Ворид кардани таърих аз браузери дигар
-firefoxview-import-history-description = Браузери «{ -brand-short-name }»-ро ҳамчун браузери дӯстдоштаи худ истифода баред. Таърихи тамошокунӣ, хатбаракҳо ва бисёр чизҳои дигарро ворид намоед.
+firefoxview-import-history-description = Браузери «{ -brand-short-name }»-ро ҳамчун браузери дӯстдоштаи худ истифода баред. Таърихи тамошобинӣ, хатбаракҳо ва бисёр чизҳои дигарро ворид намоед.
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
 firefoxview-recentlyclosed-empty-header = Варақаеро хеле зуд пӯшидед?
 firefoxview-recentlyclosed-empty-description = Дар ин ҷо шумо варақаҳоеро, ки ба наздикӣ пӯшидаед, пайдо мекунед, то шумо тавонед яке аз онҳоро зуд аз нав кушоед.
-firefoxview-recentlyclosed-empty-description-two = Барои дидани варақаҳо қаблӣ, ба <a data-l10n-name="history-url">таърихи тамошокунӣ</a> нигаред.
+firefoxview-recentlyclosed-empty-description-two = Барои дидани варақаҳо қаблӣ, ба <a data-l10n-name="history-url">таърихи тамошобинӣ</a> нигаред.
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

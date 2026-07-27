@@ -1,22 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/ServoStyleRuleMap.h"
 
+#include "mozilla/IntegerRange.h"
+#include "mozilla/ServoBindings.h"
+#include "mozilla/ServoStyleSet.h"
+#include "mozilla/StyleSheetInlines.h"
 #include "mozilla/css/GroupRule.h"
 #include "mozilla/dom/CSSImportRule.h"
+#include "mozilla/dom/CSSNestedDeclarations.h"
+#include "mozilla/dom/CSSPositionTryRule.h"
 #include "mozilla/dom/CSSRuleBinding.h"
 #include "mozilla/dom/CSSStyleRule.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/ShadowRoot.h"
-#include "mozilla/IntegerRange.h"
-#include "mozilla/ServoStyleSet.h"
-#include "mozilla/StyleSheetInlines.h"
-#include "nsStyleSheetService.h"
 
 using namespace mozilla::dom;
 
@@ -81,6 +81,7 @@ void ServoStyleRuleMap::RuleRemoved(StyleSheet& aStyleSheet,
 
   switch (aStyleRule.Type()) {
     case StyleCssRuleType::Style:
+    case StyleCssRuleType::NestedDeclarations:
     case StyleCssRuleType::Import:
     case StyleCssRuleType::Media:
     case StyleCssRuleType::Supports:
@@ -89,11 +90,13 @@ void ServoStyleRuleMap::RuleRemoved(StyleSheet& aStyleSheet,
     case StyleCssRuleType::Document:
     case StyleCssRuleType::Scope:
     case StyleCssRuleType::StartingStyle:
+    case StyleCssRuleType::AppearanceBase:
     case StyleCssRuleType::PositionTry: {
       // See the comment in SheetRemoved.
       mTable.Clear();
       break;
     }
+    case StyleCssRuleType::CustomMedia:
     case StyleCssRuleType::LayerStatement:
     case StyleCssRuleType::FontFace:
     case StyleCssRuleType::Page:
@@ -105,6 +108,7 @@ void ServoStyleRuleMap::RuleRemoved(StyleSheet& aStyleSheet,
     case StyleCssRuleType::CounterStyle:
     case StyleCssRuleType::FontFeatureValues:
     case StyleCssRuleType::FontPaletteValues:
+    case StyleCssRuleType::ViewTransition:
       break;
   }
 }
@@ -116,11 +120,35 @@ size_t ServoStyleRuleMap::SizeOfIncludingThis(
   return n;
 }
 
+void ServoStyleRuleMap::RuleDeclarationsChanged(
+    css::Rule& aRule, const StyleLockedDeclarationBlock* aOld,
+    const StyleLockedDeclarationBlock* aNew) {
+  MOZ_ASSERT(aOld);
+  MOZ_ASSERT(aNew);
+  if (IsEmpty()) {
+    return;
+  }
+  auto old = mTable.Extract(aOld);
+  MOZ_ASSERT(old.valueOr(nullptr) == &aRule,
+             "We were tracking the wrong rule?");
+  mTable.InsertOrUpdate(aNew, &aRule);
+}
+
 void ServoStyleRuleMap::FillTableFromRule(css::Rule& aRule) {
   switch (aRule.Type()) {
+    case StyleCssRuleType::NestedDeclarations: {
+      auto& rule = static_cast<CSSNestedDeclarations&>(aRule);
+      mTable.InsertOrUpdate(rule.RawStyle(), &rule);
+      break;
+    }
+    case StyleCssRuleType::PositionTry: {
+      auto& rule = static_cast<CSSPositionTryRule&>(aRule);
+      mTable.InsertOrUpdate(rule.RawStyle(), &rule);
+      break;
+    }
     case StyleCssRuleType::Style: {
       auto& rule = static_cast<CSSStyleRule&>(aRule);
-      mTable.InsertOrUpdate(rule.Raw(), &rule);
+      mTable.InsertOrUpdate(rule.RawStyle(), &rule);
       [[fallthrough]];
     }
     case StyleCssRuleType::LayerBlock:
@@ -129,7 +157,8 @@ void ServoStyleRuleMap::FillTableFromRule(css::Rule& aRule) {
     case StyleCssRuleType::Container:
     case StyleCssRuleType::Document:
     case StyleCssRuleType::Scope:
-    case StyleCssRuleType::StartingStyle: {
+    case StyleCssRuleType::StartingStyle:
+    case StyleCssRuleType::AppearanceBase: {
       auto& rule = static_cast<css::GroupRule&>(aRule);
       FillTableFromRuleList(*rule.CssRules());
       break;
@@ -141,6 +170,7 @@ void ServoStyleRuleMap::FillTableFromRule(css::Rule& aRule) {
       }
       break;
     }
+    case StyleCssRuleType::CustomMedia:
     case StyleCssRuleType::LayerStatement:
     case StyleCssRuleType::FontFace:
     case StyleCssRuleType::Page:
@@ -152,7 +182,7 @@ void ServoStyleRuleMap::FillTableFromRule(css::Rule& aRule) {
     case StyleCssRuleType::CounterStyle:
     case StyleCssRuleType::FontFeatureValues:
     case StyleCssRuleType::FontPaletteValues:
-    case StyleCssRuleType::PositionTry:
+    case StyleCssRuleType::ViewTransition:
       break;
   }
 }

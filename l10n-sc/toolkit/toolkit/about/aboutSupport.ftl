@@ -7,7 +7,6 @@ page-subtitle =
     Custa pàgina cuntenet informatziones tècnicas chi ti podent torrare ùtiles cando ses chirchende de acontzare unu problema.
     Si ses chirchende rispostas a preguntas fitianas in pitzus de { -brand-short-name },
     càstia su <a data-l10n-name="support-link">situ web de agiudu</a>nostru.
-
 crashes-title = Informes de faddinas
 crashes-id = Identificadore de s'informe
 crashes-send-date = Data de imbiu
@@ -65,7 +64,7 @@ app-basics-rosetta = Tradùidu dae Rosetta
 app-basics-memory-use = Impreu de sa memòria
 app-basics-performance = Rendimentu
 app-basics-service-workers = Protzessos de traballu de servìtziu registrados
-app-basics-third-party = Modulos de tertzas partes
+app-basics-third-party = Mòdulos de tertzas partes
 app-basics-profiles = Profilos
 app-basics-launcher-process-status = Protzessu de aviu
 app-basics-multi-process-support = Ventanas multi-protzessu
@@ -78,12 +77,10 @@ app-basics-key-mozilla = Crae de su servìtziu de positzione de Mozilla
 app-basics-safe-mode = Modalidade segura
 app-basics-memory-size = Mannària de sa memòria (RAM)
 app-basics-disk-available = Ispàtziu de discu a disponimentu
-
 # Variables:
 #   $value (number) - Amount of data being stored
 #   $unit (string) - The unit of data being stored (e.g. MB)
 app-basics-data-size = { $value } { $unit }
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Ammustra in Finder
@@ -100,7 +97,7 @@ modified-key-prefs-title = Preferèntzias importantes modificadas
 modified-prefs-name = Nòmine
 modified-prefs-value = Valore
 user-js-title = Preferèntzias de user.js
-user-js-description = Su profilu tuo cuntenet un'archìviu <a data-l10n-name="user-js-link">user.js</a>, chi includet preferèntzias non creadas dae { -brand-short-name }.
+user-js-description = Su profilu tuo cuntenet un’archìviu <a data-l10n-name="user-js-link">user.js</a>, chi includet preferèntzias non creadas dae { -brand-short-name }.
 locked-key-prefs-title = Preferèntzias importantes blocadas
 locked-prefs-name = Nòmine
 locked-prefs-value = Valore
@@ -178,8 +175,6 @@ media-codec-support-info = Informatzione de suportu pro is codec
 # List all the entries of the database.
 media-capabilities-enumerate = Numeratzione de sa base de datos
 
-## Codec support table
-
 ##
 
 intl-title = Internatzionalizatzione e localizatzione
@@ -214,7 +209,6 @@ report-crash-for-days =
         [one] Informes de faddinas de s’ùrtima die
        *[other] Informes de faddinas de is ùrtimas { $days } dies
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -222,7 +216,6 @@ crashes-time-minutes =
         [one] { $minutes } minutu a immoe
        *[other] { $minutes } minutos a immoe
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -230,7 +223,6 @@ crashes-time-hours =
         [one] { $hours } ora a immoe
        *[other] { $hours } oras a immoe
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -238,7 +230,6 @@ crashes-time-days =
         [one] { $days } die a oe
        *[other] { $days } dies a oe
     }
-
 raw-data-copied = Datos chena protzessare copiados in punta de billete
 text-copied = Testu copiadu in punta de billete
 
@@ -247,11 +238,9 @@ text-copied = Testu copiadu in punta de billete
 blocked-driver = Blocadu dae sa versione de driver gràficu.
 blocked-gfx-card = Blocadu dae sa carta gràfica tua a càusa de problemas non risortos de su driver.
 blocked-os-version = Blocadu dae sa versione de su sistema operativu tuo.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Paràmetros ClearType
-
 compositing = Cumpositzione
 hardware-h264 = Decodìfica H264 tràmite hardware
 main-thread-no-omtc = filu printzipale, chena OMTC
@@ -266,7 +255,6 @@ virtual-monitor-disp = Ischermu de monitore virtuale
 
 found = A disponimentu
 missing = Ammancat
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Descritzione
@@ -287,29 +275,23 @@ webgl2-wsiinfo = Informatziones driver WSI WebGL 2
 webgl2-version = Versione driver WebGL 2
 webgl2-driver-extensions = Estensiones de su driver WebGL 2
 webgl2-extensions = Estensiones WebGL 2
-
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Blocadu pro more de problemas connotos: <a data-l10n-name="bug-link">faddina { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = In sa lista de blocos; còdighe de faddina { $failureCode }
-
 d3d11layers-crash-guard = Cumponidore D3D11
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = Decodificadore vìdeu WMF VPX
-
 reset-on-next-restart = Ripristina cando as a torrare a aviare
 gpu-process-kill-button = Firma su protzessu GPU
 gpu-device-reset = Riprìstinu de su dispositivu
 gpu-device-reset-button = Avia su riprìstinu de su dispositivu
 uses-tiling = Imprea mosàicos
 content-uses-tiling = Imprea mosàicos (cuntenutu)
-
 min-lib-versions = Versione mìnima abetada
 loaded-lib-versions = Versione impreada
-
 has-seccomp-bpf = Seccomp-BPF (filtru de tzerriadas de sistema)
 has-seccomp-tsync = Sicronizatzione de su filu Seccomp
 has-user-namespaces = Ispàtzios de nòmines de utente
@@ -318,18 +300,15 @@ sandbox-proc-type-content = cuntenutu
 sandbox-proc-type-file = cuntenutu de s'archìviu
 sandbox-proc-type-media-plugin = plugin multimediale
 sandbox-proc-type-data-decoder = decodificadore de datos
-
 startup-cache-title = Memòria temporànea de aviu
 startup-cache-disk-cache-path = Percursu de su discu de sa memòria temporànea
 startup-cache-ignore-disk-cache = Inniora sa memòria temporànea de su discu
 startup-cache-found-disk-cache-on-init = Memòria temporànea de su discu agatada a s'aviu
 startup-cache-wrote-to-disk-cache = Iscritura in sa memòria temporànea de su discu
-
 launcher-process-status-0 = Ativadu
 launcher-process-status-1 = Disativadu pro more de una faddina
 launcher-process-status-2 = Disativadu in manera fortzada
 launcher-process-status-unknown = Istadu disconnotu
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -348,14 +327,9 @@ fission-status-disabled-by-default = Disativadu in manera predefinida
 fission-status-enabled-by-user-pref = Ativadu dae s'utente
 fission-status-disabled-by-user-pref = Disativadu dae s'utente
 fission-status-disabled-by-e10s-other = E10s disativadu
-
 apz-none = nissunu
 keyboard-enabled = tecladu ativadu
 autoscroll-enabled = iscurrimentu automàticu ativadu
-
-## Variables
-## $preferenceKey (string) - String ID of preference
-
 
 ## Strings representing the status of the Enterprise Policies engine.
 
@@ -377,7 +351,6 @@ support-printing-prefs-value = Valore
 support-remote-experiments-title = Esperimentos remotos
 support-remote-experiments-name = Nòmine
 support-remote-experiments-branch = Ramu isperimentale
-
 support-remote-features-title = Funtzionalidades remotas
 support-remote-features-name = Nòmine
 support-remote-features-status = Istadu

@@ -104,21 +104,21 @@ async function testAddTextInFilter(inspector, view) {
 
 function checkRules(view, data) {
   info("Check that the correct rules are visible");
-  is(view.element.children.length, 2, "Should have 2 rules.");
+  assertDisplayedRulesCount(view, 2);
   is(
-    getRuleViewRuleEditor(view, 0).rule.selectorText,
+    getRuleViewRuleEditorAt(view, 0).rule.selectorText,
     "element",
     "First rule is inline element."
   );
 
-  const rule = getRuleViewRuleEditor(view, 1).rule;
+  const rule = getRuleViewRuleEditorAt(view, 1).rule;
   const textPropEditor = rule.textProps[0].editor;
   const computed = textPropEditor.computed;
 
   is(rule.selectorText, "#testid", "Second rule is #testid.");
   is(
-    !!textPropEditor.expander.getAttribute("open"),
-    data.isExpanderOpen,
+    textPropEditor.expander.getAttribute("aria-expanded"),
+    data.isExpanderOpen + "",
     "Got correct expander state."
   );
   is(
@@ -159,22 +159,27 @@ async function clearSearchAndCheckRules(view) {
   const searchField = view.searchField;
   const searchClearButton = view.searchClearButton;
 
-  const rule = getRuleViewRuleEditor(view, 1).rule;
+  const rule = getRuleViewRuleEditorAt(view, 1).rule;
   const textPropEditor = rule.textProps[0].editor;
   const computed = textPropEditor.computed;
 
   info("Clearing the search filter");
+  const onRuleViewFiltered = view.inspector.once("ruleview-filtered");
   EventUtils.synthesizeMouseAtCenter(searchClearButton, {}, win);
-  await view.inspector.once("ruleview-filtered");
+  await onRuleViewFiltered;
 
   info("Check the search filter is cleared and no rules are highlighted");
-  is(view.element.children.length, 3, "Should have 3 rules.");
+  assertDisplayedRulesCount(view, 3);
   ok(!searchField.value, "Search filter is cleared");
   ok(
     !view.styleDocument.querySelectorAll(".ruleview-highlight").length,
     "No rules are higlighted"
   );
 
-  ok(!textPropEditor.expander.getAttribute("open"), "Expander is closed.");
+  is(
+    textPropEditor.expander.getAttribute("aria-expanded"),
+    "false",
+    "Expander is closed."
+  );
   ok(!computed.hasAttribute("filter-open"), "margin computed list is closed.");
 }

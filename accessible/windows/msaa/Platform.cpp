@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,28 +6,59 @@
 
 #include "AccEvent.h"
 #include "Compatibility.h"
-#include "HyperTextAccessible.h"
 #include "MsaaAccessible.h"
 #include "nsWinUtils.h"
 #include "mozilla/a11y/DocAccessibleParent.h"
+#include "mozilla/a11y/HyperTextAccessibleBase.h"
 #include "mozilla/a11y/RemoteAccessible.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/WindowsVersion.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
-#include "WinUtils.h"
 #include "ia2AccessibleText.h"
 
-#include <tuple>
-
 #if defined(MOZ_TELEMETRY_REPORTING)
-#  include "mozilla/Telemetry.h"
+#  include "mozilla/glean/AccessibleMetrics.h"
 #endif  // defined(MOZ_TELEMETRY_REPORTING)
 
 using namespace mozilla;
 using namespace mozilla::a11y;
-using namespace mozilla::mscom;
 
 static StaticRefPtr<nsIFile> gInstantiator;
+
+/**
+ * System caret support: update the Windows caret position.
+ * The system caret works more universally than the MSAA caret
+ * For example, Window-Eyes, JAWS, ZoomText and Windows Tablet Edition use it
+ * We will use an invisible system caret.
+ * Gecko is still responsible for drawing its own caret
+ */
+static void UpdateSystemCaretFor(Accessible* aAccessible) {
+  // Move the system caret so that Windows Tablet Edition and tradional ATs with
+  // off-screen model can follow the caret
+  ::DestroyCaret();
+  HyperTextAccessibleBase* text = aAccessible->AsHyperTextBase();
+  if (!text) {
+    return;
+  }
+  auto [caretRect, widget] = text->GetCaretRect();
+  if (caretRect.IsEmpty() || !widget) {
+    return;
+  }
+  HWND caretWnd =
+      reinterpret_cast<HWND>(widget->GetNativeData(NS_NATIVE_WINDOW));
+  if (!caretWnd) {
+    return;
+  }
+  // Create invisible bitmap for caret, otherwise its appearance interferes
+  // with Gecko caret
+  nsAutoBitmap caretBitMap(CreateBitmap(1, caretRect.Height(), 1, 1, nullptr));
+  if (::CreateCaret(caretWnd, caretBitMap, 1,
+                    caretRect.Height())) {  // Also destroys the last caret
+    ::ShowCaret(caretWnd);
+    POINT clientPoint{caretRect.X(), caretRect.Y()};
+    ::ScreenToClient(caretWnd, &clientPoint);
+    ::SetCaretPos(clientPoint.x, clientPoint.y);
+  }
+}
 
 void a11y::PlatformInit() {
   nsWinUtils::MaybeStartWindowEmulation();
@@ -68,7 +97,15 @@ void a11y::ProxyDestroyed(RemoteAccessible* aProxy) {
 }
 
 void a11y::PlatformEvent(Accessible* aTarget, uint32_t aEventType) {
-  MsaaAccessible::FireWinEvent(aTarget, aEventType);
+  Accessible* msaaTarget = aTarget;
+  if (aEventType == nsIAccessibleEvent::EVENT_SCROLLING_START &&
+      aTarget->IsTextLeaf()) {
+    // For MSAA/IA2, this event should not be fired on text leaf Accessibles.
+    msaaTarget = aTarget->Parent();
+  }
+  if (msaaTarget) {
+    MsaaAccessible::FireWinEvent(msaaTarget, aEventType);
+  }
   uiaRawElmProvider::RaiseUiaEventForGeckoEvent(aTarget, aEventType);
 }
 
@@ -78,8 +115,7 @@ void a11y::PlatformStateChangeEvent(Accessible* aTarget, uint64_t aState,
   uiaRawElmProvider::RaiseUiaEventForStateChange(aTarget, aState, aEnabled);
 }
 
-void a11y::PlatformFocusEvent(Accessible* aTarget,
-                              const LayoutDeviceIntRect& aCaretRect) {
+void a11y::PlatformFocusEvent(Accessible* aTarget) {
   if (aTarget->IsRemote() && FocusMgr() &&
       FocusMgr()->FocusedLocalAccessible()) {
     // This is a focus event from a remote document, but focus has moved out
@@ -92,7 +128,7 @@ void a11y::PlatformFocusEvent(Accessible* aTarget,
     return;
   }
 
-  AccessibleWrap::UpdateSystemCaretFor(aTarget, aCaretRect);
+  UpdateSystemCaretFor(aTarget);
   MsaaAccessible::FireWinEvent(aTarget, nsIAccessibleEvent::EVENT_FOCUS);
   uiaRawElmProvider::RaiseUiaEventForGeckoEvent(
       aTarget, nsIAccessibleEvent::EVENT_FOCUS);
@@ -100,10 +136,8 @@ void a11y::PlatformFocusEvent(Accessible* aTarget,
 
 void a11y::PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
                                   bool aIsSelectionCollapsed,
-                                  int32_t aGranularity,
-                                  const LayoutDeviceIntRect& aCaretRect,
-                                  bool aFromUser) {
-  AccessibleWrap::UpdateSystemCaretFor(aTarget, aCaretRect);
+                                  int32_t aGranularity, bool aFromUser) {
+  UpdateSystemCaretFor(aTarget);
   MsaaAccessible::FireWinEvent(aTarget,
                                nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED);
   uiaRawElmProvider::RaiseUiaEventForGeckoEvent(
@@ -135,6 +169,13 @@ void a11y::PlatformSelectionEvent(Accessible* aTarget, Accessible*,
   uiaRawElmProvider::RaiseUiaEventForGeckoEvent(aTarget, aType);
 }
 
+void a11y::PlatformAnnouncementEvent(Accessible* aTarget,
+                                     const nsAString& aAnnouncement,
+                                     uint16_t aPriority) {
+  uiaRawElmProvider::RaiseUiaNotificationEvent(aTarget, aAnnouncement,
+                                               aPriority);
+}
+
 static bool GetInstantiatorExecutable(const DWORD aPid,
                                       nsIFile** aOutClientExe) {
   nsAutoHandle callingProcess(
@@ -162,7 +203,7 @@ static bool GetInstantiatorExecutable(const DWORD aPid,
   }
 
   nsCOMPtr<nsIFile> file;
-  nsresult rv = NS_NewLocalFile(nsDependentString(buf.get(), bufLen), false,
+  nsresult rv = NS_NewLocalFile(nsDependentString(buf.get(), bufLen),
                                 getter_AddRefs(file));
   if (NS_FAILED(rv)) {
     return false;
@@ -204,7 +245,7 @@ static void AccumulateInstantiatorTelemetry(const nsAString& aValue) {
 
   if (!aValue.IsEmpty()) {
 #if defined(MOZ_TELEMETRY_REPORTING)
-    Telemetry::ScalarSet(Telemetry::ScalarID::A11Y_INSTANTIATORS, aValue);
+    glean::a11y::instantiators.Set(NS_ConvertUTF16toUTF8(aValue));
 #endif  // defined(MOZ_TELEMETRY_REPORTING)
     CrashReporter::RecordAnnotationNSString(
         CrashReporter::Annotation::AccessibilityClient, aValue);
@@ -270,4 +311,17 @@ bool a11y::GetInstantiator(nsIFile** aOutInstantiator) {
   }
 
   return NS_SUCCEEDED(gInstantiator->Clone(aOutInstantiator));
+}
+
+void a11y::GetHumanReadableInstantiatorStr(nsAString& aResult) {
+  a11y::Compatibility::GetHumanReadableConsumersStr(aResult);
+}
+
+uint64_t a11y::GetCacheDomainsForKnownClients(uint64_t aCacheDomains) {
+  // If we're instantiating because of a screen reader, enable all cache
+  // domains. We expect that demanding ATs will need all information we have.
+  if (Compatibility::IsKnownScreenReader()) {
+    return CacheDomain::All;
+  }
+  return aCacheDomains;
 }

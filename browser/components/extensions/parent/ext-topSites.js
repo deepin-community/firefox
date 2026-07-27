@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,8 +7,8 @@
 ChromeUtils.defineESModuleGetters(this, {
   AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
-  getSearchProvider: "resource://activity-stream/lib/SearchShortcuts.sys.mjs",
-  shortURL: "resource://activity-stream/lib/ShortURL.sys.mjs",
+  getSearchProvider:
+    "moz-src:///toolkit/components/search/SearchShortcuts.sys.mjs",
 });
 
 const SHORTCUTS_PREF =
@@ -75,7 +73,9 @@ this.topSites = class extends ExtensionAPI {
             // with a proper label and url. But certain non-pinned links may
             // also be promoted to search shortcuts; here we convert them.
             links = links.map(link => {
-              let searchProvider = getSearchProvider(shortURL(link));
+              let searchProvider = getSearchProvider(
+                NewTabUtils.shortURL(link)
+              );
               if (searchProvider) {
                 link.searchTopSite = true;
                 link.label = searchProvider.keyword;

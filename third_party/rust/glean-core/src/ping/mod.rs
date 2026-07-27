@@ -4,8 +4,8 @@
 
 //! Ping collection, assembly & submission.
 
-use std::fs::{create_dir_all, File};
-use std::io::Write;
+use std::fs::{self, create_dir_all, File};
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -34,6 +34,8 @@ pub struct Ping<'a> {
     pub includes_info_sections: bool,
     /// Other pings that should be scheduled when this ping is sent.
     pub schedules_pings: Vec<String>,
+    /// Capabilities the uploader must have in order to uplaoad this ping.
+    pub uploader_capabilities: Vec<String>,
 }
 
 /// Collect a ping's data, assemble it into its full payload and store it on disk.
@@ -66,6 +68,11 @@ impl PingMaker {
 
     /// Gets, and then increments, the sequence number for a given ping.
     fn get_ping_seq(&self, glean: &Glean, storage_name: &str) -> usize {
+        // Don't attempt to increase sequence number for disabled ping
+        if !glean.is_ping_enabled(storage_name) {
+            return 0;
+        }
+
         // Sequence numbers are stored as a counter under a name that includes the storage name
         let seq = CounterMetric::new(CommonMetricData {
             name: format!("{}#sequence", storage_name),
@@ -155,6 +162,20 @@ impl PingMaker {
                 .insert("experiments".to_string(), experiment_data);
         };
 
+        // Get the Server Knobs configuration, if available.
+        if let Some(config_json) = glean
+            .additional_metrics
+            .server_knobs_config
+            .get_value(glean, INTERNAL_STORAGE)
+        {
+            // Object metrics always hold a string produced by serde_json::to_string,
+            // so deserializing it back into a JsonValue cannot fail.
+            let server_knobs_config = serde_json::from_str(&config_json).unwrap();
+            map.as_object_mut()
+                .unwrap() // safe unwrap, we created the object above
+                .insert("server_knobs_config".to_string(), server_knobs_config);
+        }
+
         map
     }
 
@@ -169,8 +190,36 @@ impl PingMaker {
             StorageManager.snapshot_as_json(glean.storage(), "glean_client_info", true)
         {
             let client_info_obj = client_info.as_object().unwrap(); // safe unwrap, snapshot always returns an object.
-            for (_key, value) in client_info_obj {
-                merge(&mut map, value);
+            for (_metric_type, metrics) in client_info_obj {
+                merge(&mut map, metrics);
+            }
+            let map = map.as_object_mut().unwrap(); // safe unwrap, we created the object above.
+            let mut attribution = serde_json::Map::new();
+            let mut distribution = serde_json::Map::new();
+            map.retain(|name, value| {
+                // Only works because we ensure no client_info metric categories contain '.'.
+                let mut split = name.split('.');
+                let category = split.next();
+                let name = split.next();
+                if let (Some(category), Some(name)) = (category, name) {
+                    if category == "attribution" {
+                        attribution.insert(name.into(), value.take());
+                        false
+                    } else if category == "distribution" {
+                        distribution.insert(name.into(), value.take());
+                        false
+                    } else {
+                        true
+                    }
+                } else {
+                    true
+                }
+            });
+            if !attribution.is_empty() {
+                map.insert("attribution".into(), serde_json::Value::from(attribution));
+            }
+            if !distribution.is_empty() {
+                map.insert("distribution".into(), serde_json::Value::from(distribution));
             }
         } else {
             log::warn!("Empty client info data.");
@@ -196,7 +245,6 @@ impl PingMaker {
     ///
     /// A map of header names to header values.
     /// Might be empty if there are no extra headers to send.
-    /// ```
     fn get_headers(&self, glean: &Glean) -> HeaderMap {
         let mut headers_map = HeaderMap::new();
 
@@ -251,6 +299,32 @@ impl PingMaker {
         let events_data = glean
             .event_storage()
             .snapshot_as_json(glean, ping.name(), true);
+
+        // We're adding the metric `glean.ping.uploader_capabilities` the most manual way here.
+        // This avoids creating a `StringListMetric` and further indirection.
+        // It also avoids yet another database write.
+        // It's only added if
+        // (1) There's already data in `metrics` or `events`
+        // (2) or the ping should be sent empty (`send_if_empty=true`)
+        let uploader_capabilities = ping.uploader_capabilities();
+        if !uploader_capabilities.is_empty() {
+            if metrics_data.is_none() && (ping.send_if_empty() || events_data.is_some()) {
+                metrics_data = Some(json!({}))
+            }
+
+            if let Some(map) = metrics_data.as_mut().and_then(|o| o.as_object_mut()) {
+                let lists = map
+                    .entry("string_list")
+                    .or_insert_with(|| json!({}))
+                    .as_object_mut()
+                    .unwrap();
+
+                lists.insert(
+                    "glean.ping.uploader_capabilities".to_string(),
+                    json!(uploader_capabilities),
+                );
+            }
+        }
 
         // Due to the way the experimentation identifier could link datasets that are intentionally unlinked,
         // it will not be included in pings that specifically exclude the Glean client-id, those pings that
@@ -329,6 +403,7 @@ impl PingMaker {
             headers: self.get_headers(glean),
             includes_info_sections: ping.include_info_sections(),
             schedules_pings: ping.schedules_pings().to_vec(),
+            uploader_capabilities: ping.uploader_capabilities().to_vec(),
         })
     }
 
@@ -387,6 +462,7 @@ impl PingMaker {
                 headers: Some(ping.headers.clone()),
                 body_has_info_sections: Some(ping.includes_info_sections),
                 ping_name: Some(ping.name.to_string()),
+                uploader_capabilities: Some(ping.uploader_capabilities.clone()),
             };
             file.write_all(::serde_json::to_string(&metadata)?.as_bytes())?;
         }
@@ -404,11 +480,45 @@ impl PingMaker {
     }
 
     /// Clears any pending pings in the queue.
-    pub fn clear_pending_pings(&self, data_path: &Path) -> Result<()> {
+    pub fn clear_pending_pings(&self, data_path: &Path, ping_names: &[&str]) -> Result<()> {
         let pings_dir = self.get_pings_dir(data_path, None)?;
 
-        std::fs::remove_dir_all(&pings_dir)?;
-        create_dir_all(&pings_dir)?;
+        // TODO(bug 1932909): Refactor this into its own function
+        // and share it with `upload::directory`.
+        let entries = pings_dir.read_dir()?;
+        for entry in entries.filter_map(|entry| entry.ok()) {
+            if let Ok(file_type) = entry.file_type() {
+                if !file_type.is_file() {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            let file = match File::open(entry.path()) {
+                Ok(file) => file,
+                Err(_) => {
+                    continue;
+                }
+            };
+
+            let mut lines = BufReader::new(file).lines();
+            if let (Some(Ok(path)), Some(Ok(_body)), Ok(metadata)) =
+                (lines.next(), lines.next(), lines.next().transpose())
+            {
+                let PingMetadata { ping_name, .. } = metadata
+                    .and_then(|m| crate::upload::process_metadata(&path, &m))
+                    .unwrap_or_default();
+                let ping_name =
+                    ping_name.unwrap_or_else(|| path.split('/').nth(3).unwrap_or("").into());
+
+                if ping_names.contains(&&ping_name[..]) {
+                    _ = fs::remove_file(entry.path());
+                }
+            } else {
+                continue;
+            }
+        }
 
         log::debug!("All pending pings deleted");
 
@@ -426,15 +536,115 @@ mod test {
         let (mut glean, _t) = new_glean(None);
         let ping_maker = PingMaker::new();
 
-        assert_eq!(0, ping_maker.get_ping_seq(&glean, "custom"));
-        assert_eq!(1, ping_maker.get_ping_seq(&glean, "custom"));
+        assert_eq!(0, ping_maker.get_ping_seq(&glean, "store1"));
+        assert_eq!(1, ping_maker.get_ping_seq(&glean, "store1"));
 
         glean.set_upload_enabled(false);
-        assert_eq!(0, ping_maker.get_ping_seq(&glean, "custom"));
-        assert_eq!(0, ping_maker.get_ping_seq(&glean, "custom"));
+        assert_eq!(0, ping_maker.get_ping_seq(&glean, "store1"));
+        assert_eq!(0, ping_maker.get_ping_seq(&glean, "store1"));
 
         glean.set_upload_enabled(true);
-        assert_eq!(0, ping_maker.get_ping_seq(&glean, "custom"));
-        assert_eq!(1, ping_maker.get_ping_seq(&glean, "custom"));
+        assert_eq!(0, ping_maker.get_ping_seq(&glean, "store1"));
+        assert_eq!(1, ping_maker.get_ping_seq(&glean, "store1"));
+    }
+
+    #[test]
+    fn test_server_knobs_config_appears_in_ping_info() {
+        use crate::metrics::RemoteSettingsConfig;
+        use std::collections::HashMap;
+
+        let (glean, _t) = new_glean(None);
+
+        // Apply complete Server Knobs config with all three fields
+        let mut metrics_enabled = HashMap::new();
+        metrics_enabled.insert("test.counter".to_string(), true);
+
+        let mut pings_enabled = HashMap::new();
+        pings_enabled.insert("custom".to_string(), false);
+
+        let config = RemoteSettingsConfig {
+            metrics_enabled,
+            pings_enabled,
+            event_threshold: Some(41),
+        };
+        glean.apply_server_knobs_config(config);
+
+        // Verify complete config structure appears in ping_info
+        let ping_maker = PingMaker::new();
+        let ping_info = ping_maker.get_ping_info(&glean, "store1", None, TimeUnit::Minute);
+
+        let server_knobs = &ping_info["server_knobs_config"];
+        assert_eq!(server_knobs["metrics_enabled"]["test.counter"], true);
+        assert_eq!(server_knobs["pings_enabled"]["custom"], false);
+        assert_eq!(server_knobs["event_threshold"], 41);
+    }
+
+    #[test]
+    fn test_server_knobs_not_included_when_no_config() {
+        let (glean, _t) = new_glean(None);
+
+        let ping_maker = PingMaker::new();
+        let ping_info = ping_maker.get_ping_info(&glean, "store1", None, TimeUnit::Minute);
+
+        assert!(ping_info.get("server_knobs_config").is_none());
+    }
+
+    #[test]
+    fn test_server_knobs_appears_in_all_pings() {
+        use crate::metrics::RemoteSettingsConfig;
+        use std::collections::HashMap;
+
+        let (glean, _t) = new_glean(None);
+
+        let mut metrics_enabled = HashMap::new();
+        metrics_enabled.insert("test.counter".to_string(), true);
+
+        let config = RemoteSettingsConfig {
+            metrics_enabled,
+            ..Default::default()
+        };
+        glean.apply_server_knobs_config(config);
+
+        // Verify config appears in multiple different pings
+        let ping_maker = PingMaker::new();
+        let ping_info1 = ping_maker.get_ping_info(&glean, "store1", None, TimeUnit::Minute);
+        let ping_info2 = ping_maker.get_ping_info(&glean, "store2", None, TimeUnit::Minute);
+
+        assert_eq!(
+            ping_info1["server_knobs_config"]["metrics_enabled"]["test.counter"],
+            true
+        );
+        assert_eq!(
+            ping_info2["server_knobs_config"]["metrics_enabled"]["test.counter"],
+            true
+        );
+    }
+
+    #[test]
+    fn test_server_knobs_config_omits_empty_fields() {
+        use crate::metrics::RemoteSettingsConfig;
+        use std::collections::HashMap;
+
+        let (glean, _t) = new_glean(None);
+
+        // Apply config with only metrics_enabled set; pings_enabled and event_threshold are empty/None
+        let mut metrics_enabled = HashMap::new();
+        metrics_enabled.insert("test.counter".to_string(), true);
+
+        let config = RemoteSettingsConfig {
+            metrics_enabled,
+            ..Default::default()
+        };
+        glean.apply_server_knobs_config(config);
+
+        let ping_maker = PingMaker::new();
+        let ping_info = ping_maker.get_ping_info(&glean, "store1", None, TimeUnit::Minute);
+
+        let server_knobs = &ping_info["server_knobs_config"];
+        // metrics_enabled should be present
+        assert_eq!(server_knobs["metrics_enabled"]["test.counter"], true);
+        // pings_enabled and event_threshold should be absent (not empty object / null)
+        assert!(server_knobs.get("pings_enabled").is_none());
+        assert!(server_knobs.get("event_threshold").is_none());
     }
 }

@@ -6,6 +6,7 @@
             "linux-devedition",
             "linux64",
             "linux64-devedition",
+            "linux64-aarch64-devedition",
             "macosx64",
             "macosx64-devedition",
             "win32",
@@ -15,7 +16,7 @@
             "win64-aarch64-devedition",
             "win64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     },
     "en-CA": {
         "platforms": [
@@ -24,6 +25,7 @@
             "linux-devedition",
             "linux64",
             "linux64-devedition",
+            "linux64-aarch64-devedition",
             "macosx64",
             "macosx64-devedition",
             "win32",
@@ -33,7 +35,7 @@
             "win64-aarch64-devedition",
             "win64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     },
     "he": {
         "platforms": [
@@ -42,6 +44,7 @@
             "linux-devedition",
             "linux64",
             "linux64-devedition",
+            "linux64-aarch64-devedition",
             "macosx64",
             "macosx64-devedition",
             "win32",
@@ -51,7 +54,7 @@
             "win64-aarch64-devedition",
             "win64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     },
     "it": {
         "platforms": [
@@ -60,6 +63,7 @@
             "linux-devedition",
             "linux64",
             "linux64-devedition",
+            "linux64-aarch64-devedition",
             "macosx64",
             "macosx64-devedition",
             "win32",
@@ -69,7 +73,7 @@
             "win64-aarch64-devedition",
             "win64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     },
     "ja": {
         "platforms": [
@@ -78,6 +82,7 @@
             "linux-devedition",
             "linux64",
             "linux64-devedition",
+            "linux64-aarch64-devedition",
             "win32",
             "win32-devedition",
             "win64",
@@ -85,13 +90,13 @@
             "win64-aarch64-devedition",
             "win64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     },
     "ja-JP-mac": {
         "platforms": [
             "macosx64",
             "macosx64-devedition"
         ],
-        "revision": "ff6c9d55d4c1d558576bb6ca615179d8f9969f21"
+        "revision": "main"
     }
 }

@@ -15,10 +15,6 @@ add_task(async function () {
       ["privacy.trackingprotection.enabled", false],
       ["privacy.trackingprotection.pbmode.enabled", false],
       ["privacy.trackingprotection.annotate_channels", true],
-      [
-        "privacy.partition.always_partition_third_party_non_cookie_storage",
-        false,
-      ],
     ],
   });
 
@@ -92,8 +88,8 @@ add_task(async function () {
           ok(false, "Unknown message");
         });
 
-        content.document.body.appendChild(ifr);
         ifr.src = obj.page;
+        content.document.body.appendChild(ifr);
       });
     }
   );

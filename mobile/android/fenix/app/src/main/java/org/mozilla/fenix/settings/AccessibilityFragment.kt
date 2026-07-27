@@ -5,12 +5,16 @@
 package org.mozilla.fenix.settings
 
 import android.os.Bundle
+import androidx.navigation.fragment.navArgs
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreference
+import androidx.preference.SwitchPreferenceCompat
 import org.mozilla.fenix.R
+import org.mozilla.fenix.e2e.SystemInsetsPaddedFragment
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
+import org.mozilla.fenix.utils.Settings
 
 /**
  * Displays font size controls for accessibility.
@@ -18,12 +22,15 @@ import org.mozilla.fenix.ext.showToolbar
  * Includes an automatic font sizing toggle. When turned on, font sizing follows the Android device settings.
  * When turned off, the font sizing can be controlled manually within the app.
  */
-class AccessibilityFragment : PreferenceFragmentCompat() {
+class AccessibilityFragment : PreferenceFragmentCompat(), SystemInsetsPaddedFragment {
+
+    private val args by navArgs<AccessibilityFragmentArgs>()
+
     override fun onResume() {
         super.onResume()
         showToolbar(getString(R.string.preferences_accessibility))
 
-        val forceZoomPreference = requirePreference<SwitchPreference>(
+        val forceZoomPreference = requirePreference<SwitchPreferenceCompat>(
             R.string.pref_key_accessibility_force_enable_zoom,
         )
 
@@ -37,29 +44,24 @@ class AccessibilityFragment : PreferenceFragmentCompat() {
             true
         }
 
-        val textSizePreference = requirePreference<TextPercentageSeekBarPreference>(
+        val textSizePreference = requirePreference<ComposeTextSizePreference>(
             R.string.pref_key_accessibility_font_scale,
         )
-        textSizePreference.setOnPreferenceChangeListener<Int> { preference, newTextSize ->
-            val settings = preference.context.settings()
+
+        textSizePreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference, newValue ->
+            val newTextScale = newValue as Float
             val components = preference.context.components
 
-            // Value is mapped from 0->30 in steps of 1 so let's convert to float in range 0.5->2.0
-            val newTextScale =
-                ((newTextSize * STEP_SIZE) + MIN_SCALE_VALUE).toFloat() / PERCENT_TO_DECIMAL
-
             // Save new text scale value. We assume auto sizing is off if this change listener was called.
-            settings.fontSizeFactor = newTextScale
             components.core.engine.settings.fontSizeFactor = newTextScale
 
             // Reload the current session to reflect the new text scale
             components.useCases.sessionUseCases.reload()
             true
         }
-        textSizePreference.isEnabled = !requireContext().settings().shouldUseAutoSize
 
         val useAutoSizePreference =
-            requirePreference<SwitchPreference>(R.string.pref_key_accessibility_auto_size)
+            requirePreference<SwitchPreferenceCompat>(R.string.pref_key_accessibility_auto_size)
         useAutoSizePreference.setOnPreferenceChangeListener<Boolean> { preference, useAutoSize ->
             val settings = preference.context.settings()
             val components = preference.context.components
@@ -74,22 +76,22 @@ class AccessibilityFragment : PreferenceFragmentCompat() {
                 components.core.engine.settings.fontSizeFactor = settings.fontSizeFactor
             }
 
-            // Enable the manual sizing controls if automatic sizing is turned off.
-            textSizePreference.isEnabled = !useAutoSize
+            textSizePreference.setIsSliderEnabled(!useAutoSize)
 
             // Reload the current session to reflect the new text scale
             components.useCases.sessionUseCases.reload()
             true
         }
+
+        textSizePreference.setIsSliderEnabled(!requireContext().settings().shouldUseAutoSize)
+
+        args.preferenceToScrollTo?.let {
+            scrollToPreferenceWithHighlight(it)
+        }
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.sharedPreferencesName = Settings.FENIX_PREFERENCES
         setPreferencesFromResource(R.xml.accessibility_preferences, rootKey)
-    }
-
-    companion object {
-        const val MIN_SCALE_VALUE = 50
-        const val STEP_SIZE = 5
-        const val PERCENT_TO_DECIMAL = 100f
     }
 }

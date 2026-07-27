@@ -1,4 +1,3 @@
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -30,8 +29,6 @@ ConnectionHandle::~ConnectionHandle() {
   }
 }
 
-NS_IMPL_ISUPPORTS0(ConnectionHandle)
-
 nsresult ConnectionHandle::OnHeadersAvailable(nsAHttpTransaction* trans,
                                               nsHttpRequestHead* req,
                                               nsHttpResponseHead* resp,
@@ -50,7 +47,7 @@ nsresult ConnectionHandle::TakeTransport(nsISocketTransport** aTransport,
   return mConn->TakeTransport(aTransport, aInputStream, aOutputStream);
 }
 
-Http3WebTransportSession* ConnectionHandle::GetWebTransportSession(
+WebTransportSessionBase* ConnectionHandle::GetWebTransportSession(
     nsAHttpTransaction* aTransaction) {
   return mConn->GetWebTransportSession(aTransaction);
 }

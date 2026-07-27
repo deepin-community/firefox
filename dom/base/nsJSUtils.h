@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsJSUtils_h__
-#define nsJSUtils_h__
+#ifndef nsJSUtils_h_
+#define nsJSUtils_h_
 
 /**
  * This is not a generated file. It contains common utility functions
@@ -14,13 +12,12 @@
  * the generated code itself.
  */
 
-#include "mozilla/Assertions.h"
-
-#include "jsapi.h"
 #include "js/CompileOptions.h"
 #include "js/Conversions.h"
 #include "js/String.h"  // JS::{,Lossy}CopyLinearStringChars, JS::CopyStringChars, JS::Get{,Linear}StringLength, JS::MaxStringLength, JS::StringHasLatin1Chars
 #include "js/Utility.h"  // JS::FreePolicy
+#include "jsapi.h"
+#include "mozilla/Assertions.h"
 #include "nsString.h"
 #include "xpcpublic.h"
 
@@ -28,6 +25,10 @@ class nsIScriptContext;
 class nsIScriptElement;
 class nsIScriptGlobalObject;
 class nsXBLPrototypeBinding;
+
+namespace JS {
+class JS_PUBLIC_API EnvironmentChain;
+};
 
 namespace mozilla {
 union Utf8Unit;
@@ -51,7 +52,7 @@ class nsJSUtils {
   static uint64_t GetCurrentlyRunningCodeInnerWindowID(JSContext* aContext);
 
   static nsresult CompileFunction(mozilla::dom::AutoJSAPI& jsapi,
-                                  JS::HandleVector<JSObject*> aScopeChain,
+                                  const JS::EnvironmentChain& aEnvChain,
                                   JS::CompileOptions& aOptions,
                                   const nsACString& aName, uint32_t aArgCount,
                                   const char** aArgArray,
@@ -66,10 +67,10 @@ class nsJSUtils {
   static bool IsScriptable(JS::Handle<JSObject*> aEvaluationGlobal);
 
   // Returns false if an exception got thrown on aCx.  Passing a null
-  // aElement is allowed; that wil produce an empty aScopeChain.
-  static bool GetScopeChainForElement(
-      JSContext* aCx, mozilla::dom::Element* aElement,
-      JS::MutableHandleVector<JSObject*> aScopeChain);
+  // aElement is allowed; that wil produce an empty aEnvChain.
+  static bool GetEnvironmentChainForElement(JSContext* aCx,
+                                            mozilla::dom::Element* aElement,
+                                            JS::EnvironmentChain& aEnvChain);
 
   static void ResetTimeZone();
 
@@ -228,4 +229,4 @@ using nsAutoJSString = nsTAutoJSString<char16_t>;
 // Note that this is guaranteed to be UTF-8.
 using nsAutoJSCString = nsTAutoJSString<char>;
 
-#endif /* nsJSUtils_h__ */
+#endif /* nsJSUtils_h_ */

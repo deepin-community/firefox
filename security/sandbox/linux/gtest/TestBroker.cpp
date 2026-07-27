@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,6 +24,7 @@
 #include "mozilla/PodOperations.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/ipc/FileDescriptor.h"
+#include "nsIThreadManager.h"
 
 namespace mozilla {
 
@@ -36,7 +35,7 @@ class SandboxBrokerTest : public ::testing::Test {
   static const int MAY_CREATE = SandboxBroker::MAY_CREATE;
   static const auto AddAlways = SandboxBroker::Policy::AddAlways;
 
-  UniquePtr<SandboxBroker> mServer;
+  RefPtr<SandboxBroker> mServer;
   UniquePtr<SandboxBrokerClient> mClient;
 
   UniquePtr<const SandboxBroker::Policy> GetPolicy() const;
@@ -68,9 +67,6 @@ class SandboxBrokerTest : public ::testing::Test {
   }
   int Mkdir(const char* aPath, int aMode) {
     return mClient->Mkdir(aPath, aMode);
-  }
-  int Symlink(const char* aPath, const char* bPath) {
-    return mClient->Symlink(aPath, bPath);
   }
   int Rename(const char* aPath, const char* bPath) {
     return mClient->Rename(aPath, bPath);
@@ -307,25 +303,6 @@ TEST_F(SandboxBrokerTest, Link) {
   PrePostTestCleanup();
 }
 
-TEST_F(SandboxBrokerTest, Symlink) {
-  PrePostTestCleanup();
-
-  int fd = Open("/tmp/blublu", O_WRONLY | O_CREAT);
-  ASSERT_GE(fd, 0) << "Opening /tmp/blublu for writing failed.";
-  close(fd);
-  ASSERT_EQ(0, Symlink("/tmp/blublu", "/tmp/blublublu"));
-  EXPECT_EQ(0, Access("/tmp/blublublu", F_OK));
-  statstruct aStat;
-  ASSERT_EQ(0, lstatsyscall("/tmp/blublublu", &aStat));
-  EXPECT_EQ((mode_t)S_IFLNK, aStat.st_mode & S_IFMT);
-  // Not whitelisted target path
-  EXPECT_EQ(-EACCES, Symlink("/tmp/blublu", "/tmp/nope"));
-  EXPECT_EQ(0, unlink("/tmp/blublublu"));
-  EXPECT_EQ(0, unlink("/tmp/blublu"));
-
-  PrePostTestCleanup();
-}
-
 TEST_F(SandboxBrokerTest, Mkdir) {
   PrePostTestCleanup();
 
@@ -401,7 +378,8 @@ TEST_F(SandboxBrokerTest, Readlink) {
   int fd = Open("/tmp/blublu", O_WRONLY | O_CREAT);
   ASSERT_GE(fd, 0) << "Opening /tmp/blublu for writing failed.";
   close(fd);
-  ASSERT_EQ(0, Symlink("/tmp/blublu", "/tmp/blublublu"));
+  // This is the real symlink() now that there's no broker support.
+  ASSERT_EQ(0, symlink("/tmp/blublu", "/tmp/blublublu"));
   EXPECT_EQ(0, Access("/tmp/blublublu", F_OK));
   char linkBuff[256];
   EXPECT_EQ(11, Readlink("/tmp/blublublu", linkBuff, sizeof(linkBuff)));
@@ -646,10 +624,13 @@ SandboxBrokerSigStress::DoSomething()
 // (This uses a different test group because it doesn't use the
 // fixture class, and gtest doesn't allow mixing TEST and TEST_F in
 // the same group.)
-TEST(SandboxBrokerMisc, LeakCheck)
+TEST(SandboxBrokerMisc, FileDescLeak)
 {
   // If this value is increased in the future, check that it won't
-  // cause the test to take an excessive amount of time:
+  // cause the test to take an excessive amount of time.
+  // (Alternately, this test could be changed to run a smaller number
+  // of cycles and check for increased fd usage afterwards; some care
+  // would be needed to avoid false positives.)
   static constexpr size_t kCycles = 4096;
   struct rlimit oldLimit;
   bool changedLimit = false;
@@ -676,13 +657,53 @@ TEST(SandboxBrokerMisc, LeakCheck)
     policy->AddPath(SandboxBroker::MAY_READ, "/dev/null",
                     SandboxBroker::Policy::AddAlways);
     ipc::FileDescriptor fd;
-    auto broker = SandboxBroker::Create(std::move(policy), pid, fd);
-    ASSERT_TRUE(broker);
+    RefPtr<SandboxBroker> broker =
+        SandboxBroker::Create(std::move(policy), pid, fd);
+    ASSERT_TRUE(broker != nullptr);
     ASSERT_TRUE(fd.IsValid());
+    broker->Terminate();
   }
 
   if (changedLimit) {
     ASSERT_EQ(setrlimit(RLIMIT_NOFILE, &oldLimit), 0) << strerror(errno);
+  }
+}
+
+// Bug 1958444: In theory this test could fail intermittently: it
+// creates a large number of threads which will do a small amount of
+// work and then exit, but intentionally doesn't join them, so there
+// could be a large number of threads actually live at once, even if
+// they would be cleaned up correctly when they exit.
+//
+// To test locally, delete the `DISABLED_` prefix and rebuild.
+TEST(SandboxBrokerMisc, DISABLED_StackLeak)
+{
+  // The idea is that kCycles * DEFAULT_STACK_SIZE is more than 4GiB
+  // so this fails on 32-bit if the thread stack is leaked.  This
+  // isn't ideal; it would be better to either use resource limits
+  // (maybe RLIMIT_AS) or measure address space usage (getrusage or
+  // procfs), to detect such bugs with a smaller amount of leakage.
+  static constexpr size_t kCycles = 16384;
+
+  if (nsIThreadManager::DEFAULT_STACK_SIZE) {
+    EXPECT_GE(nsIThreadManager::DEFAULT_STACK_SIZE, size_t(256 * 1024));
+  }
+
+  pid_t pid = getpid();
+  for (size_t i = 0; i < kCycles; ++i) {
+    auto policy = MakeUnique<SandboxBroker::Policy>();
+    // Currently nothing in `Create` tries to check for or
+    // special-case an empty policy, but just in case:
+    policy->AddPath(SandboxBroker::MAY_READ, "/dev/null",
+                    SandboxBroker::Policy::AddAlways);
+    ipc::FileDescriptor fd;
+    RefPtr<SandboxBroker> broker =
+        SandboxBroker::Create(std::move(policy), pid, fd);
+    ASSERT_TRUE(broker != nullptr)
+    << "iter " << i;
+    ASSERT_TRUE(fd.IsValid())
+    << "iter " << i;
+    broker = nullptr;
   }
 }
 

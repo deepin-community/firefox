@@ -130,13 +130,17 @@ function writeCrashReportFile(dir, uuid, suffix, date, data) {
   file.lastModifiedTime = date;
 }
 
-function writeMinidumpFile(dir, uuid, date) {
+function writeMinidumpFile(dir, uuid, date, payload = "") {
   // that's the start of a valid minidump, anyway
-  writeCrashReportFile(dir, uuid, ".dmp", date, "MDMP");
+  writeCrashReportFile(dir, uuid, ".dmp", date, `MDMP${payload}`);
 }
 
 function writeExtraFile(dir, uuid, date, data) {
   writeCrashReportFile(dir, uuid, ".extra", date, JSON.stringify(data));
+}
+
+function writeIgnoreFile(dir, uuid, date) {
+  writeCrashReportFile(dir, uuid, ".dmp.ignore", date, "");
 }
 
 function writeMemoryReport(dir, uuid, date) {
@@ -144,14 +148,23 @@ function writeMemoryReport(dir, uuid, date) {
   writeCrashReportFile(dir, uuid, ".memory.json.gz", date, data);
 }
 
-function addPendingCrashreport(crD, date, extra) {
+function addPendingCrashreport(
+  crD,
+  date,
+  extra,
+  payload = "",
+  ignored = false
+) {
   let pendingdir = crD.clone();
   pendingdir.append("pending");
   let uuid = generate_uuid();
-  writeMinidumpFile(pendingdir, uuid, date);
+  writeMinidumpFile(pendingdir, uuid, date, payload);
   writeExtraFile(pendingdir, uuid, date, extra);
   writeMemoryReport(pendingdir, uuid, date);
-  return { id: uuid, date, pending: true, extra };
+  if (ignored) {
+    writeIgnoreFile(pendingdir, uuid);
+  }
+  return { id: uuid, date, pending: true, ignored, extra };
 }
 
 function addIncompletePendingCrashreport(crD, date) {

@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = הגדרת מדיניות שהרחבות WebExtensions יכולות לגשת אליהן באמצעות chrome.storage.managed.
+policy-AIControls = הגדרת תצורה של בקרות בינה מלאכותית.
 policy-AllowedDomainsForApps = הגדרת שמות מתחם המורשים לגשת ל־Google Workspace.
 policy-AllowFileSelectionDialogs = לאפשר תיבות דו־שיח לבחירת קבצים.
 policy-AppAutoUpdate = הפעלה או השבתה של עדכון אוטומטי ליישום.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = הפעלת מילוי אוטומטי עבור כ
 policy-AutofillCreditCardEnabled = הפעלת מילוי אוטומטי עבור אמצעי תשלום.
 policy-AutoLaunchProtocolsFromOrigins = הגדרת רשימה של פרוטוקולים חיצוניים שניתן להשתמש בהם ממתחמים מסוימים מבלי להציג הודעה למשתמש.
 policy-BackgroundAppUpdate2 = הפעלה או השבתה של שירות המעדכן ברקע.
+policy-Backup = השבתת הגיבוי או השחזור של נתוני פרופיל.
 policy-BlockAboutAddons = חסימת הגישה למנהל התוספות (about:addons).
 policy-BlockAboutConfig = חסימת הגישה לעמוד about:config.
 policy-BlockAboutProfiles = חסימת הגישה לעמוד about:profiles.
@@ -35,6 +37,7 @@ policy-Containers = הגדרת מדיניות הקשורה למגירות לשו
 policy-DisableAccounts = השבתת שירותים מבוססי חשבון, כולל סנכרון.
 policy-DisabledCiphers = השבתת צפנים.
 policy-DefaultDownloadDirectory = הגדרת תיקיית ההורדות ברירת המחדל.
+policy-DefaultSerialGuardSetting = שליטה בשימוש של Serial API.
 policy-DisableAppUpdate = מניעת עדכון הדפדפן.
 policy-DisableBuiltinPDFViewer = השבתת PDF.js, מציג ה־PDF המובנה ב־{ -brand-short-name }.
 policy-DisableDefaultBrowserAgent = למנוע מסוכן הדפדפן ברירת המחדל מלבצע פעולות כלשהן. תקף ל־Windows בלבד; בסביבות אחרות אין את הסוכן הזה.
@@ -54,7 +57,9 @@ policy-DisablePasswordReveal = לא לאפשר לחשוף ססמאות בכני�
 policy-DisablePocket2 = השבתת התכונה לשמירת דפי אינטרנט ב־{ -pocket-brand-name }.
 policy-DisablePrivateBrowsing = השבתת גלישה פרטית.
 policy-DisableProfileImport = השבתת פקודת התפריט לייבוא נתונים מדפדפן אחר.
-policy-DisableProfileRefresh = השבתת הכפתור 'רענון { -brand-short-name }' בעמוד about:support.
+policy-DisableProfileRefresh = השבתת הכפתור 'ריענון { -brand-short-name }' בעמוד about:support.
+policy-DisableRemoteImprovements = למנוע מ־{ -brand-short-name } להחיל שינויים בביצועים, יציבות ותכונות בין עדכונים.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = השבתת הגדרות מרוחקות.
 policy-DisableSafeMode = השבתת התכונה להפעלה מחדש במצב בטוח. לתשומת לבך: ניתן להשבית את מקש ה־Shift לכניסה למצב בטוח רק ב־Windows באמצעות מדיניות קבוצתית.
 policy-DisableSecurityBypass = למנוע מהמשתמש לעקוף אזהרות אבטחה מסוימות.
 policy-DisableSetAsDesktopBackground = להשבית את הפקודה לקביעה כרקע שולחן העבודה בתפריט עבור תמונות.
@@ -79,6 +84,7 @@ policy-ExtensionSettings = ניהול כל ההיבטים של התקנת הרח
 policy-ExtensionUpdate = הפעלה או השבתה של עדכונים אוטומטיים להרחבות.
 policy-FirefoxHome2 = הגדרת תצורה של { -firefox-home-brand-name }.
 policy-FirefoxSuggest = הגדרת תצורה של { -firefox-suggest-brand-name }.
+policy-GenerativeAI = הגדרת תצורה של תכונות של בינה מלאכותית המייצרת תוכן.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = לכפות ניווט ישיר לאתרי אינטראנט במקום לבצע חיפוש, בעת הקלדת רשומות של מילה בודדה בשורת הכתובת.
 policy-Handlers = קביעת תצורה של מטפלים ביישומי ברירת מחדל.
 policy-HardwareAcceleration = כיבוי האצת חומרה אם מוגדר כ־false.
@@ -87,14 +93,13 @@ policy-Homepage = הגדרה ונעילה כרשות של דף הבית.
 policy-HttpAllowlist = כתובות שלא ישודרגו ל־HTTPS.
 policy-HttpsOnlyMode = לאפשר הפעלה של מצב HTTPS בלבד
 policy-InstallAddonsPermission = לאפשר לאתרים מסוימים להתקין תוספות.
+policy-IPProtectionAvailable = למנוע את זמינות ה־VPN המובנה למשתמשים.
 policy-LegacyProfiles = השבתת התכונה האוכפת פרופיל נפרד לכל התקנה
-
-## Do not translate "SameSite", it's the name of a cookie attribute.
-
 
 ##
 
 policy-LocalFileLinks = לאפשר לאתרים מסויימים לקשר לקבצים מקומיים.
+policy-LocalNetworkAccess = הפעלה או השבתה של בדיקות גישה לרשת מקומית
 policy-ManagedBookmarks = הגדרת רשימה של סימניות המנוהלת על־ידי מנהל מערכת ושאינה ניתנת לשינוי על־ידי המשתמש.
 policy-ManualAppUpdateOnly = לאפשר עדכונים באופן ידני בלבד ולא להודיע למשתמש על עדכונים.
 policy-PrimaryPassword = לדרוש או למנוע שימוש בססמה ראשית.
@@ -115,11 +120,13 @@ policy-PostQuantumKeyAgreementEnabled = הפעלת הסכם מפתח פוסט-ק
 policy-PDFjs = השבתה או הגדרת התצורה של PDF.js, מציג ה־PDF המובנה ב־{ -brand-short-name }.
 policy-Permissions2 = קביעת תצורה של הרשאות עבור מצלמה, מיקרופון, מיקום, התרעות וניגון אוטומטי.
 policy-PictureInPicture = הפעלה או השבתה של תמונה בתוך תמונה.
+policy-PopupBlocking2 = לאפשר לאתרים מסוימים להציג חלונות קופצים ולהיות מופנים מחדש על־ידי מסגרות מצד שלישי.
 policy-PopupBlocking = לאפשר לאתרים מסוימים להקפיץ חלונות כברירת מחדל.
 policy-Preferences = הגדרה ונעילת הערכים עבור חלק מההעדפות.
 policy-PrivateBrowsingModeAvailability = הגדרת הזמינות של מצב הגלישה הפרטית.
 policy-PromptForDownloadLocation = הצגת שאלה היכן לשמור קבצים בזמן הורדה.
 policy-Proxy = קביעת תצורה של הגדרות שרת מתווך.
+policy-RelaunchRequired = לדרוש להפעיל מחדש את { -brand-short-name } בתוך פרק זמן נתון ולהודיע למשתמש על ההפעלה מחדש הקרובה.
 policy-RequestedLocales = הגדרת רשימת השפות המבוקשות עבור היישום לפי סדר העדפה.
 policy-SanitizeOnShutdown2 = ניקוי נתוני ניווט עם הכיבוי.
 policy-SearchBar = הגדרת מיקום ברירת המחדל של שורת החיפוש. המשתמש עדיין מורשה להתאים זאת אישית.
@@ -128,6 +135,9 @@ policy-SearchSuggestEnabled = הפעלה או השבתה של הצעות חיפ�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = הוספה או מחיקת מודולי PKCS #11.
 policy-ShowHomeButton = הצגת כפתור הבית בסרגל הכלים.
+policy-SitePolicies = מדיניות ספציפיות לאתרים.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = לא להציג את תנאי השימוש והצהרת הפרטיות בעת הפעלת הדפדפן. הפעלת מדיניות זו מצהירה שמקובל עליך, ושיש לך את הסמכות לקבל את תנאי השימוש בשם כל האנשים להם תוענק גישה לדפדפן זה על ידך.
 policy-SSLVersionMax = הגדרת גרסת ה־SSL המקסימלית.
 policy-SSLVersionMin = הגדרת גרסת ה־SSL המינימלית.
 policy-StartDownloadsInTempDirectory = לכפות על הורדות להתחיל במיקום מקומי וזמני במקום בתיקיית ההורדות המוגדרת כברירת המחדל.
@@ -135,5 +145,10 @@ policy-SupportMenu = הוספת תפריט תמיכה בהתאמה אישית ל
 policy-TranslateEnabled = הפעלה או השבתה של תרגום דפי אינטרנט.
 policy-UserMessaging = לא להציג למשתמש הודעות מסוימות.
 policy-UseSystemPrintDialog = הדפסה באמצעות תיבת הדו־שיח להדפסה של המערכת.
+policy-VisualSearchEnabled = הפעלה או השבתה של חיפוש חזותי
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = חסימת ביקור באתרים. יש לעיין בתיעוד לקבלת פרטים נוספים על התבנית.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = לאפשר SSO עבור חשבונות Microsoft Entra.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = הפעלה או השבתה של התמיכה עבור XSLTProcessor JavaScript API ו־XSLT processing instruction.

@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } Gizli Gezinti
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Gizli Gezinti
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Gizli Gezinti
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Gizli Gezinti
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Gizli Gezinti
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Gizli Gezinti
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Gizli Gezinti
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Gizli Gezinti
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Gizli Gezinti
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Gizli Gezinti
+       *[other] { -brand-full-name } Gizli Gezinti
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Gizli Gezinti
+popups-infobar-dont-show-message2 =
+    .label = Açılır pencereler veya üçüncü taraf yönlendirmeleri engellendiğinde bu mesajı gösterme
+    .accesskey = A
+edit-popup-settings2 =
+    .label = Açılır pencere ve üçüncü taraf yönlendirmesi ayarlarını yönet…
+    .accesskey = A
 
 ##
 
@@ -65,6 +140,8 @@ urlbar-web-notification-anchor =
     .tooltiptext = Sitenin bildirim gönderip gönderemeyeceğini ayarlayın
 urlbar-midi-notification-anchor =
     .tooltiptext = MIDI panelini aç
+urlbar-serial-notification-anchor =
+    .tooltiptext = Seri panelini aç
 urlbar-eme-notification-anchor =
     .tooltiptext = DRM yazılımı kullanımını yönet
 urlbar-web-authn-anchor =
@@ -77,6 +154,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Mesaj panelini aç
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Konum isteği panelini aç
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Bu site için yerel cihaz erişimini yönet
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Bu siteyle yerel ağ erişimini paylaşmayı yönet
 urlbar-xr-notification-anchor =
     .tooltiptext = Sanal gerçeklik izin panelini aç
 urlbar-storage-access-anchor =
@@ -114,6 +195,24 @@ urlbar-result-menu-button =
     .title = Menüyü aç
 urlbar-result-menu-button-feedback = Görüş bildir
     .title = Menüyü aç
+urlbar-result-menu-learn-more2 = Daha fazla bilgi al
+    .accesskey = D
+urlbar-result-menu-remove-from-history2 = Geçmişten kaldır
+    .accesskey = G
+urlbar-result-menu-tip-get-help2 = Yardım al
+    .accesskey = Y
+urlbar-result-menu-dismiss-suggestion2 = Bu öneriyi kapat
+    .accesskey = B
+urlbar-result-menu-manage-firefox-suggest2 = { -firefox-suggest-brand-name } yönet
+    .accesskey = n
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = Hatalı konum bildir
+urlbar-result-menu-show-less-frequently2 = Daha az göster
+urlbar-result-menu-dont-show-weather-suggestions2 = Hava durumu önerilerini gösterme
 urlbar-result-menu-learn-more =
     .label = Daha fazla bilgi al
     .accesskey = D
@@ -123,6 +222,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Yardım al
     .accesskey = Y
+urlbar-result-menu-dismiss-suggestion =
+    .label = Bu öneriyi kapat
+    .accesskey = B
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = { -firefox-suggest-brand-name } hakkında bilgi al
+    .accesskey = h
+urlbar-result-menu-manage-firefox-suggest =
+    .label = { -firefox-suggest-brand-name } yönet
+    .accesskey = n
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Hatalı konum bildir
+urlbar-result-menu-show-less-frequently =
+    .label = Daha az göster
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Hava durumu önerilerini gösterme
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Menüyü aç
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Geri bildiriminiz için teşekkürler
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Geri bildiriminiz için teşekkür ederiz. Artık hava durumu önerilerini görmeyeceksiniz.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +276,10 @@ urlbar-search-mode-actions = Eylemler
 
 urlbar-geolocation-blocked =
     .tooltiptext = Bu sitenin konumunuzu öğrenmesini engellediniz.
+urlbar-localhost-blocked =
+    .tooltiptext = Bu sitenin yerel cihaz bağlantılarını engellediniz.
+urlbar-local-network-blocked =
+    .tooltiptext = Bu sitenin yerel ağ bağlantılarını engellediniz.
 urlbar-xr-blocked =
     .tooltiptext = Bu sitenin sanal gerçeklik cihazlarına erişimini engellediniz.
 urlbar-web-notifications-blocked =
@@ -160,6 +292,8 @@ urlbar-screen-blocked =
     .tooltiptext = Bu sitenin ekranınızı paylaşmasını engellediniz.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Bu sitenin kalıcı veri depolamasını engellediniz.
+urlbar-popup-blocked2 =
+    .tooltiptext = Bu sitede açılır pencereleri ve üçüncü taraf yönlendirmelerini engellediniz.
 urlbar-popup-blocked =
     .tooltiptext = Bu sitedeki açılır pencereleri engellediniz.
 urlbar-autoplay-media-blocked =
@@ -168,6 +302,8 @@ urlbar-canvas-blocked =
     .tooltiptext = Bu sitenin canvas’tan veri ayıklamasını engellediniz.
 urlbar-midi-blocked =
     .tooltiptext = Bu sitenin MIDI erişimini engellediniz.
+urlbar-serial-blocked =
+    .tooltiptext = Bu sitenin seri bağlantı noktası erişimini engellediniz.
 urlbar-install-blocked =
     .tooltiptext = Bu sitenin eklenti yüklemesini engellediniz.
 # Variables
@@ -178,6 +314,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Bu sayfayı yer imlerine ekle ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Ayrık görünüm
+    .aria-label = Ayrık görünüm
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Arama geçmişini temizle
+    .accesskey = t
 
 ## Page Action Context Menu
 
@@ -250,14 +395,25 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Eklentileri görüntüle
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = uzantılar, temalar, eklentiler
+# Opens preferences page at AI controls
+quickactions-manageai = Yapay zekâ kontrollerini yönet
+quickactions-cmd-manageai = yapay zekâyı devre dışı bırak, yapay zekâyı kapat, yapay zekâyı yönet, yapay zekayı devre dışı bırak, yapay zekayı kapat, yapay zekayı yönet, ai kapat, ai devre dışı, ai yönet
 quickactions-cmd-addons2 = eklentiler
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Yer imlerini yönet
 quickactions-cmd-bookmarks = yer imleri
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Yakın geçmişi temizle
+quickactions-cmd-clearrecenthistory2 = çerezleri temizle, önbellek, önbelleği temizle, gezinti verilerini temizle, geçmiş, yakın geçmişi temizle
+quickactions-cmd-clearrecenthistory = yakın geçmişi temizle, geçmiş
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Geçmişi temizle
 quickactions-cmd-clearhistory = geçmişi temizle
@@ -266,13 +422,36 @@ quickactions-downloads2 = İndirilenleri göster
 quickactions-cmd-downloads = indirilenler
 # Opens about:addons page in the extensions section
 quickactions-extensions = Uzantıları yönet
+quickactions-cmd-extensions2 = uzantılar, eklentiler
 quickactions-cmd-extensions = uzantılar
+# Opens Firefox View
+quickactions-firefoxview = { -firefoxview-brand-name }’u aç
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = { -firefoxview-brand-name }’u aç, { -firefoxview-brand-name }, view’u aç, view
+# Opens SUMO home page
+quickactions-help = { -brand-product-name } yardımı
+quickactions-cmd-help = yardım, destek
 # Opens the devtools web inspector
 quickactions-inspector2 = Geliştirici araçlarını aç
+quickactions-cmd-inspector2 = denetçi, geliştirici araçları, inspector, devtools, dev tools
+# Opens the devtools eyedropper to pick a color from the page
+quickactions-colorpicker = Renk seç
+quickactions-cmd-colorpicker = renk seçici, damlalık
+# Opens Firefox Library
+quickactions-cmd-library = arşiv
+quickactions-library = Arşivi aç
 quickactions-cmd-inspector = denetçi, geliştirici araçları
 # Opens about:logins
 quickactions-logins2 = Parolaları yönet
 quickactions-cmd-logins = hesaplar, parolalar
+# Mutes all tabs playing audio
+quickactions-mute = Ses çalan sekmeleri sessize al
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = sessiz, sus, şşt
 # Opens about:addons page in the plugins section
 quickactions-plugins = Yan uygulamaları yönet
 quickactions-cmd-plugins = yan uygulamalar
@@ -281,7 +460,10 @@ quickactions-print2 = Sayfayı yazdır
 quickactions-cmd-print = yazdır
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Sayfayı PDF olarak kaydet
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, sayfayı kaydet
+# Opens about:pdf, the PDF editor landing page
+quickactions-editpdf = PDF düzenleyicisini aç
+quickactions-cmd-editpdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Gizli pencere aç
 quickactions-cmd-private = gizli gezinti
@@ -293,22 +475,40 @@ quickactions-restart = { -brand-short-name } tarayıcısını yeniden başlat
 quickactions-cmd-restart = yeniden başlat
 # Opens the screenshot tool
 quickactions-screenshot3 = Ekran görüntüsü al
+quickactions-cmd-screenshot2 = ekran görüntüsü al
+# Opens about:translations
+quickactions-translate = Çevir
+quickactions-cmd-translate = çevir
 quickactions-cmd-screenshot = ekran görüntüsü
 # Opens about:preferences
 quickactions-settings2 = Ayarları yönet
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = ayarlar, tercihler, seçenekler
 quickactions-cmd-settings = ayarlar, tercihler, seçenekler
 # Opens about:addons page in the themes section
 quickactions-themes = Temaları yönet
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = temalar, eklentiler
 quickactions-cmd-themes = temalar
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = { -brand-short-name } tarayıcısını güncelle
 quickactions-cmd-update = güncelle
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Sayfa kaynağını göster
+quickactions-cmd-viewsource2 = kaynağı göster, kaynak, sayfa kaynağı
+# Opens about:preferences:experimental (Firefox Labs)
+quickactions-labs = { -firefoxlabs-brand-name }’i aç
+quickactions-cmd-labs = labs, deney
 quickactions-cmd-viewsource = kaynağı görüntüle, kaynak
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Hızlı eylemler hakkında daha fazla bilgi alın
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Seçmek için Tab tuşuna basın:
 
 ## Bookmark Panel
 
@@ -382,7 +582,11 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Bu siteye güvenli bir şekilde bağlanmadınız.
 identity-connection-verified = Bu siteye güvenli bir şekilde bağlandınız.
 identity-ev-owner-label = Sertifika sahibi:
+identity-verifier-label = Doğrulayan:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = 2024/1183 Sayılı AB Regülasyonu’na uygundur.
 identity-description-custom-root2 = Mozilla bu sertifika yayıncısını tanımıyor. İşletim sisteminiz üzerinden veya sistem yöneticiniz tarafından eklenmiş olabilir.
+identity-cert-exception-overridden = Bu siteye güvenlik ayrıcalığı tanıdınız.
 identity-remove-cert-exception =
     .label = Ayrıcalığı kaldır
     .accesskey = k
@@ -415,6 +619,9 @@ browser-window-restore-down-button =
     .tooltiptext = Geri küçült
 browser-window-close-button =
     .tooltiptext = Kapat
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = Geri dön
 
 ## Tab actions
 
@@ -484,6 +691,11 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Bu oturumda paylaşım korumasını devre dışı bırak
 
+## WebSerial "select a port" popup
+
+webserial-select-port-label = Bir seri bağlantı noktası seçin:
+webserial-no-ports-available = Kullanılabilir seri bağlantı noktası yok
+
 ## DevTools F12 popup
 
 enable-devtools-popup-description2 = F12 kısayolunu kullanmak için önce tarayıcı araçları menüsünden geliştirici araçlarını açın.
@@ -497,6 +709,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Arama yapın veya adres yazın
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Adres yazın
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -545,17 +761,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Uzantı:
+urlbar-go-button2 =
+    .title = Konum çubuğundaki adrese git
 urlbar-go-button =
     .tooltiptext = Konum çubuğundaki adrese git
 urlbar-page-action-button =
     .tooltiptext = Sayfa eylemleri
 urlbar-revert-button =
     .tooltiptext = Konum çubuğunda adresi göster
-urlbar-show-page-actions-button =
-    .tooltiptext = Tüm sayfa eylemlerini göster
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -572,12 +789,15 @@ urlbar-result-action-search-in-private = Gizli pencerede ara
 urlbar-result-action-search-w-engine = { $engine } ile ara
 urlbar-result-action-sponsored = Sponsorlu
 urlbar-result-action-switch-tab = Sekmeye geç
+urlbar-result-action-move-tab-to-split-view = Sekmeyi ayrık görünüme taşı
 urlbar-result-action-visit = Ziyaret et
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Sekmeye geç · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Adsız grup
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Panodan ziyaret et
 # Directs a user to press the Tab key to perform a search with the specified
@@ -607,12 +827,305 @@ urlbar-result-action-copy-to-clipboard = Kopyala
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = tanımsız
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = { -brand-product-name } uzantısı
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Öneriliyor
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = { $region }, { $city } şu anda <strong>{ $temperature } °{ $unit }</strong>
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = { $city }, { $region }, { $country } şu anda <strong>{ $temperature } °{ $unit }</strong>
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = { $city } şu anda <strong>{ $temperature } °{ $unit }</strong>
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Sponsorlu
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Sor
+
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
+
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative = En son { $date } ziyaret ettiniz
+# This explanation is used when the last-visited date is a small number of days
+# in the past.
+# Variables:
+#   $daysAgo (number) - The number of days ago
+urlbar-result-explanation-last-visited-days =
+    { $daysAgo ->
+        [one] En son { $daysAgo } gün önce ziyaret ettiniz
+       *[other] En son { $daysAgo } gün önce ziyaret ettiniz
+    }
+# This explanation is used when the last-visited date is a small number of weeks
+# in the past.
+# Variables:
+#   $weeksAgo (number) - The number of weeks ago
+urlbar-result-explanation-last-visited-weeks =
+    { $weeksAgo ->
+        [one] En son { $weeksAgo } hafta önce ziyaret ettiniz
+       *[other] En son { $weeksAgo } hafta önce ziyaret ettiniz
+    }
+# This explanation is used when the last-visited date is a small number of
+# months in the past.
+# Variables:
+#   $monthsAgo (number) - The number of months ago
+urlbar-result-explanation-last-visited-months =
+    { $monthsAgo ->
+        [one] En son { $monthsAgo } ay önce ziyaret ettiniz
+       *[other] En son { $monthsAgo } ay önce ziyaret ettiniz
+    }
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute = En son { $date } tarihinde ziyaret ettiniz
+# This explanation is used when the result is bookmarked. The date will be
+# formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-bookmarked = { $date } tarihinde yer imlerine eklendi
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative-2 = Son ziyaret: { $date }
+# This explanation is used when the last-visited date is a small number of days
+# in the past.
+# Variables:
+#   $daysAgo (number) - The number of days ago
+urlbar-result-explanation-last-visited-days-2 =
+    { $daysAgo ->
+        [one] Son ziyaret: { $daysAgo } gün önce
+       *[other] Son ziyaret: { $daysAgo } gün önce
+    }
+# This explanation is used when the last-visited date is a small number of weeks
+# in the past.
+# Variables:
+#   $weeksAgo (number) - The number of weeks ago
+urlbar-result-explanation-last-visited-weeks-2 =
+    { $weeksAgo ->
+        [one] Son ziyaret: { $weeksAgo } hafta önce
+       *[other] Son ziyaret: { $weeksAgo } hafta önce
+    }
+# This explanation is used when the last-visited date is a small number of
+# months in the past.
+# Variables:
+#   $monthsAgo (number) - The number of months ago
+urlbar-result-explanation-last-visited-months-2 =
+    { $monthsAgo ->
+        [one] Son ziyaret: { $monthsAgo } ay önce
+       *[other] Son ziyaret: { $monthsAgo } ay önce
+    }
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute-2 = Son ziyaret: { $date }
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Borsa verilerine doğrudan arama çubuğunuzdan ulaşın
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Borsa verilerini ve iş ortaklarımızdan gelen haberleri görmek için arama sorgusu verilerinizi { -vendor-short-name } ile paylaşabilirsiniz. <a data-l10n-name="learn-more-link">Daha fazla bilgi alın</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Önerileri göster
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Şimdi değil
+urlbar-result-realtime-opt-in-dismiss = Kapat
+urlbar-result-realtime-opt-in-dismiss-all2 = Bu önerileri gösterme
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = Borsa önerilerini gösterme
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Bu önerileri gösterme
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Borsa önerilerini gösterme
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Geri bildiriminiz için teşekkür ederiz. Artık borsa önerilerini görmeyeceksiniz.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Borsa önerileri
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Geri bildiriminiz için teşekkür ederiz. Artık bu önerileri görmeyeceksiniz.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · { $daysUntilStart } gün sonra
+       *[other] { $name } · { $daysUntilStart } gün sonra
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · { $daysUntilStart } gün sonra başlıyor
+       *[other] { $name } · { $daysUntilStart } gün sonra başlıyor
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · { $daysUntilEnd } gün sonra bitiyor
+       *[other] { $name } · { $daysUntilEnd } gün sonra bitiyor
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Bugün
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Bugün bitiyor
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } ile ara
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - { $localSearchMode } araması
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - { $engine } ile ara
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Bir arama motoru seçin
+urlbar-searchmode-bookmarks =
+    .label = Yer imleri
+urlbar-searchmode-tabs =
+    .label = Sekmeler
+urlbar-searchmode-history =
+    .label = Geçmiş
+urlbar-searchmode-actions =
+    .label = Eylemler
+urlbar-searchmode-exit-button =
+    .tooltiptext = Kapat
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Burada ara:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Arama ayarları
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, arama motorunu değiştir
+    .tooltiptext = { $engine }, arama motorunu değiştir
+urlbar-searchmode-button-no-engine =
+    .label = Kısayol seçilmemiş, kısayol seçin
+    .tooltiptext = Kısayol seçilmemiş, kısayol seçin
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, arama motorunu değiştir
+urlbar-searchmode-button-no-engine2 =
+    .title = Kısayol seçilmemiş, kısayol seçin
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = Anahtar kelimeyle arama devre dışı
+urlbar-searchmode-dropmarker2 =
+    .title = Bir arama motoru seçin
+urlbar-searchmode-bookmarks2 = Yer imleri
+urlbar-searchmode-tabs2 = Sekmeler
+urlbar-searchmode-history2 = Geçmiş
+urlbar-searchmode-actions2 = Eylemler
+urlbar-searchmode-exit-button2 =
+    .title = Kapat
+urlbar-searchmode-default2 =
+    .title = Varsayılan arama motoru
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = “{ $engineName }” arama motorunu ekle
+    .title = “{ $engineName }” arama motorunu ekle
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Burada ara:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = Bununla ara:
+urlbar-searchmode-popup-search-settings-panelitem = Arama ayarları
+urlbar-searchmode-popup-settings-panelitem = Ayarlar
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -622,6 +1135,27 @@ urlbar-result-action-search-bookmarks = Yer imlerinde ara
 urlbar-result-action-search-history = Geçmişte ara
 urlbar-result-action-search-tabs = Sekmelerde ara
 urlbar-result-action-search-actions = İşlemlerde ara
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = { $group } grubuna geç
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } grubunu aç
+
+## Used in the context menu in urlbar view.
+
+urlbar-view-context-menu-open-in-tab =
+    .label = Yeni sekmede aç
+    .accesskey = s
+urlbar-view-context-menu-open-in-container-tab =
+    .label = Yeni kapsayıcı sekmede aç
+    .accesskey = k
+urlbar-view-context-menu-open-in-window =
+    .label = Yeni pencerede aç
+    .accesskey = e
+urlbar-view-context-menu-open-in-private-window =
+    .label = Yeni gizli pencerede aç
+    .accesskey = z
 
 ## Labels shown above groups of urlbar results
 
@@ -648,6 +1182,12 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = { $engine } arama trendleri
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = Arama trendlerini gösterme
+    .accesskey = A
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Sponsorlu
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Arama trendlerini gösterme
@@ -692,6 +1232,9 @@ fullscreen-warning-no-domain = Bu belge artık tam ekran
 fullscreen-exit-button = Tam ekrandan çık (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = Tam ekrandan çık (esc)
+fullscreen-keyboardlock-exit-button = Tam ekrandan çık (Esc tuşunu basılı tutun)
+# "esc" is lowercase on mac keyboards, but uppercase elsewhere.
+fullscreen-keyboardlock-exit-mac-button = Tam ekrandan çık (esc tuşunu basılı tutun)
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -787,7 +1330,7 @@ repair-text-encoding-button =
     .label = Metin kodlamasını onar
     .tooltiptext = Sayfa içeriğinden doğru metin kodlamasını tahmin et
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -807,6 +1350,29 @@ toolbar-button-email-link =
 toolbar-button-logins =
     .label = Parolalar
     .tooltiptext = Kayıtlı parolalarımı görüntüle ve yönet
+qrcode-panel-error =
+    .message = QR kodu oluşturulamadı. Lütfen yeniden deneyin.
+qrcode-copy-button =
+    .label = Kopyala
+qrcode-copy-success =
+    .message = QR kodu panoya kopyalandı.
+qrcode-copy-error =
+    .message = QR kodu kopyalanamadı.
+qrcode-save-button =
+    .label = Kaydet
+qrcode-save-success =
+    .message = QR kodu kaydedildi.
+qrcode-save-error =
+    .message = QR kodu kaydedilemedi.
+qrcode-save-title = QR kodunu kaydet
+qrcode-save-filter-png = PNG resmi
+qrcode-save-filename = qrkodu.png
+qrcode-window-title = QR kodu
+qrcode-dialog-title = QR kodu
+qrcode-image =
+    .aria-label = QR kodu
+qrcode-close-button =
+    .aria-label = Kapat
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -820,11 +1386,28 @@ toolbar-button-open-file =
 toolbar-button-synced-tabs =
     .label = Eşitlenmiş sekmeler
     .tooltiptext = Diğer cihazlardaki sekmeleri göster
+toolbar-button-send-tab =
+    .label = Sekmeyi gönder
+    .tooltiptext = Geçerli sekmeyi başka bir cihaza gönder
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
     .label = Yeni gizli pencere
     .tooltiptext = Yeni bir Gizli Gezinti penceresi aç ({ $shortcut })
+toolbar-button-share-tab =
+    .label = Paylaş
+    .tooltiptext = Bu sayfayı paylaş
+toolbar-button-tab-groups =
+    .label = Sekme grupları
+    .tooltiptext = Sekme gruplarımı göster
+
+## Default filenames used when saving a QR code. The file extension (.png)
+## is added automatically.
+
+qrcode-save-filename-base = qrkodu
+# Variables:
+#  $domain (String): The current page's domain used in the suggested filename.
+qrcode-save-filename-with-domain-base = qrkodu-{ $domain }
 
 ## EME notification panel
 
@@ -838,12 +1421,30 @@ eme-notifications-drm-content-playing-dismiss-accesskey = K
 
 panel-save-update-username = Kullanıcı adı
 panel-save-update-password = Parola
+panel-save-update-username-2 =
+    .label = Kullanıcı adı
+panel-save-update-password-2 =
+    .label = Parola
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Daha fazla…
+menu-share-windows =
+    .label = Diğer seçenekler
+# Variables:
+#   $count (Number) - The number of links that will be copied.
+menu-share-copy-links =
+    .label =
+        { $count ->
+            [one] Bağlantıyı kopyala
+           *[other] { $count } bağlantıyı kopyala
+        }
+    .accesskey = B
+menu-share-copy-link =
+    .label = Bağlantıyı kopyala
+    .accesskey = B
 ui-tour-info-panel-close =
     .tooltiptext = Kapat
 
@@ -855,6 +1456,9 @@ popups-infobar-allow =
     .accesskey = p
 popups-infobar-block =
     .label = { $uriHost } açılır pencerelerini engelle
+    .accesskey = p
+popups-infobar-allow2 =
+    .label = { $uriHost } için açılır pencerelere ve üçüncü taraf yönlendirmelerine izin ver
     .accesskey = p
 
 ##
@@ -891,6 +1495,8 @@ navbar-accessible =
     .aria-label = Gezinme
 navbar-downloads =
     .label = İndirilenler
+navbar-overflow-2 =
+    .tooltiptext = Daha fazla araç
 navbar-overflow =
     .tooltiptext = Daha fazla araç…
 # Variables:
@@ -917,6 +1523,10 @@ tabs-toolbar-list-all-tabs =
     .label = Tüm sekmeleri listele
     .tooltiptext = Tüm sekmeleri listele
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Sekmeyi sabitlemek için buraya bırakın
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -935,6 +1545,9 @@ data-reporting-notification-button =
     .accesskey = N
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Gizli gezinti
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Gizli gezinti
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -943,7 +1556,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Veri koruması
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Kuruluşunuz veri kaybını önlemek için { $agentName } kullanıyor. <a data-l10n-name="info">Daha fazla bilgi al</a>
+content-analysis-panel-text-styled = Kuruluşunuz veri kaybını önlemek için <b>{ $agentName }</b> kullanıyor. <a data-l10n-name="info">Daha fazla bilgi al</a>
 
 ## Unified extensions (toolbar) button
 
@@ -967,11 +1580,22 @@ unified-extensions-button-quarantined =
     .label = Uzantılar
     .tooltiptext = Bazı uzantılara izin verilmiyor
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Uzantılar
+    .tooltiptext =
+        Uzantılar
+        Bazı uzantılar devre dışı
+
 ## Private browsing reset button
 
 reset-pbm-toolbar-button =
     .label = Gizli oturumu sonlandır
     .tooltiptext = Gizli oturumu sonlandır
+reset-pbm-panel-heading2 = Veriler temizlenip yeni bir gizli oturum başlatılsın mı?
+reset-pbm-panel-description2 = Bu işlem, gizli pencerenizi kapatmadan geçmişi, çerezleri ve tüm site verilerini siler.
 reset-pbm-panel-heading = Gizli oturum sonlandırılsın mı?
 reset-pbm-panel-description = Tüm özel sekmeleri kapat ve geçmişi, çerezleri ve tüm site verilerini sil.
 reset-pbm-panel-always-ask-checkbox =
@@ -980,10 +1604,16 @@ reset-pbm-panel-always-ask-checkbox =
 reset-pbm-panel-cancel-button =
     .label = Vazgeç
     .accesskey = V
+reset-pbm-panel-confirm-button2 =
+    .label = Gizli oturumu temizle
+    .accesskey = z
 reset-pbm-panel-confirm-button =
     .label = Oturum verilerini sil
     .accesskey = O
 reset-pbm-panel-complete = Gizli oturum verileri silindi
+reset-pbm-toolbar-button2 =
+    .label = Gizli oturumu temizle
+    .tooltiptext = Gizli oturumu temizle
 
 ## Autorefresh blocker
 
@@ -1000,16 +1630,23 @@ firefox-relay-offer-why-to-use-relay = Güvenli, kullanımı kolay maskelerimiz 
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = E-posta maskelerinize gönderilen tüm e-postalar <strong>{ $useremail }</strong> adresine yönlendirilecektir (siz engellemeye karar vermediğiniz sürece).
 firefox-relay-offer-legal-notice = “E-posta maskesi kullan”a tıkladığınızda <label data-l10n-name="tos-url">Hizmet Koşulları</label>’nı ve <label data-l10n-name="privacy-url">Gizlilik Bildirimi</label>’ni kabul etmiş sayılırsınız.
+firefox-relay-offer-legal-notice-1 = Kaydolup e-posta maskesi oluşturduğunuzda <label data-l10n-name="tos-url">Hizmet Koşulları</label>’nı ve <label data-l10n-name="privacy-url">Gizlilik Bildirimi</label>’ni kabul etmiş sayılırsınız.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Doğrulanmamış)
 popup-notification-xpinstall-prompt-learn-more = Eklentileri güvenle yükleme hakkında daha fazla bilgi alın
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Gizli pencerede çalışabilir
-    .accesskey = G
+popup-notification-xpinstall-prompt-block-url = Ayrıntıları göster
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Uzantının gizli pencerelerde çalışmasına izin ver
+    .accesskey = z
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Teknik verileri ve etkileşim verilerini uzantı geliştiricisiyle paylaş
+    .accesskey = T
 
 ## Pop-up warning
 
@@ -1020,6 +1657,15 @@ popup-warning-message =
         [one] { -brand-short-name } bu sitenin açılır pencere açmasını engelledi.
        *[other] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } bu sitenin sizi yönlendirmesini engelledi.
+        [1] { -brand-short-name } bu sitenin açılır pencere açmasını ve sizi yönlendirmesini engelledi.
+        [one] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını ve sizi yönlendirmesini engelledi.
+       *[other] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını ve sizi yönlendirmesini engelledi.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
@@ -1027,6 +1673,13 @@ popup-warning-exceeded-message =
     { $popupCount ->
         [one] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
        *[other] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
+    }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } bu sitenin en az { $popupCount } açılır pencere açmasını ve sizi yönlendirmesini engelledi.
+       *[other] { -brand-short-name } bu sitenin en az { $popupCount } açılır pencere açmasını ve sizi yönlendirmesini engelledi.
     }
 popup-warning-button =
     .label =
@@ -1043,6 +1696,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” penceresini göster
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = “{ $redirectURI }” sayfasını göster
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1064,3 +1721,162 @@ file-picker-crashed-save-nowhere = Windows dosya iletişim kutusu çöktü. Vars
 file-picker-crashed-show-in-folder =
     .label = Klasörde göster
     .accessKey = l
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Kurulumu tamamla
+onboarding-aw-finish-setup-button =
+    .label = Kurulumu tamamla
+    .tooltiptext = { -brand-short-name } kurulumunu tamamlayın
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Gelişmiş izlenme koruması açık
+trustpanel-etp-label-disabled = Gelişmiş izlenme koruması kapalı
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Gelişmiş izlenme koruması: { $host } için açık
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Gelişmiş izlenme koruması: { $host } için kapalı
+trustpanel-etp-description-enabled = Site bozuk görünüyorsa korumaları kapatmayı deneyin.
+trustpanel-etp-description-disabled = { -brand-product-name } şirketlerin sizi daha az takip etmesi gerektiğini düşünüyor. Korumaları açtığınızda mümkün olduğunca çok sayıda takip kodunu engelliyoruz.
+trustpanel-connection-label-secure = Bağlantı güvenli
+trustpanel-connection-label-insecure = Bağlantı güvenli değil
+trustpanel-header-enabled = { -brand-product-name } sizi koruyor
+trustpanel-description-enabled2 = Koruma altındasınız. Bir şey tespit edersek size haber vereceğiz.
+trustpanel-header-enabled-insecure = Bu sitede dikkatli olun
+trustpanel-description-enabled-insecure = { -brand-product-name } şüpheli bir şey fark etti.
+trustpanel-header-disabled = Korumaları kapattınız
+trustpanel-description-disabled = { -brand-product-name } kapalı. Korumaları yeniden açmanızı öneririz.
+trustpanel-clear-cookies-button = Çerezleri ve site verilerini temizle
+trustpanel-privacy-link = Gizlilik ayarları
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = { $host } çerezlerini ve site verilerini temizle
+trustpanel-clear-cookies-description = Çerezleri ve site verilerini temizlerseniz sitelerdeki oturumlarınız kapanabilir ve alışveriş sepetleriniz boşalabilir.
+trustpanel-clear-cookies-subview-button-clear = Temizle
+trustpanel-clear-cookies-subview-button-cancel = Vazgeç
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = { $host } bağlantı korumaları
+trustpanel-siteinformation-morelink = Daha fazla site bilgisi
+trustpanel-blocker-see-all = Tümünü göster
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = { $host } izlenme korumaları
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Güvenli değil
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } şirketlerin sizi daha az takip etmesi gerektiğini düşünüyor. O yüzden mümkün olduğunca çok takip kodunu engelliyoruz.
+trustpanel-blocked-header = { -brand-product-name } sizin için aşağıdakileri engelledi:
+trustpanel-tracking-header = Sitelerin bozulmasını önlemek için { -brand-product-name } aşağıdakilere izin verdi:
+trustpanel-tracking-description = Takip kodları olmadan bazı düğmeler, formlar ve giriş alanları çalışmayabilir.
+trustpanel-insecure-section-header = Bağlantınız güvenli değil
+trustpanel-insecure-description = Bu siteye gönderdiğiniz veriler şifrelenmemiştir. Bu veriler görüntülenebilir, çalınabilir veya üzerinde değişiklik yapılabilir.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } siteler arası takip çerezi
+       *[other] { $count } siteler arası takip çerezi
+    }
+trustpanel-list-label-tracking-content = Takip amaçlı içerikler
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } parmak izi toplayıcı
+       *[other] { $count } parmak izi toplayıcı
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } sosyal medya takip kodu
+       *[other] { $count } sosyal medya takip kodu
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } kripto madencisi
+       *[other] { $count } kripto madencisi
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } sosyal medya takip kodunu engelledi
+       *[other] { -brand-product-name } { $count } sosyal medya takip kodunu engelledi
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } sosyal medya takip koduna izin verdi
+       *[other] { -brand-product-name } { $count } sosyal medya takip koduna izin verdi
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } siteler arası takip çerezini engelledi
+       *[other] { -brand-product-name } { $count } siteler arası takip çerezini engelledi
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } siteler arası takip çerezine izin verdi
+       *[other] { -brand-product-name } { $count } siteler arası takip çerezine izin verdi
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } takip kodunu engelledi
+       *[other] { -brand-product-name } { $count } takip kodunu engelledi
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } takip koduna izin verdi
+       *[other] { -brand-product-name } { $count } takip koduna izin verdi
+    }
+trustpanel-tracking-content-tab-list-header = Bu siteler sizi izlemeye çalışıyor:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } parmak izi toplayıcıyı engelledi
+       *[other] { -brand-product-name } { $count } parmak izi toplayıcıyı engelledi
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } parmak izi toplayıcıya izin verdi
+       *[other] { -brand-product-name } { $count } parmak izi toplayıcıya izin verdi
+    }
+trustpanel-fingerprinter-list-header = Bu siteler parmak izinizi almaya çalışıyor:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } kripto madenciyi engelledi
+       *[other] { -brand-product-name } { $count } kripto madenciyi engelledi
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } { $count } kripto madenciye izin verdi
+       *[other] { -brand-product-name } { $count } kripto madenciye izin verdi
+    }
+trustpanel-cryptominer-tab-list-header = Bu siteler kripto madenciliği yapmaya çalışıyor:
+# "account on this site" refers to the (breached) site the user is currently visiting, not a Mozilla Monitor account.
+trustpanel-breachalerts-anonymous-breached-header = Bu sitede hesabınız var mı?
+trustpanel-breachalerts-anonymous-breached-description = { -brand-product-name } bu sitenin son 12 ay içinde veri ihlali yaşadığını tespit etti. Etkilenip etkilenmediğinizi öğrenin.
+trustpanel-breachalerts-anonymous-breached-button-dismiss = Kapat
+trustpanel-breachalerts-anonymous-breached-button-check-monitor = Ücretsiz taramayı başlat
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] Bu sitede <span data-l10n-name="count">{ $count }</span> takip kodu engellendi
+       *[other] Bu sitede <span data-l10n-name="count">{ $count }</span> takip kodu engellendi
+    }
+
+## Reduced Protection Infobar ("ReducedProtectionNotification.sys.mjs")
+
+# "temporarily lower your tracking protection" refers to temporarily decreasing the amount of tracking protection.
+reduced-protection-infobar-message = <strong>Site bozuk mu görünüyor?</strong> İzlenme korumanızı geçici olarak azaltmak için sayfayı tazeleyin.
+reduced-protection-infobar-reload-button = Tazele
+    .accesskey = z
+reduced-protection-infobar-never-show-button = Bir daha gösterme
+    .accesskey = B

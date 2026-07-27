@@ -37,9 +37,9 @@ translations-panel-displayname-beta =
 
 translations-panel-settings-manage-languages =
     .label = Rheoli ieithoedd
-translations-panel-settings-about = Ynghylch cyfieithiadau yn { -brand-shorter-name }
+translations-panel-settings-about = Ynghylch cyfieithu yn { -brand-shorter-name }
 translations-panel-settings-about2 =
-    .label = Ynghylch cyfieithiadau yn { -brand-shorter-name }
+    .label = Ynghylch cyfieithu yn { -brand-shorter-name }
 # Text displayed for the option to always translate a given language
 # Variables:
 #   $language (string) - The localized display name of the detected language
@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Newid yr iaith wreiddiol
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Ymddiheuriadau, dydyn ni ddim yn cefnogi cyfieithiadau o'r { $language } eto.
+translations-panel-error-unsupported-hint-unknown-2 = Ymddiheuriadau, dydyn ni ddim yn cefnogi cyfieithiadau o'r iaith hon eto.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -118,7 +126,7 @@ translations-panel-restore-button =
 
 ## Firefox Translations language management in about:preferences.
 
-translations-manage-header = Cyfieithiadau
+translations-manage-header = Cyfieithu
 translations-manage-settings-button =
     .label = Gosodiadau…
     .accesskey = G
@@ -126,13 +134,6 @@ translations-manage-description = Llwythwch i lawr ieithoedd ar gyfer cyfieithu 
 translations-manage-all-language = Pob iaith
 translations-manage-download-button = Llwytho i lawr
 translations-manage-delete-button = Dileu
-translations-manage-intro = Gosodwch eich dewisiadau cyfieithu iaith a gwefan a rheoli ieithoedd sydd wedi'u gosod ar gyfer cyfieithu all-lein.
-translations-manage-install-description = Gosodwch ieithoedd ar gyfer cyfieithu all-lein
-translations-manage-language-install-button =
-    .label = Gosod
-translations-manage-language-install-all-button =
-    .label = Gosod y cyfan
-    .accesskey = G
 translations-manage-intro-2 = Gosodwch eich dewisiadau iaith a chyfieithu gwefan a rheoli'r ieithoedd sydd wedi'u llwytho i lawr ar gyfer cyfieithu all-lein.
 translations-manage-download-description = Llwytho i lawr ieithoedd ar gyfer cyfieithu all-lein
 translations-manage-language-download-button =
@@ -145,13 +146,12 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Tynnu'r cyfan
     .accesskey = T
-translations-manage-error-install = Bu anhawster wrth osod y ffeiliau iaith. Ceisiwch eto.
 translations-manage-error-download = Bu anhawster wrth lwytho'r ffeiliau iaith i lawr. Ceisiwch eto.
 translations-manage-error-delete = Bu gwall wrth ddileu'r ffeiliau iaith. Ceisiwch eto.
 translations-manage-error-remove = Bu gwall wrth dynnu'r ffeiliau iaith. Ceisiwch eto.
 translations-manage-error-list = Wedi methu â chael y rhestr o ieithoedd sydd ar gael i'w cyfieithu. Ail-lwythwch y dudalen i geisio eto.
 translations-settings-title =
-    .title = Gosodiadau Cyfieithiadau
+    .title = Gosodiadau Cyfieithu
     .style = min-width: 36em
 translations-settings-close-key =
     .key = w
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Bu anhawster wrth gyfieithu. Ceisiwch eto.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Ymddiheuriadau, dydyn ni ddim yn cefnogi cyfieithiadau o'r { $language } eto.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Ymddiheuriadau, dydyn ni ddim yn cefnogi cyfieithiadau o'r iaith hon eto.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

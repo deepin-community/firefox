@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "File.h"
+
 #include "FileBlobImpl.h"
 #include "MemoryBlobImpl.h"
 #include "MultipartBlobImpl.h"
@@ -13,8 +12,8 @@
 #include "mozilla/dom/FileCreatorHelper.h"
 #include "mozilla/dom/FileSystemUtils.h"
 #include "mozilla/dom/Promise.h"
-#include "nsIFile.h"
 #include "nsContentUtils.h"
+#include "nsIFile.h"
 #include "nsXULAppAPI.h"
 
 namespace mozilla::dom {
@@ -116,6 +115,10 @@ void File::GetRelativePath(nsAString& aPath) const {
   }
 }
 
+void File::SetMozRelativePath(const nsAString& aPath) {
+  mImpl->SetDOMPath(aPath);
+}
+
 int64_t File::GetLastModified(ErrorResult& aRv) {
   return mImpl->GetLastModified(aRv);
 }
@@ -181,7 +184,7 @@ already_AddRefed<Promise> File::CreateFromFileName(
     const ChromeFilePropertyBag& aBag, SystemCallerGuarantee aGuarantee,
     ErrorResult& aRv) {
   nsCOMPtr<nsIFile> file;
-  aRv = NS_NewLocalFile(aPath, false, getter_AddRefs(file));
+  aRv = NS_NewLocalFile(aPath, getter_AddRefs(file));
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }

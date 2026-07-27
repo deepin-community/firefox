@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,6 +16,7 @@ namespace mozilla {
 namespace net {
 
 class nsHttpConnection;
+class WebTransportSessionBase;
 
 class ASpdySession : public nsAHttpTransaction {
  public:
@@ -78,15 +77,20 @@ class ASpdySession : public nsAHttpTransaction {
             code == NS_BINDING_ABORTED || code == NS_BINDING_REDIRECTED ||
             code == NS_ERROR_INVALID_CONTENT_ENCODING ||
             code == NS_BINDING_RETARGETED ||
-            code == NS_ERROR_CORRUPTED_CONTENT);
+            code == NS_ERROR_CORRUPTED_CONTENT ||
+            code == NS_ERROR_NET_TIMEOUT_EXTERNAL);
   }
 
   virtual void SetCleanShutdown(bool) = 0;
-  virtual WebSocketSupport GetWebSocketSupport() = 0;
+  virtual ExtendedCONNECTSupport GetExtendedCONNECTSupport() = 0;
 
-  virtual already_AddRefed<mozilla::net::nsHttpConnection> CreateTunnelStream(
-      nsAHttpTransaction* aHttpTransaction, nsIInterfaceRequestor* aCallbacks,
-      PRIntervalTime aRtt, bool aIsWebSocket = false) = 0;
+  virtual Result<already_AddRefed<mozilla::net::nsHttpConnection>, nsresult>
+  CreateTunnelStream(nsAHttpTransaction* aHttpTransaction,
+                     nsIInterfaceRequestor* aCallbacks, PRIntervalTime aRtt,
+                     bool aIsExtendedCONNECT = false) = 0;
+
+  virtual WebTransportSessionBase* GetWebTransportSession(
+      nsAHttpTransaction* aTransaction) = 0;
 };
 
 using ALPNCallback = bool (*)(nsITLSSocketControl*);

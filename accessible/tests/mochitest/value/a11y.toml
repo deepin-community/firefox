@@ -3,6 +3,8 @@ support-files = "!/accessible/tests/mochitest/*.js"
 
 ["test_ariavalue.html"]
 
+["test_color.html"]
+
 ["test_datetime.html"]
 
 ["test_general.html"]

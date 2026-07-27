@@ -68,7 +68,7 @@ system_default:
       known browsers.
 
       Possible values currently include the following (from
-      [DefaultBrowser.cpp](https://searchfox.org/mozilla-central/source/toolkit/mozapps/defaultagent/DefaultBrowser.cpp)):
+      [DefaultBrowser.cpp](https://searchfox.org/firefox-main/source/toolkit/mozapps/defaultagent/DefaultBrowser.cpp)):
       * "error"
       * "" (unknown)
       * "firefox"
@@ -134,7 +134,7 @@ system_default:
       known handlers.
 
       Possible values currently include the following (from
-      [DefaultPDF.cpp](https://searchfox.org/mozilla-central/source/toolkit/mozapps/defaultagent/DefaultPDF.cpp)):
+      [DefaultPDF.cpp](https://searchfox.org/firefox-main/source/toolkit/mozapps/defaultagent/DefaultPDF.cpp)):
       * "Error"
       * "" (unknown)
       * "Firefox"
@@ -206,3 +206,22 @@ notification:
     expires: never
     send_in_pings:
       - default-agent
+
+defaultagent:
+  days_since_last_app_launch:
+    type: quantity
+    description: >
+      Number of days since the app last launched. Once this reaches 90 days, the installation
+      will stop running the default browser agent.
+    notification_emails:
+        - install-update@mozilla.com
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1843667
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1843667
+    data_sensitivity:
+      - technical
+    expires: never
+    send_in_pings:
+      - default-agent
+    unit: days

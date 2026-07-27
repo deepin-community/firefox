@@ -5,29 +5,32 @@
 package org.mozilla.fenix.components
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.feature.accounts.FirefoxAccountsAuthFeature
 import mozilla.components.feature.app.links.AppLinksInterceptor
 import mozilla.components.service.fxa.manager.FxaAccountManager
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.perf.lazyMonitored
 import org.mozilla.fenix.settings.SupportUtils
+import org.mozilla.fenix.utils.PersistStoryUTMRequestInterceptor
 
 /**
  * Component group which encapsulates foreground-friendly services.
  */
 class Services(
     private val context: Context,
+    private val store: BrowserStore,
     private val accountManager: FxaAccountManager,
 ) {
     val accountsAuthFeature by lazyMonitored {
         FirefoxAccountsAuthFeature(accountManager, FxaServer.REDIRECT_URL) { context, authUrl ->
             var url = authUrl
             if (context.settings().useReactFxAServer) {
-                url = Uri.parse(url)
+                url = url.toUri()
                     .buildUpon()
                     .appendQueryParameter("forceExperiment", "generalizedReactApp")
                     .appendQueryParameter("forceExperimentGroup", "react")
@@ -43,9 +46,14 @@ class Services(
 
     val appLinksInterceptor by lazyMonitored {
         AppLinksInterceptor(
-            context,
-            interceptLinkClicks = true,
+            context = context,
             launchInApp = { context.settings().shouldOpenLinksInApp() },
+            launchFromInterceptor = false,
+            store = store,
         )
+    }
+
+    val storyUTMRequestInterceptor by lazyMonitored {
+        PersistStoryUTMRequestInterceptor()
     }
 }

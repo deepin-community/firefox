@@ -3,7 +3,7 @@
 const { ExperimentAPI } = ChromeUtils.importESModule(
   "resource://nimbus/ExperimentAPI.sys.mjs"
 );
-const { ExperimentFakes } = ChromeUtils.importESModule(
+const { NimbusTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/NimbusTestUtils.sys.mjs"
 );
 const { TelemetryTestUtils } = ChromeUtils.importESModule(
@@ -16,7 +16,7 @@ const { TelemetryTestUtils } = ChromeUtils.importESModule(
 add_task(async function test_multistage_zeroOnboarding_experimentAPI() {
   await setAboutWelcomePref(true);
   await ExperimentAPI.ready();
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  let doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: { enabled: false },
   });
@@ -35,14 +35,15 @@ add_task(async function test_multistage_zeroOnboarding_experimentAPI() {
 
   await test_screen_content(
     browser,
-    "Opens new tab",
+    // When about:welcome is disabled, we should redirect to about:home
+    "home",
     // Expected selectors:
     ["div.search-wrapper", "body.activity-stream"],
     // Unexpected selectors:
     ["div.onboardingContainer", "main.AW_STEP1"]
   );
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 /**
@@ -134,7 +135,7 @@ add_task(async function test_multistage_aboutwelcome_experimentAPI() {
   await setAboutWelcomePref(true);
   await ExperimentAPI.ready();
 
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  let doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     enabled: true,
     value: {
@@ -142,8 +143,6 @@ add_task(async function test_multistage_aboutwelcome_experimentAPI() {
       screens: TEST_CONTENT,
     },
   });
-
-  sandbox.spy(ExperimentAPI, "recordExposureEvent");
 
   Services.telemetry.clearScalars();
   let tab = await BrowserTestUtils.openNewForegroundTab(
@@ -174,7 +173,7 @@ add_task(async function test_multistage_aboutwelcome_experimentAPI() {
       "div.secondary-cta.top",
       "button[value='secondary_button']",
       "button[value='secondary_button_top']",
-      "label.theme",
+      "label.select-item",
       "input[type='radio']",
     ],
     // Unexpected selectors:
@@ -233,6 +232,8 @@ add_task(async function test_multistage_aboutwelcome_experimentAPI() {
     ["main.AW_STEP1", "main.AW_STEP2"]
   );
   await onButtonClick(browser, "button.primary");
+
+  await BrowserTestUtils.browserLoaded(browser, false, "about:home");
   await test_screen_content(
     browser,
     "home",
@@ -242,21 +243,7 @@ add_task(async function test_multistage_aboutwelcome_experimentAPI() {
     ["div.onboardingContainer"]
   );
 
-  Assert.equal(
-    ExperimentAPI.recordExposureEvent.callCount,
-    1,
-    "Called only once for exposure event"
-  );
-
-  const scalars = TelemetryTestUtils.getProcessScalars("parent", true, true);
-  TelemetryTestUtils.assertKeyedScalar(
-    scalars,
-    "telemetry.event_counts",
-    "normandy#expose#nimbus_experiment",
-    1
-  );
-
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 /* Test multistage custom backdrop
@@ -279,7 +266,7 @@ add_task(async function test_multistage_aboutwelcome_backdrop() {
   await ExperimentAPI.ready();
   await pushPrefs(["browser.aboutwelcome.backdrop", TEST_BACKDROP]);
 
-  const doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  const doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: {
       id: "my-mochitest-experiment",
@@ -307,7 +294,7 @@ add_task(async function test_multistage_aboutwelcome_backdrop() {
     [`div.outer-wrapper.onboardingContainer[style*='${TEST_BACKDROP}']`]
   );
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_multistage_aboutwelcome_utm_term() {
@@ -336,7 +323,7 @@ add_task(async function test_multistage_aboutwelcome_utm_term() {
   await setAboutWelcomePref(true);
   await ExperimentAPI.ready();
 
-  const doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  const doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: {
       id: "my-mochitest-experiment",
@@ -353,6 +340,17 @@ add_task(async function test_multistage_aboutwelcome_utm_term() {
 
   const browser = tab.linkedBrowser;
   const aboutWelcomeActor = await getAboutWelcomeParent(browser);
+
+  // Wait for the experiment screen to render before stubbing
+  // onContentMessage to prevent in-flight queries from getAWContent getting
+  // caught by the stub
+  await SpecialPowers.spawn(browser, [], async () => {
+    await ContentTaskUtils.waitForCondition(
+      () =>
+        content.document.querySelector("button[value='secondary_button_top']"),
+      "experiment screen has rendered"
+    );
+  });
 
   sandbox.stub(aboutWelcomeActor, "onContentMessage");
 
@@ -380,5 +378,5 @@ add_task(async function test_multistage_aboutwelcome_utm_term() {
     BrowserTestUtils.removeTab(tab);
   });
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });

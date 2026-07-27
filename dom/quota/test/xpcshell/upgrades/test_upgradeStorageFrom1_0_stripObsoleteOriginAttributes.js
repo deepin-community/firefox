@@ -50,6 +50,17 @@ function* testSteps() {
 
   let metadataBuffers = [];
 
+  // XXX Set the pref using add_task once the test is converted to use explicit
+  // tasks
+  info("Setting pref");
+
+  Services.prefs.setBoolPref(
+    "dom.quotaManager.temporaryStorage.clearNonPersistedZeroUsageOrigins",
+    false
+  );
+
+  todo(!testGenerator, "Set the pref using add_task");
+
   info("Clearing");
 
   clear(continueToNextStepSync);
@@ -165,6 +176,7 @@ function* testSteps() {
       request = initTemporaryOrigin(
         origin.persistence,
         principal,
+        /* createIfNonExistent */ true,
         continueToNextStepSync
       );
     }

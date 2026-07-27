@@ -7,19 +7,6 @@
 
 learn-more = <span data-l10n-name="link">Lleer más</span>
 
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain why
-## the property is not applied.
-## Variables:
-##   $property (string) - A CSS property name e.g. "color".
-##   $display (string) - A CSS display value e.g. "inline-block".
-
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
-
-
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why
 ## the property is incompatible and the platforms it is incompatible on.
@@ -28,5 +15,4 @@ learn-more = <span data-l10n-name="link">Lleer más</span>
 ##   $rootProperty (string) - A raw CSS property name e.g. "user-select" that is not a platform specific alias.
 
 css-compatibility-experimental-supported-message = <strong>{ $property }</strong> ye una propiedá esperimental.
-
 css-compatibility-learn-more-message = <span data-l10n-name="link">Lleer más</span> tocante a <strong>{ $rootProperty }</strong>

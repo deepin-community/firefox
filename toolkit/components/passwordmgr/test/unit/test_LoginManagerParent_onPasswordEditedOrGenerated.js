@@ -208,9 +208,8 @@ add_setup(async () => {
 
 add_task(async function test_onPasswordEditedOrGenerated_generatedPassword() {
   await startTestConditions(99);
-  let { generatedPassword } = await stubGeneratedPasswordForBrowsingContextId(
-    99
-  );
+  let { generatedPassword } =
+    await stubGeneratedPasswordForBrowsingContextId(99);
   let { fakePromptToChangePassword, restorePrompter } = stubPrompter();
   let rootBrowser = LMP.getRootBrowser();
 
@@ -334,16 +333,15 @@ add_task(async function test_onPasswordEditedOrGenerated_generatedPassword() {
   LoginManagerParent._browsingContextGlobal.get.restore();
   restorePrompter();
   LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-  Services.logins.removeAllUserFacingLogins();
+  await Services.logins.removeAllUserFacingLoginsAsync();
   Services.telemetry.clearEvents();
 });
 
 add_task(
   async function test_onPasswordEditedOrGenerated_editToEmpty_generatedPassword() {
     await startTestConditions(99);
-    let { generatedPassword } = await stubGeneratedPasswordForBrowsingContextId(
-      99
-    );
+    let { generatedPassword } =
+      await stubGeneratedPasswordForBrowsingContextId(99);
     let { fakePromptToChangePassword, restorePrompter } = stubPrompter();
     let rootBrowser = LMP.getRootBrowser();
 
@@ -423,16 +421,15 @@ add_task(
     LoginManagerParent._browsingContextGlobal.get.restore();
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
     Services.telemetry.clearEvents();
   }
 );
 
 add_task(async function test_addUsernameBeforeAutoSaveEdit() {
   await startTestConditions(99);
-  let { generatedPassword } = await stubGeneratedPasswordForBrowsingContextId(
-    99
-  );
+  let { generatedPassword } =
+    await stubGeneratedPasswordForBrowsingContextId(99);
   let { fakePromptToChangePassword, restorePrompter, resetPrompterHistory } =
     stubPrompter();
   let rootBrowser = LMP.getRootBrowser();
@@ -441,7 +438,7 @@ add_task(async function test_addUsernameBeforeAutoSaveEdit() {
   };
   sinon.stub(LoginHelper, "getBrowserForPrompt").callsFake(() => {
     return {
-      ownerGlobal: {
+      documentGlobal: {
         PopupNotifications: fakePopupNotifications,
       },
     };
@@ -504,7 +501,7 @@ add_task(async function test_addUsernameBeforeAutoSaveEdit() {
   info("Add a username to the auto-saved login in storage");
   let loginWithUsername = login.clone();
   loginWithUsername.username = "added_username";
-  LoginManagerPrompter._updateLogin(login, loginWithUsername);
+  await LoginManagerPrompter._updateLogin(login, loginWithUsername);
 
   info("Edit the password");
   const newPassword = generatedPassword + "🔥";
@@ -618,7 +615,7 @@ add_task(async function test_addUsernameBeforeAutoSaveEdit() {
   LoginHelper.getBrowserForPrompt.restore();
   restorePrompter();
   LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-  Services.logins.removeAllUserFacingLogins();
+  await Services.logins.removeAllUserFacingLoginsAsync();
   Services.telemetry.clearEvents();
 });
 
@@ -637,7 +634,7 @@ add_task(async function test_editUsernameOfFilledSavedLogin() {
   };
   sinon.stub(LoginHelper, "getBrowserForPrompt").callsFake(() => {
     return {
-      ownerGlobal: {
+      documentGlobal: {
         PopupNotifications: fakePopupNotifications,
       },
     };
@@ -750,16 +747,15 @@ add_task(async function test_editUsernameOfFilledSavedLogin() {
   LoginHelper.getBrowserForPrompt.restore();
   restorePrompter();
   LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-  Services.logins.removeAllUserFacingLogins();
+  await Services.logins.removeAllUserFacingLoginsAsync();
   Services.telemetry.clearEvents();
 });
 
 add_task(
   async function test_onPasswordEditedOrGenerated_generatedPassword_withDisabledLogin() {
     await startTestConditions(99);
-    let { generatedPassword } = await stubGeneratedPasswordForBrowsingContextId(
-      99
-    );
+    let { generatedPassword } =
+      await stubGeneratedPasswordForBrowsingContextId(99);
     let { restorePrompter } = stubPrompter();
     let rootBrowser = LMP.getRootBrowser();
 
@@ -790,7 +786,7 @@ add_task(
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
     Services.logins.setLoginSavingEnabled("https://www.example.com", true);
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
   }
 );
 
@@ -876,7 +872,7 @@ add_task(
     LoginManagerParent._browsingContextGlobal.get.restore();
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
     Services.telemetry.clearEvents();
   }
 );
@@ -993,7 +989,7 @@ add_task(
     LoginManagerParent._browsingContextGlobal.get.restore();
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
     Services.telemetry.clearEvents();
   }
 );
@@ -1057,7 +1053,7 @@ add_task(
     LoginManagerParent._browsingContextGlobal.get.restore();
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
   }
 );
 
@@ -1118,6 +1114,6 @@ add_task(
     LoginManagerParent._browsingContextGlobal.get.restore();
     restorePrompter();
     LoginManagerParent.getGeneratedPasswordsByPrincipalOrigin().clear();
-    Services.logins.removeAllUserFacingLogins();
+    await Services.logins.removeAllUserFacingLoginsAsync();
   }
 );

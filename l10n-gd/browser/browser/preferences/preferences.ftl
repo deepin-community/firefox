@@ -9,6 +9,8 @@ do-not-track-option-default-content-blocking-known =
 do-not-track-option-always =
     .label = An-còmhnaidh
 settings-page-title = Roghainnean
+category-nav-heading =
+    .heading = Roghainnean
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
 #
@@ -21,23 +23,33 @@ search-input-box2 =
     .style = width: 17em
     .placeholder = Lorg sna roghainnean
 managed-notice = Tha am brabhsair agad fo stiùireadh a’ bhuidhinn agad.
+managed-notice-nav =
+    .label = Tha am brabhsair agad fo stiùireadh a’ bhuidhinn agad.
 category-list =
     .aria-label = Roinnean-seòrsa
 pane-general-title = Coitcheann
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Dhachaigh
+pane-search-title2 = Lorg
+    .title = Lorg
+pane-privacy-title3 = Prìobhaideachd ⁊ tèarainteachd
+    .title = Prìobhaideachd ⁊ tèarainteachd
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Lorg
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Prìobhaideachd ⁊ tèarainteachd
 pane-privacy-title = Prìobhaideachd ⁊ tèarainteachd
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 pane-sync-title3 = Sioncronachadh
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 pane-experimental-title = Deuchainn air { -brand-short-name }
 category-experimental =
     .tooltiptext = Deuchainn air { -brand-short-name }
@@ -50,12 +62,18 @@ settings-category-labs =
 pane-experimental-reset =
     .label = Aisig na bun-roghainnean
     .accesskey = r
+help-button-label2 = Taic le { -brand-short-name }
+    .title = Taic le { -brand-short-name }
+addons-button-label2 = Leudachain ⁊ ùrlaran
+    .title = Leudachain ⁊ ùrlaran
 help-button-label = Taic le { -brand-short-name }
 addons-button-label = Leudachain ⁊ ùrlaran
 focus-search =
     .key = f
 close-button =
     .aria-label = Dùin
+applications-setting-new-file-types =
+    .label = Dè nì { -brand-short-name } le faidhlichean eile?
 
 ## Browser Restart Dialog
 
@@ -128,6 +146,8 @@ preferences-data-migration-description = Ion-phortaich comharran-lìn, faclan-fa
 preferences-data-migration-button =
     .label = Ion-phortaich an dàta
     .accesskey = o
+tabs-group-header2 =
+    .label = Tabaichean
 tabs-group-header = Tabaichean
 ctrl-tab-recently-used-order =
     .label = Cuairtichidh Ctrl+Tab thu tro na tabaichean san robh iad agad o chionn goirid
@@ -163,6 +183,8 @@ browser-containers-settings =
     .label = Roghainnean…
     .accesskey = i
 containers-disable-alert-title = A bheil thu airson gach taba soithich a dhùnadh?
+startup-group =
+    .label = Aig an toiseach
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -203,6 +225,12 @@ containers-remove-cancel-button = Na thoir an soitheach seo air falbh
 language-and-appearance-header = Cànan is coltas
 preferences-web-appearance-header = Coltas nan làrach
 preferences-web-appearance-description = Cuiridh cuid a làraichean-lìn gleus air sgeama an dathan a-rèir nan roghainnean agad-sa. Tagh an sgeama dhathan a bu mhiann leat dha na làraichean ud.
+preferences-web-appearance-choice-light2 =
+    .label = Soilleir
+    .title = Cleachd coltas soilleir airson cùlaibhean is susbaint làraichean-lìn.
+preferences-web-appearance-choice-dark2 =
+    .label = Dorcha
+    .title = Cleachd coltas dorcha airson cùlaibhean is susbaint làraichean-lìn.
 preferences-web-appearance-choice-auto = Fèin-obrachail
 preferences-web-appearance-choice-light = Soilleir
 preferences-web-appearance-choice-dark = Dorcha
@@ -218,21 +246,24 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Stiùirich ùrlaran { -brand-short-name } ann an roghainnean nan leudachan ⁊ ùrlaran
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Tha na dathan a thagh thu a’ tar-àithn coltas na làraich-lìn. <a data-l10n-name="colors-link">Stiùirich na dathan</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Tha na dathan a thagh thu a’ tar-àithn coltas na làraich-lìn.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Stiùirich ùrlaran { -brand-short-name } ann an roghainnean nan <a data-l10n-name="themes-link">leudachan ⁊ ùrlaran</a>
+preferences-colors-manage-button2 =
+    .label = Stiùirich na dathan
+    .accesskey = c
 preferences-colors-header = Dathan
 preferences-colors-description = Tar-àithn na dathan bunaiteach aig { -brand-short-name } a thaobh teacsa, cùlaibhean làraichean-lìn is ceanglaichean.
 preferences-colors-manage-button =
     .label = Stiùirich na dathan…
     .accesskey = c
+preferences-fonts-header2 =
+    .label = Cruthan-clò
 preferences-fonts-header = Cruthan-clò
 default-font = An cruth-clò bunaiteach
     .accesskey = u
@@ -241,6 +272,9 @@ default-font-size = Meud
 advanced-fonts =
     .label = Adhartach…
     .accesskey = h
+preferences-default-zoom-label =
+    .label = An sùm bunaiteach
+    .accesskey = s
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Sùm
 preferences-default-zoom = An sùm bunaiteach
@@ -263,6 +297,8 @@ manage-browser-languages-button =
     .accesskey = l
 confirm-browser-language-change-description = Ath-thòisich { -brand-short-name } gus na h-atharraichean seo a chur an comas
 confirm-browser-language-change-button = Cuir an sàs is ath-thòisich
+browser-language-install-error =
+    .message = Chan urrainn dha { -brand-short-name } na cànain agad ùrachadh an-dràsta fhèin. Dèan cinnteach gu bheil ceangal agad ris an eadar-lìon no feuch ris a-rithist.
 translate-web-pages =
     .label = Eadar-theangaich susbaint-lìn
     .accesskey = t
@@ -284,6 +320,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Faidhlichean is aplacaidean
+download-save-files-header =
+    .label = Sàbhail faidhlichean ann an
+download-save-where-3 =
+    .aria-label = Sàbhail faidhlichean ann an
 download-header = Luchdaidhean a-nuas
 download-save-where = Sàbhail faidhlichean ann an
     .accesskey = S
@@ -308,9 +348,11 @@ applications-filter =
 applications-type-column =
     .label = Seòrsa na susbaint
     .accesskey = t
+applications-type-heading = Seòrsa na susbaint
 applications-action-column =
     .label = Gnìomh
     .accesskey = G
+applications-action-heading = Gnìomh
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = Faidhle { $extension }
@@ -374,7 +416,7 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
 applications-handle-new-file-types-description = Dè nì { -brand-short-name } le faidhlichean eile?
 applications-save-for-new-types =
@@ -383,6 +425,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Faighnich dhìom a bheil mi airson faidhlichean fhosgladh no dùnadh
     .accesskey = a
+drm-group =
+    .label = Susbaint Digital Rights Management (DRM)
 drm-content-header = Susbaint Digital Rights Management (DRM)
 play-drm-content =
     .label = Cluich susbaint fo smachd DRM
@@ -393,6 +437,9 @@ update-application-description = Cum { -brand-short-name } ùraichte airson dèa
 # Variables:
 # $version (string) - Firefox version
 update-application-version = Tionndadh { $version } <a data-l10n-name="learn-more">Na tha ùr</a>
+update-history-2 =
+    .label = Seall eachdraidh nan ùrachaidhean
+    .accesskey = h
 update-history =
     .label = Seall eachdraidh nan ùrachaidhean…
     .accesskey = h
@@ -409,6 +456,8 @@ update-application-manual =
 update-application-background-enabled =
     .label = Nuair nach eil { -brand-short-name } a’ ruith
     .accesskey = r
+update-application-warning-cross-user-setting-2 =
+    .message = Bidh buaidh aig an roghainn seo air gach cunntas Windows agus pròifil { -brand-short-name } a chleachdas an stàladh seo de { -brand-short-name }.
 update-application-warning-cross-user-setting = Bidh buaidh aig an roghainn seo air gach cunntas Windows agus pròifil { -brand-short-name } a chleachdas an stàladh seo de { -brand-short-name }.
 update-application-use-service =
     .label = Cleachd seirbheis a stàlaicheas na h-ùrachaidhean sa chùlaibh
@@ -451,8 +500,10 @@ performance-limit-content-process-blocked-desc = Chan urrainn dhut àireamh nam 
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (bun-roghainn)
+performance-group =
+    .label = Dèanadas
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = A' brabhsadh
 browsing-use-autoscroll =
@@ -488,6 +539,8 @@ browsing-cfr-features =
     .label = Mol gleusan fhad ’s a nithear brabhsadh
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Barrachd fiosrachaidh
+browsing-group =
+    .label = A' brabhsadh
 
 ## General Section - Proxy
 
@@ -503,10 +556,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = Uinneagan is tabaichean ùra
 home-new-windows-tabs-description2 = Tagh na chì thu nuair a dh’fhosglas tu an duilleag-dhachaigh agad no uinneag no taba ùr.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Cleachd mar am brabhsair bunaiteach
+    .accesskey = b
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = An duilleag-dhachaigh is uinneagan ùra
 home-newtabs-mode-label = Tabaichean ùra
+home-homepage-new-tabs =
+    .label = Tabaichean ùra
 home-restore-defaults =
     .label = Aisig na bun-roghainnean
     .accesskey = r
@@ -542,11 +603,12 @@ home-prefs-search-header =
 home-prefs-shortcuts-header =
     .label = Ath-ghoiridean
 home-prefs-shortcuts-description = Làraichean a shàbhail thu no a thadhail thu orra
+home-prefs-shortcuts-select =
+    .aria-label = Ath-ghoiridean
 home-prefs-shortcuts-by-option-sponsored =
     .label = Ath-ghoiridean sponsairichte
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = ’Ga mholadh le { $provider }
@@ -570,6 +632,8 @@ home-prefs-highlights-option-saved-to-pocket =
 home-prefs-recent-activity-header =
     .label = Gnìomhachd o chionn goirid
 home-prefs-recent-activity-description = Roghainn de làraichean is susbaint faisg ort
+home-prefs-recent-activity-select =
+    .aria-label = Gnìomhachd o chionn goirid
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
@@ -577,6 +641,11 @@ home-prefs-recent-activity-description = Roghainn de làraichean is susbaint fai
 home-prefs-snippets-header =
     .label = Snippets
 home-prefs-snippets-description-new = Gliocasan is naidheachdan o { -vendor-short-name } is { -brand-product-name }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Extension ({ $extension })
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -609,6 +678,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Seall molaidhean luirg ann an toraidhean bàr an t-seòlaidh
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Cha dèid molaidhean luirg a shealltainn ann an toraidhean bàr an t-seòlaidh a chionn ’s gun do dh’iarr thu air { -brand-short-name } gun a bhith a’ cumail na h-eachdraidh sa chuimhne.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -648,12 +719,18 @@ search-keyword-warning-title = Facal-luirg dùbailte
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Thagh thu facal-luirg a tha ’ga chleachdadh le “{ $name }” mu thràth. An tagh thu fear eile?
 search-keyword-warning-bookmark = Tagh thu facal-luirg a tha 'ga chleachdadh ann an comharra-lìn mu thràth. An tagh thu fear eile?
+search-engine-group =
+    .label = An t-einnsean-luirg bunaiteach
+search-default-engine =
+    .aria-label = An t-einnsean-luirg bunaiteach
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Till dha na roghainnean
 containers-header = Tabaichean soithich
+containers-section-header =
+    .heading = Tabaichean soithich
 containers-add-button =
     .label = Cuir soitheach ùr ris
     .accesskey = a
@@ -664,6 +741,11 @@ containers-settings-button =
     .label = Roghainnean
 containers-remove-button =
     .label = Thoir air falbh
+
+## Account and sync
+
+sync-group-label =
+    .label = Sioncronachadh
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -693,11 +775,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Clàraich a-mach…
     .accesskey = C
+sync-sign-out2 =
+    .label = Clàraich a-mach
+    .accesskey = C
 sync-manage-account = Stiùirich an cunntas
+    .accesskey = n
+sync-manage-account2 =
+    .label = Stiùirich an cunntas
     .accesskey = n
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = Cha deach { $email } a dhearbhadh
 sync-signedin-login-failure = Clàraich a-steach airson ceangal ris a-rithist { $email }
@@ -721,6 +810,9 @@ prefs-syncing-off = Sioncronachadh: DHETH
 prefs-sync-turn-on-syncing =
     .label = Cuir an sioncronachadh air…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Cuir an sioncronachadh air
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Sioncronaich na comharran-lìn, an eachdraidh, na tabaichean, na faclan-faire, na tuilleadain ’s na roghainnean agad thar nan uidheaman agad uile.
 prefs-sync-now =
     .labelnotsyncing = Sioncronaich an-dràsta
@@ -729,8 +821,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sioncronaich an-dràsta
     .accesskey = n
+prefs-sync-now-button-2 =
+    .label = Sioncronaich an-dràsta
+    .accesskey = n
 prefs-syncing-button =
     .label = ’Ga shioncronachadh…
+prefs-syncing-button-2 =
+    .label = ’Ga shioncronachadh…
+    .title = Sioncronaich an-dràsta
 
 ## The list of things currently syncing.
 
@@ -791,6 +889,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Ainm an uidheim
+sync-device-name-header-2 =
+    .label = Ainm an uidheim
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Ainm an uidheim
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Atharraich ainm an uidheim
+    .accesskey = h
 sync-device-name-change =
     .label = Atharraich ainm an uidheim...
     .accesskey = h
@@ -801,6 +909,8 @@ sync-device-name-save =
     .label = Sàbhail
     .accesskey = b
 sync-connect-another-device = Ceangail uidheam eile ris
+sync-connect-another-device-2 =
+    .label = Ceangail uidheam eile ris
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -826,7 +936,7 @@ forms-ask-to-save-logins =
     .label = Faighnich an dèid clàraidhean a-steach is faclan-faire làraichean-lìn a shàbhaladh
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = Eisgeachdan…
@@ -881,9 +991,6 @@ primary-password-os-auth-dialog-message-win = Airson prìomh fhacal-faire a chru
 primary-password-os-auth-dialog-message-macosx = prìomh fhacal-faire a chruthachadh
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Eachdraidh
@@ -904,6 +1011,12 @@ history-remember-option-never =
     .label = Na cuimhnich an eachdraidh idir
 history-remember-option-custom =
     .label = Cleachd roghainnean gnàthaichte airson na h-eachdraidh
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = Cuimhnichidh { -brand-short-name } eachdraidh a’ bhrabhsaidh, nam foirm, nan lorg is nan rudan a luchdaich thu a-nuas.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = Cleachdaidh { -brand-short-name } na dearbh roghainnean 's a tha agad ann an brabhsadh prìobhaideach agus cha chuimhnich e eachdraidh sam bith 's tu a' brabhsadh an lìn.
 history-remember-description = Cuimhnichidh { -brand-short-name } eachdraidh a’ bhrabhsaidh, nam foirm, nan lorg is nan rudan a luchdaich thu a-nuas.
 history-dontremember-description = Cleachdaidh { -brand-short-name } na dearbh roghainnean 's a tha agad ann an brabhsadh prìobhaideach agus cha chuimhnich e eachdraidh sam bith 's tu a' brabhsadh an lìn.
 history-private-browsing-permanent =
@@ -924,6 +1037,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Falamhaich an eachdraidh...
     .accesskey = s
+history-group =
+    .label = Eachdraidh
 
 ## Privacy Section - Site Data
 
@@ -969,6 +1084,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Stiùirich na h-eisgeachdan…
     .accesskey = e
+cookies-site-data-group =
+    .label = Briosgaidean is dàta làraichean
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -981,7 +1098,7 @@ cookie-banner-learn-more = Barrachd fiosrachaidh
 forms-handle-cookie-banners =
     .label = Nas lugha de bhrataichean bhriosgaidean
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Bàr an t-seòlaidh
 addressbar-suggest = Nuair a chleachdas mi bàr an t-seòlaidh, mol dhomh
@@ -1048,7 +1165,7 @@ content-blocking-unvisited-cookies = Briosgaidean o làraichean air nach deach t
 content-blocking-all-windows-tracking-content = Susbaint tracaidh air uinneag sam bith
 content-blocking-all-cross-site-cookies = Gach briosgaid thar-làraich
 content-blocking-cryptominers = Criopto-mhèinneadairean
-content-blocking-fingerprinters = Lorgaichean-meur
+content-blocking-fingerprinters = Lorgairean-meòir
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1085,7 +1202,7 @@ content-blocking-cryptominers-label =
 # Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
 # that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
 content-blocking-fingerprinters-label =
-    .label = Lorgaichean-meur
+    .label = Lorgairean-meòir
     .accesskey = L
 
 ## Privacy Section - Tracking
@@ -1126,6 +1243,8 @@ permissions-notification-link = Barrachd fiosrachaidh
 permissions-notification-pause =
     .label = Cuir am brath ’na stad gus an ath-thòisich { -brand-short-name }
     .accesskey = n
+permissions-autoplay2 =
+    .label = Fèin-chluich
 permissions-autoplay = Fèin-chluich
 permissions-autoplay-settings =
     .label = Roghainnean…
@@ -1145,6 +1264,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Eisgeachdan…
     .accesskey = E
+permissions-location2 =
+    .label = Ionad
+permissions-xr2 =
+    .label = Fìorachd bhiortail
+permissions-camera2 =
+    .label = Camara
+permissions-microphone2 =
+    .label = Micreofon
+permissions-notification2 =
+    .label = Brathan
 
 ## Privacy Section - Data Collection
 
@@ -1168,17 +1297,16 @@ addon-recommendations-link = Barrachd fiosrachaidh
 collection-health-report-disabled = Tha aithriseadh dàta à comas airson rèiteachadh a’ bhuild seo
 collection-backlogged-crash-reports-with-link = Leig le { -brand-short-name } aithisgean tuislidh a chàirn roimhe a chur às do leth <a data-l10n-name="crash-reports-link">Barrachd fiosrachaidh</a>
     .accesskey = c
-collection-backlogged-crash-reports = Leig le { -brand-short-name } aithisgean tuislidh a chàirn roimhe a chur às do leth
-    .accesskey = c
 privacy-segmentation-section-header = Gleusan ùra a leasaicheas am brabhsadh a nì thu
 privacy-segmentation-section-description = Ma bhios gleusan againn a chleachdas an dàta agad airson àrainneachd nas pearsantaiche:
 privacy-segmentation-radio-off =
     .label = Cleachd molaidhean { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Seall am mion-fhiosrachadh
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-health-report-telemetry-disabled =
+    .message = Chan eil thu a’ toirt cead dha { -vendor-short-name } tuilleadh airson dàta teicnigeach ’s nan eadar-ghnìomhan a ghlacadh. Thèid dàta sam bith a chaidh a chruinneachadh cheana a sguabadh às am broinn 30 latha.
+data-collection-studies-link =
+    .label = Seall obair-rannsachaidh { -brand-short-name }
 
 ## Privacy Section - Security
 ##
@@ -1210,6 +1338,7 @@ certs-view =
 certs-devices =
     .label = Uidheaman tèarainteachd...
     .accesskey = n
+certs-devices-enable-fips = Cuir FIPS an comas
 space-alert-over-5gb-settings-button =
     .label = Fosgail na roghainnean
     .accesskey = o

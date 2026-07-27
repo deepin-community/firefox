@@ -8,12 +8,14 @@
 #include <cstdint>
 #include <iosfwd>
 
-#include "nsPoint.h"
+#include "Units.h"
+#include "mozilla/DefineEnum.h"
+#include "mozilla/RelativeTo.h"
 #include "mozilla/ScrollGeneration.h"
 #include "mozilla/ScrollOrigin.h"
 #include "mozilla/ScrollSnapTargetId.h"
 #include "mozilla/ScrollTypes.h"
-#include "Units.h"
+#include "nsPoint.h"
 
 namespace IPC {
 template <typename T>
@@ -22,19 +24,20 @@ struct ParamTraits;
 
 namespace mozilla {
 
-enum class ScrollUpdateType {
-  // A scroll update to a specific destination, regardless of the current
-  // scroll position.
-  Absolute,
-  // A scroll update by a specific amount, based off a given starting scroll
-  // position. XXX Fold this into PureRelative, it should be relatively
-  // straightforward after bug 1655733.
-  Relative,
-  // A scroll update by a specific amount, where only the delta is provided.
-  // The delta should be applied to whatever the current scroll position is
-  // on the receiver side.
-  PureRelative,
-};
+MOZ_DEFINE_ENUM_CLASS_WITH_BASE_AND_TOSTRING(
+    ScrollUpdateType, uint8_t,
+    (
+        // A scroll update to a specific destination, regardless of the current
+        // scroll position.
+        Absolute,
+        // A scroll update by a specific amount, based off a given starting
+        // scroll position. XXX Fold this into PureRelative, it should be
+        // relatively straightforward after bug 1655733.
+        Relative,
+        // A scroll update by a specific amount, where only the delta is
+        // provided. The delta should be applied to whatever the current scroll
+        // position is on the receiver side.
+        PureRelative));
 
 enum class ScrollTriggeredByScript : bool { No, Yes };
 
@@ -75,7 +78,8 @@ class ScrollPositionUpdate {
   static ScrollPositionUpdate NewSmoothScroll(
       ScrollMode aMode, ScrollOrigin aOrigin, nsPoint aDestination,
       ScrollTriggeredByScript aTriggeredByScript,
-      UniquePtr<ScrollSnapTargetIds> aSnapTargetIds);
+      UniquePtr<ScrollSnapTargetIds> aSnapTargetIds,
+      ViewportType aViewportToScroll);
   // Create a ScrollPositionUpdate for a new pure-relative scroll. The
   // aMode parameter controls whether or not this is a smooth animation or
   // instantaneous scroll.
@@ -97,6 +101,7 @@ class ScrollPositionUpdate {
   // GetDelta is only valid for the PureRelative type; it asserts otherwise.
   CSSPoint GetDelta() const;
 
+  ViewportType GetViewportType() const { return mViewportType; }
   ScrollTriggeredByScript GetScrollTriggeredByScript() const {
     return mTriggeredByScript;
   }
@@ -121,6 +126,11 @@ class ScrollPositionUpdate {
   CSSPoint mSource;
   // mDelta is not populated when mType == Absolute || mType == Relative.
   CSSPoint mDelta;
+  // Specifies whether mDestination, mSource, and mDelta should be interpreted
+  // as applying to the layout viewport or the visual viewport.
+  // Currently, updates to the visual viewport offset are only supported for
+  // smooth scroll updates (mScrollMode is Smooth or SmoothMsd).
+  ViewportType mViewportType = ViewportType::Layout;
   ScrollTriggeredByScript mTriggeredByScript;
   ScrollSnapTargetIds mSnapTargetIds;
 };

@@ -8,13 +8,9 @@
 
 # The text "WebRTC" is a proper noun and should not be translated.
 about-webrtc-document-title = „WebRTC“ vidus
-
 # "about:webrtc" is a internal browser URL and should not be
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = Įrašyti „about:webrtc“ kaip
-
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
 
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
@@ -22,7 +18,6 @@ about-webrtc-aec-logging-msg-label = AEC įrašymas
 about-webrtc-aec-logging-off-state-label = Pradėti AEC įrašinėjimą
 about-webrtc-aec-logging-on-state-label = Baigti AEC įrašinėjimą
 about-webrtc-aec-logging-on-state-msg = AEC įrašinėjimas aktyvus (pakalbėkite su pašnekovu keletą minučių, o tada sustabdykite įrašymą)
-
 about-webrtc-aec-logging-toggled-on-state-msg = AEC įrašinėjimas aktyvus (pakalbėkite su pašnekovu keletą minučių, o tada sustabdykite įrašymą)
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
@@ -30,10 +25,8 @@ about-webrtc-aec-logging-toggled-off-state-msg = Įrašyti žurnalo failai yra �
 
 ##
 
-# The autorefresh checkbox causes the page to autorefresh its content when checked
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Automatinis turinio atnaujinimas
-
-
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
@@ -83,12 +76,10 @@ about-webrtc-type-remote = Nuotolinis
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 about-webrtc-nominated = Nominuota
-
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 # This represents an attribute of an ICE candidate.
 about-webrtc-selected = Pasirinkta
-
 about-webrtc-save-page-label = Įrašyti tinklalapį
 about-webrtc-debug-mode-msg-label = Derinimo veiksena
 about-webrtc-debug-mode-off-state-label = Įjungti derinimo veikseną
@@ -101,7 +92,6 @@ about-webrtc-log-show-msg = rodyti žurnalą
     .title = spustelėkite, norėdami išskleisti šią sekciją
 about-webrtc-log-hide-msg = slėpti žurnalą
     .title = spustelėkite, norėdami suskleisti šią sekciją
-
 about-webrtc-log-section-show-msg = Rodyti žurnalą
     .title = Spustelėkite, norėdami išskleisti šią sekciją
 about-webrtc-log-section-hide-msg = Slėpti žurnalą
@@ -116,11 +106,6 @@ about-webrtc-log-section-hide-msg = Slėpti žurnalą
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (užverta) { $now }
-
-## These are used to indicate what direction media is flowing.
-## Variables:
-##  $codecs - a list of media codecs
-
 
 ##
 
@@ -168,67 +153,51 @@ about-webrtc-local-receive-ssrc = Vietinis gaunamas SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Nuotolinis siunčiamas SSRC
 
-## These are displayed on the button that shows or hides the
-## PeerConnection configuration disclosure
-
-
 ##
 
 # An option whose value will not be displayed but instead noted as having been
 # provided
 about-webrtc-configuration-element-provided = Pateikta
-
 # An option whose value will not be displayed but instead noted as having not
 # been provided
 about-webrtc-configuration-element-not-provided = Nepateikta
-
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Naudotojo nustatytos „WebRTC“ parinktys
 
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Numatomas pralaidumas
-
 # The ID of the MediaStreamTrack
 about-webrtc-track-identifier = Takelio identifikatorius
-
 # The estimated bandwidth available for sending WebRTC media in bytes per second
 about-webrtc-send-bandwidth-bytes-sec = Siuntimo pralaidumas (baitai/sek)
-
 # The estimated bandwidth available for receiving WebRTC media in bytes per second
 about-webrtc-receive-bandwidth-bytes-sec = Gavimo pralaidumas (baitas/sek)
-
 # Maximum number of bytes per second that will be padding zeros at the ends of packets
 about-webrtc-max-padding-bytes-sec = Didžiausias užpildymas (baitai/sek)
-
 # The amount of time inserted between packets to keep them spaced out
 about-webrtc-pacer-delay-ms = Tempo delsa (ms)
-
 # The amount of time it takes for a packet to travel from the local machine to the remote machine,
 # and then have a packet return
 about-webrtc-round-trip-time-ms = RTT (ms)
-
 # This is a section heading for video frame statistics for a MediaStreamTrack.
 # see https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack.
 # Variables:
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Vaizdo kadrų statistika – „MediaStreamTrack“ ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = tinklalapis įrašytas į: { $path }
 about-webrtc-debug-mode-off-state-msg = vykdymo sekimo žurnalas yra čia: { $path }
 about-webrtc-debug-mode-on-state-msg = derinimo veiksena aktyvi, vykdymo sekimo žurnalas čia: { $path }
 about-webrtc-aec-logging-off-state-msg = įrašyti žurnalo failai yra čia: { $path }
-
+# This path is used for saving the about:webrtc page so it can be attached to
+# bug reports.
+# Variables:
+#  $path (String) - The path to which the file is saved.
 about-webrtc-save-page-complete-msg = Tinklalapis įrašytas į: { $path }
-about-webrtc-debug-mode-toggled-off-state-msg = Vykdymo sekimo žurnalas yra čia: { $path }
-about-webrtc-debug-mode-toggled-on-state-msg = Derinimo veiksena aktyvi, vykdymo sekimo žurnalas čia: { $path }
-
-##
-
 # This is the total number of packets received on the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets received.
@@ -238,7 +207,6 @@ about-webrtc-received-label =
         [few] Gauti { $packets } duomenų paketai
        *[other] Gauta { $packets } duomenų paketų
     }
-
 # This is the total number of packets lost by the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets lost.
@@ -248,7 +216,6 @@ about-webrtc-lost-label =
         [few] Pradingę { $packets } duomenų paketai
        *[other] Pradingę { $packets } duomenų paketų
     }
-
 # This is the total number of packets sent by the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets sent.
@@ -258,13 +225,11 @@ about-webrtc-sent-label =
         [few] Išsiųsti { $packets } duomenų paketai
        *[other] Išsiųsta { $packets } duomenų paketų
     }
-
 # Jitter is the variance in the arrival time of packets.
 # See: https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter
 # Variables:
 #   $jitter (Number) - The jitter.
 about-webrtc-jitter-label = Virpėjimas { $jitter }
-
 # ICE candidates arriving after the remote answer arrives are considered trickled
 # (an attribute of an ICE candidate). These are highlighted in the ICE stats
 # table with light blue background.
@@ -277,25 +242,12 @@ about-webrtc-trickle-caption-msg = Vėlesni („trickled“) kandidatai (atvykst
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-local = Nustatyti „Vietinis SDP“ ties laiko žyma { NUMBER($timestamp, useGrouping: "false") }
-
 # This is used as a header for remote SDP.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-remote = Nustatyti „Nutolęs SDP“ ties laiko žyma { NUMBER($timestamp, useGrouping: "false") }
-
 # This is used as a header for an SDP section contained in two columns allowing for side-by-side comparisons.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Laiko žymė: { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
-
-## These are displayed on the button that shows or hides the SDP information disclosure
-
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

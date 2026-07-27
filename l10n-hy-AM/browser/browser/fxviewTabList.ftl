@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Տեղափոխել վերջ
     .accesskey = E
 fxviewtabrow-move-tab-window = Տեղափոխել Նոր Պատուհան
     .accesskey = W
+fxviewtabrow-send-to-device = Ուղարկել սարքի
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Ուղարկել բջջայինին
+    .accesskey = n
 fxviewtabrow-send-tab = Ուղարկել ներդիրը սարքին
     .accesskey = n
 fxviewtabrow-pin-tab = Ամրացնել ներդիրը
@@ -68,9 +72,17 @@ fxviewtabrow-unmute-tab = Ապալռեցնել ներդիրը
 fxviewtabrow-options-menu-button =
     .title = Ընտրանքներ { $tabTitle }-ի համար
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Լռեցնել ներդիրը
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Ապալռեցնել ներդիրը
+fxviewtabrow-send-to-mobile-device-missing2 = Չե՞ք տեսնում ձեր սարքը։
+fxviewtabrow-send-to-mobile-not-verified = Հաշիվը ստուգված չէ
+fxviewtabrow-send-to-mobile-verify-account = Ստուգել հաշիվը
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Մուտք գործեք՝ ներդիրներ ուղարկելու համար
+fxviewtabrow-send-to-mobile-turn-on-sync = Միացնել համաժամեցումը՝ ներդիրներ ուղարկելու համար

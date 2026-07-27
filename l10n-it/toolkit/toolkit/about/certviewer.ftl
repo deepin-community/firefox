@@ -6,7 +6,7 @@ certificate-viewer-certificate-section-title = Certificato
 
 ## Error messages
 
-certificate-viewer-error-message = Non è stato possibile trovare informazioni sul certificato oppure il certificato è danneggiato. Riprovare.
+certificate-viewer-error-message = Non è stato possibile trovare informazioni sul certificato oppure il certificato è danneggiato. Riprova.
 certificate-viewer-error-title = Si è verificato un problema
 
 ## Certificate information labels
@@ -36,10 +36,17 @@ certificate-viewer-key-size = Dimensione chiave
 certificate-viewer-inc-locality = Località di costituzione
 certificate-viewer-locality = Località
 certificate-viewer-location = Indirizzo
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Nome registro
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID log
 certificate-viewer-method = Metodo
 certificate-viewer-modulus = Modulo
 certificate-viewer-name = Nome
+certificate-viewer-surname = Cognome
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Nome
 certificate-viewer-not-after = Non dopo
 certificate-viewer-not-before = Non prima
 certificate-viewer-organization = Organizzazione
@@ -81,37 +88,37 @@ certificate-viewer-authority-info-aia = Info autorità (AIA)
 certificate-viewer-certificate-policies = Criteri certificato
 certificate-viewer-embedded-scts = SCT inclusi
 certificate-viewer-crl-endpoints = Endpoint CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Download
 # This message is used to replace boolean values (true/false) in several certificate fields, e.g. Certificate Authority
 # Variables:
 #   $boolean (String) - true/false value for the specific field
-certificate-viewer-boolean = { $boolean ->
-  [true] Sì
- *[false] No
-}
+certificate-viewer-boolean =
+    { $boolean ->
+        [true] Sì
+       *[false] No
+    }
 
 ## Variables:
 ##   $fileName (String) - The file name to save the PEM data in, derived from the common name from the certificate being displayed.
 
 certificate-viewer-download-pem = PEM (certificato)
-  .download = { $fileName }.pem
+    .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (catena)
-  .download = { $fileName }-catena.pem
-
+    .download = { $fileName }-catena.pem
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
-  .title = Questa estensione è stata contrassegnata come critica. Questo significa che un client deve rifiutare il certificato se non è in grado di interpretarla.
-
+    .title = Questa estensione è stata contrassegnata come critica. Questo significa che un client deve rifiutare il certificato se non è in grado di interpretarla.
 certificate-viewer-export = Esporta
-  .download = { $fileName }.pem
+    .download = { $fileName }.pem
 
 ##
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (sconosciuto)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificato
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

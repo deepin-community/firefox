@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Ezin da eguneratu — sistema bateragaitza
 appmenuitem-banner-update-restart =
     .label = Eguneraketa erabilgarri — berrabiarazi orain
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Lortu { -brand-short-name } berria. Mantendu zure fitxa guztiak.
+appmenu-nova-update-link = Berrabiarazi eguneratzeko
+appmenu-nova-fxa-sign-in = Hasi saioa
+appmenu-nova-switch-device-promo =
+    .message = Gailu berri batera aldatzera zoaz laster? Eraman { -brand-short-name } zurekin!
+appmenu-nova-switch-device-link = Nola migratu zure datuak
 appmenuitem-new-tab =
     .label = Fitxa berria
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Leiho pribatu berria
 appmenuitem-history =
     .label = Historia
+appmenuitem-tab-groups =
+    .label = Fitxa-taldeak
 appmenuitem-downloads =
     .label = Deskargak
 appmenuitem-passwords =
     .label = Pasahitzak
+appmenuitem-extensions-and-themes =
+    .label = Hedapenak eta itxurak
+appmenuitem-extensions =
+    .label = Hedapenak
 appmenuitem-addons-and-themes =
     .label = Gehigarriak eta itxurak
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Sinkronizatu eta gorde datuak
 appmenu-fxa-signed-in-label = Hasi saioa
 appmenu-fxa-setup-sync =
     .label = Gaitu sinkronizazioa…
+appmenu-fxa-setup-sync-new = Aktibatu
 appmenuitem-save-page =
     .label = Gorde orria honela…
+appmenuitem-fxa-sync-off-title = Sinkronizazioa desaktibatuta dago
+appmenuitem-fxa-sync-off-description = Babestu eta izan eskura edonon zure laster-markak, pasahitzak eta gehiago.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Ireki analizatzailearen panela
+    .tooltiptext = Ireki analizatzailearen panela
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = { -brand-shorter-name }(r)en audio eta bideo programa-erroreak ikertzeko aurrezarpena.
 profiler-popup-presets-media-label =
     .label = Multimedia
+profiler-popup-presets-ml-description = { -brand-shorter-name }(r)en ikasketa automatikoko programa-erroreak ikertzeko aurrezarpena.
+profiler-popup-presets-ml-label =
+    .label = Ikasketa automatikoa
 profiler-popup-presets-networking-description = { -brand-shorter-name }(r)en sareko programa-erroreak ikertzeko aurrezarpena.
 profiler-popup-presets-networking-label =
     .label = Sarea
@@ -196,8 +219,12 @@ profiler-popup-presets-power-description = { -brand-shorter-name }(r)en energia-
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = { -brand-shorter-name }(r)en arazketarako aurrezarpena. Eragin negatibo handia du, ez erabili errendimenduarekin lotutako lanerako, bai ordea nabigatzailearen portaera ulertzeko.
 profiler-popup-presets-debug-label =
     .label = Araztu
+profiler-popup-presets-web-compat-description = Webguneetako web bateragarritasun arazoen arazketarako, errendimenduaren jarraipenerako baino, gomendatutako aurrezarpena.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Pertsonalizatua
 
@@ -263,6 +290,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Pertsonalizatu tresna-barra…
+appmenu-abouttranslations =
+    .label = Itzuli…
 appmenu-developer-tools-subheader = Nabigatzailearen tresnak
 appmenu-developer-tools-extensions =
     .label = Garatzaileentzako hedapenak
@@ -273,7 +302,30 @@ appmenuitem-report-broken-site =
 
 appmenuitem-sign-in-account = Hasi saioa zure kontuan
 appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Eskuratu datu-urratzeei buruzko alertak
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskaratu zure benetako helbide elektronikoa eta telefonoa
+appmenuitem-services-relay-description = Abiarazi helbide elektronikoen maskaren arbela
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Eskuratu gailu osoaren babesa
 appmenuitem-vpn-description = Babestu lineako zure jarduera
+appmenu-services-header = Nire zerbitzuak
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Probatu Mozillaren bestelako babes-tresnak:
+appmenu-other-protection-header = Probatu { -vendor-short-name }(r)en bestelako babes-tresnak:
+
+## Profiles panel
+
+appmenu-other-profiles = Beste profilak
+appmenu-manage-profiles =
+    .label = Kudeatu profilak
+appmenu-copy-profile =
+    .label = Kopiatu profil hau
+appmenu-create-profile =
+    .label = Profil berria
+appmenu-edit-profile =
+    .aria-label = Editatu profila
+appmenu-profiles-2 =
+    .label = Profilak

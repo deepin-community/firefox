@@ -17,10 +17,10 @@ add_task(async function test_translations_telemetry_retranslate() {
     "The button is available."
   );
 
-  await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
+  await FullPageTranslationsTestUtils.assertPageIsNotTranslated(runInPage);
 
   await FullPageTranslationsTestUtils.openPanel({
-    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
   });
 
   await FullPageTranslationsTestUtils.changeSelectedFromLanguage({
@@ -31,11 +31,11 @@ add_task(async function test_translations_telemetry_retranslate() {
     downloadHandler: resolveDownloads,
   });
 
-  await FullPageTranslationsTestUtils.assertPageIsTranslated(
-    "fr",
-    "en",
-    runInPage
-  );
+  await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated({
+    fromLanguage: "fr",
+    toLanguage: "en",
+    runInPage,
+  });
 
   await TestTranslationsTelemetry.assertLabeledCounter(
     Glean.translations.requestCount,
@@ -43,11 +43,6 @@ add_task(async function test_translations_telemetry_retranslate() {
       ["full_page", 1],
       ["select", 0],
     ]
-  );
-  await TestTranslationsTelemetry.assertCounter(
-    "RequestCount",
-    Glean.translations.requestsCount,
-    1
   );
   await TestTranslationsTelemetry.assertEvent(Glean.translationsPanel.open, {
     expectNewFlowId: true,
@@ -86,7 +81,6 @@ add_task(async function test_translations_telemetry_retranslate() {
         to_language: "en",
         auto_translate: false,
         document_language: "es",
-        top_preferred_language: "en",
         request_target: "full_page",
       },
     }
@@ -105,11 +99,11 @@ add_task(async function test_translations_telemetry_retranslate() {
     downloadHandler: resolveDownloads,
   });
 
-  await FullPageTranslationsTestUtils.assertPageIsTranslated(
-    "fr",
-    "uk",
-    runInPage
-  );
+  await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated({
+    fromLanguage: "fr",
+    toLanguage: "uk",
+    runInPage,
+  });
 
   await TestTranslationsTelemetry.assertLabeledCounter(
     Glean.translations.requestCount,
@@ -117,11 +111,6 @@ add_task(async function test_translations_telemetry_retranslate() {
       ["full_page", 2],
       ["select", 0],
     ]
-  );
-  await TestTranslationsTelemetry.assertCounter(
-    "RequestCount",
-    Glean.translations.requestsCount,
-    2
   );
   await TestTranslationsTelemetry.assertEvent(Glean.translationsPanel.open, {
     expectNewFlowId: true,
@@ -160,8 +149,29 @@ add_task(async function test_translations_telemetry_retranslate() {
         to_language: "uk",
         auto_translate: false,
         document_language: "es",
-        top_preferred_language: "en",
         request_target: "full_page",
+      },
+    }
+  );
+
+  await TestTranslationsTelemetry.assertTranslationsEnginePerformance({
+    expectedEventCount: 2,
+  });
+
+  await TestTranslationsTelemetry.assertEvent(
+    Glean.translations.identifyPageLanguage,
+    {
+      expectedEventCount: 1,
+      assertForMostRecentEvent: {
+        html_lang_attribute: "es",
+        identified_language: "es",
+        lang_tags_match: true,
+        is_lang_attribute_valid: true,
+        extracted_code_units: 2132,
+        extraction_time: ms => 0 < ms,
+        identification_time: ms => 0 < ms,
+        total_time: ms => 0 < ms,
+        confident: true,
       },
     }
   );

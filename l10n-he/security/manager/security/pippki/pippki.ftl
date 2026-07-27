@@ -48,15 +48,14 @@ download-cert-view-cert =
     .label = הצגה
 download-cert-view-text = בחן אישור של רשות אישורים
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = בקשה לזיהוי המשתמש
 client-auth-site-description = אתר זה ביקש ממך להזדהות באמצעות אישור:
 client-auth-choose-cert = נא לבחור באישור להצגה כזיהוי:
+client-auth-send-no-certificate =
+    .label = לא לשלוח אישור
 # Variables:
 # $hostname (String) - The domain name of the site requesting the client authentication certificate
 client-auth-site-identification = האתר ״{ $hostname }״ ביקש ממך להזדהות באמצעות אישור:
@@ -83,8 +82,13 @@ client-auth-cert-details-issued-by = הונפק על־ידי: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = מאוחסן תחת: { $storedOn }
-client-auth-cert-remember-box =
-    .label = שמירת הבחירה הזו
+client-auth-cert-remember-label = שמירת הבחירה הזו:
+client-auth-cert-remember-never =
+    .label = פעם אחת
+client-auth-cert-remember-always =
+    .label = לצמיתות
+client-auth-cert-remember-temporarily =
+    .label = להפעלה זו בלבד
 
 ## Set password (p12) dialog
 
@@ -96,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = ססמה לגיבוי אישור (שוב):
 set-password-reminder = חשוב: אם הססמה שלך לגיבוי האישור תישכח, לא תהיה לך אפשרות לשחזר גיבוי זה מאוחר יותר.  נא לרשום אותה במקום בטוח.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = הזדהות מוגנת
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = נא להזדהות להתקן האבטחה ״{ $tokenName }״. אופן ההזדהות תלוי בהתקן (למשל, שימוש בקורא טביעות אצבע או הזנת קוד על לוח מקשים).
 
 ## Protected authentication alert
 

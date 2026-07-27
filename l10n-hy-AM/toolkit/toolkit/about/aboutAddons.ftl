@@ -62,8 +62,8 @@ detail-private-browsing-label = Աշխատեցնել գաղտնի պատուհա
 detail-private-disallowed-label = Թույլատրված չէ գաղտնի պատուհաններում
 detail-private-disallowed-description2 = Այս ընդլայնումը չի գործում գաղտնի դիտարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
-detail-private-required-label = Պահանջվում է մուտք դեպի անձնական պատուհան
-detail-private-required-description2 = Այս ընդլայնումը հասանելի է ձեր առցանց գործունության՝ անձնական զննարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
+detail-private-required-label = Պահանջվում է հասանելիություն դեպի գաղտնի պատուհան
+detail-private-required-description2 = Այս ընդլայնումը հասանելիություն ունի գաղտնի դիտարկման ժամանակ Ձեր առցանց գործունությանը։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 detail-private-browsing-on =
     .label = Թույլատրել
     .tooltiptext = Միացնել գաղտնի դիտարկումում
@@ -71,7 +71,7 @@ detail-private-browsing-off =
     .label = Չթույլատրել
     .tooltiptext = Անջատել գաղտնի դիտարկումում
 detail-home =
-    .label = Կայքէջը
+    .label = Տնէջ
 detail-home-value =
     .value = { detail-home.label }
 detail-repository =
@@ -85,18 +85,18 @@ detail-check-for-updates =
 detail-show-preferences =
     .label =
         { PLATFORM() ->
-            [windows] Կարգավորումներ
-           *[other] Նախընտրանքներ
+            [windows] Ընտրանքներ
+           *[other] Նախապատվություններ
         }
     .accesskey =
         { PLATFORM() ->
-            [windows] Կ
+            [windows] Ը
            *[other] Ն
         }
     .tooltiptext =
         { PLATFORM() ->
-            [windows] Կարգավորել այս հավելումը
-           *[other] Փոփոխել այս հավելման նախընտրանքները
+            [windows] Փոխել այս հավելման ընտրանքները
+           *[other] Փոխել այս հավելման նախապատվությունները
         }
 detail-rating =
     .value = Վարկանիշ
@@ -217,7 +217,7 @@ shortcuts-input =
     .placeholder = Մուտքագրեք դյուրացնում
 shortcuts-browserAction2 = Ակտիվացնել գործիքագոտու կոճակը
 shortcuts-pageAction = Ակտիվացրեք էջի գործողությունը
-shortcuts-sidebarAction = Բացել/Փակել կողային վահանակը
+shortcuts-sidebarAction = Բացել/Փակել կողագոտին
 shortcuts-modifier-mac = Ներառել Ctrl, Alt, կամ ⌘
 shortcuts-modifier-other = Ներառեք Ctrl  կամ  Alt
 shortcuts-invalid = Անվավեր համադրություն
@@ -237,7 +237,7 @@ shortcuts-duplicate-warning-message2 =
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
-shortcuts-exists = Արդեն օգտագործվում է{ $addon }
+shortcuts-exists = Արդեն օգտագործվում է { $addon }-ի կողմից
 # Variables:
 #   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
@@ -254,11 +254,10 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Ընդլայնումները և հիմնապատկերները նման են ձեր դիտարկիչի գործադիրներին և դրանք ձեզ թույլատրում են
-    պաշտպանել գաղտնաբառերը, ներբեռնել տեսանյութեր, գտնել գործարքներ, արգելափակել նյարդայնացնող գովազդները, փոխել
-    ձեր զննարկչի տեսքը և ավելին։ Այս փոքր ծրագրային ծրագրերը 
-    հաճախ զարգացվել են երրորդ կողմի կողմից։ Ահա ընտրանք { -brand-product-name }
-    <a data-l10n-name="learn-more-trigger">խորհուրդ է տրվում</a> բացառիկ
+    Ընդլայնումները և ոճերը դա ձեր դիտարկիչի հավելվածներն են և դրանք ձեզ հնարավորություն են տալիս
+    պաշտպանել գաղտնաբառերը, ներբեռնել տեսանյութեր, գտնել գործարքներ, արգելափակել նյարդայնացնող գովազդները, փոխել ձեր դիտարկիչի տեսքը և ավելին։ Այս փոքր ծրագրաշարային ծրագրերը 
+    հաճախ զարգացվել են երրորդ կողմի կողմից։ Ահա դրանցից մի քանիսը, որոնք { -brand-product-name }
+    <a data-l10n-name="learn-more-trigger">խորհուրդ է տրվում</a>՝ բացառիկ
     անվտանգության, արդյունավետության և գործառություն համար։
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Այս առաջարկներից մի քանիսը անհատականացված են։ Դրանք հիմնված են ուրիշների վրա ձեր սահմանած ընդարձակումների, հատկագրի կարգավորումների և օգտագործման վիճակագրությունից։
@@ -266,6 +265,7 @@ discopane-notice-recommendations = Այս առաջարկներից մի քանի
 discopane-notice-recommendations2 =
     .message = Այս առաջարկներից մի քանիսը անհատականացված են։ Դրանք հիմնված են ուրիշների վրա ձեր սահմանած ընդարձակումների, հատկագրի կարգավորումների և օգտագործման վիճակագրությունից։
 discopane-notice-learn-more = Իմանալ ավելին
+colorway-removal-notice-learn-more = Իմանալ ավելին
 privacy-policy = Գաղտնիության դրույթներ
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -274,7 +274,7 @@ created-by-author = <a data-l10n-name="author">{ $author }</a>-ի կողմից
 # Shows the number of daily users of the add-on.
 # Variables:
 #   $dailyUsers (number) - The number of daily users.
-user-count = Օգտագործողներ { $dailyUsers }
+user-count = Օգտագործողներ՝ { $dailyUsers }
 install-extension-button = Հավելել { -brand-product-name }-ին
 install-theme-button = Տեղադրել ոճ
 # The label of the button that appears after installing an add-on. Upon click,
@@ -286,6 +286,14 @@ find-more-themes = Գտնել ավելի շատ ոճեր
 # used for screen readers.
 addon-options-button =
     .aria-label = Լրացուցիչ ընտրանքներ
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Ընդլայնումները և ոճերը հնարավորություն են տալիս ձեզ հարմարեցնել { -brand-product-name }-ը: Դրանք կարող են խթանել անվտանգությունը, կատարելագործել արտադրողականությունը, լավարկել մեդիան, փոխել { -brand-product-name }-ի տեսքը և շատ ավելին: Այս փոքրիկ ծրագրաշարային ծրագրերը հաճախ ստեղծվել են երրորդ կողմից: Ահա դրանցից մի քանիսը, որոնք { -brand-product-name }
+    <a data-l10n-name="learn-more-trigger">խորհուրդ է տրվում</a>՝ բացառիկ
+    անվտանգության, արդյունավետության և գործառություն համար։
 
 ## Add-on actions
 
@@ -302,7 +310,7 @@ extension-enable-addon-button-label =
 preferences-addon-button =
     { PLATFORM() ->
         [windows] Ընտրանքներ
-       *[other] Նախընտրություններ
+       *[other] Նախապատվություններ
     }
 details-addon-button = Մանրամասներ
 release-notes-addon-button = Թողարկման նշումներ
@@ -331,7 +339,7 @@ install-postponed-message = Այս ընդլայնումը կթարմացվի, ե
 # Message for add-ons with a staged pending update.
 install-postponed-message2 =
     .message = Այս ընդլայնումը կթարմացվի, երբ { -brand-short-name }-ը վերամեկնարկի:
-install-postponed-button = Թարմացնել հիմա
+install-postponed-button = Արդիացնել
 # The average rating that the add-on has received.
 # Variables:
 #   $rating (number) - A number between 0 and 5. The translation should show at most one digit after the comma.
@@ -372,10 +380,14 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Թույլատրված է գաղտնի պատուհաններում
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Թույլատրված է գաղտնի պատուհաններում
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Երբ թույլատրված է, գաղտնի զննարկելիս ընդլայնումը կունենա ձեր առցանց գործունեության մատչում։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
+addon-detail-private-browsing-help = Երբ թույլատրված է, ընդլայնումը գաղտնի դիտարկման ժամանակ կունենա հասանելիություն Ձեր առցանց գործունեությանը: <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 addon-detail-private-browsing-allow = Թույլատրել
 addon-detail-private-browsing-disallow = Չթույլատրել
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -388,6 +400,8 @@ addon-detail-group-label-private-browsing =
 
 # Used as a description for the option to allow or block an add-on on quarantined domains.
 addon-detail-quarantined-domains-label = Աշխատեցնել կայքերում՝ սահմանափակումներով
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Թույլատրվելու դեպքում ընդլայնումը կունենա { -vendor-short-name }-ի կողմից սահմանափակված կայքեր մուտք գործելու հնարավորություն։ Թույլատրեք միայն այն դեպքում, եթե վստահում եք այս ընդլայնմանը։
 # Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
 addon-detail-quarantined-domains-allow = Թույլատրել
 addon-detail-quarantined-domains-disallow = Չթույլատրել
@@ -396,7 +410,7 @@ addon-detail-quarantined-domains-disallow = Չթույլատրել
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
-    .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են մեր անվտանգության և արդյունավետության չափօրինակներին
+    .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են անվտանգության և արտադրողականության մեր չափանիշներին
     .aria-label = { addon-badge-recommended2.title }
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
@@ -406,6 +420,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Այս ընդլայնումը գնահատվել է՝ անվտանգության և արտադրողականության մեր չափանիշներին համապատասխանելու համար
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Պաշտոնական ընդլայնում, հավաքված Mozilla-ի կողմից: Համապատասխանում է անվտանգության և արտադրողականության չափանիշներին
 
 ##
 
@@ -413,7 +431,10 @@ available-updates-heading = Առկա թարմացումներ
 recent-updates-heading = Վերջին թարմացումները
 release-notes-loading = Բեռնում․․․
 release-notes-error = Հնարավոր չեղավ բացել թողարկման նշումները։
+addon-permissions-heading = Թույլտվություններ
+addon-permissions-required-label = Պահանջված՝
 addon-permissions-empty = Այս ընդլայնումը չի պահանջում որևէ թույլատվություններ
+addon-permissions-required = Հիմնական գործառության համար անհրաժեշտ թույլտվություններ՝
 addon-permissions-learnmore = Իմանալ ավելին թույլտվությունների մասին
 recommended-extensions-heading = Երաշխավորված ընդլայնում
 recommended-themes-heading = Երաշխավորված հիմնապատկերներ
@@ -427,14 +448,14 @@ extension-heading = Կառավարեք ձեր ընդարձակումները
 theme-heading = Կառավարեք ձեր հիմնապատկերները
 plugin-heading = Կառավարեք ձեր ընդլայնումները
 dictionary-heading = Կառավարեք ձեր բառարանները
-locale-heading = Կառավարեք ձեր լեզուները
-updates-heading = Կառավարեք ձեր թարմացումները
-sitepermission-heading = Կառավարեք կայքի թույլտվությունները
+locale-heading = Կառավարել Ձեր լեզուները
+updates-heading = Կառավարել Ձեր թարմացումները
+sitepermission-heading = Կառավարել կայքի Ձեր թույլտվությունները
 discover-heading = Անհատականացրեք ձեր { -brand-short-name }-ը
 shortcuts-heading = Կառավարել ընդլայնման դյուրացումները
 default-heading-search-label = Ավելի շատ հավելումներ
 addons-heading-search-input =
-    .placeholder = Որոնել  addons.mozilla.org֊-ում
+    .placeholder = Որոնել addons.mozilla.org֊ում
 addon-page-options-button =
     .title = Գործիքներ բոլոր հավելումների համար
 
@@ -459,12 +480,8 @@ details-notification-unsigned2 =
     .message = { $name }-ը չէր կարող վավերացվել { -brand-short-name }-ում օգտագործման համար։ Կատարվել է նախազգուշացմամբ։
 details-notification-unsigned-link = Ավելի շատ տեղեկություն
 details-notification-blocked = { $name }-ը անջատվել է` անվտանգություն կամ կայունություն ապահովելու նպատակով:
-details-notification-blocked2 =
-    .message = { $name }-ը անջատվել է` անվտանգություն կամ կայունություն ապահովելու նպատակով:
 details-notification-blocked-link = Ավելի շատ տեղեկություն
 details-notification-softblocked = Հայտնի է, որ { $name }-ը պատճառում է ապահովության կամ կայունության խնդիրներ:
-details-notification-softblocked2 =
-    .message = Հայտնի է, որ { $name }-ը պատճառում է ապահովության կամ կայունության խնդիրներ:
 details-notification-softblocked-link = Ավելի շատ տեղեկություն
 details-notification-gmp-pending = { $name }-ը շուտով կտեղադրվի:
 details-notification-gmp-pending2 =
@@ -478,3 +495,19 @@ plugins-openh264-name = OpenH264 Video Codec, որը մատակարարում է
 plugins-openh264-description = Այս բաղադրիչը ինքնաբար տեղադրված է Mozilla-ի կողմից և համապատասխանում է WebRTC բնութագրին և WebRTC-ը միացնելու համար կանչում է սարքեր, որոնք պահանջում են H.264 տեսանյութի կոդեկ: Այցելեք http://www.openh264.org/ կայք՝ դիտելու համար կոդեկի բնագիրը:
 plugins-widevine-name = Widevine Content Decryption Module՝ Google Inc.-ի կողմից
 plugins-widevine-description = Այս բաղադրիչը հնարավորություն է տալիս նվագարկել գաղտնագրված մեդիան՝ գաղտնագրված մեդիայի ընդարձակման հատկորոշման համաձայն: Գաղտնագրված մեդիան սովորաբար օգտագործվում է կայքերի կողմից պրեմիում մեդիա բովանդակությունը պատճենելուց պաշտպանվելու համար: Այցելեք https://www.w3.org/TR/encrypted-media/՝ գաղտնագրված մեդիայի ընդարձակման վերաբերյալ լրացուցիչ տեղեկություններ ստանալու համար:
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Պահանջվող տվյալների հավաքում՝
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Թույլտվություններ և տվյալներ
+addon-data-collection-learnmore = Իմացեք ավելին տվյալների հավաքագրման մասին
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Սարքի վրա գործող ԱԲ
+addon-category-mlmodel-title =
+    .title = Սարքի վրա գործող ԱԲ
+mlmodel-heading = Կառավարեք սարքի վրա գործող արհեստական բանականության մոդելները

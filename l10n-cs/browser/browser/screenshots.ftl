@@ -7,7 +7,7 @@ screenshot-toolbarbutton =
     .tooltiptext = Pořídí snímek obrazovky
 screenshot-shortcut =
     .key = S
-screenshots-instructions = Oblast vyberete kliknutím nebo tahem myší. Pro zrušení stiskněte ESC.
+screenshots-instructions = Oblast vyberete klepnutím nebo tahem myší. Pro zrušení stiskněte ESC.
 screenshots-cancel-button = Zrušit
 screenshots-save-visible-button = Uložit viditelnou oblast
 screenshots-save-page-button = Uložit celou stránku
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = Kopírovat
 screenshots-component-download-button-2 = Stáhnout
     .title = Stáhnout ({ $shortcut })
     .aria-label = Stáhnout
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Snímek obrazovky
+    .tooltiptext = Vytvoří snímek obrazovky ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

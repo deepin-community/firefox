@@ -11,7 +11,6 @@ graph-week-summary =
         [few] { -brand-short-name } je { $count } přesćěhowaki zańdźeny tydźeń zablokował
        *[other] { -brand-short-name } je { $count } přesćěhowakow zańdźeny tydźeń zablokował
     }
-
 # Variables:
 #   $count (Number) - Number of tracking events blocked.
 #   $earliestDate (Number) - Unix timestamp in ms, representing a date. The
@@ -23,57 +22,43 @@ graph-total-tracker-summary =
         [few] <b>{ $count }</b> přesćěhowaki je so wot { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } zablokowali
        *[other] <b>{ $count }</b> přesćěhowakow je so wot { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } zablokowało
     }
-
 # Text displayed instead of the graph when in Private Mode
 graph-private-window = { -brand-short-name } přesćěhowaki w priwatnych woknach dale blokuje, ale njezapřijima, što je so zablokowało.
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = Přesćěhowaki, kotrež { -brand-short-name } je so tutón tydźeń zablokował
-
 protection-report-webpage-title = Přehlad škitow
 protection-report-page-content-title = Přehlad škitow
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
 protection-report-page-summary = { -brand-short-name } móže wašu priwatnosć za kulisami škitać, mjeztym zo přehladujeće. To je personalizowane zjeće tutych škitnych naprawow, mjez nimi nastroje, kotrež wašu wěstotu online kontroluja.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
 protection-report-page-summary-default = { -brand-short-name } wašu priwatnosć za kulisami škita, mjeztym zo přehladujeće. To je personalizowane zjeće tutych škitnych naprawow, mjez nimi nastroje, kotrež wašu wěstotu online kontroluja.
-
 protection-report-settings-link = Nastajenja priwatnosće a wěstoty rjadować
-
 etp-card-title-always = Polěpšeny slědowanski škit: přeco zmóžnjeny
 etp-card-title-custom-not-blocking = Polěpšeny slědowanski škit: ZNJEMÓŽNJENY
 etp-card-content-description = { -brand-short-name } awtomatisce zadźěwa tomu, zo předewzaća wam skradźu po webje slěduja.
 protection-report-etp-card-content-custom-not-blocking = Kóždy škit je tuchwilu wotpinjeny. Wubjerće, kotre přesćěhowaki maja so přez rjadowanje wašich škitnych nastajenjow { -brand-short-name } blokować.
 protection-report-manage-protections = Nastajenja rjadować
-
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
 # capitalization for this string should match the output for your locale.
 graph-today = Dźensa
-
 # This string is used to describe the graph for screenreader users.
 graph-legend-description = Graf, kotryž cyłkownu ličbu kóždeho typa přesćěhowaka pokazuje, kotryž je so tutón tydźeń zablokował.
-
 social-tab-title = Přesćěhowaki socialnych medijow
 social-tab-contant = Socialne syće placěruja přesćěhowaki na druhich websydłach, zo bychu slědowali, što online činiće, widźiće a wobkedźbujeće. To předewzaćam socialnych medijow dowola, wjace wo was zhonił hač w profilach socialnych medijow dźěliće. <a data-l10n-name="learn-more-link">Dalše informacije</a>
-
 cookie-tab-title = Sydła přesahowace slědowace placki
 cookie-tab-content = Tute placki wam wot sydła do sydła slěduja, zo byšće daty wo tym hromadźili, štož online činiće. Stajeja so wot třećich poskićowarjow kaž na přikład wabjerjo a analyzowe předewzaća, Blokowanje sydła přesahowacych plackow ličbu wabjenjow redukuje, kotrež wam slěduja. <a data-l10n-name="learn-more-link">Dalše informacije</a>
-
 tracker-tab-title = Slědowacy wobsah
 tracker-tab-description = Websydła móža eksterne wabjenje, wideja a druhi wobsah ze slědowacym kodom začitać. Hdyž slědowacy wobsah blokujeće, móže to pomhać, sydła spěšnišo začitać, ale někotre tłóčatka, formulary a přizjewjenske pola snano hižo njebudu fungować. <a data-l10n-name="learn-more-link">Dalše informacije</a>
-
-fingerprinter-tab-title = Porstowe wotćišće
-fingerprinter-tab-content = Porstowe wotćišće zběraja nastajenja z wašeho wobhladowaka a ličaka, zo bychu profil wo was wutworili. Hdyž tutón digitalny porstowy wotćišć wužiwaće, móža wam přez rozdźělne websydła slědować. <a data-l10n-name="learn-more-link">Dalše informacije</a>
-
+fingerprinter-tab-title = Hromadźaki porstowych wotćišćow
+fingerprinter-tab-content = Hromadźaki porstowych wotćišće hromadźa nastajenja z wašeho wobhladowaka a ličaka, zo bychu profil wo was wutworili. Hdyž tutón digitalny porstowy wotćišć wužiwaće, móža wam přez rozdźělne websydła slědować. <a data-l10n-name="learn-more-link">Dalše informacije</a>
 cryptominer-tab-title = Kryptokopanje
 cryptominer-tab-content = Kryptokopanje ličenski wukon wašeho systema wužiwa, zo by digitalne pjenjezy dobyło. Kryptokopanske skripty wašu bateriju prózdnja, waš ličak spomaleja a móža wašu přetrjebu energije powyšić. <a data-l10n-name="learn-more-link">Dalše informacije</a>
-
 protections-close-button2 =
     .aria-label = Začinić
     .title = Začinić
-
 mobile-app-title = Wabjenske přesćěhowaki přez dalše graty blokować
 mobile-app-card-content = Mobilny wobhladowak ze zatwarjenym škitom přećiwo wabjenskemu slědowanju wužiwać
 mobile-app-links = Wobhladowak { -brand-product-name } za <a data-l10n-name="android-mobile-inline-link">Android</a> a <a data-l10n-name="ios-mobile-inline-link">iOS</a>
-
 lockwise-title = Njezabywajće ženje wjace hesło
 passwords-title-logged-in = Waše hesła rjadować
 passwords-header-content = { -brand-product-name } waše hesła we wašim wobhladowaku wěsće składuje.
@@ -82,8 +67,6 @@ protection-report-passwords-save-passwords-button = Hesła składować
     .title = Hesła składować
 protection-report-passwords-manage-passwords-button = Hesła rjadować
     .title = Hesła rjadować
-
-
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
 lockwise-scanned-text-breached-logins =
@@ -93,7 +76,6 @@ lockwise-scanned-text-breached-logins =
         [few] { $count } hesła su so datowej dźěrje wustajili.
        *[other] { $count } hesłow je so datowej dźěrje wustajiło.
     }
-
 # While English doesn't use the number in the plural form, you can add $count to your language
 # if needed for grammatical reasons.
 # Variables:
@@ -106,7 +88,6 @@ lockwise-scanned-text-no-breached-logins =
        *[other] { $count } hesłow je so wěsće składowało.
     }
 lockwise-how-it-works-link = Kak funguje
-
 monitor-title = Rozhladujće so za datowymi dźěrami
 monitor-link = Kak funguje
 monitor-header-content-no-account = Přepruwujće { -monitor-brand-name }, zo byšće zwěsćił, hač sće na znatu datowu dźěru padnył a warnowanja wo nowych dźěrach dóstawaće.
@@ -114,14 +95,12 @@ monitor-header-content-signed-in = { -monitor-brand-name } was warnuje, jeli wa�
 monitor-sign-up-link = Registrujće so za warnowanja wo datowych dźěrach
     .title = Registrujće so za warnowanja wo datowych dźěrach na { -monitor-brand-name }
 auto-scan = Dźensa awtomatisce skenowany
-
 monitor-emails-tooltip =
     .title = Dohladowane e-mejlowe adresy w { -monitor-brand-short-name } pokazać
 monitor-breaches-tooltip =
     .title = Znate datowe dźěry w { -monitor-brand-short-name } pokazać
 monitor-passwords-tooltip =
     .title = Wotkryte hesła w { -monitor-brand-short-name } pokazać
-
 # This string is displayed after a large numeral that indicates the total number
 # of email addresses being monitored. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -132,7 +111,6 @@ info-monitored-emails =
         [few] E-mejlowe adresy, kotrež so dohladuja
        *[other] E-mejlowe adresy, kotrež so dohladuja
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of known data breaches. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -143,7 +121,6 @@ info-known-breaches-found =
         [few] Znate datowe dźěry su waše informacije přeradźili
        *[other] Znate datowe dźěry su waše informacije přeradźili
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of known data breaches that are marked as resolved by the user. Don’t add $count
 # to your localization, because it would result in the number showing twice.
@@ -154,7 +131,6 @@ info-known-breaches-resolved =
         [few] znate datowe dźěry su so jako rozrisane markěrowali
        *[other] znatych datowych dźěrow je so jako rozrisane markěrowało
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of exposed passwords. Don’t add $count to
 # your localization, because it would result in the number showing twice.
@@ -165,7 +141,6 @@ info-exposed-passwords-found =
         [few] Hesła su so přez wšě datowe dźery přeradźili
        *[other] Hesła su so přez wšě datowe dźery přeradźili
     }
-
 # This string is displayed after a large numeral that indicates the total number
 # of exposed passwords that are marked as resolved by the user. Don’t add $count
 # to your localization, because it would result in the number showing twice.
@@ -176,7 +151,6 @@ info-exposed-passwords-resolved =
         [few] hesła su so w njerozrisanych datowych dźěrach pokazali
        *[other] hesłow je so w njerozrisanych datowych dźěrach pokazało
     }
-
 monitor-no-breaches-title = Dobre powěsće!
 monitor-no-breaches-description = Nimaće žane znate datowe dźěry. Jeli so to změni, zdźělimy wam to.
 monitor-view-report-link = Rozprawu pokazać
@@ -187,7 +161,6 @@ monitor-manage-breaches-link = Datowe dźěry rjadować
     .title = Datowe dźěry na { -monitor-brand-short-name } rjadować
 monitor-breaches-resolved-title = Wulkotnje! Sće wšě znate datowe dźěry wotstronił.
 monitor-breaches-resolved-description = Jeli so waša e-mejlowa adresa w nowych datowych dźěrach jewi, zdźělimy wam to.
-
 # Variables:
 # $numBreachesResolved (Number) - Number of breaches marked as resolved by the user on Monitor.
 # $numBreaches (Number) - Number of breaches in which a user's data was involved, detected by Monitor.
@@ -198,11 +171,9 @@ monitor-partial-breaches-title =
         [few] { $numBreachesResolved } z { $numBreaches } datowych dźěrow su so jako wotstronjene markěrowali.
        *[other] { $numBreachesResolved } z { $numBreaches } datowych dźěrow je so jako wotstronjene markěrowało.
     }
-
 # Variables:
 # $percentageResolved (Number) - Percentage of breaches marked as resolved by a user on Monitor.
 monitor-partial-breaches-percentage = { $percentageResolved } % dokónčene
-
 monitor-partial-breaches-motivation-title-start = Wulkotny spočatk!
 monitor-partial-breaches-motivation-title-middle = Dale tak!
 monitor-partial-breaches-motivation-title-end = Nimale dokónčene! Dale tak.
@@ -245,13 +216,13 @@ bar-tooltip-tracker =
            *[other] { $count } slědowacych wobsahow ({ $percentage } %)
         }
 bar-tooltip-fingerprinter =
-    .title = Porstowe wotćišće
+    .title = Hromadźaki porstowych wotćišćow
     .aria-label =
         { $count ->
-            [one] { $count } porstowy wotćišć ({ $percentage } %)
-            [two] { $count } porstowej wotćišćej ({ $percentage } %)
-            [few] { $count } porstowe wotćišće ({ $percentage } %)
-           *[other] { $count } porstowych wotćišćow ({ $percentage } %)
+            [one] { $count } hromadźak porstowych wotćišćow ({ $percentage } %)
+            [two] { $count } hromadźakaj porstowych wotćišćow ({ $percentage } %)
+            [few] { $count } hromadźaki porstowych wotćišćow ({ $percentage } %)
+           *[other] { $count } hromadźakow porstowych wotćišćow ({ $percentage } %)
         }
 bar-tooltip-cryptominer =
     .title = Kryptokopaki
@@ -262,3 +233,73 @@ bar-tooltip-cryptominer =
             [few] { $count } kryptokopaki ({ $percentage } %)
            *[other] { $count } kryptokopakow ({ $percentage } %)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Škit priwatnosće
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [one] { $count } je so tutón tydźeń zablokował
+        [two] { $count } stej so tutón tydźeń zablokowałoj
+        [few] { $count } su so tutón tydźeń zablokowali
+       *[other] { $count } je so tutón tydźeń zablokowało
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } přesćěhowak
+        [two] { $count } přesćěhowakaj
+        [few] { $count } přesćěhowaki
+       *[other] { $count } přesćěhowakow
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } hromadźak porstowych wotćišćow
+        [two] { $count } hromadźakaj porstowych wotćišćow
+        [few] { $count } hromadźaki porstowych wotćišćow
+       *[other] { $count } hromadźakow porstowych wotćišćow
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } přesćěhowacy plack
+        [two] { $count } přesćěhowacej plackaj
+        [few] { $count } přesćěhowace placki
+       *[other] { $count } přesćěhowacych plackow
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } socialny přesćěhowak
+        [two] { $count } socialnej přesćěhowakaj
+        [few] { $count } socialne přesćěhowaki
+       *[other] { $count } socialnych přesćěhowakow
+    }
+privacy-metrics-empty = Přesćěhowaki njejsu so tutón tydźeń zablokowali. { -brand-short-name } was před slědowacymi wohroženjemi škita, hdyž přehladujeće.
+privacy-metrics-loading = Škitne statistiske daty so začitaja…
+privacy-metrics-error = Njeje móžno, škitne statistiske daty začitać.
+privacy-metrics-private-window = { -brand-short-name } přesćěhowaki w priwatnych woknach dale blokuje, ale njezapřijima, što je so zablokowało.
+
+## VPN promo card and banner
+
+protections-vpn-title = Wobstarajće sej priwatnosć wyše wobhladowaka
+protections-vpn-header-content = Škitajće swój cyły grat z { -mozilla-vpn-brand-name }. Jedyn podótk cyły wobchad zaklučuje a waše stejnišćo chowa.
+protections-get-vpn-link = { -mozilla-vpn-brand-name } wobstarać
+protections-vpn-title-subscribed = VPN: Abonowany
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [one] Z pomocu { -mozilla-vpn-brand-name } so waš wšón wobchad zaklučuje a waše stejnišćo chowa – na hač do { $count } graće. Wućehńće najlěpše ze swojeho abonementa – přidajće jón z <a data-l10n-name="playstore-link">Google Play Store</a> abo <a data-l10n-name="appstore-link">Apple App Store</a>.
+        [two] Z pomocu { -mozilla-vpn-brand-name } so waš wšón wobchad zaklučuje a waše stejnišćo chowa – na hač do { $count } gratomaj. Wućehńće najlěpše ze swojeho abonementa – přidajće jón z <a data-l10n-name="playstore-link">Google Play Store</a> abo <a data-l10n-name="appstore-link">Apple App Store</a>.
+        [few] Z pomocu { -mozilla-vpn-brand-name } so waš wšón wobchad zaklučuje a waše stejnišćo chowa – na hač do { $count } gratach. Wućehńće najlěpše ze swojeho abonementa – přidajće jón z <a data-l10n-name="playstore-link">Google Play Store</a> abo <a data-l10n-name="appstore-link">Apple App Store</a>.
+       *[other] Z pomocu { -mozilla-vpn-brand-name } so waš wšón wobchad zaklučuje a waše stejnišćo chowa – na hač do { $count } gratach. Wućehńće najlěpše ze swojeho abonementa – přidajće jón z <a data-l10n-name="playstore-link">Google Play Store</a> abo <a data-l10n-name="appstore-link">Apple App Store</a>.
+    }
+protections-vpn-banner-header = Škit, kotryž wobhladowak přesahuje
+protections-vpn-banner-content = Wupruwujće { -mozilla-vpn-brand-name } bjez rizika a hladajće, čehodla TechRadar praji, zo „jeho spěšnosć, jednorosć a niska měsačna płaćizna su pohlad hódne.“
+protections-vpn-banner-link = { -mozilla-vpn-brand-name } wobstarać

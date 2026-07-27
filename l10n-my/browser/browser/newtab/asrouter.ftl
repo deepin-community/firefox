@@ -57,7 +57,7 @@ cfr-doorhanger-extension-total-users =
        *[other] သုံးစွဲသူ { $total } ယောက်
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = သင့် စာမှတ်များ နေရာမျိုးစုံ တွင်အသုံးပြုပါ
 cfr-doorhanger-bookmark-fxa-body = ကောင်းကောင်းတွေ့တာပဲ! ဒီ စာမှတ် ကို သင့် မိုဘိုင်း ကိရိယာပေါ်မှာပဲ မထားခဲ့ပါနဲ့။ အခုပဲ { -fxaccount-brand-name } နှင့် စတင်ပါ။
@@ -91,54 +91,3 @@ cfr-doorhanger-milestone-ok-button = အားလုံးကိုကြည့�
 
 cfr-doorhanger-doh-secondary-button = ပိတ်ထားသည်
     .accesskey = D
-
-## Full Video Support CFR message
-
-
-## VPN promotion dialog for public Wi-Fi users
-##
-## If a user is detected to be on a public Wi-Fi network, they are given a
-## bit of info about how to improve their privacy and then offered a button
-## to the Mozilla VPN page and a link to dismiss the dialog.
-
-
-## Emotive Continuous Onboarding
-
-
-## MR2022 Background Update Windows native toast notification strings.
-##
-## These strings will be displayed by the Windows operating system in
-## a native toast, like:
-##
-## <b>multi-line title</b>
-## multi-line text
-## <img>
-## [ primary button ] [ secondary button ]
-##
-## The button labels are fitted into narrow fixed-width buttons by
-## Windows and therefore must be as narrow as possible.
-
-
-## Firefox View CFR
-
-
-## Firefox View Spotlight
-
-
-## Colorways expiry reminder CFR
-
-
-## Cookie Banner Handling CFR
-
-
-## These strings are used in the Fox doodle Pin/set default spotlights
-
-
-## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
-
-
-## FxA sync CFR
-
-
-## Device Migration FxA Spotlight
-

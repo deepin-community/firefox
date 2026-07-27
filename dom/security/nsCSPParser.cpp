@@ -1,27 +1,25 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/TextUtils.h"
-#include "mozilla/dom/Document.h"
+#include "nsCSPParser.h"
+
+#include <cstdint>
+#include <utility>
+
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_security.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
 #include "nsCOMPtr.h"
-#include "nsContentUtils.h"
-#include "nsCSPParser.h"
 #include "nsCSPUtils.h"
+#include "nsContentUtils.h"
 #include "nsIScriptError.h"
 #include "nsNetUtil.h"
 #include "nsReadableUtils.h"
 #include "nsServiceManagerUtils.h"
 #include "nsUnicharUtils.h"
-
-#include <cstdint>
-#include <utility>
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -39,7 +37,6 @@ static LogModule* GetCspParserLog() {
 static const uint32_t kSubHostPathCharacterCutoff = 512;
 
 static const char* const kHashSourceValidFns[] = {"sha256", "sha384", "sha512"};
-static const uint32_t kHashSourceValidFnsLen = 3;
 
 /* ===== nsCSPParser ==================== */
 
@@ -91,9 +88,12 @@ bool isGroupDelim(char16_t aSymbol) {
           aSymbol == '\\' || aSymbol == ']' || aSymbol == '"');
 }
 
-static bool isValidBase64Value(const char16_t* cur, const char16_t* end) {
+bool nsCSPParser::isValidBase64Value(const nsAString& aValue) {
   // Using grammar at
   // https://w3c.github.io/webappsec-csp/#grammardef-nonce-source
+
+  const char16_t* cur = aValue.BeginReading();
+  const char16_t* end = aValue.EndReading();
 
   // May end with one or two =
   if (end > cur && *(end - 1) == EQUALS) end--;
@@ -468,6 +468,11 @@ nsCSPBaseSrc* nsCSPParser::keywordSource() {
     return new nsCSPKeywordSrc(CSP_UTF16KeywordToEnum(mCurToken));
   }
 
+  if (StaticPrefs::dom_security_trusted_types_enabled() &&
+      CSP_IsKeyword(mCurToken, CSP_TRUSTED_TYPES_EVAL)) {
+    return new nsCSPKeywordSrc(CSP_UTF16KeywordToEnum(mCurToken));
+  }
+
   return nullptr;
 }
 
@@ -559,8 +564,7 @@ nsCSPNonceSrc* nsCSPParser::nonceSource() {
   if (dashIndex < 0) {
     return nullptr;
   }
-  if (!isValidBase64Value(expr.BeginReading() + dashIndex + 1,
-                          expr.EndReading())) {
+  if (!isValidBase64Value(Substring(expr, dashIndex + 1))) {
     return nullptr;
   }
 
@@ -589,8 +593,7 @@ nsCSPHashSrc* nsCSPParser::hashSource() {
     return nullptr;
   }
 
-  if (!isValidBase64Value(expr.BeginReading() + dashIndex + 1,
-                          expr.EndReading())) {
+  if (!isValidBase64Value(Substring(expr, dashIndex + 1))) {
     return nullptr;
   }
 
@@ -598,8 +601,8 @@ nsCSPHashSrc* nsCSPParser::hashSource() {
   nsAutoString hash(
       Substring(expr, dashIndex + 1, expr.Length() - dashIndex + 1));
 
-  for (uint32_t i = 0; i < kHashSourceValidFnsLen; i++) {
-    if (algo.LowerCaseEqualsASCII(kHashSourceValidFns[i])) {
+  for (auto hashSourceValidFn : kHashSourceValidFns) {
+    if (algo.LowerCaseEqualsASCII(hashSourceValidFn)) {
       // cache if encountering hash or nonce to invalidate unsafe-inline
       mHasHashOrNonce = true;
       return new nsCSPHashSrc(algo, hash);
@@ -813,9 +816,10 @@ void nsCSPParser::reportGroup(nsCSPDirective* aDir) {
   while (!atEnd()) {
     if (isGroupDelim(*mCurChar) ||
         nsContentUtils::IsHTMLWhitespace(*mCurChar)) {
-      AutoTArray<nsString, 1> params = {mCurToken};
+      nsString badChar(mozilla::Span(mCurChar, 1));
+      AutoTArray<nsString, 2> params = {mCurToken, badChar};
       logWarningErrorToConsole(nsIScriptError::warningFlag,
-                               "invalidGroupSyntax", params);
+                               "ignoringInvalidGroupSyntax", params);
       delete aDir;
       return;
     }
@@ -867,21 +871,23 @@ void nsCSPParser::sandboxFlagList(nsCSPDirective* aDir) {
   mPolicy->addDirective(aDir);
 }
 
-// https://w3c.github.io/trusted-types/dist/spec/#integration-with-content-security-policy
-static constexpr nsLiteralString kValidRequireTrustedTypesForDirectiveValue =
-    u"'script'"_ns;
-
 static bool IsValidRequireTrustedTypesForDirectiveValue(
     const nsAString& aToken) {
   return aToken.Equals(kValidRequireTrustedTypesForDirectiveValue);
 }
 
 void nsCSPParser::handleRequireTrustedTypesForDirective(nsCSPDirective* aDir) {
+  CSPPARSERLOG(("nsCSPParser::handleTrustedTypesDirective"));
+
   // "srcs" start at index 1. Here "srcs" should represent Trusted Types' sink
   // groups
   // (https://w3c.github.io/trusted-types/dist/spec/#require-trusted-types-for-csp-directive).
-
-  if (mCurDir.Length() != 2) {
+  // We align with other browsers and make the syntax forgiving i.e. invalid
+  // trusted-types-sink-group-keyword are discarded without invalidating the
+  // whole directive. However, if no valid trusted-types-sink-group-keyword is
+  // found, the directive has no effect and can just be discarded completely.
+  // See https://github.com/w3c/trusted-types/issues/580.
+  if (mCurDir.Length() < 2) {
     nsString numberOfTokensStr;
 
     // Casting is required to avoid ambiguous function calls on some platforms.
@@ -894,24 +900,33 @@ void nsCSPParser::handleRequireTrustedTypesForDirective(nsCSPDirective* aDir) {
     return;
   }
 
-  mCurToken = mCurDir.LastElement();
+  nsTArray<nsCSPBaseSrc*> trustedTypesSinkGroupKeywords;
+  bool foundValidTrustedTypesSinkGroupKeyword = false;
+  for (uint32_t i = 1; i < mCurDir.Length(); ++i) {
+    mCurToken = mCurDir[i];
 
-  CSPPARSERLOG(
-      ("nsCSPParser::handleRequireTrustedTypesForDirective, mCurToken: %s",
-       NS_ConvertUTF16toUTF8(mCurToken).get()));
+    CSPPARSERLOG(
+        ("nsCSPParser::handleRequireTrustedTypesForDirective, mCurToken: %s",
+         NS_ConvertUTF16toUTF8(mCurToken).get()));
 
-  if (!IsValidRequireTrustedTypesForDirectiveValue(mCurToken)) {
-    AutoTArray<nsString, 1> token = {mCurToken};
-    logWarningErrorToConsole(nsIScriptError::errorFlag,
-                             "invalidRequireTrustedTypesForDirectiveValue",
-                             token);
+    if (!IsValidRequireTrustedTypesForDirectiveValue(mCurToken)) {
+      AutoTArray<nsString, 1> token = {mCurToken};
+      logWarningErrorToConsole(nsIScriptError::warningFlag,
+                               "invalidRequireTrustedTypesForDirectiveValue",
+                               token);
+    } else {
+      foundValidTrustedTypesSinkGroupKeyword = true;
+    }
+    trustedTypesSinkGroupKeywords.AppendElement(
+        new nsCSPRequireTrustedTypesForDirectiveValue(mCurToken));
+  }
+  if (!foundValidTrustedTypesSinkGroupKeyword) {
+    for (auto* trustedTypesSinkGroupKeyword : trustedTypesSinkGroupKeywords) {
+      delete trustedTypesSinkGroupKeyword;
+    }
     return;
   }
-
-  nsTArray<nsCSPBaseSrc*> srcs = {
-      new nsCSPRequireTrustedTypesForDirectiveValue(mCurToken)};
-
-  aDir->addSrcs(srcs);
+  aDir->addSrcs(trustedTypesSinkGroupKeywords);
   mPolicy->addDirective(aDir);
 }
 
@@ -977,14 +992,10 @@ void nsCSPParser::handleTrustedTypesDirective(nsCSPDirective* aDir) {
           new nsCSPTrustedTypesDirectivePolicyName(mCurToken));
     } else {
       AutoTArray<nsString, 1> token = {mCurToken};
-      logWarningErrorToConsole(nsIScriptError::errorFlag,
+      logWarningErrorToConsole(nsIScriptError::warningFlag,
                                "invalidTrustedTypesExpression", token);
-
-      for (auto* trustedTypeExpression : trustedTypesExpressions) {
-        delete trustedTypeExpression;
-      }
-
-      return;
+      trustedTypesExpressions.AppendElement(
+          new nsCSPTrustedTypesDirectiveInvalidToken(mCurToken));
     }
   }
 
@@ -1065,16 +1076,10 @@ nsCSPDirective* nsCSPParser::directiveName() {
 
   // special case handling for block-all-mixed-content
   if (directive == nsIContentSecurityPolicy::BLOCK_ALL_MIXED_CONTENT) {
-    // If mixed content upgrade is enabled for all types block-all-mixed-content
-    // is obsolete
+    // If mixed content upgrade is enabled for display content, then
+    // block-all-mixed-content is obsolete.
     if (mozilla::StaticPrefs::
-            security_mixed_content_upgrade_display_content() &&
-        mozilla::StaticPrefs::
-            security_mixed_content_upgrade_display_content_image() &&
-        mozilla::StaticPrefs::
-            security_mixed_content_upgrade_display_content_audio() &&
-        mozilla::StaticPrefs::
-            security_mixed_content_upgrade_display_content_video()) {
+            security_mixed_content_upgrade_display_content()) {
       // log to the console that if mixed content display upgrading is enabled
       // block-all-mixed-content is obsolete.
       AutoTArray<nsString, 1> params = {mCurToken};
@@ -1263,8 +1268,10 @@ void nsCSPParser::MaybeWarnAboutIgnoredSources(
       nsAutoString srcStr;
       aSrcs[i]->toString(srcStr);
       // Hashes and nonces continue to apply with 'strict-dynamic', as well as
-      // 'unsafe-eval', 'wasm-unsafe-eval' and 'unsafe-hashes'.
+      // 'unsafe-eval', 'wasm-unsafe-eval', 'trusted-types-eval' and
+      // 'unsafe-hashes'.
       if (!aSrcs[i]->isKeyword(CSP_STRICT_DYNAMIC) &&
+          !aSrcs[i]->isKeyword(CSP_TRUSTED_TYPES_EVAL) &&
           !aSrcs[i]->isKeyword(CSP_UNSAFE_EVAL) &&
           !aSrcs[i]->isKeyword(CSP_WASM_UNSAFE_EVAL) &&
           !aSrcs[i]->isKeyword(CSP_UNSAFE_HASHES) && !aSrcs[i]->isNonce() &&
@@ -1324,19 +1331,21 @@ nsCSPPolicy* nsCSPParser::policy() {
   for (uint32_t i = 0; i < mTokens.Length(); i++) {
     // https://w3c.github.io/webappsec-csp/#parse-serialized-policy
     // Step 2.2. ..., or if token is not an ASCII string, continue.
+    // https://w3c.github.io/webappsec-csp/#grammardef-directive-value
+    // Also, if token contains characters outside 0x21-0x7E, continue.
     //
     // Note: In the spec the token isn't split by whitespace yet.
-    bool isAscii = true;
+    bool isValid = true;
     for (const auto& token : mTokens[i]) {
-      if (!IsAscii(token)) {
+      if (CSP_IsInvalidDirectiveValue(token)) {
         AutoTArray<nsString, 1> params = {mTokens[i][0], token};
         logWarningErrorToConsole(nsIScriptError::warningFlag,
-                                 "ignoringNonAsciiToken", params);
-        isAscii = false;
+                                 "ignoringInvalidToken", params);
+        isValid = false;
         break;
       }
     }
-    if (!isAscii) {
+    if (!isValid) {
       continue;
     }
 
@@ -1435,7 +1444,8 @@ nsCSPPolicy* nsCSPParser::parseContentSecurityPolicy(
   if (aReportOnly) {
     policy->setReportOnlyFlag(true);
     if (!policy->hasDirective(nsIContentSecurityPolicy::REPORT_TO_DIRECTIVE) &&
-        !policy->hasDirective(nsIContentSecurityPolicy::REPORT_URI_DIRECTIVE)) {
+        !policy->hasDirective(nsIContentSecurityPolicy::REPORT_URI_DIRECTIVE) &&
+        !CSP_IsBrowserXHTML(aSelfURI)) {
       nsAutoCString prePath;
       nsresult rv = aSelfURI->GetPrePath(prePath);
       NS_ENSURE_SUCCESS(rv, policy);

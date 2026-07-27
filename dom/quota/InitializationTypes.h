@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,6 +30,13 @@ enum class Initialization {
   UpgradeStorageFrom2_2To2_3 = 1 << 8,
   UpgradeFromIndexedDBDirectory = 1 << 9,
   UpgradeFromPersistentStorageDirectory = 1 << 10,
+  PersistentRepository = 1 << 11,
+};
+
+enum class GroupInitialization {
+  None = 0,
+  PersistentGroup = 1 << 0,
+  TemporaryGroup = 1 << 1,
 };
 
 enum class OriginInitialization {
@@ -41,6 +46,7 @@ enum class OriginInitialization {
 };
 
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(Initialization)
+MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(GroupInitialization)
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(OriginInitialization)
 
 class StringGenerator final {
@@ -49,18 +55,38 @@ class StringGenerator final {
   static nsLiteralCString GetString(Initialization aInitialization);
 
   // TODO: Use constexpr here once bug 1594094 is addressed.
+  static nsLiteralCString GetString(GroupInitialization aGroupInitialization);
+
+  // TODO: Use constexpr here once bug 1594094 is addressed.
   static nsLiteralCString GetString(OriginInitialization aOriginInitialization);
 };
 
 using OriginInitializationInfo =
     FirstInitializationAttempts<OriginInitialization, StringGenerator>;
 
+using GroupInitializationInfo =
+    FirstInitializationAttempts<GroupInitialization, StringGenerator>;
+
 class InitializationInfo
     : public FirstInitializationAttempts<Initialization, StringGenerator> {
+  nsTHashMap<nsCStringHashKey, GroupInitializationInfo>
+      mGroupInitializationInfos;
   nsTHashMap<nsCStringHashKey, OriginInitializationInfo>
       mOriginInitializationInfos;
 
  public:
+  GroupInitializationInfo& MutableGroupInitializationInfoRef(
+      const nsACString& aGroup) {
+    return *mGroupInitializationInfos.Lookup(aGroup);
+  }
+
+  GroupInitializationInfo& MutableGroupInitializationInfoRef(
+      const nsACString& aGroup, const CreateIfNonExistent&) {
+    return mGroupInitializationInfos.LookupOrInsert(aGroup);
+  }
+
+  void ResetGroupInitializationInfos() { mGroupInitializationInfos.Clear(); }
+
   OriginInitializationInfo& MutableOriginInitializationInfoRef(
       const nsACString& aOrigin) {
     return *mOriginInitializationInfos.Lookup(aOrigin);

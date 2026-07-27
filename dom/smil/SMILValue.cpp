@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #include "SMILValue.h"
 
 #include "nsDebug.h"
-#include <string.h>
 
 namespace mozilla {
 
@@ -120,15 +117,16 @@ nsresult SMILValue::Interpolate(const SMILValue& aEndVal, double aUnitDistance,
 //----------------------------------------------------------------------
 // Helper methods
 
-// Wrappers for SMILType::Init & ::Destroy that verify their postconditions
+// Wrappers for SMILType::InitValue & ::DestroyValue that verify their
+// postconditions.
 void SMILValue::InitAndCheckPostcondition(const SMILType* aNewType) {
-  aNewType->Init(*this);
+  aNewType->InitValue(*this);
   MOZ_ASSERT(mType == aNewType,
              "Post-condition of Init failed. SMILValue is invalid");
 }
 
 void SMILValue::DestroyAndCheckPostcondition() {
-  mType->Destroy(*this);
+  mType->DestroyValue(*this);
   MOZ_ASSERT(IsNull(),
              "Post-condition of Destroy failed. "
              "SMILValue not null after destroying");

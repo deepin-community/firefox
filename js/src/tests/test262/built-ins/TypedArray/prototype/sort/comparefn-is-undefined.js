@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -14,8 +13,8 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  let sample = new TA([42, 44, 46, 43, 45]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  let sample = new TA(makeCtorArg([42, 44, 46, 43, 45]));
   let explicit = sample.sort(undefined);
   let implicit = sample.sort();
 

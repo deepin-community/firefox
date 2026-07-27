@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -72,7 +71,7 @@ interface TestFunctions {
   DOMString getShortLiteralString();
 
   // Get a medium (long enough to not be a JS inline, but short enough
-  // to fit in a FakeString inline buffer) literal string.
+  // to fit in an nsAutoString inline buffer) literal string.
   DOMString getMediumLiteralString();
 
   // Get a long (long enough to not fit in any inline buffers) literal string.
@@ -139,11 +138,21 @@ interface TestFunctions {
   undefined testAllowShared([AllowShared] ArrayBufferView buffer);
   undefined testAllowShared([AllowShared] ArrayBuffer buffer);
   undefined testDictWithAllowShared(optional DictWithAllowSharedBufferSource buffer = {});
-  undefined testUnionOfBuffferSource((ArrayBuffer or ArrayBufferView or DOMString) foo);
-  undefined testUnionOfAllowSharedBuffferSource(([AllowShared] ArrayBuffer or [AllowShared] ArrayBufferView) foo);
+  undefined testUnionOfBufferSource((ArrayBuffer or ArrayBufferView or DOMString) foo);
+  undefined testUnionOfAllowSharedBufferSource(AllowSharedBufferSource foo);
+  undefined testUnionWithAllowShared([AllowShared] (Int8Array or Int16Array) foo);
 
   boolean staticAndNonStaticOverload();
   static boolean staticAndNonStaticOverload(optional unsigned long foo);
+
+  [ChromeOnly, NewObject]
+  static TestChromeOnlyInterface createTestChromeOnlyInterface();
+};
+
+[Pref="dom.expose_test_interfaces",
+ ChromeOnly,
+ Exposed=Window]
+interface TestChromeOnlyInterface {
 };
 
 [Pref="dom.expose_test_interfaces",

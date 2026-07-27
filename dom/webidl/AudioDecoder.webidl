@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,7 +6,7 @@
  * https://w3c.github.io/webcodecs/#audiodecoder
  */
 
-[Exposed=(Window,DedicatedWorker), SecureContext, Pref="dom.media.webcodecs.enabled"]
+[Exposed=(Window,DedicatedWorker), SecureContext, Func="nsRFPService::ExposeWebCodecsAPI"]
 interface AudioDecoder : EventTarget {
   [Throws]
   constructor(AudioDecoderInit init);
@@ -48,6 +47,6 @@ dictionary AudioDecoderConfig {
   required [EnforceRange] unsigned long sampleRate;
   required [EnforceRange] unsigned long numberOfChannels;
 
-  // Bug 1696216: Should be AllowSharedBufferSource
-  ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) description;
+  // Bug 1958020: This should be BufferSource
+  AllowSharedBufferSource description;
 };

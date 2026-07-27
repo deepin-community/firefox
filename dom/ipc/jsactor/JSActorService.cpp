@@ -1,18 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/JSActorService.h"
-#include "mozilla/dom/ChromeUtilsBinding.h"
+
+#include "mozilla/ArrayAlgorithm.h"
+#include "mozilla/Logging.h"
+#include "mozilla/Services.h"
+#include "mozilla/StaticPtr.h"
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/BrowserParent.h"
-#include "mozilla/dom/EventListenerBinding.h"
+#include "mozilla/dom/ChromeUtilsBinding.h"
+#include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/Event.h"
-#include "mozilla/dom/EventTargetBinding.h"
+#include "mozilla/dom/EventListenerBinding.h"
 #include "mozilla/dom/EventTarget.h"
+#include "mozilla/dom/EventTargetBinding.h"
 #include "mozilla/dom/InProcessChild.h"
 #include "mozilla/dom/InProcessParent.h"
 #include "mozilla/dom/JSActorManager.h"
@@ -24,14 +28,8 @@
 #include "mozilla/dom/JSWindowActorProtocol.h"
 #include "mozilla/dom/MessageManagerBinding.h"
 #include "mozilla/dom/PContent.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/WindowGlobalChild.h"
 #include "mozilla/dom/WindowGlobalParent.h"
-#include "mozilla/ArrayAlgorithm.h"
-#include "mozilla/Services.h"
-#include "mozilla/StaticPtr.h"
-#include "mozilla/Logging.h"
 #include "nsIObserverService.h"
 
 namespace mozilla::dom {
@@ -60,6 +58,13 @@ void JSActorService::RegisterWindowActor(const nsACString& aName,
                                          ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(XRE_IsParentProcess());
+
+  if (mProcessActorDescriptors.Contains(aName)) {
+    aRv.ThrowNotSupportedError(
+        nsPrintfCString("'%s' actor is already registered as a process actor.",
+                        PromiseFlatCString(aName).get()));
+    return;
+  }
 
   const auto proto = mWindowActorDescriptors.WithEntryHandle(
       aName, [&](auto&& entry) -> RefPtr<JSWindowActorProtocol> {
@@ -92,7 +97,7 @@ void JSActorService::RegisterWindowActor(const nsACString& aName,
   AutoTArray<JSWindowActorInfo, 1> windowInfos{proto->ToIPC()};
   nsTArray<JSProcessActorInfo> contentInfos{};
   for (auto* cp : ContentParent::AllProcesses(ContentParent::eLive)) {
-    Unused << cp->SendInitJSActorInfos(contentInfos, windowInfos);
+    (void)cp->SendInitJSActorInfos(contentInfos, windowInfos);
   }
 
   // Register event listeners for any existing chrome targets.
@@ -126,8 +131,10 @@ void JSActorService::UnregisterWindowActor(const nsACString& aName) {
     // potential managers, to have the actor disabled.
     nsTArray<RefPtr<JSActorManager>> managers;
     if (XRE_IsParentProcess()) {
-      for (auto* cp : ContentParent::AllProcesses(ContentParent::eLive)) {
-        Unused << cp->SendUnregisterJSWindowActor(name);
+      for (auto* cp : ContentParent::AllProcesses(ContentParent::eAll)) {
+        if (cp->CanSend()) {
+          (void)cp->SendUnregisterJSWindowActor(name);
+        }
         for (const auto& bp : cp->ManagedPBrowserParent()) {
           for (const auto& wgp : bp->ManagedPWindowGlobalParent()) {
             managers.AppendElement(static_cast<WindowGlobalParent*>(wgp));
@@ -228,6 +235,13 @@ void JSActorService::RegisterProcessActor(const nsACString& aName,
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(XRE_IsParentProcess());
 
+  if (mWindowActorDescriptors.Contains(aName)) {
+    aRv.ThrowNotSupportedError(
+        nsPrintfCString("'%s' actor is already registered as a window actor.",
+                        PromiseFlatCString(aName).get()));
+    return;
+  }
+
   const auto proto = mProcessActorDescriptors.WithEntryHandle(
       aName, [&](auto&& entry) -> RefPtr<JSProcessActorProtocol> {
         if (entry) {
@@ -259,7 +273,7 @@ void JSActorService::RegisterProcessActor(const nsACString& aName,
   AutoTArray<JSProcessActorInfo, 1> contentInfos{proto->ToIPC()};
   nsTArray<JSWindowActorInfo> windowInfos{};
   for (auto* cp : ContentParent::AllProcesses(ContentParent::eLive)) {
-    Unused << cp->SendInitJSActorInfos(contentInfos, windowInfos);
+    (void)cp->SendInitJSActorInfos(contentInfos, windowInfos);
   }
 
   // Add observers to the protocol.
@@ -283,8 +297,10 @@ void JSActorService::UnregisterProcessActor(const nsACString& aName) {
     // potential managers, to have the actor disabled.
     nsTArray<RefPtr<JSActorManager>> managers;
     if (XRE_IsParentProcess()) {
-      for (auto* cp : ContentParent::AllProcesses(ContentParent::eLive)) {
-        Unused << cp->SendUnregisterJSProcessActor(name);
+      for (auto* cp : ContentParent::AllProcesses(ContentParent::eAll)) {
+        if (cp->CanSend()) {
+          (void)cp->SendUnregisterJSProcessActor(name);
+        }
         managers.AppendElement(cp);
       }
       managers.AppendElement(InProcessChild::Singleton());
@@ -317,6 +333,29 @@ JSActorService::GetJSProcessActorProtocol(const nsACString& aName) {
 already_AddRefed<JSWindowActorProtocol>
 JSActorService::GetJSWindowActorProtocol(const nsACString& aName) {
   return mWindowActorDescriptors.Get(aName);
+}
+
+bool JSActorProtocol::RemoteTypePrefixMatches(const nsACString& aRemoteType) {
+  if (mRemoteTypes.IsEmpty()) {
+    return true;
+  }
+
+  nsDependentCSubstring remoteTypePrefix(RemoteTypePrefix(aRemoteType));
+
+  // The actual remote type for the parent process is the empty string, so
+  // change it to something we can actually match.
+  MOZ_ASSERT(!StringBeginsWith(remoteTypePrefix, "parent"_ns));
+  if (aRemoteType == NOT_REMOTE_TYPE) {
+    remoteTypePrefix.AssignLiteral("parent");
+  }
+
+  for (auto& remoteType : mRemoteTypes) {
+    // TODO: Maybe this should use glob-style matching instead. See bug 2006165.
+    if (StringBeginsWith(remoteTypePrefix, remoteType)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace mozilla::dom

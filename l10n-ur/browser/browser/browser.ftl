@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -114,8 +111,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = یہ صفحہ نشان زد کریں ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = تلاش سابقات خالی کریں
+    .accesskey = H
 
 ## Auto-hide Context Menu
 
@@ -166,11 +166,6 @@ search-one-offs-tabs =
     .tooltiptext = تبز  ({ $restrict })
 search-one-offs-history =
     .tooltiptext = سابقات ({ $restrict })
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -268,14 +263,6 @@ browser-tab-audio-playing2 = ‏‏چلا رہا ہے
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-muted2 = خاموش
 
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-select-camera-device =
@@ -296,9 +283,6 @@ popup-all-windows-shared = آپ کی سکرین پر نظر آنے والے تم
 
 sharing-warning-proceed-to-tab =
     .label = ٹیب پر آگے بڑھیں
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -332,13 +316,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = ایکسٹینشن:
+urlbar-go-button2 =
+    .title = محل وقوع بار میں دیے گئے پتے پر جائیں
 urlbar-go-button =
     .tooltiptext = محل وقوع بار میں دیے گئے پتے پر جائیں
 urlbar-page-action-button =
     .tooltiptext = صفحہ اعمال
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -364,6 +351,18 @@ urlbar-result-action-copy-to-clipboard = نقل کریں
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = بک مارک
+urlbar-searchmode-tabs =
+    .label = ٹیبز
+urlbar-searchmode-history =
+    .label = سابقات
+urlbar-searchmode-bookmarks2 = بک مارک
+urlbar-searchmode-tabs2 = ٹیبز
+urlbar-searchmode-history2 = سابقات
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -379,7 +378,7 @@ urlbar-result-action-search-tabs = تلاش ٹیبس
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
@@ -393,11 +392,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = ناظر نظارہ بند کریں
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -487,10 +481,7 @@ save-to-pocket-button =
     .label = { -pocket-brand-name } میں محفوظ کریں
     .tooltiptext = { -pocket-brand-name } میں محفوظ کریں
 
-## Repair text encoding toolbar button
-
-
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -538,6 +529,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 panel-save-update-username = صارف کا نام
 panel-save-update-password = پاس ورڈ
+panel-save-update-username-2 =
+    .label = صارف کا نام
+panel-save-update-password-2 =
+    .label = پاس ورڈ
 
 ##
 
@@ -565,10 +560,6 @@ popups-infobar-dont-show-message =
 picture-in-picture-hide-toggle =
     .label = تصویر میں تصویر ٹوگل چھپائیں
     .accesskey = H
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -619,20 +610,6 @@ data-reporting-notification-button =
     .label = میرے شیَر کرنے کی اشیاہ چنیں
     .accesskey = چ
 
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
-
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } نے اس صفحہ کو خودکار لوڈ ہونے سے روکا۔
@@ -640,9 +617,6 @@ refresh-blocked-redirect-label = { -brand-short-name } نے اس پیج کو خ�
 refresh-blocked-allow =
     .label = اجازت دیں
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

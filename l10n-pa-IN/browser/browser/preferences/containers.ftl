@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = { $name } ਕਨਟੇਨਰ ਸੈਟਿੰਗਾਂ
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = ਨਵਾਂ
+    .placeholder = ਇੱਕ ਨਾਂ ਜੋੜੋ
+containers-icon-label2 =
+    .label = ਆਈਕਾਨ
+containers-color-label2 =
+    .label = ਰੰਗ
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = ਨਾਂ
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = ਕਨਟੇਨਰ ਨਾਂ ਭਰੋ
-
 containers-icon-label = ਆਈਕਾਨ
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = ਰੰਗ
     .accesskey = o
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = ਹੋ ਗਿਆ
     .buttonaccesskeyaccept = D
-
 containers-color-blue =
     .label = ਨੀਲਾ
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = ਬੈਂਗਣੀ
 containers-color-toolbar =
     .label = ਟੂਲਬਾਰ ਨਾਲ ਮਿਲਾਓ
-
 containers-icon-fence =
     .label = ਵਾੜ
 containers-icon-fingerprint =
@@ -91,3 +89,11 @@ containers-icon-tree =
     .label = ਦਰੱਖਤ
 containers-icon-chill =
     .label = ਠੰਢ
+containers-window-new3 =
+    .title = ਨਵਾਂ ਕਨਟੇਨਰ ਜੋੜੋ
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = { $name } ਕਨਟੇਨਰ ਸੈਟਿੰਗਾਂ
+    .style = min-width: 32em

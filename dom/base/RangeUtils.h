@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,7 @@
 
 #include "mozilla/Maybe.h"
 #include "mozilla/RangeBoundary.h"
+#include "nsContentUtils.h"
 #include "nsIContent.h"
 #include "nsINode.h"
 
@@ -25,76 +24,44 @@ class AbstractRange;
 struct ShadowDOMSelectionHelpers {
   ShadowDOMSelectionHelpers() = delete;
 
-  static nsINode* GetStartContainer(const AbstractRange* aRange,
-                                    bool aAllowCrossShadowBoundary);
+  static RawRangeBoundary StartRef(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 
-  static uint32_t StartOffset(const AbstractRange* aRange,
-                              bool aAllowCrossShadowBoundary);
+  static nsINode* GetStartContainer(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 
-  static nsINode* GetEndContainer(const AbstractRange* aRange,
-                                  bool aAllowCrossShadowBoundary);
+  static uint32_t StartOffset(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 
-  static uint32_t EndOffset(const AbstractRange* aRange,
-                            bool aAllowCrossShadowBoundary);
+  static RawRangeBoundary EndRef(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 
-  static nsINode* GetParentNode(nsINode& aNode, bool aAllowCrossShadowBoundary);
+  static nsINode* GetEndContainer(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 
-  static ShadowRoot* GetShadowRoot(const nsINode* aNode,
-                                   bool aAllowCrossShadowBoundary);
+  static uint32_t EndOffset(
+      const AbstractRange* aRange,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
+
+  static nsINode* GetParentNodeInSameSelection(
+      const nsINode& aNode,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
+
+  static ShadowRoot* GetShadowRoot(
+      const nsINode* aNode,
+      AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 };
 }  // namespace dom
 
 class RangeUtils final {
-  typedef dom::AbstractRange AbstractRange;
+  using AbstractRange = dom::AbstractRange;
 
  public:
-  /**
-   * GetRawRangeBoundaryBefore() and GetRawRangeBoundaryAfter() retrieve
-   * RawRangeBoundary which points before or after aNode.
-   */
-  static const RawRangeBoundary GetRawRangeBoundaryAfter(nsINode* aNode) {
-    MOZ_ASSERT(aNode);
-
-    if (NS_WARN_IF(!aNode->IsContent())) {
-      return RawRangeBoundary();
-    }
-
-    nsINode* parentNode = aNode->GetParentNode();
-    if (!parentNode) {
-      return RawRangeBoundary();
-    }
-    RawRangeBoundary afterNode(parentNode, aNode->AsContent());
-    // If aNode isn't in the child nodes of its parent node, we hit this case.
-    // This may occur when we're called by a mutation observer while aNode is
-    // removed from the parent node.
-    if (NS_WARN_IF(
-            !afterNode.Offset(RawRangeBoundary::OffsetFilter::kValidOffsets))) {
-      return RawRangeBoundary();
-    }
-    return afterNode;
-  }
-
-  static const RawRangeBoundary GetRawRangeBoundaryBefore(nsINode* aNode) {
-    MOZ_ASSERT(aNode);
-
-    if (NS_WARN_IF(!aNode->IsContent())) {
-      return RawRangeBoundary();
-    }
-
-    nsINode* parentNode = aNode->GetParentNode();
-    if (!parentNode) {
-      return RawRangeBoundary();
-    }
-    // If aNode isn't in the child nodes of its parent node, we hit this case.
-    // This may occur when we're called by a mutation observer while aNode is
-    // removed from the parent node.
-    const Maybe<uint32_t> indexInParent = parentNode->ComputeIndexOf(aNode);
-    if (MOZ_UNLIKELY(NS_WARN_IF(indexInParent.isNothing()))) {
-      return RawRangeBoundary();
-    }
-    return RawRangeBoundary(parentNode, *indexInParent);
-  }
-
   /**
    * Compute the root node of aNode for initializing range classes.
    * When aNode is in an anonymous subtree, this returns the shadow root or
@@ -128,22 +95,31 @@ class RangeUtils final {
   /**
    * The caller needs to ensure aNode is in the same doc like aAbstractRange.
    */
-  static Maybe<bool> IsNodeContainedInRange(nsINode& aNode,
-                                            AbstractRange* aAbstractRange);
+  template <TreeKind aKind = TreeKind::ShadowIncludingDOM,
+            typename = std::enable_if_t<aKind == TreeKind::ShadowIncludingDOM ||
+                                        aKind == TreeKind::Flat>>
+  static Maybe<bool> IsNodeContainedInRange(
+      const nsINode& aNode, const AbstractRange* aAbstractRange);
 
   /**
    * Utility routine to detect if a content node starts before a range and/or
    * ends after a range.  If neither it is contained inside the range.
    * Note that callers responsibility to ensure node in same doc as range.
    */
-  static nsresult CompareNodeToRange(nsINode* aNode,
-                                     AbstractRange* aAbstractRange,
+  template <TreeKind aKind = TreeKind::ShadowIncludingDOM,
+            typename = std::enable_if_t<aKind == TreeKind::ShadowIncludingDOM ||
+                                        aKind == TreeKind::Flat>>
+  static nsresult CompareNodeToRange(const nsINode* aNode,
+                                     const AbstractRange* aAbstractRange,
                                      bool* aNodeIsBeforeRange,
                                      bool* aNodeIsAfterRange);
 
-  template <typename SPT, typename SRT, typename EPT, typename ERT>
+  template <TreeKind aKind, typename SPT, typename SRT, typename EPT,
+            typename ERT,
+            typename = std::enable_if_t<aKind == TreeKind::ShadowIncludingDOM ||
+                                        aKind == TreeKind::Flat>>
   static nsresult CompareNodeToRangeBoundaries(
-      nsINode* aNode, const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
+      const nsINode* aNode, const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
       const RangeBoundaryBase<EPT, ERT>& aEndBoundary, bool* aNodeIsBeforeRange,
       bool* aNodeIsAfterRange);
 };

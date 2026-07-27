@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FileBlobImpl.h"
+
 #include "BaseBlobImpl.h"
 #include "mozilla/SlicedInputStream.h"
 #include "mozilla/dom/WorkerPrivate.h"
@@ -160,11 +159,9 @@ uint64_t FileBlobImpl::GetSize(ErrorResult& aRv) {
 
 class FileBlobImpl::GetTypeRunnable final : public WorkerMainThreadRunnable {
  public:
-  GetTypeRunnable(WorkerPrivate* aWorkerPrivate, FileBlobImpl* aBlobImpl,
-                  const MutexAutoLock& aProofOfLock)
+  GetTypeRunnable(WorkerPrivate* aWorkerPrivate, FileBlobImpl* aBlobImpl)
       : WorkerMainThreadRunnable(aWorkerPrivate, "FileBlobImpl :: GetType"_ns),
-        mBlobImpl(aBlobImpl),
-        mProofOfLock(aProofOfLock) {
+        mBlobImpl(aBlobImpl) {
     MOZ_ASSERT(aBlobImpl);
     aWorkerPrivate->AssertIsOnWorkerThread();
   }
@@ -173,7 +170,7 @@ class FileBlobImpl::GetTypeRunnable final : public WorkerMainThreadRunnable {
     MOZ_ASSERT(NS_IsMainThread());
 
     nsAutoString type;
-    mBlobImpl->GetTypeInternal(type, mProofOfLock);
+    mBlobImpl->GetType(type);
     return true;
   }
 
@@ -181,16 +178,10 @@ class FileBlobImpl::GetTypeRunnable final : public WorkerMainThreadRunnable {
   ~GetTypeRunnable() override = default;
 
   RefPtr<FileBlobImpl> mBlobImpl;
-  const MutexAutoLock& mProofOfLock;
 };
 
 void FileBlobImpl::GetType(nsAString& aType) {
   MutexAutoLock lock(mMutex);
-  GetTypeInternal(aType, lock);
-}
-
-void FileBlobImpl::GetTypeInternal(nsAString& aType,
-                                   const MutexAutoLock& aProofOfLock) {
   aType.Truncate();
 
   if (mContentType.IsVoid()) {
@@ -205,8 +196,25 @@ void FileBlobImpl::GetTypeInternal(nsAString& aType,
         return;
       }
 
+      // NOTE: We need to unlock the mutex while we're dispatching to the main
+      // thread, as otherwise we could deadlock in a few ways:
+      //
+      // 1. We spin a nested event loop while `Dispatch` is being called to wait
+      //    for the runnable to complete. Some event dispatched to that nested
+      //    loop could theoretically access `FileBlobImpl` which would lead to a
+      //    deadlock on this thread.
+      // 2. The main thread could attempt to access a method on the
+      //    `FileBlobImpl` while the runnable is being dispatched to the main
+      //    thread, which will lead to the main thread being deadlocked (as the
+      //    background thread is still holding the mutex).
+      //
+      // Instead, we unlock here, and we'll re-acquire the mutex on the main
+      // thread to update `mContentType`, and acquire it again on this thread to
+      // return the relevant value.
+      MutexAutoUnlock unlock(mMutex);
+
       RefPtr<GetTypeRunnable> runnable =
-          new GetTypeRunnable(workerPrivate, this, aProofOfLock);
+          new GetTypeRunnable(workerPrivate, this);
 
       ErrorResult rv;
       runnable->Dispatch(workerPrivate, Canceling, rv);

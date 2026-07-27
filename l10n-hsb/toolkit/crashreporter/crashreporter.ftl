@@ -5,20 +5,21 @@
 crashreporter-branded-title = { -brand-short-name } - rozprawjak spadow
 crashreporter-apology = Je nam žel
 crashreporter-crashed-and-restore = { -brand-short-name } měješe problem a spadny. Pospytujemy waše rajtarki a wokno wobnowić, hdyž znowa startuje.
-crashreporter-plea = Zo byšće nam pomhał problem diagnosticěrować a porjedźić, móžeće nam rozprawu wo spadźe pósłać.
+crashreporter-plea = Zo byšće nam pomhał problem diagnosticěrować a rozrisać, móžeće nam rozprawu wo spadźe pósłać.
 crashreporter-information = Tute nałoženje je po spadźe běžało, zo by { -vendor-short-name } problem zdźěliło.  Njeměło direktnje běžeć.
 crashreporter-error = { -brand-short-name } měješe problem a je spadnyło. Bohužel rozprawjak spadow njemóžeše rozprawu wo tutym spadźe pósłać.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Podrobnosće: { $details }
+crashreporter-error-details-header = Podrobnosće:
 crashreporter-no-run-message = Tute nałoženje je po spadźe běžało, zo by zhotowjerjej nałoženja problem zdźěliło.  Njeměło direktnje běžeć.
 crashreporter-button-details = Podrobnosće…
 crashreporter-loading-details = Začituje so…
 crashreporter-view-report-title = Wobsah rozprawy
 crashreporter-comment-prompt = Komentar přidać (komentary su zjawnje widźomne)
 crashreporter-report-info = Tuta rozprawa wobsahuje tež techniske informacije wo stawje nałoženja, hdyž je so spadnyło.
-crashreporter-send-report = Informujće { -vendor-short-name } wo tutym spadźe, zo by móhł jón wotstronił.
-crashreporter-include-url = Adresu strony zasadźić, na kotrejž sym był.
+crashreporter-checkbox-test-hardware = Za problemami hardwary a konfiguracije na mojim graće pytać.
+crashreporter-checkbox-send-report = Informujće { -vendor-short-name } wo tutym spadźe, zo by móhł jón wotstronił.
+crashreporter-checkbox-include-url = Adresu strony zasadźić, na kotrejž sym był.
 crashreporter-submit-status = Waša rozprawa wo spadźe so pósćele, prjedy hač skónčiće abo znowa startujeće.
+crashreporter-submit-waiting-hardware-tests = Pyta so za problemami hardwary a konfiguracije…
 crashreporter-submit-in-progress = Waša rozprawa so sćele…
 crashreporter-submit-success = Rozprawa je so wuspěšnje wotpósłała!
 crashreporter-submit-failure = Při slanju wašeje rozprawy je problem wustupił.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Móžeće sej podrobnosće wo tutym spadźe na { $
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Minidump-analyzer njeda so wuwjesć
 # $path (String) - the file path
 crashreporter-error-opening-file = Dataja ({ $path }) njeda so wočinić
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Falowacy startowy zapis
 # $to (String) - the destination path
 crashreporter-error-moving-path = Přesunjenje wot { $from } do { $to } njeje so poradźiło
 crashreporter-error-version-eol = Kónc žiwjenja wersije: Rozprawy spadow so hižo njeakceptuja.
+crashreporter-error-failed-to-generate-minidump = Nałoženju njeje so poradźiło, informacije wo spadźe generěrować.

@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsUpdateSyncManager_h__
-#define nsUpdateSyncManager_h__
+#ifndef nsUpdateSyncManager_h_
+#define nsUpdateSyncManager_h_
 
 #include "mozilla/AlreadyAddRefed.h"
 #include "nsIObserver.h"
@@ -26,6 +24,11 @@ class nsUpdateSyncManager final : public nsIUpdateSyncManager,
  public:
   explicit nsUpdateSyncManager(nsIFile* anAppFile = nullptr);
 
+  nsUpdateSyncManager(nsUpdateSyncManager&) = delete;
+  nsUpdateSyncManager(nsUpdateSyncManager&&) = delete;
+  nsUpdateSyncManager& operator=(nsUpdateSyncManager&) = delete;
+  nsUpdateSyncManager& operator=(nsUpdateSyncManager&&) = delete;
+
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIUPDATESYNCMANAGER
   NS_DECL_NSIOBSERVER
@@ -35,15 +38,10 @@ class nsUpdateSyncManager final : public nsIUpdateSyncManager,
  private:
   ~nsUpdateSyncManager();
 
-  nsUpdateSyncManager(nsUpdateSyncManager&) = delete;
-  nsUpdateSyncManager(nsUpdateSyncManager&&) = delete;
-  nsUpdateSyncManager& operator=(nsUpdateSyncManager&) = delete;
-  nsUpdateSyncManager& operator=(nsUpdateSyncManager&&) = delete;
-
   nsresult OpenLock(nsIFile* anAppFile = nullptr);
   void ReleaseLock();
 
   mozilla::MultiInstLockHandle mLock = MULTI_INSTANCE_LOCK_HANDLE_ERROR;
 };
 
-#endif  // nsUpdateSyncManager_h__
+#endif  // nsUpdateSyncManager_h_

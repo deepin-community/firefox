@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -41,18 +40,24 @@ export class UserCharacteristicsWindowInfoChild extends JSWindowActorChild {
       return;
     }
 
-    const result = {
-      outerHeight: this.contentWindow.outerHeight,
-      innerHeight: this.contentWindow.innerHeight,
-      outerWidth: this.contentWindow.outerWidth,
-      innerWidth: this.contentWindow.innerWidth,
-      availHeight: this.contentWindow.screen.availHeight,
-      availWidth: this.contentWindow.screen.availWidth,
-    };
+    const result = new Map([
+      ["screenWidth", this.contentWindow.screen.width],
+      ["screenHeight", this.contentWindow.screen.height],
+      ["outerHeight", this.contentWindow.outerHeight],
+      ["innerHeight", this.contentWindow.innerHeight],
+      ["outerWidth", this.contentWindow.outerWidth],
+      ["innerWidth", this.contentWindow.innerWidth],
+      ["availHeight", this.contentWindow.screen.availHeight],
+      ["availWidth", this.contentWindow.screen.availWidth],
+      ["pixelRatio", this.contentWindow.devicePixelRatio.toString()],
+    ]);
 
-    if (Object.values(result).some(v => v <= 0)) {
+    if (result.values().some(v => v <= 0)) {
       return;
     }
+
+    result.set("availTop", this.contentWindow.screen.availTop);
+    result.set("availLeft", this.contentWindow.screen.availLeft);
 
     this.sendMessage("ScreenInfo:Populated", result);
     this.propertyCollected("ScreenInfo");
@@ -98,21 +103,28 @@ export class UserCharacteristicsWindowInfoChild extends JSWindowActorChild {
     };
 
     promise.then(e => {
-      this.sendMessage("PointerInfo:Populated", {
-        pointerPressure: e.pointer.pressure,
-        pointerTangentinalPressure: e.pointer.tangentialPressure,
-        pointerTiltx: e.pointer.tiltX,
-        pointerTilty: e.pointer.tiltY,
-        pointerTwist: e.pointer.twist,
-        pointerWidth: e.pointer.width,
-        pointerHeight: e.pointer.height,
-        touchRotationAngle: e.touch?.rotationAngle || 0,
-      });
+      const map = new Map([
+        ["pointerPressure", e.pointer.pressure],
+        ["pointerTangentinalPressure", e.pointer.tangentialPressure],
+        ["pointerTiltx", e.pointer.tiltX],
+        ["pointerTilty", e.pointer.tiltY],
+        ["pointerTwist", e.pointer.twist],
+        ["pointerWidth", e.pointer.width],
+        ["pointerHeight", e.pointer.height],
+        ["touchRotationAngle", e.touch?.rotationAngle || 0],
+      ]);
+      this.sendMessage("PointerInfo:Populated", map);
       this.propertyCollected("PointerInfo");
     });
 
     this.handlers.touchstart = touchStartHandler;
     this.handlers.pointerdown = pointerDownHandler;
+
+    if (Cu.isInAutomation) {
+      // Just simulate the events if we are in automation
+      const pointerEvent = new PointerEvent("pointerdown");
+      this.contentWindow.windowRoot.dispatchEvent(pointerEvent);
+    }
   }
 
   sendMessage(name, obj, transferables) {
@@ -133,7 +145,7 @@ export class UserCharacteristicsWindowInfoChild extends JSWindowActorChild {
   didDestroy() {
     this.destroyed = true;
     for (const [type, handler] of Object.entries(this.handlers)) {
-      this.contentWindow.windowRoot.removeEventListener(type, handler);
+      this.contentWindow?.windowRoot?.removeEventListener(type, handler);
     }
   }
 

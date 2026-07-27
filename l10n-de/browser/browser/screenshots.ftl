@@ -26,7 +26,7 @@ screenshots-retry-button-title =
 screenshots-meta-key =
     { PLATFORM() ->
         [macos] ⌘
-       *[other] Ctrl
+       *[other] Strg
     }
 screenshots-notification-link-copied-title = Link kopiert
 screenshots-notification-link-copied-details = Der Link zu Ihrem Bildschirmfoto wurde in die Zwischenablage kopiert. Drücken Sie { screenshots-meta-key }-V zum Einfügen.
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = Kopieren
 screenshots-component-download-button-2 = Herunterladen
     .title = Herunterladen ({ $shortcut })
     .aria-label = Herunterladen
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Bildschirmfoto
+    .tooltiptext = Ein Bildschirmfoto aufnehmen ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

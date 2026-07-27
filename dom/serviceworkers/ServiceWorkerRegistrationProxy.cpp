@@ -1,21 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorkerRegistrationProxy.h"
 
-#include "mozilla/SchedulerGroup.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/ipc/BackgroundParent.h"
 #include "ServiceWorkerManager.h"
 #include "ServiceWorkerRegistrationParent.h"
 #include "ServiceWorkerUnregisterCallback.h"
+#include "mozilla/SchedulerGroup.h"
+#include "mozilla/ScopeExit.h"
+#include "mozilla/dom/notification/NotificationUtils.h"
+#include "mozilla/ipc/BackgroundParent.h"
+#include "nsINotificationStorage.h"
 
 namespace mozilla::dom {
 
 using mozilla::ipc::AssertIsOnBackgroundThread;
+using namespace mozilla::dom::notification;
 
 class ServiceWorkerRegistrationProxy::DelayedUpdate final
     : public nsITimerCallback,
@@ -63,7 +64,7 @@ void ServiceWorkerRegistrationProxy::UpdateStateOnBGThread(
   if (!mActor) {
     return;
   }
-  Unused << mActor->SendUpdateState(aDescriptor.ToIPC());
+  (void)mActor->SendUpdateState(aDescriptor.ToIPC());
 }
 
 void ServiceWorkerRegistrationProxy::FireUpdateFoundOnBGThread() {
@@ -71,7 +72,7 @@ void ServiceWorkerRegistrationProxy::FireUpdateFoundOnBGThread() {
   if (!mActor) {
     return;
   }
-  Unused << mActor->SendFireUpdateFound();
+  (void)mActor->SendFireUpdateFound();
 }
 
 void ServiceWorkerRegistrationProxy::InitOnMainThread() {
@@ -114,6 +115,11 @@ void ServiceWorkerRegistrationProxy::MaybeShutdownOnMainThread() {
 
 void ServiceWorkerRegistrationProxy::StopListeningOnMainThread() {
   AssertIsOnMainThread();
+
+  if (mDelayedUpdate) {
+    mDelayedUpdate->Reject();
+    mDelayedUpdate = nullptr;
+  }
 
   if (!mReg) {
     return;
@@ -167,8 +173,11 @@ bool ServiceWorkerRegistrationProxy::MatchesDescriptor(
 }
 
 ServiceWorkerRegistrationProxy::ServiceWorkerRegistrationProxy(
-    const ServiceWorkerRegistrationDescriptor& aDescriptor)
-    : mEventTarget(GetCurrentSerialEventTarget()), mDescriptor(aDescriptor) {}
+    const ServiceWorkerRegistrationDescriptor& aDescriptor,
+    const ClientInfo& aForClient)
+    : mEventTarget(GetCurrentSerialEventTarget()),
+      mDescriptor(aDescriptor),
+      mListeningClientInfo(aForClient) {}
 
 void ServiceWorkerRegistrationProxy::Init(
     ServiceWorkerRegistrationParent* aActor) {
@@ -318,8 +327,8 @@ ServiceWorkerRegistrationProxy::DelayedUpdate::Notify(nsITimer* aTimer) {
   NS_ENSURE_TRUE(swm, NS_ERROR_FAILURE);
 
   RefPtr<UpdateCallback> cb = new UpdateCallback(std::move(mPromise));
-  swm->Update(mProxy->mReg->Principal(), mProxy->mReg->Scope(),
-              std::move(mNewestWorkerScriptUrl), cb);
+  swm->Update(mProxy->mListeningClientInfo, mProxy->mReg->Principal(),
+              mProxy->mReg->Scope(), std::move(mNewestWorkerScriptUrl), cb);
 
   mTimer = nullptr;
   mProxy->mDelayedUpdate = nullptr;
@@ -377,8 +386,9 @@ RefPtr<ServiceWorkerRegistrationPromise> ServiceWorkerRegistrationProxy::Update(
           NS_ENSURE_TRUE_VOID(swm);
 
           RefPtr<UpdateCallback> cb = new UpdateCallback(std::move(promise));
-          swm->Update(self->mReg->Principal(), self->mReg->Scope(),
-                      std::move(newestWorkerScriptUrl), cb);
+          swm->Update(self->mListeningClientInfo, self->mReg->Principal(),
+                      self->mReg->Scope(), std::move(newestWorkerScriptUrl),
+                      cb);
         }
         scopeExit.release();
       });
@@ -478,6 +488,31 @@ ServiceWorkerRegistrationProxy::GetNavigationPreloadState() {
   MOZ_ALWAYS_SUCCEEDS(SchedulerGroup::Dispatch(r.forget()));
 
   return promise;
+}
+
+RefPtr<NotificationsPromise> ServiceWorkerRegistrationProxy::GetNotifications(
+    const nsAString& aTag) {
+  AssertIsOnBackgroundThread();
+
+  RefPtr<ServiceWorkerRegistrationProxy> self = this;
+  return InvokeAsync(
+      GetMainThreadSerialEventTarget(), __func__,
+      [self, tag = nsString(aTag)]() {
+        Result<nsCOMPtr<nsIPrincipal>, nsresult> principalResult =
+            self->mListeningClientInfo.GetPrincipal();
+        if (principalResult.isErr()) {
+          return NotificationsPromise::CreateAndReject(
+              NS_ERROR_DOM_INVALID_STATE_ERR, __func__);
+        }
+
+        nsCOMPtr<nsIPrincipal> principal = principalResult.unwrap();
+        nsString origin;
+        GetOrigin(principal, origin);
+
+        RefPtr<NotificationsPromise> promise = GetStoredNotificationsForScope(
+            principal, self->mDescriptor.Scope(), tag);
+        return promise;
+      });
 }
 
 }  // namespace mozilla::dom

@@ -1,29 +1,26 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _SDPATTRIBUTE_H_
-#define _SDPATTRIBUTE_H_
+#ifndef DOM_MEDIA_WEBRTC_SDP_SDPATTRIBUTE_H_
+#define DOM_MEDIA_WEBRTC_SDP_SDPATTRIBUTE_H_
 
 #include <algorithm>
 #include <cctype>
-#include <vector>
-#include <ostream>
-#include <sstream>
 #include <cstring>
 #include <iomanip>
-#include <string>
+#include <ostream>
+#include <span>
+#include <sstream>
+#include <string_view>
+#include <vector>
 
-#include "mozilla/UniquePtr.h"
-#include "mozilla/Attributes.h"
+#include "common/EncodingConstraints.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Maybe.h"
+#include "mozilla/UniquePtr.h"
 #include "nsString.h"
-
 #include "sdp/SdpEnum.h"
-#include "common/EncodingConstraints.h"
 
 namespace mozilla {
 
@@ -41,6 +38,7 @@ class SdpAttribute {
     kDtlsMessageAttribute,
     kEndOfCandidatesAttribute,
     kExtmapAttribute,
+    kExtmapAllowMixedAttribute,
     kFingerprintAttribute,
     kFmtpAttribute,
     kGroupAttribute,
@@ -74,7 +72,7 @@ class SdpAttribute {
     kLastAttribute = kMaxMessageSizeAttribute
   };
 
-  explicit SdpAttribute(AttributeType type) : mType(type) {}
+  explicit SdpAttribute(const AttributeType type) : mType(type) {}
   virtual ~SdpAttribute() = default;
 
   virtual SdpAttribute* Clone() const = 0;
@@ -83,9 +81,9 @@ class SdpAttribute {
 
   virtual void Serialize(std::ostream&) const = 0;
 
-  static bool IsAllowedAtSessionLevel(AttributeType type);
-  static bool IsAllowedAtMediaLevel(AttributeType type);
-  static const std::string GetAttributeTypeString(AttributeType type);
+  static bool IsAllowedAtSessionLevel(const AttributeType type);
+  static bool IsAllowedAtMediaLevel(const AttributeType type);
+  static const std::string GetAttributeTypeString(const AttributeType type);
 
  protected:
   AttributeType mType;
@@ -140,7 +138,7 @@ class SdpConnectionAttribute : public SdpAttribute {
  public:
   enum ConnValue { kNew, kExisting };
 
-  explicit SdpConnectionAttribute(SdpConnectionAttribute::ConnValue value)
+  explicit SdpConnectionAttribute(const SdpConnectionAttribute::ConnValue value)
       : SdpAttribute(kConnectionAttribute), mValue(value) {}
 
   SdpAttribute* Clone() const override {
@@ -153,7 +151,7 @@ class SdpConnectionAttribute : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpConnectionAttribute::ConnValue c) {
+                                const SdpConnectionAttribute::ConnValue c) {
   switch (c) {
     case SdpConnectionAttribute::kNew:
       os << "new";
@@ -180,7 +178,7 @@ class SdpDirectionAttribute : public SdpAttribute {
     kSendrecv = sdp::kSend | sdp::kRecv
   };
 
-  explicit SdpDirectionAttribute(Direction value)
+  explicit SdpDirectionAttribute(const Direction value)
       : SdpAttribute(kDirectionAttribute), mValue(value) {}
 
   SdpAttribute* Clone() const override {
@@ -193,7 +191,7 @@ class SdpDirectionAttribute : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpDirectionAttribute::Direction d) {
+                                const SdpDirectionAttribute::Direction d) {
   switch (d) {
     case SdpDirectionAttribute::kSendonly:
       os << "sendonly";
@@ -215,7 +213,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 inline SdpDirectionAttribute::Direction reverse(
-    SdpDirectionAttribute::Direction d) {
+    const SdpDirectionAttribute::Direction d) {
   switch (d) {
     case SdpDirectionAttribute::Direction::kInactive:
       return SdpDirectionAttribute::Direction::kInactive;
@@ -231,23 +229,27 @@ inline SdpDirectionAttribute::Direction reverse(
 }
 
 inline SdpDirectionAttribute::Direction operator|(
-    SdpDirectionAttribute::Direction d1, SdpDirectionAttribute::Direction d2) {
+    const SdpDirectionAttribute::Direction d1,
+    const SdpDirectionAttribute::Direction d2) {
   return (SdpDirectionAttribute::Direction)((unsigned)d1 | (unsigned)d2);
 }
 
 inline SdpDirectionAttribute::Direction operator&(
-    SdpDirectionAttribute::Direction d1, SdpDirectionAttribute::Direction d2) {
+    const SdpDirectionAttribute::Direction d1,
+    const SdpDirectionAttribute::Direction d2) {
   return (SdpDirectionAttribute::Direction)((unsigned)d1 & (unsigned)d2);
 }
 
 inline SdpDirectionAttribute::Direction operator|=(
-    SdpDirectionAttribute::Direction& d1, SdpDirectionAttribute::Direction d2) {
+    SdpDirectionAttribute::Direction& d1,
+    const SdpDirectionAttribute::Direction d2) {
   d1 = d1 | d2;
   return d1;
 }
 
 inline SdpDirectionAttribute::Direction operator&=(
-    SdpDirectionAttribute::Direction& d1, SdpDirectionAttribute::Direction d2) {
+    SdpDirectionAttribute::Direction& d1,
+    const SdpDirectionAttribute::Direction d2) {
   d1 = d1 & d2;
   return d1;
 }
@@ -267,7 +269,7 @@ class SdpDtlsMessageAttribute : public SdpAttribute {
  public:
   enum Role { kClient, kServer };
 
-  explicit SdpDtlsMessageAttribute(Role role, const std::string& value)
+  explicit SdpDtlsMessageAttribute(const Role role, const std::string& value)
       : SdpAttribute(kDtlsMessageAttribute), mRole(role), mValue(value) {}
 
   // TODO: remove this, Bug 1469702
@@ -294,7 +296,7 @@ class SdpDtlsMessageAttribute : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpDtlsMessageAttribute::Role r) {
+                                const SdpDtlsMessageAttribute::Role r) {
   switch (r) {
     case SdpDtlsMessageAttribute::kClient:
       os << "client";
@@ -342,12 +344,14 @@ class SdpExtmapAttributeList : public SdpAttribute {
     std::string extensionattributes;
   };
 
-  void PushEntry(uint16_t entry, SdpDirectionAttribute::Direction direction,
-                 bool direction_specified, const std::string& extensionname,
+  void PushEntry(const uint16_t entry,
+                 const SdpDirectionAttribute::Direction direction,
+                 const bool direction_specified,
+                 const std::string& extensionname,
                  const std::string& extensionattributes = "") {
     Extmap value = {entry, direction, direction_specified, extensionname,
                     extensionattributes};
-    mExtmaps.push_back(value);
+    mExtmaps.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -398,8 +402,8 @@ class SdpFingerprintAttributeList : public SdpAttribute {
   // For use by application programmers. Enforces that it's a known and
   // reasonable algorithm.
   void PushEntry(std::string algorithm_str,
-                 const std::vector<uint8_t>& fingerprint,
-                 bool enforcePlausible = true) {
+                 std::span<const uint8_t> fingerprint,
+                 const bool enforcePlausible = true) {
     std::transform(algorithm_str.begin(), algorithm_str.end(),
                    algorithm_str.begin(), ::tolower);
 
@@ -434,10 +438,13 @@ class SdpFingerprintAttributeList : public SdpAttribute {
     PushEntry(algorithm, fingerprint);
   }
 
-  void PushEntry(HashAlgorithm hashFunc,
-                 const std::vector<uint8_t>& fingerprint) {
-    Fingerprint value = {hashFunc, fingerprint};
-    mFingerprints.push_back(value);
+  void PushEntry(const HashAlgorithm hashFunc,
+                 std::span<const uint8_t> fingerprint) {
+    Fingerprint value = {
+        hashFunc,
+    };
+    value.fingerprint.assign(fingerprint.begin(), fingerprint.end());
+    mFingerprints.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -452,7 +459,8 @@ class SdpFingerprintAttributeList : public SdpAttribute {
   static std::vector<uint8_t> ParseFingerprint(const std::string& str);
 };
 
-inline nsLiteralCString ToString(SdpFingerprintAttributeList::HashAlgorithm a) {
+inline nsLiteralCString ToString(
+    const SdpFingerprintAttributeList::HashAlgorithm a) {
   static constexpr nsLiteralCString Values[] = {
       "sha-1"_ns,   "sha-224"_ns, "sha-256"_ns, "sha-384"_ns,
       "sha-512"_ns, "md5"_ns,     "md2"_ns,
@@ -462,8 +470,8 @@ inline nsLiteralCString ToString(SdpFingerprintAttributeList::HashAlgorithm a) {
   return "?"_ns;
 }
 
-inline std::ostream& operator<<(std::ostream& os,
-                                SdpFingerprintAttributeList::HashAlgorithm a) {
+inline std::ostream& operator<<(
+    std::ostream& os, const SdpFingerprintAttributeList::HashAlgorithm a) {
   return os << ToString(a);
 }
 
@@ -497,9 +505,10 @@ class SdpGroupAttributeList : public SdpAttribute {
     std::vector<std::string> tags;
   };
 
-  void PushEntry(Semantics semantics, const std::vector<std::string>& tags) {
+  void PushEntry(const Semantics semantics,
+                 const std::vector<std::string>& tags) {
     Group value = {semantics, tags};
-    mGroups.push_back(value);
+    mGroups.push_back(std::move(value));
   }
 
   void RemoveMid(const std::string& mid) {
@@ -527,7 +536,7 @@ class SdpGroupAttributeList : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpGroupAttributeList::Semantics s) {
+                                const SdpGroupAttributeList::Semantics s) {
   switch (s) {
     case SdpGroupAttributeList::kLs:
       os << "LS";
@@ -782,7 +791,7 @@ class SdpMsidAttributeList : public SdpAttribute {
   void PushEntry(const std::string& identifier,
                  const std::string& appdata = "") {
     Msid value = {identifier, appdata};
-    mMsids.push_back(value);
+    mMsids.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -813,7 +822,7 @@ class SdpMsidSemanticAttributeList : public SdpAttribute {
   void PushEntry(const std::string& semantic,
                  const std::vector<std::string>& msids) {
     MsidSemantic value = {semantic, msids};
-    mMsidSemantics.push_back(value);
+    mMsidSemantics.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -929,7 +938,7 @@ class SdpRidAttributeList : public SdpAttribute {
     std::string id;
     sdp::Direction direction;
     std::vector<uint16_t> formats;  // Empty implies all
-    EncodingConstraints constraints;
+    VideoEncodingConstraints constraints;
     std::vector<std::string> dependIds;
   };
 
@@ -945,9 +954,9 @@ class SdpRidAttributeList : public SdpAttribute {
   // Remove this function. See Bug 1469702
   bool PushEntry(const std::string& raw, std::string* error, size_t* errorPos);
 
-  void PushEntry(const std::string& id, sdp::Direction dir,
+  void PushEntry(const std::string& id, const sdp::Direction dir,
                  const std::vector<uint16_t>& formats,
-                 const EncodingConstraints& constraints,
+                 const VideoEncodingConstraints& constraints,
                  const std::vector<std::string>& dependIds);
 
   std::vector<Rid> mRids;
@@ -960,14 +969,14 @@ class SdpRidAttributeList : public SdpAttribute {
 //                         connection-address] CRLF
 class SdpRtcpAttribute : public SdpAttribute {
  public:
-  explicit SdpRtcpAttribute(uint16_t port)
+  explicit SdpRtcpAttribute(const uint16_t port)
       : SdpAttribute(kRtcpAttribute),
         mPort(port),
         mNetType(sdp::kNetTypeNone),
         mAddrType(sdp::kAddrTypeNone) {}
 
-  SdpRtcpAttribute(uint16_t port, sdp::NetType netType, sdp::AddrType addrType,
-                   const std::string& address)
+  SdpRtcpAttribute(const uint16_t port, const sdp::NetType netType,
+                   const sdp::AddrType addrType, const std::string& address)
       : SdpAttribute(kRtcpAttribute),
         mPort(port),
         mNetType(netType),
@@ -1047,11 +1056,11 @@ class SdpRtcpFbAttributeList : public SdpAttribute {
     }
   };
 
-  void PushEntry(const std::string& pt, Type type,
+  void PushEntry(const std::string& pt, const Type type,
                  const std::string& parameter = "",
                  const std::string& extra = "") {
     Feedback value = {pt, type, parameter, extra};
-    mFeedbacks.push_back(value);
+    mFeedbacks.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -1064,7 +1073,7 @@ class SdpRtcpFbAttributeList : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpRtcpFbAttributeList::Type type) {
+                                const SdpRtcpFbAttributeList::Type type) {
   switch (type) {
     case SdpRtcpFbAttributeList::kAck:
       os << "ack";
@@ -1113,6 +1122,7 @@ class SdpRtpmapAttributeList : public SdpAttribute {
     kiLBC,
     kiSAC,
     kH264,
+    kAV1,
     kRed,
     kUlpfec,
     kTelephoneEvent,
@@ -1130,11 +1140,11 @@ class SdpRtpmapAttributeList : public SdpAttribute {
     uint32_t channels;
   };
 
-  void PushEntry(const std::string& pt, CodecType codec,
-                 const std::string& name, uint32_t clock,
-                 uint32_t channels = 0) {
+  void PushEntry(const std::string& pt, const CodecType codec,
+                 const std::string& name, const uint32_t clock,
+                 const uint32_t channels = 0) {
     Rtpmap value = {pt, codec, name, clock, channels};
-    mRtpmaps.push_back(value);
+    mRtpmaps.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -1165,7 +1175,7 @@ class SdpRtpmapAttributeList : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpRtpmapAttributeList::CodecType c) {
+                                const SdpRtpmapAttributeList::CodecType c) {
   switch (c) {
     case SdpRtpmapAttributeList::kOpus:
       os << "opus";
@@ -1193,6 +1203,9 @@ inline std::ostream& operator<<(std::ostream& os,
       break;
     case SdpRtpmapAttributeList::kH264:
       os << "H264";
+      break;
+    case SdpRtpmapAttributeList::kAV1:
+      os << "AV1";
       break;
     case SdpRtpmapAttributeList::kRed:
       os << "red";
@@ -1230,13 +1243,13 @@ class SdpFmtpAttributeList : public SdpAttribute {
 
     virtual ~Parameters() = default;
     virtual Parameters* Clone() const = 0;
+    virtual bool ShouldSerialize() const { return true; }
     virtual void Serialize(std::ostream& os) const = 0;
     virtual bool CompareEq(const Parameters& other) const = 0;
 
     bool operator==(const Parameters& other) const {
       return codec_type == other.codec_type && CompareEq(other);
     }
-
     SdpRtpmapAttributeList::CodecType codec_type;
   };
 
@@ -1259,6 +1272,63 @@ class SdpFmtpAttributeList : public SdpAttribute {
     }
 
     std::vector<uint8_t> encodings;
+  };
+
+  struct Av1Parameters : public Parameters {
+    // https://aomediacodec.github.io/av1-rtp-spec/#722-rid-restrictions-mapping-for-av1
+    Maybe<uint8_t> profile;
+    static constexpr uint8_t kDefaultProfile = 0;
+    Maybe<uint8_t> levelIdx;
+    static constexpr uint8_t kDefaultLevelIdx = 5;
+    Maybe<uint8_t> tier;
+    static constexpr uint8_t kDefaultTier = 0;
+
+    Av1Parameters() : Parameters(SdpRtpmapAttributeList::kAV1) {}
+    Av1Parameters(const Av1Parameters&) = default;
+
+    virtual ~Av1Parameters() = default;
+
+    virtual Parameters* Clone() const override {
+      return new Av1Parameters(*this);
+    }
+
+    // Returns the profile parameter if set, or the spec mandated default of 0.
+    auto profileValue() const -> uint8_t {
+      return profile.valueOr(kDefaultProfile);
+    }
+    // Returns the level-idx parameter if set, or the spec mandated default of
+    // 5.
+    auto levelIdxValue() const -> uint8_t {
+      return levelIdx.valueOr(kDefaultLevelIdx);
+    }
+    // Returns the tier parameter if set, or the spec mandated default of 0.
+    auto tierValue() const -> uint8_t { return tier.valueOr(kDefaultTier); }
+
+    virtual bool ShouldSerialize() const override {
+      return profile.isSome() || levelIdx.isSome() || tier.isSome();
+    };
+
+    virtual void Serialize(std::ostream& os) const override {
+      bool first = true;
+      profile.apply([&](const auto& profileV) {
+        os << "profile=" << static_cast<int>(profileV);
+        first = false;
+      });
+      levelIdx.apply([&](const auto& levelIdxV) {
+        os << (first ? "" : ";") << "level-idx=" << static_cast<int>(levelIdxV);
+        first = false;
+      });
+      tier.apply([&](const auto& tierV) {
+        os << (first ? "" : ";") << "tier=" << static_cast<int>(tierV);
+      });
+    }
+
+    virtual bool CompareEq(const Parameters& aOther) const override {
+      return aOther.codec_type == codec_type &&
+             static_cast<const Av1Parameters&>(aOther).profile == profile &&
+             static_cast<const Av1Parameters&>(aOther).levelIdx == levelIdx &&
+             static_cast<const Av1Parameters&>(aOther).tier == tier;
+    }
   };
 
   class RtxParameters : public Parameters {
@@ -1377,7 +1447,7 @@ class SdpFmtpAttributeList : public SdpAttribute {
   // Also used for VP9 since they share parameters
   class VP8Parameters : public Parameters {
    public:
-    explicit VP8Parameters(SdpRtpmapAttributeList::CodecType type)
+    explicit VP8Parameters(const SdpRtpmapAttributeList::CodecType type)
         : Parameters(type), max_fs(0), max_fr(0) {}
 
     virtual Parameters* Clone() const override {
@@ -1574,9 +1644,9 @@ class SdpSctpmapAttributeList : public SdpAttribute {
   };
 
   void PushEntry(const std::string& pt, const std::string& name,
-                 uint32_t streams = 0) {
+                 const uint32_t streams = 0) {
     Sctpmap value = {pt, name, streams};
-    mSctpmaps.push_back(value);
+    mSctpmaps.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -1608,7 +1678,7 @@ class SdpSetupAttribute : public SdpAttribute {
  public:
   enum Role { kActive, kPassive, kActpass, kHoldconn };
 
-  explicit SdpSetupAttribute(Role role)
+  explicit SdpSetupAttribute(const Role role)
       : SdpAttribute(kSetupAttribute), mRole(role) {}
 
   SdpAttribute* Clone() const override { return new SdpSetupAttribute(*this); }
@@ -1618,7 +1688,8 @@ class SdpSetupAttribute : public SdpAttribute {
   Role mRole;
 };
 
-inline std::ostream& operator<<(std::ostream& os, SdpSetupAttribute::Role r) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const SdpSetupAttribute::Role r) {
   switch (r) {
     case SdpSetupAttribute::kActive:
       os << "active";
@@ -1675,7 +1746,7 @@ class SdpSimulcastAttribute : public SdpAttribute {
 
   class Encoding {
    public:
-    Encoding(const std::string& aRid, bool aPaused)
+    Encoding(const std::string& aRid, const bool aPaused)
         : rid(aRid), paused(aPaused) {}
     std::string rid;
     bool paused = false;
@@ -1738,9 +1809,9 @@ class SdpSsrcAttributeList : public SdpAttribute {
     std::string attribute;
   };
 
-  void PushEntry(uint32_t ssrc, const std::string& attribute) {
+  void PushEntry(const uint32_t ssrc, const std::string& attribute) {
     Ssrc value = {ssrc, attribute};
-    mSsrcs.push_back(value);
+    mSsrcs.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -1777,9 +1848,10 @@ class SdpSsrcGroupAttributeList : public SdpAttribute {
 
   SdpSsrcGroupAttributeList() : SdpAttribute(kSsrcGroupAttribute) {}
 
-  void PushEntry(Semantics semantics, const std::vector<uint32_t>& ssrcs) {
+  void PushEntry(const Semantics semantics,
+                 const std::vector<uint32_t>& ssrcs) {
     SsrcGroup value = {semantics, ssrcs};
-    mSsrcGroups.push_back(value);
+    mSsrcGroups.push_back(std::move(value));
   }
 
   SdpAttribute* Clone() const override {
@@ -1792,7 +1864,7 @@ class SdpSsrcGroupAttributeList : public SdpAttribute {
 };
 
 inline std::ostream& operator<<(std::ostream& os,
-                                SdpSsrcGroupAttributeList::Semantics s) {
+                                const SdpSsrcGroupAttributeList::Semantics s) {
   switch (s) {
     case SdpSsrcGroupAttributeList::kFec:
       os << "FEC";
@@ -1819,7 +1891,8 @@ inline std::ostream& operator<<(std::ostream& os,
 ///////////////////////////////////////////////////////////////////////////
 class SdpMultiStringAttribute : public SdpAttribute {
  public:
-  explicit SdpMultiStringAttribute(AttributeType type) : SdpAttribute(type) {}
+  explicit SdpMultiStringAttribute(const AttributeType type)
+      : SdpAttribute(type) {}
 
   void PushEntry(const std::string& entry) { mValues.push_back(entry); }
 
@@ -1837,9 +1910,9 @@ class SdpMultiStringAttribute : public SdpAttribute {
 // a single line with space separating tokens
 class SdpOptionsAttribute : public SdpAttribute {
  public:
-  explicit SdpOptionsAttribute(AttributeType type) : SdpAttribute(type) {}
+  explicit SdpOptionsAttribute(const AttributeType type) : SdpAttribute(type) {}
 
-  void PushEntry(const std::string& entry) { mValues.push_back(entry); }
+  void PushEntry(std::string&& entry) { mValues.push_back(std::move(entry)); }
 
   void Load(const std::string& value);
 
@@ -1855,7 +1928,7 @@ class SdpOptionsAttribute : public SdpAttribute {
 // Used for attributes that take no value (eg; a=ice-lite)
 class SdpFlagAttribute : public SdpAttribute {
  public:
-  explicit SdpFlagAttribute(AttributeType type) : SdpAttribute(type) {}
+  explicit SdpFlagAttribute(const AttributeType type) : SdpAttribute(type) {}
 
   SdpAttribute* Clone() const override { return new SdpFlagAttribute(*this); }
 
@@ -1865,7 +1938,7 @@ class SdpFlagAttribute : public SdpAttribute {
 // Used for any other kind of single-valued attribute not otherwise specialized
 class SdpStringAttribute : public SdpAttribute {
  public:
-  explicit SdpStringAttribute(AttributeType type, const std::string& value)
+  explicit SdpStringAttribute(const AttributeType type, std::string_view value)
       : SdpAttribute(type), mValue(value) {}
 
   SdpAttribute* Clone() const override { return new SdpStringAttribute(*this); }
@@ -1878,7 +1951,8 @@ class SdpStringAttribute : public SdpAttribute {
 // Used for any purely (non-negative) numeric attribute
 class SdpNumberAttribute : public SdpAttribute {
  public:
-  explicit SdpNumberAttribute(AttributeType type, uint32_t value = 0)
+  explicit SdpNumberAttribute(const AttributeType type,
+                              const uint32_t value = 0)
       : SdpAttribute(type), mValue(value) {}
 
   SdpAttribute* Clone() const override { return new SdpNumberAttribute(*this); }

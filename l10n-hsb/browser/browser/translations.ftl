@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Žórłowu rěč změnić
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Bohužel přełožki z rěče { $language } hišće njepodpěrujemy.
+translations-panel-error-unsupported-hint-unknown-2 = Bohužel přełožki z tuteje rěče hišće njepodpěrujemy.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Rěče za přełožowanje offline sćahnyć.
 translations-manage-all-language = Wšě rěče
 translations-manage-download-button = Sćahnyć
 translations-manage-delete-button = Zhašeć
-translations-manage-intro = Postajće swoje nastajenja za rěč a přełožowanje sydłow a rjadujće rěče, kotrež su za přełožowanje offline instalowane.
-translations-manage-install-description = Rěče za přełožowanje offline instalować
-translations-manage-language-install-button =
-    .label = Instalować
-translations-manage-language-install-all-button =
-    .label = Wšě instalować
-    .accesskey = i
 translations-manage-intro-2 = Postajće swoje nastajenja za rěč a přełožowanje sydłow a rjadujće rěče, kotrež su za přełožowanje offline sćehnjene.
 translations-manage-download-description = Rěče za přełožowanje offline sćahnyć
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Wšě wotstronić
     .accesskey = t
-translations-manage-error-install = Při instalowanju rěčnych datajow je problem nastał. Prošu spytajće hišće raz.
 translations-manage-error-download = Při sćahowanju rěčnych datajow je problem nastał. Prošu spytajće hišće raz.
 translations-manage-error-delete = Při zhašenju rěčnych datajow je problem nastał. Prošu spytajće hišće raz.
 translations-manage-error-remove = Při wotstronjenju rěčnych datajow je problem nastał. Prošu spytajće hišće raz.
@@ -220,7 +220,7 @@ select-translations-panel-copy-button =
 select-translations-panel-copy-button-copied =
     .label = Kopěrowany
 select-translations-panel-done-button =
-    .label = Dokónčeny
+    .label = Dokónčene
 select-translations-panel-translate-full-page-button =
     .label = Dospołnu stronu přełožować
 select-translations-panel-translate-button =
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Při přełožowanju je problem nastał. Prošu spytajće hišće raz.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Bohužel přełožki z rěče { $language } hišće njepodpěrujemy.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Bohužel přełožki z tuteje rěče hišće njepodpěrujemy.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

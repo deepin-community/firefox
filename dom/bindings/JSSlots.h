@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -35,9 +33,9 @@ enum {
 // See js::FunctionExtended::NUM_EXTENDED_SLOTS.
 #define INTERFACE_OBJECT_MAX_SLOTS 3
 
-// Legacy factory functions store a JSNativeHolder in the
-// LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT slot.
-enum { LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT = 0 };
+// Legacy factory functions store a LegacyFactoryFunction in the
+// LEGACY_FACTORY_FUNCTION_RESERVED_SLOT slot.
+enum { LEGACY_FACTORY_FUNCTION_RESERVED_SLOT = 0 };
 
 // Interface prototype objects store a number of reserved slots equal to
 // DOM_INTERFACE_PROTO_SLOTS_BASE or DOM_INTERFACE_PROTO_SLOTS_BASE + 1 if a
@@ -50,5 +48,15 @@ enum { LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT = 0 };
 
 // The slot index of backing list stored in observable array exotic object.
 #define OBSERVABLE_ARRAY_BACKING_LIST_OBJECT_SLOT 1
+
+namespace mozilla::dom {
+
+// This mimics xpc::JSSLOT_EXPANDO_COUNT (and we static assert that), but avoids
+// pulling in XPConnect headers.
+enum ExpandoSlots {
+  DOM_EXPANDO_RESERVED_SLOTS = 4,
+};
+
+}  // namespace mozilla::dom
 
 #endif /* mozilla_dom_DOMSlots_h */

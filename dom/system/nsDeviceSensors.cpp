@@ -1,30 +1,26 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/Hal.h"
-#include "mozilla/HalSensor.h"
-
-#include "nsContentUtils.h"
 #include "nsDeviceSensors.h"
 
-#include "nsGlobalWindowInner.h"
-#include "nsPIDOMWindow.h"
-#include "nsIScriptObjectPrincipal.h"
+#include <cmath>
+
+#include "mozilla/ErrorResult.h"
+#include "mozilla/Hal.h"
+#include "mozilla/HalSensor.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_device.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/DeviceLightEvent.h"
 #include "mozilla/dom/DeviceOrientationEvent.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Event.h"
 #include "mozilla/dom/UserProximityEvent.h"
-#include "mozilla/ErrorResult.h"
-
-#include <cmath>
+#include "nsContentUtils.h"
+#include "nsGlobalWindowInner.h"
+#include "nsIScriptObjectPrincipal.h"
+#include "nsPIDOMWindow.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -198,6 +194,13 @@ static bool WindowCannotReceiveSensorEvent(nsPIDOMWindowInner* aWindow) {
   nsPIDOMWindowOuter* windowOuter = aWindow->GetOuterWindow();
   BrowsingContext* topBC = aWindow->GetBrowsingContext()->Top();
   if (windowOuter->IsBackground() || !topBC->GetIsActiveBrowserWindow()) {
+    nsGlobalWindowInner* win = nsGlobalWindowInner::Cast(aWindow);
+    nsIPrincipal* principal = win->GetPrincipal();
+    if (principal &&
+        principal->Equals(
+            nsContentUtils::GetFingerprintingProtectionPrincipal())) {
+      return false;
+    }
     return true;
   }
 

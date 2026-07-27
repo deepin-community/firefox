@@ -1,31 +1,29 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebrtcTCPSocket.h"
 
+#include "WebrtcTCPSocketCallback.h"
+#include "WebrtcTCPSocketLog.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/BrowserParent.h"
+#include "mozilla/dom/ContentProcessManager.h"
 #include "nsHttpChannel.h"
+#include "nsICancelable.h"
 #include "nsIChannel.h"
 #include "nsIClassOfService.h"
 #include "nsIContentPolicy.h"
+#include "nsICookieJarSettings.h"
 #include "nsIIOService.h"
 #include "nsILoadInfo.h"
 #include "nsIProtocolProxyService.h"
-#include "nsIURIMutator.h"
-#include "nsICookieJarSettings.h"
-#include "nsProxyRelease.h"
-#include "nsString.h"
-#include "mozilla/dom/ContentProcessManager.h"
-#include "mozilla/dom/BrowserParent.h"
-#include "mozilla/StaticPrefs_media.h"
+#include "nsISocketTransport.h"
 #include "nsISocketTransportService.h"
-#include "nsICancelable.h"
+#include "nsIURIMutator.h"
+#include "nsProxyRelease.h"
 #include "nsSocketTransportService2.h"
-
-#include "WebrtcTCPSocketCallback.h"
-#include "WebrtcTCPSocketLog.h"
+#include "nsString.h"
 
 namespace mozilla::net {
 
@@ -254,7 +252,8 @@ NS_IMETHODIMP WebrtcTCPSocket::OnProxyAvailable(nsICancelable* aRequest,
       return rv;
     }
 
-    if (mProxyType == "http" || mProxyType == "https") {
+    if (mProxyType == "http" || mProxyType == "https" ||
+        mProxyType == "masque") {
       rv = OpenWithHttpProxy();
       if (NS_WARN_IF(NS_FAILED(rv))) {
         CloseWithReason(rv);
@@ -335,7 +334,7 @@ void WebrtcTCPSocket::OpenWithoutHttpProxy(nsIProxyInfo* aSocksProxyInfo) {
   }
 
   if (NS_WARN_IF(PR_SUCCESS !=
-                 PR_StringToNetAddr(mLocalAddress.BeginReading(), &prAddr))) {
+                 PR_StringToNetAddr(mLocalAddress.get(), &prAddr))) {
     CloseWithReason(NS_ERROR_FAILURE);
     return;
   }
@@ -447,6 +446,11 @@ nsresult WebrtcTCPSocket::OpenWithHttpProxy() {
   if (!httpChannel) {
     LOG(("WebrtcTCPSocket %p: not an http channel\n", this));
     return NS_ERROR_FAILURE;
+  }
+
+  if (!mTls &&
+      mozilla::StaticPrefs::media_webrtc_disallow_HTTPS_upgrade_for_TURN()) {
+    loadInfo->SetSkipHTTPSUpgrade(true);
   }
 
   rv = localChannel->SetLoadInfo(loadInfo);
@@ -680,44 +684,52 @@ WebrtcTCPSocket::OnInputStreamReady(nsIAsyncInputStream* in) {
   MOZ_ASSERT(mTransport, "webrtc TCP socket not connected");
   MOZ_ASSERT(mSocketIn == in, "wrong input stream");
 
-  char buffer[9216];
-  uint32_t remainingCapacity = sizeof(buffer);
-  uint32_t read = 0;
+  while (true) {
+    char buffer[9216];
+    uint32_t remainingCapacity = sizeof(buffer);
+    uint32_t read = 0;
 
-  while (remainingCapacity > 0) {
-    uint32_t count = 0;
-    nsresult rv = mSocketIn->Read(buffer + read, remainingCapacity, &count);
-    if (rv == NS_BASE_STREAM_WOULD_BLOCK) {
+    while (remainingCapacity > 0) {
+      uint32_t count = 0;
+      nsresult rv = mSocketIn->Read(buffer + read, remainingCapacity, &count);
+      if (rv == NS_BASE_STREAM_WOULD_BLOCK) {
+        break;
+      }
+
+      if (NS_FAILED(rv)) {
+        LOG(("WebrtcTCPSocket::OnInputStreamReady %p failed %u\n", this,
+             static_cast<uint32_t>(rv)));
+        CloseWithReason(rv);
+        return rv;
+      }
+
+      // base stream closed
+      if (count == 0) {
+        LOG(("WebrtcTCPSocket::OnInputStreamReady %p connection closed\n",
+             this));
+        CloseWithReason(NS_ERROR_FAILURE);
+        return NS_OK;
+      }
+
+      remainingCapacity -= count;
+      read += count;
+    }
+
+    if (read > 0) {
+      nsTArray<uint8_t> array(read);
+      array.AppendElements(buffer, read);
+
+      InvokeOnRead(std::move(array));
+    }
+
+    if (remainingCapacity != 0) {
+      // Loop exited above, but not because we ran out of space. We're actually
+      // done, break out of the while(true) loop.
       break;
     }
-
-    if (NS_FAILED(rv)) {
-      LOG(("WebrtcTCPSocket::OnInputStreamReady %p failed %u\n", this,
-           static_cast<uint32_t>(rv)));
-      CloseWithReason(rv);
-      return rv;
-    }
-
-    // base stream closed
-    if (count == 0) {
-      LOG(("WebrtcTCPSocket::OnInputStreamReady %p connection closed\n", this));
-      CloseWithReason(NS_ERROR_FAILURE);
-      return NS_OK;
-    }
-
-    remainingCapacity -= count;
-    read += count;
-  }
-
-  if (read > 0) {
-    nsTArray<uint8_t> array(read);
-    array.AppendElements(buffer, read);
-
-    InvokeOnRead(std::move(array));
   }
 
   mSocketIn->AsyncWait(this, 0, 0, nullptr);
-
   return NS_OK;
 }
 

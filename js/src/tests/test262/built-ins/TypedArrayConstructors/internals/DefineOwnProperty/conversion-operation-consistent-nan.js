@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -69,14 +68,14 @@ includes: [nans.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(FA) {
+testWithTypedArrayConstructors(function(FA, makeCtorArg) {
   var precision = floatTypedArrayConstructorPrecision(FA);
-  var samples = new FA(1);
+  var samples = new FA(makeCtorArg(1));
   var controls, idx, aNaN;
 
   for (idx = 0; idx < NaNs.length; ++idx) {
     aNaN = NaNs[idx];
-    controls = new FA([aNaN, aNaN, aNaN]);
+    controls = new FA(makeCtorArg([aNaN, aNaN, aNaN]));
 
     Object.defineProperty(samples, "0", { value: aNaN });
 

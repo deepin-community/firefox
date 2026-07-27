@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -29,7 +28,7 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   assert(
     compareArray(
       new TA().fill(8),
@@ -39,7 +38,7 @@ testWithTypedArrayConstructors(function(TA) {
   );
 
   assert(
-    compareArray(new TA([0, 0, 0]).fill(8), [8, 8, 8]),
+    compareArray(new TA(makeCtorArg([0, 0, 0])).fill(8), [8, 8, 8]),
     "Default start and end indexes are 0 and this.length"
   );
 });

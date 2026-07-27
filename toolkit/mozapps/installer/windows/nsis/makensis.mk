@@ -11,7 +11,7 @@ ABS_CONFIG_DIR := $(abspath $(CONFIG_DIR))
 SFX_MODULE ?= $(error SFX_MODULE is not defined)
 
 ifeq ($(TARGET_CPU), aarch64)
-USE_UPX := 
+USE_UPX :=
 else
 ifneq (,$(UPX)$(MOZ_AUTOMATION))
 USE_UPX := --use-upx
@@ -63,10 +63,9 @@ endif
 
 ifdef ZIP_IN
 installer:: $(CONFIG_DIR)/setup.exe $(ZIP_IN)
-	@echo 'Packaging $(WIN32_INSTALLER_OUT).'
-	$(NSINSTALL) -D '$(ABS_DIST)/$(PKG_INST_PATH)'
+	$(NSINSTALL) -D '$(ABS_DIST)/$(PKG_PATH)'
 	$(PYTHON3) $(MOZILLA_DIR)/mach repackage installer \
-	  -o '$(ABS_DIST)/$(PKG_INST_PATH)$(PKG_INST_BASENAME).exe' \
+	  -o '$(ABS_DIST)/$(PKG_PATH)$(PKG_INST_BASENAME).exe' \
 	  --package-name '$(MOZ_PKG_DIR)' \
 	  --package '$(ZIP_IN)' \
 	  --tag $(topsrcdir)/$(MOZ_BUILD_APP)/installer/windows/app.tag \
@@ -75,7 +74,7 @@ installer:: $(CONFIG_DIR)/setup.exe $(ZIP_IN)
 	  $(USE_UPX)
 ifdef MOZ_STUB_INSTALLER
 	$(PYTHON3) $(MOZILLA_DIR)/mach repackage installer \
-	  -o '$(ABS_DIST)/$(PKG_INST_PATH)$(PKG_STUB_BASENAME).exe' \
+	  -o '$(ABS_DIST)/$(PKG_PATH)$(PKG_STUB_BASENAME).exe' \
 	  --tag $(topsrcdir)/browser/installer/windows/stub.tag \
 	  --setupexe $(CONFIG_DIR)/setup-stub.exe \
 	  --sfx-stub $(SFX_MODULE) \
@@ -102,6 +101,7 @@ $(CONFIG_DIR)/helper.exe: $(HELPER_DEPS)
 	$(INSTALL) $(addprefix $(srcdir)/,$(INSTALLER_FILES)) $(CONFIG_DIR)
 	$(INSTALL) $(addprefix $(topsrcdir)/$(MOZ_BRANDING_DIRECTORY)/,$(BRANDING_FILES)) $(CONFIG_DIR)
 	$(call py_action,preprocessor defines.nsi,-Fsubstitution $(DEFINES) $(ACDEFINES) \
+	-DTOPOBJDIR=$(topobjdir) \
 	  $(srcdir)/nsis/defines.nsi.in -o $(CONFIG_DIR)/defines.nsi)
 	$(PYTHON3) $(topsrcdir)/toolkit/mozapps/installer/windows/nsis/preprocess-locale.py \
 	  --preprocess-locale $(topsrcdir) \
@@ -121,6 +121,7 @@ maintenanceservice_installer::
 	$(INSTALL) $(addprefix $(srcdir)/,$(INSTALLER_FILES)) $(CONFIG_DIR)
 	$(INSTALL) $(addprefix $(topsrcdir)/$(MOZ_BRANDING_DIRECTORY)/,$(BRANDING_FILES)) $(CONFIG_DIR)
 	$(call py_action,preprocessor defines.nsi,-Fsubstitution $(DEFINES) $(ACDEFINES) \
+	-DTOPOBJDIR=$(topobjdir) \
 	  $(srcdir)/nsis/defines.nsi.in -o $(CONFIG_DIR)/defines.nsi)
 	$(PYTHON3) $(topsrcdir)/toolkit/mozapps/installer/windows/nsis/preprocess-locale.py \
 	  --preprocess-locale $(topsrcdir) \

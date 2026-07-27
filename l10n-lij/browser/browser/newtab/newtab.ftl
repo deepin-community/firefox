@@ -9,6 +9,38 @@ newtab-page-title = Neuvo feuggio
 newtab-settings-button =
     .title = Personalizza a teu pagina Neuvo feuggio
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Neuvi feuggi
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } riga
+           *[other] { $num } righe
+        }
+home-restore-defaults-srd =
+    .label = Repiggia predefinii
+    .accesskey = R
+home-mode-choice-custom-srd =
+    .label = Indirissi cliénti...
+home-mode-choice-blank-srd =
+    .label = Pagina gianca
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Stöie sponsorizæ
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Pagine vixitæ
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Segnalibbri
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Urtimi descaregamenti
+
 ## Search box component.
 
 # "Search" is a verb/action
@@ -16,19 +48,17 @@ newtab-search-box-search-button =
     .title = Çerca
     .aria-label = Çerca
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Azonzi motô de riçerca
 newtab-topsites-edit-topsites-header = Cangia scito prinçipâ
 newtab-topsites-title-label = Titolo
 newtab-topsites-title-input =
     .placeholder = Scrivi 'n titolo
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Scrivi ò incòlla URL
 newtab-topsites-url-validation = Serve 'na URL bonn-a
-
 newtab-topsites-image-url-label = URL da inmagine personalizâ
 newtab-topsites-use-image-link = Adeuvia inagine personalizâ…
 newtab-topsites-image-validation = Erô into caregamento de l'inmagine. Preuva 'n atra URL.
@@ -47,16 +77,12 @@ newtab-confirm-delete-history-p1 = Te seguo de scancelâ tutte e ripetiçioin de
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = Sta açion a no se peu anulâ.
 
-## Top Sites - Sponsored label
-
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = Arvi menû
     .aria-label = Arvi menû
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
 #   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
@@ -80,9 +106,6 @@ newtab-menu-delete-history = Scancella da-a stöia
 newtab-menu-save-to-pocket = Sarva in { -pocket-brand-name }
 newtab-menu-delete-pocket = Scancella da { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivia in { -pocket-brand-name }
-
-## Message displayed in a modal window to explain privacy and provide context for sponsored content.
-
 
 ##
 
@@ -118,7 +141,6 @@ newtab-label-bookmarked = Azonto a-i segnalibbri
 newtab-label-recommended = De tentensa
 newtab-label-saved = Sarvou in { -pocket-brand-name }
 newtab-label-download = Descaregou
-
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
 #   $source (string) - The name of a company or their domain
@@ -156,7 +178,6 @@ newtab-section-header-pocket = Consegiou da { $provider }
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = Iniçia a navegâ e, in sta seçion, saian mostræ articoli, video e atre pagine vixitæ de fresco ò azonti a-i segnalibbri.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
@@ -177,16 +198,8 @@ newtab-pocket-more-recommendations = Atri conseggi
 newtab-pocket-learn-more = Atre informaçioin
 newtab-pocket-cta-button = Piggite { -pocket-brand-name }
 newtab-pocket-cta-text = Sarva e stöie che te piaxan into { -pocket-brand-name }, e carega torna a mente con letue che incantan.
-
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Sarva
 newtab-pocket-saved = Sarvòu
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -197,6 +210,15 @@ newtab-error-fallback-refresh-link = Agiorna pagina pe provâ torna.
 ## Customization Menu
 
 newtab-custom-shortcuts-title = Scorsaieu
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } riga
+           *[other] { $num } righe
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =

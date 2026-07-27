@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1165,7 +1163,7 @@ tests.push({
       );
       for (let row of parentRows) {
         let actualChangeCounter = row.getResultByName("syncChangeCounter");
-        Assert.ok(actualChangeCounter > 0);
+        Assert.greater(actualChangeCounter, 0);
       }
     }
 
@@ -2019,22 +2017,22 @@ tests.push({
   async setup() {
     await PlacesTestUtils.addVisits([
       {
-        uri: NetUtil.newURI("http://l3.moz.org/"),
+        uri: Services.io.newURI("http://l3.moz.org/"),
         transition: TRANSITION_TYPED,
       },
       {
-        uri: NetUtil.newURI("http://l3.moz.org/redirecting/"),
+        uri: Services.io.newURI("http://l3.moz.org/redirecting/"),
         transition: TRANSITION_TYPED,
       },
       {
-        uri: NetUtil.newURI("http://l3.moz.org/redirecting2/"),
+        uri: Services.io.newURI("http://l3.moz.org/redirecting2/"),
         transition: TRANSITION_REDIRECT_TEMPORARY,
-        referrer: NetUtil.newURI("http://l3.moz.org/redirecting/"),
+        referrer: Services.io.newURI("http://l3.moz.org/redirecting/"),
       },
       {
-        uri: NetUtil.newURI("http://l3.moz.org/target/"),
+        uri: Services.io.newURI("http://l3.moz.org/target/"),
         transition: TRANSITION_REDIRECT_PERMANENT,
-        referrer: NetUtil.newURI("http://l3.moz.org/redirecting2/"),
+        referrer: Services.io.newURI("http://l3.moz.org/redirecting2/"),
       },
     ]);
   },
@@ -2478,7 +2476,7 @@ tests.push({
           let nowAsPRTime = PlacesUtils.toPRTime(new Date());
           Assert.greater(dateAdded, 0);
           Assert.equal(dateAdded, lastModified);
-          Assert.ok(dateAdded <= nowAsPRTime);
+          Assert.lessOrEqual(dateAdded, nowAsPRTime);
           break;
         }
 
@@ -2610,13 +2608,10 @@ tests.push({
     });
 
     PlacesUtils.tagging.tagURI(this._uri1, ["testtag"]);
-    PlacesUtils.favicons.setAndFetchFaviconForPage(
+    await PlacesTestUtils.setFaviconForPage(
       this._uri2,
       SMALLPNG_DATA_URI,
-      false,
-      PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-      null,
-      Services.scriptSecurityManager.getSystemPrincipal()
+      SMALLPNG_DATA_URI
     );
     await PlacesUtils.keywords.insert({
       url: this._uri1.spec,
@@ -2657,12 +2652,8 @@ tests.push({
     });
     Assert.equal(pageInfo.annotations.get("anno"), "anno");
 
-    await new Promise(resolve => {
-      PlacesUtils.favicons.getFaviconURLForPage(this._uri2, aFaviconURI => {
-        Assert.ok(aFaviconURI.equals(SMALLPNG_DATA_URI));
-        resolve();
-      });
-    });
+    let favicon = await PlacesTestUtils.getFaviconForPage(this._uri2);
+    Assert.equal(favicon.uri.spec, SMALLPNG_DATA_URI.spec);
   },
 });
 
@@ -2674,7 +2665,7 @@ add_task(async function test_preventive_maintenance() {
   defaultBookmarksMaxId = (
     await db.executeCached("SELECT MAX(id) FROM moz_bookmarks")
   )[0].getResultByIndex(0);
-  Assert.ok(defaultBookmarksMaxId > 0);
+  Assert.greater(defaultBookmarksMaxId, 0);
 
   for (let test of tests) {
     await PlacesTestUtils.markBookmarksAsSynced();

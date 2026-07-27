@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Eraman amaierara
     .accesskey = a
 fxviewtabrow-move-tab-window = Eraman leiho berrira
     .accesskey = b
+fxviewtabrow-send-to-device = Bidali gailura
+    .accesskey = d
+fxviewtabrow-send-to-mobile = Bidali mugikorrera
+    .accesskey = d
 fxviewtabrow-send-tab = Bidali fitxa gailura
     .accesskey = B
 fxviewtabrow-pin-tab = Ainguratu fitxa
@@ -68,9 +72,18 @@ fxviewtabrow-unmute-tab = Ez mututu fitxa
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } fitxarako aukerak
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Mututu fitxa
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Ez mututu fitxa
+fxviewtabrow-send-to-mobile-connect-device = Konektatu gailu bat fitxak bidaltzeko
+fxviewtabrow-send-to-mobile-device-missing2 = Ez duzu zure gailua ikusten?
+fxviewtabrow-send-to-mobile-not-verified = Kontua egiaztatu gabe
+fxviewtabrow-send-to-mobile-verify-account = Egiaztatu zure kontua
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Hasi saioa fitxak bidaltzeko
+fxviewtabrow-send-to-mobile-turn-on-sync = Aktibatu sinkronizazioa fitxak bidaltzeko

@@ -131,8 +131,7 @@ function run_loadImage_tests() {
   }
 
   for (let loader of [gPublicLoader, gPrivateLoader]) {
-    loader.QueryInterface(Ci.imgICache).clearCache(true);
-    loader.QueryInterface(Ci.imgICache).clearCache(false);
+    loader.QueryInterface(Ci.imgICache).clearCache(); // no parameter=all
   }
   Services.obs.addObserver(observer, "cacheservice:empty-cache");
   let cs = Services.cache2;
@@ -149,8 +148,6 @@ function run_test() {
   registerCleanupFunction(cleanup);
 
   do_test_pending();
-
-  Services.prefs.setBoolPref("network.http.rcwn.enabled", false);
 
   // We create a public channel that loads an image, then an identical
   // one that should cause a cache read. We then create a private channel

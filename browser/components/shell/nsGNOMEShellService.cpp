@@ -1,11 +1,11 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/widget/GSettings.h"
 
+#include "nsAppRunner.h"
 #include "nsCOMPtr.h"
 #include "nsGNOMEShellService.h"
 #include "nsShellService.h"
@@ -15,7 +15,6 @@
 #include "prenv.h"
 #include "nsString.h"
 #include "nsIGIOService.h"
-#include "nsIGSettingsService.h"
 #include "nsIStringBundle.h"
 #include "nsServiceManagerUtils.h"
 #include "nsIImageLoadingContent.h"
@@ -28,7 +27,6 @@
 #include "mozilla/dom/Element.h"
 #include "nsImageToPixbuf.h"
 #include "nsXULAppAPI.h"
-#include "gfxPlatform.h"
 
 #include <glib.h>
 #include <gdk/gdk.h>
@@ -67,19 +65,6 @@ static const MimeTypeAssociation appTypes[] = {
 
 nsresult nsGNOMEShellService::Init() {
   nsresult rv;
-
-  if (gfxPlatform::IsHeadless()) {
-    return NS_ERROR_NOT_AVAILABLE;
-  }
-
-  // GSettings or GIO _must_ be available, or we do not allow
-  // CreateInstance to succeed.
-
-  nsCOMPtr<nsIGIOService> giovfs = do_GetService(NS_GIOSERVICE_CONTRACTID);
-  nsCOMPtr<nsIGSettingsService> gsettings =
-      do_GetService(NS_GSETTINGSSERVICE_CONTRACTID);
-
-  if (!giovfs && !gsettings) return NS_ERROR_NOT_AVAILABLE;
 
 #ifdef MOZ_ENABLE_DBUS
   if (widget::IsGnomeDesktopEnvironment() &&
@@ -206,10 +191,10 @@ nsGNOMEShellService::IsDefaultBrowser(bool aForAllTypes,
   nsAutoCString handler;
   nsCOMPtr<nsIGIOMimeApp> gioApp;
 
-  for (unsigned int i = 0; i < ArrayLength(appProtocols); ++i) {
-    if (!appProtocols[i].essential) continue;
+  for (auto appProtocol : appProtocols) {
+    if (!appProtocol.essential) continue;
 
-    if (!IsDefaultForSchemeHelper(nsDependentCString(appProtocols[i].name),
+    if (!IsDefaultForSchemeHelper(nsDependentCString(appProtocol.name),
                                   giovfs)) {
       return NS_OK;
     }
@@ -298,19 +283,17 @@ nsGNOMEShellService::SetDefaultBrowser(bool aForAllUsers) {
     }
 
     // set handler for the protocols
-    for (unsigned int i = 0; i < ArrayLength(appProtocols); ++i) {
-      appInfo->SetAsDefaultForURIScheme(
-          nsDependentCString(appProtocols[i].name));
+    for (auto appProtocol : appProtocols) {
+      appInfo->SetAsDefaultForURIScheme(nsDependentCString(appProtocol.name));
     }
 
     // set handler for .html and xhtml files and MIME types:
     // Add mime types for html, xhtml extension and set app to just created
     // appinfo.
-    for (unsigned int i = 0; i < ArrayLength(appTypes); ++i) {
-      appInfo->SetAsDefaultForMimeType(
-          nsDependentCString(appTypes[i].mimeType));
+    for (auto appType : appTypes) {
+      appInfo->SetAsDefaultForMimeType(nsDependentCString(appType.mimeType));
       appInfo->SetAsDefaultForFileExtensions(
-          nsDependentCString(appTypes[i].extensions));
+          nsDependentCString(appType.extensions));
     }
   }
 
@@ -407,15 +390,8 @@ nsGNOMEShellService::SetDesktopBackground(dom::Element* aElement,
   // write the image to a file in the home dir
   MOZ_TRY(WriteImage(filePath, container));
 
-  nsCOMPtr<nsIGSettingsService> gsettings =
-      do_GetService(NS_GSETTINGSSERVICE_CONTRACTID);
-  if (!gsettings) {
-    return NS_ERROR_FAILURE;
-  }
-  nsCOMPtr<nsIGSettingsCollection> backgroundSettings;
-  gsettings->GetCollectionForSchema(kDesktopBGSchema,
-                                    getter_AddRefs(backgroundSettings));
-  if (!backgroundSettings) {
+  widget::GSettings::Collection bgSettings(kDesktopBGSchema);
+  if (!bgSettings) {
     return NS_ERROR_FAILURE;
   }
 
@@ -425,12 +401,10 @@ nsGNOMEShellService::SetDesktopBackground(dom::Element* aElement,
     return NS_ERROR_FAILURE;
   }
 
-  backgroundSettings->SetString("picture-options"_ns, options);
-  backgroundSettings->SetString("picture-uri"_ns,
-                                nsDependentCString(fileURI.get()));
-  backgroundSettings->SetString("picture-uri-dark"_ns,
-                                nsDependentCString(fileURI.get()));
-  backgroundSettings->SetBoolean("draw-background"_ns, true);
+  bgSettings.SetString("picture-options"_ns, options);
+  bgSettings.SetString("picture-uri"_ns, nsDependentCString(fileURI.get()));
+  bgSettings.SetString("picture-uri-dark"_ns,
+                       nsDependentCString(fileURI.get()));
   return NS_OK;
 }
 
@@ -439,19 +413,9 @@ nsGNOMEShellService::SetDesktopBackground(dom::Element* aElement,
 
 NS_IMETHODIMP
 nsGNOMEShellService::GetDesktopBackgroundColor(uint32_t* aColor) {
-  nsCOMPtr<nsIGSettingsService> gsettings =
-      do_GetService(NS_GSETTINGSSERVICE_CONTRACTID);
-  nsCOMPtr<nsIGSettingsCollection> background_settings;
   nsAutoCString background;
-
-  if (gsettings) {
-    gsettings->GetCollectionForSchema(kDesktopBGSchema,
-                                      getter_AddRefs(background_settings));
-    if (background_settings) {
-      background_settings->GetString(kDesktopColorGSKey, background);
-    }
-  }
-
+  widget::GSettings::GetString(kDesktopBGSchema, kDesktopColorGSKey,
+                               background);
   if (background.IsEmpty()) {
     *aColor = 0;
     return NS_OK;
@@ -486,17 +450,63 @@ nsGNOMEShellService::SetDesktopBackgroundColor(uint32_t aColor) {
   nsAutoCString colorString;
   ColorToCString(aColor, colorString);
 
-  nsCOMPtr<nsIGSettingsService> gsettings =
-      do_GetService(NS_GSETTINGSSERVICE_CONTRACTID);
-  if (gsettings) {
-    nsCOMPtr<nsIGSettingsCollection> background_settings;
-    gsettings->GetCollectionForSchema(nsLiteralCString(kDesktopBGSchema),
-                                      getter_AddRefs(background_settings));
-    if (background_settings) {
-      background_settings->SetString(kDesktopColorGSKey, colorString);
-      return NS_OK;
-    }
+  widget::GSettings::Collection bgSettings(kDesktopBGSchema);
+  if (bgSettings) {
+    bgSettings.SetString(kDesktopColorGSKey, colorString);
+    return NS_OK;
   }
 
   return NS_ERROR_FAILURE;
+}
+
+NS_IMETHODIMP
+nsGNOMEShellService::GetGSettingsString(const nsACString& aSchema,
+                                        const nsACString& aKey,
+                                        nsACString& aResult) {
+  widget::GSettings::GetString(PromiseFlatCString(aSchema),
+                               PromiseFlatCString(aKey), aResult);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsGNOMEShellService::SetGSettingsString(const nsACString& aSchema,
+                                        const nsACString& aKey,
+                                        const nsACString& aValue) {
+  widget::GSettings::Collection settings(PromiseFlatCString(aSchema));
+  if (!settings) {
+    return NS_ERROR_FAILURE;
+  }
+  if (!settings.SetString(PromiseFlatCString(aKey),
+                          PromiseFlatCString(aValue))) {
+    return NS_ERROR_FAILURE;
+  }
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsGNOMEShellService::GetArgv0(nsACString& output) {
+  output.Assign(gArgc <= 0 ? "" : gArgv[0]);
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsGNOMEShellService::GetGlibPrgname(nsACString& output) {
+  output.Assign(g_get_prgname());
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsGNOMEShellService::GetDesktopEntryStatus(
+    const nsACString& aDesktopId,
+    nsIGNOMEShellService::DesktopEntryStatus* aResult) {
+  NS_ENSURE_ARG_POINTER(aResult);
+
+  RefPtr<GDesktopAppInfo> appinfo =
+      dont_AddRef(g_desktop_app_info_new(PromiseFlatCString(aDesktopId).get()));
+  if (!appinfo) {
+    *aResult = nsIGNOMEShellService::DESKTOP_ENTRY_ABSENT;
+  } else if (g_app_info_should_show(G_APP_INFO(appinfo.get()))) {
+    *aResult = nsIGNOMEShellService::DESKTOP_ENTRY_VISIBLE;
+  } else {
+    *aResult = nsIGNOMEShellService::DESKTOP_ENTRY_INVISIBLE;
+  }
+
+  return NS_OK;
 }

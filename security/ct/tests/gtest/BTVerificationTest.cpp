@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -208,29 +206,31 @@ static const char* kInputSHA512Hex =
     "3865396533623666306432333839666234623763396563356638643833373534"
     "6239313635313165333661373238653863303236376564653761666561316638";
 
-static const BTVerificationTestParams BT_VERIFICATION_TEST_PARAMS[] = {
-    {kValidInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, Success},
-    {kValidInclusionProofHex, kExpectedRootHashHex, kAlteredInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kShortInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kLongInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kValidInclusionProofHex, kIncorrectRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kWrongTreeSizeInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kWrongLeafIndexInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kValidInclusionProofHex, kExpectedRootHashHex, kInputHex,
-     pkix::DigestAlgorithm::sha512, pkix::Result::ERROR_BAD_SIGNATURE},
-    {kValidInclusionProof2Hex, kExpectedRootHash2Hex, kInput2Hex,
-     pkix::DigestAlgorithm::sha256, Success},
-    {kValidInclusionProofSHA512Hex, kExpectedRootHashSHA512Hex, kInputSHA512Hex,
-     pkix::DigestAlgorithm::sha512, Success},
-    {kValidInclusionProofSHA512Hex, kExpectedRootHashSHA512Hex, kInputSHA512Hex,
-     pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+MOZ_RUNINIT static const BTVerificationTestParams
+    BT_VERIFICATION_TEST_PARAMS[] = {
+        {kValidInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, Success},
+        {kValidInclusionProofHex, kExpectedRootHashHex, kAlteredInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kShortInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kLongInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kValidInclusionProofHex, kIncorrectRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kWrongTreeSizeInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kWrongLeafIndexInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha256, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kValidInclusionProofHex, kExpectedRootHashHex, kInputHex,
+         pkix::DigestAlgorithm::sha512, pkix::Result::ERROR_BAD_SIGNATURE},
+        {kValidInclusionProof2Hex, kExpectedRootHash2Hex, kInput2Hex,
+         pkix::DigestAlgorithm::sha256, Success},
+        {kValidInclusionProofSHA512Hex, kExpectedRootHashSHA512Hex,
+         kInputSHA512Hex, pkix::DigestAlgorithm::sha512, Success},
+        {kValidInclusionProofSHA512Hex, kExpectedRootHashSHA512Hex,
+         kInputSHA512Hex, pkix::DigestAlgorithm::sha256,
+         pkix::Result::ERROR_BAD_SIGNATURE},
 };
 
 TEST_P(BTVerificationTest, BTVerificationSimpleTest) {

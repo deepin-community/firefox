@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -14,7 +14,7 @@
 #include <new>
 #include <tuple>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
 
@@ -29,11 +29,11 @@ using libaom_test::ACMRandom;
 
 namespace {
 
-typedef double (*LBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
-                                const YV12_BUFFER_CONFIG *dest);
-typedef double (*HBDMetricFunc)(const YV12_BUFFER_CONFIG *source,
-                                const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
-                                uint32_t bd);
+using LBDMetricFunc = double (*)(const YV12_BUFFER_CONFIG *source,
+                                 const YV12_BUFFER_CONFIG *dest);
+using HBDMetricFunc = double (*)(const YV12_BUFFER_CONFIG *source,
+                                 const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
+                                 uint32_t bd);
 
 double compute_hbd_psnr(const YV12_BUFFER_CONFIG *source,
                         const YV12_BUFFER_CONFIG *dest, uint32_t in_bd,
@@ -173,8 +173,8 @@ class HBDMetricsTestBase {
   HBDMetricFunc hbd_metric_;
 };
 
-typedef std::tuple<LBDMetricFunc, HBDMetricFunc, int, int, double>
-    MetricTestTParam;
+using MetricTestTParam =
+    std::tuple<LBDMetricFunc, HBDMetricFunc, int, int, double>;
 class HBDMetricsTest : public HBDMetricsTestBase,
                        public ::testing::TestWithParam<MetricTestTParam> {
  public:

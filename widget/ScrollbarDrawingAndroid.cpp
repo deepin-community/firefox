@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 40; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,11 +24,11 @@ template <typename PaintBackendData>
 void ScrollbarDrawingAndroid::DoPaintScrollbarThumb(
     PaintBackendData& aPaintData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   // TODO(emilio): Maybe do like macOS and draw a stroke?
-  const auto color = ComputeScrollbarThumbColor(aFrame, aStyle, aElementState,
-                                                aDocumentState, aColors);
+  const auto color =
+      ComputeScrollbarThumbColor(aFrame, aStyle, aElementState, aColors);
   const bool horizontal = aScrollbarKind == ScrollbarKind::Horizontal;
 
   // Draw the thumb rect centered in the scrollbar.
@@ -52,20 +51,20 @@ void ScrollbarDrawingAndroid::DoPaintScrollbarThumb(
 bool ScrollbarDrawingAndroid::PaintScrollbarThumb(
     DrawTarget& aDt, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   DoPaintScrollbarThumb(aDt, aRect, aScrollbarKind, aFrame, aStyle,
-                        aElementState, aDocumentState, aColors, aDpiRatio);
+                        aElementState, aColors, aDpiRatio);
   return true;
 }
 
 bool ScrollbarDrawingAndroid::PaintScrollbarThumb(
     WebRenderBackendData& aWrData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   DoPaintScrollbarThumb(aWrData, aRect, aScrollbarKind, aFrame, aStyle,
-                        aElementState, aDocumentState, aColors, aDpiRatio);
+                        aElementState, aColors, aDpiRatio);
   return true;
 }
 

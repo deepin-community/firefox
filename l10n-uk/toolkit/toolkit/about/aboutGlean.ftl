@@ -16,6 +16,12 @@ about-glean-interface-description =
     – це бібліотека збору даних, що використовується в проєктах { -vendor-short-name }.
     Цей інтерфейс розроблений для ручного <a data-l10n-name="fog-link">тестування інструментарію</a>
     розробниками й тестувальниками.
+about-glean-category-about-glean = Про { -glean-brand-name }
+about-glean-category-manual-testing = Ручне тестування
+about-glean-category-adhoc-testing = Спеціальне тестування
+about-glean-category-profiler = Використання профайлера
+about-glean-category-about-data = Про дані
+about-glean-category-metrics-table = Таблиця показників
 about-glean-upload-enabled = Вивантаження даних увімкнено.
 about-glean-upload-disabled = Вивантаження даних вимкнено.
 about-glean-upload-enabled-local = Вивантаження даних увімкнено лише для надсилання на локальний сервер.
@@ -43,6 +49,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Щоб отримати пояснення щодо різних способів запису та пошуку даних, перегляньте
+    вкладку <strong>Про дані</strong>.
 about-glean-about-testing-header = Про тестування
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -74,7 +83,7 @@ about-glean-label-for-log-pings =
 # An in-line button labeled "Apply settings and submit ping" precedes this string.
 about-glean-label-for-controls-submit =
     Натисніть попередню кнопку, щоб позначити всі пінги { -glean-brand-name } своєю міткою і надіслати вибраний пінг.
-    (Усі пінги, надіслані з того часу до перезапуску застосунку, будуть позначені міткою
+    (Усі пінги, надіслані з того часу до перезапуску програми, будуть позначені міткою
     <code>{ $debug-tag }</code>.)
 about-glean-li-for-visit-gdpv =
     <a data-l10n-name="gdpv-tagged-pings-link">Відвідайте сторінку { glean-debug-ping-viewer-brand-name }, щоб побачити пінги з вашою міткою</a>.
@@ -100,8 +109,104 @@ about-glean-adhoc-note =
     Зауважте, що ви використовуєте Glean JS API в консолі devtools.
     Це означає, що категорія та назва метрики має формат
     <code>camelCase</code>, на відміну від Rust і C++ API.
+about-glean-profiler-explanation =
+    Щоб переглянути всі записані показники, скористайтеся { -profiler-brand-name }.
+    Спочатку ви повинні <a data-l10n-name="firefox-profiler-link">записати профіль продуктивності</a>.
+    Після створення профілю виберіть <q>Маркерна діаграма</q> та подивіться на маркери в розділі <q>Телеметрія</q>.
+about-glean-profiler-explanation-profiler =
+    У профілі продуктивності можна побачити всі зібрані показники, час отримання
+    та їхні значення. Навівши курсор на окремі маркери, ви можете переконатися,
+    що було отримано правильне значення і в потрібний час.
 controls-button-label-verbose = Застосувати налаштування та відправити ping
+about-glean-feedback-settings-only =
+    .message = Налаштування застосовано!
+about-glean-feedback-settings-and-ping =
+    .message = Налаштування застосовано та сигнал відправлено!
 about-glean-about-data-header = Про дані
+about-glean-about-data-description =
+    Є декілька різних інструментів, які можна використовувати для перегляду даних
+    залежно від того, що ви шукаєте.
+about-glean-about-data-description-list-intro =
+    Скористайтеся наведеним нижче списком, щоб дізнатися
+    про окремі сценарії використання для кожного інструмента:
+about-glean-about-data-list-item-dictionary =
+    Щоб переглянути список даних, зібраних { -glean-brand-name } для кожної програми,
+    скористайтеся <a data-l10n-name="glean-dictionary-link">Словником { -glean-brand-name }</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Щоб переглянути дані, які збираються застарілою телеметрією,
+    скористайтеся <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Щоб переглянути мітки налагодження, повні запити ping, пряму трансляцію подій
+    або візуалізацію показників, скористайтеся
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Щоб записати профіль продуктивності та переглянути всі записані показники, скористайтеся
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Усі показники
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Категорія
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Назва
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Тип
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Значення
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Дії
+about-glean-metrics-table-settings-button = Налаштування
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Налаштування таблиці показників
+about-glean-metrics-table-settings-category-general = Основні
+about-glean-metrics-table-settings-hide-empty-value-rows = Приховати рядки з порожніми значеннями
+about-glean-metrics-table-settings-category-visualizations = Візуалізації
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Зразок
+about-glean-metrics-table-settings-category-visualizations-histogram = Гістограма
+about-glean-metrics-table-settings-histograms-chart-max = Максимальна висота графіка
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Масштабована максимальна висота
+about-glean-metrics-table-settings-histograms-box-padding = Відступи поля
+about-glean-metrics-table-settings-histograms-chart-padding = Відступи графіка
+about-glean-metrics-table-settings-histograms-left-padding = Додатковий відступ зліва
+about-glean-metrics-table-settings-category-visualizations-timeline = Шкала часу
+about-glean-metrics-table-settings-timelines-height = Висота
+about-glean-metrics-table-settings-timelines-width = Ширина
+about-glean-metrics-table-settings-timelines-chart-padding = Відступи графіка
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Радіус кола
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Зміщення осі Y по осі X
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Зміщення осі Y по осі Y
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Фільтр
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Ця дія відфільтрує наведену нижче таблицю за категорією, назвою, типом і значенням (якщо значення простого типу).
+about-glean-button-load-all = Завантажити всі значення
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Експортувати дані
+about-glean-button-load-value = Завантажити
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Документи
+about-glean-button-watch = Стежити
+# Meaning "to stop watching"
+about-glean-button-unwatch = Не стежити
+about-glean-no-data-to-display = Немає даних для показу.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Показники <code>DualLabeledCounter</code> ще не підтримуються у поданні <code>about:glean</code>.
+about-glean-unknown-metric-type-warning = Невідомий тип показника.
 about-glean-about-data-explanation =
     Щоб переглянути список зібраних даних, зверніться до
     <a data-l10n-name="glean-dictionary-link">Словника { -glean-brand-name }</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Вбудовані пінги
+about-glean-ping-list-optgroup-custom =
+    .label = Користувацькі пінги

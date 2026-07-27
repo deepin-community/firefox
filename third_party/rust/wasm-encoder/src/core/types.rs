@@ -1,26 +1,17 @@
-use crate::{encode_section, Encode, Section, SectionId};
+use crate::{Encode, Section, SectionId, encode_section};
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 
 /// Represents a subtype of possible other types in a WebAssembly module.
 #[derive(Debug, Clone)]
 pub struct SubType {
     /// Is the subtype final.
     pub is_final: bool,
-    /// The list of supertype indexes. As of GC MVP, there can be at most one supertype.
+    /// The list of supertype indexes. As of GC MVP, there can be at most one
+    /// supertype.
     pub supertype_idx: Option<u32>,
     /// The composite type of the subtype.
     pub composite_type: CompositeType,
-}
-
-impl Encode for SubType {
-    fn encode(&self, sink: &mut Vec<u8>) {
-        // We only need to emit a prefix byte before the actual composite type
-        // when either the type is not final or it has a declared super type.
-        if self.supertype_idx.is_some() || !self.is_final {
-            sink.push(if self.is_final { 0x4f } else { 0x50 });
-            self.supertype_idx.encode(sink);
-        }
-        self.composite_type.encode(sink);
-    }
 }
 
 /// Represents a composite type in a WebAssembly module.
@@ -31,27 +22,10 @@ pub struct CompositeType {
     /// Whether the type is shared. This is part of the
     /// shared-everything-threads proposal.
     pub shared: bool,
-}
-
-impl Encode for CompositeType {
-    fn encode(&self, sink: &mut Vec<u8>) {
-        if self.shared {
-            sink.push(0x65);
-        }
-        match &self.inner {
-            CompositeInnerType::Func(ty) => TypeSection::encode_function(
-                sink,
-                ty.params().iter().copied(),
-                ty.results().iter().copied(),
-            ),
-            CompositeInnerType::Array(ArrayType(ty)) => {
-                TypeSection::encode_array(sink, &ty.element_type, ty.mutable)
-            }
-            CompositeInnerType::Struct(ty) => {
-                TypeSection::encode_struct(sink, ty.fields.iter().cloned())
-            }
-        }
-    }
+    /// Optional descriptor attribute.
+    pub descriptor: Option<u32>,
+    /// Optional describes attribute.
+    pub describes: Option<u32>,
 }
 
 /// A [`CompositeType`] can contain one of these types.
@@ -63,6 +37,8 @@ pub enum CompositeInnerType {
     Array(ArrayType),
     /// The type is for a struct.
     Struct(StructType),
+    /// The type is for a continuation.
+    Cont(ContType),
 }
 
 /// Represents a type of a function in a WebAssembly module.
@@ -119,6 +95,10 @@ impl StorageType {
         }
     }
 }
+
+/// Represents a type of a continuation in a WebAssembly module.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub struct ContType(pub u32);
 
 /// The type of a core WebAssembly value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -319,6 +299,14 @@ impl RefType {
         },
     };
 
+    /// Create a new abstract reference type.
+    pub fn new_abstract(ty: AbstractHeapType, nullable: bool, shared: bool) -> Self {
+        Self {
+            nullable,
+            heap_type: HeapType::Abstract { shared, ty },
+        }
+    }
+
     /// Set the nullability of this reference type.
     pub fn nullable(mut self, nullable: bool) -> Self {
         self.nullable = nullable;
@@ -328,29 +316,34 @@ impl RefType {
 
 impl Encode for RefType {
     fn encode(&self, sink: &mut Vec<u8>) {
-        if self.nullable {
-            // Favor the original encodings of `funcref` and `externref` where
-            // possible.
-            use AbstractHeapType::*;
-            match self.heap_type {
-                HeapType::Abstract {
-                    shared: false,
-                    ty: Func,
-                } => return sink.push(0x70),
-                HeapType::Abstract {
-                    shared: false,
-                    ty: Extern,
-                } => return sink.push(0x6f),
-                _ => {}
+        match self {
+            // Binary abbreviations (i.e., short form), for when the ref is
+            // nullable.
+            RefType {
+                nullable: true,
+                heap_type: heap @ HeapType::Abstract { .. },
+            } => {
+                heap.encode(sink);
+            }
+
+            // Generic 'ref null <heaptype>' encoding (i.e., long form).
+            RefType {
+                nullable: true,
+                heap_type,
+            } => {
+                sink.push(0x63);
+                heap_type.encode(sink);
+            }
+
+            // Generic 'ref <heaptype>' encoding.
+            RefType {
+                nullable: false,
+                heap_type,
+            } => {
+                sink.push(0x64);
+                heap_type.encode(sink);
             }
         }
-
-        if self.nullable {
-            sink.push(0x63);
-        } else {
-            sink.push(0x64);
-        }
-        self.heap_type.encode(sink);
     }
 }
 
@@ -373,6 +366,8 @@ pub enum HeapType {
 
     /// A concrete Wasm-defined type at the given index.
     Concrete(u32),
+    /// An exact type.
+    Exact(u32),
 }
 
 impl HeapType {
@@ -413,6 +408,11 @@ impl Encode for HeapType {
             // Note that this is encoded as a signed type rather than unsigned
             // as it's decoded as an s33
             HeapType::Concrete(i) => i64::from(*i).encode(sink),
+            // Exact type is u32
+            HeapType::Exact(i) => {
+                sink.push(0x62);
+                u32::from(*i).encode(sink)
+            }
         }
     }
 }
@@ -470,6 +470,12 @@ pub enum AbstractHeapType {
 
     /// The abstract `noexn` heap type.
     NoExn,
+
+    /// The abstract `cont` heap type.
+    Cont,
+
+    /// The abstract `nocont` heap type.
+    NoCont,
 }
 
 impl Encode for AbstractHeapType {
@@ -488,6 +494,8 @@ impl Encode for AbstractHeapType {
             I31 => sink.push(0x6C),
             Exn => sink.push(0x69),
             NoExn => sink.push(0x74),
+            Cont => sink.push(0x68),
+            NoCont => sink.push(0x75),
         }
     }
 }
@@ -501,7 +509,7 @@ impl Encode for AbstractHeapType {
 ///
 /// let mut types = TypeSection::new();
 ///
-/// types.function([ValType::I32, ValType::I32], [ValType::I64]);
+/// types.ty().function([ValType::I32, ValType::I32], [ValType::I64]);
 ///
 /// let mut module = Module::new();
 /// module.section(&types);
@@ -530,107 +538,14 @@ impl TypeSection {
         self.num_added == 0
     }
 
-    /// Define a function type in this type section.
-    pub fn function<P, R>(&mut self, params: P, results: R) -> &mut Self
-    where
-        P: IntoIterator<Item = ValType>,
-        P::IntoIter: ExactSizeIterator,
-        R: IntoIterator<Item = ValType>,
-        R::IntoIter: ExactSizeIterator,
-    {
-        Self::encode_function(&mut self.bytes, params, results);
+    /// Encode a function type in this type section.
+    #[must_use = "the encoder must be used to encode the type"]
+    pub fn ty(&mut self) -> CoreTypeEncoder<'_> {
         self.num_added += 1;
-        self
-    }
-
-    /// Define a function type in this type section.
-    pub fn func_type(&mut self, ty: &FuncType) -> &mut Self {
-        Self::encode_function(
-            &mut self.bytes,
-            ty.params().iter().cloned(),
-            ty.results().iter().cloned(),
-        );
-        self.num_added += 1;
-        self
-    }
-
-    fn encode_function<P, R>(sink: &mut Vec<u8>, params: P, results: R)
-    where
-        P: IntoIterator<Item = ValType>,
-        P::IntoIter: ExactSizeIterator,
-        R: IntoIterator<Item = ValType>,
-        R::IntoIter: ExactSizeIterator,
-    {
-        let params = params.into_iter();
-        let results = results.into_iter();
-
-        sink.push(0x60);
-        params.len().encode(sink);
-        params.for_each(|p| p.encode(sink));
-        results.len().encode(sink);
-        results.for_each(|p| p.encode(sink));
-    }
-
-    /// Define an array type in this type section.
-    pub fn array(&mut self, ty: &StorageType, mutable: bool) -> &mut Self {
-        Self::encode_array(&mut self.bytes, ty, mutable);
-        self.num_added += 1;
-        self
-    }
-
-    fn encode_array(sink: &mut Vec<u8>, ty: &StorageType, mutable: bool) {
-        sink.push(0x5e);
-        Self::encode_field(sink, ty, mutable);
-    }
-
-    fn encode_field(sink: &mut Vec<u8>, ty: &StorageType, mutable: bool) {
-        ty.encode(sink);
-        sink.push(mutable as u8);
-    }
-
-    /// Define a struct type in this type section.
-    pub fn struct_<F>(&mut self, fields: F) -> &mut Self
-    where
-        F: IntoIterator<Item = FieldType>,
-        F::IntoIter: ExactSizeIterator,
-    {
-        Self::encode_struct(&mut self.bytes, fields);
-        self.num_added += 1;
-        self
-    }
-
-    fn encode_struct<F>(sink: &mut Vec<u8>, fields: F)
-    where
-        F: IntoIterator<Item = FieldType>,
-        F::IntoIter: ExactSizeIterator,
-    {
-        let fields = fields.into_iter();
-        sink.push(0x5f);
-        fields.len().encode(sink);
-        for f in fields {
-            Self::encode_field(sink, &f.element_type, f.mutable);
+        CoreTypeEncoder {
+            bytes: &mut self.bytes,
+            push_prefix_if_component_core_type: false,
         }
-    }
-
-    /// Define an explicit subtype in this type section.
-    pub fn subtype(&mut self, ty: &SubType) -> &mut Self {
-        ty.encode(&mut self.bytes);
-        self.num_added += 1;
-        self
-    }
-
-    /// Define an explicit recursion group in this type section.
-    pub fn rec<T>(&mut self, types: T) -> &mut Self
-    where
-        T: IntoIterator<Item = SubType>,
-        T::IntoIter: ExactSizeIterator,
-    {
-        let types = types.into_iter();
-        self.bytes.push(0x4e);
-        types.len().encode(&mut self.bytes);
-        types.for_each(|t| t.encode(&mut self.bytes));
-        self.num_added += 1;
-        self
     }
 }
 
@@ -646,6 +561,164 @@ impl Section for TypeSection {
     }
 }
 
+/// A single-use encoder for encoding a type; this forces all encoding for a
+/// type to be done in a single shot.
+#[derive(Debug)]
+pub struct CoreTypeEncoder<'a> {
+    pub(crate) bytes: &'a mut Vec<u8>,
+    // For the time being, this flag handles an ambiguous encoding in the
+    // component model: the `0x50` opcode represents both a core module type as
+    // well as a GC non-final `sub` type. To avoid this, the component model
+    // specification requires us to prefix a non-final `sub` type with `0x00`
+    // when it is used as a top-level core type of a component. Eventually
+    // (prior to the component model's v1.0 release), a module type will get a
+    // new opcode and this special logic can go away.
+    pub(crate) push_prefix_if_component_core_type: bool,
+}
+impl<'a> CoreTypeEncoder<'a> {
+    /// Define a function type in this type section.
+    pub fn function<P, R>(mut self, params: P, results: R)
+    where
+        P: IntoIterator<Item = ValType>,
+        P::IntoIter: ExactSizeIterator,
+        R: IntoIterator<Item = ValType>,
+        R::IntoIter: ExactSizeIterator,
+    {
+        self.encode_function(params, results);
+    }
+
+    /// Define a function type in this type section.
+    pub fn func_type(mut self, ty: &FuncType) {
+        self.encode_function(ty.params().iter().cloned(), ty.results().iter().cloned());
+    }
+
+    fn encode_function<P, R>(&mut self, params: P, results: R)
+    where
+        P: IntoIterator<Item = ValType>,
+        P::IntoIter: ExactSizeIterator,
+        R: IntoIterator<Item = ValType>,
+        R::IntoIter: ExactSizeIterator,
+    {
+        let params = params.into_iter();
+        let results = results.into_iter();
+
+        self.bytes.push(0x60);
+        params.len().encode(self.bytes);
+        params.for_each(|p| p.encode(self.bytes));
+        results.len().encode(self.bytes);
+        results.for_each(|p| p.encode(self.bytes));
+    }
+
+    /// Define an array type in this type section.
+    pub fn array(mut self, ty: &StorageType, mutable: bool) {
+        self.encode_array(ty, mutable);
+    }
+
+    fn encode_array(&mut self, ty: &StorageType, mutable: bool) {
+        self.bytes.push(0x5e);
+        self.encode_field(ty, mutable);
+    }
+
+    fn encode_field(&mut self, ty: &StorageType, mutable: bool) {
+        ty.encode(self.bytes);
+        self.bytes.push(mutable as u8);
+    }
+
+    /// Define a struct type in this type section.
+    pub fn struct_<F>(mut self, fields: F)
+    where
+        F: IntoIterator<Item = FieldType>,
+        F::IntoIter: ExactSizeIterator,
+    {
+        self.encode_struct(fields);
+    }
+
+    fn encode_struct<F>(&mut self, fields: F)
+    where
+        F: IntoIterator<Item = FieldType>,
+        F::IntoIter: ExactSizeIterator,
+    {
+        let fields = fields.into_iter();
+        self.bytes.push(0x5f);
+        fields.len().encode(self.bytes);
+        for f in fields {
+            self.encode_field(&f.element_type, f.mutable);
+        }
+    }
+
+    /// Define a continuation type in this subsection
+    pub fn cont(mut self, ty: &ContType) {
+        self.encode_cont(ty)
+    }
+
+    fn encode_cont(&mut self, ty: &ContType) {
+        self.bytes.push(0x5d);
+        i64::from(ty.0).encode(self.bytes);
+    }
+
+    /// Define an explicit subtype in this type section.
+    pub fn subtype(mut self, ty: &SubType) {
+        self.encode_subtype(ty)
+    }
+
+    /// Define an explicit subtype in this type section.
+    fn encode_subtype(&mut self, ty: &SubType) {
+        // We only need to emit a prefix byte before the actual composite type
+        // when either the `sub` type is not final or it has a declared super
+        // type (see notes on `push_prefix_if_component_core_type`).
+        if ty.supertype_idx.is_some() || !ty.is_final {
+            if ty.is_final {
+                self.bytes.push(0x4f);
+            } else {
+                if self.push_prefix_if_component_core_type {
+                    self.bytes.push(0x00);
+                }
+                self.bytes.push(0x50);
+            }
+            ty.supertype_idx.encode(self.bytes);
+        }
+        if ty.composite_type.shared {
+            self.bytes.push(0x65);
+        }
+        if let Some(index) = ty.composite_type.describes {
+            self.bytes.push(0x4c);
+            index.encode(self.bytes);
+        }
+        if let Some(index) = ty.composite_type.descriptor {
+            self.bytes.push(0x4d);
+            index.encode(self.bytes);
+        }
+        match &ty.composite_type.inner {
+            CompositeInnerType::Func(ty) => {
+                self.encode_function(ty.params().iter().copied(), ty.results().iter().copied())
+            }
+            CompositeInnerType::Array(ArrayType(ty)) => {
+                self.encode_array(&ty.element_type, ty.mutable)
+            }
+            CompositeInnerType::Struct(ty) => self.encode_struct(ty.fields.iter().cloned()),
+            CompositeInnerType::Cont(ty) => self.encode_cont(ty),
+        }
+    }
+
+    /// Define an explicit recursion group in this type section.
+    pub fn rec<T>(mut self, types: T)
+    where
+        T: IntoIterator<Item = SubType>,
+        T::IntoIter: ExactSizeIterator,
+    {
+        // When emitting a `rec` group, we will never emit `sub`'s special
+        // `0x00` prefix; that is only necessary when `sub` is not wrapped by
+        // `rec` (see notes on `push_prefix_if_component_core_type`).
+        self.push_prefix_if_component_core_type = false;
+        let types = types.into_iter();
+        self.bytes.push(0x4e);
+        types.len().encode(self.bytes);
+        types.for_each(|t| {
+            self.encode_subtype(&t);
+        });
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -655,12 +728,14 @@ mod tests {
     #[test]
     fn func_types_dont_require_wasm_gc() {
         let mut types = TypeSection::new();
-        types.subtype(&SubType {
+        types.ty().subtype(&SubType {
             is_final: true,
             supertype_idx: None,
             composite_type: CompositeType {
                 inner: CompositeInnerType::Func(FuncType::new([], [])),
                 shared: false,
+                descriptor: None,
+                describes: None,
             },
         });
 

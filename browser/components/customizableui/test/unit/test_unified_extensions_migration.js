@@ -7,7 +7,7 @@ http://creativecommons.org/publicdomain/zero/1.0/ */
 // We definitely do need to manually import CustomizableUI.
 // eslint-disable-next-line mozilla/no-redeclare-with-import-autofix
 const { CustomizableUI } = ChromeUtils.importESModule(
-  "resource:///modules/CustomizableUI.sys.mjs"
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
 );
 
 do_get_profile();
@@ -48,7 +48,7 @@ function migrateForward(stateObj) {
   }
 
   CustomizableUI.setTestOnlyInternalProp("gSavedState", stateToSave);
-  CustomizableUIInternal._updateForNewVersion();
+  CustomizableUIInternal.updateForNewVersion();
 
   let migratedState = CustomizableUI.getTestOnlyInternalProp("gSavedState");
   if (migratedState) {
@@ -96,8 +96,8 @@ add_task(async function test_no_extensions() {
         "back-button",
         "forward-button",
         "spring",
+        "vertical-spacer",
         "urlbar-container",
-        "save-to-pocket-button",
         "reset-pbm-toolbar-button",
       ],
       "toolbar-menubar": [
@@ -143,8 +143,8 @@ add_task(async function test_existing_browser_actions_no_movement() {
         "back-button",
         "forward-button",
         "spring",
+        "vertical-spacer",
         "urlbar-container",
-        "save-to-pocket-button",
         "reset-pbm-toolbar-button",
       ],
       "toolbar-menubar": [
@@ -186,8 +186,8 @@ add_task(async function test_migrate_extension_buttons() {
         "back-button",
         "forward-button",
         "spring",
+        "vertical-spacer",
         "urlbar-container",
-        "save-to-pocket-button",
         "reset-pbm-toolbar-button",
       ],
       "toolbar-menubar": [
@@ -245,8 +245,8 @@ add_task(async function test_migrate_extension_buttons_no_overwrite() {
         "back-button",
         "forward-button",
         "spring",
+        "vertical-spacer",
         "urlbar-container",
-        "save-to-pocket-button",
         "reset-pbm-toolbar-button",
       ],
       "toolbar-menubar": [
@@ -309,9 +309,9 @@ add_task(async function test_migrate_extension_buttons_elsewhere() {
         "ext1-browser-action",
         "spring",
         "ext2-browser-action",
+        "vertical-spacer",
         "urlbar-container",
         "ext3-browser-action",
-        "save-to-pocket-button",
         "reset-pbm-toolbar-button",
         "ext4-browser-action",
       ],

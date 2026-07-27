@@ -10,8 +10,8 @@ use std::collections::HashMap;
 
 use serde_json::{json, Value as JsonValue};
 
-use crate::coverage::record_coverage;
 use crate::database::Database;
+use crate::metrics::dual_labeled_counter::RECORD_SEPARATOR;
 use crate::metrics::Metric;
 use crate::Lifetime;
 
@@ -31,7 +31,18 @@ fn snapshot_labeled_metrics(
     metric_id: &str,
     metric: &Metric,
 ) {
-    let ping_section = format!("labeled_{}", metric.ping_section());
+    // Explicit match for supported labeled metrics, avoiding the formatting string
+    let ping_section = match metric.ping_section() {
+        "boolean" => "labeled_boolean".to_string(),
+        "counter" => "labeled_counter".to_string(),
+        "timing_distribution" => "labeled_timing_distribution".to_string(),
+        "memory_distribution" => "labeled_memory_distribution".to_string(),
+        "custom_distribution" => "labeled_custom_distribution".to_string(),
+        "quantity" => "labeled_quantity".to_string(),
+        // This should never happen, we covered all cases.
+        // Should we ever extend it this would however at least catch it and do the right thing.
+        _ => format!("labeled_{}", metric.ping_section()),
+    };
     let map = snapshot.entry(ping_section).or_default();
 
     // Safe unwrap, the function is only called when the id does contain a '/'
@@ -40,6 +51,30 @@ fn snapshot_labeled_metrics(
     let obj = map.entry(metric_id.into()).or_insert_with(|| json!({}));
     let obj = obj.as_object_mut().unwrap(); // safe unwrap, we constructed the object above
     obj.insert(label.into(), metric.as_json());
+}
+
+/// Dual Labeled metrics are stored as `<metric id><\x1e><key><\x1e><category>`.
+/// They need to go into a nested object in the final snapshot.
+///
+/// We therefore extract the metric id and the label from the key and construct the new object or
+/// add to it.
+fn snapshot_dual_labeled_metrics(
+    snapshot: &mut HashMap<String, HashMap<String, JsonValue>>,
+    metric_id: &str,
+    metric: &Metric,
+) {
+    let ping_section = format!("dual_labeled_{}", metric.ping_section());
+    let map = snapshot.entry(ping_section).or_default();
+    let parts = metric_id.split(RECORD_SEPARATOR).collect::<Vec<&str>>();
+
+    let obj = map
+        .entry(parts[0].into())
+        .or_insert_with(|| json!({}))
+        .as_object_mut()
+        .unwrap(); // safe unwrap, we constructed the object above
+    let key_obj = obj.entry(parts[1].to_string()).or_insert_with(|| json!({}));
+    let key_obj = key_obj.as_object_mut().unwrap();
+    key_obj.insert(parts[2].into(), metric.as_json());
 }
 
 impl StorageManager {
@@ -89,6 +124,8 @@ impl StorageManager {
             let metric_id = String::from_utf8_lossy(metric_id).into_owned();
             if metric_id.contains('/') {
                 snapshot_labeled_metrics(&mut snapshot, &metric_id, metric);
+            } else if metric_id.split(RECORD_SEPARATOR).count() == 3 {
+                snapshot_dual_labeled_metrics(&mut snapshot, &metric_id, metric);
             } else {
                 let map = snapshot.entry(metric.ping_section().into()).or_default();
                 map.insert(metric_id, metric.as_json());
@@ -149,29 +186,39 @@ impl StorageManager {
         snapshot
     }
 
-    /// Gets the current value of a single metric identified by name.
-    ///
-    /// Use this API, rather than `snapshot_metric` within the testing API, so
-    /// that the usage will be reported in coverage, if enabled.
+    /// Gets the list of currently-stored labels for a single labeled metric.
     ///
     /// # Arguments
     ///
     /// * `storage` - The database to get data from.
     /// * `store_name` - The store name to look into.
     /// * `metric_id` - The full metric identifier.
+    /// * `metric_lifetime` - The metric's lifetime.
     ///
     /// # Returns
     ///
-    /// The decoded metric or `None` if no data is found.
-    pub fn snapshot_metric_for_test(
+    /// The list of all labels with values in the db. Empty if none.
+    pub fn snapshot_labels(
         &self,
         storage: &Database,
         store_name: &str,
         metric_id: &str,
         metric_lifetime: Lifetime,
-    ) -> Option<Metric> {
-        record_coverage(metric_id);
-        self.snapshot_metric(storage, store_name, metric_id, metric_lifetime)
+    ) -> Vec<String> {
+        let mut labels = Vec::new();
+
+        let mut snapshotter = |id: &[u8], _metric: &Metric| {
+            let id = String::from_utf8_lossy(id).into_owned();
+            if let Some((base_id, label)) = id.split_once('/') {
+                if base_id == metric_id {
+                    labels.push(label.to_owned());
+                }
+            }
+        };
+
+        storage.iter_store_from(metric_lifetime, store_name, None, &mut snapshotter);
+
+        labels
     }
 
     ///  Snapshots the experiments.

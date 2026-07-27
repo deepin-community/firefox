@@ -1,10 +1,11 @@
+use alloc::{format, vec, vec::Vec};
+
+use super::{Error, Instruction, LookupExpression, LookupHelper as _};
+use crate::proc::Emitter;
 use crate::{
     arena::{Arena, Handle},
     front::spv::{BlockContext, BodyIndex},
 };
-
-use super::{Error, Instruction, LookupExpression, LookupHelper as _};
-use crate::proc::Emitter;
 
 pub type BlockId = u32;
 
@@ -60,6 +61,7 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
                 ),
                 named_expressions: crate::NamedExpressions::default(),
                 body: crate::Block::new(),
+                diagnostic_filter_leaf: None,
             }
         };
 
@@ -110,6 +112,9 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
             }
         }
 
+        // Note the index this function's handle will be assigned, for tracing.
+        let function_index = module.functions.len();
+
         // Read body
         self.function_call_graph.add_node(fun_id);
         let mut parameters_sampling =
@@ -121,14 +126,10 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
             body_for_label: Default::default(),
             mergers: Default::default(),
             bodies: Default::default(),
+            module,
             function_id: fun_id,
             expressions: &mut fun.expressions,
             local_arena: &mut fun.local_variables,
-            const_arena: &mut module.constants,
-            overrides: &mut module.overrides,
-            global_expressions: &mut module.global_expressions,
-            type_arena: &module.types,
-            global_arena: &module.global_variables,
             arguments: &fun.arguments,
             parameter_sampling: &mut parameters_sampling,
         };
@@ -157,6 +158,18 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
                     fun_inst.expect(1)?;
                     break;
                 }
+                spirv::Op::ExtInst => {
+                    let _ = self.next()?;
+                    let _ = self.next()?;
+                    let set_id = self.next()?;
+                    if Some(set_id) == self.ext_non_semantic_id {
+                        for _ in 0..fun_inst.wc - 4 {
+                            self.next()?;
+                        }
+                    } else {
+                        return Err(Error::UnsupportedInstruction(self.state, fun_inst.op));
+                    }
+                }
                 _ => {
                     return Err(Error::UnsupportedInstruction(self.state, fun_inst.op));
                 }
@@ -166,12 +179,20 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
         if let Some(ref prefix) = self.options.block_ctx_dump_prefix {
             let dump_suffix = match self.lookup_entry_point.get(&fun_id) {
                 Some(ep) => format!("block_ctx.{:?}-{}.txt", ep.stage, ep.name),
-                None => format!("block_ctx.Fun-{}.txt", module.functions.len()),
+                None => format!("block_ctx.Fun-{function_index}.txt"),
             };
-            let dest = prefix.join(dump_suffix);
-            let dump = format!("{block_ctx:#?}");
-            if let Err(e) = std::fs::write(&dest, dump) {
-                log::error!("Unable to dump the block context into {:?}: {}", dest, e);
+
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "fs")] {
+                    let prefix: &std::path::Path = prefix.as_ref();
+                    let dest = prefix.join(dump_suffix);
+                    let dump = format!("{block_ctx:#?}");
+                    if let Err(e) = std::fs::write(&dest, dump) {
+                        log::error!("Unable to dump the block context into {dest:?}: {e}");
+                    }
+                } else {
+                    log::error!("Unable to dump the block context into {prefix:?}/{dump_suffix}: file system integration was not enabled with the `fs` feature");
+                }
             }
         }
 
@@ -182,7 +203,7 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
         // to get the spill.
         for phi in block_ctx.phis.iter() {
             // Get a pointer to the local variable for the phi's value.
-            let phi_pointer = block_ctx.expressions.append(
+            let phi_pointer: Handle<crate::Expression> = block_ctx.expressions.append(
                 crate::Expression::LocalVariable(phi.local),
                 crate::Span::default(),
             );
@@ -311,6 +332,7 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
             expressions: Arena::new(),
             named_expressions: crate::NamedExpressions::default(),
             body: crate::Block::new(),
+            diagnostic_filter_leaf: None,
         };
 
         // 1. copy the inputs from arguments to privates
@@ -372,7 +394,15 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
         );
 
         // 3. copy the outputs from privates to the result
+        //
+        // It would be nice to share struct layout code here with `parse_type_struct`,
+        // but that case needs to take into account offset decorations, which makes an
+        // abstraction harder to follow than just writing out what we mean. `Layouter`
+        // and `Alignment` cover the worst parts already.
         let mut members = Vec::new();
+        self.layouter.update(module.to_ctx()).unwrap();
+        let mut next_member_offset = 0;
+        let mut struct_alignment = crate::proc::Alignment::ONE;
         let mut components = Vec::new();
         for &v_id in ep.variable_ids.iter() {
             let lvar = self.lookup_variable.lookup(v_id)?;
@@ -433,6 +463,11 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
                                 }
                             }
 
+                            let member_alignment = self.layouter[sm.ty].alignment;
+                            next_member_offset = member_alignment.round_up(next_member_offset);
+                            sm.offset = next_member_offset;
+                            struct_alignment = struct_alignment.max(member_alignment);
+                            next_member_offset += self.layouter[sm.ty].size;
                             members.push(sm);
 
                             components.push(function.expressions.append(
@@ -452,12 +487,16 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
                             }
                         }
 
+                        let member_alignment = self.layouter[result.ty].alignment;
+                        next_member_offset = member_alignment.round_up(next_member_offset);
                         members.push(crate::StructMember {
                             name: None,
                             ty: result.ty,
                             binding,
-                            offset: 0,
+                            offset: next_member_offset,
                         });
+                        struct_alignment = struct_alignment.max(member_alignment);
+                        next_member_offset += self.layouter[result.ty].size;
                         // populate just the globals first, then do `Load` in a
                         // separate step, so that we can get a range.
                         components.push(expr_handle);
@@ -543,7 +582,7 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
                         name: None,
                         inner: crate::TypeInner::Struct {
                             members,
-                            span: 0xFFFF, // shouldn't matter
+                            span: struct_alignment.round_up(next_member_offset),
                         },
                     },
                     span,
@@ -567,20 +606,24 @@ impl<I: Iterator<Item = u32>> super::Frontend<I> {
             stage: ep.stage,
             early_depth_test: ep.early_depth_test,
             workgroup_size: ep.workgroup_size,
+            workgroup_size_overrides: None,
             function,
+            mesh_info: None,
+            task_payload: None,
+            incoming_ray_payload: None,
         });
 
         Ok(())
     }
 }
 
-impl<'function> BlockContext<'function> {
-    pub(super) fn gctx(&self) -> crate::proc::GlobalCtx {
+impl BlockContext<'_> {
+    pub(super) const fn gctx(&self) -> crate::proc::GlobalCtx<'_> {
         crate::proc::GlobalCtx {
-            types: self.type_arena,
-            constants: self.const_arena,
-            overrides: self.overrides,
-            global_expressions: self.global_expressions,
+            types: &self.module.types,
+            constants: &self.module.constants,
+            overrides: &self.module.overrides,
+            global_expressions: &self.module.global_expressions,
         }
     }
 
@@ -641,7 +684,7 @@ impl<'function> BlockContext<'function> {
                                 let body = lower_impl(blocks, bodies, body_idx);
 
                                 // Handle simple cases that would make a fallthrough statement unreachable code
-                                let fall_through = body.last().map_or(true, |s| !s.is_terminator());
+                                let fall_through = body.last().is_none_or(|s| !s.is_terminator());
 
                                 crate::SwitchCase {
                                     value: crate::SwitchValue::I32(value),

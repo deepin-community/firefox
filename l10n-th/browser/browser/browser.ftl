@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = การเรียกดูแบบส่วนตัวของ { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — การเรียกดูแบบส่วนตัว
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — การเรียกดูแบบส่วนตัว
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — การเรียกดูแบบส่วนตัว
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — การเรียกดูแบบส่วนตัว
+       *[other] การเรียกดูแบบส่วนตัวใน { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = การท่องเว็บแบบส่วนตัว
+popups-infobar-dont-show-message2 =
+    .label = ไม่ต้องแสดงข้อความนี้เมื่อป๊อปอัปหรือการเปลี่ยนเส้นทางจากบุคคลที่สามถูกปิดกั้น
+    .accesskey = ม
+edit-popup-settings2 =
+    .label = จัดการการตั้งค่าป๊อปอัปและการเปลี่ยนเส้นทางจากบุคคลที่สาม…
+    .accesskey = จ
 
 ##
 
@@ -65,6 +140,8 @@ urlbar-web-notification-anchor =
     .tooltiptext = เลือกว่าคุณสามารถรับการแจ้งเตือนจากไซต์ได้หรือไม่
 urlbar-midi-notification-anchor =
     .tooltiptext = เปิดแผง MIDI
+urlbar-serial-notification-anchor =
+    .tooltiptext = เปิดแผงซีเรียล
 urlbar-eme-notification-anchor =
     .tooltiptext = จัดการการใช้ซอฟต์แวร์ DRM
 urlbar-web-authn-anchor =
@@ -77,10 +154,14 @@ urlbar-default-notification-anchor =
     .tooltiptext = เปิดแผงข้อความ
 urlbar-geolocation-notification-anchor =
     .tooltiptext = เปิดแผงคำขอตำแหน่งที่ตั้ง
+urlbar-localhost-notification-anchor =
+    .tooltiptext = จัดการการเข้าถึงอุปกรณ์เฉพาะที่สำหรับไซต์นี้
+urlbar-local-network-notification-anchor =
+    .tooltiptext = จัดการการแบ่งปันการเข้าถึงเครือข่ายเฉพาะที่ของคุณกับไซต์นี้
 urlbar-xr-notification-anchor =
-    .tooltiptext = เปิดแผงสิทธิอนุญาตความจริงเสมือน
+    .tooltiptext = เปิดแผงการกำหนดสิทธิ์ความเป็นจริงเสมือน
 urlbar-storage-access-anchor =
-    .tooltiptext = เปิดแผงสิทธิอนุญาตกิจกรรมการเรียกดู
+    .tooltiptext = เปิดแผงการกำหนดสิทธิ์กิจกรรมการเรียกดู
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = จัดการการแบ่งปันหน้าต่างหรือหน้าจอของคุณกับไซต์
 urlbar-indexed-db-notification-anchor =
@@ -94,7 +175,7 @@ urlbar-web-rtc-share-devices-notification-anchor =
 # "Speakers" is used in a general sense that might include headphones or
 # another audio output connection.
 urlbar-web-rtc-share-speaker-notification-anchor =
-    .tooltiptext = จัดการการแบ่งปันลำโพงอื่นๆ กับไซต์
+    .tooltiptext = จัดการการแบ่งปันลำโพงอื่น ๆ กับไซต์
 urlbar-autoplay-notification-anchor =
     .tooltiptext = เปิดแผงการเล่นอัตโนมัติ
 urlbar-persistent-storage-notification-anchor =
@@ -112,8 +193,26 @@ urlbar-tip-icon-description =
     .alt = เคล็ดลับ:
 urlbar-result-menu-button =
     .title = เปิดเมนู
-urlbar-result-menu-button-feedback = ข้อคิดเห็น
+urlbar-result-menu-button-feedback = ข้อเสนอแนะ
     .title = เปิดเมนู
+urlbar-result-menu-learn-more2 = เรียนรู้เพิ่มเติม
+    .accesskey = ร
+urlbar-result-menu-remove-from-history2 = เอาออกจากประวัติ
+    .accesskey = อ
+urlbar-result-menu-tip-get-help2 = รับความช่วยเหลือ
+    .accesskey = ช
+urlbar-result-menu-dismiss-suggestion2 = เพิกเฉยคำแนะนำนี้
+    .accesskey = พ
+urlbar-result-menu-manage-firefox-suggest2 = จัดการ { -firefox-suggest-brand-name }
+    .accesskey = M
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = รายงานตำแหน่งที่ไม่แม่นยำ
+urlbar-result-menu-show-less-frequently2 = แสดงน้อยลง
+urlbar-result-menu-dont-show-weather-suggestions2 = ไม่ต้องแสดงคำแนะนำเกี่ยวกับสภาพอากาศ
 urlbar-result-menu-learn-more =
     .label = เรียนรู้เพิ่มเติม
     .accesskey = ร
@@ -123,14 +222,43 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = รับความช่วยเหลือ
     .accesskey = ช
+urlbar-result-menu-dismiss-suggestion =
+    .label = เพิกเฉยคำแนะนำนี้
+    .accesskey = พ
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = เรียนรู้เพิ่มเติมเกี่ยวกับ { -firefox-suggest-brand-name }
+    .accesskey = L
+urlbar-result-menu-manage-firefox-suggest =
+    .label = จัดการ { -firefox-suggest-brand-name }
+    .accesskey = M
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = รายงานตำแหน่งที่ไม่แม่นยำ
+urlbar-result-menu-show-less-frequently =
+    .label = แสดงน้อยลง
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = ไม่ต้องแสดงคำแนะนำเกี่ยวกับสภาพอากาศ
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = เปิดเมนู
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = ขอบคุณสำหรับข้อเสนอแนะของคุณ
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = ขอบคุณสำหรับข้อเสนอแนะของคุณ คุณจะไม่เห็นคำแนะนำเกี่ยวกับสภาพอากาศอีกต่อไป
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
 ## Variables:
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
-urlbar-search-tips-onboard = พิมพ์น้อยลง ค้นหามากขึ้น: ค้นหา { $engineName } โดยตรงจากแถบที่อยู่ของคุณ
-urlbar-search-tips-redirect-2 = เริ่มการค้นหาของคุณในแถบที่อยู่เพื่อดูข้อเสนอแนะจาก { $engineName } และประวัติการเรียกดูของคุณ
+urlbar-search-tips-onboard = พิมพ์น้อยลง ค้นหาได้มากขึ้น: ค้นหา { $engineName } โดยตรงจากแถบที่อยู่ของคุณ
+urlbar-search-tips-redirect-2 = เริ่มการค้นหาของคุณในแถบที่อยู่เพื่อดูคำแนะนำจาก { $engineName } และประวัติการเรียกดูของคุณ
 # Make sure to match the name of the Search panel in settings.
 urlbar-search-tips-persist = ตอนนี้การค้นหาทำได้ง่ายขึ้นแล้ว ลองทำให้การค้นหาของคุณเจาะจงขึ้นที่นี่ในแถบที่อยู่ เมื่อต้องการแสดง URL แทน ให้ไปที่ การค้นหา ในการตั้งค่า
 # Prompts users to use the Urlbar when they are typing in the domain of a
@@ -148,6 +276,10 @@ urlbar-search-mode-actions = การกระทำ
 
 urlbar-geolocation-blocked =
     .tooltiptext = คุณได้ปิดกั้นข้อมูลตำแหน่งที่ตั้งสำหรับเว็บไซต์นี้
+urlbar-localhost-blocked =
+    .tooltiptext = คุณได้ปิดกั้นการเชื่อมต่ออุปกรณ์เฉพาะที่สำหรับเว็บไซต์นี้
+urlbar-local-network-blocked =
+    .tooltiptext = คุณได้ปิดกั้นการเชื่อมต่อเครือข่ายเฉพาะที่สำหรับเว็บไซต์นี้
 urlbar-xr-blocked =
     .tooltiptext = คุณได้ปิดกั้นการเข้าถึงอุปกรณ์ความจริงเสมือนสำหรับเว็บไซต์นี้
 urlbar-web-notifications-blocked =
@@ -160,6 +292,8 @@ urlbar-screen-blocked =
     .tooltiptext = คุณได้ปิดกั้นเว็บไซต์นี้จากการแบ่งปันหน้าจอของคุณ
 urlbar-persistent-storage-blocked =
     .tooltiptext = คุณได้ปิดกั้นที่เก็บข้อมูลถาวรสำหรับเว็บไซต์นี้
+urlbar-popup-blocked2 =
+    .tooltiptext = คุณได้ปิดกั้นป๊อปอัปและการเปลี่ยนเส้นทางจากบุคคลที่สามสำหรับเว็บไซต์นี้
 urlbar-popup-blocked =
     .tooltiptext = คุณได้ปิดกั้นป๊อปอัปสำหรับเว็บไซต์นี้
 urlbar-autoplay-media-blocked =
@@ -168,6 +302,8 @@ urlbar-canvas-blocked =
     .tooltiptext = คุณได้ปิดกั้นการส่งออกข้อมูลผืนผ้าใบสำหรับเว็บไซต์นี้
 urlbar-midi-blocked =
     .tooltiptext = คุณได้ปิดกั้นการเข้าถึง MIDI สำหรับเว็บไซต์นี้
+urlbar-serial-blocked =
+    .tooltiptext = คุณได้ปิดกั้นการเข้าถึงพอร์ตซีเรียลสำหรับเว็บไซต์นี้
 urlbar-install-blocked =
     .tooltiptext = คุณได้ปิดกั้นการติดตั้งส่วนเสริมสำหรับเว็บไซต์นี้
 # Variables
@@ -178,6 +314,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = เพิ่มที่คั่นหน้าสำหรับหน้านี้ ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = มุมมองแยก
+    .aria-label = มุมมองแยก
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = ล้างประวัติการค้นหา
+    .accesskey = ง
 
 ## Page Action Context Menu
 
@@ -250,14 +395,22 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = ดูส่วนเสริม
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = ส่วนขยาย, ชุดตกแต่ง, ส่วนเสริม
 quickactions-cmd-addons2 = ส่วนเสริม
 # Opens the bookmarks library window
 quickactions-bookmarks2 = จัดการที่คั่นหน้า
 quickactions-cmd-bookmarks = ที่คั่นหน้าที่คั่นหน้า
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = ล้างประวัติล่าสุด
+quickactions-cmd-clearrecenthistory2 = คุกกี้, ล้างคุกกี้, แคช, ล้างแคช, ประวัติการเรียกดู, ล้างประวัติการเรียกดู, ประวัติ, ล้างประวัติล่าสุด
+quickactions-cmd-clearrecenthistory = ล้างประวัติล่าสุด, ประวัติ
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = ล้างประวัติ
 quickactions-cmd-clearhistory = ล้างประวัติ
@@ -266,13 +419,36 @@ quickactions-downloads2 = ดูการดาวน์โหลด
 quickactions-cmd-downloads = ดาวน์โหลด
 # Opens about:addons page in the extensions section
 quickactions-extensions = จัดการส่วนขยาย
+quickactions-cmd-extensions2 = ส่วนขยาย, ส่วนเสริม
 quickactions-cmd-extensions = ส่วนขยาย
+# Opens Firefox View
+quickactions-firefoxview = เปิด { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = เปิด { -firefoxview-brand-name }, { -firefoxview-brand-name }, เปิด view, view
+# Opens SUMO home page
+quickactions-help = ความช่วยเหลือของ { -brand-product-name }
+quickactions-cmd-help = ความช่วยเหลือ, สนับสนุน
 # Opens the devtools web inspector
 quickactions-inspector2 = เปิดเครื่องมือนักพัฒนา
+quickactions-cmd-inspector2 = ตัวตรวจสอบ, devtools, เครื่องมือนักพัฒนา
+# Opens the devtools eyedropper to pick a color from the page
+quickactions-colorpicker = เลือกสี
+quickactions-cmd-colorpicker = ตัวเลือกสี, หลอดดูดสี, เลือกสี
+# Opens Firefox Library
+quickactions-cmd-library = ห้องสมุด
+quickactions-library = เปิดห้องสมุด
 quickactions-cmd-inspector = ตัวตรวจสอบ, devtools
 # Opens about:logins
 quickactions-logins2 = จัดการรหัสผ่าน
 quickactions-cmd-logins = การเข้าสู่ระบบ, รหัสผ่าน
+# Mutes all tabs playing audio
+quickactions-mute = ปิดเสียงแท็บที่เล่นเสียงอยู่
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = ปิดเสียง, ชู่ว, ชู่ว์, เงียบ
 # Opens about:addons page in the plugins section
 quickactions-plugins = จัดการปลั๊กอิน
 quickactions-cmd-plugins = ปลั๊กอิน
@@ -281,7 +457,10 @@ quickactions-print2 = พิมพ์หน้า
 quickactions-cmd-print = พิมพ์
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = บันทึกหน้าเป็น PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, บันทึกหน้า
+# Opens about:pdf, the PDF editor landing page
+quickactions-editpdf = เปิดตัวแก้ไข PDF
+quickactions-cmd-editpdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = เปิดหน้าต่างส่วนตัว
 quickactions-cmd-private = การเรียกดูแบบส่วนตัว
@@ -293,22 +472,40 @@ quickactions-restart = เริ่มการทำงาน { -brand-short-na
 quickactions-cmd-restart = เริ่มการทำงานใหม่
 # Opens the screenshot tool
 quickactions-screenshot3 = จับภาพหน้าจอ
+quickactions-cmd-screenshot2 = ภาพหน้าจอ, เก็บภาพหน้าจอ
+# Opens about:translations
+quickactions-translate = แปล
+quickactions-cmd-translate = แปล
 quickactions-cmd-screenshot = ภาพหน้าจอ
 # Opens about:preferences
 quickactions-settings2 = จัดการการตั้งค่า
-quickactions-cmd-settings = การตั้งค่า, การกำหนดลักษณะ, ตัวเลือก
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = การตั้งค่า, ค่าปรับแต่ง, ตัวเลือก, จัดการ
+quickactions-cmd-settings = การตั้งค่า, ค่าปรับแต่ง, ตัวเลือก
 # Opens about:addons page in the themes section
 quickactions-themes = จัดการชุดตกแต่ง
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = ชุดตกแต่ง, ส่วนเสริม
 quickactions-cmd-themes = ชุดตกแต่ง
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = อัปเดต { -brand-short-name }
 quickactions-cmd-update = อัปเดต
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = ดูต้นฉบับหน้า
+quickactions-cmd-viewsource2 = ดูต้นฉบับ, ต้นฉบับ, ต้นฉบับหน้า
+# Opens about:preferences:experimental (Firefox Labs)
+quickactions-labs = เปิด { -firefoxlabs-brand-name }
+quickactions-cmd-labs = ห้องทดลอง, การทดลอง
 quickactions-cmd-viewsource = ดูต้นฉบับ, ต้นฉบับ
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = เรียนรู้เพิ่มเติมเกี่ยวกับคำสั่งด่วน
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = กดแท็บเพื่อเลือก:
 
 ## Bookmark Panel
 
@@ -375,17 +572,21 @@ identity-permissions-storage-access-learn-more = เรียนรู้เพ�
 identity-permissions-reload-hint = คุณอาจจำเป็นต้องโหลดหน้าใหม่เพื่อให้การเปลี่ยนแปลงมีผล
 identity-clear-site-data =
     .label = ล้างคุกกี้และข้อมูลไซต์…
-identity-connection-not-secure-security-view = คุณไม่ได้เชื่อมต่ออย่างปลอดภัยไปยังไซต์นี้
-identity-connection-verified = คุณได้เชื่อมต่ออย่างปลอดภัยไปยังไซต์นี้
+identity-connection-not-secure-security-view = คุณไม่ได้เชื่อมต่อกับไซต์นี้อย่างปลอดภัย
+identity-connection-verified = คุณได้เชื่อมต่อกับไซต์นี้อย่างปลอดภัย
 identity-ev-owner-label = ออกใบรับรองให้กับ:
+identity-verifier-label = ยืนยันโดย:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = มีคุณสมบัติตรงตามที่ระบุไว้ในระเบียบ (EU) 2024/1183
 identity-description-custom-root2 = Mozilla ไม่รู้จักผู้ออกใบรับรองนี้ ซึ่งอาจถูกเพิ่มจากระบบปฏิบัติการของคุณหรือโดยผู้ดูแลระบบ
+identity-cert-exception-overridden = คุณได้เพิ่มข้อยกเว้นความปลอดภัยสำหรับไซต์นี้
 identity-remove-cert-exception =
     .label = เอาข้อยกเว้นออก
     .accesskey = อ
 identity-description-insecure = การเชื่อมต่อของคุณไปยังไซต์นี้ไม่เป็นส่วนตัว ข้อมูลที่คุณแบ่งปันกับไซต์นี้สามารถดูได้โดยผู้อื่น (เช่น รหัสผ่าน, ข้อความ, บัตรเครดิต ฯลฯ)
 identity-description-insecure-login-forms = การเข้าสู่ระบบที่คุณป้อนบนหน้านี้ไม่ปลอดภัยและอาจถูกบุกรุกได้
 identity-description-weak-cipher-intro = การเชื่อมต่อของคุณไปยังเว็บไซต์นี้ใช้การเข้ารหัสที่อ่อนแอและไม่เป็นส่วนตัว
-identity-description-weak-cipher-risk = คนอื่นๆ จะสามารถดูข้อมูลของคุณหรือปรับเปลี่ยนลักษณะการทำงานของเว็บไซต์ได้
+identity-description-weak-cipher-risk = คนอื่น ๆ จะสามารถดูข้อมูลของคุณหรือปรับเปลี่ยนลักษณะการทำงานของเว็บไซต์ได้
 identity-description-active-blocked2 = { -brand-short-name } ได้ปิดกั้นบางส่วนของหน้านี้ที่ไม่ปลอดภัย
 identity-description-passive-loaded = การเชื่อมต่อของคุณไม่เป็นส่วนตัวและข้อมูลที่คุณแบ่งปันกับเว็บไซต์คนอื่นสามารถดูได้
 identity-description-passive-loaded-insecure2 = เว็บไซต์นี้มีเนื้อหาที่ไม่ปลอดภัย (อย่างเช่น ภาพ)
@@ -411,6 +612,9 @@ browser-window-restore-down-button =
     .tooltiptext = คืนค่าลงล่าง
 browser-window-close-button =
     .tooltiptext = ปิด
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = ย้อนกลับ
 
 ## Tab actions
 
@@ -421,7 +625,7 @@ browser-tab-audio-muted2 = ปิดเสียงอยู่
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-blocked = การเล่นอัตโนมัติถูกปิดกั้น
 # This label should be written in all capital letters if your locale supports them.
-browser-tab-audio-pip = ภาพที่เล่นควบคู่
+browser-tab-audio-pip = ภาพซ้อนภาพ
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
@@ -476,7 +680,12 @@ sharing-warning-screen = คุณกำลังแบ่งปันทั้�
 sharing-warning-proceed-to-tab =
     .label = ไปยังแท็บต่อ
 sharing-warning-disable-for-session =
-    .label = ปิดใช้งานการป้องกันการแบ่งปันในวาระนี้
+    .label = ปิดใช้งานการป้องกันการแบ่งปันในเซสชันนี้
+
+## WebSerial "select a port" popup
+
+webserial-select-port-label = เลือกพอร์ตซีเรียล:
+webserial-no-ports-available = ไม่มีพอร์ตซีเรียลที่พร้อมใช้งาน
 
 ## DevTools F12 popup
 
@@ -491,6 +700,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = ค้นหาหรือป้อนที่อยู่
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = ป้อนที่อยู่
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -539,17 +752,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = ส่วนขยาย:
+urlbar-go-button2 =
+    .title = ไปยังที่อยู่ในแถบตำแหน่งที่ตั้ง
 urlbar-go-button =
     .tooltiptext = ไปยังที่อยู่ในแถบตำแหน่งที่ตั้ง
 urlbar-page-action-button =
     .tooltiptext = การกระทำหน้า
 urlbar-revert-button =
     .tooltiptext = แสดงที่อยู่ในแถบตำแหน่งที่ตั้ง
-urlbar-show-page-actions-button =
-    .tooltiptext = แสดงการกระทำหน้าทั้งหมด
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -566,12 +780,15 @@ urlbar-result-action-search-in-private = ค้นหาในหน้าต่
 urlbar-result-action-search-w-engine = ค้นหาด้วย { $engine }
 urlbar-result-action-sponsored = ได้รับการสนับสนุน
 urlbar-result-action-switch-tab = สลับไปยังแท็บ
+urlbar-result-action-move-tab-to-split-view = ย้ายแท็บไปยังมุมมองแยก
 urlbar-result-action-visit = เยี่ยมชม
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = สลับไปยังแท็บ · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = กลุ่มที่ไม่มีชื่อ
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = เยี่ยมชมจากคลิปบอร์ด
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +818,248 @@ urlbar-result-action-copy-to-clipboard = คัดลอก
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = ไม่นิยาม
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = ส่วนขยาย { -brand-product-name }
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = แนะนำ
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> ใน { $city } { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> ใน { $city } { $region } { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> ใน { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · ได้รับการสนับสนุน
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = ถาม
+
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
+
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative = คุณเยี่ยมชมครั้งล่าสุดเมื่อ { $date }
+# This explanation is used when the last-visited date is a small number of days
+# in the past.
+# Variables:
+#   $daysAgo (number) - The number of days ago
+urlbar-result-explanation-last-visited-days = คุณเยี่ยมชมครั้งล่าสุดเมื่อ { $daysAgo } วันก่อน
+# This explanation is used when the last-visited date is a small number of weeks
+# in the past.
+# Variables:
+#   $weeksAgo (number) - The number of weeks ago
+urlbar-result-explanation-last-visited-weeks = คุณเยี่ยมชมครั้งล่าสุดเมื่อ { $weeksAgo } สัปดาห์ก่อน
+# This explanation is used when the last-visited date is a small number of
+# months in the past.
+# Variables:
+#   $monthsAgo (number) - The number of months ago
+urlbar-result-explanation-last-visited-months = คุณเยี่ยมชมครั้งล่าสุดเมื่อ { $monthsAgo } เดือนก่อน
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute = คุณเยี่ยมชมครั้งล่าสุดเมื่อ { $date }
+# This explanation is used when the result is bookmarked. The date will be
+# formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-bookmarked = เพิ่มที่คั่นหน้าเมื่อ { $date }
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = รับข้อมูลตลาดหุ้นโดยตรงในแถบค้นหาของคุณ
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = แสดงข่าวสารตลาดหุ้นและข่าวสารเพิ่มเติมจากพันธมิตรของเราเมื่อคุณแบ่งปันข้อมูลคำค้นหากับ { -vendor-short-name } <a data-l10n-name="learn-more-link">เรียนรู้เพิ่มเติม</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = แสดงคำแนะนำ
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = ยังไม่ทำตอนนี้
+urlbar-result-realtime-opt-in-dismiss = ปิด
+urlbar-result-realtime-opt-in-dismiss-all2 = ไม่ต้องแสดงคำแนะนำเหล่านี้
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = ไม่ต้องแสดงคำแนะนำเกี่ยวกับตลาดหุ้น
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = ไม่ต้องแสดงคำแนะนำเหล่านี้
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = ไม่ต้องแสดงคำแนะนำเกี่ยวกับตลาดหุ้น
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = ขอบคุณสำหรับข้อเสนอแนะของคุณ คุณจะไม่เห็นคำแนะนำเกี่ยวกับตลาดหุ้นอีกต่อไป
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = ข้อเสนอแนะเกี่ยวกับตลาดหุ้น
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = ขอบคุณสำหรับข้อเสนอแนะของคุณ คุณจะไม่เห็นคำแนะนำเหล่านี้อีกต่อไป
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · ใน { $daysUntilStart } วัน
+       *[other] { $name } · ใน { $daysUntilStart } วัน
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range = { $name } · จะเริ่มใน { $daysUntilStart } วัน
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing = { $name } · จะสิ้นสุดใน { $daysUntilEnd } วัน
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · วันนี้
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · จะสิ้นสุดวันนี้
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = ค้นหาด้วย { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - ค้นหา { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - ค้นหาด้วย { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = เลือกเครื่องมือค้นหา
+urlbar-searchmode-bookmarks =
+    .label = ที่คั่นหน้า
+urlbar-searchmode-tabs =
+    .label = แท็บ
+urlbar-searchmode-history =
+    .label = ประวัติ
+urlbar-searchmode-actions =
+    .label = การกระทำ
+urlbar-searchmode-exit-button =
+    .tooltiptext = ปิด
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ครั้งนี้ค้นหาด้วย:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = การตั้งค่าการค้นหา
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = ขณะนี้คือ { $engine } โปรดเลือกเครื่องมือค้นหา
+    .tooltiptext = ขณะนี้คือ { $engine } โปรดเลือกเครื่องมือค้นหา
+urlbar-searchmode-button-no-engine =
+    .label = ไม่ได้เลือกทางลัด โปรดเลือกทางลัดด้วย
+    .tooltiptext = ไม่ได้เลือกทางลัด โปรดเลือกทางลัดด้วย
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = ขณะนี้คือ { $engine } โปรดเลือกเครื่องมือค้นหา
+urlbar-searchmode-button-no-engine2 =
+    .title = ไม่ได้เลือกทางลัด โปรดเลือกทางลัดด้วย
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = การค้นหาด้วยคำสำคัญถูกปิดใช้งาน
+urlbar-searchmode-dropmarker2 =
+    .title = เลือกเครื่องมือค้นหา
+urlbar-searchmode-bookmarks2 = ที่คั่นหน้า
+urlbar-searchmode-tabs2 = แท็บ
+urlbar-searchmode-history2 = ประวัติ
+urlbar-searchmode-actions2 = การกระทำ
+urlbar-searchmode-exit-button2 =
+    .title = ปิด
+urlbar-searchmode-default2 =
+    .title = เครื่องมือค้นหาเริ่มต้น
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = เพิ่ม “{ $engineName }”
+    .title = เพิ่มเครื่องมือค้นหา “{ $engineName }”
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = ครั้งนี้ค้นหาด้วย:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = ค้นหาด้วย:
+urlbar-searchmode-popup-search-settings-panelitem = การตั้งค่าการค้นหา
+urlbar-searchmode-popup-settings-panelitem = การตั้งค่า
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +1069,27 @@ urlbar-result-action-search-bookmarks = ค้นหาที่คั่นห�
 urlbar-result-action-search-history = ค้นหาประวัติ
 urlbar-result-action-search-tabs = ค้นหาแท็บ
 urlbar-result-action-search-actions = คำสั่งการค้นหา
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = สลับไปยัง { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = เปิด { $group }
+
+## Used in the context menu in urlbar view.
+
+urlbar-view-context-menu-open-in-tab =
+    .label = เปิดในแท็บใหม่
+    .accesskey = ห
+urlbar-view-context-menu-open-in-container-tab =
+    .label = เปิดในแท็บแยกข้อมูลใหม่
+    .accesskey = ข
+urlbar-view-context-menu-open-in-window =
+    .label = เปิดในหน้าต่างใหม่
+    .accesskey = ต
+urlbar-view-context-menu-open-in-private-window =
+    .label = เปิดในหน้าต่างส่วนตัวใหม่
+    .accesskey = ส
 
 ## Labels shown above groups of urlbar results
 
@@ -628,7 +1102,7 @@ urlbar-group-firefox-suggest =
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
-    .label = ข้อเสนอแนะ { $engine }
+    .label = คำแนะนำ { $engine }
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = คำสั่งด่วน
@@ -643,6 +1117,12 @@ urlbar-group-recent-searches =
 urlbar-group-trending =
     .label = กำลังมาแรงใน { $engine }
 # The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = ไม่ต้องแสดงการค้นหาที่กำลังมาแรง
+    .accesskey = ม
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = ได้รับการสนับสนุน
+# The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = ไม่ต้องแสดงการค้นหาที่กำลังมาแรง
     .accesskey = ม
@@ -651,7 +1131,7 @@ urlbar-result-menu-trending-why =
     .accesskey = ท
 # A message that replaces a result when the user dismisses all suggestions of a
 # particular type.
-urlbar-trending-dismissal-acknowledgment = ขอบคุณสำหรับความคิดเห็นของคุณ คุณจะไม่เห็นการค้นหาที่กำลังมาแรงอีกต่อไป
+urlbar-trending-dismissal-acknowledgment = ขอบคุณสำหรับข้อเสนอแนะของคุณ คุณจะไม่เห็นการค้นหาที่กำลังมาแรงอีกต่อไป
 
 ## Reader View toolbar buttons
 
@@ -670,8 +1150,8 @@ picture-in-picture-urlbar-button-open =
     .tooltiptext = เปิดการแสดงภาพซ้อนภาพ ({ $shortcut })
 picture-in-picture-urlbar-button-close =
     .tooltiptext = ปิดการแสดงภาพซ้อนภาพ ({ $shortcut })
-picture-in-picture-panel-header = ภาพที่เล่นควบคู่
-picture-in-picture-panel-headline = เว็บไซต์นี้ไม่แนะนำภาพที่เล่นควบคู่
+picture-in-picture-panel-header = ภาพซ้อนภาพ
+picture-in-picture-panel-headline = เว็บไซต์นี้ไม่แนะนำภาพซ้อนภาพ
 picture-in-picture-panel-body = วิดีโออาจไม่แสดงตามที่นักพัฒนาคาดไว้ในขณะที่เปิดใช้งานการแสดงภาพซ้อนภาพ
 picture-in-picture-enable-toggle =
     .label = เปิดใช้งานต่อไป
@@ -686,6 +1166,9 @@ fullscreen-warning-no-domain = เอกสารนี้เต็มหน้�
 fullscreen-exit-button = ออกจากภาพเต็มหน้าจอ (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = ออกจากภาพเต็มหน้าจอ (esc)
+fullscreen-keyboardlock-exit-button = ออกจากโหมดเต็มหน้าจอ (กดปุ่ม Esc ค้างไว้)
+# "esc" is lowercase on mac keyboards, but uppercase elsewhere.
+fullscreen-keyboardlock-exit-mac-button = ออกจากโหมดเต็มหน้าจอ (กดปุ่ม Esc ค้างไว้)
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -781,7 +1264,7 @@ repair-text-encoding-button =
     .label = ซ่อมแซมรหัสอักขระข้อความ
     .tooltiptext = คาดเดารหัสอักขระข้อความที่ถูกต้องจากเนื้อหาในหน้า
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -801,6 +1284,29 @@ toolbar-button-email-link =
 toolbar-button-logins =
     .label = รหัสผ่าน
     .tooltiptext = ดูและจัดการรหัสผ่านที่บันทึกไว้ของคุณ
+qrcode-panel-error =
+    .message = สร้างรหัส QR ไม่สำเร็จ โปรดลองอีกครั้ง
+qrcode-copy-button =
+    .label = คัดลอก
+qrcode-copy-success =
+    .message = คัดลอกรหัส QR ไปยังคลิปบอร์ดแล้ว
+qrcode-copy-error =
+    .message = คัดลอกรหัส QR ไม่สำเร็จ
+qrcode-save-button =
+    .label = บันทึก
+qrcode-save-success =
+    .message = บันทึกรหัส QR เรียบร้อยแล้ว
+qrcode-save-error =
+    .message = บันทึกรหัส QR ไม่สำเร็จ
+qrcode-save-title = บันทึกรหัส QR
+qrcode-save-filter-png = ภาพ PNG
+qrcode-save-filename = qrcode.png
+qrcode-window-title = รหัส QR
+qrcode-dialog-title = รหัส QR
+qrcode-image =
+    .aria-label = รหัส QR
+qrcode-close-button =
+    .aria-label = ปิด
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -814,11 +1320,28 @@ toolbar-button-open-file =
 toolbar-button-synced-tabs =
     .label = แท็บที่ซิงค์
     .tooltiptext = แสดงแท็บจากอุปกรณ์อื่น ๆ
+toolbar-button-send-tab =
+    .label = ส่งแท็บ
+    .tooltiptext = ส่งแท็บปัจจุบันไปยังอุปกรณ์อื่น
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
     .label = หน้าต่างส่วนตัวใหม่
     .tooltiptext = เปิดหน้าต่างเรียกดูแบบส่วนตัวใหม่ ({ $shortcut })
+toolbar-button-share-tab =
+    .label = แบ่งปัน
+    .tooltiptext = แบ่งปันหน้านี้
+toolbar-button-tab-groups =
+    .label = กลุ่มแท็บ
+    .tooltiptext = แสดงกลุ่มแท็บของคุณ
+
+## Default filenames used when saving a QR code. The file extension (.png)
+## is added automatically.
+
+qrcode-save-filename-base = qrcode
+# Variables:
+#  $domain (String): The current page's domain used in the suggested filename.
+qrcode-save-filename-with-domain-base = qrcode-{ $domain }
 
 ## EME notification panel
 
@@ -832,12 +1355,26 @@ eme-notifications-drm-content-playing-dismiss-accesskey = ด
 
 panel-save-update-username = ชื่อผู้ใช้
 panel-save-update-password = รหัสผ่าน
+panel-save-update-username-2 =
+    .label = ชื่อผู้ใช้
+panel-save-update-password-2 =
+    .label = รหัสผ่าน
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = เพิ่มเติม…
+menu-share-windows =
+    .label = ตัวเลือกเพิ่มเติม
+# Variables:
+#   $count (Number) - The number of links that will be copied.
+menu-share-copy-links =
+    .label = คัดลอก { $count } ลิงก์
+    .accesskey = ง
+menu-share-copy-link =
+    .label = คัดลอกลิงก์
+    .accesskey = ง
 ui-tour-info-panel-close =
     .tooltiptext = ปิด
 
@@ -850,6 +1387,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = ปิดกั้นป๊อปอัปสำหรับ { $uriHost }
     .accesskey = ป
+popups-infobar-allow2 =
+    .label = อนุญาตป๊อปอัปและการเปลี่ยนเส้นทางจากบุคคลที่สามสำหรับ { $uriHost }
+    .accesskey = ป
 
 ##
 
@@ -860,18 +1400,18 @@ edit-popup-settings =
     .label = จัดการการตั้งค่าป๊อปอัป…
     .accesskey = จ
 picture-in-picture-hide-toggle =
-    .label = ซ่อนสลับภาพที่เล่นควบคู่
+    .label = ซ่อนสลับภาพซ้อนภาพ
     .accesskey = อ
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
 picture-in-picture-move-toggle-right =
-    .label = เลื่อนภาพที่เล่นควบคู่สลับไปทางด้านขวา
-    .accesskey = R
+    .label = เลื่อนภาพซ้อนภาพสลับไปทางด้านขวา
+    .accesskey = ว
 picture-in-picture-move-toggle-left =
-    .label = เลื่อนภาพที่เล่นควบคู่สลับไปทางด้านซ้าย
-    .accesskey = L
+    .label = เลื่อนภาพซ้อนภาพสลับไปทางด้านซ้าย
+    .accesskey = ย
 
 ##
 
@@ -885,6 +1425,8 @@ navbar-accessible =
     .aria-label = การนำทาง
 navbar-downloads =
     .label = การดาวน์โหลด
+navbar-overflow-2 =
+    .tooltiptext = เครื่องมือเพิ่มเติม
 navbar-overflow =
     .tooltiptext = เครื่องมือเพิ่มเติม…
 # Variables:
@@ -911,10 +1453,14 @@ tabs-toolbar-list-all-tabs =
     .label = แสดงรายการแท็บทั้งหมด
     .tooltiptext = แสดงรายการแท็บทั้งหมด
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = ปล่อยแท็บที่นี่เพื่อปักหมุด
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
-restore-session-startup-suggestion-message = <strong>ต้องการเปิดแท็บก่อนหน้าหรือไม่</strong> คุณสามารถเรียกคืนวาระก่อนหน้าได้จากเมนูแอปพลิเคชัน { -brand-short-name } <img data-l10n-name="icon"/> ภายใต้ ประวัติ
+restore-session-startup-suggestion-message = <strong>ต้องการเปิดแท็บก่อนหน้าหรือไม่</strong> คุณสามารถเรียกคืนเซสชันก่อนหน้าได้จากเมนูแอปพลิเคชัน { -brand-short-name } <img data-l10n-name="icon"/> ภายใต้ ประวัติ
 restore-session-startup-suggestion-button = แสดงวิธีให้ฉันดู
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
@@ -929,6 +1475,9 @@ data-reporting-notification-button =
     .accesskey = ล
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = การเรียกดูแบบส่วนตัว
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = การเรียกดูแบบส่วนตัว
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -937,7 +1486,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = การปกป้องข้อมูล
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = องค์กรของคุณใช้ { $agentName } เพื่อป้องกันข้อมูลสูญหาย <a data-l10n-name="info">เรียนรู้เพิ่มเติม</a>
+content-analysis-panel-text-styled = องค์กรของคุณใช้ <b>{ $agentName }</b> เพื่อป้องกันข้อมูลสูญหาย <a data-l10n-name="info">เรียนรู้เพิ่มเติม</a>
 
 ## Unified extensions (toolbar) button
 
@@ -963,12 +1512,23 @@ unified-extensions-button-quarantined =
         ส่วนขยาย
         ไม่ได้อนุญาตส่วนขยายบางตัว
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = ส่วนขยาย
+    .tooltiptext =
+        ส่วนขยาย
+        ส่วนขยายบางตัวถูกปิดใช้งาน
+
 ## Private browsing reset button
 
 reset-pbm-toolbar-button =
-    .label = จบวาระส่วนตัว
-    .tooltiptext = จบวาระส่วนตัว
-reset-pbm-panel-heading = จบวาระส่วนตัวของคุณหรือไม่?
+    .label = จบเซสชันส่วนตัว
+    .tooltiptext = จบเซสชันส่วนตัว
+reset-pbm-panel-heading2 = ล้างข้อมูลและเริ่มเซสชันส่วนตัวใหม่เลยหรือไม่?
+reset-pbm-panel-description2 = การดำเนินการนี้จะลบประวัติ คุกกี้ และข้อมูลเว็บไซต์อื่น ๆ ทั้งหมด โดยไม่ปิดหน้าต่างส่วนตัวของคุณ
+reset-pbm-panel-heading = จบเซสชันส่วนตัวของคุณหรือไม่?
 reset-pbm-panel-description = ปิดแท็บส่วนตัวทั้งหมดและลบประวัติ คุกกี้ และข้อมูลไซต์อื่น ๆ ทั้งหมด
 reset-pbm-panel-always-ask-checkbox =
     .label = ถามฉันเสมอ
@@ -976,10 +1536,16 @@ reset-pbm-panel-always-ask-checkbox =
 reset-pbm-panel-cancel-button =
     .label = ยกเลิก
     .accesskey = ย
-reset-pbm-panel-confirm-button =
-    .label = ลบข้อมูลวาระ
+reset-pbm-panel-confirm-button2 =
+    .label = ล้างเซสชันส่วนตัว
     .accesskey = ล
-reset-pbm-panel-complete = ลบข้อมูลวาระส่วนตัวแล้ว
+reset-pbm-panel-confirm-button =
+    .label = ลบข้อมูลเซสชัน
+    .accesskey = ล
+reset-pbm-panel-complete = ลบข้อมูลเซสชันส่วนตัวแล้ว
+reset-pbm-toolbar-button2 =
+    .label = ล้างเซสชันส่วนตัว
+    .tooltiptext = ล้างเซสชันส่วนตัว
 
 ## Autorefresh blocker
 
@@ -991,36 +1557,54 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
-firefox-relay-offer-why-to-use-relay = ตัวปกปิดที่ปลอดภัยและใช้ง่ายของเราช่วยปกป้องข้อมูลประจำตัวของคุณและป้องกันสแปมด้วยการซ่อนที่อยู่อีเมลของคุณ
+firefox-relay-offer-why-to-use-relay = ตัวปกปิดที่ปลอดภัยและใช้ง่ายของเราช่วยปกป้องข้อมูลตัวตนของคุณและป้องกันสแปมด้วยการซ่อนที่อยู่อีเมลของคุณ
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = อีเมลทั้งหมดที่ส่งไปยังตัวปกปิดอีเมลของคุณจะถูกส่งต่อไปยัง <strong>{ $useremail }</strong> (นอกจากคุณจะตัดสินใจปิดกั้นอีเมลเหล่านั้น)
 firefox-relay-offer-legal-notice = การคลิก “ใช้ตัวปกปิดอีเมล” ถือว่าคุณยอมรับ<label data-l10n-name="tos-url">เงื่อนไขการใช้บริการ</label>และ<label data-l10n-name="privacy-url">ข้อกำหนดความเป็นส่วนตัว</label>
+firefox-relay-offer-legal-notice-1 = เมื่อลงทะเบียนและสร้างตัวปกปิดอีเมล แสดงว่าคุณยอมรับ<label data-l10n-name="tos-url">เงื่อนไขการให้บริการ</label>และ<label data-l10n-name="privacy-url">ประกาศความเป็นส่วนตัว</label>
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (ไม่ได้รับการยืนยัน)
 popup-notification-xpinstall-prompt-learn-more = เรียนรู้เพิ่มเติมเกี่ยวกับการติดตั้งส่วนเสริมอย่างปลอดภัย
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = เรียกใช้ในหน้าต่างส่วนตัว
-    .accesskey = ส
+popup-notification-xpinstall-prompt-block-url = ดูรายละเอียด
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = อนุญาตให้ส่วนขยายทำงานในหน้าต่างส่วนตัว
+    .accesskey = อ
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = แบ่งปันข้อมูลทางเทคนิคและการโต้ตอบกับผู้พัฒนาส่วนขยาย
+    .accesskey = บ
 
 ## Pop-up warning
 
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message = { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปิด { $popupCount } หน้าต่างป๊อปอัป
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปลี่ยนเส้นทาง
+        [1] { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปิดหน้าต่างป๊อปอัปและเปลี่ยนเส้นทาง
+       *[other] { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปิด { $popupCount } หน้าต่างป๊อปอัปและเปลี่ยนเส้นทาง
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปิดมากกว่า { $popupCount } หน้าต่างป๊อปอัป
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message = { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้เปิดหน้าต่างป๊อปอัปมากกว่า { $popupCount } บานและเปลี่ยนเส้นทาง
 popup-warning-button =
     .label =
         { PLATFORM() ->
             [windows] ตัวเลือก
-           *[other] การตั้งค่า
+           *[other] ค่าปรับแต่ง
         }
     .accesskey =
         { PLATFORM() ->
@@ -1031,6 +1615,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = แสดง “{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = แสดง “{ $redirectURI }”
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1052,3 +1640,102 @@ file-picker-crashed-save-nowhere = กล่องโต้ตอบไฟล์
 file-picker-crashed-show-in-folder =
     .label = แสดงในโฟลเดอร์
     .accessKey = F
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = ตั้งค่าให้เสร็จสิ้น
+onboarding-aw-finish-setup-button =
+    .label = ตั้งค่าให้เสร็จสิ้น
+    .tooltiptext = ตั้งค่า { -brand-short-name } ให้เสร็จสิ้น
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = การป้องกันการติดตามแบบพิเศษเปิดอยู่
+trustpanel-etp-label-disabled = การป้องกันการติดตามแบบพิเศษปิดอยู่
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = การป้องกันการติดตามแบบพิเศษ: เปิดสำหรับ { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = การป้องกันการติดตามแบบพิเศษ: ปิดสำหรับ { $host }
+trustpanel-etp-description-enabled = ถ้ามีบางอย่างดูเสียหายบนไซต์นี้ ให้ลองปิดการป้องกัน
+trustpanel-etp-description-disabled = { -brand-product-name } คิดว่าบริษัทต่าง ๆ ควรติดตามคุณให้น้อยลง เราจะปิดกั้นตัวติดตามให้ได้มากที่สุดเท่าที่จะทำได้เมื่อคุณเปิดการป้องกัน
+trustpanel-connection-label-secure = การเชื่อมต่อปลอดภัย
+trustpanel-connection-label-insecure = การเชื่อมต่อไม่ปลอดภัย
+trustpanel-header-enabled = { -brand-product-name } กำลังป้องกันอยู่
+trustpanel-description-enabled2 = คุณได้รับการปกป้อง หากเราพบสิ่งใดเราจะแจ้งให้คุณทราบ
+trustpanel-header-enabled-insecure = โปรดระวังในไซต์นี้
+trustpanel-description-enabled-insecure = { -brand-product-name } สังเกตเห็นบางสิ่งที่น่าสงสัย
+trustpanel-header-disabled = คุณปิดการป้องกันแล้ว
+trustpanel-description-disabled = { -brand-product-name } ไม่ได้ทำงานอยู่ เราขอแนะนำให้เปิดการป้องกันอีกครั้ง
+trustpanel-clear-cookies-button = ล้างคุกกี้และข้อมูลไซต์
+trustpanel-privacy-link = การตั้งค่าความเป็นส่วนตัว
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = ล้างคุกกี้และข้อมูลไซต์สำหรับ { $host }
+trustpanel-clear-cookies-description = การเอาคุกกี้และข้อมูลไซต์ออกอาจทำให้คุณออกจากระบบเว็บไซต์และล้างตะกร้าสินค้า
+trustpanel-clear-cookies-subview-button-clear = ล้าง
+trustpanel-clear-cookies-subview-button-cancel = ยกเลิก
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = การป้องกันการเชื่อมต่อสำหรับ { $host }
+trustpanel-siteinformation-morelink = ข้อมูลไซต์เพิ่มเติม
+trustpanel-blocker-see-all = ดูทั้งหมด
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = การป้องกันการติดตามสำหรับ { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = ไม่ปลอดภัย
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } คิดว่าบริษัทต่าง ๆ ควรติดตามคุณให้น้อยลง ดังนั้นเราจึงปิดกั้นให้มากที่สุดเท่าที่จะทำได้
+trustpanel-blocked-header = { -brand-product-name } ปิดกั้นสิ่งเหล่านี้สำหรับคุณ:
+trustpanel-tracking-header = { -brand-product-name } อนุญาตสิ่งเหล่านี้เพื่อไม่ให้ไซต์เสียหาย:
+trustpanel-tracking-description = ถ้าไม่มีตัวติดตาม ปุ่ม แบบฟอร์ม และช่องข้อมูลเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
+trustpanel-insecure-section-header = การเชื่อมต่อของคุณไม่ปลอดภัย
+trustpanel-insecure-description = ข้อมูลที่คุณส่งมายังไซต์นี้ไม่ได้เข้ารหัสลับ ข้อมูลนั้นอาจถูกดู ขโมย หรือแก้ไขได้
+trustpanel-list-label-tracking-cookies = { $count } คุกกี้ติดตามข้ามไซต์
+trustpanel-list-label-tracking-content = เนื้อหาติดตาม
+trustpanel-list-label-fingerprinter = { $count } ลายนิ้วมือดิจิทัล
+trustpanel-list-label-social-tracking = { $count } ตัวติดตามสื่อสังคมออนไลน์
+trustpanel-list-label-cryptominer = { $count } ตัวขุดเหรียญดิจิทัล
+trustpanel-social-tracking-blocking-tab-header = { -brand-product-name } ปิดกั้น { $count } ตัวติดตามสื่อสังคมออนไลน์
+trustpanel-social-tracking-not-blocking-tab-header = { -brand-product-name } อนุญาต { $count } ตัวติดตามสื่อสังคมออนไลน์
+trustpanel-tracking-cookies-blocking-tab-header = { -brand-product-name } ปิดกั้น { $count } คุกกี้ติดตามข้ามไซต์
+trustpanel-tracking-cookies-not-blocking-tab-header = { -brand-product-name } อนุญาต { $count } คุกกี้ติดตามข้ามไซต์
+trustpanel-tracking-content-blocking-tab-header = { -brand-product-name } ปิดกั้น { $count } ตัวติดตาม
+trustpanel-tracking-content-not-blocking-tab-header = { -brand-product-name } อนุญาต { $count } ตัวติดตาม
+trustpanel-tracking-content-tab-list-header = ไซต์เหล่านี้กำลังพยายามติดตามคุณ:
+trustpanel-fingerprinter-blocking-tab-header = { -brand-product-name } ปิดกั้น { $count } ลายนิ้วมือดิจิทัล
+trustpanel-fingerprinter-not-blocking-tab-header = { -brand-product-name } อนุญาต { $count } ลายนิ้วมือดิจิทัล
+trustpanel-fingerprinter-list-header = ไซต์เหล่านี้กำลังพยายามสร้างลายนิ้วมือจากตัวคุณ:
+trustpanel-cryptominer-blocking-tab-header = { -brand-product-name } ปิดกั้น { $count } ตัวขุดเหรียญดิจิทัล
+trustpanel-cryptominer-not-blocking-tab-header = { -brand-product-name } อนุญาต { $count } ตัวขุดเหรียญดิจิทัล
+trustpanel-cryptominer-tab-list-header = ไซต์เหล่านี้กำลังพยายามขุดเหรียญดิจิทัล:
+# "account on this site" refers to the (breached) site the user is currently visiting, not a Mozilla Monitor account.
+trustpanel-breachalerts-anonymous-breached-header = มีบัญชีบนไซต์นี้หรือไม่?
+trustpanel-breachalerts-anonymous-breached-description = { -brand-product-name } พบว่าเว็บไซต์นี้มีการรั่วไหลของข้อมูลในช่วง 12 เดือนที่ผ่านมา ตรวจสอบดูว่าคุณได้รับผลกระทบหรือไม่
+trustpanel-breachalerts-anonymous-breached-button-dismiss = ปิด
+trustpanel-breachalerts-anonymous-breached-button-check-monitor = เริ่มการสแกนฟรี
+trustpanel-blocker-section-header2 = มี <span data-l10n-name="count">{ $count }</span> ตัวติดตามที่ถูกปิดกั้นบนไซต์นี้
+
+## Reduced Protection Infobar ("ReducedProtectionNotification.sys.mjs")
+
+# "temporarily lower your tracking protection" refers to temporarily decreasing the amount of tracking protection.
+reduced-protection-infobar-message = <strong>เว็บไซต์ดูมีปัญหาใช่ไหม?</strong> โหลดหน้าเว็บใหม่เพื่อลดการป้องกันการติดตามลงชั่วคราว
+reduced-protection-infobar-reload-button = โหลดใหม่
+    .accesskey = ห
+reduced-protection-infobar-never-show-button = ไม่ต้องแสดงอีก
+    .accesskey = ไ

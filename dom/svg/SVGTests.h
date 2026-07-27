@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef DOM_SVG_SVGTESTS_H_
 #define DOM_SVG_SVGTESTS_H_
 
-#include "nsStringFwd.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/SVGStringList.h"
+#include "nsStringFwd.h"
 
 class nsAttrValue;
 class nsAtom;
@@ -23,12 +21,8 @@ class DOMSVGStringList;
 class SVGSwitchElement;
 }  // namespace dom
 
-#define MOZILLA_DOMSVGTESTS_IID                      \
-  {                                                  \
-    0x92370da8, 0xda28, 0x4895, {                    \
-      0x9b, 0x1b, 0xe0, 0x06, 0x0d, 0xb7, 0x3f, 0xc3 \
-    }                                                \
-  }
+#define MOZILLA_DOMSVGTESTS_IID \
+  {0x92370da8, 0xda28, 0x4895, {0x9b, 0x1b, 0xe0, 0x06, 0x0d, 0xb7, 0x3f, 0xc3}}
 
 namespace dom {
 
@@ -36,7 +30,7 @@ class SVGElement;
 
 class SVGTests : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(MOZILLA_DOMSVGTESTS_IID)
+  NS_INLINE_DECL_STATIC_IID(MOZILLA_DOMSVGTESTS_IID)
 
   SVGTests();
 
@@ -105,8 +99,6 @@ class SVGTests : public nsISupports {
   static nsStaticAtom* const sStringListNames[2];
   mutable Maybe<bool> mPassesConditionalProcessingTests = Some(true);
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(SVGTests, MOZILLA_DOMSVGTESTS_IID)
 
 }  // namespace dom
 }  // namespace mozilla

@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Preferentias
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Parametros…
+menu-application-set-as-default =
+    .label = Facer de { -brand-shorter-name } tu navigator predefinite
 menu-application-services =
     .label = Servicios
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Compartir
     .accesskey = C
+menu-file-share-qrcode =
+    .label = Generar codice QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Generar un codice QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = Configurar le pagina…
     .accesskey = u
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Chronologia
 menu-view-synced-tabs-sidebar =
     .label = Schedas synchronisate
-menu-view-megalist-sidebar =
-    .label = Contrasignos
 menu-view-full-zoom =
     .label = Zoom
     .accesskey = Z
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Marcapaginas mobile
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilos
+menu-profiles-manage-profiles =
+    .label = Gerer le profilos
+menu-profiles-new-profile =
+    .label = Nove profilo
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (actual)
+menu-profiles-menu =
+    .label = Profilos
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Discargamentos
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Extensiones e themas
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Additivos e themas
     .accesskey = A
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Informationes del pagina
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = Modificar file PDF…
+    .accesskey = P
 menu-settings =
     .label = Parametros
     .accesskey =

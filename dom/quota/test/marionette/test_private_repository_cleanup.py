@@ -22,7 +22,7 @@ AUTOSTART_PBM_PREF = "browser.privatebrowsing.autostart"
 
 class PrivateRepositoryCleanup(QuotaTestCase):
     def setUp(self, autostartPBM=False):
-        super(PrivateRepositoryCleanup, self).setUp()
+        super().setUp()
 
         self.marionette.set_pref(AUTOSTART_PBM_PREF, autostartPBM)
         self.marionette.set_pref(QM_TESTING_PREF, True)
@@ -37,10 +37,10 @@ class PrivateRepositoryCleanup(QuotaTestCase):
         self.marionette.clear_pref(QM_TESTING_PREF)
 
         self.marionette.restart(in_app=True)
-        super(PrivateRepositoryCleanup, self).tearDown()
+        super().tearDown()
 
     def doStorageWork(self):
-        origin = self.marionette.absolute_url("")[:-1] + "^privateBrowsingId=1"
+        origin = "https://example.com^privateBrowsingId=1"
         assert self.initTemporaryOrigin("private", origin)
 
         self.ensureInvariantHolds(lambda _: os.path.exists(self.getPrivateRepository()))
@@ -74,7 +74,7 @@ class PBM(PrivateRepositoryCleanup):
 
 class PBMAutoStart(PrivateRepositoryCleanup):
     def setUp(self):
-        super(PBMAutoStart, self).setUp(True)
+        super().setUp(True)
 
     def test_ensure_cleanup(self):
         self.doStorageWork()

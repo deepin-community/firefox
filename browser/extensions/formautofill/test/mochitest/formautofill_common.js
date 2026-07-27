@@ -196,7 +196,10 @@ async function triggerAutofillAndCheckProfile(profile) {
         element.addEventListener(
           "input",
           event => {
-            if (element.tagName == "INPUT" && element.type == "text") {
+            if (
+              (element.tagName == "INPUT" && element.type == "text") ||
+              element.tagName == "TEXTAREA"
+            ) {
               if (hadEditor) {
                 ok(
                   beforeInputFired,
@@ -279,12 +282,11 @@ async function onStorageChanged(type) {
   });
 }
 
-function makeAddressComment({ primary, secondary, status }) {
+function makeAddressComment({ primary, secondary }) {
   return JSON.stringify({
     primary,
     secondary,
-    status,
-    ariaLabel: primary + " " + secondary + " " + status,
+    ariaLabel: primary + " " + secondary,
   });
 }
 
@@ -394,9 +396,7 @@ async function waitForOSKeyStoreLoginTestSetupComplete() {
         "resource://gre/modules/shared/FormAutofillUtils.sys.mjs"
       );
 
-      return FormAutofillUtils.getOSAuthEnabled(
-        FormAutofillUtils.AUTOFILL_CREDITCARDS_REAUTH_PREF
-      );
+      return FormAutofillUtils.getOSAuthEnabled();
     }))
   ) {
     return;
@@ -440,9 +440,7 @@ async function waitForOSKeyStoreLogin(login = false) {
         "resource://gre/modules/shared/FormAutofillUtils.sys.mjs"
       );
 
-      return FormAutofillUtils.getOSAuthEnabled(
-        FormAutofillUtils.AUTOFILL_CREDITCARDS_REAUTH_PREF
-      );
+      return FormAutofillUtils.getOSAuthEnabled();
     }))
   ) {
     return;
@@ -452,7 +450,7 @@ async function waitForOSKeyStoreLogin(login = false) {
 }
 
 function patchRecordCCNumber(record) {
-  const ccNumberFmt = "****" + record.cc["cc-number"].substr(-4);
+  const ccNumberFmt = "••••" + record.cc["cc-number"].substr(-4);
 
   return {
     cc: Object.assign({}, record.cc, { ccNumberFmt }),
@@ -493,9 +491,10 @@ function initPopupListener() {
 }
 
 async function triggerPopupAndHoverItem(fieldSelector, selectIndex) {
+  const promise = expectPopup();
   await focusAndWaitForFieldsIdentified(fieldSelector);
   synthesizeKey("KEY_ArrowDown");
-  await expectPopup();
+  await promise;
   for (let i = 0; i <= selectIndex; i++) {
     synthesizeKey("KEY_ArrowDown");
   }

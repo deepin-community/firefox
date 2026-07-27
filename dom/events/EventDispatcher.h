@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,10 +6,10 @@
 #  ifndef mozilla_EventDispatcher_h_
 #    define mozilla_EventDispatcher_h_
 
-#    include "mozilla/dom/BindingDeclarations.h"
-#    include "mozilla/dom/Touch.h"
 #    include "mozilla/EventForwards.h"
 #    include "mozilla/Maybe.h"
+#    include "mozilla/dom/BindingDeclarations.h"
+#    include "mozilla/dom/Touch.h"
 #    include "nsCOMPtr.h"
 #    include "nsTArray.h"
 
@@ -133,6 +131,7 @@ class MOZ_STACK_CLASS EventChainPreVisitor final : public EventChainVisitor {
         mRelatedTargetRetargetedInCurrentScope(false),
         mIgnoreBecauseOfShadowDOM(false),
         mWantsActivationBehavior(false),
+        mMaybeUncancelable(false),
         mParentTarget(nullptr),
         mEventTargetAtParent(nullptr),
         mRetargetedRelatedTarget(nullptr),
@@ -265,6 +264,14 @@ class MOZ_STACK_CLASS EventChainPreVisitor final : public EventChainVisitor {
    * See activationTarget in https://dom.spec.whatwg.org/#concept-event-dispatch
    */
   bool mWantsActivationBehavior;
+
+  /*
+   * Some events will be set uncancelable if we know they won't be default
+   * prevented. If mMaybeUncancelable is true, we haven't found something
+   * that might default prevent the event, like a non-passive listener.
+   * https://w3c.github.io/touch-events/#cancelability
+   */
+  bool mMaybeUncancelable;
 
  private:
   /**

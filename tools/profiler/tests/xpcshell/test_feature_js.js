@@ -17,7 +17,7 @@ add_task(async () => {
   // functionA -> functionB -> functionC -> captureAtLeastOneJsSample
   const sampleIndex = await functionA();
 
-  const profile = await stopNowAndGetProfile();
+  const profile = await ProfilerTestUtils.stopNowAndGetProfile();
 
   const [thread] = profile.threads;
   const { samples } = thread;
@@ -34,17 +34,20 @@ add_task(async () => {
       "js::RunScript",
       // The following regexes match a string similar to:
       //
-      // "functionA (/gecko/obj/_tests/xpcshell/tools/profiler/tests/xpcshell/test_feature_js.js:47:0)"
+      // "functionA (/gecko/obj/_tests/xpcshell/tools/profiler/tests/xpcshell/test_feature_js.js:47:0)[0]"
       // or
-      // "functionA (test_feature_js.js:47:0)"
+      // "functionA (test_feature_js.js:47:0)[0]"
+      //
+      // Note: The [N] suffix is the source index in the sources table.
       //
       //          this matches the script location
       //          |                       match the line number
       //          |                       |   match the column number
-      //          v                       v   v
-      /^functionA \(.*test_feature_js\.js:\d+:\d+\)$/,
-      /^functionB \(.*test_feature_js\.js:\d+:\d+\)$/,
-      /^functionC \(.*test_feature_js\.js:\d+:\d+\)$/,
+      //          |                       |   |   match source index
+      //          v                       v   v   v
+      /^functionA \(.*test_feature_js\.js:\d+:\d+\)\[\d+\]$/,
+      /^functionB \(.*test_feature_js\.js:\d+:\d+\)\[\d+\]$/,
+      /^functionC \(.*test_feature_js\.js:\d+:\d+\)\[\d+\]$/,
     ],
     "The stack contains a few frame labels, as well as the JS functions that we called."
   );
@@ -59,5 +62,5 @@ function functionB() {
 }
 
 async function functionC() {
-  return captureAtLeastOneJsSample();
+  return ProfilerTestUtils.captureAtLeastOneJsSample();
 }

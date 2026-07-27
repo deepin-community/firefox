@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,11 +22,9 @@
 #include "mozilla/gfx/StackArray.h"
 #include "mozilla/widget/WinCompositorWidget.h"
 
-#include "mozilla/EnumeratedArray.h"
 #include "mozilla/ProfilerState.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_layers.h"
-#include "mozilla/Telemetry.h"
 
 #include "D3D11ShareHandleImage.h"
 #include "DeviceAttachmentsD3D11.h"
@@ -509,20 +505,21 @@ void CompositorD3D11::SetRenderTarget(CompositingRenderTarget* aRenderTarget) {
   }
 }
 
-ID3D11PixelShader* CompositorD3D11::GetPSForEffect(Effect* aEffect) {
+ID3D11PixelShader* CompositorD3D11::GetPSForEffect(Effect* aEffect,
+                                                   const ClipType aClipType) {
   switch (aEffect->mType) {
     case EffectTypes::RGB: {
       SurfaceFormat format =
           static_cast<TexturedEffect*>(aEffect)->mTexture->GetFormat();
       return (format == SurfaceFormat::B8G8R8A8 ||
               format == SurfaceFormat::R8G8B8A8)
-                 ? mAttachments->mRGBAShader
-                 : mAttachments->mRGBShader;
+                 ? mAttachments->mRGBAShader[aClipType]
+                 : mAttachments->mRGBShader[aClipType];
     }
     case EffectTypes::NV12:
-      return mAttachments->mNV12Shader;
+      return mAttachments->mNV12Shader[aClipType];
     case EffectTypes::YCBCR:
-      return mAttachments->mYCbCrShader;
+      return mAttachments->mYCbCrShader[aClipType];
     default:
       NS_WARNING("No shader to load");
       return nullptr;
@@ -552,7 +549,8 @@ void CompositorD3D11::ClearRect(const gfx::Rect& aRect) {
   scissor.bottom = aRect.YMost();
   mContext->RSSetScissorRects(1, &scissor);
   mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-  mContext->VSSetShader(mAttachments->mVSQuadShader, nullptr, 0);
+  mContext->VSSetShader(mAttachments->mVSQuadShader[ClipType::ClipNone],
+                        nullptr, 0);
 
   mContext->PSSetShader(mAttachments->mSolidColorShader, nullptr, 0);
   mPSConstants.layerColor[0] = 0;
@@ -642,10 +640,33 @@ void CompositorD3D11::DrawQuad(const gfx::Rect& aRect,
 
   mContext->RSSetScissorRects(1, &scissor);
 
-  RefPtr<ID3D11VertexShader> vertexShader = mAttachments->mVSQuadShader;
+  auto clipType = ClipType::ClipNone;
+
+  if (aEffectChain.mRoundedClipEffect) {
+    clipType = ClipType::RoundedRect;
+
+    mVSConstants.roundedClipRect[0] = aEffectChain.mRoundedClipEffect->mRect.x;
+    mVSConstants.roundedClipRect[1] = aEffectChain.mRoundedClipEffect->mRect.y;
+    mVSConstants.roundedClipRect[2] =
+        aEffectChain.mRoundedClipEffect->mRect.width;
+    mVSConstants.roundedClipRect[3] =
+        aEffectChain.mRoundedClipEffect->mRect.height;
+
+    mPSConstants.roundedClipRadii[0] =
+        aEffectChain.mRoundedClipEffect->mRadii[eCornerTopLeft].width;
+    mPSConstants.roundedClipRadii[1] =
+        aEffectChain.mRoundedClipEffect->mRadii[eCornerBottomLeft].width;
+    mPSConstants.roundedClipRadii[2] =
+        aEffectChain.mRoundedClipEffect->mRadii[eCornerTopRight].width;
+    mPSConstants.roundedClipRadii[3] =
+        aEffectChain.mRoundedClipEffect->mRadii[eCornerBottomRight].width;
+  }
+
+  RefPtr<ID3D11VertexShader> vertexShader =
+      mAttachments->mVSQuadShader[clipType];
 
   RefPtr<ID3D11PixelShader> pixelShader =
-      GetPSForEffect(aEffectChain.mPrimaryEffect);
+      GetPSForEffect(aEffectChain.mPrimaryEffect, clipType);
 
   mContext->VSSetShader(vertexShader, nullptr, 0);
   mContext->PSSetShader(pixelShader, nullptr, 0);
@@ -844,9 +865,9 @@ Maybe<IntRect> CompositorD3D11::BeginFrame(const nsIntRegion& aInvalidRegion,
 
   PrepareStaticVertexBuffer();
 
-  mBackBufferInvalid.Or(mBackBufferInvalid, invalidRegionSafe);
+  mBackBufferInvalid.OrWith(invalidRegionSafe);
   if (mIsDoubleBuffered) {
-    mFrontBufferInvalid.Or(mFrontBufferInvalid, invalidRegionSafe);
+    mFrontBufferInvalid.OrWith(invalidRegionSafe);
   }
 
   // We have to call UpdateRenderTarget after we've determined the invalid regi

@@ -4,10 +4,6 @@
 
 addons-page-title = Topitorde Ɓeyditte
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -160,29 +156,6 @@ addon-install-from-file-filter-name = Ɓeyditte
 addon-open-about-debugging = Buggito Ɓeyditte
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } jaaɓdaani e { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = { $name } horiima ƴeewteede ngam huutoraade e { -brand-short-name }. Waɗtu heen hakkille.
 details-notification-unsigned-link = Ɓeydu Humpito
 details-notification-blocked = { $name } daaƴaama sabu caɗe kisal walla jamɗugol.
-details-notification-blocked2 =
-    .message = { $name } daaƴaama sabu caɗe kisal walla jamɗugol.
 details-notification-blocked-link = Ɓeydu Humpito
 details-notification-softblocked = { $name } ena anndiraa addude caɗe kisal walla jamɗugol.
-details-notification-softblocked2 =
-    .message = { $name } ena anndiraa addude caɗe kisal walla jamɗugol.
 details-notification-softblocked-link = Ɓeydu Humpito
 details-notification-gmp-pending = { $name } maa aafe ko leelaani.
 details-notification-gmp-pending2 =

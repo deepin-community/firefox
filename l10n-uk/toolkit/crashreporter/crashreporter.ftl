@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = У { -brand-short-name } виникла пр
 crashreporter-plea = Щоб допомогти нам розібратись і виправити проблему, ви можете надіслати звіт про цей збій.
 crashreporter-information = Ця програма запускається після збою, щоб повідомити { -vendor-short-name } про проблему. Вона не повинна запускатися безпосередньо.
 crashreporter-error = У { -brand-short-name } виникла проблема, і він аварійно завершив роботу. На жаль, засіб звітування про збої не може надіслати звіт про цей збій.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Подробиці: { $details }
+crashreporter-error-details-header = Подробиці:
 crashreporter-no-run-message = Ця програма запускається після збою, щоб повідомити розробника програми про проблему.  Її не слід запускати напряму.
 crashreporter-button-details = Подробиці…
 crashreporter-loading-details = Завантаження…
 crashreporter-view-report-title = Зміст звіту
 crashreporter-comment-prompt = Додати коментар (коментарі бачать всі)
 crashreporter-report-info = Цей звіт також місить інформацію стосовно стану програми на момент збою.
-crashreporter-send-report = Повідомте { -vendor-short-name } про цей збій, щоб звони могли його виправити.
-crashreporter-include-url = Додати адресу відвіданої сторінки.
+crashreporter-checkbox-test-hardware = Перевірити наявність проблем з обладнанням і конфігурацією на моєму пристрої.
+crashreporter-checkbox-send-report = Повідомте { -vendor-short-name } про цей збій, щоб вони могли його виправити.
+crashreporter-checkbox-include-url = Додати адресу відвіданої сторінки.
 crashreporter-submit-status = Ваш звіт про збій буде надіслано перед закриттям або перезапуском програми.
+crashreporter-submit-waiting-hardware-tests = Перевірка проблем з обладнанням і конфігурацією…
 crashreporter-submit-in-progress = Надсилання звіту…
 crashreporter-submit-success = Звіт успішно надіслано!
 crashreporter-submit-failure = Під час надсилання звіту сталася помилка.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Ви можете переглянути подр�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Не вдалося запустити аналізатор мінідампів
 # $path (String) - the file path
 crashreporter-error-opening-file = Не вдалося відкрити файл ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Відсутній домашній катал
 # $to (String) - the destination path
 crashreporter-error-moving-path = Не вдалося перемістити { $from } до { $to }
 crashreporter-error-version-eol = Версія більше не підтримується: звіти про збої для цієї версії не приймаються.
+crashreporter-error-failed-to-generate-minidump = Програмі не вдалося згенерувати інформацію про збій.

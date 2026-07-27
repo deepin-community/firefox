@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,11 +5,12 @@
 #include "WebGLExtensions.h"
 
 #include "GLContext.h"
+#include "WebGLContext.h"
+#include "WebGLFormats.h"
 #include "mozilla/Casting.h"
-#include "mozilla/dom/WebGLRenderingContextBinding.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_webgl.h"
-#include "WebGLContext.h"
+#include "mozilla/dom/WebGLRenderingContextBinding.h"
 
 namespace mozilla {
 
@@ -34,9 +34,16 @@ static bool TestShaderCompile(gl::GLContext* const gl, const GLenum type,
                         chars.data());
   printf_stderr("GetShaderInfoLog() ->\n%s\n", chars.data());
 
+#if defined(MOZ_WIDGET_ANDROID) && (defined(_M_IX86) || defined(__i386__) || \
+                                    defined(__x86_64__) || defined(__amd64__))
+  // Flakey gl on x86 android emulators in CI sometimes crash on the first
+  // GetShaderSource call.
+  printf_stderr("source ->\n%s\n", source.c_str());
+#else
   gl->fGetShaderSource(shader, LazyAssertedCast(chars.size() - 1), nullptr,
                        chars.data());
   printf_stderr("GetShaderSource() ->\n%s\n", chars.data());
+#endif
 
   return false;
 }
@@ -65,7 +72,7 @@ WebGLExtensionColorBufferFloat::WebGLExtensionColorBufferFloat(
 }
 
 void WebGLExtensionColorBufferFloat::SetRenderable(
-    const webgl::FormatRenderableState state) {
+    const webgl::FormatRenderableState& state) {
   auto& fua = mContext->mFormatUsage;
 
   auto fnUpdateUsage = [&](GLenum sizedFormat,
@@ -106,7 +113,7 @@ WebGLExtensionColorBufferHalfFloat::WebGLExtensionColorBufferHalfFloat(
 }
 
 void WebGLExtensionColorBufferHalfFloat::SetRenderable(
-    const webgl::FormatRenderableState state) {
+    const webgl::FormatRenderableState& state) {
   auto& fua = mContext->mFormatUsage;
 
   auto fnUpdateUsage = [&](GLenum sizedFormat, webgl::EffectiveFormat effFormat,

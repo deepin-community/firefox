@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -15,7 +15,7 @@
 #include <string>
 #include <tuple>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
@@ -32,37 +32,37 @@ namespace {
 
 using CdefFilterBlockFunctions = std::array<cdef_filter_block_func, 4>;
 
-typedef std::tuple<CdefFilterBlockFunctions, CdefFilterBlockFunctions,
-                   BLOCK_SIZE, int, int>
-    cdef_dir_param_t;
+using cdef_dir_param_t =
+    std::tuple<CdefFilterBlockFunctions, CdefFilterBlockFunctions, BLOCK_SIZE,
+               int, int>;
 
 class CDEFBlockTest : public ::testing::TestWithParam<cdef_dir_param_t> {
  public:
   ~CDEFBlockTest() override = default;
   void SetUp() override {
-    cdef = GET_PARAM(0);
-    ref_cdef = GET_PARAM(1);
-    bsize = GET_PARAM(2);
-    boundary = GET_PARAM(3);
-    depth = GET_PARAM(4);
+    cdef_ = GET_PARAM(0);
+    ref_cdef_ = GET_PARAM(1);
+    bsize_ = GET_PARAM(2);
+    boundary_ = GET_PARAM(3);
+    depth_ = GET_PARAM(4);
   }
 
  protected:
-  BLOCK_SIZE bsize;
-  int boundary;
-  int depth;
-  CdefFilterBlockFunctions cdef;
-  CdefFilterBlockFunctions ref_cdef;
+  BLOCK_SIZE bsize_;
+  int boundary_;
+  int depth_;
+  CdefFilterBlockFunctions cdef_;
+  CdefFilterBlockFunctions ref_cdef_;
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFBlockTest);
 
-typedef CDEFBlockTest CDEFBlockHighbdTest;
+using CDEFBlockHighbdTest = CDEFBlockTest;
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFBlockHighbdTest);
 
-typedef CDEFBlockTest CDEFSpeedTest;
+using CDEFSpeedTest = CDEFBlockTest;
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFSpeedTest);
 
-typedef CDEFBlockTest CDEFSpeedHighbdTest;
+using CDEFSpeedHighbdTest = CDEFBlockTest;
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFSpeedHighbdTest);
 
 int64_t test_cdef(BLOCK_SIZE bsize, int iterations,
@@ -206,26 +206,26 @@ void test_cdef_speed(BLOCK_SIZE bsize, int iterations,
       << "SIMD time: " << elapsed_time << " us" << std::endl;
 }
 
-typedef int (*find_dir_t)(const uint16_t *img, int stride, int32_t *var,
-                          int coeff_shift);
+using find_dir_t = int (*)(const uint16_t *img, int stride, int32_t *var,
+                           int coeff_shift);
 
-typedef std::tuple<find_dir_t, find_dir_t> find_dir_param_t;
+using find_dir_param_t = std::tuple<find_dir_t, find_dir_t>;
 
 class CDEFFindDirTest : public ::testing::TestWithParam<find_dir_param_t> {
  public:
   ~CDEFFindDirTest() override = default;
   void SetUp() override {
-    finddir = GET_PARAM(0);
-    ref_finddir = GET_PARAM(1);
+    finddir_ = GET_PARAM(0);
+    ref_finddir_ = GET_PARAM(1);
   }
 
  protected:
-  find_dir_t finddir;
-  find_dir_t ref_finddir;
+  find_dir_t finddir_;
+  find_dir_t ref_finddir_;
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirTest);
 
-typedef CDEFFindDirTest CDEFFindDirSpeedTest;
+using CDEFFindDirSpeedTest = CDEFFindDirTest;
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirSpeedTest);
 
 void test_finddir(int (*finddir)(const uint16_t *img, int stride, int32_t *var,
@@ -293,28 +293,28 @@ void test_finddir_speed(int (*finddir)(const uint16_t *img, int stride,
       << "SIMD time: " << elapsed_time << " us" << std::endl;
 }
 
-typedef void (*find_dir_dual_t)(const uint16_t *img1, const uint16_t *img2,
-                                int stride, int32_t *var1, int32_t *var2,
-                                int coeff_shift, int *out1, int *out2);
+using find_dir_dual_t = void (*)(const uint16_t *img1, const uint16_t *img2,
+                                 int stride, int32_t *var1, int32_t *var2,
+                                 int coeff_shift, int *out1, int *out2);
 
-typedef std::tuple<find_dir_dual_t, find_dir_dual_t> find_dir_dual_param_t;
+using find_dir_dual_param_t = std::tuple<find_dir_dual_t, find_dir_dual_t>;
 
 class CDEFFindDirDualTest
     : public ::testing::TestWithParam<find_dir_dual_param_t> {
  public:
   ~CDEFFindDirDualTest() override = default;
   void SetUp() override {
-    finddir = GET_PARAM(0);
-    ref_finddir = GET_PARAM(1);
+    finddir_ = GET_PARAM(0);
+    ref_finddir_ = GET_PARAM(1);
   }
 
  protected:
-  find_dir_dual_t finddir;
-  find_dir_dual_t ref_finddir;
+  find_dir_dual_t finddir_;
+  find_dir_dual_t ref_finddir_;
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirDualTest);
 
-typedef CDEFFindDirDualTest CDEFFindDirDualSpeedTest;
+using CDEFFindDirDualSpeedTest = CDEFFindDirDualTest;
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirDualSpeedTest);
 
 void test_finddir_dual(
@@ -488,6 +488,7 @@ class CDEFCopyRect8to16Test
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFCopyRect8to16Test);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 using CDEFCopyRect16To16 = void (*)(uint16_t *dst, int dstride,
                                     const uint16_t *src, int sstride, int width,
                                     int height);
@@ -571,50 +572,54 @@ class CDEFCopyRect16to16Test
   CDEFCopyRect16To16 ref_func_;
 };
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFCopyRect16to16Test);
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 TEST_P(CDEFBlockTest, TestSIMDNoMismatch) {
-  test_cdef(bsize, 1, cdef, ref_cdef, boundary, depth);
+  test_cdef(bsize_, 1, cdef_, ref_cdef_, boundary_, depth_);
 }
 
 TEST_P(CDEFBlockHighbdTest, TestSIMDHighbdNoMismatch) {
-  test_cdef(bsize, 1, cdef, ref_cdef, boundary, depth);
+  test_cdef(bsize_, 1, cdef_, ref_cdef_, boundary_, depth_);
 }
 
 TEST_P(CDEFSpeedTest, DISABLED_TestSpeed) {
-  test_cdef_speed(bsize, 4, cdef, ref_cdef, boundary, depth);
+  test_cdef_speed(bsize_, 4, cdef_, ref_cdef_, boundary_, depth_);
 }
 
 TEST_P(CDEFSpeedHighbdTest, DISABLED_TestSpeed) {
-  test_cdef_speed(bsize, 4, cdef, ref_cdef, boundary, depth);
+  test_cdef_speed(bsize_, 4, cdef_, ref_cdef_, boundary_, depth_);
 }
 
 TEST_P(CDEFFindDirTest, TestSIMDNoMismatch) {
-  test_finddir(finddir, ref_finddir);
+  test_finddir(finddir_, ref_finddir_);
 }
 
 TEST_P(CDEFFindDirSpeedTest, DISABLED_TestSpeed) {
-  test_finddir_speed(finddir, ref_finddir);
+  test_finddir_speed(finddir_, ref_finddir_);
 }
 
 TEST_P(CDEFFindDirDualTest, TestSIMDNoMismatch) {
-  test_finddir_dual(finddir, ref_finddir);
+  test_finddir_dual(finddir_, ref_finddir_);
 }
 
 TEST_P(CDEFFindDirDualSpeedTest, DISABLED_TestSpeed) {
-  test_finddir_dual_speed(finddir, ref_finddir);
+  test_finddir_dual_speed(finddir_, ref_finddir_);
 }
 
 TEST_P(CDEFCopyRect8to16Test, TestSIMDNoMismatch) {
   test_copy_rect_8_to_16(test_func_, ref_func_);
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 TEST_P(CDEFCopyRect16to16Test, TestSIMDNoMismatch) {
   test_copy_rect_16_to_16(test_func_, ref_func_);
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 using std::make_tuple;
 
-#if ((AOM_ARCH_X86 && HAVE_SSSE3) || HAVE_SSE4_1 || HAVE_AVX2 || HAVE_NEON)
+#if ((AOM_ARCH_X86 && HAVE_SSSE3) || HAVE_SSE4_1 || HAVE_AVX2 || HAVE_NEON || \
+     HAVE_RVV)
 static const CdefFilterBlockFunctions kCdefFilterFuncC[] = {
   { &cdef_filter_8_0_c, &cdef_filter_8_1_c, &cdef_filter_8_2_c,
     &cdef_filter_8_3_c }
@@ -663,10 +668,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(make_tuple(&cdef_copy_rect8_8bit_to_16bit_c,
                                  &cdef_copy_rect8_8bit_to_16bit_ssse3)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 INSTANTIATE_TEST_SUITE_P(
     SSSE3, CDEFCopyRect16to16Test,
     ::testing::Values(make_tuple(&cdef_copy_rect8_16bit_to_16bit_c,
                                  &cdef_copy_rect8_16bit_to_16bit_ssse3)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif
 
 #if HAVE_SSE4_1
@@ -707,10 +714,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(make_tuple(&cdef_copy_rect8_8bit_to_16bit_c,
                                  &cdef_copy_rect8_8bit_to_16bit_sse4_1)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 INSTANTIATE_TEST_SUITE_P(
     SSE4_1, CDEFCopyRect16to16Test,
     ::testing::Values(make_tuple(&cdef_copy_rect8_16bit_to_16bit_c,
                                  &cdef_copy_rect8_16bit_to_16bit_sse4_1)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif
 
 #if HAVE_AVX2
@@ -750,10 +759,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(make_tuple(&cdef_copy_rect8_8bit_to_16bit_c,
                                  &cdef_copy_rect8_8bit_to_16bit_avx2)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 INSTANTIATE_TEST_SUITE_P(
     AVX2, CDEFCopyRect16to16Test,
     ::testing::Values(make_tuple(&cdef_copy_rect8_16bit_to_16bit_c,
                                  &cdef_copy_rect8_16bit_to_16bit_avx2)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif
 
 #if HAVE_NEON
@@ -793,10 +804,52 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(make_tuple(&cdef_copy_rect8_8bit_to_16bit_c,
                                  &cdef_copy_rect8_8bit_to_16bit_neon)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 INSTANTIATE_TEST_SUITE_P(
     NEON, CDEFCopyRect16to16Test,
     ::testing::Values(make_tuple(&cdef_copy_rect8_16bit_to_16bit_c,
                                  &cdef_copy_rect8_16bit_to_16bit_neon)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+#endif
+
+#if HAVE_RVV
+static const CdefFilterBlockFunctions kCdefFilterFuncRvv[] = {
+  { &cdef_filter_8_0_rvv, &cdef_filter_8_1_rvv, &cdef_filter_8_2_rvv,
+    &cdef_filter_8_3_rvv }
+};
+
+static const CdefFilterBlockFunctions kCdefFilterHighbdFuncRvv[] = {
+  { &cdef_filter_16_0_rvv, &cdef_filter_16_1_rvv, &cdef_filter_16_2_rvv,
+    &cdef_filter_16_3_rvv }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFBlockTest,
+    ::testing::Combine(::testing::ValuesIn(kCdefFilterFuncRvv),
+                       ::testing::ValuesIn(kCdefFilterFuncC),
+                       ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
+                                         BLOCK_8X8),
+                       ::testing::Range(0, 16), ::testing::Values(8)));
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFBlockHighbdTest,
+    ::testing::Combine(::testing::ValuesIn(kCdefFilterHighbdFuncRvv),
+                       ::testing::ValuesIn(kCdefFilterHighbdFuncC),
+                       ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
+                                         BLOCK_8X8),
+                       ::testing::Range(0, 16), ::testing::Range(10, 13, 2)));
+INSTANTIATE_TEST_SUITE_P(RVV, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_rvv,
+                                                      &cdef_find_dir_c)));
+
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFCopyRect8to16Test,
+    ::testing::Values(make_tuple(&cdef_copy_rect8_8bit_to_16bit_c,
+                                 &cdef_copy_rect8_8bit_to_16bit_rvv)));
+
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFCopyRect16to16Test,
+    ::testing::Values(make_tuple(&cdef_copy_rect8_16bit_to_16bit_c,
+                                 &cdef_copy_rect8_16bit_to_16bit_rvv)));
 #endif
 
 // Test speed for all supported architectures
@@ -891,6 +944,26 @@ INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirSpeedTest,
 INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirDualSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_dual_neon,
                                                       &cdef_find_dir_dual_c)));
+#endif
+
+#if HAVE_RVV
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFSpeedTest,
+    ::testing::Combine(::testing::ValuesIn(kCdefFilterFuncRvv),
+                       ::testing::ValuesIn(kCdefFilterFuncC),
+                       ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
+                                         BLOCK_8X8),
+                       ::testing::Range(0, 16), ::testing::Values(8)));
+INSTANTIATE_TEST_SUITE_P(
+    RVV, CDEFSpeedHighbdTest,
+    ::testing::Combine(::testing::ValuesIn(kCdefFilterHighbdFuncRvv),
+                       ::testing::ValuesIn(kCdefFilterHighbdFuncC),
+                       ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
+                                         BLOCK_8X8),
+                       ::testing::Range(0, 16), ::testing::Values(10)));
+INSTANTIATE_TEST_SUITE_P(RVV, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_rvv,
+                                                      &cdef_find_dir_c)));
 #endif
 
 }  // namespace

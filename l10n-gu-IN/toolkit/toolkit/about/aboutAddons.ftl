@@ -7,10 +7,6 @@ search-header =
     .placeholder = addons.mozilla.org શોધો
     .searchbuttonlabel = શોધો
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -190,6 +186,8 @@ shortcuts-modifier-other = Ctrl અથવા Alt ને શામેલ કર�
 shortcuts-invalid = અમાન્ય સંયોજન
 shortcuts-letter = એક પત્ર લખો
 shortcuts-system = { -brand-short-name } શૉર્ટકટને ઓવરરાઇડ કરી શકતા નથી
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] { $numberToShow } વધુ બતાવો
@@ -199,28 +197,11 @@ shortcuts-card-collapse-button = ઓછું બતાવો
 header-back-button =
     .title = પાછળ જાવ
 
-## Recommended add-ons page
-
-
 ## Add-on actions
 
 remove-addon-button = દૂર કરો
 disable-addon-button = નિષ્ક્રિય
 enable-addon-button = સક્રિય
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
 
 ## Page headings
 
@@ -240,7 +221,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } એ { -brand-short-name } { $version } સાથે અસુસંગત છે.
 # Variables:
 #   $version (string) - Application version.
@@ -255,12 +236,8 @@ details-notification-unsigned2 =
     .message = { -brand-short-name } માં ઉપયોગ માટે { $name } ચકાસવામાં આવી શક્યું નથી. સાવધાની સાથે આગળ વધો.
 details-notification-unsigned-link = વધુ મહિતી
 details-notification-blocked = સુરક્ષા અથવા સ્થિરતા સમસ્યાઓ દરમ્યાન { $name } ને નિષ્ક્રિય કરી દેવામાં આવ્યો છે.
-details-notification-blocked2 =
-    .message = સુરક્ષા અથવા સ્થિરતા સમસ્યાઓ દરમ્યાન { $name } ને નિષ્ક્રિય કરી દેવામાં આવ્યો છે.
 details-notification-blocked-link = વધારે જાણકારી
 details-notification-softblocked = સુરક્ષા અથવા સ્થિરતાની સમસ્યાઓને કારણે { $name } જાણીતો છે.
-details-notification-softblocked2 =
-    .message = સુરક્ષા અથવા સ્થિરતાની સમસ્યાઓને કારણે { $name } જાણીતો છે.
 details-notification-softblocked-link = વધારે જાણકારી
 details-notification-gmp-pending = { $name } ટૂંક સમયમાં જ ઇન્સ્ટોલ થશે.
 details-notification-gmp-pending2 =

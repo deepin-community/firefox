@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -34,12 +33,12 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  assert(compareArray(new TA([0, 0, 0]).fill(8, 1, 2), [0, 8, 0]));
-  assert(compareArray(new TA([0, 0, 0, 0, 0]).fill(8, -3, 4), [0, 0, 8, 8, 0]));
-  assert(compareArray(new TA([0, 0, 0, 0, 0]).fill(8, -2, -1), [0, 0, 0, 8, 0]));
-  assert(compareArray(new TA([0, 0, 0, 0, 0]).fill(8, -1, -3), [0, 0, 0, 0, 0]));
-  assert(compareArray(new TA([0, 0, 0, 0, 0]).fill(8, 1, 3), [0, 8, 8, 0, 0]));
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  assert(compareArray(new TA(makeCtorArg([0, 0, 0])).fill(8, 1, 2), [0, 8, 0]));
+  assert(compareArray(new TA(makeCtorArg([0, 0, 0, 0, 0])).fill(8, -3, 4), [0, 0, 8, 8, 0]));
+  assert(compareArray(new TA(makeCtorArg([0, 0, 0, 0, 0])).fill(8, -2, -1), [0, 0, 0, 8, 0]));
+  assert(compareArray(new TA(makeCtorArg([0, 0, 0, 0, 0])).fill(8, -1, -3), [0, 0, 0, 0, 0]));
+  assert(compareArray(new TA(makeCtorArg([0, 0, 0, 0, 0])).fill(8, 1, 3), [0, 8, 8, 0, 0]));
 });
 
 reportCompare(0, 0);

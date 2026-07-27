@@ -9,9 +9,11 @@ add_task(async function () {
   //  in: 48x48 ico, 56646 bytes.
   // (howstuffworks.com icon, contains 13 icons with sizes from 16x16 to
   // 48x48 in varying depths)
-  let pageURI = NetUtil.newURI("http://places.test/page/");
+  let pageURI = Services.io.newURI("http://places.test/page/");
   await PlacesTestUtils.addVisits(pageURI);
-  let faviconURI = NetUtil.newURI("http://places.test/icon/favicon-multi.ico");
+  let faviconURI = Services.io.newURI(
+    "http://places.test/icon/favicon-multi.ico"
+  );
   // Fake window.
   let win = { devicePixelRatio: 1.0 };
   let icoDataURL = await readFileDataAsDataURL(
@@ -25,13 +27,22 @@ add_task(async function () {
   );
 
   for (let size of [16, 32, 64]) {
-    let file = do_get_file(`favicon-multi-frame${size}.png`);
+    let allowMissing = AppConstants.USE_LIBZ_RS;
+    let file = do_get_file(
+      `favicon-multi-frame${size}` +
+        (AppConstants.USE_LIBZ_RS ? ".libz-rs.png" : ".png"),
+      allowMissing
+    );
+    if (!file.exists()) {
+      file = do_get_file(`favicon-multi-frame${size}.png`);
+    }
+
     let data = readFileData(file);
 
     info("Check getFaviconDataForPage");
-    let icon = await getFaviconDataForPage(pageURI, size);
+    let icon = await PlacesTestUtils.getFaviconForPage(pageURI, size);
     Assert.equal(icon.mimeType, "image/png");
-    Assert.deepEqual(icon.data, data);
+    Assert.deepEqual(icon.rawData, data);
 
     info("Check cached-favicon protocol");
     await compareFavicons(

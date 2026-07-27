@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "HLSDecoder.h"
+
 #include "AndroidBridge.h"
-#include "base/process_util.h"
 #include "DecoderTraits.h"
 #include "HLSDemuxer.h"
 #include "HLSUtils.h"
@@ -15,16 +13,17 @@
 #include "MediaDecoderStateMachine.h"
 #include "MediaFormatReader.h"
 #include "MediaShutdownManager.h"
+#include "base/process_util.h"
+#include "mozilla/NullPrincipal.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/HTMLMediaElement.h"
+#include "mozilla/glean/DomMediaHlsMetrics.h"
 #include "mozilla/java/GeckoHLSResourceWrapperNatives.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsIURL.h"
 #include "nsNetUtil.h"
 #include "nsThreadUtils.h"
-#include "mozilla/dom/HTMLMediaElement.h"
-#include "mozilla/glean/GleanMetrics.h"
-#include "mozilla/NullPrincipal.h"
-#include "mozilla/StaticPrefs_media.h"
 
 namespace mozilla {
 
@@ -170,7 +169,7 @@ nsresult HLSDecoder::Load(nsIChannel* aChannel) {
 
   mChannel = aChannel;
   nsCString spec;
-  Unused << mURI->GetSpec(spec);
+  (void)mURI->GetSpec(spec);
   mUsageRecorded = false;
 
   HLSResourceCallbacksSupport::Init();
@@ -276,7 +275,7 @@ void HLSDecoder::RecordMediaUsage(nsIURI* aMediaUri) {
 
   // TODO: get hostname. See bug 1887053.
   nsAutoCString mediaExt;
-  Unused << url->GetFileExtension(mediaExt);
+  (void)url->GetFileExtension(mediaExt);
   glean::hls::MediaLoadExtra extra = {.mediaExtension = Some(mediaExt.get())};
   glean::hls::media_load.Record(Some(extra));
   mUsageRecorded = true;
@@ -290,8 +289,8 @@ void HLSDecoder::UpdateCurrentPrincipal(nsIURI* aMediaUri) {
 
   // Check the subsumption of old and new principals. Should be either
   // equal or disjoint.
-  if (!mContentPrincipal) {
-    mContentPrincipal = principal;
+  if (!mContentPrincipal || principal->GetIsNullPrincipal()) {
+    mContentPrincipal = std::move(principal);
   } else if (principal->Equals(mContentPrincipal)) {
     return;
   } else if (!principal->Subsumes(mContentPrincipal) &&
@@ -299,7 +298,7 @@ void HLSDecoder::UpdateCurrentPrincipal(nsIURI* aMediaUri) {
     // Principals are disjoint -- no access.
     mContentPrincipal = NullPrincipal::Create(OriginAttributes());
   } else {
-    MOZ_DIAGNOSTIC_ASSERT(false, "non-equal principals should be disjoint");
+    MOZ_DIAGNOSTIC_CRASH("non-equal principals should be disjoint");
     mContentPrincipal = nullptr;
   }
   MediaDecoder::NotifyPrincipalChanged();
@@ -315,15 +314,15 @@ already_AddRefed<nsIPrincipal> HLSDecoder::GetContentPrincipal(
   if (element->GetCORSMode() == CORS_USE_CREDENTIALS) {
     securityFlags |= nsILoadInfo::SEC_COOKIES_INCLUDE;
   }
+  nsCOMPtr<nsIPrincipal> principal = NullPrincipal::Create(OriginAttributes());
   nsCOMPtr<nsIChannel> channel;
   nsresult rv = NS_NewChannel(
       getter_AddRefs(channel), aMediaUri, static_cast<dom::Element*>(element),
       securityFlags, nsIContentPolicy::TYPE_INTERNAL_VIDEO);
-  NS_ENSURE_SUCCESS(rv, nullptr);
-  nsCOMPtr<nsIPrincipal> principal;
+  NS_ENSURE_SUCCESS(rv, principal.forget());
   nsIScriptSecurityManager* secMan = nsContentUtils::GetSecurityManager();
   if (!secMan) {
-    return nullptr;
+    return principal.forget();
   }
   secMan->GetChannelResultPrincipal(channel, getter_AddRefs(principal));
   return principal.forget();

@@ -12,7 +12,6 @@ const { AddonManager } = ChromeUtils.importESModule(
 const {
   gDevTools,
 } = require("resource://devtools/client/framework/devtools.js");
-const TABS_REORDERED_SCALAR = "devtools.toolbox.tabs_reordered";
 const PREFERENCE_NAME = "devtools.toolbox.tabsOrder";
 
 /**
@@ -105,7 +104,7 @@ class ToolboxTabsOrderManager {
       this.dragTarget.closest("#toolbox-container");
     this.toolboxTabsElement = this.dragTarget.closest(".toolbox-tabs");
     this.isOrderUpdated = false;
-    this.eventTarget = this.dragTarget.ownerGlobal.top;
+    this.eventTarget = this.dragTarget.documentGlobal.top;
 
     this.eventTarget.addEventListener("mousemove", this.onMouseMove);
     this.eventTarget.addEventListener("mouseup", this.onMouseUp);
@@ -193,7 +192,7 @@ class ToolboxTabsOrderManager {
       // "How frequently are the tabs re-ordered, also which tabs get re-ordered?"
       const toolId =
         this.dragTarget.dataset.extensionId || this.dragTarget.dataset.id;
-      this.toolbox.telemetry.keyedScalarAdd(TABS_REORDERED_SCALAR, toolId, 1);
+      Glean.devtoolsToolbox.tabsReordered[toolId].add(1);
     }
 
     this.eventTarget.removeEventListener("mousemove", this.onMouseMove);
@@ -225,7 +224,7 @@ function sortPanelDefinitions(definitions) {
   });
 }
 
-/*
+/**
  * This function returns absolute tab ids that were merged the both ids that are in
  * preference and tabs.
  * Some tabs added with add-ons etc show/hide depending on conditions.

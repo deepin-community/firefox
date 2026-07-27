@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,6 @@
 
 #include "HttpChannelChild.h"
 #include "mozilla/ExtensionPolicyService.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/net/ChannelEventQueue.h"
 #include "mozilla/StaticPrefs_extensions.h"
@@ -77,7 +74,7 @@ class ChannelEventRunnable final : public ChannelEventWrapper {
 
   void Run() override {
     nsresult rv = mRunnable->Run();
-    Unused << NS_WARN_IF(NS_FAILED(rv));
+    (void)NS_WARN_IF(NS_FAILED(rv));
   }
 
  protected:
@@ -182,7 +179,7 @@ void StreamFilterParent::Disconnect(const nsACString& aReason) {
   nsAutoCString reason(aReason);
 
   RefPtr<StreamFilterParent> self(this);
-  RunOnActorThread(FUNC, [self, reason] {
+  RunOnActorThread(FUNC, [self, reason = std::move(reason)] {
     if (self->IPCActive()) {
       self->mState = State::Disconnected;
       self->CheckResult(self->SendError(reason));
@@ -268,6 +265,8 @@ void StreamFilterParent::Broken() {
     case State::Initialized:
     case State::TransferringData:
     case State::Suspended: {
+      // TODO bug 1965710: Entering Disconnecting + Disconnected can result in
+      // data corruption.
       mState = State::Disconnecting;
       RefPtr<StreamFilterParent> self(this);
       RunOnMainThread(FUNC, [=] {
@@ -276,6 +275,12 @@ void StreamFilterParent::Broken() {
         }
       });
 
+      // Immediately calling FinishDisconnect() may trigger a race condition
+      // (like bug 1628642) where data is dropped by DoSendData(), when the
+      // assumption documented in FinishDisconnect() is violated.
+      // Since bug 1965710 already results in data corruption, there is not
+      // really a point in fixing just this issue.
+      // TODO bug 1965710: Fix this issue when the data corruption is fixed.
       FinishDisconnect();
     } break;
 
@@ -297,11 +302,11 @@ IPCResult StreamFilterParent::RecvClose() {
     RefPtr<StreamFilterParent> self(this);
     RunOnMainThread(FUNC, [=] {
       nsresult rv = self->EmitStopRequest(NS_OK);
-      Unused << NS_WARN_IF(NS_FAILED(rv));
+      (void)NS_WARN_IF(NS_FAILED(rv));
     });
   }
 
-  Unused << SendClosed();
+  (void)SendClosed();
   Destroy();
   return IPC_OK();
 }
@@ -328,7 +333,7 @@ IPCResult StreamFilterParent::RecvSuspend() {
     RunOnMainThread(FUNC, [=] {
       self->mChannel->Suspend();
 
-      RunOnActorThread(FUNC, [=] {
+      self->RunOnActorThread(FUNC, [=] {
         if (self->IPCActive()) {
           self->mState = State::Suspended;
           self->CheckResult(self->SendSuspended());
@@ -351,7 +356,7 @@ IPCResult StreamFilterParent::RecvResume() {
     RunOnMainThread(FUNC, [=] {
       self->mChannel->Resume();
 
-      RunOnActorThread(FUNC, [=] {
+      self->RunOnActorThread(FUNC, [=] {
         if (self->IPCActive()) {
           self->CheckResult(self->SendResumed());
         }
@@ -370,6 +375,8 @@ IPCResult StreamFilterParent::RecvDisconnect() {
     return IPC_OK();
   }
 
+  // TODO bug 1965711: If SendFlushData() fails or if the child never sends
+  // SendFlushData(), we stay stuck in Disconnecting forever!
   mState = State::Disconnecting;
   CheckResult(SendFlushData());
   return IPC_OK();
@@ -388,23 +395,49 @@ IPCResult StreamFilterParent::RecvFlushedData() {
 
 void StreamFilterParent::FinishDisconnect() {
   RefPtr<StreamFilterParent> self(this);
+  // FinishDisconnect is called when we do not expect RecvWrite from the child.
+  //
+  // Immediately after entering mState Disconnecting, ODA might still be in the
+  // process of dispatching DoSendData calls from the IO thread to the actor
+  // thread. When DoSendData runs, it detects state Disconnecting and puts the
+  // data back in mBufferedData (at index mPrependedBufferCount).
+  //
+  // When state Disconnecting is entered via RecvDisconnect, it performs an
+  // IPC roundtrip to the child. Any queued DoSendData() queued to the actor
+  // thread by ODA are expected to have executed before RecvFlushedData is
+  // executed, and we don't expect additional DoSendData().
+  //
+  // Set mPrependedBufferCount = -1 prevents DoSendData() from prepending
+  // additional data to mBufferedData (if DoSendData() is somehow called
+  // unexpectedly).
+  mPrependedBufferCount = -1;
   RunOnIOThread(FUNC, [=] {
+    // This is not always the last flush. See below for the final flush.
     self->FlushBufferedData();
 
-    RunOnMainThread(FUNC, [=] {
-      if (self->mReceivedStop && !self->mSentStop) {
-        nsresult rv = self->EmitStopRequest(NS_OK);
-        Unused << NS_WARN_IF(NS_FAILED(rv));
-      } else if (self->mLoadGroup && !self->mDisconnected) {
-        Unused << self->mLoadGroup->RemoveRequest(self, nullptr, NS_OK);
-      }
-      self->mDisconnected = true;
-    });
-
-    RunOnActorThread(FUNC, [=] {
+    self->RunOnActorThread(FUNC, [=] {
       if (self->mState != State::Closed) {
         self->mState = State::Disconnected;
       }
+      // Despite having flushed buffers before, the buffer may be non-empty
+      // if OnDataAvailable is called before entering state Disconnected.
+      self->RunOnIOThread(FUNC, [=] {
+        // If OnDataAvailable is called after entering state Disconnected,
+        // it calls FlushBufferedData() if needed. But if that did not
+        // happen, we need to flush the data here, now.
+        if (!self->mBufferedData.isEmpty()) {
+          self->FlushBufferedData();
+        }
+      });
+      self->RunOnMainThread(FUNC, [=] {
+        if (self->mReceivedStop && !self->mSentStop) {
+          nsresult rv = self->EmitStopRequest(NS_OK);
+          (void)NS_WARN_IF(NS_FAILED(rv));
+        } else if (self->mLoadGroup && !self->mDisconnected) {
+          (void)self->mLoadGroup->RemoveRequest(self, nullptr, NS_OK);
+        }
+        self->mDisconnected = true;
+      });
     });
   });
 }
@@ -424,7 +457,7 @@ IPCResult StreamFilterParent::RecvWrite(Data&& aData) {
 
 void StreamFilterParent::WriteMove(Data&& aData) {
   nsresult rv = Write(aData);
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 }
 
 nsresult StreamFilterParent::Write(Data& aData) {
@@ -437,8 +470,8 @@ nsresult StreamFilterParent::Write(Data& aData) {
       NS_ASSIGNMENT_DEPEND);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  rv =
-      mOrigListener->OnDataAvailable(mChannel, stream, mOffset, aData.Length());
+  nsCOMPtr<nsIStreamListener> origListener = mOrigListener;
+  rv = origListener->OnDataAvailable(mChannel, stream, mOffset, aData.Length());
   NS_ENSURE_SUCCESS(rv, rv);
 
   mOffset += aData.Length();
@@ -566,7 +599,7 @@ StreamFilterParent::OnStartRequest(nsIRequest* aRequest) {
   if (aRequest != mChannel) {
     nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
     nsCOMPtr<nsILoadInfo> loadInfo = channel ? channel->LoadInfo() : nullptr;
-    mChannel = channel;
+    mChannel = std::move(channel);
 
     if (!(loadInfo &&
           loadInfo->RedirectChainIncludingInternalRedirects().IsEmpty())) {
@@ -577,7 +610,7 @@ StreamFilterParent::OnStartRequest(nsIRequest* aRequest) {
       RunOnActorThread(FUNC, [=] {
         if (self->IPCActive()) {
           self->mState = State::Disconnected;
-          CheckResult(self->SendError("Channel redirected"_ns));
+          self->CheckResult(self->SendError("Channel redirected"_ns));
         }
       });
     }
@@ -595,7 +628,7 @@ StreamFilterParent::OnStartRequest(nsIRequest* aRequest) {
       RunOnActorThread(FUNC, [=] {
         if (self->IPCActive()) {
           self->mState = State::Disconnected;
-          CheckResult(
+          self->CheckResult(
               self->SendError("Channel is delivering cached alt-data"_ns));
         }
       });
@@ -603,20 +636,21 @@ StreamFilterParent::OnStartRequest(nsIRequest* aRequest) {
   }
 
   if (!mDisconnected) {
-    Unused << mChannel->GetLoadGroup(getter_AddRefs(mLoadGroup));
+    (void)mChannel->GetLoadGroup(getter_AddRefs(mLoadGroup));
     if (mLoadGroup) {
-      Unused << mLoadGroup->AddRequest(this, nullptr);
+      (void)mLoadGroup->AddRequest(this, nullptr);
     }
   }
 
-  nsresult rv = mOrigListener->OnStartRequest(aRequest);
+  nsCOMPtr<nsIStreamListener> origListener = mOrigListener;
+  nsresult rv = origListener->OnStartRequest(aRequest);
 
   // Important: Do this only *after* running the next listener in the chain, so
   // that we get the final delivery target after any retargeting that it may do.
   if (nsCOMPtr<nsIThreadRetargetableRequest> req =
           do_QueryInterface(aRequest)) {
     nsCOMPtr<nsISerialEventTarget> thread;
-    Unused << req->GetDeliveryTarget(getter_AddRefs(thread));
+    (void)req->GetDeliveryTarget(getter_AddRefs(thread));
     if (thread) {
       mIOThread = std::move(thread);
     }
@@ -653,12 +687,15 @@ StreamFilterParent::OnStopRequest(nsIRequest* aRequest, nsresult aStatusCode) {
   RunOnActorThread(FUNC, [=] {
     if (self->IPCActive()) {
       self->CheckResult(self->SendStopRequest(aStatusCode));
-    } else if (self->mState != State::Disconnecting) {
+    } else if (self->mState == State::Disconnected) {
+      // !IPCActive() implies mState == Closed, Disconnecting or Disconnected.
+      //
+      // When we enter Closed via RecvClose, we emit a stop request.
       // If we're currently disconnecting, then we'll emit a stop
       // request at the end of that process. Otherwise we need to
       // manually emit one here, since we won't be getting a response
       // from the child.
-      RunOnMainThread(FUNC, [=] {
+      self->RunOnMainThread(FUNC, [=] {
         if (!self->mSentStop) {
           self->EmitStopRequest(aStatusCode);
         }
@@ -673,10 +710,11 @@ nsresult StreamFilterParent::EmitStopRequest(nsresult aStatusCode) {
   MOZ_ASSERT(!mSentStop);
 
   mSentStop = true;
-  nsresult rv = mOrigListener->OnStopRequest(mChannel, aStatusCode);
+  nsCOMPtr<nsIStreamListener> origListener = mOrigListener;
+  nsresult rv = origListener->OnStopRequest(mChannel, aStatusCode);
 
   if (mLoadGroup && !mDisconnected) {
-    Unused << mLoadGroup->RemoveRequest(this, nullptr, aStatusCode);
+    (void)mLoadGroup->RemoveRequest(this, nullptr, aStatusCode);
   }
 
   return rv;
@@ -691,7 +729,35 @@ void StreamFilterParent::DoSendData(Data&& aData) {
 
   if (mState == State::TransferringData) {
     CheckResult(SendData(aData));
+    // TODO bug 1965710: If SendData(aData) fails, this chunk is dropped, but
+    // any later data may be forwarded to the listener. This can result in
+    // surprising data inconsistencies.
+  } else if (mState == State::Disconnecting) {
+    // OnDataAvailable buffers data when state is Disconnecting. But if this
+    // state was entered between the thread hop from ODA to DoSendData, then we
+    // have data that should be in the buffer but is not.
+
+    // We should not be called after some point in FinishDisconnect().
+    MOZ_ASSERT(mPrependedBufferCount != -1);
+
+    MutexAutoLock al(mBufferMutex);
+    if (mPrependedBufferCount == 0) {
+      mBufferedData.insertFront(new BufferedData(std::move(aData)));
+    } else {
+      MOZ_ASSERT(!mBufferedData.isEmpty());
+      int i = 0;
+      for (BufferedData* item : mBufferedData) {
+        if (++i == mPrependedBufferCount) {
+          item->setNext(new BufferedData(std::move(aData)));
+          ++mPrependedBufferCount;
+          break;
+        }
+      }
+      MOZ_ASSERT_UNREACHABLE("mPrependedBufferCount past end of mBufferedData");
+    }
   }
+
+  // If mState is Closed or the child cannot be reached, the data is dropped.
 }
 
 NS_IMETHODIMP
@@ -699,6 +765,19 @@ StreamFilterParent::OnDataAvailable(nsIRequest* aRequest,
                                     nsIInputStream* aInputStream,
                                     uint64_t aOffset, uint32_t aCount) {
   AssertIsIOThread();
+  // Data handling is as follows:
+  // - If mDisconnectedByOnStartRequest == true: Forward data.
+  //   (^ child was never notified from OnStartRequest)
+  // - If mState is TransferringData or Suspended: send to child (DoSendData).
+  // - If mState is Closed: Drop data (ignore it).
+  // - If mState is Disconnecting: Buffer data for later.
+  // - If mState is Disconnected: Forward data.
+  //
+  // Desired order of forwarding data during Disconnecting:
+  // - Any RecvWrite (from child before/during Disconnecting, not buffered).
+  // - Any DoSendData that were queued before Disconnecting but were not sent
+  //   to the child because the state changed to Disconnecting.
+  // - Any OnDataAvailable while state is set to Disconnecting.
 
   if (mDisconnectedByOnStartRequest || mState == State::Disconnected) {
     // If we're offloading data in a thread pool, it's possible that we'll
@@ -709,12 +788,18 @@ StreamFilterParent::OnDataAvailable(nsIRequest* aRequest,
     // Note: When in the eDisconnected state, the buffer list is guaranteed
     // never to be accessed by another thread during an OnDataAvailable call.
     if (!mBufferedData.isEmpty()) {
+      // The flag is set without notifying the child, so we cannot ever get
+      // into the Disconnecting state that would fill the buffer.
+      MOZ_ASSERT(!mDisconnectedByOnStartRequest);
+      // OnDataAvailable called before FinishDisconnect has had a chance to
+      // perform the final FlushBufferedData() call, so do it here now.
       FlushBufferedData();
     }
 
     mOffset += aCount;
-    return mOrigListener->OnDataAvailable(aRequest, aInputStream,
-                                          mOffset - aCount, aCount);
+    nsCOMPtr<nsIStreamListener> origListener = mOrigListener;
+    return origListener->OnDataAvailable(aRequest, aInputStream,
+                                         mOffset - aCount, aCount);
   }
 
   Data data;
@@ -752,6 +837,15 @@ nsresult StreamFilterParent::FlushBufferedData() {
   while (!mBufferedData.isEmpty()) {
     UniquePtr<BufferedData> data(mBufferedData.popFirst());
 
+    if (NS_WARN_IF(mState == State::Closed)) {
+      // We should only have data to flush while in state Disconnecting, set by
+      // RecvDisconnect. But we can also enter the Disconnecting state via
+      // Broken() via CheckResult(false), after which it is theoretically to
+      // still receive RecvClose. When RecvClose is called, EmitStopRequest is
+      // called, so we should not write additional data (OnDataAvailable).
+      continue;
+    }
+
     nsresult rv = Write(data->mData);
     NS_ENSURE_SUCCESS(rv, rv);
   }
@@ -781,7 +875,8 @@ void StreamFilterParent::AssertIsIOThread() { MOZ_ASSERT(IsIOThread()); }
 
 template <typename Function>
 void StreamFilterParent::RunOnMainThread(const char* aName, Function&& aFunc) {
-  mQueue->RunOrEnqueue(new ChannelEventFunction(mMainThread, std::move(aFunc)));
+  mQueue->RunOrEnqueue(
+      new ChannelEventFunction(mMainThread, std::forward<Function>(aFunc)));
 }
 
 void StreamFilterParent::RunOnMainThread(already_AddRefed<Runnable> aRunnable) {
@@ -791,7 +886,8 @@ void StreamFilterParent::RunOnMainThread(already_AddRefed<Runnable> aRunnable) {
 
 template <typename Function>
 void StreamFilterParent::RunOnIOThread(const char* aName, Function&& aFunc) {
-  mQueue->RunOrEnqueue(new ChannelEventFunction(mIOThread, std::move(aFunc)));
+  mQueue->RunOrEnqueue(
+      new ChannelEventFunction(mIOThread, std::forward<Function>(aFunc)));
 }
 
 void StreamFilterParent::RunOnIOThread(already_AddRefed<Runnable> aRunnable) {

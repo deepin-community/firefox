@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,7 @@
 #include "MainThreadUtils.h"
 #include "mozilla/BaseProfilerMarkersPrerequisites.h"
 #include "mozilla/ProfilerMarkers.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/XpcomMetrics.h"
 #include "mozilla/TimeStamp.h"
 
 using namespace mozilla;
@@ -76,12 +74,6 @@ class CCSliceMarker : public BaseMarkerType<CCSliceMarker> {
       "{marker.name} (idle={marker.data.idle})";
 
   static constexpr MS::ETWMarkerGroup Group = MS::ETWMarkerGroup::Memory;
-
-  static void StreamJSONMarkerData(
-      mozilla::baseprofiler::SpliceableJSONWriter& aWriter,
-      bool aIsDuringIdle) {
-    StreamJSONMarkerDataImpl(aWriter, aIsDuringIdle);
-  }
 };
 }  // namespace geckoprofiler::markers
 
@@ -119,8 +111,7 @@ void mozilla::CycleCollectorStats::AfterCycleCollectionSlice() {
 
     uint32_t percent =
         uint32_t(idleDuration.ToSeconds() / duration.ToSeconds() * 100);
-    Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_SLICE_DURING_IDLE,
-                          percent);
+    glean::cycle_collector::slice_during_idle.AccumulateSingleSample(percent);
   }
 
   TimeDuration sliceTime = TimeBetween(mBeginSliceTime, mEndSliceTime);
@@ -180,20 +171,25 @@ void mozilla::CycleCollectorStats::SendTelemetry(TimeDuration aCCNowDuration,
   // other threads' measures.
   MOZ_ASSERT(NS_IsMainThread());
 
-  Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_FINISH_IGC, mAnyLockedOut);
-  Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_SYNC_SKIPPABLE,
-                        mRanSyncForgetSkippable);
-  Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_FULL,
-                        aCCNowDuration.ToMilliseconds());
-  Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_MAX_PAUSE,
-                        mMaxSliceTime.ToMilliseconds());
+  glean::cycle_collector::finish_igc
+      .EnumGet(
+          static_cast<glean::cycle_collector::FinishIgcLabel>(mAnyLockedOut))
+      .Add();
+  glean::cycle_collector::sync_skippable
+      .EnumGet(static_cast<glean::cycle_collector::SyncSkippableLabel>(
+          mRanSyncForgetSkippable))
+      .Add();
+  glean::cycle_collector::full.ProcessGet().AccumulateRawDuration(
+      aCCNowDuration);
+  glean::cycle_collector::max_pause.ProcessGet().AccumulateRawDuration(
+      mMaxSliceTime);
 
   if (!aPrevCCEnd.IsNull()) {
     TimeDuration timeBetween = TimeBetween(aPrevCCEnd, mBeginTime);
-    Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_TIME_BETWEEN,
-                          timeBetween.ToSeconds());
+    glean::cycle_collector::time_between.ProcessGet().AccumulateRawDuration(
+        timeBetween);
   }
 
-  Telemetry::Accumulate(Telemetry::FORGET_SKIPPABLE_MAX,
-                        mMaxForgetSkippableTime.ToMilliseconds());
+  glean::cycle_collector::forget_skippable_max.ProcessGet()
+      .AccumulateRawDuration(mMaxForgetSkippableTime);
 }

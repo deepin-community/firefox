@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = o
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Copiar sen seguimento do sitio
-    .accesskey = C
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Copiar ligazón limpa
+    .accesskey = n
 text-action-paste =
     .label = Pegar
     .accesskey = P
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Eliminar
     .accesskey = E
+text-action-reveal-password =
+    .label = Revelar o contrasinal
+    .accesskey = v
 text-action-select-all =
     .label = Seleccionar todo
     .accesskey = t
@@ -62,3 +66,22 @@ text-action-spell-dictionaries =
     .accesskey = I
 text-action-search-text-box-clear =
     .title = Limpar
+text-action-highlight-selection =
+    .label = Resaltar selección
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Copiar ligazón ao texto resaltado
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Copia a ligazón limpa ao texto resaltado
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Eliminar o resaltado
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Eliminar todos os resaltados

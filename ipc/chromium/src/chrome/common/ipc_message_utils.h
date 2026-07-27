@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -10,20 +8,16 @@
 #include <cstdint>
 #include <iterator>
 #include <map>
-#include <unordered_map>
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
+#include <variant>
 #include "ErrorList.h"
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/string_util.h"
 #include "chrome/common/ipc_message.h"
 #include "mozilla/CheckedInt.h"
-#include "mozilla/IntegerRange.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
 
 #if defined(XP_WIN)
 #  include <windows.h>
@@ -36,15 +30,25 @@ class nsCOMPtr;
 
 namespace mozilla::ipc {
 class IProtocol;
-template <typename P>
-struct IPDLParamTraits;
-class SharedMemory;
+namespace shared_memory {
+class Cursor;
+}
 
 // Implemented in ProtocolUtils.cpp
 MOZ_NEVER_INLINE void PickleFatalError(const char* aMsg, IProtocol* aActor);
 }  // namespace mozilla::ipc
 
 namespace IPC {
+
+/**
+ * This constant determines the threshold size (in bytes) for deciding whether
+ * shared memory should be used during serialization/deserialization handled
+ * by the MessageBufferWriter class.
+ *
+ * NOTE: Even above this threshold, if MessageBufferWriter fails to allocate a
+ * shared memory region, it may still fall-back to sending the message inline.
+ */
+constexpr uint32_t kMessageBufferShmemThreshold = 64 * 1024;  // 64 KB
 
 /**
  * Context used to serialize into an IPC::Message. Provides relevant context
@@ -114,6 +118,10 @@ class MOZ_STACK_CLASS MessageWriter final {
 #if defined(XP_DARWIN)
   bool WriteMachSendRight(mozilla::UniqueMachSendRight port) {
     return message_.WriteMachSendRight(std::move(port));
+  }
+
+  bool WriteMachReceiveRight(mozilla::UniqueMachReceiveRight port) {
+    return message_.WriteMachReceiveRight(std::move(port));
   }
 #endif
 
@@ -208,6 +216,11 @@ class MOZ_STACK_CLASS MessageReader final {
 #if defined(XP_DARWIN)
   [[nodiscard]] bool ConsumeMachSendRight(mozilla::UniqueMachSendRight* port) {
     return message_.ConsumeMachSendRight(&iter_, port);
+  }
+
+  [[nodiscard]] bool ConsumeMachReceiveRight(
+      mozilla::UniqueMachReceiveRight* port) {
+    return message_.ConsumeMachReceiveRight(&iter_, port);
   }
 #endif
 
@@ -473,7 +486,7 @@ inline constexpr auto ParamTraitsReadUsesOutParam()
 }  // namespace detail
 
 template <typename P>
-inline bool WARN_UNUSED_RESULT ReadParam(MessageReader* reader, P* p) {
+[[nodiscard]] inline bool ReadParam(MessageReader* reader, P* p) {
   if constexpr (!detail::ParamTraitsReadUsesOutParam<P>()) {
     auto maybe = ParamTraits<P>::Read(reader);
     if (maybe) {
@@ -487,7 +500,7 @@ inline bool WARN_UNUSED_RESULT ReadParam(MessageReader* reader, P* p) {
 }
 
 template <typename P>
-inline ReadResult<P> WARN_UNUSED_RESULT ReadParam(MessageReader* reader) {
+[[nodiscard]] inline ReadResult<P> ReadParam(MessageReader* reader) {
   if constexpr (!detail::ParamTraitsReadUsesOutParam<P>()) {
     return ParamTraits<P>::Read(reader);
   } else {
@@ -524,8 +537,7 @@ class MOZ_STACK_CLASS MessageBufferWriter {
 
  private:
   MessageWriter* writer_;
-  RefPtr<mozilla::ipc::SharedMemory> shmem_;
-  char* buffer_ = nullptr;
+  mozilla::UniquePtr<mozilla::ipc::shared_memory::Cursor> shmem_cursor_;
   uint32_t remaining_ = 0;
 };
 
@@ -556,8 +568,7 @@ class MOZ_STACK_CLASS MessageBufferReader {
 
  private:
   MessageReader* reader_;
-  RefPtr<mozilla::ipc::SharedMemory> shmem_;
-  const char* buffer_ = nullptr;
+  mozilla::UniquePtr<mozilla::ipc::shared_memory::Cursor> shmem_cursor_;
   uint32_t remaining_ = 0;
 };
 
@@ -679,8 +690,7 @@ bool ReadSequenceParamImpl(MessageReader* reader, mozilla::Maybe<I>&& data,
  * If the type satisfies kUseWriteBytes, output iterators are not supported.
  */
 template <typename P, typename F>
-bool WARN_UNUSED_RESULT ReadSequenceParam(MessageReader* reader,
-                                          F&& allocator) {
+[[nodiscard]] bool ReadSequenceParam(MessageReader* reader, F&& allocator) {
   uint32_t length = 0;
   if (!reader->ReadUInt32(&length)) {
     reader->FatalError("failed to read byte length in ReadSequenceParam");
@@ -690,34 +700,10 @@ bool WARN_UNUSED_RESULT ReadSequenceParam(MessageReader* reader,
   return ReadSequenceParamImpl<P>(reader, allocator(length), length);
 }
 
-// Temporary fallback class to allow types to declare serialization using the
-// IPDLParamTraits type class. Will be removed once all remaining
-// IPDLParamTraits implementations are gone. (bug 1754009)
-
-template <class P>
-struct ParamTraitsIPDLFallback {
-  template <class R>
-  static auto Write(MessageWriter* writer, R&& p)
-      -> decltype(mozilla::ipc::IPDLParamTraits<P>::Write(writer,
-                                                          writer->GetActor(),
-                                                          std::forward<R>(p))) {
-    mozilla::ipc::IPDLParamTraits<P>::Write(writer, writer->GetActor(),
-                                            std::forward<R>(p));
-  }
-  template <class R>
-  static auto Read(MessageReader* reader, R* r)
-      -> decltype(mozilla::ipc::IPDLParamTraits<P>::Read(reader,
-                                                         reader->GetActor(),
-                                                         r)) {
-    return mozilla::ipc::IPDLParamTraits<P>::Read(reader, reader->GetActor(),
-                                                  r);
-  }
-};
-
 // Fundamental types.
 
 template <class P>
-struct ParamTraitsFundamental : ParamTraitsIPDLFallback<P> {};
+struct ParamTraitsFundamental;
 
 template <>
 struct ParamTraitsFundamental<bool> {
@@ -932,6 +918,55 @@ struct ParamTraitsStd<std::map<K, V>> {
   }
 };
 
+template <>
+struct ParamTraitsStd<std::monostate> {
+  using param_type = std::monostate;
+  static void Write(MessageWriter*, const param_type&) {}
+  static bool Read(MessageReader*, param_type*) { return true; }
+};
+
+template <class... Ts>
+struct ParamTraitsStd<std::variant<Ts...>> {
+  using param_type = std::variant<Ts...>;
+
+  template <class U>
+  static void Write(MessageWriter* writer, U&& p) {
+    WriteParam(writer, static_cast<uint64_t>(p.index()));
+    std::visit(
+        [&](auto&& param) {
+          WriteParam(writer, std::forward<decltype(param)>(param));
+        },
+        std::forward<U>(p));
+  }
+
+  static ReadResult<param_type> Read(MessageReader* reader) {
+    uint64_t index;
+    if (!ReadParam(reader, &index)) {
+      return {};
+    }
+    return ReadI<0>(reader, static_cast<size_t>(index));
+  }
+
+ private:
+  template <size_t I>
+  static ReadResult<param_type> ReadI(MessageReader* reader, size_t index) {
+    if constexpr (I >= std::variant_size_v<param_type>) {
+      return {};  // No matching variant index
+    } else {
+      if (index == I) {
+        using alt_type = std::variant_alternative_t<I, param_type>;
+        ReadResult<alt_type> alt = ReadParam<alt_type>(reader);
+        if (!alt) {
+          return {};
+        }
+        return ReadResult<param_type>{std::in_place, std::in_place_index<I>,
+                                      std::move(alt.get())};
+      }
+      return ReadI<I + 1>(reader, index);
+    }
+  }
+};
+
 // Windows-specific types.
 
 template <class P>
@@ -1054,6 +1089,49 @@ struct ParamTraitsIPC<mozilla::UniqueMachSendRight> {
     return true;
   }
 };
+
+// `UniqueMachReceiveRight` may be serialized over IPC channels. On the
+// receiving side, the UniqueMachReceiveRight is the local name of the right
+// which was transmitted.
+//
+// When sending a UniqueMachReceiveRight, the right must be valid at the time of
+// transmission. As transmission is asynchronous, this requires passing
+// ownership of the handle to IPC.
+//
+// A UniqueMachReceiveRight may only be read once. After it has been read once,
+// it will be consumed, and future reads will return an invalid right.
+template <>
+struct ParamTraitsIPC<mozilla::UniqueMachReceiveRight> {
+  typedef mozilla::UniqueMachReceiveRight param_type;
+  static void Write(MessageWriter* writer, param_type&& p) {
+    const bool valid = p != nullptr;
+    WriteParam(writer, valid);
+    if (valid) {
+      if (!writer->WriteMachReceiveRight(std::move(p))) {
+        writer->FatalError("Too many mach receive rights for one message!");
+        NOTREACHED() << "Too many mach receive rights for one message!";
+      }
+    }
+  }
+  static bool Read(MessageReader* reader, param_type* r) {
+    bool valid;
+    if (!ReadParam(reader, &valid)) {
+      reader->FatalError("Error reading mach receive right validity");
+      return false;
+    }
+
+    if (!valid) {
+      *r = nullptr;
+      return true;
+    }
+
+    if (!reader->ConsumeMachReceiveRight(r)) {
+      reader->FatalError("Mach receive right not found in message!");
+      return false;
+    }
+    return true;
+  }
+};
 #endif
 
 // Mozilla-specific types.
@@ -1081,8 +1159,13 @@ struct ParamTraitsMozilla<nsresult> {
   }
 };
 
-// See comments for the IPDLParamTraits specializations for RefPtr<T> and
-// nsCOMPtr<T> for more details.
+// When being passed `RefPtr<T>` or `nsCOMPtr<T>`, forward to a specialization
+// for the underlying target type. The parameter type will be passed as `T*`,
+// and result as `RefPtr<T>*`.
+//
+// This is done explicitly to ensure that the deleted `&&` overload for
+// `operator T*` is not selected in generic contexts, and to support
+// deserializing into `nsCOMPtr<T>`.
 template <class T>
 struct ParamTraitsMozilla<RefPtr<T>> {
   static void Write(MessageWriter* writer, const RefPtr<T>& p) {

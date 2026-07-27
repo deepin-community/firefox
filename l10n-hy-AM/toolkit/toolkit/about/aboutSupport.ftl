@@ -15,6 +15,14 @@ support-addons-type = Տեսակ
 support-addons-enabled = Միացված
 support-addons-version = Տարբերակ
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Տեղադրություն
+legacy-user-stylesheets-title = Հնացած օգտատիրոջ ոճաթերթեր
+legacy-user-stylesheets-enabled = Ակտիվ
+legacy-user-stylesheets-stylesheet-types = Ոճաթերթեր
+legacy-user-stylesheets-no-stylesheets-found = Ոճաթերթեր չեն գտնվել
 security-software-title = Անվտանգության ծրագրաշար
 security-software-type = Տեսակ
 security-software-name = Անուն
@@ -54,33 +62,49 @@ app-basics-enabled-plugins = Միացված բաղադրիչներ
 app-basics-build-config = Հավաքման ձևաչափ
 app-basics-user-agent = Օգտետերի Դիտարկիչը
 app-basics-os = OS
+app-basics-os-theme = ՕՀ ոճեր
+# Rosetta is Apple's translation process to run apps containing x86_64
+# instructions on Apple Silicon. This should remain in English.
+app-basics-rosetta = Rosetta թարգմանված
 app-basics-memory-use = Հիշողության ծավալ
 app-basics-performance = Արտադրողականություն
 app-basics-service-workers = Գրանցված Service Workers
+app-basics-third-party = Երրորդ կողմի մոդուլներ
 app-basics-profiles = Պրոֆիլներ
 app-basics-launcher-process-status = Թողարկման գործընթաց
 app-basics-multi-process-support = Բազմաընթացքային պատուհաններ
+app-basics-fission-support = Ճեղքման պատուհաններ
 app-basics-remote-processes-count = Հեռավոր գործընթացներ
 app-basics-enterprise-policies = Ընկերության կանոններ
 app-basics-location-service-key-google = Google Տեղադրության ծառայության բանալի
 app-basics-safebrowsing-key-google = Google անվտանգ զննարկման բանալի
 app-basics-key-mozilla = Mozilla-ի տեղադրության ծառայության բանալի
 app-basics-safe-mode = Ապահով կերպ
+app-basics-memory-size = Հիշողության չափը (RAM)
+app-basics-disk-available = Սկավառակի հասանելի տարածք
+app-basics-pointing-devices = Ցուցիչ սարքեր
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Ցույց տալ Finder -ում
         [windows] Բացել թղթապանակը
        *[other] Բացել թղթապանակը
     }
+environment-variables-title = Միջավայրի փոփոխականներ
+environment-variables-name = Անուն
+environment-variables-value = Արժեքը
 experimental-features-title = Փորձարարական հատկություններ
 experimental-features-name = Անուն
 experimental-features-value = Արժեք
-modified-key-prefs-title = Փոփոխված կարևոր կարգավորումներ
+modified-key-prefs-title = Կարևոր փոփոխված նախապատվություններ
 modified-prefs-name = Անուն
 modified-prefs-value = Արժեքը
-user-js-title = user.js-ի կարգավորումներ
+user-js-title = user.js-ի նախապատվություններ
 user-js-description = Ձեր պրոֆիլի թղթապանակը պարունակում է<a data-l10n-name="user-js-link">user.js ֆայլ</a>, որը ներառում է կարգավորումներ, որոնք չեն ստեղծվել { -brand-short-name }-ի կողմից։
-locked-key-prefs-title = Կողպված կարևոր կարգավորումներ
+locked-key-prefs-title = Կարևոր կողպված նախապատվություններ
 locked-prefs-name = Անուն
 locked-prefs-value = Արժեքը
 graphics-title = Գրաֆիկա
@@ -92,13 +116,27 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Որոշման մատյան
 graphics-crash-guards-title = Վթարի պաշտպանի անջատած յուրահատկություններ
 graphics-workarounds-title = Շրջանցիկներ
+graphics-device-pixel-ratios = Պատուհանային սարքի պիքսելային հարաբերակցություններ
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Պատուհանի հաղորդակարգ
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Աշխատասեղանի միջավայր
 place-database-title = Տվյալների շտեմարան
+place-database-stats = Վիճակագրություն
+place-database-stats-show = Ցուցադրել վիճակագրությունը
+place-database-stats-hide = Ցուցադրել վիճակագրությունը
+place-database-stats-entity = Կազմակերպություն
+place-database-stats-count = Քանակը
+place-database-stats-size-kib = Չափը (ԿԲ)
+place-database-stats-size-perc = Չափս (%)
+place-database-stats-efficiency-perc = Արդյունավետություն (%)
+place-database-stats-sequentiality-perc = Հաջորդականություն (%)
 place-database-integrity = Շտեմարաններ
 place-database-verify-integrity = Ստուգել ամբողջությունը
+place-database-last-idle-maintenance-data = Վերջին անգործուն սպասարկման ամսաթիվը
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Վերջին ներծծման ամսաթիվը
+place-database-last-integrity-corruption-date = Վերջին ամբողջականության վնասման ամսաթիվը
 a11y-title = Մատչելիություն
 a11y-activated = Ակտիվացված է
 a11y-force-disabled = Կանխել հասանելիությունը
@@ -116,9 +154,12 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Ընթացքի տեսակը
 sandbox-sys-call-number = Համզանգ
 sandbox-sys-call-args = Փաստարկներ
+troubleshoot-mode-title = Ախտորոշել խնդիրներ
 restart-in-troubleshoot-mode-label = Խափանաշտկման կերպ…
 clear-startup-cache-title = Փորձեք մաքրել ինքնամեկնարկի շտեմը
 clear-startup-cache-label = Մաքրել ինքնամեկնարկի շտեմը…
+startup-cache-dialog-title2 = Վերագործարկե՞լ { -brand-short-name }-ը՝ գործարկման քեշը մաքրելու համար։
+startup-cache-dialog-body2 = Սա չի փոխի ձեր կարգավորումները կամ չի հեռացնի ընդլայնումները։
 restart-button-label = Վերամեկնարկել
 
 ## Media titles
@@ -140,16 +181,38 @@ media-device-channels = Ալիքներ
 media-device-rate = ԳՆահատական
 media-device-latency = Սպասում
 media-capabilities-title = Մեդիա հնարավորություններ
+media-codec-support-info = Կոդեկի աջակցության տեղեկատվություն
 # List all the entries of the database.
 media-capabilities-enumerate = Վերցրեք գրառումները տվյալների բազայից
 
 ## Codec support table
 
+media-codec-support-sw-decoding = Ծրագրային ապահովման վերծանում
+media-codec-support-hw-decoding = Սարքաշարի վերծանում
+media-codec-support-sw-encoding = Ծրագրային կոդավորում
+media-codec-support-hw-encoding = Սարքաշարի կոդավորում
+media-codec-support-codec-name = Կոդեկի անունը
+media-codec-support-supported = Աջակցվող
+media-codec-support-unsupported = Չի աջակցվում
+media-codec-support-error = Կոդեկի աջակցության տեղեկատվությունը հասանելի չէ: Կրկին փորձեք մեդիա ֆայլը նվագարկելուց հետո:
+media-codec-support-lack-of-extension = Տեղադրեք ընդլայնում
 
 ## Media Content Decryption Modules (CDM)
 ## See EME Spec for more explanation for following technical terms
 ## https://w3c.github.io/encrypted-media/
 
+media-content-decryption-modules-title = Բովանդակության վերծանման մոդուլների տեղեկատվություն
+media-key-system-name = Հիմնական համակարգի անվանումը
+media-video-robustness = Տեսանյութի կայունություն
+media-audio-robustness = Աուդիո կայունություն
+media-cdm-capabilities = Հնարավորություններ
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Մաքուր կապար
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2 համատեղելի
 
 ##
 
@@ -229,6 +292,7 @@ try-newer-driver = Արգելված է տեսասարքի սարքավարի տ�
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-ի ցուցիչները
 compositing = Կազմում
+support-font-determination = Տառատեսակի տեսանելիության վրիպազերծման տեղեկատվություն
 hardware-h264 = Սարքաշարի H264 ապակոդավորում
 main-thread-no-omtc = հիմնական շղթա, ոչ OMTC
 yes = Այո
@@ -264,6 +328,11 @@ webgl2-renderer = WebGL 2 սարքավարի նյութավորիչ
 webgl2-version = WebGL 2 սարքավարի տարբերակ
 webgl2-driver-extensions = WebGL 2 սարքավարի ընդլայնումներ
 webgl2-extensions = WebGL 2 ընդլայնումներ
+webgpu-default-adapter = WebGPU-ի լռելյայն ադապտեր
+webgpu-fallback-adapter = WebGPU պահեստային ադապտեր
+# Variables
+#   $bugNumber (string) - Bug number on Bugzilla
+support-blocklisted-bug = Արգելափակված է հայտնի խնդիրների պատճառով՝ <a data-l10n-name="bug-link">խնդիր { $bugNumber }</a>
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Սև ցուցակում, վթարի կոդը՝ { $failureCode }
@@ -285,10 +354,15 @@ has-seccomp-bpf = Seccomp-BPF (System Call Filtering)
 has-seccomp-tsync = Seccomp շղթայի համաժամեցում
 has-user-namespaces = Օգտվողի անվան բացատներ
 has-privileged-user-namespaces = Օգտվողի անվան բացատներ՝ արտոնյալ ընթացների համար
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Այս գործառույթը թույլատրված չէ ձեր համակարգի կողմից։ Սա կարող է սահմանափակել { -brand-short-name }-ի անվտանգության գործառույթները։
 can-sandbox-content = Բովանդակության Sandboxing
 can-sandbox-media = Մեդիաբաղադրչի Sandboxing
 content-sandbox-level = Բովանդակության ընթացք Sandboxing-ի մակարդակ
 effective-content-sandbox-level = Արդյունավետ բովանդակության ընթացքի Sandboxing-ի մակարդակ
+content-win32k-lockdown-state = Win32k-ի արգելափակման վիճակը բովանդակության գործընթացի համար
+support-sandbox-gpu-level = GPU պրոցեսի Sandbox մակարդակ
 sandbox-proc-type-content = բովանդակությունը
 sandbox-proc-type-file = ֆայլի բովանդակություն
 sandbox-proc-type-media-plugin = մեդիա բաղադրիչ
@@ -306,8 +380,21 @@ launcher-process-status-unknown = Անհայտ իրավիճակ
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
+# Variables
+# $fissionWindows (integer) - Number of remote windows
+# $totalWindows (integer) - Number of total windows
+fission-windows = { $fissionWindows }/{ $totalWindows }
+fission-status-experiment-control = Անջատված է փորձի պատճառով
+fission-status-experiment-treatment = Միացված է փորձի միջոցով
+fission-status-disabled-by-e10s-env = Անջատված է միջավայրի կողմից
+fission-status-enabled-by-env = Միացված է միջավայրի կողմից
+fission-status-disabled-by-env = Անջատված է միջավայրի կողմից
 fission-status-enabled-by-default = Միացված՝ ըստ սկզբնադիրի
 fission-status-disabled-by-default = Անջատված՝ ըստ սկզբնադիրի
+fission-status-enabled-by-user-pref = Միացված օգտվողի կողմից
+fission-status-disabled-by-user-pref = Անջատված է օգտվողի կողմից
+fission-status-disabled-by-e10s-other = USB-ն անջատված է
+fission-status-enabled-by-rollout = Հնարավորություն է տրվել փուլային ներդրման միջոցով
 async-pan-zoom = Չհամաժամված շեղում/Դիտափոխում
 apz-none = նշում
 wheel-enabled = անիվի ներածումը միացված է
@@ -333,12 +420,48 @@ policies-error = Սխալ
 
 support-printing-title = Տպում է
 support-printing-troubleshoot = Խափանաշտկում
+support-printing-clear-settings-button = Մաքրել պահպանված տպագրության կարգավորումները
+support-printing-modified-settings = Փոփոխված տպագրության կարգավորումներ
+support-printing-prefs-name = Անուն
+support-printing-prefs-value = Արժեք
+
+## Remote Settings sections
+
+support-remote-settings-title = Հեռակառավարման կարգավորումներ
+support-remote-settings-status = Կարգավիճակ
+support-remote-settings-status-ok = Լավ
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Չի աշխատում
+support-remote-settings-last-check = Վերջին ստուգումը
+support-remote-settings-local-timestamp = Տեղական ժամանակային կնիք
+support-remote-settings-sync-history = Պատմություն
+support-remote-settings-sync-history-status = Կարգավիճակ
+support-remote-settings-sync-history-datetime = Ամսաթիվ
+support-remote-settings-sync-history-infos = Տեղեկություն
 
 ## Normandy sections
 
+support-remote-experiments-title = Հեռակա փորձեր
+support-remote-experiments-name = Անուն
+support-remote-experiments-branch = Փորձարարական ճյուղ
+support-remote-experiments-see-about-studies = Ավելի շատ տեղեկությունների համար, այդ թվում՝ ինչպես անջատել առանձին փորձերը կամ անջատել { -brand-short-name }-ի կողմից այս տեսակի փորձի իրականացումը ապագայում, տե՛ս <a data-l10n-name="support-about-studies-link">about:studies</a>:
+support-remote-features-status = Վիճակը
 
 ## Pointing devices
 
+pointing-device-mouse = Մկնիկ
+pointing-device-touchscreen = Հպման էկրան
+pointing-device-pen-digitizer = Գրիչի թվայնացուցիչ
+pointing-device-none = Ցուցիչ սարքեր չկան
 
 ## Content Analysis (DLP)
 
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Բովանդակության վերլուծություն (DLP)
+content-analysis-active = Ակտիվ
+content-analysis-connected-to-agent = Միացված է գործակալին
+content-analysis-agent-path = Գործակալի ուղի
+content-analysis-agent-failed-signature-verification = Գործակալը ձախողեց ստորագրության ստուգումը
+content-analysis-request-count = Հարցումների քանակը

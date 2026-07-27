@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_a11y_XULTreeAccessible_h__
-#define mozilla_a11y_XULTreeAccessible_h__
+#ifndef mozilla_a11y_XULTreeAccessible_h_
+#define mozilla_a11y_XULTreeAccessible_h_
 
 #include "nsITreeView.h"
 #include "XULListboxAccessible.h"
@@ -186,8 +185,7 @@ class XULTreeItemAccessibleBase : public AccessibleWrap {
 
   // LocalAccessible
   MOZ_CAN_RUN_SCRIPT
-  virtual void DispatchClickEvent(nsIContent* aContent,
-                                  uint32_t aActionIndex) const override;
+  virtual void DispatchClickEvent(uint32_t aActionIndex) const override;
   virtual LocalAccessible* GetSiblingAtOffset(
       int32_t aOffset, nsresult* aError = nullptr) const override;
 
@@ -224,7 +222,7 @@ class XULTreeItemAccessible : public XULTreeItemAccessibleBase {
 
   // LocalAccessible
   virtual void Shutdown() override;
-  virtual ENameValueFlag Name(nsString& aName) const override;
+  virtual ENameValueFlag DirectName(nsString& aName) const override;
   virtual a11y::role NativeRole() const override;
 
   // XULTreeItemAccessibleBase

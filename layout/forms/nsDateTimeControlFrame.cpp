@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,6 +10,7 @@
 #include "nsDateTimeControlFrame.h"
 
 #include "mozilla/PresShell.h"
+#include "mozilla/ReflowInput.h"
 #include "nsLayoutUtils.h"
 #include "nsTextControlFrame.h"
 
@@ -34,11 +33,11 @@ nsDateTimeControlFrame::nsDateTimeControlFrame(ComputedStyle* aStyle,
                                                nsPresContext* aPresContext)
     : nsContainerFrame(aStyle, aPresContext, kClassID) {}
 
-nscoord nsDateTimeControlFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsDateTimeControlFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                                IntrinsicISizeType aType) {
   return mFrames.IsEmpty() ? 0
                            : nsLayoutUtils::IntrinsicForContainer(
-                                 aContext, mFrames.FirstChild(), aType);
+                                 aInput.mContext, mFrames.FirstChild(), aType);
 }
 
 Maybe<nscoord> nsDateTimeControlFrame::GetNaturalBaselineBOffset(

@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Nastajenja
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Nastajenja…
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } ako standardny wobglědowak nastajiś
 menu-application-services =
     .label = Słužby
 menu-application-hide-this =
@@ -100,6 +93,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Źěliś
     .accesskey = l
+menu-file-share-qrcode =
+    .label = QR-kod generěrowaś…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = QR-kod generěrowaś
+    .accesskey = Q
 menu-file-print-setup =
     .label = Bok zarědowaś…
     .accesskey = B
@@ -140,7 +139,7 @@ menu-view-customize-toolbar2 =
     .label = Symbolowu rědku pśiměriś…
     .accesskey = S
 menu-view-sidebar =
-    .label = Bócnica
+    .label = Bocnica
     .accesskey = B
 menu-view-bookmarks =
     .label = Cytańske znamjenja
@@ -148,8 +147,6 @@ menu-view-history-button =
     .label = Historija
 menu-view-synced-tabs-sidebar =
     .label = Synchronizěrowane rejtariki
-menu-view-megalist-sidebar =
-    .label = Gronidła
 menu-view-full-zoom =
     .label = Skalěrowaś
     .accesskey = k
@@ -257,6 +254,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilne cytańske znamjenja
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profile
+menu-profiles-manage-profiles =
+    .label = Profile zastojaś
+menu-profiles-new-profile =
+    .label = Nowy profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (aktualny)
+menu-profiles-menu =
+    .label = Profile
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -265,6 +278,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Ześěgnjenja
     .accesskey = Z
+menu-tools-extensions-and-themes =
+    .label = Rozšyrjenja a drastwy
+    .accesskey = R
 menu-tools-addons-and-themes =
     .label = Dodanki a drastwy
     .accesskey = D
@@ -292,6 +308,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Info wó boku
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = PDF wobźěłaś…
+    .accesskey = P
 menu-settings =
     .label = Nastajenja
     .accesskey =

@@ -1,11 +1,10 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 UNIFIED_SOURCES += [
     "Helpers.cpp",
+    "MozPromiseExamples.cpp",
     "TestArenaAllocator.cpp",
     "TestArrayAlgorithm.cpp",
     "TestAtoms.cpp",
@@ -55,11 +54,14 @@ UNIFIED_SOURCES += [
     "TestSnappyStreams.cpp",
     "TestStateMirroring.cpp",
     "TestStateWatching.cpp",
+    "TestStaticBackgroundTaskQueue.cpp",
+    "TestStopGapEventTarget.cpp",
     "TestStorageStream.cpp",
     "TestStrings.cpp",
     "TestStringStream.cpp",
     "TestSubstringTuple.cpp",
     "TestSynchronization.cpp",
+    "TestTargetShutdownTask.cpp",
     "TestTArray.cpp",
     "TestTArray2.cpp",
     "TestTaskController.cpp",
@@ -111,7 +113,6 @@ if (
 
 if CONFIG["OS_TARGET"] == "WINNT":
     UNIFIED_SOURCES += [
-        "TestAvailableMemoryWatcherWin.cpp",
         "TestFileNTFSSpecialPaths.cpp",
         "TestFilePreferencesWin.cpp",
         "TestHandleWatcher.cpp",
@@ -120,6 +121,13 @@ else:
     UNIFIED_SOURCES += [
         "TestFilePreferencesUnix.cpp",
     ]
+
+# Bug 1940978 - Fails 50% of the time when the address santizer is enabled
+if CONFIG["OS_TARGET"] == "WINNT" and not CONFIG["MOZ_ASAN"]:
+    UNIFIED_SOURCES += [
+        "TestAvailableMemoryWatcherWin.cpp",
+    ]
+
 
 if CONFIG["OS_TARGET"] == "Darwin":
     UNIFIED_SOURCES += [
@@ -152,6 +160,7 @@ if CONFIG["MOZ_MEMORY"]:
     ]
 
 SOURCES += [
+    "TestAsyncPlatformPipes.cpp",
     "TestCOMArray.cpp",
     "TestCOMPtr.cpp",  # Redefines IFoo and IBar
     "TestHashtables.cpp",  # Redefines IFoo
@@ -163,6 +172,11 @@ LOCAL_INCLUDES += [
     "/toolkit/components/telemetry/tests/gtest",
     "/xpcom/components",
 ]
+
+# GCC 11 issues a false-positive -Wstringop-overread warning from
+# std::vector::reserve()/push_back() patterns in gmock-matchers.h.
+if CONFIG["CC_TYPE"] == "gcc" and 11 <= int(CONFIG["CC_VERSION"].split(".")[0]) < 12:
+    CXXFLAGS += ["-Wno-stringop-overread"]
 
 GeneratedFile(
     "dafsa_test_1.inc",

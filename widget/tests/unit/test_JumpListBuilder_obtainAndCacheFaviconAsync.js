@@ -6,9 +6,6 @@ https://creativecommons.org/publicdomain/zero/1.0/ */
 const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { PlacesUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/PlacesUtils.sys.mjs"
-);
 const { PlacesTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/PlacesTestUtils.sys.mjs"
 );
@@ -68,15 +65,11 @@ add_setup(async () => {
     reader.readAsDataURL(blob);
   });
 
-  return new Promise(resolve => {
-    PlacesUtils.favicons.setFaviconForPage(
-      TEST_PAGE_URI,
-      TEST_FAVICON_URI,
-      Services.io.newURI(dataURL),
-      undefined,
-      resolve
-    );
-  });
+  await PlacesTestUtils.setFaviconForPage(
+    TEST_PAGE_URI,
+    TEST_FAVICON_URI,
+    dataURL
+  );
 });
 
 /**
@@ -88,9 +81,8 @@ add_task(async function test_write_favicon_cache() {
   // to start.
   await emptyFaviconCache();
 
-  let firstCallCachePath = await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(
-    TEST_PAGE_URI
-  );
+  let firstCallCachePath =
+    await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(TEST_PAGE_URI);
   Assert.ok(firstCallCachePath, "Got a non-empty cache path");
 
   Assert.ok(
@@ -111,9 +103,8 @@ add_task(async function test_write_favicon_cache() {
   );
   let { lastModified } = await IOUtils.stat(firstCallCachePath);
 
-  let secondCallCachePath = await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(
-    TEST_PAGE_URI
-  );
+  let secondCallCachePath =
+    await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(TEST_PAGE_URI);
   Assert.equal(
     secondCallCachePath,
     firstCallCachePath,
@@ -142,9 +133,8 @@ add_task(async function test_invalid_favicon() {
   );
 
   // And ensure that no favicons got written despite the error.
-  let { length: numberOfFavicons } = await IOUtils.getChildren(
-    JUMP_LIST_CACHE_PATH
-  );
+  let { length: numberOfFavicons } =
+    await IOUtils.getChildren(JUMP_LIST_CACHE_PATH);
   Assert.equal(numberOfFavicons, 0, "No favicons were written");
 });
 
@@ -157,9 +147,8 @@ add_task(async function test_expired_favicon_cache() {
   // to start.
   await emptyFaviconCache();
 
-  let firstCallCachePath = await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(
-    TEST_PAGE_URI
-  );
+  let firstCallCachePath =
+    await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(TEST_PAGE_URI);
   Assert.ok(firstCallCachePath, "Got a non-empty cache path");
   Assert.ok(
     await IOUtils.exists(firstCallCachePath),
@@ -172,9 +161,8 @@ add_task(async function test_expired_favicon_cache() {
   await IOUtils.setModificationTime(firstCallCachePath, aWeekAgo);
   let { lastModified } = await IOUtils.stat(firstCallCachePath);
 
-  let secondCallCachePath = await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(
-    TEST_PAGE_URI
-  );
+  let secondCallCachePath =
+    await JUMP_LIST_BUILDER.obtainAndCacheFaviconAsync(TEST_PAGE_URI);
   Assert.equal(
     secondCallCachePath,
     firstCallCachePath,

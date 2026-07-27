@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,6 @@
 #define mozilla_dom_PublicKeyCredential_h
 
 #include "js/TypeDecls.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/AuthenticatorAssertionResponse.h"
 #include "mozilla/dom/AuthenticatorAttestationResponse.h"
 #include "mozilla/dom/BindingDeclarations.h"
@@ -27,7 +24,7 @@ class PublicKeyCredential final : public Credential {
   explicit PublicKeyCredential(nsPIDOMWindowInner* aParent);
 
  protected:
-  ~PublicKeyCredential() override;
+  ~PublicKeyCredential() override = default;
 
  public:
   virtual JSObject* WrapObject(JSContext* aCx,
@@ -54,11 +51,14 @@ class PublicKeyCredential final : public Credential {
   IsUserVerifyingPlatformAuthenticatorAvailable(GlobalObject& aGlobal,
                                                 ErrorResult& aError);
 
+  static already_AddRefed<Promise> GetClientCapabilities(GlobalObject& aGlobal,
+                                                         ErrorResult& aError);
+
   static already_AddRefed<Promise> IsConditionalMediationAvailable(
       GlobalObject& aGlobal, ErrorResult& aError);
 
   void GetClientExtensionResults(
-      AuthenticationExtensionsClientOutputs& aResult);
+      JSContext* cx, AuthenticationExtensionsClientOutputs& aResult) const;
 
   void ToJSON(JSContext* aCx, JS::MutableHandle<JSObject*> aRetval,
               ErrorResult& aError);
@@ -68,6 +68,19 @@ class PublicKeyCredential final : public Credential {
   void SetClientExtensionResultCredPropsRk(bool aResult);
 
   void SetClientExtensionResultHmacSecret(bool aHmacCreateSecret);
+
+  void InitClientExtensionResultLargeBlob();
+  void SetClientExtensionResultLargeBlobSupported(bool aSupported);
+  void SetClientExtensionResultLargeBlobValue(
+      const nsTArray<uint8_t>& aLargeBlobValue);
+  void SetClientExtensionResultLargeBlobWritten(bool aLargeBlobWritten);
+
+  void InitClientExtensionResultPrf();
+  void SetClientExtensionResultPrfEnabled(bool aPrfEnabled);
+  void SetClientExtensionResultPrfResultsFirst(
+      const nsTArray<uint8_t>& aPrfResultsFirst);
+  void SetClientExtensionResultPrfResultsSecond(
+      const nsTArray<uint8_t>& aPrfResultsSecond);
 
   static void ParseCreationOptionsFromJSON(
       GlobalObject& aGlobal,
@@ -81,11 +94,17 @@ class PublicKeyCredential final : public Credential {
 
  private:
   nsTArray<uint8_t> mRawId;
-  JS::Heap<JSObject*> mRawIdCachedObj;
   Maybe<nsString> mAuthenticatorAttachment;
   RefPtr<AuthenticatorAttestationResponse> mAttestationResponse;
   RefPtr<AuthenticatorAssertionResponse> mAssertionResponse;
   AuthenticationExtensionsClientOutputs mClientExtensionOutputs;
+
+  // We need a reference to JSContext in order to convert nsTArray to
+  // BufferSource, so we need to store these outside mClientExtensionOutputs and
+  // defer the conversion until the GetClientExtensionResults call.
+  Maybe<nsTArray<uint8_t>> mLargeBlobValue;
+  Maybe<nsTArray<uint8_t>> mPrfResultsFirst;
+  Maybe<nsTArray<uint8_t>> mPrfResultsSecond;
 };
 
 }  // namespace mozilla::dom

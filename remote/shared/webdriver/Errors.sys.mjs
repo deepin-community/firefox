@@ -10,45 +10,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   pprint: "chrome://remote/content/shared/Format.sys.mjs",
 });
 
-const ERRORS = new Set([
-  "DetachedShadowRootError",
-  "ElementClickInterceptedError",
-  "ElementNotAccessibleError",
-  "ElementNotInteractableError",
-  "InsecureCertificateError",
-  "InvalidArgumentError",
-  "InvalidCookieDomainError",
-  "InvalidElementStateError",
-  "InvalidSelectorError",
-  "InvalidSessionIDError",
-  "JavaScriptError",
-  "MoveTargetOutOfBoundsError",
-  "NoSuchAlertError",
-  "NoSuchElementError",
-  "NoSuchFrameError",
-  "NoSuchHandleError",
-  "NoSuchHistoryEntryError",
-  "NoSuchInterceptError",
-  "NoSuchNodeError",
-  "NoSuchRequestError",
-  "NoSuchScriptError",
-  "NoSuchShadowRootError",
-  "NoSuchUserContextError",
-  "NoSuchWindowError",
-  "ScriptTimeoutError",
-  "SessionNotCreatedError",
-  "StaleElementReferenceError",
-  "TimeoutError",
-  "UnableToCaptureScreen",
-  "UnableToSetCookieError",
-  "UnableToSetFileInputError",
-  "UnexpectedAlertOpenError",
-  "UnknownCommandError",
-  "UnknownError",
-  "UnsupportedOperationError",
-  "WebDriverError",
-]);
-
 const BUILTIN_ERRORS = new Set([
   "Error",
   "EvalError",
@@ -112,10 +73,21 @@ export const error = {
    *     false otherwise.
    */
   isWebDriverError(obj) {
-    // Don't use "instanceof" to compare error objects because of possible
-    // problems when the other instance was created in a different global and
-    // as such won't have the same prototype object.
-    return error.isError(obj) && "name" in obj && ERRORS.has(obj.name);
+    // Walk the prototype chain checking for WebDriverError by constructor
+    // name rather than using instanceof, which doesn't work across globals.
+    // This avoids false positives for platform errors e.g. DOMException
+    // with name "UnknownError".
+    try {
+      let proto = Object.getPrototypeOf(obj);
+      while (proto) {
+        if (proto.constructor.name === "WebDriverError") {
+          return true;
+        }
+        proto = Object.getPrototypeOf(proto);
+      }
+    } catch (e) {}
+
+    return false;
   },
 
   /**
@@ -123,20 +95,24 @@ export const error = {
    *
    * If the given error is already in the WebDriverError prototype
    * chain, ``err`` is returned unmodified.  If it is not, it is wrapped
-   * in :js:class:`UnknownError`.
+   * in the provided WebDriverError class (defaults to :js:class:`UnknownError`).
    *
    * @param {Error} err
    *     Error to conditionally turn into a WebDriverError.
+   * @param {WebDriverError=} targetErrorClass
+   *     Target WebDriver error class to wrap the error with.
+   *     Defaults to UnknownError.
    *
    * @returns {WebDriverError}
    *     If ``err`` is a WebDriverError, it is returned unmodified.
-   *     Otherwise an UnknownError type is returned.
+   *     Otherwise a WebDriver error of the target error class type is returned.
    */
-  wrap(err) {
+  wrap(err, targetErrorClass = UnknownError) {
     if (error.isWebDriverError(err)) {
       return err;
     }
-    return new UnknownError(err);
+
+    return new targetErrorClass(err);
   },
 
   /**
@@ -198,7 +174,14 @@ class WebDriverError extends RemoteError {
 
     // Error's ctor does not preserve x' stack
     if (error.isError(obj)) {
-      this.stack = obj.stack;
+      this.lineNumber = obj.lineNumber;
+      this.columnNumber = obj.columnNumber;
+      if (!obj.stack) {
+        // Provides a stacktrace if it was missing on the original Error object
+        this.stack = `@${obj.fileName}:${obj.lineNumber}:${obj.columnNumber}\n`;
+      } else {
+        this.stack = obj.stack;
+      }
     }
 
     if (error.isWebDriverError(obj)) {
@@ -264,14 +247,15 @@ class WebDriverError extends RemoteError {
 /**
  * The Gecko a11y API indicates that the element is not accessible.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class ElementNotAccessibleError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "element not accessible";
   }
 }
@@ -293,7 +277,7 @@ class ElementNotAccessibleError extends WebDriverError {
  *     will produce a nicer error message.
  */
 class ElementClickInterceptedError extends WebDriverError {
-  constructor(message, data = {}, obscuredEl = undefined, coords = undefined) {
+  constructor(obj, data = {}, obscuredEl = undefined, coords = undefined) {
     let obscuredElDetails = null;
     let overlayingElDetails = null;
 
@@ -306,7 +290,7 @@ class ElementClickInterceptedError extends WebDriverError {
 
       switch (obscuredEl.style.pointerEvents) {
         case "none":
-          message =
+          obj =
             `Element ${obscuredElDetails} is not clickable ` +
             `at point (${coords.x},${coords.y}) ` +
             `because it does not have pointer events enabled, ` +
@@ -315,7 +299,7 @@ class ElementClickInterceptedError extends WebDriverError {
           break;
 
         default:
-          message =
+          obj =
             `Element ${obscuredElDetails} is not clickable ` +
             `at point (${coords.x},${coords.y}) ` +
             `because another element ${overlayingElDetails} ` +
@@ -334,7 +318,7 @@ class ElementClickInterceptedError extends WebDriverError {
       data.overlayingElement = overlayingElDetails;
     }
 
-    super(message, data);
+    super(obj, data);
     this.status = "element click intercepted";
   }
 }
@@ -343,14 +327,15 @@ class ElementClickInterceptedError extends WebDriverError {
  * A command could not be completed because the element is not pointer-
  * or keyboard interactable.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class ElementNotInteractableError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "element not interactable";
   }
 }
@@ -359,14 +344,15 @@ class ElementNotInteractableError extends WebDriverError {
  * Navigation caused the user agent to hit a certificate warning, which
  * is usually the result of an expired or invalid TLS certificate.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InsecureCertificateError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "insecure certificate";
   }
 }
@@ -374,14 +360,15 @@ class InsecureCertificateError extends WebDriverError {
 /**
  * The arguments passed to a command are either invalid or malformed.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InvalidArgumentError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "invalid argument";
   }
 }
@@ -390,14 +377,15 @@ class InvalidArgumentError extends WebDriverError {
  * An illegal attempt was made to set a cookie under a different
  * domain than the current page.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InvalidCookieDomainError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "invalid cookie domain";
   }
 }
@@ -407,14 +395,15 @@ class InvalidCookieDomainError extends WebDriverError {
  * invalid state, e.g. attempting to clear an element that isn't both
  * editable and resettable.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InvalidElementStateError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "invalid element state";
   }
 }
@@ -422,14 +411,15 @@ class InvalidElementStateError extends WebDriverError {
 /**
  * Argument was an invalid selector.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InvalidSelectorError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "invalid selector";
   }
 }
@@ -438,29 +428,47 @@ class InvalidSelectorError extends WebDriverError {
  * Occurs if the given session ID is not in the list of active sessions,
  * meaning the session either does not exist or that it's not active.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class InvalidSessionIDError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "invalid session id";
+  }
+}
+
+/**
+ * Tried to install an invalid web extension.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class InvalidWebExtensionError extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "invalid web extension";
   }
 }
 
 /**
  * An error occurred whilst executing JavaScript supplied by the user.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class JavaScriptError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "javascript error";
   }
 }
@@ -469,14 +477,15 @@ class JavaScriptError extends WebDriverError {
  * The target for mouse interaction is not in the browser's viewport
  * and cannot be brought into that viewport.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class MoveTargetOutOfBoundsError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "move target out of bounds";
   }
 }
@@ -485,15 +494,32 @@ class MoveTargetOutOfBoundsError extends WebDriverError {
  * An attempt was made to operate on a modal dialog when one was
  * not open.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchAlertError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such alert";
+  }
+}
+
+/**
+ * The client window could not be found.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchClientWindow extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "no such client window";
   }
 }
 
@@ -501,14 +527,15 @@ class NoSuchAlertError extends WebDriverError {
  * An element could not be located on the page using the given
  * search parameters.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchElementError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such element";
   }
 }
@@ -516,14 +543,15 @@ class NoSuchElementError extends WebDriverError {
 /**
  * A command tried to remove an unknown preload script.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchScriptError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such script";
   }
 }
@@ -531,14 +559,15 @@ class NoSuchScriptError extends WebDriverError {
 /**
  * A shadow root was not attached to the element.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchShadowRootError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such shadow root";
   }
 }
@@ -546,14 +575,15 @@ class NoSuchShadowRootError extends WebDriverError {
 /**
  * A shadow root is no longer attached to the document.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class DetachedShadowRootError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "detached shadow root";
   }
 }
@@ -562,14 +592,15 @@ class DetachedShadowRootError extends WebDriverError {
  * A command to switch to a frame could not be satisfied because
  * the frame could not be found.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchFrameError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such frame";
   }
 }
@@ -577,14 +608,15 @@ class NoSuchFrameError extends WebDriverError {
 /**
  * The handle of a strong object reference could not be found.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchHandleError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such handle";
   }
 }
@@ -592,14 +624,15 @@ class NoSuchHandleError extends WebDriverError {
 /**
  * The entry of the history could not be found.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchHistoryEntryError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such history entry";
   }
 }
@@ -607,15 +640,48 @@ class NoSuchHistoryEntryError extends WebDriverError {
 /**
  * Tried to remove an unknown network intercept.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchInterceptError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such intercept";
+  }
+}
+
+/**
+ * A network data collector with the given unique id could not be found.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchNetworkCollectorError extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "no such network collector";
+  }
+}
+
+/**
+ * A network data for the provided request id and data type could not be found.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchNetworkDataError extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "no such network data";
   }
 }
 
@@ -623,14 +689,15 @@ class NoSuchInterceptError extends WebDriverError {
  * A node as given by its unique shared id could not be found within the cache
  * of known nodes.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchNodeError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such node";
   }
 }
@@ -638,14 +705,15 @@ class NoSuchNodeError extends WebDriverError {
 /**
  * Tried to continue an unknown request.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchRequestError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such request";
   }
 }
@@ -653,15 +721,32 @@ class NoSuchRequestError extends WebDriverError {
 /**
  * A command tried to reference an unknown user context (containers in Firefox).
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchUserContextError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such user context";
+  }
+}
+
+/**
+ * A command tried to reference an unknown web extension.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchWebExtensionError extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "no such web extension";
   }
 }
 
@@ -669,14 +754,15 @@ class NoSuchUserContextError extends WebDriverError {
  * A command to switch to a window could not be satisfied because
  * the window could not be found.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class NoSuchWindowError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "no such window";
   }
 }
@@ -684,14 +770,15 @@ class NoSuchWindowError extends WebDriverError {
 /**
  * A script did not complete before its timeout expired.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class ScriptTimeoutError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "script timeout";
   }
 }
@@ -699,14 +786,15 @@ class ScriptTimeoutError extends WebDriverError {
 /**
  * A new session could not be created.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class SessionNotCreatedError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "session not created";
   }
 }
@@ -715,14 +803,15 @@ class SessionNotCreatedError extends WebDriverError {
  * A command failed because the referenced element is no longer
  * attached to the DOM.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class StaleElementReferenceError extends WebDriverError {
-  constructor(message, options = {}) {
-    super(message, options);
+  constructor(obj, options = {}) {
+    super(obj, options);
     this.status = "stale element reference";
   }
 }
@@ -730,14 +819,15 @@ class StaleElementReferenceError extends WebDriverError {
 /**
  * An operation did not complete before its timeout expired.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class TimeoutError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "timeout";
   }
 }
@@ -745,14 +835,15 @@ class TimeoutError extends WebDriverError {
 /**
  * A command to set a cookie's value could not be satisfied.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnableToSetCookieError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unable to set cookie";
   }
 }
@@ -760,14 +851,15 @@ class UnableToSetCookieError extends WebDriverError {
 /**
  * A command to set a file could not be satisfied.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnableToSetFileInputError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unable to set file input";
   }
 }
@@ -775,29 +867,47 @@ class UnableToSetFileInputError extends WebDriverError {
 /**
  * A command to capture a screenshot could not be satisfied.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnableToCaptureScreen extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unable to capture screen";
+  }
+}
+
+/**
+ * A network data content is not available.
+ *
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class UnavailableNetworkDataError extends WebDriverError {
+  constructor(obj, data = {}) {
+    super(obj, data);
+    this.status = "unavailable network data";
   }
 }
 
 /**
  * A modal dialog was open, blocking this operation.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnexpectedAlertOpenError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unexpected alert open";
   }
 }
@@ -806,14 +916,15 @@ class UnexpectedAlertOpenError extends WebDriverError {
  * A command could not be executed because the remote end is not
  * aware of it.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnknownCommandError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unknown command";
   }
 }
@@ -822,14 +933,15 @@ class UnknownCommandError extends WebDriverError {
  * An unknown error occurred in the remote end while processing
  * the command.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnknownError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unknown error";
   }
 }
@@ -838,14 +950,15 @@ class UnknownError extends WebDriverError {
  * Indicates that a command that should have executed properly
  * cannot be supported for some reason.
  *
- * @param {string=} message
- *     Optional string describing error situation.
+ * @param {(string|Error)=} obj
+ *     Optional string describing error situation or Error instance
+ *     to propagate.
  * @param {object=} data
  *     Additional error data helpful in diagnosing the error.
  */
 class UnsupportedOperationError extends WebDriverError {
-  constructor(message, data = {}) {
-    super(message, data);
+  constructor(obj, data = {}) {
+    super(obj, data);
     this.status = "unsupported operation";
   }
 }
@@ -861,19 +974,24 @@ const STATUSES = new Map([
   ["invalid element state", InvalidElementStateError],
   ["invalid selector", InvalidSelectorError],
   ["invalid session id", InvalidSessionIDError],
+  ["invalid web extension", InvalidWebExtensionError],
   ["javascript error", JavaScriptError],
   ["move target out of bounds", MoveTargetOutOfBoundsError],
   ["no such alert", NoSuchAlertError],
+  ["no such client window", NoSuchClientWindow],
   ["no such element", NoSuchElementError],
   ["no such frame", NoSuchFrameError],
   ["no such handle", NoSuchHandleError],
   ["no such history entry", NoSuchHistoryEntryError],
   ["no such intercept", NoSuchInterceptError],
+  ["no such network collector", NoSuchNetworkCollectorError],
+  ["no such network data", NoSuchNetworkDataError],
   ["no such node", NoSuchNodeError],
   ["no such request", NoSuchRequestError],
   ["no such script", NoSuchScriptError],
   ["no such shadow root", NoSuchShadowRootError],
   ["no such user context", NoSuchUserContextError],
+  ["no such web extension", NoSuchWebExtensionError],
   ["no such window", NoSuchWindowError],
   ["script timeout", ScriptTimeoutError],
   ["session not created", SessionNotCreatedError],
@@ -882,6 +1000,7 @@ const STATUSES = new Map([
   ["unable to capture screen", UnableToCaptureScreen],
   ["unable to set cookie", UnableToSetCookieError],
   ["unable to set file input", UnableToSetFileInputError],
+  ["unavailable network data", UnavailableNetworkDataError],
   ["unexpected alert open", UnexpectedAlertOpenError],
   ["unknown command", UnknownCommandError],
   ["unknown error", UnknownError],
@@ -889,10 +1008,9 @@ const STATUSES = new Map([
   ["webdriver error", WebDriverError],
 ]);
 
-// Errors must be expored on the local this scope so that the
-// EXPORTED_SYMBOLS and the ChromeUtils.import("foo") machinery sees them.
-// We could assign each error definition directly to |this|, but
-// because they are Error prototypes this would mess up their names.
+// Errors must be exported as part of the `error` object.
+// We could declare each error as global variable, but because they are Error
+// prototypes this would mess up their names.
 for (let cls of STATUSES.values()) {
   error[cls.name] = cls;
 }

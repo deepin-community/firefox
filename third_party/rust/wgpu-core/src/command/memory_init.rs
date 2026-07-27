@@ -1,15 +1,21 @@
-use std::{collections::hash_map::Entry, ops::Range, sync::Arc, vec::Drain};
+use alloc::{
+    sync::Arc,
+    vec::{Drain, Vec},
+};
+use core::ops::Range;
+
+use hashbrown::hash_map::Entry;
 
 use crate::{
     device::Device,
     init_tracker::*,
-    resource::{DestroyedResourceError, ParentDevice, Texture, Trackable},
+    resource::{DestroyedResourceError, ParentDevice, RawResourceAccess, Texture, Trackable},
     snatch::SnatchGuard,
     track::{DeviceTracker, TextureTracker},
     FastHashMap,
 };
 
-use super::{clear::clear_texture, BakedCommands, ClearError};
+use super::{clear_texture, BakedCommands, ClearError};
 
 /// Surface that was discarded by `StoreOp::Discard` of a preceding renderpass.
 /// Any read access to this surface needs to be preceded by a texture initialization.
@@ -34,7 +40,7 @@ pub(crate) struct CommandBufferTextureMemoryActions {
 }
 
 impl CommandBufferTextureMemoryActions {
-    pub(crate) fn drain_init_actions(&mut self) -> Drain<TextureInitTrackerAction> {
+    pub(crate) fn drain_init_actions(&mut self) -> Drain<'_, TextureInitTrackerAction> {
         self.init_actions.drain(..)
     }
 
@@ -143,6 +149,7 @@ pub(crate) fn fixup_discarded_surfaces<InitIter: Iterator<Item = TextureSurfaceD
             &device.alignments,
             device.zero_buffer.as_ref(),
             snatch_guard,
+            device.instance_flags,
         )
         .unwrap();
     }
@@ -211,12 +218,12 @@ impl BakedCommands {
             // must already know about it.
             let transition = device_tracker
                 .buffers
-                .set_single(&buffer, hal::BufferUses::COPY_DST);
+                .set_single(&buffer, wgt::BufferUses::COPY_DST);
 
             let raw_buf = buffer.try_raw(snatch_guard)?;
 
             unsafe {
-                self.encoder.transition_buffers(
+                self.encoder.raw.transition_buffers(
                     transition
                         .map(|pending| pending.into_hal(&buffer, snatch_guard))
                         .as_slice(),
@@ -240,7 +247,7 @@ impl BakedCommands {
                 );
 
                 unsafe {
-                    self.encoder.clear_buffer(raw_buf, range.clone());
+                    self.encoder.raw.clear_buffer(raw_buf, range.clone());
                 }
             }
         }
@@ -293,11 +300,12 @@ impl BakedCommands {
                 let clear_result = clear_texture(
                     &texture_use.texture,
                     range,
-                    self.encoder.as_mut(),
+                    self.encoder.raw.as_mut(),
                     &mut device_tracker.textures,
                     &device.alignments,
                     device.zero_buffer.as_ref(),
                     snatch_guard,
+                    device.instance_flags,
                 );
 
                 // A Texture can be destroyed between the command recording

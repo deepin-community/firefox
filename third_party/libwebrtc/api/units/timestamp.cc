@@ -10,13 +10,14 @@
 
 #include "api/units/timestamp.h"
 
-#include "api/array_view.h"
+#include <string>
+
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
 std::string ToString(Timestamp value) {
   char buf[64];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   if (value.IsPlusInfinity()) {
     sb << "+inf ms";
   } else if (value.IsMinusInfinity()) {

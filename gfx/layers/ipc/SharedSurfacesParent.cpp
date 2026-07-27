@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -39,11 +37,14 @@ void SharedSurfacesParent::MappingTracker::TakeExpired(
   aExpired = std::move(mExpired);
 }
 
-void SharedSurfacesParent::MappingTracker::NotifyHandlerEnd() {
+void SharedSurfacesParent::MappingTracker::InternalTrackerObserver::
+    NotifyHandlerEnd() {
   nsTArray<RefPtr<gfx::SourceSurfaceSharedDataWrapper>> expired;
   {
     StaticMutexAutoLock lock(sMutex);
-    TakeExpired(expired, lock);
+    if (sInstance) {
+      sInstance->mTracker.TakeExpired(expired, lock);
+    }
   }
 
   SharedSurfacesParent::ExpireMap(expired);
@@ -60,6 +61,7 @@ void SharedSurfacesParent::Initialize() {
   StaticMutexAutoLock lock(sMutex);
   if (!sInstance) {
     sInstance = new SharedSurfacesParent();
+    sInstance->mTracker.InitLocked(lock);
   }
 }
 
@@ -87,7 +89,10 @@ void SharedSurfacesParent::Shutdown() {
   // main thread.
   MOZ_ASSERT(NS_IsMainThread());
   StaticMutexAutoLock lock(sMutex);
-  sInstance = nullptr;
+  if (sInstance) {
+    sInstance->mTracker.DestroyLocked(lock);
+    sInstance = nullptr;
+  }
 }
 
 /* static */
@@ -190,12 +195,16 @@ void SharedSurfacesParent::AddSameProcess(const wr::ExternalImageId& aId,
   surface->Init(aSurface);
 
   uint64_t id = wr::AsUint64(aId);
-  MOZ_ASSERT(!sInstance->mSurfaces.Contains(id));
+  if (sInstance->mSurfaces.Contains(id)) {
+    gfxCriticalNote << "SSP:Ads " << wr::AsUint64(aId) << " dupe";
+    SharedSurfacesParent::RemoveTrackingLocked(surface, lock);
+    MOZ_DIAGNOSTIC_CRASH("External image ID reused!");
+    return;
+  }
 
   auto texture = MakeRefPtr<wr::RenderSharedSurfaceTextureHost>(surface);
   wr::RenderThread::Get()->RegisterExternalImage(aId, texture.forget());
 
-  surface->AddConsumer();
   sInstance->mSurfaces.InsertOrUpdate(id, std::move(surface));
 }
 
@@ -234,6 +243,11 @@ void SharedSurfacesParent::Add(const wr::ExternalImageId& aId,
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread());
   MOZ_ASSERT(aPid != base::GetCurrentProcId());
 
+  if (aDesc.format() != SurfaceFormat::B8G8R8X8 &&
+      aDesc.format() != SurfaceFormat::B8G8R8A8) {
+    return;
+  }
+
   RefPtr<SourceSurfaceSharedDataWrapper> surface =
       new SourceSurfaceSharedDataWrapper();
 
@@ -254,12 +268,16 @@ void SharedSurfacesParent::Add(const wr::ExternalImageId& aId,
   }
 
   uint64_t id = wr::AsUint64(aId);
-  MOZ_ASSERT(!sInstance->mSurfaces.Contains(id));
+  if (sInstance->mSurfaces.Contains(id)) {
+    gfxCriticalNote << "SSP:Add " << wr::AsUint64(aId) << " dupe";
+    SharedSurfacesParent::RemoveTrackingLocked(surface, lock);
+    MOZ_DIAGNOSTIC_CRASH("External image ID reused!");
+    return;
+  }
 
   auto texture = MakeRefPtr<wr::RenderSharedSurfaceTextureHost>(surface);
   wr::RenderThread::Get()->RegisterExternalImage(aId, texture.forget());
 
-  surface->AddConsumer();
   sInstance->mSurfaces.InsertOrUpdate(id, std::move(surface));
 }
 
@@ -274,6 +292,7 @@ void SharedSurfacesParent::AddTrackingLocked(
     SourceSurfaceSharedDataWrapper* aSurface,
     const StaticMutexAutoLock& aAutoLock) {
   MOZ_ASSERT(!aSurface->GetExpirationState()->IsTracked());
+  MOZ_ASSERT(aSurface->GetConsumers() > 0);
   sInstance->mTracker.AddObjectLocked(aSurface, aAutoLock);
 }
 
@@ -346,6 +365,7 @@ bool SharedSurfacesParent::AgeAndExpireOneGeneration() {
 void SharedSurfacesParent::ExpireMap(
     nsTArray<RefPtr<SourceSurfaceSharedDataWrapper>>& aExpired) {
   for (auto& surface : aExpired) {
+    MOZ_ASSERT(surface->GetConsumers() > 0);
     surface->ExpireMap();
   }
 }

@@ -4,15 +4,18 @@
 
 //! Generic types for font stuff.
 
+use crate::derives::*;
 use crate::parser::{Parse, ParserContext};
 use crate::values::animated::ToAnimatedZero;
-use crate::One;
+use crate::{One, Zero};
 use byteorder::{BigEndian, ReadBytesExt};
 use cssparser::Parser;
 use std::fmt::{self, Write};
 use std::io::Cursor;
-use style_traits::{CssWriter, ParseError};
-use style_traits::{StyleParseErrorKind, ToCss};
+use style_traits::{
+    CssString, CssWriter, KeywordValue, ParseError, StyleParseErrorKind, ToCss, ToTyped, TypedValue,
+};
+use thin_vec::ThinVec;
 
 /// A trait for values that are labelled with a FontTag (for feature and
 /// variation settings).
@@ -84,6 +87,7 @@ where
     ToResolvedValue,
     ToShmem,
 )]
+#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 pub struct VariationValue<Number> {
     /// A four-character tag, packed into a u32 (one byte per character).
     #[animation(constant)]
@@ -100,9 +104,21 @@ impl<T> TaggedFontValue for VariationValue<T> {
 
 /// A value both for font-variation-settings and font-feature-settings.
 #[derive(
-    Clone, Debug, Eq, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToAnimatedValue, ToCss, ToResolvedValue, ToShmem,
+    Clone,
+    Debug,
+    Eq,
+    MallocSizeOf,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToAnimatedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
 )]
+#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[css(comma)]
+#[typed(todo_derive_fields)]
 pub struct FontSettings<T>(#[css(if_empty = "normal", iterable)] pub Box<[T]>);
 
 impl<T> FontSettings<T> {
@@ -154,6 +170,7 @@ impl<T: Parse> Parse for FontSettings<T> {
     ToResolvedValue,
     ToShmem,
 )]
+#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 pub struct FontTag(pub u32);
 
 impl ToCss for FontTag {
@@ -208,13 +225,20 @@ impl Parse for FontTag {
     ToResolvedValue,
     ToShmem,
 )]
+#[value_info(other_values = "normal")]
 pub enum FontStyle<Angle> {
-    #[animation(error)]
-    Normal,
-    #[animation(error)]
-    Italic,
+    // Note that 'oblique 0deg' represents 'normal', and will serialize as such.
     #[value_info(starts_with_keyword)]
     Oblique(Angle),
+    #[animation(error)]
+    Italic,
+}
+
+impl<Angle: Zero> FontStyle<Angle> {
+    /// Return the 'normal' value, which is represented as 'oblique 0deg'.
+    pub fn normal() -> Self {
+        Self::Oblique(Angle::zero())
+    }
 }
 
 /// A generic value for the `font-size-adjust` property.
@@ -272,6 +296,19 @@ impl<Factor: ToCss> ToCss for GenericFontSizeAdjust<Factor> {
     }
 }
 
+impl<Factor: ToTyped> ToTyped for GenericFontSizeAdjust<Factor> {
+    fn to_typed(&self, dest: &mut ThinVec<TypedValue>) -> Result<(), ()> {
+        match self {
+            Self::None => {
+                dest.push(TypedValue::Keyword(KeywordValue(CssString::from("none"))));
+                Ok(())
+            },
+            Self::ExHeight(v) => v.to_typed(dest),
+            _ => Err(()),
+        }
+    }
+}
+
 /// A generic value for the `line-height` property.
 #[derive(
     Animate,
@@ -286,6 +323,7 @@ impl<Factor: ToCss> ToCss for GenericFontSizeAdjust<Factor> {
     ToCss,
     ToShmem,
     Parse,
+    ToTyped,
 )]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[repr(C, u8)]

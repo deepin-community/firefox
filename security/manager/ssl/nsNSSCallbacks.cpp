@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,32 +6,34 @@
 #include "nsNSSCallbacks.h"
 
 #include "NSSSocketControl.h"
-#include "PSMRunnable.h"
 #include "ScopedNSSTypes.h"
 #include "SharedCertVerifier.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Casting.h"
 #include "mozilla/Logging.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/Services.h"
 #include "mozilla/Span.h"
 #include "mozilla/SpinEventLoopUntil.h"
 #include "mozilla/StaticPrefs_security.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
-#include "mozilla/glean/GleanMetrics.h"
-#include "mozilla/intl/Localization.h"
+#include "mozilla/SyncRunnable.h"
+#include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/glean/SecurityManagerSslMetrics.h"
+#include "nsComponentManagerUtils.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsIHttpChannel.h"
 #include "nsIHttpChannelInternal.h"
+#include "nsIObserverService.h"
 #include "nsIPrompt.h"
 #include "nsIProtocolProxyService.h"
 #include "nsISupportsPriority.h"
 #include "nsIStreamLoader.h"
 #include "nsIUploadChannel.h"
 #include "nsIWebProgressListener.h"
+#include "nsIWindowWatcher.h"
+#include "nsIWritablePropertyBag2.h"
 #include "nsNSSCertHelper.h"
 #include "nsNSSCertificate.h"
 #include "nsNSSComponent.h"
@@ -45,10 +46,6 @@
 #include "ssl.h"
 #include "sslproto.h"
 #include "SSLTokensCache.h"
-
-#include "TrustOverrideUtils.h"
-#include "TrustOverride-SymantecData.inc"
-#include "TrustOverride-AppleGoogleDigiCertData.inc"
 
 using namespace mozilla;
 using namespace mozilla::pkix;
@@ -158,17 +155,17 @@ nsresult OCSPRequest::DispatchToMainThreadAndWait() {
   // If mStartTime was never set, we consider this an internal error.
   // Otherwise, we managed to at least send the request.
   if (mStartTime.IsNull()) {
-    Telemetry::Accumulate(Telemetry::CERT_VALIDATION_HTTP_REQUEST_RESULT, 3);
+    glean::cert::validation_http_request_result.AccumulateSingleSample(3);
   } else if (mResponseResult == NS_ERROR_NET_TIMEOUT) {
-    Telemetry::Accumulate(Telemetry::CERT_VALIDATION_HTTP_REQUEST_RESULT, 0);
+    glean::cert::validation_http_request_result.AccumulateSingleSample(0);
     mozilla::glean::ocsp_request_time::cancel.AccumulateRawDuration(
         TimeStamp::Now() - mStartTime);
   } else if (NS_SUCCEEDED(mResponseResult)) {
-    Telemetry::Accumulate(Telemetry::CERT_VALIDATION_HTTP_REQUEST_RESULT, 1);
+    glean::cert::validation_http_request_result.AccumulateSingleSample(1);
     mozilla::glean::ocsp_request_time::success.AccumulateRawDuration(
         TimeStamp::Now() - mStartTime);
   } else {
-    Telemetry::Accumulate(Telemetry::CERT_VALIDATION_HTTP_REQUEST_RESULT, 2);
+    glean::cert::validation_http_request_result.AccumulateSingleSample(2);
     mozilla::glean::ocsp_request_time::failure.AccumulateRawDuration(
         TimeStamp::Now() - mStartTime);
   }
@@ -343,7 +340,8 @@ OCSPRequest::Run() {
 
   rv = NS_NewTimerWithFuncCallback(
       getter_AddRefs(mTimeoutTimer), OCSPRequest::OnTimeout, this,
-      mTimeout.ToMilliseconds(), nsITimer::TYPE_ONE_SHOT, "OCSPRequest::Run");
+      mTimeout.ToMilliseconds(), nsITimer::TYPE_ONE_SHOT,
+      "OCSPRequest::Run"_ns);
   if (NS_FAILED(rv)) {
     return NotifyDone(rv, lock);
   }
@@ -367,7 +365,7 @@ nsresult OCSPRequest::NotifyDone(nsresult rv, MonitorAutoLock& lock) {
   mLoader = nullptr;
   mResponseResult = rv;
   if (mTimeoutTimer) {
-    Unused << mTimeoutTimer->Cancel();
+    (void)mTimeoutTimer->Cancel();
   }
   mNotifiedDone = true;
   lock.Notify();
@@ -491,53 +489,180 @@ mozilla::pkix::Result DoOCSPRequest(
   return Success;
 }
 
-static char* ShowProtectedAuthPrompt(PK11SlotInfo* slot, nsIPrompt* prompt) {
+namespace {
+
+static Atomic<uint64_t> sProtectedAuthPromptCounter{0};
+
+// Heap-allocated state shared between ShowProtectedAuthPrompt, the
+// background C_Login task, and the cancel observer. Refcounted so the
+// background task can outlive the function (it does so when the user
+// clicks Cancel — we return SECFailure immediately and let C_Login finish
+// in the background, discarding its result). The slot is referenced here
+// so it stays alive for the duration of the background C_Login call.
+class ProtectedAuthState final {
+ public:
+  explicit ProtectedAuthState(PK11SlotInfo* slot)
+      : mSlot(PK11_ReferenceSlot(slot)) {}
+  UniquePK11SlotInfo mSlot;
+  Atomic<bool> done{false};
+  Atomic<bool> cancelled{false};
+  Atomic<SECStatus> result{SECFailure};
+
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ProtectedAuthState)
+
+ private:
+  ~ProtectedAuthState() = default;
+};
+
+class ProtectedAuthCancelObserver final : public nsIObserver {
+ public:
+  NS_DECL_THREADSAFE_ISUPPORTS
+  NS_DECL_NSIOBSERVER
+
+  ProtectedAuthCancelObserver(RefPtr<ProtectedAuthState> aState,
+                              const nsAString& aPromptId)
+      : mState(std::move(aState)), mPromptId(aPromptId) {}
+
+ private:
+  ~ProtectedAuthCancelObserver() = default;
+  RefPtr<ProtectedAuthState> mState;
+  nsString mPromptId;
+};
+
+NS_IMPL_ISUPPORTS(ProtectedAuthCancelObserver, nsIObserver)
+
+NS_IMETHODIMP
+ProtectedAuthCancelObserver::Observe(nsISupports*, const char*,
+                                     const char16_t* aData) {
+  // Only react to the cancel notification carrying our unique id; another
+  // protected-auth dialog open at the same time uses a different id.
+  if (aData && mPromptId.Equals(nsDependentString(aData))) {
+    mState->cancelled = true;
+  }
+  return NS_OK;
+}
+
+}  // namespace
+
+static char* ShowProtectedAuthPrompt(PK11SlotInfo* slot) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(slot);
-  MOZ_ASSERT(prompt);
-  if (!NS_IsMainThread() || !slot || !prompt) {
+  if (!NS_IsMainThread() || !slot) {
     return nullptr;
   }
 
-  // Dispatch a background task to (eventually) call C_Login. The call will
-  // block until the protected authentication succeeds or fails.
-  Atomic<bool> done;
-  Atomic<SECStatus> result;
-  nsresult rv =
-      NS_DispatchBackgroundTask(NS_NewRunnableFunction(__func__, [&]() mutable {
-        result = PK11_CheckUserPassword(slot, nullptr);
-        done = true;
-      }));
+  RefPtr<ProtectedAuthState> state = MakeRefPtr<ProtectedAuthState>(slot);
+
+  // Unique id for this prompt, used to scope the observer notifications so a
+  // concurrent protected-auth dialog won't react to ours, or vice versa.
+  nsString promptId;
+  promptId.AppendInt(++sProtectedAuthPromptCounter);
+
+  // Dispatch a background task to call C_Login. The call will block until
+  // the protected authentication (e.g. card reader PIN entry) succeeds or
+  // fails. The task takes its own ref to `state` (and through it, the slot)
+  // so it can safely outlive this function in the cancel path.
+  nsresult rv = NS_DispatchBackgroundTask(
+      NS_NewRunnableFunction(
+          __func__,
+          [state, promptId]() {
+            state->result = PK11_CheckUserPassword(state->mSlot.get(), nullptr);
+            state->done = true;
+            // Best-effort signal to close our dialog if it's still up. The
+            // id ensures unrelated dialogs ignore this notification.
+            NS_DispatchToMainThread(NS_NewRunnableFunction(
+                "pk11-protected-auth-done", [promptId]() {
+                  nsCOMPtr<nsIObserverService> obs =
+                      mozilla::services::GetObserverService();
+                  if (obs) {
+                    obs->NotifyObservers(nullptr,
+                                         "pk11-protected-auth-complete",
+                                         promptId.get());
+                  }
+                }));
+          }),
+      NS_DISPATCH_EVENT_MAY_BLOCK);
   if (NS_FAILED(rv)) {
     return nullptr;
   }
 
-  nsTArray<nsCString> resIds = {
-      "security/pippki/pippki.ftl"_ns,
-  };
-  RefPtr<mozilla::intl::Localization> l10n =
-      mozilla::intl::Localization::Create(resIds, true);
-  auto l10nId = "protected-auth-alert"_ns;
-  auto l10nArgs = mozilla::dom::Optional<intl::L10nArgs>();
-  l10nArgs.Construct();
-  auto dirArg = l10nArgs.Value().Entries().AppendElement();
-  dirArg->mKey = "tokenName"_ns;
-  dirArg->mValue.SetValue().SetAsUTF8String().Assign(PK11_GetTokenName(slot));
-  nsAutoCString promptString;
-  ErrorResult errorResult;
-  l10n->FormatValueSync(l10nId, l10nArgs, promptString, errorResult);
-  if (NS_FAILED(errorResult.StealNSResult())) {
+  // Wire the dialog's Cancel button: it fires "pk11-protected-auth-cancel"
+  // with our promptId as data; the observer flips state->cancelled only when
+  // the id matches, so SpinEventLoopUntil exits.
+  nsCOMPtr<nsIObserverService> obsService =
+      mozilla::services::GetObserverService();
+  if (!obsService) {
     return nullptr;
   }
-  rv = prompt->Alert(nullptr, NS_ConvertUTF8toUTF16(promptString).get());
+  RefPtr<ProtectedAuthCancelObserver> cancelObserver =
+      MakeRefPtr<ProtectedAuthCancelObserver>(state, promptId);
+  rv = obsService->AddObserver(cancelObserver, "pk11-protected-auth-cancel",
+                               false);
   if (NS_FAILED(rv)) {
     return nullptr;
   }
+  auto removeObserver = MakeScopeExit([&]() {
+    obsService->RemoveObserver(cancelObserver, "pk11-protected-auth-cancel");
+  });
 
-  MOZ_ALWAYS_TRUE(SpinEventLoopUntil(
-      "ShowProtectedAuthPrompt"_ns, [&]() { return static_cast<bool>(done); }));
+  // Open the informational dialog only if there's an active window to host
+  // it. In headless contexts (xpcshell, very early startup) there's no
+  // WindowCreator registered and OpenWindow would assert/fail; the
+  // background C_Login still runs and SpinEventLoopUntil below waits on it.
+  nsCOMPtr<nsIWindowWatcher> ww =
+      do_GetService("@mozilla.org/embedcomp/window-watcher;1");
+  nsCOMPtr<mozIDOMWindowProxy> activeWindow;
+  if (ww) {
+    ww->GetActiveWindow(getter_AddRefs(activeWindow));
+  }
+  if (activeWindow) {
+    // Open a modal informational dialog that auto-closes when authentication
+    // completes. It has only a Cancel button — out-of-band PIN entry on the
+    // device itself is the sole confirmation mechanism.
+    nsCOMPtr<nsIWritablePropertyBag2> dialogArgs =
+        do_CreateInstance("@mozilla.org/hash-property-bag;1");
+    if (!dialogArgs) {
+      return nullptr;
+    }
+    rv = dialogArgs->SetPropertyAsAString(
+        u"tokenName"_ns, NS_ConvertUTF8toUTF16(PK11_GetTokenName(slot)));
+    if (NS_FAILED(rv)) {
+      return nullptr;
+    }
+    rv = dialogArgs->SetPropertyAsAString(u"promptId"_ns, promptId);
+    if (NS_FAILED(rv)) {
+      return nullptr;
+    }
+    // Inlined nsNSSDialogHelper::openDialog: the helper lives in
+    // security/manager/pki/, which is desktop-only, but this file builds on
+    // all platforms. Open the chrome XUL dialog directly via the window
+    // watcher and use AutoNoJSAPI so the new window's initial about:blank
+    // gets a system principal.
+    mozilla::dom::AutoNoJSAPI nojsapi;
+    nsCOMPtr<mozIDOMWindowProxy> newWindow;
+    rv = ww->OpenWindow(activeWindow,
+                        "chrome://pippki/content/protectedAuth.xhtml"_ns,
+                        "_blank"_ns, "centerscreen,chrome,modal,titlebar"_ns,
+                        dialogArgs, getter_AddRefs(newWindow));
+    if (NS_FAILED(rv)) {
+      return nullptr;
+    }
+  }
 
-  switch (result) {
+  // Wait until C_Login returns, the user cancels, or shutdown.
+  MOZ_ALWAYS_TRUE(SpinEventLoopUntil("ShowProtectedAuthPrompt"_ns, [&state]() {
+    return static_cast<bool>(state->done) ||
+           static_cast<bool>(state->cancelled);
+  }));
+
+  // User-initiated cancel: return immediately as auth failure. The
+  // background C_Login keeps running until the token responds; its eventual
+  // result is dropped when the last RefPtr<ProtectedAuthState> is released.
+  if (state->cancelled && !state->done) {
+    return nullptr;
+  }
+
+  switch (state->result) {
     case SECSuccess:
       return ToNewCString(nsDependentCString(PK11_PW_AUTHENTICATED));
     case SECWouldBlock:
@@ -547,28 +672,36 @@ static char* ShowProtectedAuthPrompt(PK11SlotInfo* slot, nsIPrompt* prompt) {
   }
 }
 
-class PK11PasswordPromptRunnable : public SyncRunnableBase {
+class PK11PasswordPromptRunnable final : public nsIRunnable {
  public:
   PK11PasswordPromptRunnable(PK11SlotInfo* slot, nsIInterfaceRequestor* ir)
       : mResult(nullptr), mSlot(slot), mIR(ir) {}
-  virtual ~PK11PasswordPromptRunnable() = default;
+
+  NS_DECL_THREADSAFE_ISUPPORTS
+  NS_DECL_NSIRUNNABLE
 
   char* mResult;  // out
-  virtual void RunOnTargetThread() override;
 
  private:
+  ~PK11PasswordPromptRunnable() = default;
+
+  // Accessed only on the main thread. True if any instance of
+  // PK11PasswordPromptRunnable is already running.
   static bool mRunning;
 
   PK11SlotInfo* mSlot;
   nsIInterfaceRequestor* mIR;
 };
 
+NS_IMPL_ISUPPORTS(PK11PasswordPromptRunnable, nsIRunnable)
+
 bool PK11PasswordPromptRunnable::mRunning = false;
 
-void PK11PasswordPromptRunnable::RunOnTargetThread() {
+NS_IMETHODIMP
+PK11PasswordPromptRunnable::Run() {
   MOZ_ASSERT(NS_IsMainThread());
   if (!NS_IsMainThread()) {
-    return;
+    return NS_ERROR_NOT_SAME_THREAD;
   }
 
   // If we've reentered due to the nested event loop implicit in using
@@ -578,17 +711,24 @@ void PK11PasswordPromptRunnable::RunOnTargetThread() {
   // to fail, but this is better than littering the screen with a bunch of
   // password prompts that the user will probably just cancel anyway.
   if (mRunning) {
-    return;
+    return NS_OK;
   }
   mRunning = true;
   auto setRunningToFalseOnExit = MakeScopeExit([&]() { mRunning = false; });
+
+  // Protected-auth tokens don't need an nsIPrompt — the dialog is opened
+  // directly via nsNSSDialogHelper.
+  if (PK11_ProtectedAuthenticationPath(mSlot)) {
+    mResult = ShowProtectedAuthPrompt(mSlot);
+    return NS_OK;
+  }
 
   nsresult rv;
   nsCOMPtr<nsIPrompt> prompt;
   if (!mIR) {
     rv = nsNSSComponent::GetNewPrompter(getter_AddRefs(prompt));
     if (NS_FAILED(rv)) {
-      return;
+      return rv;
     }
   } else {
     prompt = do_GetInterface(mIR);
@@ -596,12 +736,7 @@ void PK11PasswordPromptRunnable::RunOnTargetThread() {
   }
 
   if (!prompt) {
-    return;
-  }
-
-  if (PK11_ProtectedAuthenticationPath(mSlot)) {
-    mResult = ShowProtectedAuthPrompt(mSlot, prompt);
-    return;
+    return NS_ERROR_FAILURE;
   }
 
   nsAutoString promptString;
@@ -610,11 +745,11 @@ void PK11PasswordPromptRunnable::RunOnTargetThread() {
   } else {
     AutoTArray<nsString, 1> formatStrings = {
         NS_ConvertUTF8toUTF16(PK11_GetTokenName(mSlot))};
-    rv = PIPBundleFormatStringFromName("CertPasswordPrompt", formatStrings,
-                                       promptString);
+    rv = PIPBundleFormatStringFromName("CertSecurityDeviceAuthenticationPrompt",
+                                       formatStrings, promptString);
   }
   if (NS_FAILED(rv)) {
-    return;
+    return rv;
   }
 
   nsString password;
@@ -622,10 +757,11 @@ void PK11PasswordPromptRunnable::RunOnTargetThread() {
   rv = prompt->PromptPassword(nullptr, promptString.get(),
                               getter_Copies(password), &userClickedOK);
   if (NS_FAILED(rv) || !userClickedOK) {
-    return;
+    return rv;
   }
 
   mResult = ToNewUTF8String(password);
+  return NS_OK;
 }
 
 char* PK11PasswordPrompt(PK11SlotInfo* slot, PRBool /*retry*/, void* arg) {
@@ -634,7 +770,8 @@ char* PK11PasswordPrompt(PK11SlotInfo* slot, PRBool /*retry*/, void* arg) {
   }
   RefPtr<PK11PasswordPromptRunnable> runnable(new PK11PasswordPromptRunnable(
       slot, static_cast<nsIInterfaceRequestor*>(arg)));
-  runnable->DispatchToMainThreadAndWait();
+  MOZ_ALWAYS_SUCCEEDS(SyncRunnable::DispatchToThread(
+      GetMainThreadSerialEventTarget(), runnable));
   return runnable->mResult;
 }
 
@@ -655,6 +792,15 @@ nsCString getKeaGroupName(uint32_t aKeaGroup) {
       break;
     case ssl_grp_kem_xyber768d00:
       groupName = "xyber768d00"_ns;
+      break;
+    case ssl_grp_kem_mlkem768x25519:
+      groupName = "mlkem768x25519"_ns;
+      break;
+    case ssl_grp_kem_secp256r1mlkem768:
+      groupName = "secp256r1mlkem768"_ns;
+      break;
+    case ssl_grp_kem_secp384r1mlkem1024:
+      groupName = "secp384r1mlkem1024"_ns;
       break;
     case ssl_grp_ffdhe_2048:
       groupName = "FF 2048"_ns;
@@ -761,7 +907,7 @@ static void PreliminaryHandshakeDone(PRFileDesc* fd) {
   unsigned int npnlen;
 
   if (SSL_GetNextProto(fd, &state, npnbuf, &npnlen,
-                       AssertedCast<unsigned int>(ArrayLength(npnbuf))) ==
+                       AssertedCast<unsigned int>(std::size(npnbuf))) ==
       SECSuccess) {
     if (state == SSL_NEXT_PROTO_NEGOTIATED ||
         state == SSL_NEXT_PROTO_SELECTED) {
@@ -770,7 +916,7 @@ static void PreliminaryHandshakeDone(PRFileDesc* fd) {
     } else {
       socketControl->SetNegotiatedNPN(nullptr, 0);
     }
-    mozilla::Telemetry::Accumulate(Telemetry::SSL_NPN_TYPE, state);
+    mozilla::glean::ssl::npn_type.AccumulateSingleSample(state);
   } else {
     socketControl->SetNegotiatedNPN(nullptr, 0);
   }
@@ -847,8 +993,8 @@ SECStatus CanFalseStartCallback(PRFileDesc* fd, void* client_data,
   // to the same protocol we previously saw for the server, after the
   // first successful connection to the server.
 
-  Telemetry::Accumulate(Telemetry::SSL_REASONS_FOR_NOT_FALSE_STARTING,
-                        reasonsForNotFalseStarting);
+  glean::ssl::reasons_for_not_false_starting.AccumulateSingleSample(
+      reasonsForNotFalseStarting);
 
   if (reasonsForNotFalseStarting == 0) {
     *canFalseStart = PR_TRUE;
@@ -861,30 +1007,28 @@ SECStatus CanFalseStartCallback(PRFileDesc* fd, void* client_data,
   return SECSuccess;
 }
 
-static void AccumulateNonECCKeySize(Telemetry::HistogramID probe,
-                                    uint32_t bits) {
-  unsigned int value = bits < 512      ? 1
-                       : bits == 512   ? 2
-                       : bits < 768    ? 3
-                       : bits == 768   ? 4
-                       : bits < 1024   ? 5
-                       : bits == 1024  ? 6
-                       : bits < 1280   ? 7
-                       : bits == 1280  ? 8
-                       : bits < 1536   ? 9
-                       : bits == 1536  ? 10
-                       : bits < 2048   ? 11
-                       : bits == 2048  ? 12
-                       : bits < 3072   ? 13
-                       : bits == 3072  ? 14
-                       : bits < 4096   ? 15
-                       : bits == 4096  ? 16
-                       : bits < 8192   ? 17
-                       : bits == 8192  ? 18
-                       : bits < 16384  ? 19
-                       : bits == 16384 ? 20
-                                       : 0;
-  Telemetry::Accumulate(probe, value);
+static unsigned int NonECCKeySize(uint32_t bits) {
+  return bits < 512      ? 1
+         : bits == 512   ? 2
+         : bits < 768    ? 3
+         : bits == 768   ? 4
+         : bits < 1024   ? 5
+         : bits == 1024  ? 6
+         : bits < 1280   ? 7
+         : bits == 1280  ? 8
+         : bits < 1536   ? 9
+         : bits == 1536  ? 10
+         : bits < 2048   ? 11
+         : bits == 2048  ? 12
+         : bits < 3072   ? 13
+         : bits == 3072  ? 14
+         : bits < 4096   ? 15
+         : bits == 4096  ? 16
+         : bits < 8192   ? 17
+         : bits == 8192  ? 18
+         : bits < 16384  ? 19
+         : bits == 16384 ? 20
+                         : 0;
 }
 
 // XXX: This attempts to map a bit count to an ECC named curve identifier. In
@@ -893,13 +1037,12 @@ static void AccumulateNonECCKeySize(Telemetry::HistogramID probe,
 // available, the mapping would be ambiguous since there could be multiple
 // named curves for a given size (e.g. secp256k1 vs. secp256r1). We punt on
 // that for now. See also NSS bug 323674.
-static void AccumulateECCCurve(Telemetry::HistogramID probe, uint32_t bits) {
-  unsigned int value = bits == 255   ? 29  // Curve25519
-                       : bits == 256 ? 23  // P-256
-                       : bits == 384 ? 24  // P-384
-                       : bits == 521 ? 25  // P-521
-                                     : 0;  // Unknown
-  Telemetry::Accumulate(probe, value);
+static unsigned int ECCCurve(uint32_t bits) {
+  return bits == 255   ? 29  // Curve25519
+         : bits == 256 ? 23  // P-256
+         : bits == 384 ? 24  // P-384
+         : bits == 521 ? 25  // P-521
+                       : 0;  // Unknown
 }
 
 static void AccumulateCipherSuite(const SSLChannelInfo& channelInfo) {
@@ -976,7 +1119,7 @@ static void AccumulateCipherSuite(const SSLChannelInfo& channelInfo) {
       break;
   }
   MOZ_ASSERT(value != 0);
-  Telemetry::Accumulate(Telemetry::TLS_CIPHER_SUITE, value);
+  glean::tls::cipher_suite.AccumulateSingleSample(value);
 }
 
 void HandshakeCallback(PRFileDesc* fd, void* client_data) {
@@ -1008,7 +1151,7 @@ void HandshakeCallback(PRFileDesc* fd, void* client_data) {
   // 1=tls1, 2=tls1.1, 3=tls1.2, 4=tls1.3
   unsigned int versionEnum = channelInfo.protocolVersion & 0xFF;
   MOZ_ASSERT(versionEnum > 0);
-  Telemetry::Accumulate(Telemetry::SSL_HANDSHAKE_VERSION, versionEnum);
+  glean::ssl_handshake::version.AccumulateSingleSample(versionEnum);
 
   SSLCipherSuiteInfo cipherInfo;
   rv = SSL_GetCipherSuiteInfo(channelInfo.cipherSuite, &cipherInfo,
@@ -1018,47 +1161,49 @@ void HandshakeCallback(PRFileDesc* fd, void* client_data) {
     return;
   }
   // keyExchange null=0, rsa=1, dh=2, fortezza=3, ecdh=4, ecdh_hybrid=8
-  Telemetry::Accumulate(infoObject->IsFullHandshake()
-                            ? Telemetry::SSL_KEY_EXCHANGE_ALGORITHM_FULL
-                            : Telemetry::SSL_KEY_EXCHANGE_ALGORITHM_RESUMED,
-                        channelInfo.keaType);
+  if (infoObject->IsFullHandshake()) {
+    glean::ssl::key_exchange_algorithm_full.AccumulateSingleSample(
+        channelInfo.keaType);
+  } else {
+    glean::ssl::key_exchange_algorithm_resumed.AccumulateSingleSample(
+        channelInfo.keaType);
+  }
 
   if (infoObject->IsFullHandshake()) {
     switch (channelInfo.keaType) {
       case ssl_kea_rsa:
-        AccumulateNonECCKeySize(Telemetry::SSL_KEA_RSA_KEY_SIZE_FULL,
-                                channelInfo.keaKeyBits);
+        glean::ssl::kea_rsa_key_size_full.AccumulateSingleSample(
+            NonECCKeySize(channelInfo.keaKeyBits));
         break;
       case ssl_kea_dh:
-        AccumulateNonECCKeySize(Telemetry::SSL_KEA_DHE_KEY_SIZE_FULL,
-                                channelInfo.keaKeyBits);
+        glean::ssl::kea_dhe_key_size_full.AccumulateSingleSample(
+            NonECCKeySize(channelInfo.keaKeyBits));
         break;
       case ssl_kea_ecdh:
-        AccumulateECCCurve(Telemetry::SSL_KEA_ECDHE_CURVE_FULL,
-                           channelInfo.keaKeyBits);
+        glean::ssl::kea_ecdhe_curve_full.AccumulateSingleSample(
+            ECCCurve(channelInfo.keaKeyBits));
         break;
       case ssl_kea_ecdh_hybrid:
-        // Bug 1874963: Add probes for Xyber768d00
         break;
       default:
         MOZ_CRASH("impossible KEA");
         break;
     }
 
-    Telemetry::Accumulate(Telemetry::SSL_AUTH_ALGORITHM_FULL,
-                          channelInfo.authType);
+    glean::ssl::auth_algorithm_full.AccumulateSingleSample(
+        channelInfo.authType);
 
     // RSA key exchange doesn't use a signature for auth.
     if (channelInfo.keaType != ssl_kea_rsa) {
       switch (channelInfo.authType) {
         case ssl_auth_rsa:
         case ssl_auth_rsa_sign:
-          AccumulateNonECCKeySize(Telemetry::SSL_AUTH_RSA_KEY_SIZE_FULL,
-                                  channelInfo.authKeyBits);
+          glean::ssl::auth_rsa_key_size_full.AccumulateSingleSample(
+              NonECCKeySize(channelInfo.authKeyBits));
           break;
         case ssl_auth_ecdsa:
-          AccumulateECCCurve(Telemetry::SSL_AUTH_ECDSA_CURVE_FULL,
-                             channelInfo.authKeyBits);
+          glean::ssl::auth_ecdsa_curve_full.AccumulateSingleSample(
+              ECCCurve(channelInfo.authKeyBits));
           break;
         default:
           MOZ_CRASH("impossible auth algorithm");
@@ -1129,17 +1274,4 @@ void HandshakeCallback(PRFileDesc* fd, void* client_data) {
 
   infoObject->NoteTimeUntilReady();
   infoObject->SetHandshakeCompleted();
-}
-
-void SecretCallback(PRFileDesc* fd, PRUint16 epoch, SSLSecretDirection dir,
-                    PK11SymKey* secret, void* arg) {
-  // arg must be set to an NSSSocketControl* in SSL_SecretCallback
-  MOZ_ASSERT(arg);
-  NSSSocketControl* infoObject = (NSSSocketControl*)arg;
-  if (epoch == 2 && dir == ssl_secret_read) {
-    // |secret| is the server_handshake_traffic_secret. Set a flag to indicate
-    // that the Server Hello has been processed successfully. We use this when
-    // deciding whether to retry a connection in which a Xyber share was sent.
-    infoObject->SetHasTls13HandshakeSecrets();
-  }
 }

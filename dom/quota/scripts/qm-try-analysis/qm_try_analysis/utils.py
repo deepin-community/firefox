@@ -6,13 +6,14 @@ import datetime
 import json
 
 import requests
+from mozfile import json as mozfile_json
 
 from qm_try_analysis.logging import error, info, warning
 
 
 def readJSONFile(FileName):
-    f = open(FileName, "r")
-    p = json.load(f)
+    f = open(FileName)
+    p = mozfile_json.load(f)
     f.close()
     return p
 
@@ -57,7 +58,7 @@ def fetchBuildRevisions(buildids):
 
 
 def readExecutionFile(workdir):
-    exefile = "{}/qmexecutions.json".format(workdir)
+    exefile = f"{workdir}/qmexecutions.json"
     try:
         return readJSONFile(exefile)
     except OSError:
@@ -65,7 +66,7 @@ def readExecutionFile(workdir):
 
 
 def writeExecutionFile(workdir, executions):
-    exefile = "{}/qmexecutions.json".format(workdir)
+    exefile = f"{workdir}/qmexecutions.json"
     try:
         writeJSONFile(exefile, executions)
     except OSError:

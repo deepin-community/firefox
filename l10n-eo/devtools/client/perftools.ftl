@@ -26,11 +26,33 @@ perftools-heading-local-build = Loka versio
 
 perftools-description-intro = La registroj lanĉas <a>profiler.firefox.com</a> en nova langeto. Ĉiuj datumoj estas konservitaj surloke, sed vi povas decidi alŝuti kaj dividi ilin.
 perftools-description-local-build = Se vi analizas la ruladon de versio, kiun vi mem kompilis en tiu ĉi maŝino, bonvolu aldoni la objdir de via versio al la suba listo, tiel ke ĝi povas esti uzata por serĉi simbolojn.
+perftools-pick-local-build-directory = Elekti kunmetan dosierujon
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Specimena intervalo:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -61,6 +83,14 @@ perftools-button-restart = Restartigi
 perftools-button-add-directory = Aldoni dosierujon
 perftools-button-remove-directory = Forigi elektitajn
 perftools-button-edit-settings = Modifi agordojn…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Aliaj agoj
+perftools-menu-more-actions-restart-with-profiling = Restartigi { -brand-shorter-name } kun aktiva rulanalizo de starto
+perftools-menu-more-actions-copy-for-startup = Kopii ĉirkaŭaĵajn variantojn por rulanalizo de starto
+perftools-menu-more-actions-copy-for-perf-tests = Kopii parametrojn por efikecaj testoj
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -134,6 +164,8 @@ perftools-presets-graphics-label = Grafikoj
 perftools-presets-graphics-description = Rekomendita agordaro por senerarigo de grafikoj en { -brand-shorter-name }.
 perftools-presets-media-label = Aŭdvidaĵo
 perftools-presets-media-description2 = Rekomendita agordaro por senerarigo de sono kaj video en { -brand-shorter-name }.
+perftools-presets-ml-label = Aŭtomata lernado
+perftools-presets-ml-description2 = Agordoj por senerarigo de aŭtomata lernado en { -brand-shorter-name }.
 perftools-presets-networking-label = Reto
 perftools-presets-networking-description = Rekomendita agordaro por esploro de retaj eraroj en { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -141,7 +173,6 @@ perftools-presets-power-label = Energio
 perftools-presets-power-description = Agordoj por senerarigo de uzo de energio en { -brand-shorter-name }, kun malmulte da aldona kromprocezado.
 perftools-presets-debug-label = Senerarigi
 perftools-presets-debug-description = Antaŭagordo por senerarigo en { -brand-shorter-name }. Tio postulas multe pli da rimedoj, ne uzu por mezuri efikecon sed por pli koncentriĝe kompreni la konduton de la retumilo.
+perftools-presets-web-compat-label = Teksaĵa kongruo
+perftools-presets-web-compat-description = Rekomendita agordaro por senerarigo de problemoj pri kongrueco en retejoj, kaj ne por sekvi ilian efikecon.
 perftools-presets-custom-label = Personecigita
-
-##
-

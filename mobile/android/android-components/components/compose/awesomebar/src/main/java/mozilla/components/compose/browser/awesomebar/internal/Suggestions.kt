@@ -23,15 +23,21 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.parcelize.Parcelize
 import mozilla.components.compose.browser.awesomebar.AwesomeBarColors
 import mozilla.components.compose.browser.awesomebar.AwesomeBarOrientation
+import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestions.FlightSuggestion
+import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestions.SportSuggestion
+import mozilla.components.compose.browser.awesomebar.internal.optimizedsuggestions.StockSuggestion
 import mozilla.components.concept.awesomebar.AwesomeBar
+import mozilla.components.concept.awesomebar.optimizedsuggestions.SportSuggestionState
 
+@Suppress("LongParameterList")
 @Composable
 internal fun Suggestions(
-    suggestions: Map<AwesomeBar.SuggestionProviderGroup, List<AwesomeBar.Suggestion>>,
+    suggestions: Map<AwesomeBar.SuggestionProviderGroup, List<AwesomeBar.SuggestionItem>>,
     colors: AwesomeBarColors,
     orientation: AwesomeBarOrientation,
-    onSuggestionClicked: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.Suggestion) -> Unit,
+    onSuggestionClicked: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.SuggestionItem) -> Unit,
     onAutoComplete: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.Suggestion) -> Unit,
+    onRemoveClicked: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.Suggestion) -> Unit,
     onVisibilityStateUpdated: (AwesomeBar.VisibilityState) -> Unit,
     onScroll: () -> Unit,
 ) {
@@ -45,7 +51,7 @@ internal fun Suggestions(
     ) {
         suggestions.forEach { (group, suggestions) ->
             val title = group.title
-            if (suggestions.isNotEmpty() && !title.isNullOrEmpty()) {
+            if (suggestions.isNotEmpty() && !title.isNullOrEmpty() && group.displayTitle) {
                 item(ItemKey.SuggestionGroup(group.id)) {
                     SuggestionGroup(title, colors)
                 }
@@ -55,12 +61,14 @@ internal fun Suggestions(
                 items = suggestions.take(group.limit),
                 key = { suggestion -> ItemKey.Suggestion(group.id, suggestion.provider.id, suggestion.id) },
             ) { suggestion ->
-                Suggestion(
-                    suggestion,
-                    colors,
-                    orientation,
-                    onSuggestionClicked = { onSuggestionClicked(group, suggestion) },
-                    onAutoComplete = { onAutoComplete(group, suggestion) },
+                SuggestionItem(
+                    suggestion = suggestion,
+                    group = group,
+                    colors = colors,
+                    orientation = orientation,
+                    onSuggestionClicked = onSuggestionClicked,
+                    onAutoComplete = onAutoComplete,
+                    onRemoveClicked = onRemoveClicked,
                 )
             }
         }
@@ -68,6 +76,13 @@ internal fun Suggestions(
 
     val currentSuggestions by rememberUpdatedState(suggestions)
     val currentOnVisibilityStateUpdated by rememberUpdatedState(onVisibilityStateUpdated)
+    val currentFirstSuggestion by rememberUpdatedState(suggestions.values.firstOrNull())
+
+    LaunchedEffect(currentFirstSuggestion) {
+        if (currentFirstSuggestion != null) {
+            state.scrollToItem(0)
+        }
+    }
 
     LaunchedEffect(Unit) {
         // This effect is launched on the initial composition, and cancelled when `Suggestions` leaves the Composition.
@@ -97,6 +112,68 @@ private fun ScrollHandler(
     val scrollInProgress = state.isScrollInProgress
     remember(scrollInProgress) {
         ScrollHandlerImpl(scrollInProgress, onScroll)
+    }
+}
+
+@Composable
+private fun SuggestionItem(
+    suggestion: AwesomeBar.SuggestionItem,
+    group: AwesomeBar.SuggestionProviderGroup,
+    colors: AwesomeBarColors,
+    orientation: AwesomeBarOrientation,
+    onSuggestionClicked: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.SuggestionItem) -> Unit,
+    onAutoComplete: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.Suggestion) -> Unit,
+    onRemoveClicked: (AwesomeBar.SuggestionProviderGroup, AwesomeBar.Suggestion) -> Unit,
+) {
+    when (suggestion) {
+        is AwesomeBar.Suggestion -> {
+            Suggestion(
+                suggestion,
+                colors,
+                orientation,
+                onSuggestionClicked = { onSuggestionClicked(group, suggestion) },
+                onAutoComplete = { onAutoComplete(group, suggestion) },
+                onRemoveClicked = { onRemoveClicked(group, suggestion) },
+            )
+        }
+
+        is AwesomeBar.StockSuggestion -> {
+            StockSuggestion(
+                onClick = { onSuggestionClicked(group, suggestion) },
+                ticker = suggestion.ticker,
+                name = suggestion.name,
+                index = suggestion.index,
+                lastPrice = suggestion.lastPrice,
+                changePercent = suggestion.changePercToday,
+            )
+        }
+
+        is AwesomeBar.SportSuggestion -> {
+            SportSuggestion(
+                onClick = { onSuggestionClicked(group, suggestion) },
+                state = SportSuggestionState(
+                    sport = suggestion.sport,
+                    sportCategory = suggestion.sportCategory,
+                    status = suggestion.status,
+                    statusType = suggestion.statusType,
+                    date = suggestion.date,
+                    homeTeam = suggestion.homeTeam,
+                    awayTeam = suggestion.awayTeam,
+                ),
+            )
+        }
+
+        is AwesomeBar.FlightSuggestion -> {
+            FlightSuggestion(
+                onClick = { onSuggestionClicked(group, suggestion) },
+                flightNumber = suggestion.flightNumber,
+                airlineName = suggestion.airlineName,
+                flightStatus = suggestion.flightStatus,
+                progress = suggestion.progress,
+                departureFlightData = suggestion.departureFlightData,
+                arrivalFlightData = suggestion.arrivalFlightData,
+            )
+        }
     }
 }
 
@@ -138,7 +215,7 @@ internal sealed interface ItemKey {
  * in that list, ordered top to bottom. The intersection of the two is the current [AwesomeBar.VisibilityState].
  */
 internal data class VisibleItems(
-    val suggestions: Map<AwesomeBar.SuggestionProviderGroup, List<AwesomeBar.Suggestion>>,
+    val suggestions: Map<AwesomeBar.SuggestionProviderGroup, List<AwesomeBar.SuggestionItem>>,
     val visibleItemKeys: List<ItemKey>,
 ) {
     fun toVisibilityState(): AwesomeBar.VisibilityState =

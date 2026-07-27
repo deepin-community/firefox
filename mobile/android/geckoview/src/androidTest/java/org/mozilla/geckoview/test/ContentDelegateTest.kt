@@ -1,28 +1,38 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: nil; -*-
- * Any copyright is dedicated to the Public Domain.
+/* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 package org.mozilla.geckoview.test
 
 import android.graphics.SurfaceTexture
-import android.net.Uri
 import android.view.PointerIcon
 import android.view.Surface
 import androidx.annotation.AnyThread
+import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import org.hamcrest.Matchers.* // ktlint-disable no-wildcard-imports
+import org.hamcrest.Matchers.endsWith
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.greaterThan
+import org.hamcrest.Matchers.isEmptyOrNullString
+import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.notNullValue
+import org.hamcrest.Matchers.startsWith
 import org.json.JSONObject
 import org.junit.Assume.assumeThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.geckoview.* // ktlint-disable no-wildcard-imports
+import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.ContentBlocking.CookieBannerMode
 import org.mozilla.geckoview.GeckoDisplay.SurfaceInfo
+import org.mozilla.geckoview.GeckoResult
+import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.ContentDelegate
 import org.mozilla.geckoview.GeckoSession.NavigationDelegate
 import org.mozilla.geckoview.GeckoSession.NavigationDelegate.LoadRequest
 import org.mozilla.geckoview.GeckoSession.ProgressDelegate
+import org.mozilla.geckoview.GeckoSessionSettings
+import org.mozilla.geckoview.SlowScriptResponse
+import org.mozilla.geckoview.WebResponse
 import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.AssertCalled
 import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.IgnoreCrash
 import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.NullDelegate
@@ -117,6 +127,7 @@ class ContentDelegateTest : BaseSessionTest() {
     fun crashContent() {
         // TODO: bug 1710940
         assumeThat(sessionRule.env.isIsolatedProcess, equalTo(false))
+        assumeThat(sessionRule.env.isAppZygoteProcess, equalTo(false))
 
         mainSession.loadUri(CONTENT_CRASH_URL)
         mainSession.waitUntilCalled(object : ContentDelegate {
@@ -147,6 +158,7 @@ class ContentDelegateTest : BaseSessionTest() {
     fun crashContent_tapAfterCrash() {
         // TODO: bug 1710940
         assumeThat(sessionRule.env.isIsolatedProcess, equalTo(false))
+        assumeThat(sessionRule.env.isAppZygoteProcess, equalTo(false))
 
         mainSession.delegateUntilTestEnd(object : ContentDelegate {
             override fun onCrash(session: GeckoSession) {
@@ -313,7 +325,7 @@ class ContentDelegateTest : BaseSessionTest() {
 
                 val icon = manifest.getJSONArray("icons").getJSONObject(0)
 
-                val iconSrc = Uri.parse(icon.getString("src"))
+                val iconSrc = icon.getString("src").toUri()
                 assertThat("icon should have a valid src", iconSrc, notNullValue())
                 assertThat("icon src should be absolute", iconSrc.isAbsolute, equalTo(true))
                 assertThat("icon should have sizes", icon.getString("sizes"), not(isEmptyOrNullString()))
@@ -397,7 +409,8 @@ class ContentDelegateTest : BaseSessionTest() {
             override fun onCloseRequest(session: GeckoSession) {
             }
 
-            @AssertCalled(count = 1)
+            // (1) artificial from GeckoViewProgress._fireInitialLoad (2) about:blank load
+            @AssertCalled(count = 2)
             override fun onPageStop(session: GeckoSession, success: Boolean) {
             }
         })
@@ -654,6 +667,101 @@ class ContentDelegateTest : BaseSessionTest() {
         assertThat(
             "display-mode should be fullscreen",
             matches,
+            equalTo(true),
+        )
+    }
+
+    @Test fun closeWatcherForDialog() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "dom.closewatcher.enabled" to true,
+            ),
+        )
+
+        mainSession.loadTestPath(DIALOG_HTML_PATH)
+        mainSession.waitForPageStop()
+
+        sessionRule.waitForResult(mainSession.processBackPressed()).let {
+            assertThat(
+                "processBackPressed should be false due to no close watch request",
+                it,
+                equalTo(false),
+            )
+        }
+
+        // dialog has no open event.
+        mainSession.waitForJS(
+            """
+            new Promise(resolve => {
+                const dialog = document.querySelector('dialog');
+                dialog.showModal();
+                window.setTimeout(resolve, 500);
+            })
+            """,
+        )
+
+        val promise = mainSession.evaluatePromiseJS(
+            """
+            new Promise(resolve => {
+                let cancel = false;
+                const dialog = document.querySelector('dialog');
+                dialog.addEventListener('cancel', () => { cancel = true; });
+                dialog.addEventListener('close', () => resolve(cancel));
+            })
+            """,
+        )
+
+        sessionRule.waitForResult(mainSession.processBackPressed()).let {
+            assertThat(
+                "processBackPressed should be true due to having close watch request",
+                it,
+                equalTo(true),
+            )
+        }
+        assertThat("processBackPressed fires cancel event", promise.value as Boolean, equalTo(true))
+    }
+
+    @WithDisplay(width = 100, height = 100)
+    @Test fun closeWatcherForPopover() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "dom.closewatcher.enabled" to true,
+            ),
+        )
+
+        mainSession.loadTestPath(POPOVER_HTML_PATH)
+        mainSession.waitForPageStop()
+
+        val promise1 = mainSession.evaluatePromiseJS(
+            """
+            new Promise(resolve => {
+                let popover = document.getElementById('mypopover');
+                popover.addEventListener('toggle', resolve, { once: true });
+            });
+            """,
+        )
+        mainSession.synthesizeTap(50, 50)
+        promise1.value
+
+        val promise2 = mainSession.evaluatePromiseJS(
+            """
+            new Promise(resolve => {
+                let popover = document.getElementById('mypopover');
+                popover.addEventListener('toggle', () => resolve(true), { once: true });
+            })
+            """,
+        )
+
+        sessionRule.waitForResult(mainSession.processBackPressed()).let {
+            assertThat(
+                "processBackPressed should be true due to having close watch request",
+                it,
+                equalTo(true),
+            )
+        }
+        assertThat(
+            "processBackPressed fires cancel event",
+            promise2.value as Boolean,
             equalTo(true),
         )
     }

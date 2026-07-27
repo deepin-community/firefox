@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Iestatījumi
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Iestatījumi…
+menu-application-set-as-default =
+    .label = Iestatīt { -brand-shorter-name } kā noklusējuma pārlūkprogrammu
 menu-application-services =
     .label = Servisi
 menu-application-hide-this =
@@ -99,6 +92,9 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Kopīgot
     .accesskey = K
+menu-file-share-qrcode =
+    .label = Ģenerēt QR kodu...
+    .accesskey = Q
 menu-file-print-setup =
     .label = Lapas iestatījumi…
     .accesskey = u
@@ -147,8 +143,6 @@ menu-view-history-button =
     .label = Vēsture
 menu-view-synced-tabs-sidebar =
     .label = Sinhronizētās cilnes
-menu-view-megalist-sidebar =
-    .label = Paroles
 menu-view-full-zoom =
     .label = Mērogs
     .accesskey = M
@@ -256,6 +250,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilās grāmatzīmes
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profili
+menu-profiles-manage-profiles =
+    .label = Pārvaldīt profilus
+menu-profiles-new-profile =
+    .label = Jauns profils
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (pašreizējais)
+menu-profiles-menu =
+    .label = Profili
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -264,6 +274,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Lejupielādes
     .accesskey = d
+menu-tools-extensions-and-themes =
+    .label = Paplašinājumi un tēmas
+    .accesskey = P
 menu-tools-addons-and-themes =
     .label = Papildinājumi un motīvi
     .accesskey = P

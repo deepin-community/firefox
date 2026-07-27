@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -67,9 +66,6 @@ class SocketProcessChild final : public PSocketProcessChild {
 #endif
   mozilla::ipc::IPCResult RecvSocketProcessTelemetryPing();
 
-  PWebrtcTCPSocketChild* AllocPWebrtcTCPSocketChild(const Maybe<TabId>& tabId);
-  bool DeallocPWebrtcTCPSocketChild(PWebrtcTCPSocketChild* aActor);
-
   already_AddRefed<PHttpTransactionChild> AllocPHttpTransactionChild();
 
   void CleanUp();
@@ -135,6 +131,8 @@ class SocketProcessChild final : public PSocketProcessChild {
       GetDNSCacheEntriesResolver&& aResolve);
   mozilla::ipc::IPCResult RecvGetHttpConnectionData(
       GetHttpConnectionDataResolver&& aResolve);
+  mozilla::ipc::IPCResult RecvGetHttp3ConnectionStatsData(
+      GetHttp3ConnectionStatsDataResolver&& aResolve);
 
   mozilla::ipc::IPCResult RecvInitProxyAutoConfigChild(
       Endpoint<PProxyAutoConfigChild>&& aEndpoint);
@@ -143,6 +141,10 @@ class SocketProcessChild final : public PSocketProcessChild {
   mozilla::ipc::IPCResult RecvRecheckDNS();
 
   mozilla::ipc::IPCResult RecvFlushFOGData(FlushFOGDataResolver&& aResolver);
+
+  mozilla::ipc::IPCResult RecvLoadSSLTokensCache(ByteBuf&& aBuf);
+  mozilla::ipc::IPCResult RecvFlushSSLTokensCache(
+      FlushSSLTokensCacheResolver&& aResolver);
 
   mozilla::ipc::IPCResult RecvTestTriggerMetrics(
       TestTriggerMetricsResolver&& aResolve);
@@ -155,6 +157,10 @@ class SocketProcessChild final : public PSocketProcessChild {
 
   already_AddRefed<psm::IPCClientCertsChild> GetIPCClientCertsActor();
   void CloseIPCClientCertsActor();
+
+  mozilla::ipc::IPCResult RecvAddNetAddrOverride(const NetAddr& aFrom,
+                                                 const NetAddr& aTo);
+  mozilla::ipc::IPCResult RecvClearNetAddrOverrides();
 
  protected:
   friend class SocketProcessImpl;
@@ -171,9 +177,9 @@ class SocketProcessChild final : public PSocketProcessChild {
   RefPtr<ChildProfilerController> mProfilerController;
 
   // Protect the table below.
-  Mutex mMutex MOZ_UNANNOTATED{"SocketProcessChild::mMutex"};
+  Mutex mMutex{"SocketProcessChild::mMutex"};
   nsTHashMap<uint64_t, RefPtr<BackgroundDataBridgeParent>>
-      mBackgroundDataBridgeMap;
+      mBackgroundDataBridgeMap MOZ_GUARDED_BY(mMutex);
 
   bool mShuttingDown MOZ_GUARDED_BY(mMutex) = false;
 

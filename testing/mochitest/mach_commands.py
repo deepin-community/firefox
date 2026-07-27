@@ -10,7 +10,6 @@ import warnings
 from argparse import Namespace
 from collections import defaultdict
 
-import six
 from mach.decorators import Command, CommandArgument
 from mozbuild.base import MachCommandConditions as conditions
 from mozbuild.base import MozbuildObject
@@ -52,13 +51,12 @@ test path(s):
 Please check spelling and make sure there are mochitests living there.
 """.lstrip()
 
-SUPPORTED_APPS = ["firefox", "android", "thunderbird"]
+SUPPORTED_APPS = ["firefox", "android", "thunderbird", "ios"]
 
 parser = None
 
 
 class MochitestRunner(MozbuildObject):
-
     """Easily run mochitests.
 
     This currently contains just the basics for running mochitests. We may want
@@ -159,6 +157,27 @@ class MochitestRunner(MozbuildObject):
 
         return runtestsremote.run_test_harness(parser, options)
 
+    def run_ios_test(self, command_context, tests, **kwargs):
+        host_ret = verify_host_bin()
+        if host_ret != 0:
+            return host_ret
+
+        path = os.path.join(self.mochitest_dir, "runtestsremoteios.py")
+        load_source("runtestsremoteios", path)
+
+        import runtestsremoteios
+
+        options = Namespace(**kwargs)
+
+        from manifestparser import TestManifest
+
+        if tests and not options.manifestFile:
+            manifest = TestManifest()
+            manifest.tests.extend(tests)
+            options.manifestFile = manifest
+
+        return runtestsremoteios.run_test_harness(parser, options)
+
     def run_geckoview_junit_test(self, context, **kwargs):
         host_ret = verify_host_bin()
         if host_ret != 0:
@@ -207,8 +226,21 @@ def setup_argument_parser():
         # verify device and xre
         verify_android_device(build_obj, install=InstallIntent.NO, xre=True)
 
+    if conditions.is_ios(build_obj):
+        # On iOS, check for a connected device before running tests.
+        from mozrunner.devices.ios_device import verify_ios_device
+
+        # verify device and xre
+        verify_ios_device(build_obj, install=False, xre=True)
+
     global parser
     parser = MochitestArgumentParser()
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="Force reinstallation of test symlinks even if up to date.",
+    )
     return parser
 
 
@@ -279,7 +311,7 @@ def run_mochitest_general(
 ):
     from mochitest_options import ALL_FLAVORS
     from mozlog.commandline import setup_logging
-    from mozlog.handlers import StreamHandler
+    from mozlog.handlers import ResourceHandler, StreamHandler
     from moztest.resolve import get_suite_definition
 
     # TODO: This is only strictly necessary while mochitest is using Python
@@ -292,18 +324,20 @@ def run_mochitest_general(
             buildapp = app
             break
 
+    # Force the buildapp to be android if requested
+    if kwargs.get("android"):
+        buildapp = "android"
+
     flavors = None
     if flavor:
-        for fname, fobj in six.iteritems(ALL_FLAVORS):
+        for fname, fobj in ALL_FLAVORS.items():
             if flavor in fobj["aliases"]:
                 if buildapp not in fobj["enabled_apps"]:
                     continue
                 flavors = [fname]
                 break
     else:
-        flavors = [
-            f for f, v in six.iteritems(ALL_FLAVORS) if buildapp in v["enabled_apps"]
-        ]
+        flavors = [f for f, v in ALL_FLAVORS.items() if buildapp in v["enabled_apps"]]
 
     from mozbuild.controller.building import BuildDriver
 
@@ -333,15 +367,19 @@ def run_mochitest_general(
             format_args["compact"] = False
 
         default_format = command_context._mach_context.settings["test"]["format"]
-        kwargs["log"] = setup_logging(
+        log = setup_logging(
             "mach-mochitest", kwargs, {default_format: sys.stdout}, format_args
         )
-        for handler in kwargs["log"].handlers:
+        kwargs["log"] = log
+        for handler in log.handlers:
             if isinstance(handler, StreamHandler):
                 handler.formatter.inner.summary_on_shutdown = True
 
+        log.add_handler(ResourceHandler(command_context))
+
+    force = kwargs.pop("force", False)
     driver = command_context._spawn(BuildDriver)
-    driver.install_tests()
+    driver.install_tests(force=force)
 
     subsuite = kwargs.get("subsuite")
     if subsuite == "default":
@@ -411,8 +449,8 @@ def run_mochitest_general(
     # filtered tests to the mochitest harness. Mochitest harness will read
     # the master manifest in that case.
     if not resolve_tests:
-        for flavor in flavors:
-            key = (flavor, kwargs.get("subsuite"))
+        for flavor_name in flavors:
+            key = (flavor_name, kwargs.get("subsuite"))
             suites[key] = []
 
     if not suites:
@@ -431,13 +469,13 @@ def run_mochitest_general(
             apps = fobj["enabled_apps"]
             name = fobj["aliases"][0]
             if s:
-                name = "{} --subsuite {}".format(name, s)
+                name = f"{name} --subsuite {s}"
 
             if buildapp not in apps:
                 reason = "requires {}".format(" or ".join(apps))
             else:
                 reason = "excluded by the command line"
-            msg.append("    mochitest -f {} ({})".format(name, reason))
+            msg.append(f"    mochitest -f {name} ({reason})")
         print(SUPPORTED_TESTS_NOT_FOUND.format(buildapp, "\n".join(sorted(msg))))
         return 1
 
@@ -470,21 +508,29 @@ def run_mochitest_general(
             kwargs["adbPath"] = get_adb_path(command_context)
 
         run_mochitest = mochitest.run_android_test
+    elif buildapp == "ios":
+        from mozrunner.devices.ios_device import verify_ios_device
+
+        app = kwargs.get("app")
+        if not app:
+            app = "org.mozilla.ios.GeckoTestBrowser"
+        install = not kwargs.get("no_install")
+
+        # verify installation
+        verify_ios_device(command_context, install=install, xre=False, app=app)
+
+        run_mochitest = mochitest.run_ios_test
     else:
         run_mochitest = mochitest.run_desktop_test
 
     overall = None
-    for (flavor, subsuite), tests in sorted(suites.items()):
-        suite_name, suite = get_suite_definition(flavor, subsuite)
+    for (test_flavor, subsuite), tests in sorted(suites.items()):
+        suite_name, suite = get_suite_definition(test_flavor, subsuite)
         if "test_paths" in suite["kwargs"]:
             del suite["kwargs"]["test_paths"]
 
         harness_args = kwargs.copy()
         harness_args.update(suite["kwargs"])
-        # Pass in the full suite name as defined in moztest/resolve.py in case
-        # chunk-by-runtime is called, in which case runtime information for
-        # specific mochitest suite has to be loaded. See Bug 1637463.
-        harness_args.update({"suite_name": suite_name})
 
         result = run_mochitest(
             command_context._mach_context, tests=tests, **harness_args
@@ -550,5 +596,32 @@ def run_junit(command_context, no_install, **kwargs):
             "mach-mochitest", kwargs, {default_format: sys.stdout}, format_args
         )
 
+    if kwargs.get("mach_test") and kwargs.get("test_objects"):
+        test_classes = []
+        test_objects = kwargs.get("test_objects")
+        for test_object in test_objects:
+            test_classes.append(classname_for_test(test_object["name"]))
+        kwargs["test_filters"] = test_classes
+
     mochitest = command_context._spawn(MochitestRunner)
     return mochitest.run_geckoview_junit_test(command_context._mach_context, **kwargs)
+
+
+def classname_for_test(test):
+    """Convert path of test file to gradle recognized test suite name"""
+    test_path = os.path.join(
+        "mobile",
+        "android",
+        "geckoview",
+        "src",
+        "androidTest",
+        "java",
+    )
+    return (
+        os.path
+        .normpath(test)
+        .split(os.path.normpath(test_path))[-1]
+        .removeprefix(os.path.sep)
+        .replace(os.path.sep, ".")
+        .removesuffix(".kt")
+    )

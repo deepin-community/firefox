@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // This file was shamelessly copied from mozilla/xpinstall/wizard/unix/src2
 
-#ifndef nsINIParser_h__
-#define nsINIParser_h__
+#ifndef nsINIParser_h_
+#define nsINIParser_h_
 
 #ifdef MOZILLA_INTERNAL_API
 #  define nsINIParser nsINIParser_internal
@@ -16,8 +14,6 @@
 #include "nscore.h"
 #include "nsClassHashtable.h"
 #include "mozilla/UniquePtr.h"
-
-#include <stdio.h>
 
 class nsIFile;
 
@@ -31,35 +27,51 @@ class nsINIParser {
    * other methods should be called. This method reads and parses the file,
    * the class does not hold a file handle open. An instance must only be
    * initialized once.
+   *
+   * This method will still return success even if the INI file contained
+   * invalid data, it will only fail on out of memory or other exceptional
+   * circumstances.
+   *
+   * @param aFile              The file to parse
+   * @param aContainedErrors   An out param that is set to true if the INI file
+   *                           contained errors
    */
-  nsresult Init(nsIFile* aFile);
-
-  nsresult InitFromString(const nsCString& aStr);
+  nsresult Init(nsIFile* aFile, bool* aContainedErrors = nullptr);
 
   /**
-   * Callback for GetSections
-   * @return false to stop enumeration, or true to continue.
+   * Initialize the by parsing the contents of a string. If this method fails,
+   * no other methods should be called. An instance must only be
+   * initialized once.
+   *
+   * This method will still return success even if the INI file contained
+   * invalid data, it will only fail on out of memory or other exceptional
+   * circumstances.
+   *
+   * @param aStr               The string to parse
+   * @param aContainedErrors   An out param that is set to true if the INI file
+   *                           contained errors
    */
-  typedef bool (*INISectionCallback)(const char* aSection, void* aClosure);
+  nsresult InitFromString(const nsCString& aStr,
+                          bool* aContainedErrors = nullptr);
 
   /**
    * Enumerate the sections within the INI file.
+   *
+   * The callback takes the section name as an argument, and can can return
+   * false to stop enumeration.
    */
-  nsresult GetSections(INISectionCallback aCB, void* aClosure);
+  nsresult GetSections(std::function<bool(const char*)>&& aCallback);
 
   /**
-   * Callback for GetStrings
-   * @return false to stop enumeration, or true to continue
+   * Enumerate the strings within a section. If the section does not exist, this
+   * function will silently return.
+   *
+   * The callback takes the key and value strings as arguments, and can return
+   * false to stop enumeration.
    */
-  typedef bool (*INIStringCallback)(const char* aString, const char* aValue,
-                                    void* aClosure);
-
-  /**
-   * Enumerate the strings within a section. If the section does
-   * not exist, this function will silently return.
-   */
-  nsresult GetStrings(const char* aSection, INIStringCallback aCB,
-                      void* aClosure);
+  nsresult GetStrings(
+      const char* aSection,
+      std::function<bool(const char*, const char*)>&& aCallback);
 
   /**
    * Get the value of the specified key in the specified section
@@ -165,4 +177,4 @@ class nsINIParser {
   bool IsValidValue(const char* aValue);
 };
 
-#endif /* nsINIParser_h__ */
+#endif /* nsINIParser_h_ */

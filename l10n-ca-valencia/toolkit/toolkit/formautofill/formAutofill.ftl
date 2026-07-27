@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Opcions d'emplenament automàtic de formularis
 autofill-options-link-osx = Preferències d'emplenament automàtic de formularis
 
@@ -44,3 +44,6 @@ autofill-category-name = nom
 autofill-category-organization = organització
 autofill-category-tel = telèfon
 autofill-category-email = correu electrònic
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = El { -brand-short-name } ha detectat un lloc insegur. L'emplenament automàtic de formularis es desactivarà temporalment.

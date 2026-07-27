@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <limits>
-#include "mozilla/Hal.h"
 #include "ConnectionWorker.h"
+
+#include "mozilla/Hal.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
@@ -141,8 +139,8 @@ class NotifyRunnable final : public WorkerThreadRunnable {
 /* static */
 already_AddRefed<ConnectionWorker> ConnectionWorker::Create(
     WorkerPrivate* aWorkerPrivate, ErrorResult& aRv) {
-  bool shouldResistFingerprinting = aWorkerPrivate->ShouldResistFingerprinting(
-      RFPTarget::NavigatorConnection);
+  bool shouldResistFingerprinting =
+      aWorkerPrivate->ShouldResistFingerprinting(RFPTarget::NetworkConnection);
   RefPtr<ConnectionWorker> c = new ConnectionWorker(shouldResistFingerprinting);
   c->mProxy = ConnectionProxy::Create(aWorkerPrivate, c);
   if (!c->mProxy) {

@@ -6,11 +6,11 @@ package mozilla.components.support.ktx.kotlin
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
+import mozilla.components.support.ktx.helpers.ShadowInetAddresses
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -20,11 +20,13 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import java.util.Calendar
 import java.util.Calendar.MILLISECOND
+import kotlin.test.assertNotNull
 
 const val PUNYCODE = "xn--kpry57d"
 const val IDN = "台灣"
 
 @RunWith(AndroidJUnit4::class)
+@Config(shadows = [ShadowInetAddresses::class])
 class StringTest {
 
     private val publicSuffixList = PublicSuffixList(testContext)
@@ -52,6 +54,30 @@ class StringTest {
         val extraText = "Check out @asa’s Tweet: https://twitter.com/asa/status/123456789?s=09"
         val url = extraText.split(" ").find { it.isUrl() }
         assertNotEquals("Tweet:", url)
+    }
+
+    @Test
+    fun `GIVEN a content URL WHEN calling isContentUrl THEN true is returned`() {
+        val url = "content://contenturl"
+        assertTrue(url.isContentUrl())
+    }
+
+    @Test
+    fun `GIVEN an internet URL WHEN calling isContentUrl THEN false is returned`() {
+        val url = "https://mozilla.org"
+        assertFalse(url.isContentUrl())
+    }
+
+    @Test
+    fun `GIVEN an about URL WHEN calling isAboutUrl THEN true is returned`() {
+        val url = "about:about"
+        assertTrue(url.isAboutUrl())
+    }
+
+    @Test
+    fun `GIVEN an internet URL WHEN calling isAboutUrl THEN false is returned`() {
+        val url = "https://mozilla.org"
+        assertFalse(url.isAboutUrl())
     }
 
     @Test
@@ -138,6 +164,41 @@ class StringTest {
     }
 
     @Test
+    fun `Extract host from a complete Url`() {
+        val urlTest = "https://www.mozilla.com:1080/docs/resource1.html"
+        val new = urlTest.extractHostUrl()
+        assertEquals(new, "www.mozilla.com")
+    }
+
+    @Test
+    fun `Extract host from a Url without www`() {
+        val urlTest = "http://mozinlla.org/someoteher/domainthing/with/?=skdfjk"
+        val new = urlTest.extractHostUrl()
+        assertEquals(new, "mozinlla.org")
+    }
+
+    @Test
+    fun `Extract host from a Url with new line character`() {
+        val urlTest = "\nhttp://mozi\nlla.org:1080/docs/resource1.html\n"
+        val new = urlTest.extractHostUrl()
+        assertEquals(new, "mozilla.org")
+    }
+
+    @Test
+    fun `Extract host from a malformed Url returns trimmed input`() {
+        val urlTest = "  notarealurl  "
+        val new = urlTest.extractHostUrl()
+        assertEquals(new, "notarealurl")
+    }
+
+    @Test
+    fun `Extract host from IPv4 Url`() {
+        val urlTest = "http://192.168.0.1/some/path"
+        val new = urlTest.extractHostUrl()
+        assertEquals(new, "192.168.0.1")
+    }
+
+    @Test
     fun isSameOriginAs() {
         // Host mismatch.
         assertFalse("https://foo.bar".isSameOriginAs("https://foo.baz"))
@@ -169,7 +230,7 @@ class StringTest {
     @Test
     fun sanitizeURL() {
         val expectedUrl = "http://mozilla.org"
-        assertEquals(expectedUrl, "\nhttp://mozilla.org\n".sanitizeURL())
+        assertEquals(expectedUrl, "\nhttp://mozi\nlla.org\n".sanitizeURL())
     }
 
     @Test
@@ -218,6 +279,26 @@ class StringTest {
             "question?mark" to "question_mark",
             "back\\slash" to "back_slash",
             "vertical|bar" to "vertical_bar",
+            "This\u00A0is\u00A0no-break space" to "This is no-break space",
+            "This\u1680is\u1680ogham space mark" to "This is ogham space mark",
+            "This\u2000is\u2000en quad" to "This is en quad",
+            "This\u2001is\u2001em quad" to "This is em quad",
+            "This\u2002is\u2002en space" to "This is en space",
+            "This\u2003is\u2003em space" to "This is em space",
+            "This\u2004is\u2004three-per-em space" to "This is three-per-em space",
+            "This\u2005is\u2005four-per-em space" to "This is four-per-em space",
+            "This\u2006is\u2006six-per-em space" to "This is six-per-em space",
+            "This\u2007is\u2007figure space" to "This is figure space",
+            "This\u2008is\u2008punctuation space" to "This is punctuation space",
+            "This\u2009is\u2009thin space" to "This is thin space",
+            "This\u200Ais\u200Ahair space" to "This is hair space",
+            "This\u2028is\u2028line separator" to "This is line separator",
+            "This\u2029is\u2029paragraph separator" to "This is paragraph separator",
+            "This\u202Fis\u202Fnarrow no-break space" to "This is narrow no-break space",
+            "This\u205Fis\u205Fmedium mathematical space" to "This is medium mathematical space",
+            "This\u3000is\u3000ideographic space" to "This is ideographic space",
+            "This   is    a    text   with multiple   spaces.\nAnd  tabs\tand newlines\n\n" to "This is a text with multiple spaces. And tabs and newlines",
+            "This\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000is a mix of different spaces" to "This is a mix of different spaces",
         )
 
         testCases.forEach { (raw, escaped) ->
@@ -451,7 +532,7 @@ class StringTest {
 
     // BEGIN test cases borrowed from desktop (shortUrl is used for Top Sites on new tab)
     // Test cases are modified, as we show the eTLD
-    // (https://searchfox.org/mozilla-central/source/browser/components/newtab/test/unit/lib/ShortUrl.test.js)
+    // (https://searchfox.org/firefox-main/source/toolkit/modules/tests/xpcshell/test_NewTabUtils.js)
     @Test
     fun `should return a blank string if url is blank`() {
         "" shortenedShouldBecome ""

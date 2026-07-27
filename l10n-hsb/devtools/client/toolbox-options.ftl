@@ -30,10 +30,18 @@ options-context-inspector = Inspektor
 options-show-user-agent-styles-label = Wobhladowakowe stile pokazać
 options-show-user-agent-styles-tooltip =
     .title = Jeli to zapinaće, so standardne stile pokazaja, kotrež wobhladowak začituje.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM wobhladowaka pokazać
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Hdyž to zmóžnjeće, budźe waš wobhladowak elementy Shadow DOM wužiwać.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-atributy wottřihać
 options-collapse-attrs-tooltip =
     .title = Dołhe atributy w Inspektorje wottřihać
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Komentary pokazać
+options-show-comments-tooltip =
+    .title = Komentarowe suki w inspektorje pokazać
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Klikńće a ćehńće, zo byšće hódnoty wulkosćow wobdźěłował
 options-inspector-draggable-properties-tooltip =
@@ -67,6 +75,18 @@ options-webconsole-label = Webkonsola
 options-webconsole-split-console-label = Rozdźělenu konsolu zmóžnić
 options-webconsole-split-console-tooltip =
     .title = Rozdźělenu konsolu z tastu Esc wočinić
+
+## Network Monitor section
+
+# The heading
+options-netmonitor-label = Syćowy monitor
+# Text shown in the input when there is no limitation (instead of showing "0")
+options-netmonitor-body-limit-unlimited-label = Njewobmjezowany
+
+## Experimental section
+
+# The heading
+options-experimental-label = Eksperimentelne funkcije
 
 ## Style Editor section
 
@@ -107,6 +127,40 @@ options-sourceeditor-tabsize-label = Wulkosć tabulatora
 options-sourceeditor-keybinding-label = Tastowe wjazanja
 options-sourceeditor-keybinding-default-label = Standard
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Lokalny modus
+options-local-mode-only-work-locally = Lokalny modus lokalnje funguje a znjemóžnja so, hdyž so zdalene konteksty za zmylkami přepytuja
+options-local-mode-behavior = Lokalny modus wam zmóžnja, lokalne dataje přez URL https bjez eksterneje wotwisnosće začitać. URL dadźa so jenož z rajtarkow začitać, hdyž wuwiwanske nastroje su wočinjene.
+options-local-mode-domain-label = Swójska domena:
+options-local-mode-origin-input =
+    .placeholder = Pochad za lokalne přirjadowanje
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Tutón pochad je w konflikće z druhim eksistowacym přirjadowanjom
+options-local-mode-origin-invalid = Tutón pochad je njepłaćiwy
+options-local-mode-folder-label = Lokalny rjadowak:
+options-local-mode-choose-folder = Přepytać…
+    .title = Wubjerće lokalny rjadowak za tute přirjadowanje
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Rjadowak lokalneho modusa wubrać za: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Tutón rjadowak njeeksistuje abo je njepłaćiwy.
+options-local-mode-toggle =
+    .title = Tute lokalne přirjadowanje přepinać
+options-local-mode-toggle-enable = Zmóžnić
+options-local-mode-toggle-disable = Znjemóžnić
+options-local-mode-navigate-to =
+    .title = K URL přirjadowanja nawigěrować
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = Chceće přirjadowanje “{ $mappingOrigin }” wotstronić?
+options-local-mode-new-mapping = Nowe lokalne přirjadowanje přidać
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +169,8 @@ options-context-advanced-settings = Rozšěrjene nastajenja
 options-disable-http-cache-label = HTTP-pufrowak znjemóžnić (hdyž graty su wočinjene)
 options-disable-http-cache-tooltip =
     .title = Hdyž so tute nastajenje zmóžnja, so HTTP-pufrowak za wšě rajtarki znjemóžni, kotrež maja graty wočinjene. Service workers njejsu přez tute nastajenje potrjechene.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript znjemóžnić
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript znjemóžnić *
 options-disable-javascript-tooltip =
@@ -143,5 +199,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Žórłowe karty zmóžnić
 options-source-maps-tooltip =
     .title = Jeli tute nastajenje zmóžnjeće, so žórła w nastrojach kartěruja.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jenož aktualne posedźenje, strona so znowa začituje)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Jenož aktualne posedźenje, strona so znowa začituje
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (začita stronu znowa)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Awtomatiski
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Zestarjeny. Dalše informacije…

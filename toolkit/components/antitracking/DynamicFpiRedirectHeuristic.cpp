@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +10,7 @@
 
 #include "mozilla/net/HttpBaseChannel.h"
 #include "mozilla/net/UrlClassifierCommon.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AntitrackingMetrics.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsICookieJarSettings.h"
@@ -154,7 +152,7 @@ void AddConsoleReport(nsIChannel* aNewChannel, nsIURI* aNewURI,
 
   httpChannel->AddConsoleReport(nsIScriptError::warningFlag,
                                 ANTITRACKING_CONSOLE_CATEGORY,
-                                nsContentUtils::eNECKO_PROPERTIES, uri, 0, 0,
+                                PropertiesFile::NECKO_PROPERTIES, uri, 0, 0,
                                 "CookieAllowedForDFPIByHeuristic"_ns, params);
 }
 
@@ -339,10 +337,16 @@ void DynamicFpiRedirectHeuristic(nsIChannel* aOldChannel, nsIURI* aOldURI,
 
   AddConsoleReport(aNewChannel, aNewURI, oldOrigin, newOrigin);
 
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::StorageGranted);
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::Redirect);
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegranted)
+      .Add();
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(
+          glean::contentblocking::StorageAccessGrantedCountLabel::eRedirect)
+      .Add();
+
+  // We don't need to test if this is a tracker or not, we know it isn't one!
 
   // We don't care about this promise because the operation is actually sync.
   RefPtr<StorageAccessAPIHelper::ParentAccessGrantPromise> promise =
@@ -350,7 +354,7 @@ void DynamicFpiRedirectHeuristic(nsIChannel* aOldChannel, nsIURI* aOldURI,
           newPrincipal, oldPrincipal,
           StorageAccessAPIHelper::StorageAccessPromptChoices::eAllow, false,
           StaticPrefs::privacy_restrict3rdpartystorage_expiration_visited());
-  Unused << promise;
+  (void)promise;
 }
 
 }  // namespace mozilla

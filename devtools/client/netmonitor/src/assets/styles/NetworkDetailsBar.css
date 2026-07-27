@@ -87,7 +87,6 @@
   overflow: inherit;
 }
 
-
 /* Text inputs in tab panels */
 
 .network-monitor .textbox-input {
@@ -100,7 +99,8 @@
 
 /* Tree table in tab panels */
 
-.network-monitor .tree-container, .tree-container .treeTable {
+.network-monitor .tree-container,
+.tree-container .treeTable {
   position: relative;
   height: 100%;
   width: 100%;
@@ -243,7 +243,6 @@
 }
 
 .network-monitor .response-image {
-  background: #fff;
   border: 1px dashed GrayText;
   margin-bottom: 10px;
   max-width: 300px;
@@ -279,7 +278,7 @@
   height: 100%;
 }
 
-.network-monitor .html-preview iframe {
+.network-monitor .html-preview browser {
   background-color: #fff;
   border: none;
   height: 100%;
@@ -392,7 +391,6 @@
   align-items: center;
   padding-inline-end: 20px;
   --total-timings-width-percentage: 90%;
-
 }
 
 .network-monitor .requests-list-timings-total {
@@ -409,6 +407,11 @@
   transition: width 0.2s ease-out;
   margin-inline-start: calc(var(--current-timing-offset, 0) * var(--total-timings-width-percentage));
   width: calc(var(--current-timing-width, 0) * var(--total-timings-width-percentage));
+  forced-color-adjust: none;
+
+  :root[forced-colors-active] & {
+    border: 1px solid CanvasText;
+  }
 }
 
 .network-monitor .label-separator {
@@ -416,20 +419,6 @@
   margin-inline-start: 4px;
   font-weight: 600;
   color: var(--theme-comment);
-}
-
-.theme-light .network-monitor .requests-list-timings-box {
-  --timing-server-color-1: rgba(104, 195, 179, 0.8); /* teal */
-  --timing-server-color-2: rgba(123, 102, 167, 0.8); /* purple */
-  --timing-server-color-3: rgba(233, 236, 130, 0.8); /* yellow */
-  --timing-server-color-total: rgba(186, 90, 140, 0.8); /* pink */
-}
-
-.theme-dark .network-monitor .requests-list-timings-box {
-  --timing-server-color-1: rgba(74, 228, 201, 0.8); /* teal */
-  --timing-server-color-2: rgba(156, 119, 233, 0.8); /* purple */
-  --timing-server-color-3: rgba(234, 239, 73, 0.8); /* yellow */
-  --timing-server-color-total: rgba(186, 74, 133, 0.8); /* pink */
 }
 
 .network-monitor .server-timings-color-1 {
@@ -448,7 +437,6 @@
   background: var(--timing-server-color-total);
 }
 
-
 .network-monitor .serviceworker-timings-color-launch {
   background: var(--timing-server-color-1);
 }
@@ -460,7 +448,6 @@
 .network-monitor .serviceworker-timings-color-handledBy {
   background: var(--timing-server-color-3);
 }
-
 
 /* Stack trace panel */
 
@@ -516,12 +503,14 @@
 
 /* Custom request panel */
 
-.network-monitor .custom-request-panel, .http-custom-request-panel {
+.network-monitor .custom-request-panel,
+.http-custom-request-panel {
   height: 100%;
   background-color: var(--theme-sidebar-background);
 }
 
-.theme-dark .network-monitor .custom-request-panel, .http-custom-request-panel {
+.theme-dark .network-monitor .custom-request-panel,
+.http-custom-request-panel {
   color: var(--theme-selection-color);
 }
 
@@ -529,7 +518,8 @@
   font-weight: 600;
 }
 
-.network-monitor .custom-request-panel, .http-custom-request-panel textarea {
+.network-monitor .custom-request-panel,
+.http-custom-request-panel textarea {
   resize: none;
   font: message-box;
   font-size: var(--theme-body-font-size);
@@ -566,8 +556,8 @@
   width: 4.5em;
 }
 
-.network-monitor .http-custom-method-value{
-  width: 6.0em;
+.network-monitor .http-custom-method-value {
+  width: 6em;
 }
 
 .network-monitor .custom-url-value,

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +6,9 @@
 #define WEBGL_STRONG_TYPES_H_
 
 #include <algorithm>
+#include <array>
 
 #include "GLDefs.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 
@@ -185,13 +184,13 @@ bool operator!=(StrongGLenum<Details> a, GLenum b) {
 #define STRONG_GLENUM_BEGIN(NAME) const uint16_t NAME##Values[] = {
 #define STRONG_GLENUM_VALUE(VALUE) LOCAL_GL_##VALUE
 
-#define STRONG_GLENUM_END(NAME)                                            \
-  }                                                                        \
-  ;                                                                        \
-  struct NAME##Details {                                                   \
-    static size_t valuesCount() { return MOZ_ARRAY_LENGTH(NAME##Values); } \
-    static const uint16_t* values() { return NAME##Values; }               \
-  };                                                                       \
+#define STRONG_GLENUM_END(NAME)                                     \
+  }                                                                 \
+  ;                                                                 \
+  struct NAME##Details {                                            \
+    static size_t valuesCount() { return std::size(NAME##Values); } \
+    static const uint16_t* values() { return NAME##Values; }        \
+  };                                                                \
   typedef StrongGLenum<NAME##Details> NAME;
 
 ////////////////////////////////////////////////////////////////////////////////

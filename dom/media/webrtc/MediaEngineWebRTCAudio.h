@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,19 +5,21 @@
 #ifndef MediaEngineWebRTCAudio_h
 #define MediaEngineWebRTCAudio_h
 
+#include "AudioDeviceInfo.h"
 #include "AudioPacketizer.h"
 #include "AudioSegment.h"
-#include "AudioDeviceInfo.h"
 #include "DeviceInputTrack.h"
-#include "MediaEngineWebRTC.h"
 #include "MediaEnginePrefs.h"
+#include "MediaEngineWebRTC.h"
 #include "MediaTrackListener.h"
+#include "WavDumper.h"
 #include "modules/audio_processing/include/audio_processing.h"
 
 namespace mozilla {
 
 class AudioInputProcessing;
 class AudioProcessingTrack;
+class WebrtcEnvironmentWrapper;
 
 // This class is created and used exclusively on the Media Manager thread, with
 // exactly two exceptions:
@@ -32,6 +33,10 @@ class AudioProcessingTrack;
 class MediaEngineWebRTCMicrophoneSource : public MediaEngineSource {
  public:
   explicit MediaEngineWebRTCMicrophoneSource(const MediaDevice* aMediaDevice);
+
+  static already_AddRefed<MediaEngineWebRTCMicrophoneSource> CreateFrom(
+      const MediaEngineWebRTCMicrophoneSource* aSource,
+      const MediaDevice* aMediaDevice);
 
   nsresult Allocate(const dom::MediaTrackConstraints& aConstraints,
                     const MediaEnginePrefs& aPrefs, uint64_t aWindowID,
@@ -50,6 +55,9 @@ class MediaEngineWebRTCMicrophoneSource : public MediaEngineSource {
    * Main thread only.
    */
   void GetSettings(dom::MediaTrackSettings& aOutSettings) const override;
+
+  void GetCapabilities(
+      dom::MediaTrackCapabilities& aOutCapabilities) const override;
 
   nsresult TakePhoto(MediaEnginePhotoCallback* aCallback) override {
     return NS_ERROR_NOT_IMPLEMENTED;
@@ -88,6 +96,12 @@ class MediaEngineWebRTCMicrophoneSource : public MediaEngineSource {
   const nsMainThreadPtrHandle<media::Refcountable<dom::MediaTrackSettings>>
       mSettings;
 
+  // The media capabilities for the underlying device.
+  // Constructed on the MediaManager thread, and then only ever accessed on the
+  // main thread.
+  const nsMainThreadPtrHandle<media::Refcountable<dom::MediaTrackCapabilities>>
+      mCapabilities;
+
   // Current state of the resource for this source.
   MediaEngineSourceState mState;
 
@@ -121,7 +135,10 @@ class AudioInputProcessing : public AudioDataListener {
            mPlatformProcessingSetParams != CUBEB_INPUT_PROCESSING_PARAM_NONE;
   }
 
+  // Start processing data. Note that ApplySettings must be called prior to
+  // Start().
   void Start(MediaTrackGraph* aGraph);
+  // Stop processing data and reset mAudioProcessing state.
   void Stop(MediaTrackGraph* aGraph);
 
   void DeviceChanged(MediaTrackGraph* aGraph) override;
@@ -169,7 +186,8 @@ class AudioInputProcessing : public AudioDataListener {
                      const MediaEnginePrefs& aSettings);
 
   // The config currently applied to the audio processing module.
-  webrtc::AudioProcessing::Config AppliedConfig(MediaTrackGraph* aGraph) const;
+  const webrtc::AudioProcessing::Config& AppliedConfig(
+      MediaTrackGraph* aGraph) const;
 
   void End();
 
@@ -185,10 +203,13 @@ class AudioInputProcessing : public AudioDataListener {
   // For testing:
   bool HadAECAndDrift() const { return mHadAECAndDrift; }
 
+  void SetEnvironmentWrapper(AudioProcessingTrack* aTrack,
+                             RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper);
+
  private:
   ~AudioInputProcessing() = default;
   webrtc::AudioProcessing::Config ConfigForPrefs(
-      const MediaEnginePrefs& aPrefs) const;
+      MediaTrackGraph* aGraph, const MediaEnginePrefs& aPrefs) const;
   void PassThroughChanged(MediaTrackGraph* aGraph);
   void RequestedInputChannelCountChanged(MediaTrackGraph* aGraph,
                                          CubebUtils::AudioDeviceID aDeviceId);
@@ -213,6 +234,14 @@ class AudioInputProcessing : public AudioDataListener {
   // The current settings from about:config preferences and content-provided
   // constraints.
   MediaEnginePrefs mSettings;
+  // The currently applied audio processing config. Set even if mAudioProcessing
+  // is not. This is needed because ConfigForPrefs(mSettings) is not static --
+  // it relies on mPlatformProcessingSetParams and MTG::OutputForAECIsPrimary(),
+  // which can change between calls to ApplySettingsInternal -- and an
+  // AudioProcessing::Config is available from mAudioProcessing only when that
+  // exists. Initialized as needed -- it is up to the owner to call
+  // ApplySettings prior to Start.
+  webrtc::AudioProcessing::Config mAppliedConfig;
   // When false, RequestedInputProcessingParams() returns no params, resulting
   // in platform processing getting disabled in the platform.
   bool mPlatformProcessingEnabled = false;
@@ -266,6 +295,9 @@ class AudioInputProcessing : public AudioDataListener {
       mInterleavedBuffer;
   // Tracks the pending frames with paired principals piled up in packetizer.
   std::deque<std::pair<TrackTime, PrincipalHandle>> mChunksInPacketizer;
+  RefPtr<WebrtcEnvironmentWrapper> mEnvWrapper;
+  Maybe<WavDumper> mInputDump;
+  Maybe<WavDumper> mOutputDump;
 };
 
 // MediaTrack subclass tailored for MediaEngineWebRTCMicrophoneSource.
@@ -288,9 +320,13 @@ class AudioProcessingTrack : public DeviceInputConsumerTrack {
   void DestroyImpl() override;
   void ProcessInput(GraphTime aFrom, GraphTime aTo, uint32_t aFlags) override;
   uint32_t NumberOfChannels() const override {
-    MOZ_DIAGNOSTIC_ASSERT(
-        mInputProcessing,
-        "Must set mInputProcessing before exposing to content");
+    if (!mInputProcessing) {
+      // There's an async gap between adding the track to the graph
+      // (AudioProcessingTrack::Create) and setting mInputProcessing
+      // (SetInputProcessing on the media manager thread).
+      // Return 0 to indicate the default within this gap.
+      return 0;
+    }
     return mInputProcessing->GetRequestedInputChannelCount();
   }
   // Pass the graph's mixed audio output to mInputProcessing for processing as
@@ -333,6 +369,9 @@ class MediaEngineWebRTCAudioCaptureSource : public MediaEngineSource {
   }
 
   void GetSettings(dom::MediaTrackSettings& aOutSettings) const override;
+
+  void GetCapabilities(
+      dom::MediaTrackCapabilities& aOutCapabilities) const override {}
 
  protected:
   virtual ~MediaEngineWebRTCAudioCaptureSource() = default;

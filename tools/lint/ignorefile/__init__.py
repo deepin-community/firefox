@@ -55,9 +55,9 @@ def parseFile(results, path, config):
     ignoreNextLine = False
 
     lineno = 0
-    with open(path, "r") as f:
-        for line in f:
-            line = line.rstrip("\n")
+    with open(path) as f:
+        for raw_line in f:
+            line = raw_line.rstrip("\n")
             lineno += 1
 
             if ignoreNextLine:
@@ -118,7 +118,7 @@ def doLint(results, path1, config):
     patterns2 = parseFile(results, path2, config)
 
     # Comparison for each line is done via IgnorePattern.__eq__, which
-    # ignores punctuations.
+    # ignores punctuation.
     if patterns1 == patterns2:
         return
 

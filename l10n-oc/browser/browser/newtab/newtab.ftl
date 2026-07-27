@@ -8,11 +8,78 @@
 newtab-page-title = Onglet novèl
 newtab-settings-button =
     .title = Personalizar la pagina Onglet novèl
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button =
+    .title = Personalizar aquesta pagina
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button-label once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button-label = Personalizar
+newtab-customize-panel-label =
+    .label = Personalizar
+newtab-personalize-settings-icon-label =
+    .title = Personalizar la pagina onglet novèl
+    .aria-label = Paramètres
+newtab-settings-dialog-label =
+    .aria-label = Paramètres
 newtab-personalize-icon-label =
     .title = Personalizacion de la pagina onglet novèl
     .aria-label = Personalizacion de la pagina onglet novèl
 newtab-personalize-dialog-label =
     .aria-label = Personalizar
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-windows =
+    .label = Fenèstra novèla
+home-homepage-new-tabs =
+    .label = Onglets novèls
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } linha
+           *[other] { $num } linhas
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Extension ({ $extension })
+home-restore-defaults-srd =
+    .label = Restablir los paramètres per defaut
+    .accesskey = R
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (per defaut)
+home-mode-choice-custom-srd =
+    .label = Adreças personalizadas…
+home-mode-choice-blank-srd =
+    .label = Pagina voida
+home-prefs-shortcuts-header-srd =
+    .label = Acorchis
+home-prefs-shortcuts-select =
+    .aria-label = Acorchis
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Acorchis pairinejats
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Articles pairinejats
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Paginas visitadas
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Marcapaginas
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Telecargament mai recent
+home-prefs-recent-activity-header-srd =
+    .label = Activitat recenta
+home-prefs-recent-activity-select =
+    .aria-label = Activitat recenta
+home-prefs-weather-header-srd =
+    .label = Metèo
 
 ## Search box component.
 
@@ -39,13 +106,16 @@ newtab-search-box-input =
     .placeholder = Recercar sul web
     .aria-label = Recercar sul web
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Apondre un motor de recèrca
 newtab-topsites-add-shortcut-header = Acorchi novèl
 newtab-topsites-edit-topsites-header = Modificar lo site popular
 newtab-topsites-edit-shortcut-header = Modificar acorchi
 newtab-topsites-add-shortcut-label = Apondre un acorchi
+newtab-topsites-add-shortcut-title =
+    .title = Apondre un acorchi
+    .aria-label = Apondre un acorchi
 newtab-topsites-title-label = Títol
 newtab-topsites-title-input =
     .placeholder = Picar un títol
@@ -109,6 +179,9 @@ newtab-menu-save-to-pocket = Enregistrar dins { -pocket-brand-name }
 newtab-menu-delete-pocket = Suprimir de { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivar dins { -pocket-brand-name }
 newtab-menu-show-privacy-info = Nòstres esponsòrs e vòstra vida privada
+newtab-menu-about-fakespot = A prepaus de { -fakespot-brand-name }
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = Ne saber mai
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -195,6 +268,7 @@ newtab-section-header-recent-activity = Activitat recenta
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recomandat per { $provider }
+newtab-section-header-stories = Articles suggerits
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -223,7 +297,6 @@ newtab-pocket-learn-more = Ne saber mai
 newtab-pocket-cta-button = Installar { -pocket-brand-name }
 newtab-pocket-cta-text = Enregistratz vòstres articles preferits dins { -pocket-brand-name } e garissètz vòstre esperit amb de lecturas fascinantas.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fa part de la familha { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Enregistrar
 newtab-pocket-saved = Enregistrada
 
@@ -248,9 +321,21 @@ newtab-error-fallback-refresh-link = Actualizatz la pagina per tornar ensajar.
 
 newtab-custom-shortcuts-title = Acorchis
 newtab-custom-shortcuts-subtitle = Los sites qu’enregistratz o consultatz
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Acorchis
     .description = Los sites qu’enregistratz o consultatz
+newtab-custom-shortcuts-nova =
+    .label = Acorchis
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } linha
+           *[other] { $num } linhas
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -265,9 +350,6 @@ newtab-custom-pocket-sponsored = Istòrias pairinejadas
 newtab-custom-pocket-show-recent-saves = Afichar los enregistraments recents
 newtab-custom-recent-title = Activitat recenta
 newtab-custom-recent-subtitle = Una seleccion de sites e contenguts recents
-newtab-custom-recent-toggle =
-    .label = Activitat recenta
-    .description = Una seleccion de sites e contenguts recents
 newtab-custom-weather-toggle =
     .label = Metèo
     .description = Lo bulletin metèo d’uèi dins un ai
@@ -278,12 +360,17 @@ newtab-custom-settings = Gerir mai de paramètres
 
 newtab-wallpaper-title = Fonzes
 newtab-wallpaper-reset = Reïnicializar
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
+newtab-wallpaper-upload-image = Enviar un imatge
+newtab-wallpaper-toggle-title =
+    .label = Fonzes
 newtab-wallpaper-light-red-panda = Panda ros
 newtab-wallpaper-light-mountain = Montanha blanca
 newtab-wallpaper-light-color = Fòrmas blavas, ròsas e jaunas
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Colors unidas
 newtab-wallpaper-blue = Blau
 newtab-wallpaper-light-blue = Blau clar
@@ -309,12 +396,22 @@ newtab-wallpaper-abstract-blue = Fòrmas blavas
 newtab-wallpaper-abstract-purple = Fòrmas violetas
 newtab-wallpaper-abstract-orange = Fòrmas iranjas
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fotografias
 newtab-wallpaper-beach-at-sunrise = Plaja a l’alba
 newtab-wallpaper-storm-sky = Cèl auratjós
 newtab-wallpaper-white-mountains = Montanhas blancas
+newtab-wallpaper-feature-highlight-header = Ensajatz de colors novèlas
+newtab-wallpaper-feature-highlight-content = Donatz una aparéncia mai fresca a la pagina Onglets novèls amb un fons d’ecran.
+newtab-wallpaper-feature-highlight-button = Comprés
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Ignorar
+    .aria-label = Tampar la fenèstra
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
 ## New Tab Weather
 
@@ -322,11 +419,39 @@ newtab-wallpaper-white-mountains = Montanhas blancas
 #   $provider (string) - Service provider for weather data
 newtab-weather-see-forecast =
     .title = Mostrar la prevision metèo de { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Esponsorizat
 newtab-weather-menu-change-location = Modificar lo luòc
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Cercar un luòc
+    .aria-label = Cercar un luòc
+newtab-weather-menu-weather-display = Afichatge metèo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simple
+newtab-weather-menu-change-weather-display-simple = Bascular a la vista simplificada
+newtab-weather-menu-weather-display-option-detailed = Detalhat
+newtab-weather-menu-change-weather-display-detailed = Bascular a la vista detalhada
 newtab-weather-menu-temperature-units = Unitats de temperatura
 newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passar en Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passar en Celsius
 newtab-weather-menu-learn-more = Ne saber mai
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Las informacions meteorologicas son pas disponiblas ara.
+newtab-weather-opt-in-see-weather = Volètz veire lo temps per vòstra localisazion ?
+newtab-weather-opt-in-not-now =
+    .label = Pas ara
+newtab-weather-opt-in-yes =
+    .label = Òc
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Mostrar la prevision metèo de { $provider }
+    .aria-description = { $provider } ∙ Esponsorizat
 
 ## Topic Labels
 
@@ -357,3 +482,41 @@ newtab-topic-label-home = Ostal e òrt
 
 newtab-topic-selection-save-button = Enregistrar
 newtab-topic-selection-cancel-button = Anullar
+newtab-topic-selection-button-maybe-later = Benlèu mai tard
+newtab-topic-selection-privacy-link = Descobrissètz cossí protegissèm e gerissèm vòstras donadas
+newtab-topic-selection-button-update-interests = Metre a jorn vòstres interèsses
+newtab-topic-selection-button-pick-interests = Causir vòstres interèsses
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-unblock-button = Desblocar
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Pas ara
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-subtitle = Apondre un acorchi per gardar vòstres sites preferits a un clic.
+
+## Strings for task / to-do list productivity widget
+
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Nòu
+newtab-widget-lists-menu-create = Crear una lista novèla
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp = Actualizat fa { $minutes } min.
+
+## Strings for activation window message variants. In certain experiment configurations,
+## the strings from these variants may be displayed in a message below the search input
+## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
+## labels, but not all.
+
+newtab-activation-window-message-customization-focus-message = Causissètz un fons d'ecran novèl, apondètz d’acorchis cap a vòstres sites preferits e demoratz al fial de las istòrias que vos interèssan.

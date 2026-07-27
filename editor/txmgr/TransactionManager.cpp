@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/TransactionManager.h"
+#include "TransactionManager.h"
 
 #include "mozilla/Assertions.h"
-#include "mozilla/DebugOnly.h"
 #include "mozilla/HTMLEditor.h"
 #include "mozilla/mozalloc.h"
 #include "mozilla/TransactionStack.h"
@@ -325,6 +323,17 @@ NS_IMETHODIMP TransactionManager::PeekRedoStack(nsITransaction** aTransaction) {
 already_AddRefed<nsITransaction> TransactionManager::PeekRedoStack() {
   RefPtr<TransactionItem> transactionItem = mRedoStack.Peek();
   if (!transactionItem) {
+    return nullptr;
+  }
+  return transactionItem->GetTransaction();
+}
+
+already_AddRefed<nsITransaction> TransactionManager::PopUndoStack() {
+  if (NS_WARN_IF(!mRedoStack.IsEmpty())) {
+    return nullptr;
+  }
+  const RefPtr<TransactionItem> transactionItem = mUndoStack.Pop();
+  if (NS_WARN_IF(!transactionItem)) {
     return nullptr;
   }
   return transactionItem->GetTransaction();

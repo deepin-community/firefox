@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,9 @@
 
 #include "nsIUrlClassifierFeature.h"
 #include "nsIUrlClassifierExceptionListService.h"
+#include "nsIUrlClassifierExceptionList.h"
+#include "mozilla/Mutex.h"
+#include "nsCOMPtr.h"
 #include "nsTArray.h"
 #include "nsString.h"
 
@@ -37,10 +38,10 @@ class UrlClassifierFeatureBase : public nsIUrlClassifierFeature,
                        nsACString& aPrefTableName, bool* aResult) override;
 
   NS_IMETHOD
-  GetExceptionHostList(nsACString& aList) override;
+  GetExceptionList(nsIUrlClassifierExceptionList** aList) override;
 
   NS_IMETHOD
-  OnExceptionListUpdate(const nsACString& aList) override;
+  OnExceptionListUpdate(nsIUrlClassifierExceptionList* aList) override;
 
  protected:
   UrlClassifierFeatureBase(const nsACString& aName,
@@ -59,28 +60,39 @@ class UrlClassifierFeatureBase : public nsIUrlClassifierFeature,
 
   nsCString mName;
 
+ public:
+  struct PrefCallbackData {
+    mozilla::Mutex* mMutex;
+    nsTArray<nsCString>* mArray;
+  };
+
  private:
   nsCString mPrefExceptionHosts;
 
+  mozilla::Mutex mDataMutex{"UrlClassifierFeatureBase::mDataMutex"};
+
   // 2: blocklist and entitylist.
   nsCString mPrefTables[2];
-  nsTArray<nsCString> mTables[2];
+  nsTArray<nsCString> mTables[2] MOZ_GUARDED_BY(mDataMutex);
+  PrefCallbackData mTablesCbData[2];
 
   nsCString mPrefHosts[2];
   nsCString mPrefTableNames[2];
-  nsTArray<nsCString> mHosts[2];
+  nsTArray<nsCString> mHosts[2] MOZ_GUARDED_BY(mDataMutex);
+  PrefCallbackData mHostsCbData[2];
 
-  nsCString mExceptionHosts;
+  nsCOMPtr<nsIUrlClassifierExceptionList> mExceptionList;
 };
 
 class UrlClassifierFeatureAntiTrackingBase : public UrlClassifierFeatureBase {
   using UrlClassifierFeatureBase::UrlClassifierFeatureBase;
 
   NS_IMETHOD
-  GetExceptionHostList(nsACString& aList) override;
+  GetExceptionList(nsIUrlClassifierExceptionList** aList) override;
 };
 
 }  // namespace net
+
 }  // namespace mozilla
 
 #endif  // mozilla_net_UrlClassifierFeatureBase_h

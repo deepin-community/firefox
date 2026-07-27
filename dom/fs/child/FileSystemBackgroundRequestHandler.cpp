@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -59,7 +57,7 @@ void FileSystemBackgroundRequestHandler::Shutdown() {
     // We must either resolve/reject the promise or steal the internal promise
     // before the holder is destroyed. The former isn't possible during
     // shutdown.
-    Unused << mCreateFileSystemManagerChildPromiseHolder.Steal();
+    mCreateFileSystemManagerChildPromiseHolder.Steal().leak();
   }
 }
 
@@ -68,7 +66,7 @@ FileSystemBackgroundRequestHandler::FileSystemManagerChildStrongRef() const {
   return mFileSystemManagerChild;
 }
 
-RefPtr<BoolPromise>
+RefPtr<FileSystemManagerChild::ActorPromise>
 FileSystemBackgroundRequestHandler::CreateFileSystemManagerChild(
     const mozilla::ipc::PrincipalInfo& aPrincipalInfo) {
   MOZ_ASSERT(!mFileSystemManagerChild);
@@ -82,7 +80,8 @@ FileSystemBackgroundRequestHandler::CreateFileSystemManagerChild(
     PBackgroundChild* backgroundChild =
         BackgroundChild::GetOrCreateForCurrentThread();
     if (NS_WARN_IF(!backgroundChild)) {
-      return BoolPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
+      return FileSystemManagerChild::ActorPromise::CreateAndReject(
+          NS_ERROR_FAILURE, __func__);
     }
 
     // Create a new IPC connection
@@ -93,7 +92,8 @@ FileSystemBackgroundRequestHandler::CreateFileSystemManagerChild(
 
     RefPtr<FileSystemManagerChild> child = mChildFactory->Create();
     if (!childEndpoint.Bind(child)) {
-      return BoolPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
+      return FileSystemManagerChild::ActorPromise::CreateAndReject(
+          NS_ERROR_FAILURE, __func__);
     }
 
     mCreatingFileSystemManagerChild = true;
@@ -104,11 +104,17 @@ FileSystemBackgroundRequestHandler::CreateFileSystemManagerChild(
         ->Then(
             GetCurrentSerialEventTarget(), __func__,
             [self = RefPtr<FileSystemBackgroundRequestHandler>(this),
-             child](nsresult rv) {
+             child](nsresult rv) mutable {
               self->mCreateFileSystemManagerParentPromiseRequestHolder
                   .Complete();
 
               self->mCreatingFileSystemManagerChild = false;
+
+              if (child->CloseAllReceived()) {
+                self->mCreateFileSystemManagerChildPromiseHolder.RejectIfExists(
+                    NS_ERROR_ABORT, __func__);
+                return;
+              }
 
               if (NS_FAILED(rv)) {
                 self->mCreateFileSystemManagerChildPromiseHolder.RejectIfExists(
@@ -120,7 +126,7 @@ FileSystemBackgroundRequestHandler::CreateFileSystemManagerChild(
                     self);
 
                 self->mCreateFileSystemManagerChildPromiseHolder
-                    .ResolveIfExists(true, __func__);
+                    .ResolveIfExists(std::move(child), __func__);
               }
             },
             [self = RefPtr<FileSystemBackgroundRequestHandler>(this)](

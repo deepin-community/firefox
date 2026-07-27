@@ -29,10 +29,10 @@ places-add-bookmark =
     .label = Tilføj bogmærke…
     .accesskey = b
 places-add-folder-contextmenu =
-    .label = Tilføj mappe
+    .label = Tilføj mappe…
     .accesskey = m
 places-add-folder =
-    .label = Tilføj mappe
+    .label = Tilføj mappe…
     .accesskey = m
 places-add-separator =
     .label = Tilføj separator
@@ -65,7 +65,7 @@ places-delete-domain-data =
     .label = Glem alt om dette websted
     .accesskey = G
 places-forget-domain-data =
-    .label = Glem dette websted
+    .label = Glem dette websted…
     .accesskey = G
 places-sortby-name =
     .label = Sorter efter navn
@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Slet sider
         }
     .accesskey = S
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Administrerede bogmærker
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Bogmærker og historik vil ikke virke, da en  { -brand-short-name }-fil er i brug af et andet program. Visse sikkerhedsprogrammer kan være skyld i dette.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Del mappe
+    .badge = Nyt

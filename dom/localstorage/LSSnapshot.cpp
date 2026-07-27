@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,13 +13,12 @@
 
 // Global includes
 #include <cstdint>
-#include <cstdlib>
 #include <new>
-#include <type_traits>
 #include <utility>
+
 #include "ErrorList.h"
 #include "mozilla/DebugOnly.h"
-#include "mozilla/MacroForEach.h"
+#include "mozilla/GeckoTrace.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/RefPtr.h"
@@ -30,12 +27,12 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/LSValue.h"
-#include "mozilla/dom/quota/QuotaCommon.h"
-#include "mozilla/dom/quota/ResultExtensions.h"
-#include "mozilla/dom/quota/ScopedLogExtraInfo.h"
 #include "mozilla/dom/PBackgroundLSDatabase.h"
 #include "mozilla/dom/PBackgroundLSSharedTypes.h"
 #include "mozilla/dom/PBackgroundLSSnapshot.h"
+#include "mozilla/dom/quota/QuotaCommon.h"
+#include "mozilla/dom/quota/ResultExtensions.h"
+#include "mozilla/dom/quota/ScopedLogExtraInfo.h"
 #include "nsBaseHashtable.h"
 #include "nsCOMPtr.h"
 #include "nsContentUtils.h"
@@ -301,7 +298,7 @@ nsresult LSSnapshot::GetItem(const nsAString& aKey, nsAString& aResult) {
     return rv;
   }
 
-  aResult = result;
+  aResult = std::move(result);
   return NS_OK;
 }
 
@@ -325,6 +322,8 @@ nsresult LSSnapshot::GetKeys(nsTArray<nsString>& aKeys) {
 
 nsresult LSSnapshot::SetItem(const nsAString& aKey, const nsAString& aValue,
                              LSNotifyInfo& aNotifyInfo) {
+  GECKO_TRACE_SCOPE("dom::localstorage", "LSSnapshot::SetItem");
+
   AssertIsOnOwningThread();
   MOZ_ASSERT(mActor);
   MOZ_ASSERT(mInitialized);
@@ -380,10 +379,17 @@ nsresult LSSnapshot::SetItem(const nsAString& aKey, const nsAString& aValue,
       quota::ScopedLogExtraInfo scope{
           quota::ScopedLogExtraInfo::kTagContextTainted,
           "dom::localstorage::LSSnapshot::SetItem::UpdateUsage"_ns};
+      GECKO_TRACE_SCOPE("dom::localstorage",
+                        "LSSnapshot::SetItem::UpdateUsage");
       QM_TRY(MOZ_TO_RESULT(UpdateUsage(delta)), QM_PROPAGATE, QM_NO_CLEANUP,
              ([]() {
                static uint32_t counter = 0u;
-               const bool result = 0u != (counter & (1u + counter));
+               // To not flood the product maintenance diagnostics,
+               // this predicate qualifies an error by returning true
+               // only when counter and 1 + counter bits are like
+               // 0111... and 1000... , i.e. when counter is one less
+               // than a power of two.
+               const bool result = 0u == (counter & (1u + counter));
                ++counter;
                return result;
              }));
@@ -417,7 +423,7 @@ nsresult LSSnapshot::SetItem(const nsAString& aKey, const nsAString& aValue,
   }
 
   aNotifyInfo.changed() = changed;
-  aNotifyInfo.oldValue() = oldValue;
+  aNotifyInfo.oldValue() = std::move(oldValue);
 
   return NS_OK;
 }
@@ -489,7 +495,7 @@ nsresult LSSnapshot::RemoveItem(const nsAString& aKey,
   }
 
   aNotifyInfo.changed() = changed;
-  aNotifyInfo.oldValue() = oldValue;
+  aNotifyInfo.oldValue() = std::move(oldValue);
 
   return NS_OK;
 }
@@ -799,7 +805,7 @@ nsresult LSSnapshot::GetItemInternal(const nsAString& aKey,
       MOZ_CRASH("Bad state!");
   }
 
-  aResult = result;
+  aResult = std::move(result);
   return NS_OK;
 }
 
@@ -897,7 +903,7 @@ nsresult LSSnapshot::EnsureAllKeys() {
   for (auto iter = newValues.Iter(); !iter.Done(); iter.Next()) {
     nsString value;
     if (mValues.Get(iter.Key(), &value)) {
-      iter.Data() = value;
+      iter.Data() = std::move(value);
     }
   }
 
@@ -1078,7 +1084,7 @@ LSSnapshot::Run() {
     MOZ_ALWAYS_SUCCEEDS(mIdleTimer->InitWithNamedFuncCallback(
         IdleTimerCallback, this,
         StaticPrefs::dom_storage_snapshot_idle_timeout_ms(),
-        nsITimer::TYPE_ONE_SHOT, "LSSnapshot::IdleTimerCallback"));
+        nsITimer::TYPE_ONE_SHOT, "LSSnapshot::IdleTimerCallback"_ns));
 
     mHasPendingIdleTimerCallback = true;
   }

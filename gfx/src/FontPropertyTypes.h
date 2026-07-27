@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -10,12 +9,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cmath>
 #include <utility>
-
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "mozilla/Assertions.h"
 #include "mozilla/ServoStyleConsts.h"
@@ -65,12 +59,8 @@ class FontPropertyRange {
 
   /**
    * Clamp the given value to this range.
-   *
-   * (We can't use mozilla::Clamp here because it only accepts integral types.)
    */
-  T Clamp(T aValue) const {
-    return aValue <= Min() ? Min() : (aValue >= Max() ? Max() : aValue);
-  }
+  T Clamp(T aValue) const { return std::clamp(aValue, Min(), Max()); }
 
   /**
    * Return whether the range consists of a single unique value.

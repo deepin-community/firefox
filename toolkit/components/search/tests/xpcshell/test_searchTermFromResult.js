@@ -18,16 +18,6 @@ let CONFIG_V2 = [
           params: [
             { name: "pc", value: "FIREFOX" },
             {
-              name: "form",
-              searchAccessPoint: {
-                newtab: "MOZNEWTAB",
-                homepage: "MOZHOMEPAGE",
-                searchbar: "MOZSEARCHBAR",
-                addressbar: "MOZKEYWORD",
-                contextmenu: "MOZCONTEXT",
-              },
-            },
-            {
               name: "channel",
               experimentConfig: "testChannelEnabled",
             },
@@ -42,15 +32,6 @@ let CONFIG_V2 = [
       },
     ],
   },
-  {
-    recordType: "defaultEngines",
-    globalDefault: "engine-purpose",
-    specificDefaults: [],
-  },
-  {
-    recordType: "engineOrders",
-    orders: [],
-  },
 ];
 
 let defaultEngine;
@@ -62,21 +43,9 @@ const TERM_ENCODED = "c%3B%2C%3F%3A%40%26%3D%2B%24-_.!~*'()%23+d%C3%A8f";
 
 add_setup(async function () {
   SearchTestUtils.setRemoteSettingsConfig(CONFIG_V2);
-  await Services.search.init();
+  await SearchService.init();
 
-  defaultEngine = Services.search.getEngineByName("Test Engine With Purposes");
-});
-
-add_task(async function test_searchTermFromResult_withAllPurposes() {
-  for (let purpose of Object.values(SearchUtils.PARAM_PURPOSES)) {
-    let uri = defaultEngine.getSubmission(TERM, null, purpose).uri;
-    let searchTerm = defaultEngine.searchTermFromResult(uri);
-    Assert.equal(
-      searchTerm,
-      TERM,
-      `Should return the correct url for purpose: ${purpose}`
-    );
-  }
+  defaultEngine = SearchService.getEngineByName("Test Engine With Purposes");
 });
 
 add_task(async function test_searchTermFromResult() {
@@ -86,14 +55,14 @@ add_task(async function test_searchTermFromResult() {
     keyword: "idn_addParam",
     search_url: "https://www.xn--bcher-kva.ch/search",
   });
-  let engineEscapedIDN = Services.search.getEngineByName("idn_addParam");
+  let engineEscapedIDN = SearchService.getEngineByName("idn_addParam");
 
   // Setup server for french engine.
-  await useHttpServer();
+  await useHttpServer("");
 
   // For ISO-8859-1 encoding testing.
   let engineISOCharset = await SearchTestUtils.installOpenSearchEngine({
-    url: `${gDataUrl}engine-fr.xml`,
+    url: `${gHttpURL}/opensearch/fr-domain-iso8859-1.xml`,
   });
 
   // For Windows-1252 encoding testing.
@@ -103,7 +72,17 @@ add_task(async function test_searchTermFromResult() {
     encoding: "windows-1252",
     search_url: "https://www.bacon.test/find",
   });
-  let engineWinCharset = Services.search.getEngineByName("bacon_addParam");
+  let engineWinCharset = SearchService.getEngineByName("bacon_addParam");
+
+  // For providers with non-encoded characters in their path.
+  await SearchTestUtils.installSearchExtension({
+    name: "characters_with_accents_in_path",
+    keyword: "characters_with_accents_in_path",
+    search_url: "https://fr.example.org/âêîôû:ÂÊÎÔÛ",
+  });
+  let engineWithAccentsInPath = SearchService.getEngineByName(
+    "characters_with_accents_in_path"
+  );
 
   // Verify getValidEngineUrl returns a URL that can return a search term.
   let testUrl = getValidEngineUrl();
@@ -117,8 +96,8 @@ add_task(async function test_searchTermFromResult() {
   testUrl.pathname = "/SEARCH";
   Assert.equal(
     getTerm(testUrl),
-    TERM,
-    "Should get term even if path is not the same case as the engine."
+    "",
+    "Should not get term if the path is not the same case as the engine."
   );
 
   let url = `https://www.xn--bcher-kva.ch/search?q=${TERM_ENCODED}`;
@@ -154,6 +133,13 @@ add_task(async function test_searchTermFromResult() {
     getTerm(url, engineWinCharset),
     "",
     "Should get a blank string from Windows-1252 encoded url missing a search term."
+  );
+
+  url = "https://fr.example.org/âêîôû:ÂÊÎÔÛ?q=aàâäéèêëïôöùûüÿçæ";
+  Assert.equal(
+    getTerm(url, engineWithAccentsInPath),
+    "aàâäéèêëïôöùûüÿçæ",
+    "Should get term from path containing accent marks."
   );
 
   url = "about:blank";
@@ -241,14 +227,6 @@ add_task(async function test_searchTermFromResult_blank() {
     "",
     "Should get a blank string from a url with a missing a query parameter."
   );
-
-  url = getValidEngineUrl();
-  url.searchParams.delete("form");
-  Assert.equal(
-    getTerm(url),
-    "",
-    "Should get a blank string from a url with a missing a query parameter."
-  );
 });
 
 add_task(async function test_searchTermFromResult_prefParam() {
@@ -289,9 +267,7 @@ add_task(async function test_searchTermFromResult_paramsInSearchUrl() {
     search_url: "https://example.com/?q={searchTerms}&pc=firefox",
     search_url_get_params: "",
   });
-  let testEngine = Services.search.getEngineByName(
-    "engine_params_in_search_url"
-  );
+  let testEngine = SearchService.getEngineByName("engine_params_in_search_url");
   let url = `https://example.com/?q=${TERM_ENCODED}&pc=firefox`;
   Assert.equal(
     getTerm(url, testEngine),
@@ -311,7 +287,7 @@ add_task(async function test_searchTermFromResult_paramsInSearchUrl() {
     search_url: "https://example.com/q={searchTerms}",
     search_url_get_params: "",
   });
-  testEngine = Services.search.getEngineByName(
+  testEngine = SearchService.getEngineByName(
     "engine_params_in_search_url_without_delimiter"
   );
   url = `https://example.com/?q=${TERM_ENCODED}&pc=firefox&page=1`;
@@ -322,58 +298,8 @@ add_task(async function test_searchTermFromResult_paramsInSearchUrl() {
   );
 });
 
-add_task(async function test_searchTermFrom_skipParamMatching() {
-  info(
-    "Reuse engine that has a partner code and parameter corresponding to a search."
-  );
-  let testEngine = Services.search.getEngineByName(
-    "engine_params_in_search_url"
-  );
-
-  info("Enable skip param matching.");
-  const SKIP_PARAM_MATCHING = true;
-
-  let url = `https://example.com/?q=${TERM_ENCODED}&pc=firefox`;
-  Assert.equal(
-    getTerm(url, testEngine, SKIP_PARAM_MATCHING),
-    TERM,
-    "Should get term when all known params are present."
-  );
-
-  url = `https://example.com/?q=${TERM_ENCODED}`;
-  Assert.equal(
-    getTerm(url, testEngine, SKIP_PARAM_MATCHING),
-    TERM,
-    "Should get term even when missing a known non-search query param."
-  );
-
-  url = `https://example.com/?q=${TERM_ENCODED}&pc=firefox&foo=bar`;
-  Assert.equal(
-    getTerm(url, testEngine, SKIP_PARAM_MATCHING),
-    TERM,
-    "Should get term when an unknown param is added."
-  );
-
-  url = `https://example.com/?pc=firefox&foo=bar`;
-  Assert.equal(
-    getTerm(url, testEngine, SKIP_PARAM_MATCHING),
-    "",
-    "Should not get term when the search query is missing."
-  );
-
-  url = `https://example.net/?q=${TERM_ENCODED}&pc=firefox`;
-  Assert.equal(
-    getTerm(url, testEngine, SKIP_PARAM_MATCHING),
-    "",
-    "Should not get term when the input origin differs."
-  );
-});
-
-function getTerm(url, searchEngine = defaultEngine, skipParamMatching) {
-  return searchEngine.searchTermFromResult(
-    Services.io.newURI(url.toString()),
-    skipParamMatching
-  );
+function getTerm(url, searchEngine = defaultEngine) {
+  return searchEngine.searchTermFromResult(Services.io.newURI(url.toString()));
 }
 
 // Return a new instance of a submission URL so that it can modified

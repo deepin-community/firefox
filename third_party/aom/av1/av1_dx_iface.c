@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -62,6 +62,7 @@ struct aom_codec_alg_priv {
   unsigned int is_annexb;
   int operating_point;
   int output_all_layers;
+  unsigned int frame_size_limit;
 
   AVxWorker *frame_worker;
 
@@ -112,6 +113,8 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx) {
     priv->tile_mode = 0;
     priv->decode_tile_row = -1;
     priv->decode_tile_col = -1;
+
+    priv->frame_size_limit = 0;
   }
 
   return AOM_CODEC_OK;
@@ -247,13 +250,9 @@ static aom_codec_err_t parse_operating_points(struct aom_read_bit_buffer *rb,
     }
   }
 
-  if (aom_get_num_layers_from_operating_point_idc(
-          operating_point_idc0, &si->number_spatial_layers,
-          &si->number_temporal_layers) != AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-
-  return AOM_CODEC_OK;
+  return aom_get_num_layers_from_operating_point_idc(
+      operating_point_idc0, &si->number_spatial_layers,
+      &si->number_temporal_layers);
 }
 
 static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
@@ -310,10 +309,8 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
         return AOM_CODEC_UNSUP_BITSTREAM;
       }
 
-      if (parse_operating_points(&rb, reduced_still_picture_hdr, si) !=
-          AOM_CODEC_OK) {
-        return AOM_CODEC_ERROR;
-      }
+      status = parse_operating_points(&rb, reduced_still_picture_hdr, si);
+      if (status != AOM_CODEC_OK) return status;
 
       int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
       int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
@@ -363,7 +360,7 @@ static aom_codec_err_t decoder_peek_si(const uint8_t *data, size_t data_sz,
 
 static aom_codec_err_t decoder_get_si(aom_codec_alg_priv_t *ctx,
                                       aom_codec_stream_info_t *si) {
-  memcpy(si, &ctx->si, sizeof(*si));
+  *si = ctx->si;
 
   return AOM_CODEC_OK;
 }
@@ -497,6 +494,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
   frame_worker_data->pbi->operating_point = ctx->operating_point;
   frame_worker_data->pbi->output_all_layers = ctx->output_all_layers;
+  frame_worker_data->pbi->frame_size_limit = ctx->frame_size_limit;
   frame_worker_data->pbi->ext_tile_debug = ctx->ext_tile_debug;
   frame_worker_data->pbi->row_mt = ctx->row_mt;
   frame_worker_data->pbi->is_fwd_kf_present = 0;
@@ -508,7 +506,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
+static inline void check_resync(aom_codec_alg_priv_t *const ctx,
                                 const AV1Decoder *const pbi) {
   // Clear resync flag if worker got a key frame or intra only frame.
   if (ctx->need_resync == 1 && pbi->need_resync == 0 &&
@@ -954,8 +952,18 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     AVxWorker *const worker = ctx->frame_worker;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
-    return av1_set_reference_dec(&frame_worker_data->pbi->common, frame->idx,
-                                 frame->use_external_ref, &sd);
+
+    struct aom_internal_error_info *const error =
+        frame_worker_data->pbi->common.error;
+    if (setjmp(error->jmp)) {
+      error->setjmp = 0;
+      return error->error_code;
+    }
+    error->setjmp = 1;
+    av1_set_reference_dec(&frame_worker_data->pbi->common, frame->idx,
+                          frame->use_external_ref, &sd);
+    error->setjmp = 0;
+    return AOM_CODEC_OK;
   } else {
     return AOM_CODEC_INVALID_PARAM;
   }
@@ -1521,7 +1529,7 @@ static aom_codec_err_t ctrl_get_mi_info(aom_codec_alg_priv_t *ctx,
     return AOM_CODEC_INVALID_PARAM;
   }
 
-  memcpy(mi, cm->mi_params.mi_grid_base[offset], sizeof(*mi));
+  *mi = *cm->mi_params.mi_grid_base[offset];
 
   return AOM_CODEC_OK;
 }
@@ -1577,6 +1585,12 @@ static aom_codec_err_t ctrl_set_skip_film_grain(aom_codec_alg_priv_t *ctx,
     frame_worker_data->pbi->skip_film_grain = ctx->skip_film_grain;
   }
 
+  return AOM_CODEC_OK;
+}
+
+static aom_codec_err_t ctrl_set_frame_size_limit(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  ctx->frame_size_limit = va_arg(args, unsigned int);
   return AOM_CODEC_OK;
 }
 
@@ -1687,6 +1701,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_SET_ROW_MT, ctrl_set_row_mt },
   { AV1D_SET_EXT_REF_PTR, ctrl_set_ext_ref_ptr },
   { AV1D_SET_SKIP_FILM_GRAIN, ctrl_set_skip_film_grain },
+  { AOMD_SET_FRAME_SIZE_LIMIT, ctrl_set_frame_size_limit },
 
   // Getters
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },

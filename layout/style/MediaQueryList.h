@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,15 +7,14 @@
 #ifndef mozilla_dom_MediaQueryList_h
 #define mozilla_dom_MediaQueryList_h
 
-#include "nsISupports.h"
-#include "nsCycleCollectionParticipant.h"
-#include "nsCOMPtr.h"
-#include "nsTArray.h"
-#include "mozilla/LinkedList.h"
-#include "mozilla/Attributes.h"
-#include "nsWrapperCache.h"
 #include "mozilla/DOMEventTargetHelper.h"
+#include "mozilla/LinkedList.h"
 #include "mozilla/dom/MediaQueryListBinding.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsISupports.h"
+#include "nsTArray.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::dom {
 
@@ -53,8 +50,8 @@ class MediaQueryList final : public DOMEventTargetHelper,
   // WebIDL methods
   void GetMedia(nsACString& aMedia) const;
   bool Matches();
-  void AddListener(EventListener* aListener, ErrorResult& aRv);
-  void RemoveListener(EventListener* aListener, ErrorResult& aRv);
+  void AddListener(EventListener* aListener);
+  void RemoveListener(EventListener* aListener);
 
   IMPL_EVENT_HANDLER(change)
 

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -44,13 +43,19 @@ static void TestHasPrefix(const nsCString& aURL, bool aExpectedHas,
 }
 
 TEST(UrlClassifierLookupCacheV4, HasComplete)
-{ TestHasPrefix("bravo.com/"_ns, true, true); }
+{
+  TestHasPrefix("bravo.com/"_ns, true, true);
+}
 
 TEST(UrlClassifierLookupCacheV4, HasPrefix)
-{ TestHasPrefix("browsing.com/"_ns, true, false); }
+{
+  TestHasPrefix("browsing.com/"_ns, true, false);
+}
 
 TEST(UrlClassifierLookupCacheV4, Nomatch)
-{ TestHasPrefix("nomatch.com/"_ns, false, false); }
+{
+  TestHasPrefix("nomatch.com/"_ns, false, false);
+}
 
 // Test an existing .pset should be removed after .vlpset is written
 TEST(UrlClassifierLookupCacheV4, RemoveOldPset)

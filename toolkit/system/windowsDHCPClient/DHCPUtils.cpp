@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -28,7 +26,9 @@ mozilla::LazyLogModule gDhcpUtilsLog("dhcpUtils");
 #define LOG(args) MOZ_LOG(gDhcpUtilsLog, LogLevel::Debug, args)
 
 bool IsCurrentAndHasDHCP(PIP_ADAPTER_ADDRESSES aAddresses) {
-  return aAddresses->OperStatus == 1 &&
+  return aAddresses->OperStatus == IfOperStatusUp &&
+         aAddresses->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
+         (aAddresses->Flags & IP_ADAPTER_DHCP_ENABLED) &&
          (aAddresses->Dhcpv4Server.iSockaddrLength ||
           aAddresses->Dhcpv6Server.iSockaddrLength);
 }

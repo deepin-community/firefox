@@ -1,4 +1,3 @@
-//* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +9,7 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 
 ChromeUtils.defineESModuleGetters(this, {
   PlacesTransactions: "resource://gre/modules/PlacesTransactions.sys.mjs",
-  PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
+  PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
@@ -40,8 +39,11 @@ XPCOMUtils.defineLazyScriptGetter(
  */
 var SelectBookmarkDialog = {
   init: function SBD_init() {
-    document.getElementById("bookmarks").place =
+    let bookmarks = document.getElementById("bookmarks");
+    bookmarks.place =
       "place:type=" + Ci.nsINavHistoryQueryOptions.RESULTS_AS_ROOTS_QUERY;
+    bookmarks.addEventListener("dblclick", () => this.onItemDblClick());
+    bookmarks.addEventListener("select", () => this.selectionChanged());
 
     // Initial update of the OK button.
     this.selectionChanged();
@@ -117,3 +119,5 @@ var SelectBookmarkDialog = {
     window.arguments[0].names = names;
   },
 };
+
+window.addEventListener("load", () => SelectBookmarkDialog.init());

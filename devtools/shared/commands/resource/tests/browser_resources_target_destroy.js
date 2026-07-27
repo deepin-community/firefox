@@ -8,9 +8,8 @@
 
 add_task(async function () {
   const tab = await addTab("data:text/html,Test");
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   // Start watching for console messages. We don't care about messages here, only the
   // registration/destroy mechanism, so we make onAvailable a no-op function.
@@ -28,7 +27,7 @@ add_task(async function () {
     /watcher\d+$/,
     ""
   );
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     tab.linkedBrowser,
     [connectionPrefix],
     function (_connectionPrefix) {
@@ -72,7 +71,7 @@ add_task(async function () {
   info(
     "Spawn a content task in order to run some assertions on actors and resource watchers directly"
   );
-  await ContentTask.spawn(tab.linkedBrowser, [], function () {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], function () {
     const { require } = ChromeUtils.importESModule(
       "resource://devtools/shared/loader/Loader.sys.mjs"
     );

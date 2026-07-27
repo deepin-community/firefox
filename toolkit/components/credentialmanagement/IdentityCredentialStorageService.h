@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,6 @@
 #include "mozilla/OriginAttributes.h"
 #include "mozIStorageConnection.h"
 #include "mozIStorageFunction.h"
-#include "mozilla/dom/IPCIdentityCredential.h"
 #include "nsIAsyncShutdown.h"
 #include "nsIFile.h"
 #include "nsIIdentityCredentialStorageService.h"
@@ -72,11 +69,13 @@ class IdentityCredentialStorageService final
   static nsresult ValidatePrincipal(nsIPrincipal* aPrincipal);
 
   // Helper functions to initialize the database connections. Also makes sure
-  // the tables are present and have up to date schemas.
+  // the tables are present and have up to date schemas. If file is nullptr,
+  // use the in-memory database "icsprivatedb". If retry is true, allow a retry
+  // on failure.
   nsresult GetMemoryDatabaseConnection();
   nsresult GetDiskDatabaseConnection();
   static nsresult GetDatabaseConnectionInternal(
-      mozIStorageConnection** aDatabase, nsIFile* aFile);
+      mozIStorageConnection** aDatabase, nsIFile* aFile, bool aRetry);
 
   // Helper function for the Get*DatabaseConnection functions to ensure the
   // tables are present and have up to date schemas.
@@ -85,8 +84,6 @@ class IdentityCredentialStorageService final
   // Grab all data from the disk database and insert it into the memory
   // database/ This is used at start up
   nsresult LoadMemoryTableFromDisk();
-  nsresult LoadLightweightMemoryTableFromDisk();
-  nsresult LoadHeavyweightMemoryTableFromDisk();
 
   // Used to (thread-safely) track how many operations have been launched to the
   // worker thread so that we can wait for it to hit zero before close the disk
@@ -114,15 +111,11 @@ class IdentityCredentialStorageService final
                              nsIPrincipal* aIDPPrincipal,
                              nsACString const& aCredentialID);
 
+  static nsresult DisconnectData(mozIStorageConnection* aDatabaseConnection,
+                                 nsIPrincipal* aRPPrincipal,
+                                 nsIPrincipal* aIDPPrincipal);
+
   static nsresult ClearData(mozIStorageConnection* aDatabaseConnection);
-
-  static nsresult UpsertLightweightData(
-      mozIStorageConnection* aDatabaseConnection,
-      const dom::IPCIdentityCredential& aData);
-
-  static nsresult DeleteLightweightData(
-      mozIStorageConnection* aDatabaseConnection,
-      const dom::IPCIdentityCredential& aData);
 
   static nsresult DeleteDataFromOriginAttributesPattern(
       mozIStorageConnection* aDatabaseConnection,

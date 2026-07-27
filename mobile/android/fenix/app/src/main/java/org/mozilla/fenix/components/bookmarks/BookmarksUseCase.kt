@@ -4,7 +4,6 @@
 
 package org.mozilla.fenix.components.bookmarks
 
-import androidx.annotation.WorkerThread
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.appservices.places.uniffi.PlacesApiException
 import mozilla.components.concept.storage.BookmarksStorage
@@ -33,7 +32,6 @@ class BookmarksUseCase(
          * @return The guid of the newly added bookmark or null. A bookmark may not be added if
          * one with the identical [url] already exists.
          */
-        @WorkerThread
         suspend operator fun invoke(
             url: String,
             title: String,
@@ -41,7 +39,10 @@ class BookmarksUseCase(
             parentGuid: String? = null,
         ): String? {
             return try {
-                val canAdd = storage.getBookmarksWithUrl(url).firstOrNull { it.url == url } == null
+                val canAdd = storage
+                    .getBookmarksWithUrl(url)
+                    .getOrDefault(listOf())
+                    .firstOrNull { it.url == url } == null
 
                 return if (canAdd) {
                     storage.addItem(
@@ -49,7 +50,7 @@ class BookmarksUseCase(
                         url = url,
                         title = title,
                         position = position,
-                    )
+                    ).getOrNull()
                 } else {
                     null
                 }
@@ -77,7 +78,6 @@ class BookmarksUseCase(
          * @param previewImageMaxAgeMs The maximum age (ms) to search history for preview image URLs.
          * @return a list of [Bookmark]s if any, up to a number specified by [count].
          */
-        @WorkerThread
         suspend operator fun invoke(
             count: Int = DEFAULT_BOOKMARKS_TO_RETRIEVE,
             previewImageMaxAgeMs: Long = TimeUnit.DAYS.toMillis(DEFAULT_BOOKMARKS_LENGTH_DAYS_PREVIEW_IMAGE_SEARCH),
@@ -92,6 +92,7 @@ class BookmarksUseCase(
 
             return bookmarksStorage
                 .getRecentBookmarks(count)
+                .getOrDefault(listOf())
                 .map { bookmark ->
                     Bookmark(
                         title = bookmark.title,

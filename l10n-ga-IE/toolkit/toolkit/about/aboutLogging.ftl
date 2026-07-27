@@ -8,10 +8,3 @@ about-logging-set-log-file = Socraigh Logchomhad
 about-logging-set-log-modules = Socraigh Logmhodúil
 about-logging-start-logging = Tosaigh Logáil
 about-logging-stop-logging = Stop Logáil
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

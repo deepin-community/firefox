@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,12 +21,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.BottomSheetHandle
 import mozilla.components.concept.engine.translate.Language
 import mozilla.components.concept.engine.translate.TranslationError
 import mozilla.components.concept.engine.translate.TranslationPageSettings
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.BottomSheetHandle
-import org.mozilla.fenix.theme.FirefoxTheme
 
 private const val BOTTOM_SHEET_HANDLE_WIDTH_PERCENT = 0.1f
 
@@ -36,8 +35,7 @@ internal fun TranslationDialogBottomSheet(
     content: @Composable () -> Unit,
 ) {
     Surface(
-        color = FirefoxTheme.colors.layer1,
-        shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
             .verticalScroll(rememberScrollState()),
     ) {

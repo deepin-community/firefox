@@ -20,7 +20,7 @@ function run_test() {
   var stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stream.setData(DATA, DATA.length);
+  stream.setByteStringData(DATA);
   zipW.addEntryStream(
     FILENAME,
     time * PR_USEC_PER_MSEC,
@@ -31,7 +31,7 @@ function run_test() {
 
   var entry = zipW.getEntry(FILENAME);
 
-  Assert.ok(entry != null);
+  Assert.notEqual(entry, null);
 
   // Check entry seems right.
   Assert.equal(entry.compression, ZIP_METHOD_DEFLATE);

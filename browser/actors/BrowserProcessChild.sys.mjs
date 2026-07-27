@@ -5,20 +5,22 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  AboutHomeStartupCacheChild: "resource:///modules/AboutNewTabService.sys.mjs",
+  AboutHomeStartupCacheChild:
+    "resource:///modules/AboutNewTabRedirector.sys.mjs",
   WebRTCChild: "resource:///actors/WebRTCChild.sys.mjs",
 });
 
 export class BrowserProcessChild extends JSProcessActorChild {
   receiveMessage(message) {
     switch (message.name) {
-      case "AboutHomeStartupCache:InputStreams":
+      case "AboutHomeStartupCache:InputStreams": {
         let { pageInputStream, scriptInputStream } = message.data;
         lazy.AboutHomeStartupCacheChild.init(
           pageInputStream,
           scriptInputStream
         );
         break;
+      }
     }
   }
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,9 @@
 #include "mozilla/dom/cache/ManagerId.h"
 
 #include "CacheCommon.h"
-
-#include "mozilla/dom/quota/QuotaManager.h"
+#include "mozilla/dom/quota/PrincipalUtils.h"
 #include "nsIPrincipal.h"
 #include "nsProxyRelease.h"
-#include "mozilla/RefPtr.h"
 #include "nsThreadUtils.h"
 
 namespace mozilla::dom::cache {
@@ -23,11 +19,11 @@ Result<SafeRefPtr<ManagerId>, nsresult> ManagerId::Create(
     nsIPrincipal* aPrincipal) {
   MOZ_ASSERT(NS_IsMainThread());
 
-  // QuotaManager::GetOriginFromPrincipal() has special logic for system
+  // mozilla::dom::quota::GetOriginFromPrincipal() has special logic for system
   // and about: principals.  We need to use the same modified origin in
   // order to interpret calls from QM correctly.
   QM_TRY_INSPECT(const auto& quotaOrigin,
-                 QuotaManager::GetOriginFromPrincipal(aPrincipal));
+                 quota::GetOriginFromPrincipal(aPrincipal));
 
   return MakeSafeRefPtr<ManagerId>(aPrincipal, quotaOrigin, ConstructorGuard{});
 }

@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGFragmentIdentifier.h"
 
+#include "SVGAnimatedTransformList.h"
+#include "mozilla/MediaFragmentURIParser.h"
+#include "mozilla/SVGOuterSVGFrame.h"
 #include "mozilla/dom/SVGSVGElement.h"
 #include "mozilla/dom/SVGViewElement.h"
-#include "mozilla/SVGOuterSVGFrame.h"
 #include "nsCharSeparatedTokenizer.h"
-#include "SVGAnimatedTransformList.h"
 
 namespace mozilla {
 
@@ -31,7 +30,7 @@ class MOZ_RAII AutoSVGViewHandler {
       : mRoot(aRoot), mValid(false) {
     mWasOverridden = mRoot->UseCurrentView();
     mRoot->mSVGView = nullptr;
-    mRoot->mCurrentViewID = nullptr;
+    mRoot->mCurrentViewID = VoidString();
   }
 
   ~AutoSVGViewHandler() {
@@ -51,7 +50,13 @@ class MOZ_RAII AutoSVGViewHandler {
 
   void CreateSVGView() {
     MOZ_ASSERT(!mSVGView, "CreateSVGView should not be called multiple times");
-    mSVGView = MakeUnique<SVGView>();
+    mSVGView = std::make_unique<SVGView>();
+  }
+
+  void SetViewBox(const gfx::Rect& aRect) {
+    SVGViewBox viewBox(aRect.x, aRect.y, aRect.width, aRect.height);
+    mSVGView->mViewBox.SetBaseValue(viewBox, mRoot, false);
+    mValid = true;
   }
 
   bool ProcessAttr(const nsAString& aToken, const nsAString& aParams) {
@@ -78,7 +83,7 @@ class MOZ_RAII AutoSVGViewHandler {
       if (mSVGView->mTransforms) {
         return false;
       }
-      mSVGView->mTransforms = MakeUnique<SVGAnimatedTransformList>();
+      mSVGView->mTransforms = std::make_unique<SVGAnimatedTransformList>();
       if (NS_FAILED(
               mSVGView->mTransforms->SetBaseValueString(aParams, mRoot))) {
         return false;
@@ -100,8 +105,8 @@ class MOZ_RAII AutoSVGViewHandler {
   void SetValid() { mValid = true; }
 
  private:
-  SVGSVGElement* mRoot;
-  UniquePtr<SVGView> mSVGView;
+  RefPtr<SVGSVGElement> mRoot;
+  std::unique_ptr<SVGView> mSVGView;
   bool mValid;
   bool mWasOverridden;
 };
@@ -147,21 +152,56 @@ bool SVGFragmentIdentifier::ProcessSVGViewSpec(const nsAString& aViewSpec,
   return true;
 }
 
+static float PxLengthOrFallback(const LengthPercentage& aLenPct,
+                                CSSIntCoord aFallback) {
+  if (!aLenPct.IsLength()) {
+    return aFallback;
+  }
+  return aLenPct.AsLength().ToCSSPixels();
+}
+
+bool SVGFragmentIdentifier::ProcessMediaFragment(
+    const nsAString& aMediaFragment, SVGSVGElement* aRoot) {
+  NS_ConvertUTF16toUTF8 mediaFragment(aMediaFragment);
+  MediaFragmentURIParser parser(mediaFragment);
+
+  bool foundMediaFragment = false;
+
+  if (parser.HasStartTime()) {
+    aRoot->SetCurrentTime(parser.GetStartTime());
+    foundMediaFragment = true;
+  }
+  if (parser.HasEndTime()) {
+    // pause animations at end time.
+    aRoot->PauseAnimationsAt(parser.GetEndTime());
+    foundMediaFragment = true;
+  }
+  if (parser.HasClip()) {
+    gfx::Rect rect = IntRectToRect(parser.GetClip());
+    if (parser.GetClipUnit() == eClipUnit_Percent) {
+      float width = PxLengthOrFallback(aRoot->GetIntrinsicWidth(),
+                                       kFallbackIntrinsicWidthInPixels);
+      float height = PxLengthOrFallback(aRoot->GetIntrinsicHeight(),
+                                        kFallbackIntrinsicHeightInPixels);
+      rect.Scale(width / 100.0f, height / 100.0f);
+    }
+    AutoSVGViewHandler viewHandler(aRoot);
+    viewHandler.CreateSVGView();
+    viewHandler.SetViewBox(rect);
+    foundMediaFragment = true;
+  }
+
+  return foundMediaFragment;
+}
+
 bool SVGFragmentIdentifier::ProcessFragmentIdentifier(
     Document* aDocument, const nsAString& aAnchorName) {
-  MOZ_ASSERT(aDocument->GetRootElement()->IsSVGElement(nsGkAtoms::svg),
-             "expecting an SVG root element");
+  MOZ_ASSERT(aDocument->GetSVGRootElement(), "expecting an SVG root element");
 
-  auto* rootElement = SVGSVGElement::FromNode(aDocument->GetRootElement());
+  RefPtr rootElement = SVGSVGElement::FromNode(aDocument->GetRootElement());
 
-  const auto* viewElement =
-      SVGViewElement::FromNodeOrNull(aDocument->GetElementById(aAnchorName));
-
-  if (viewElement) {
-    if (!rootElement->mCurrentViewID) {
-      rootElement->mCurrentViewID = MakeUnique<nsString>();
-    }
-    *rootElement->mCurrentViewID = aAnchorName;
+  if (SVGViewElement::FromNodeOrNull(aDocument->GetElementById(aAnchorName))) {
+    rootElement->mCurrentViewID = aAnchorName;
     rootElement->mSVGView = nullptr;
     rootElement->InvalidateTransformNotifyFrame();
     if (nsIFrame* f = rootElement->GetPrimaryFrame()) {
@@ -174,7 +214,13 @@ bool SVGFragmentIdentifier::ProcessFragmentIdentifier(
     return false;
   }
 
-  return ProcessSVGViewSpec(aAnchorName, rootElement);
+  if (ProcessSVGViewSpec(aAnchorName, rootElement)) {
+    return true;
+  }
+  if (ProcessMediaFragment(aAnchorName, rootElement)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace mozilla

@@ -8,13 +8,11 @@ about-telemetry-show-subsession-data = အချိန်ခွဲသိမ်�
 about-telemetry-choose-ping = ပင်းန်ကို ရွေးရန်။
 about-telemetry-archive-ping-header = ပင်းန်
 about-telemetry-page-title = Telemetry Data
+about-telemetry-home-section = အဖွင့်
 about-telemetry-general-data-section = အထွေထွေ အချက်အလက်
 about-telemetry-environment-data-section = Environment Data
 about-telemetry-session-info-section = အသုံးပြုမှုကာလအချက်အလက်
-about-telemetry-scalar-section =
-      
-      Scalars
-      
+about-telemetry-scalar-section = Scalars
 about-telemetry-keyed-scalar-section = Keyed Scalars
 about-telemetry-histograms-section = Histograms
 about-telemetry-keyed-histogram-section = ကီးများဖြင့် ဇယားကွက်
@@ -27,8 +25,16 @@ about-telemetry-raw = JSON အကြမ်းထည်
 about-telemetry-full-sql-warning = NOTE: Slow SQL debugging is enabled. Full SQL strings may be displayed below but they will not be submitted to Telemetry.
 about-telemetry-fetch-stack-symbols = အကန့်များထဲမှ လုပ်ဆောင်ချက်အမည်များအာ:ဆွဲထုတ်ပါ
 about-telemetry-hide-stack-symbols = မူရင်းမှတ်သားချက်များအားပြပါ
+# Selects the correct upload string
 # Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
+#   $uploadcase (string) - Represents a corresponding upload string
+about-telemetry-upload-type =
+    { $uploadcase ->
+        [enabled] ဖွင့်ရန်
+       *[disabled] ပိတ်ရန်
+    }
+# Variables:
+#   $telemetryServerOwner (string) - the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
 about-telemetry-page-subtitle = This page shows the information about performance, hardware, usage and customizations collected by Telemetry. This information is submitted to { $telemetryServerOwner } to help improve { -brand-full-name }.
 # button label to copy the histogram
 about-telemetry-histogram-copy = ကူးယူပါ
@@ -42,13 +48,13 @@ about-telemetry-slow-sql-statement = ထုတ်ပြန်ချက်
 about-telemetry-addon-table-id = အတ်အွန် အိုင်ဒီ
 about-telemetry-addon-table-details = အသေးစိတ်များ
 # Variables:
-#   $addonProvider (String): the name of an Add-on Provider (e.g. “XPI”, “Plugin”)
+#   $addonProvider (string) - The name of an Add-on Provider (e.g. “XPI”, “Plugin”)
 about-telemetry-addon-provider = { $addonProvider } Provider
 about-telemetry-keys-header = ဂုဏ်သတ္တိများ
 about-telemetry-names-header = အမည်
 about-telemetry-values-header = တန်ဖိုး
 # Variables:
-#   $lateWriteCount (Integer): the number of the late writes
+#   $lateWriteCount (number) - The number of the late writes
 about-telemetry-late-writes-title = Late Write #{ $lateWriteCount }
 about-telemetry-stack-title = Stack:
 about-telemetry-memory-map-title = Memory map:

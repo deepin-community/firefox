@@ -8,6 +8,9 @@ const { PrivateBrowsingUtils } = ChromeUtils.importESModule(
 const { EnableDelayHelper } = ChromeUtils.importESModule(
   "resource://gre/modules/PromptUtils.sys.mjs"
 );
+const { getMozRemoteImageURL } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/modules/FaviconUtils.sys.mjs"
+);
 
 class MozHandler extends window.MozElements.MozRichlistitem {
   static get markup() {
@@ -68,6 +71,13 @@ let dialog = {
     this._itemChoose = document.getElementById("item-choose");
     this._rememberCheck = document.getElementById("remember");
 
+    let items = document.getElementById("items");
+    items.addEventListener("dblclick", () => this.onDblClick());
+    items.addEventListener("select", () => this.updateAcceptButton());
+    document
+      .getElementById("choose-app-btn")
+      .addEventListener("command", () => this.chooseApplication());
+
     // Register event listener for the checkbox hint.
     this._rememberCheck.addEventListener("change", () => this.onCheck());
 
@@ -124,7 +134,9 @@ let dialog = {
 
       // We defer loading the favicon so it doesn't delay load. The dialog is
       // opened in a SubDialog which will only show on window load.
-      if (app instanceof Ci.nsILocalHandlerApp) {
+      if (app instanceof Ci.nsIGIOHandlerApp) {
+        elm.setAttribute("image", "moz-icon://" + app.id + "?size=32");
+      } else if (app instanceof Ci.nsILocalHandlerApp) {
         // See if we have an nsILocalHandlerApp and set the icon
         let uri = Services.io.newFileURI(app.executable);
         elm.setAttribute("image", "moz-icon://" + uri.spec + "?size=32");
@@ -137,7 +149,10 @@ let dialog = {
           // and users won't visit the handler's URL template, they'll only
           // visit URLs derived from that template (i.e. with %s in the template
           // replaced by the URL of the content being handled).
-          elm.setAttribute("image", uri.prePath + "/favicon.ico");
+          elm.setAttribute(
+            "image",
+            getMozRemoteImageURL(uri.prePath + "/favicon.ico", { size: 32 })
+          );
         }
         elm.setAttribute("description", uri.prePath);
 
@@ -276,7 +291,7 @@ let dialog = {
    * Determines if the accept button should be disabled or not
    */
   updateAcceptButton() {
-    this._dialog.setAttribute(
+    this._dialog.toggleAttribute(
       "buttondisabledaccept",
       this._acceptBtnDisabled || this._itemChoose.selected
     );
@@ -284,6 +299,7 @@ let dialog = {
 
   /**
    * Update the handler info to reflect the user choice.
+   *
    * @param {boolean} skipAsk - Whether we should persist the application
    * choice and skip asking next time.
    */

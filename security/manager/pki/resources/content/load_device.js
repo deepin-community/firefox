@@ -1,8 +1,12 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* import-globals-from pippki.js */
+
 "use strict";
+
+const { alertPromptService } = ChromeUtils.importESModule(
+  "resource://gre/modules/psm/pippki.sys.mjs"
+);
 
 document.addEventListener("dialogaccept", onDialogAccept);
 
@@ -39,7 +43,10 @@ async function onBrowseBtnPress() {
  * @param {object} event
  *        The event causing this handler function to be called.
  */
-function onDialogAccept(event) {
+async function onDialogAccept(event) {
+  // Prevent the window from closing in case adding the module fails.
+  event.preventDefault();
+
   let nameBox = document.getElementById("device_name");
   let pathBox = document.getElementById("device_path");
   let pkcs11ModuleDB = Cc["@mozilla.org/security/pkcs11moduledb;1"].getService(
@@ -47,16 +54,16 @@ function onDialogAccept(event) {
   );
 
   try {
-    pkcs11ModuleDB.addModule(nameBox.value, pathBox.value, 0, 0);
+    await pkcs11ModuleDB.addModule(nameBox.value, pathBox.value, 0, 0);
+    window.close();
   } catch (e) {
     addModuleFailure("add-module-failure");
-    event.preventDefault();
   }
 }
 
 async function addModuleFailure(l10nID) {
   let [AddModuleFailure] = await document.l10n.formatValues([{ id: l10nID }]);
-  alertPromptService(null, AddModuleFailure);
+  alertPromptService(window, null, AddModuleFailure);
 }
 
 function validateModuleName() {
@@ -77,3 +84,12 @@ function validateModuleName() {
     dialogNode.setAttribute("buttondisabledaccept", true);
   }
 }
+
+window.addEventListener("load", () => {
+  document
+    .getElementById("device_name")
+    .addEventListener("change", () => validateModuleName());
+  document
+    .getElementById("browse")
+    .addEventListener("command", () => onBrowseBtnPress());
+});

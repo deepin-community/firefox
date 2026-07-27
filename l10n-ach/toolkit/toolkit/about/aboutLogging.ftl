@@ -7,10 +7,3 @@ about-logging-log-tutorial = Nen <a data-l10n-name="logging">Gwoko rikod me HTTP
 about-logging-set-log-file = Ter pwil me rikod
 about-logging-start-logging = Cak gwoko rikod
 about-logging-stop-logging = Juk gwoko rikod
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

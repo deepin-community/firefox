@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef MOZILLA_GFX_RENDERCOMPOSITOR_H
 #define MOZILLA_GFX_RENDERCOMPOSITOR_H
 
-#include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/layers/Fence.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "Units.h"
 
@@ -22,6 +20,7 @@ class GLContext;
 }
 
 namespace layers {
+class AndroidHardwareBuffer;
 class CompositionRecorder;
 class SyncObjectHost;
 }  // namespace layers
@@ -57,6 +56,12 @@ class RenderCompositor {
   // Returns false when waiting gpu tasks is failed.
   // It might happen when rendering context is lost.
   virtual bool WaitForGPU() { return true; }
+
+  // On platforms where putting the frame onto the screen involves work in other
+  // processes, wait until those other processes have completed that work.
+  // Specifically, on macOS, we have to send surfaces to the parent process and
+  // it will put them into CALayers, and we want to wait until that's done.
+  virtual void WaitUntilPresentationFlushed() {}
 
   // Check for and return the last completed frame.
   // @return the last (highest) completed RenderedFrameId
@@ -114,6 +119,17 @@ class RenderCompositor {
 
   virtual bool ShouldUseNativeCompositor() { return false; }
 
+  virtual bool ShouldUseLayerCompositor() const { return false; }
+
+  virtual bool UseLayerCompositor() const { return false; }
+
+  // Request RenderCompositor to enable taking screenshot
+  // In WebRender layer compositor case, taking screenshot will be ready in at
+  // most one WebRender composition.
+  //
+  // @return true if taking screenshot is ready.
+  virtual bool EnableAsyncScreenshot() { return false; }
+
   // Interface for wr::Compositor
   virtual void CompositorBeginFrame() {}
   virtual void CompositorEndFrame() {}
@@ -130,6 +146,17 @@ class RenderCompositor {
   virtual void CreateSurface(wr::NativeSurfaceId aId,
                              wr::DeviceIntPoint aVirtualOffset,
                              wr::DeviceIntSize aTileSize, bool aIsOpaque) {}
+  virtual void CreateSwapChainSurface(wr::NativeSurfaceId aId,
+                                      wr::DeviceIntSize aSize, bool aIsOpaque,
+                                      bool aNeedsSyncDcompCommit) {}
+  virtual void ResizeSwapChainSurface(wr::NativeSurfaceId aId,
+                                      wr::DeviceIntSize aSize) {}
+  virtual void BindSwapChain(wr::NativeSurfaceId aId,
+                             const wr::DeviceIntRect* aDirtyRects,
+                             size_t aNumDirtyRects) {}
+  virtual void PresentSwapChain(wr::NativeSurfaceId aId,
+                                const wr::DeviceIntRect* aDirtyRects,
+                                size_t aNumDirtyRects) {}
   virtual void CreateExternalSurface(wr::NativeSurfaceId aId, bool aIsOpaque) {}
   virtual void CreateBackdropSurface(wr::NativeSurfaceId aId,
                                      wr::ColorF aColor) {}
@@ -141,7 +168,9 @@ class RenderCompositor {
   virtual void AddSurface(wr::NativeSurfaceId aId,
                           const wr::CompositorSurfaceTransform& aTransform,
                           wr::DeviceIntRect aClipRect,
-                          wr::ImageRendering aImageRendering) {}
+                          wr::ImageRendering aImageRendering,
+                          wr::DeviceIntRect aRoundedClipRect,
+                          wr::ClipRadius aClipRadius) {}
   // Called in the middle of a frame after all surfaces have been added but
   // before tiles are updated to signal that early compositing can start
   virtual void StartCompositing(wr::ColorF aClearColor,
@@ -149,13 +178,23 @@ class RenderCompositor {
                                 size_t aNumDirtyRects,
                                 const wr::DeviceIntRect* aOpaqueRects,
                                 size_t aNumOpaqueRects) {}
-  virtual void EnableNativeCompositor(bool aEnable) {}
   virtual void DeInit() {}
   // Overrides any of the default compositor capabilities for behavior this
   // compositor might require.
   virtual void GetCompositorCapabilities(CompositorCapabilities* aCaps);
 
   virtual void GetWindowVisibility(WindowVisibility* aVisibility);
+
+  // Called from WebRender Renderer::composite_simple().
+  // WindowProperties is used to control how to composite with WebRender layer
+  // compositor.
+  //
+  // @param WindowProperties::is_opaque Notify if rendering window is opaque.
+  // WebRender might use this to optimize layer allocation.
+  // @param WindowProperties::enable_screenshot Requests to WebRender to use
+  // only one content layer during composite for taking screenshot except debug
+  // layer.
+  virtual void GetWindowProperties(WindowProperties* aProperties);
 
   // Interface for partial present
   virtual bool UsePartialPresent() { return false; }
@@ -193,14 +232,15 @@ class RenderCompositor {
     return false;
   }
   virtual bool MaybeProcessScreenshotQueue() { return false; }
-
-  // Returns FileDescriptor of release fence.
-  // Release fence is a fence that is used for waiting until usage/composite of
-  // AHardwareBuffer is ended. The fence is delivered to client side via
-  // ImageBridge. It is used only on android.
-  virtual ipc::FileDescriptor GetAndResetReleaseFence() {
-    return ipc::FileDescriptor();
+#ifdef MOZ_WIDGET_ANDROID
+  virtual bool MaybeCaptureScreenPixels(
+      const gfx::IntRect& aSourceRect,
+      RefPtr<layers::AndroidHardwareBuffer> aHardwareBuffer) {
+    return false;
   }
+#endif
+
+  virtual RefPtr<layers::Fence> GetAndResetReleaseFence() { return nullptr; }
 
   virtual bool IsPaused() { return false; }
 

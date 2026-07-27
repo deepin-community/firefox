@@ -1,5 +1,3 @@
-// |reftest| skip-if(!this.hasOwnProperty("Intl"))
-
 const {
   Hour, Minute, Literal, TimeZoneName,
 } = DateTimeFormatParts;
@@ -61,7 +59,7 @@ const tests = {
       },
     },
   ],
-  "ar": [
+  "ar-EG": [
     {
       date: 0,
       timeZone: "+13:37",

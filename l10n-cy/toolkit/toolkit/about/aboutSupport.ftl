@@ -15,6 +15,10 @@ support-addons-type = Math
 support-addons-enabled = Galluogwyd
 support-addons-version = Fersiwn
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Lleoliad
 legacy-user-stylesheets-title = Hen Ddalenni Arddull Defnyddiwr
 legacy-user-stylesheets-enabled = Gweithredol
 legacy-user-stylesheets-stylesheet-types = Dalenni arddull
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Effeithlonrwydd (%)
 place-database-stats-sequentiality-perc = Dilynianedd (%)
 place-database-integrity = Cyfanrwydd
 place-database-verify-integrity = Gwirio Cyfanrwydd
+place-database-last-idle-maintenance-data = Dyddiad Cynnal a Chadw Segur Diwethaf
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Dyddiad Gwactod Diwethaf
+place-database-last-integrity-corruption-date = Dyddiad Llygredd Uniondeb Diweddaf
 a11y-title = Hygyrchedd
 a11y-activated = Gweithredu
 a11y-force-disabled = Atal Hygyrchedd
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Cyfrifo'r gronfa ddata
 
 media-codec-support-sw-decoding = Datgodio Meddalwedd
 media-codec-support-hw-decoding = Datgodio Caledwedd
+media-codec-support-sw-encoding = Amgodio Meddalwedd
+media-codec-support-hw-encoding = Amgodio Caledwedd
 media-codec-support-codec-name = Enw Codec
 media-codec-support-supported = Cefnogaeth
 media-codec-support-unsupported = Heb eu Cynnal

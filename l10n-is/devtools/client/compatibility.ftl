@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Messages used as headers in the main pane
-
-
 ## Message used as labels for the type of issue
 
 compatibility-issue-deprecated = (úrelt)
@@ -32,8 +29,6 @@ compatibility-issue-occurrences =
         [one] { $number } tilvik
        *[other] { $number } tilvik
     }
-
 compatibility-no-issues-found = Engin samhæfnisvandamál fundust.
 compatibility-close-settings-button =
     .title = Loka stillingum
-

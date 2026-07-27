@@ -90,7 +90,7 @@ public:
 
     auto ret = UNSAFE_unverified();
     if (ret != nullptr) {
-      size_t bytes = sizeof(T) * count;
+      size_t bytes = sizeof(T_Pointed) * count;
       detail::check_range_doesnt_cross_app_sbx_boundary<T_Sbx>(ret, bytes);
     }
     return ret;
@@ -217,7 +217,7 @@ public:
   inline constexpr T_Wrap<T, T_Sbx> operator opSymbol##opSymbol(int)           \
   {                                                                            \
     tainted<T, T_Sbx> ret = impl();                                            \
-    operator++();                                                              \
+    operator opSymbol##opSymbol();                                                              \
     return ret;                                                                \
   }                                                                            \
   RLBOX_REQUIRE_SEMI_COLON
@@ -788,12 +788,20 @@ BinaryOpWrappedRhs(&);
 BinaryOpWrappedRhs(|);
 BinaryOpWrappedRhs(<<);
 BinaryOpWrappedRhs(>>);
+
+// GCC10.1 to GCC13 has a bug where it selects the wrong overload of operator==
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114549 . However C++ 20 also
+// provides reverse comparisons by default, and so we no longer need to define
+// them. Thus, from C++ 20, we do not define the reverse operators.
+#if __cplusplus < 202002L
 BinaryOpWrappedRhs(==);
 BinaryOpWrappedRhs(!=);
 BinaryOpWrappedRhs(<);
 BinaryOpWrappedRhs(<=);
 BinaryOpWrappedRhs(>);
 BinaryOpWrappedRhs(>=);
+#endif
+
 #undef BinaryOpWrappedRhs
 
 #define BooleanBinaryOpWrappedRhs(opSymbol)                                    \

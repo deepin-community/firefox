@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,13 +10,13 @@
 
 namespace mozilla {
 
-void SMILStringType::Init(SMILValue& aValue) const {
+void SMILStringType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
   aValue.mU.mPtr = new nsString();
   aValue.mType = this;
 }
 
-void SMILStringType::Destroy(SMILValue& aValue) const {
+void SMILStringType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value");
   delete static_cast<nsAString*>(aValue.mU.mPtr);
   aValue.mU.mPtr = nullptr;

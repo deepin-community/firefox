@@ -4,30 +4,44 @@
 
 package org.mozilla.fenix.components
 
+import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import mozilla.components.lib.crash.CrashReporter
+import mozilla.components.lib.crash.runtimetagproviders.BuildRuntimeTagProvider
+import mozilla.components.lib.crash.runtimetagproviders.EnvironmentRuntimeProvider
+import mozilla.components.lib.crash.runtimetagproviders.ExperimentDataRuntimeTagProvider
+import mozilla.components.lib.crash.runtimetagproviders.VersionInfoProvider
 import mozilla.components.lib.crash.sentry.SentryService
+import mozilla.components.lib.crash.sentry.eventprocessors.CrashMetadataEventProcessor
 import mozilla.components.lib.crash.service.CrashReporterService
 import mozilla.components.lib.crash.service.GleanCrashReporterService
-import mozilla.components.lib.crash.service.MozillaSocorroService
+import mozilla.components.lib.crash.service.socorro.MozillaSocorroService
+import mozilla.components.lib.crash.store.CrashReportOption
 import mozilla.components.support.ktx.android.content.isMainProcess
-import mozilla.components.support.utils.BrowsersCache
+import mozilla.components.support.utils.Browsers
 import mozilla.components.support.utils.RunWhenReadyQueue
+import mozilla.components.support.utils.ext.packageManagerCompatHelper
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ReleaseChannel
+import org.mozilla.fenix.components.metrics.AdjustMetricsService
 import org.mozilla.fenix.components.metrics.DefaultMetricsStorage
+import org.mozilla.fenix.components.metrics.FirstSessionMetricsService
 import org.mozilla.fenix.components.metrics.GleanMetricsService
+import org.mozilla.fenix.components.metrics.GleanProfileIdPreferenceStore
+import org.mozilla.fenix.components.metrics.GleanUsageReportingMetricsService
 import org.mozilla.fenix.components.metrics.InstallReferrerMetricsService
 import org.mozilla.fenix.components.metrics.MetricController
 import org.mozilla.fenix.components.metrics.MetricsStorage
 import org.mozilla.fenix.crashes.CrashFactCollector
-import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.crashes.NimbusExperimentDataProvider
+import org.mozilla.fenix.crashes.ReleaseRuntimeTagProvider
+import org.mozilla.fenix.crashes.crashReportOption
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.perf.lazyMonitored
 import org.mozilla.geckoview.BuildConfig.MOZ_APP_BUILDID
@@ -40,14 +54,12 @@ import org.mozilla.geckoview.BuildConfig.MOZ_UPDATE_CHANNEL
  */
 class Analytics(
     private val context: Context,
+    private val nimbusComponents: NimbusComponents,
     private val runWhenReadyQueue: RunWhenReadyQueue,
 ) {
     val crashReporter: CrashReporter by lazyMonitored {
         val services = mutableListOf<CrashReporterService>()
-        val distributionId = when (Config.channel.isMozillaOnline) {
-            true -> "MozillaOnline"
-            false -> "Mozilla"
-        }
+        val distributionId = "Mozilla"
 
         if (isSentryEnabled()) {
             // We treat caught exceptions similar to debug logging.
@@ -68,6 +80,7 @@ class Analytics(
                 sendEventForNativeCrashes = false, // Do not send native crashes to Sentry
                 sendCaughtExceptions = shouldSendCaughtExceptions,
                 sentryProjectUrl = getSentryProjectUrl(),
+                crashMetadataEventProcessor = CrashMetadataEventProcessor(),
             )
 
             // We only want to initialize Sentry on startup on the main process.
@@ -85,8 +98,6 @@ class Analytics(
         val socorroService = MozillaSocorroService(
             context,
             appName = "Fenix",
-            version = MOZ_APP_VERSION,
-            buildId = MOZ_APP_BUILDID,
             vendor = MOZ_APP_VENDOR,
             releaseChannel = MOZ_UPDATE_CHANNEL,
             distributionId = distributionId,
@@ -111,7 +122,15 @@ class Analytics(
         CrashReporter(
             context = context,
             services = services,
-            telemetryServices = listOf(GleanCrashReporterService(context)),
+            telemetryServices = listOf(
+                GleanCrashReporterService(
+                    context,
+                    appChannel = MOZ_UPDATE_CHANNEL,
+                    appVersion = MOZ_APP_VERSION,
+                    appBuildId = MOZ_APP_BUILDID,
+                    isUploadEnabled = context.settings().isTelemetryEnabled,
+                ),
+            ),
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             promptConfiguration = CrashReporter.PromptConfiguration(
                 appName = context.getString(R.string.app_name),
@@ -119,7 +138,19 @@ class Analytics(
             ),
             enabled = true,
             nonFatalCrashIntent = pendingIntent,
-            notificationsDelegate = context.components.notificationsDelegate,
+            useLegacyReporting =
+                context.settings().crashReportOption() != CrashReportOption.Auto &&
+                !context.settings().useNewCrashReporterFlow,
+            runtimeTagProviders = listOf(
+                ReleaseRuntimeTagProvider(),
+                BuildRuntimeTagProvider(context.versionInfoProvider),
+                EnvironmentRuntimeProvider(),
+                ExperimentDataRuntimeTagProvider(
+                    NimbusExperimentDataProvider(
+                        nimbusApi = lazyMonitored { nimbusComponents.sdk },
+                    ),
+                ),
+            ),
         )
     }
 
@@ -131,7 +162,7 @@ class Analytics(
         DefaultMetricsStorage(
             context = context,
             settings = context.settings(),
-            checkDefaultBrowser = { BrowsersCache.all(context).isDefaultBrowser },
+            checkDefaultBrowser = { Browsers.isDefaultBrowser(context) },
         )
     }
 
@@ -139,10 +170,20 @@ class Analytics(
         MetricController.create(
             listOf(
                 GleanMetricsService(context),
+                AdjustMetricsService(
+                    application = context as Application,
+                    storage = metricsStorage,
+                    crashReporter = crashReporter,
+                ),
+                FirstSessionMetricsService(context),
                 InstallReferrerMetricsService(context),
+                GleanUsageReportingMetricsService(gleanProfileIdStore = GleanProfileIdPreferenceStore(context)),
             ),
             isDataTelemetryEnabled = { context.settings().isTelemetryEnabled },
-            isMarketingDataTelemetryEnabled = { context.settings().isMarketingTelemetryEnabled },
+            isMarketingDataTelemetryEnabled = {
+                context.settings().isMarketingTelemetryEnabled && context.settings().hasMadeMarketingTelemetrySelection
+            },
+            isUsageTelemetryEnabled = { context.settings().isDailyUsagePingEnabled },
             context.settings(),
         )
     }
@@ -159,3 +200,12 @@ private fun getSentryProjectUrl(): String? {
         else -> null
     }
 }
+
+private val Context.versionInfoProvider: VersionInfoProvider
+    get() {
+        val packageInfo = applicationContext.packageManagerCompatHelper.getPackageInfoCompat(
+            applicationContext.packageName,
+            0,
+        )
+        return VersionInfoProvider.fromPackageInfo(packageInfo)
+    }

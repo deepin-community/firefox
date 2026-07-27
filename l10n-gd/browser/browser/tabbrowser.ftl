@@ -148,9 +148,6 @@ tabbrowser-confirm-caretbrowsing-title = Brabhsadh carait
 tabbrowser-confirm-caretbrowsing-message = Cuiridh tu brabhsadh carait air is dheth le F7. Cuiridh an gleus seo carait ghluasadach ann an duilleag-lìn agus ’s urrainn dhut teacsa a thaghadh leis a’ mheur-chlàr leis. A bheil thu airson brabhsadh carait a chur air a-nis?
 tabbrowser-confirm-caretbrowsing-checkbox = Na seall am bogsa-còmhraidh seo dhomh a-rithist.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -191,5 +188,7 @@ tabbrowser-ctrl-tab-list-all-tabs =
            *[other] Seall na tabaichean air fad ({ $tabCount })
         }
 
-## Tab manager menu buttons
+## Tab Notes
 
+tab-note-panel-add-note-new-badge =
+    .label = Ùr

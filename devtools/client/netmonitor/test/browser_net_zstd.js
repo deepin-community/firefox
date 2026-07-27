@@ -36,9 +36,9 @@ add_task(async function () {
   const requestsListStatus = requestItem.querySelector(".status-code");
   EventUtils.sendMouseEvent({ type: "mouseover" }, requestsListStatus);
   await waitUntil(() => requestsListStatus.title);
-  await waitForDOMIfNeeded(requestItem, ".requests-list-timings-total");
+  await waitForDOM(requestItem, ".requests-list-timings-total");
 
-  verifyRequestItemTarget(
+  await verifyRequestItemTarget(
     document,
     getDisplayedRequests(store.getState()),
     getSortedRequests(store.getState())[0],
@@ -55,7 +55,7 @@ add_task(async function () {
     }
   );
 
-  const wait = waitForDOM(document, ".CodeMirror-code");
+  const wait = waitForDOM(document, ".cm-content");
   const onResponseContent = monitor.panelWin.api.once(
     TEST_EVENTS.RECEIVED_RESPONSE_CONTENT
   );

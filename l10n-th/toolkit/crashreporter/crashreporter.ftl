@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } มีปัญหา�
 crashreporter-plea = เพื่อช่วยเราวินิจฉัยและแก้ไขปัญหา คุณสามารถส่งรายงานข้อขัดข้องให้กับเรา
 crashreporter-information = แอปพลิเคชันนี้จะทำงานหลังจากเกิดข้อขัดข้องเพื่อรายงานปัญหาไปยัง { -vendor-short-name } แอปพลิเคชันไม่ควรถูกเรียกใช้โดยตรง
 crashreporter-error = { -brand-short-name } มีปัญหาและขัดข้อง โชคไม่ดีที่เครื่องมือรายงานข้อขัดข้องไม่สามารถส่งรายงานข้อขัดข้องนี้ได้
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = รายละเอียด: { $details }
+crashreporter-error-details-header = รายละเอียด:
 crashreporter-no-run-message = แอปพลิเคชันนี้จะทำงานหลังจากเกิดข้อขัดข้องเพื่อรายงานปัญหาไปยังผู้จำหน่ายแอปพลิเคชัน  แอปพลิเคชันไม่ควรถูกเรียกใช้โดยตรง
 crashreporter-button-details = รายละเอียด…
 crashreporter-loading-details = กำลังโหลด…
 crashreporter-view-report-title = เนื้อหารายงาน
 crashreporter-comment-prompt = เพิ่มความคิดเห็น (ความคิดเห็นจะปรากฏต่อสาธารณะ)
 crashreporter-report-info = รายงานนี้ยังมีข้อมูลทางเทคนิคเกี่ยวกับสถานะของแอปพลิเคชันขณะขัดข้อง
-crashreporter-send-report = แจ้ง { -vendor-short-name } เกี่ยวกับข้อขัดข้องนี้เพื่อให้พวกเขาสามารถแก้ไขปัญหาได้
-crashreporter-include-url = รวมที่อยู่ของหน้าที่ฉันเข้าชมอยู่
+crashreporter-checkbox-test-hardware = ตรวจสอบปัญหาเกี่ยวกับฮาร์ดแวร์และการกำหนดค่าบนอุปกรณ์ของฉัน
+crashreporter-checkbox-send-report = แจ้ง { -vendor-short-name } เกี่ยวกับข้อขัดข้องนี้เพื่อให้พวกเขาสามารถแก้ไขปัญหาได้
+crashreporter-checkbox-include-url = รวมที่อยู่ของหน้าที่ฉันเข้าชมอยู่
 crashreporter-submit-status = จะส่งรายงานข้อขัดข้องของคุณก่อนที่คุณจะออกหรือเริ่มการทำงานใหม่
+crashreporter-submit-waiting-hardware-tests = กำลังตรวจสอบปัญหาเกี่ยวกับฮาร์ดแวร์และการกำหนดค่า…
 crashreporter-submit-in-progress = กำลังส่งรายงานของคุณ…
 crashreporter-submit-success = ส่งรายงานสำเร็จ!
 crashreporter-submit-failure = เกิดปัญหาในการส่งรายงานของคุณ
@@ -34,7 +35,6 @@ crashreporter-crash-details = คุณสามารถดูรายละ�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = ไม่สามารถเรียกใช้ minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = ไม่สามารถเปิดไฟล์ ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = ไดเรกทอรีบ้านหา�
 # $to (String) - the destination path
 crashreporter-error-moving-path = ไม่สามารถย้าย { $from } ไปยัง { $to }
 crashreporter-error-version-eol = รุ่นนี้สิ้นอายุการใช้งาน: ไม่รับรายงานข้อขัดข้องอีกต่อไปแล้ว
+crashreporter-error-failed-to-generate-minidump = แอปพลิเคชันไม่สามารถสร้างข้อมูลข้อขัดข้องได้

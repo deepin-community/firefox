@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,6 +15,7 @@
 
 #ifdef MOZ_WAYLAND
 #  include "mozilla/StaticPrefs_widget.h"
+#  include "WindowSurfaceCairo.h"
 #  include "WindowSurfaceWaylandMultiBuffer.h"
 #endif
 #ifdef MOZ_X11
@@ -114,6 +114,9 @@ RefPtr<WindowSurface> WindowSurfaceProvider::CreateWindowSurface() {
     if (!mWidget) {
       return nullptr;
     }
+    if (mWidget->IsDragPopup()) {
+      return MakeRefPtr<WindowSurfaceCairo>(mWidget);
+    }
     return MakeRefPtr<WindowSurfaceWaylandMB>(mWidget, mCompositorWidget);
   }
 #endif
@@ -149,8 +152,7 @@ MOZ_PUSH_IGNORE_THREAD_SAFETY
 
 already_AddRefed<gfx::DrawTarget>
 WindowSurfaceProvider::StartRemoteDrawingInRegion(
-    const LayoutDeviceIntRegion& aInvalidRegion,
-    layers::BufferMode* aBufferMode) {
+    const LayoutDeviceIntRegion& aInvalidRegion) {
   if (aInvalidRegion.IsEmpty()) {
     return nullptr;
   }
@@ -175,7 +177,6 @@ WindowSurfaceProvider::StartRemoteDrawingInRegion(
     }
   }
 
-  *aBufferMode = BufferMode::BUFFER_NONE;
   RefPtr<gfx::DrawTarget> dt = mWindowSurface->Lock(aInvalidRegion);
 #ifdef MOZ_X11
   if (!dt && GdkIsX11Display() && !mWindowSurface->IsFallback()) {
@@ -206,33 +207,6 @@ void WindowSurfaceProvider::EndRemoteDrawingInRegion(
   if (!mWindowSurface || !mWindowSurfaceValid) {
     return;
   }
-#if defined(MOZ_WAYLAND)
-  if (GdkIsWaylandDisplay()) {
-    // We're called too early or we're unmapped.
-    // Don't draw anything.
-    if (!mWidget || !mWidget->IsMapped()) {
-      return;
-    }
-    if (moz_container_wayland_is_commiting_to_parent(
-            mWidget->GetMozContainer())) {
-      // If we're drawing directly to wl_surface owned by Gtk we need to use it
-      // in main thread to sync with Gtk access to it.
-      NS_DispatchToMainThread(NS_NewRunnableFunction(
-          "WindowSurfaceProvider::EndRemoteDrawingInRegion",
-          [widget = RefPtr{mWidget}, this, aInvalidRegion]() {
-            if (!widget->IsMapped()) {
-              return;
-            }
-            MutexAutoLock lock(mMutex);
-            // Commit to mWindowSurface only when we have a valid one.
-            if (mWindowSurface && mWindowSurfaceValid) {
-              mWindowSurface->Commit(aInvalidRegion);
-            }
-          }));
-      return;
-    }
-  }
-#endif
   mWindowSurface->Commit(aInvalidRegion);
 }
 

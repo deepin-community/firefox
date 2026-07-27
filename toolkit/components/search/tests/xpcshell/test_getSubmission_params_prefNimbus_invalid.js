@@ -46,26 +46,33 @@ const CONFIG = [
 add_setup(async function () {
   consoleAllowList.push("Failed to load nimbus variables for extraParams");
 
-  updateStub = sinon.stub(NimbusFeatures.search, "onUpdate");
-  getVariableStub = sinon.stub(NimbusFeatures.search, "getVariable");
-  sinon.stub(NimbusFeatures.search, "ready").resolves();
+  updateStub = sinon.stub(NimbusFeatures.searchConfiguration, "onUpdate");
+  getVariableStub = sinon.stub(
+    NimbusFeatures.searchConfiguration,
+    "getVariable"
+  );
+  sinon.stub(NimbusFeatures.searchConfiguration, "ready").resolves();
 
   // The test engines used in this test need to be recognized as application
   // provided engines, or their MozParams will be ignored.
   SearchTestUtils.setRemoteSettingsConfig(CONFIG);
+
+  registerCleanupFunction(async () => {
+    sinon.restore();
+  });
 });
 
 add_task(async function test_bad_nimbus_setting_on_init() {
   getVariableStub.withArgs("extraParams").returns({ foo: "bar" });
 
-  await Services.search.init();
+  await SearchService.init();
 
   Assert.ok(
     updateStub.called,
     "Should have called onUpdate to listen for future updates"
   );
 
-  const engine = Services.search.getEngineById("preferenceEngine");
+  const engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "q=foo",
@@ -86,7 +93,7 @@ add_task(async function test_switch_to_good_nimbus_setting() {
 
   updateStub.firstCall.args[0]();
 
-  const engine = Services.search.getEngineById("preferenceEngine");
+  const engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "code=supergood%26id%3Dunique123456&q=foo",
@@ -101,7 +108,7 @@ add_task(async function test_switch_back_to_bad_nimbus_setting() {
 
   updateStub.firstCall.args[0]();
 
-  const engine = Services.search.getEngineById("preferenceEngine");
+  const engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "q=foo",

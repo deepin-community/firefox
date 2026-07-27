@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,14 +6,13 @@
 #define DOM_SVG_DOMSVGLENGTH_H_
 
 #include "DOMSVGLengthList.h"
+#include "SVGLength.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsTArray.h"
-#include "SVGLength.h"
-#include "mozilla/Attributes.h"
 #include "nsWrapperCache.h"
 
-#define MOZ_SVG_LIST_INDEX_BIT_COUNT 22  // supports > 4 million list items
+#define MOZ_SVG_LIST_INDEX_BIT_COUNT 21  // supports > 2 million list items
 
 namespace mozilla {
 
@@ -133,7 +130,10 @@ class DOMSVGLength final : public nsWrapperCache {
   }
 
   /// This method is called to notify this object that its list index changed.
-  void UpdateListIndex(uint32_t aListIndex) { mListIndex = aListIndex; }
+  void UpdateListIndex(uint32_t aListIndex) {
+    MOZ_RELEASE_ASSERT(aListIndex <= MaxListIndex());
+    mListIndex = aListIndex;
+  }
 
   /**
    * This method is called to notify this DOM object that it is about to be
@@ -203,6 +203,13 @@ class DOMSVGLength final : public nsWrapperCache {
   uint32_t mListIndex : MOZ_SVG_LIST_INDEX_BIT_COUNT;
   uint32_t mAttrEnum : 4;  // supports up to 16 attributes
   uint32_t mIsAnimValItem : 1;
+
+  // Tracks whether we're in the tearoff table. Initialized to false in the
+  // ctor, but then immediately set to true after we're added to the table
+  // (unless we're an instance created via 'Copy()'; those never get added to
+  // the table).  Updated to false when we're removed from the table (at which
+  // point we're being destructed or soon-to-be destructed).
+  uint32_t mIsInTearoffTable : 1;
 
   // The following members are only used when we're not in a list:
   uint32_t mUnit : 5;  // can handle 31 units (the 10 SVG 1.1 units + rem, vw,

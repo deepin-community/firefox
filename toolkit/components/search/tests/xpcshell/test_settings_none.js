@@ -15,7 +15,7 @@ add_setup(async function () {
 });
 
 add_task(async function test_nosettings() {
-  let search = Services.search;
+  let search = SearchService;
 
   let afterSettingsPromise = promiseAfterSettings();
 
@@ -30,7 +30,7 @@ add_task(async function test_nosettings() {
   Assert.ok(settingsFile.exists());
 
   await SearchTestUtils.installOpenSearchEngine({
-    url: `${gDataUrl}engine.xml`,
+    url: `${gHttpURL}/opensearch/generic1.xml`,
   });
 
   info("Engine has been added, let's wait for the settings to be built");

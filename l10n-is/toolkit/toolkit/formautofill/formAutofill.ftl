@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } er að reyna
 autofill-edit-payment-method-os-prompt-macos = birta geymdar greiðslumátaupplýsingar
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } er að reyna að birta vistaðar upplýsingar um greiðslumáta. Staðfestu aðgang að þessum Windows reikningi hér að neðan.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } er að reyna að birta vistaðar upplýsingar um greiðslumáta.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Stillingar fyrir sjálfvirkar útfyllingar
 autofill-options-link-osx = Stillingar fyrir sjálfvirkar útfyllingar
 
@@ -81,3 +81,6 @@ autofill-category-name = nafn
 autofill-category-organization = fyrirtæki
 autofill-category-tel = sími
 autofill-category-email = tölvupóstfang
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } uppgötvaði óöruggt vefsvæði. Slökkt er tímabundið á sjálfvirkri útfyllingu.

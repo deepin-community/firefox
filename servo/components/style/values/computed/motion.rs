@@ -4,6 +4,7 @@
 
 //! Computed types for CSS values that are related to motion path.
 
+use crate::derives::*;
 use crate::values::computed::basic_shape::BasicShape;
 use crate::values::computed::url::ComputedUrl;
 use crate::values::computed::{Angle, LengthPercentage, Position};
@@ -44,8 +45,10 @@ fn is_auto_zero_angle(auto: &bool, angle: &Angle) -> bool {
     ToAnimatedZero,
     ToCss,
     ToResolvedValue,
+    ToTyped,
 )]
 #[repr(C)]
+#[typed(todo_derive_fields)]
 pub struct OffsetRotate {
     /// If auto is false, this is a fixed angle which indicates a
     /// constant clockwise rotation transformation applied to it by this

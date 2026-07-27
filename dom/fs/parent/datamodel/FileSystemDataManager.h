@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,12 +7,14 @@
 
 #include "FileSystemParentTypes.h"
 #include "ResultConnection.h"
+#include "mozilla/Atomics.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/ThreadBound.h"
 #include "mozilla/dom/FileSystemHelpers.h"
 #include "mozilla/dom/FileSystemTypes.h"
 #include "mozilla/dom/quota/CheckedUnsafePtr.h"
+#include "mozilla/dom/quota/ClientDirectoryLockHandle.h"
 #include "mozilla/dom/quota/CommonMetadata.h"
 #include "mozilla/dom/quota/ForwardDecls.h"
 #include "nsCOMPtr.h"
@@ -38,7 +38,7 @@ class FileSystemChildMetadata;
 }  // namespace fs
 
 namespace quota {
-class DirectoryLock;
+class ClientDirectoryLock;
 class QuotaManager;
 }  // namespace quota
 
@@ -99,8 +99,8 @@ class FileSystemDataManager
     return mIOTaskQueue.get();
   }
 
-  Maybe<quota::DirectoryLock&> MaybeDirectoryLockRef() const {
-    return ToMaybeRef(mDirectoryLock.get());
+  Maybe<quota::ClientDirectoryLock&> MaybeDirectoryLockRef() const {
+    return ToMaybeRef(mDirectoryLockHandle.get());
   }
 
   FileSystemDatabaseManager* MutableDatabaseManagerPtr() const {
@@ -140,6 +140,11 @@ class FileSystemDataManager
   void UnlockShared(const EntryId& aEntryId, const FileId& aFileId,
                     bool aAbort);
 
+  void DeprecateSharedLocks(const EntryId& aEntryId, const FileId& aFileId);
+
+  bool IsLockedWithDeprecatedSharedLock(const EntryId& aEntryId,
+                                        const FileId& aFileId) const;
+
   FileMode GetMode(bool aKeepData) const;
 
  protected:
@@ -167,16 +172,18 @@ class FileSystemDataManager
   const quota::OriginMetadata mOriginMetadata;
   nsTHashSet<EntryId> mExclusiveLocks;
   nsTHashMap<EntryId, uint32_t> mSharedLocks;
+  nsTHashMap<EntryId, nsTArray<FileId>> mDeprecatedLocks;
   NS_DECL_OWNINGEVENTTARGET
   const RefPtr<quota::QuotaManager> mQuotaManager;
   const NotNull<nsCOMPtr<nsISerialEventTarget>> mBackgroundTarget;
   const NotNull<nsCOMPtr<nsIEventTarget>> mIOTarget;
   const NotNull<RefPtr<TaskQueue>> mIOTaskQueue;
-  RefPtr<quota::DirectoryLock> mDirectoryLock;
+  quota::ClientDirectoryLockHandle mDirectoryLockHandle;
   UniquePtr<FileSystemDatabaseManager> mDatabaseManager;
   MozPromiseHolder<BoolPromise> mOpenPromiseHolder;
   MozPromiseHolder<BoolPromise> mClosePromiseHolder;
-  uint32_t mRegCount;
+  int64_t mDirectoryLockId;
+  Atomic<uint32_t, Relaxed> mRegCount;
   DatabaseVersion mVersion;
   State mState;
 };

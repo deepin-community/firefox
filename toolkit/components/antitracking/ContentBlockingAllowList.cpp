@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -104,7 +102,7 @@ ContentBlockingAllowList::ComputeContentBlockingAllowListPrincipal(
   nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
   nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
 
-  Unused << loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
+  (void)loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
 
   return ContentBlockingAllowList::Check(cookieJarSettings);
 }
@@ -112,7 +110,7 @@ ContentBlockingAllowList::ComputeContentBlockingAllowListPrincipal(
 nsresult ContentBlockingAllowList::Check(
     nsIPrincipal* aContentBlockingAllowListPrincipal, bool aIsPrivateBrowsing,
     bool& aIsAllowListed) {
-  MOZ_ASSERT(XRE_IsParentProcess());
+  MOZ_ASSERT(NS_IsMainThread());
   aIsAllowListed = false;
 
   if (!aContentBlockingAllowListPrincipal) {
@@ -124,7 +122,7 @@ nsresult ContentBlockingAllowList::Check(
             _spec),
            aContentBlockingAllowListPrincipal);
 
-  PermissionManager* permManager = PermissionManager::GetInstance();
+  RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
   NS_ENSURE_TRUE(permManager, NS_ERROR_FAILURE);
 
   // Check both the normal mode and private browsing mode user override
@@ -317,7 +315,7 @@ nsresult ContentBlockingAllowListCache::EnsureInit() {
   mIsInitialized = true;
 
   // 1. Get all permissions representing allow-list entries.
-  PermissionManager* permManager = PermissionManager::GetInstance();
+  RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
   NS_ENSURE_TRUE(permManager, NS_ERROR_FAILURE);
 
   nsTArray<nsCString> types = GetAllowListPermissionTypes();

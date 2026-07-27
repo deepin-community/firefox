@@ -5,7 +5,6 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=721569
 -->
 <head>
   <title>Test for Blob constructor (Bug 721569)</title>
-  <script type="text/javascript" src="/MochiKit/MochiKit.js"></script>
   <script src="/tests/SimpleTest/SimpleTest.js"></script>
   <script type="text/javascript" src="common_blob.js"></script>
   <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css" />
@@ -19,7 +18,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=721569
 <pre id="test">
 <script class="testbody" type="text/javascript">
 "use strict";
-/** Test for Bug 721569 **/
+/** Test for Bug 721569 */
 var blob = new Blob();
 ok(blob, "Blob should exist");
 
@@ -84,7 +83,7 @@ ok(false, "NOT REACHED");
 ok(true, "a string options member should throw");
 }
 
-/** Test for dictionary initialization order **/
+/** Test for dictionary initialization order */
 (function() {
   var o = {};
   var p = {type: "text/plain", endings: "transparent"};

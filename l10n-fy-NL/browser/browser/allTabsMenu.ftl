@@ -9,10 +9,27 @@ all-tabs-menu-new-user-context =
     .label = Nij kontenerljepblêd
 all-tabs-menu-hidden-tabs =
     .label = Ferstoppe ljepblêden
+all-tabs-menu-close-duplicate-tabs =
+    .label = Dûbele ljepblêden slute
+all-tabs-menu-view-all-tabs =
+    .label = Alle ljepblêden besjen
 all-tabs-menu-manage-user-context =
     .label = Konteners beheare
     .accesskey = K
-all-tabs-menu-close-duplicate-tabs =
-    .label = Dûbele ljepblêden slute
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Alle dûbele ljepblêden slute
+all-tabs-menu-synced-tabs =
+    .label = Ljepblêden fan oare apparaten
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Resinte ljepblêdgroepen
+all-tabs-menu-current-window-header = Aktuele finster
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Alles toane
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Ljepblêdgroepen
+# "Search" is a verb, as in "Search through all tabs".
+all-tabs-menu-search-all-tabs =
+    .label = Alle ljepblêden trochsykje

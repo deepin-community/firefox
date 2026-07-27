@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,6 +31,7 @@
 #include "js/AllocPolicy.h"
 #include "js/CharacterEncoding.h"  // JS::ConstUTF8CharsZ
 #include "js/ColumnNumber.h"       // JS::ColumnNumberOneOrigin
+#include "js/Exception.h"          // JS::BorrowedErrorReport
 #include "js/RootingAPI.h"         // JS::HandleObject, JS::RootedObject
 #include "js/UniquePtr.h"          // js::UniquePtr
 #include "js/Value.h"              // JS::Value
@@ -89,6 +89,9 @@ enum JSExnType {
   JSEXN_WASMCOMPILEERROR,
   JSEXN_WASMLINKERROR,
   JSEXN_WASMRUNTIMEERROR,
+#ifdef ENABLE_WASM_JSPI
+  JSEXN_WASMSUSPENDERROR,
+#endif
   JSEXN_ERROR_LIMIT,
   // Warnings
   JSEXN_WARN = JSEXN_ERROR_LIMIT,
@@ -406,14 +409,19 @@ struct MOZ_STACK_CLASS JS_PUBLIC_API ErrorReportBuilder {
   // Reports exceptions from add-on scopes to telemetry.
   void ReportAddonExceptionToTelemetry(JSContext* cx);
 
-  // We may have a provided JSErrorReport, so need a way to represent that.
+  // Maybe create an (owned) JSErrorReport when obj is a DOM Exception object.
+  // Return the "toStringResult" str.
+  JSString* maybeCreateReportFromDOMException(JS::HandleObject obj,
+                                              JSContext* cx);
+
+  // If non-nullptr, this is either |&ownedReport| or |borrowedReport.report_|.
   JSErrorReport* reportp;
 
   // Or we may need to synthesize a JSErrorReport one of our own.
   JSErrorReport ownedReport;
 
-  // Root our exception value to keep a possibly borrowed |reportp| alive.
-  JS::RootedObject exnObject;
+  // Used to keep a possibly borrowed |reportp| alive.
+  JS::BorrowedErrorReport borrowedReport;
 
   // And for our filename.
   JS::UniqueChars filename;
@@ -552,6 +560,20 @@ extern JS_PUBLIC_API bool CreateError(
     uint32_t lineNumber, JS::ColumnNumberOneOrigin column,
     JSErrorReport* report, HandleString message,
     Handle<mozilla::Maybe<Value>> cause, MutableHandleValue rval);
+
+/**
+ * An uncatchable exception is used to terminate execution by returning false
+ * or nullptr without reporting a pending exception on the context. These
+ * exceptions are called "uncatchable" because try-catch can't be used to catch
+ * them.
+ *
+ * This is mainly used to terminate JS execution from the interrupt handler.
+ *
+ * If the context has a pending exception, this function will clear it. Also, in
+ * debug builds, it sets a flag on the context to improve exception handling
+ * assertions in the engine.
+ */
+extern JS_PUBLIC_API void ReportUncatchableException(JSContext* cx);
 
 } /* namespace JS */
 

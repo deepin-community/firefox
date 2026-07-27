@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,8 +19,9 @@
 #include "aom/aom_integer.h"
 #include "aom/internal/aom_image_internal.h"
 #include "aom_mem/aom_mem.h"
+#include "aom/aom_codec.h"
 
-static INLINE unsigned int align_image_dimension(unsigned int d,
+static inline unsigned int align_image_dimension(unsigned int d,
                                                  unsigned int subsampling,
                                                  unsigned int size_align) {
   unsigned int align;
@@ -27,6 +29,21 @@ static INLINE unsigned int align_image_dimension(unsigned int d,
   align = (1 << subsampling) - 1;
   align = (size_align - 1 > align) ? (size_align - 1) : align;
   return ((d + align) & ~align);
+}
+
+static bool is_valid_img_fmt(aom_img_fmt_t fmt) {
+  switch (fmt) {
+    case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_I420:
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I444:
+    case AOM_IMG_FMT_NV12:
+    case AOM_IMG_FMT_I42016:
+    case AOM_IMG_FMT_YV1216:
+    case AOM_IMG_FMT_I42216:
+    case AOM_IMG_FMT_I44416: return true;
+    default: return false;
+  }
 }
 
 static aom_image_t *img_alloc_helper(
@@ -41,7 +58,7 @@ static aom_image_t *img_alloc_helper(
 
   if (img != NULL) memset(img, 0, sizeof(aom_image_t));
 
-  if (fmt == AOM_IMG_FMT_NONE) goto fail;
+  if (!is_valid_img_fmt(fmt)) goto fail;
 
   /* Impose maximum values on input parameters so that this function can
    * perform arithmetic operations without worrying about overflows.
@@ -73,9 +90,7 @@ static aom_image_t *img_alloc_helper(
   switch (fmt) {
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
-    case AOM_IMG_FMT_NV12:
-    case AOM_IMG_FMT_AOMI420:
-    case AOM_IMG_FMT_AOMYV12: bps = 12; break;
+    case AOM_IMG_FMT_NV12: bps = 12; break;
     case AOM_IMG_FMT_I422: bps = 16; break;
     case AOM_IMG_FMT_I444: bps = 24; break;
     case AOM_IMG_FMT_YV1216:
@@ -92,8 +107,6 @@ static aom_image_t *img_alloc_helper(
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_NV12:
-    case AOM_IMG_FMT_AOMI420:
-    case AOM_IMG_FMT_AOMYV12:
     case AOM_IMG_FMT_I422:
     case AOM_IMG_FMT_I42016:
     case AOM_IMG_FMT_YV1216:
@@ -105,8 +118,6 @@ static aom_image_t *img_alloc_helper(
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_NV12:
-    case AOM_IMG_FMT_AOMI420:
-    case AOM_IMG_FMT_AOMYV12:
     case AOM_IMG_FMT_YV1216:
     case AOM_IMG_FMT_I42016: ycs = 1; break;
     default: ycs = 0; break;
@@ -179,6 +190,10 @@ static aom_image_t *img_alloc_helper(
     img->stride[AOM_PLANE_U] *= 2;
     img->stride[AOM_PLANE_V] = 0;
   }
+
+  img->cp = AOM_CICP_CP_UNSPECIFIED;
+  img->tc = AOM_CICP_TC_UNSPECIFIED;
+  img->mc = AOM_CICP_MC_UNSPECIFIED;
 
   /* Default viewport to entire image. (This aom_img_set_rect call always
    * succeeds.) */
@@ -379,12 +394,21 @@ int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
     img->metadata = aom_img_metadata_array_alloc(0);
     if (!img->metadata) return -1;
   }
+  // Some metadata types are not allowed to be layer specific, according to
+  // the Table in Section 6.7.1 of the AV1 specifiction.
+  // Do not check for OBU_METADATA_TYPE_HDR_CLL or OBU_METADATA_TYPE_HDR_MDCV
+  // because there are plans to alow them to be layer specific.
+  if ((insert_flag & AOM_MIF_LAYER_SPECIFIC) &&
+      (type == OBU_METADATA_TYPE_SCALABILITY ||
+       type == OBU_METADATA_TYPE_TIMECODE)) {
+    return -1;
+  }
   aom_metadata_t *metadata =
       aom_img_metadata_alloc(type, data, sz, insert_flag);
   if (!metadata) return -1;
-  aom_metadata_t **metadata_array =
-      (aom_metadata_t **)realloc(img->metadata->metadata_array,
-                                 (img->metadata->sz + 1) * sizeof(metadata));
+  aom_metadata_t **metadata_array = (aom_metadata_t **)realloc(
+      img->metadata->metadata_array,
+      (img->metadata->sz + 1) * sizeof(*metadata_array));
   if (!metadata_array) {
     aom_img_metadata_free(metadata);
     return -1;

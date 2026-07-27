@@ -1,4 +1,3 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,8 +7,7 @@
 #include "HashStore.h"
 #include "nsIFileStreams.h"
 #include "nsISeekableStream.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/UrlClassifierMetrics.h"
 #include "mozilla/Logging.h"
 #include "nsNetUtil.h"
 #include "nsCheckSummedOutputStream.h"
@@ -19,6 +17,8 @@
 #include "nsUrlClassifierInfo.h"
 #include "nsUrlClassifierUtils.h"
 #include "nsUrlClassifierDBService.h"
+#include "mozilla/StaticPrefs_urlclassifier.h"
+#include "mozilla/ProfilerMarkers.h"
 
 #ifdef DEBUG
 #  include "nsPrintfCString.h"
@@ -185,6 +185,7 @@ LookupCache::LookupCache(const nsACString& aTableName,
                          const nsACString& aProvider,
                          nsCOMPtr<nsIFile>& aRootStoreDir)
     : mPrimed(false),
+      mNeedCRC32Verification(false),
       mTableName(aTableName),
       mProvider(aProvider),
       mRootStoreDirectory(aRootStoreDir),
@@ -203,7 +204,7 @@ nsresult LookupCache::Open() {
     rv = LoadPrefixSet();
   }
 
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 
   return rv;
 }
@@ -362,6 +363,7 @@ void LookupCache::ClearAll() {
   ClearCache();
   ClearPrefixes();
   mPrimed = false;
+  mNeedCRC32Verification = false;
 }
 
 nsresult LookupCache::ClearPrefixes() {
@@ -440,7 +442,7 @@ bool LookupCache::IsCanonicalizedIP(const nsACString& aHost) {
 // third.party.domain. This is to make sure we can find a match when a
 // exceptionlisted domain is eTLD.
 /* static */
-nsresult LookupCache::GetLookupEntitylistFragments(
+void LookupCache::GetLookupEntitylistFragments(
     const nsACString& aSpec, nsTArray<nsCString>* aFragments) {
   aFragments->Clear();
 
@@ -455,7 +457,8 @@ nsresult LookupCache::GetLookupEntitylistFragments(
   // "/?resoruce=" because this means the URL is not generated in
   // CreatePairwiseEntityListURI()
   if (!FindInReadable("/?resource="_ns, iter, iter_end)) {
-    return GetLookupFragments(aSpec, aFragments);
+    GetLookupFragments(aSpec, aFragments);
+    return;
   }
 
   const nsACString& topLevelURL = Substring(begin, iter++);
@@ -500,7 +503,7 @@ nsresult LookupCache::GetLookupEntitylistFragments(
     if (FindCharInReadable('.', iter, end)) {
       iter++;
       nsAutoCString thirdPartyURLToAdd;
-      thirdPartyURLToAdd.Assign(Substring(iter++, end));
+      thirdPartyURLToAdd.Assign(Substring(iter, end));
 
       // don't bother checking toplevel domains
       if (FindCharInReadable('.', iter, end)) {
@@ -519,13 +522,11 @@ nsresult LookupCache::GetLookupEntitylistFragments(
       aFragments->AppendElement(key);
     }
   }
-
-  return NS_OK;
 }
 
 /* static */
-nsresult LookupCache::GetLookupFragments(const nsACString& aSpec,
-                                         nsTArray<nsCString>* aFragments)
+void LookupCache::GetLookupFragments(const nsACString& aSpec,
+                                     nsTArray<nsCString>* aFragments)
 
 {
   aFragments->Clear();
@@ -536,7 +537,7 @@ nsresult LookupCache::GetLookupFragments(const nsACString& aSpec,
 
   iter = begin;
   if (!FindCharInReadable('/', iter, end)) {
-    return NS_OK;
+    return;
   }
 
   const nsACString& host = Substring(begin, iter++);
@@ -624,8 +625,6 @@ nsresult LookupCache::GetLookupFragments(const nsACString& aSpec,
       aFragments->AppendElement(key);
     }
   }
-
-  return NS_OK;
 }
 
 nsresult LookupCache::LoadPrefixSet() {
@@ -718,9 +717,9 @@ nsresult LookupCache::StoreToFile(nsCOMPtr<nsIFile>& aFile) {
   // Preallocate the file storage
   {
     nsCOMPtr<nsIFileOutputStream> fos(do_QueryInterface(localOutFile));
-    Telemetry::AutoTimer<Telemetry::URLCLASSIFIER_VLPS_FALLOCATE_TIME> timer;
+    auto timer = glean::urlclassifier::vlps_fallocate_time.Measure();
 
-    Unused << fos->Preallocate(fileSize);
+    (void)fos->Preallocate(fileSize);
   }
 
   nsCOMPtr<nsIOutputStream> out;
@@ -756,14 +755,16 @@ nsresult LookupCache::StoreToFile(nsCOMPtr<nsIFile>& aFile) {
   LOG(("[%s] Storing PrefixSet successful", mTableName.get()));
 
   // This is to remove old ".pset" files if exist
-  Unused << ClearLegacyFile();
+  (void)ClearLegacyFile();
   return NS_OK;
 }
 
 nsresult LookupCache::LoadFromFile(nsCOMPtr<nsIFile>& aFile) {
   NS_ENSURE_ARG_POINTER(aFile);
+  AUTO_PROFILER_MARKER_UNTYPED("LookupCache::LoadFromFile", OTHER,
+                               MarkerTiming::IntervalStart());
 
-  Telemetry::AutoTimer<Telemetry::URLCLASSIFIER_VLPS_FILELOAD_TIME> timer;
+  auto timer = glean::urlclassifier::vlps_fileload_time.Measure();
 
   nsCOMPtr<nsIInputStream> localInFile;
   nsresult rv = NS_NewLocalFileInputStream(getter_AddRefs(localInFile), aFile,
@@ -814,16 +815,66 @@ nsresult LookupCache::LoadFromFile(nsCOMPtr<nsIFile>& aFile) {
     return rv;
   }
 
-  // Load crc32 checksum and verify
-  rv = VerifyCRC32(in);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return rv;
+  if (StaticPrefs::urlclassifier_delay_prefixes_crc32_check()) {
+    // To improve the startup performance, we don't verify the CRC32 checksum
+    // here. We will verify it in the next list update. So, we mark the
+    // verification as needed.
+    mNeedCRC32Verification = true;
+  } else {
+    // Load crc32 checksum and verify
+    rv = VerifyCRC32(in);
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return rv;
+    }
   }
 
   mPrimed = true;
 
   LOG(("[%s] Loading PrefixSet successful", mTableName.get()));
   return NS_OK;
+}
+
+bool LookupCache::MaybeVerifyCRC32() {
+  // We only perform the CRC32 check if necessary. We set the flag after we load
+  // prefix file from disk.
+  if (!mNeedCRC32Verification) {
+    return true;
+  }
+
+  // Clear the flag after we verify the CRC32 to stop unnecessary verification.
+  mNeedCRC32Verification = false;
+
+  // Prepare the buffer input stream for verifying CRC32.
+  nsCOMPtr<nsIFile> psFile;
+  nsresult rv = mStoreDirectory->Clone(getter_AddRefs(psFile));
+  NS_ENSURE_SUCCESS(rv, false);
+
+  rv = psFile->AppendNative(mTableName + GetPrefixSetSuffix());
+  NS_ENSURE_SUCCESS(rv, false);
+
+  nsCOMPtr<nsIInputStream> fileIn;
+  rv = NS_NewLocalFileInputStream(getter_AddRefs(fileIn), psFile,
+                                  PR_RDONLY | nsIFile::OS_READAHEAD);
+  NS_ENSURE_SUCCESS(rv, false);
+
+  int64_t fileSize;
+  rv = psFile->GetFileSize(&fileSize);
+  NS_ENSURE_SUCCESS(rv, false);
+
+  uint32_t bufferSize =
+      std::min<uint32_t>(static_cast<uint32_t>(fileSize), MAX_BUFFER_SIZE);
+
+  nsCOMPtr<nsIInputStream> in;
+  rv = NS_NewBufferedInputStream(getter_AddRefs(in), fileIn.forget(),
+                                 bufferSize);
+  NS_ENSURE_SUCCESS(rv, false);
+
+  rv = VerifyCRC32(in);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return false;
+  }
+
+  return true;
 }
 
 // This function assumes CRC32 checksum is in the end of the input stream

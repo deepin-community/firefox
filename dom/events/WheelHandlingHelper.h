@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,9 +25,9 @@ class ScrollContainerFrame;
  */
 
 struct DeltaValues {
-  DeltaValues() : deltaX(0.0), deltaY(0.0) {}
+  constexpr DeltaValues() : deltaX(0.0), deltaY(0.0) {}
 
-  DeltaValues(double aDeltaX, double aDeltaY)
+  constexpr DeltaValues(double aDeltaX, double aDeltaY)
       : deltaX(aDeltaX), deltaY(aDeltaY) {}
 
   explicit DeltaValues(WidgetWheelEvent* aEvent);
@@ -92,7 +90,9 @@ class ScrollbarsForWheel {
 
  protected:
   static const size_t kNumberOfTargets = 4;
-  static const DeltaValues directions[kNumberOfTargets];
+  static constexpr DeltaValues directions[kNumberOfTargets] = {
+      DeltaValues(-1, 0), DeltaValues(+1, 0), DeltaValues(0, -1),
+      DeltaValues(0, +1)};
   static AutoWeakFrame sActiveOwner;
   static AutoWeakFrame sActivatedScrollTargets[kNumberOfTargets];
   static bool sHadWheelStart;
@@ -188,9 +188,6 @@ class WheelTransaction {
    *
    * See https://w3c.github.io/uievents/#topmost-event-target and
    * https://w3c.github.io/uievents/#event-type-wheel for details.
-   *
-   * Note: this is only populated if dom.event.wheel-event-groups.enabled is
-   * set.
    */
   static AutoWeakFrame sEventTargetFrame;
   /**

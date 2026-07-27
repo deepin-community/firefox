@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -48,13 +47,13 @@ interface URL {
 [Exposed=(Window,DedicatedWorker,SharedWorker)]
 partial interface URL {
   [Throws]
-  static UTF8String createObjectURL(Blob blob);
+  static UTF8String createObjectURL((Blob or MediaSource) obj);
   [Throws]
   static undefined revokeObjectURL(UTF8String url);
-  [ChromeOnly, Throws]
-  static boolean isValidObjectURL(UTF8String url);
+};
 
-  // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html
-  [Throws]
-  static UTF8String createObjectURL(MediaSource source);
+[Exposed=(Window,DedicatedWorker,SharedWorker)]
+partial interface URL {
+  [ChromeOnly, Throws]
+  static boolean isBoundToBlob(UTF8String url);
 };

@@ -289,12 +289,24 @@ function getRequestLoadContext(request) {
 // Exports variables that will be accessed by the non-privileged scripts.
 function exportData(win, headers) {
   const json = new win.Text();
+  // This pref allows using a deploy preview or local development version of
+  // the profiler, and also allows tests to avoid hitting the network.
+  const profilerUrl = Services.prefs.getStringPref(
+    "devtools.performance.recording.ui-base-url",
+    "https://profiler.firefox.com"
+  );
+  const sizeProfilerEnabled = Services.prefs.getBoolPref(
+    "devtools.jsonview.size-profiler.enabled",
+    false
+  );
   const JSONView = Cu.cloneInto(
     {
       headers,
       json,
       readyState: "uninitialized",
       Locale: getAllStrings(),
+      profilerUrl,
+      sizeProfilerEnabled,
     },
     win,
     {
@@ -362,8 +374,11 @@ function initialHTML(doc) {
         element("body", {}, [
           element("div", { id: "content" }, [element("div", { id: "json" })]),
           element("script", {
-            src: baseURI + "lib/require.js",
-            "data-main": baseURI + "viewer-config.js",
+            src: baseURI + "json-viewer.mjs",
+            type: "module",
+            // This helps ensure that the ES Module get evaluated early,
+            // even if the HTTP request is transmitted in chunks (browser_jsonview_chunked_json.js).
+            async: "true",
           }),
         ]),
       ]

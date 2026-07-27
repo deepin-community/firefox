@@ -1,5 +1,5 @@
-commit 6f877dbcd7930f92fe8f97929e2ca683e7d443a2
-Author: yumaoka <y.umaoka@gmail.com>
-Date:   Thu Feb 8 15:05:36 2024 -0500
+commit 1e485258faadaa2fd7b0e85434e18ffb17fd3d28
+Author: Robert Bastian <4706271+robertbastian@users.noreply.github.com>
+Date:   Thu Apr 23 21:13:59 2026 +0200
 
-    ICU-22659 tzdata2024a updates in ICU Data repo
+    ICU-23384 Manual patch

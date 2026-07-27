@@ -92,7 +92,7 @@ tabbrowser-confirm-close-tabs-title =
        *[other] Vai aizvērt { $tabCount } ciļņu?
     }
 tabbrowser-confirm-close-tabs-button = Aizvērt cilnes
-tabbrowser-confirm-close-tabs-checkbox = Apstipriniet, pirms aizvērt vairākas cilnes
+tabbrowser-confirm-close-tabs-checkbox = Apstiprināt, pirms aizvērt vairākas cilnes
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
 
@@ -141,8 +141,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Nerādīt man vairs šo dialoglodzi�
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Uzmanību
-tabbrowser-confirm-close-duplicate-tabs-text = Mēs atstāsim atvērtu pēdējo aktīvo cilni
 tabbrowser-confirm-close-all-duplicate-tabs-title = Aizvērt dublētās cilnes?
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     Mēs aizvērsim dublētās cilnes šajā logā. Pēdējā aktīvā
@@ -189,6 +187,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Apklusināt cilni
@@ -196,3 +197,8 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Atjaunot skaņu cilnei
 tabbrowser-manager-close-tab =
     .tooltiptext = Aizvērt cilni
+
+## Tab Notes
+
+tab-note-panel-add-note-new-badge =
+    .label = Jaunums

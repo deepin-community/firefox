@@ -15,7 +15,25 @@ webext-perms-header-with-perms = Zontâ { $extension }? Cheste estension e varà
 webext-perms-header-unsigned = Zontâ { $extension }? Cheste estension no je verificade. Lis estensions malevulis a puedin robâ lis tôs informazions privadis o comprometi il computer. Zontile dome se tu sês sigûr de sô origjin.
 webext-perms-header-unsigned-with-perms = Zontâ { $extension }? Cheste estension no je verificade. Lis estensions malevulis a puedin robâ lis tôs informazions privadis o comprometi il computer. Zontile dome se tu sês sigûr de sô origjin. Cheste estension e varà i permès par:
 webext-perms-sideload-header = { $extension } zontât
+webext-perms-optional-perms-header2 = { $extension } al domande permès in plui
 webext-perms-optional-perms-header = { $extension } al domande permès adizionâi.
+webext-perms-header2 = Zonte { $extension }
+webext-perms-list-intro-unsigned = Cheste estension che no je stade verificade, e podarès meti a risi la tô riservatece o comprometi il to dispositîf. Zontile nome se tu ti fidis de sô origjin.
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = Permès obligatoris:
+webext-perms-header-optional-settings = Impostazions facoltativis:
+webext-perms-header-update-required-perms = Gnûfs permès obligatoris:
+webext-perms-header-optional-required-perms = Gnûfs permès:
+webext-perms-header-data-collection-perms = Racuelte dâts obligatorie:
+webext-perms-header-data-collection-is-none = Racuelte dâts:
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = Gnove racuelte dâts obligatorie:
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = Gnove racuelte dâts:
 
 ##
 
@@ -33,6 +51,9 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Anule
     .accesskey = A
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = { $extension } al è stât inzornât. Par podê instalâ la version inzornade tu scugnis prime aprovâ i gnûfs permès. Se tu sielzis “Anule” tu mantignarâs la version de estension che tu stâs doprant in chest moment.
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = { $extension } al è stât inzornât. Tu scugnis aprovâ i gnûfs permès prime di instalâ la gnove version. Selezionant “Anule” tu tignarâs la version corinte de estension. Cheste estension e varà i permès par:
@@ -69,6 +90,44 @@ webext-perms-host-description-too-many-sites =
         [one] Acedi ai tiei dâts su { $domainCount } altri sît
        *[other] Acedi ai tiei dâts su { $domainCount } altris sîts
     }
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = Acedi ai tiei dâts par sît tai dominis { $domain }
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains =
+    { $domainCount ->
+        [one] Acedi ai tiei dâts par sîts in { $domainCount } domini
+       *[other] Acedi ai tiei dâts par sîts in { $domainCount } dominis
+    }
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = Il svilupadôr al dîs che cheste estension no à bisugne di tirâ sù dâts.
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = Il svilupadôr al dîs che cheste estension e tire sù: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = Il svilupadôr al dîs che la estension e tirarà sù: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = Il svilupadôr al dîs che la estension e vûl tirâ sù: { $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text-with-data-collection = { $extension } al domande gnovis impostazions pal inzornament
+webext-perms-update-list-intro-with-data-collection = Anule par mantignî la version e lis impostazions di cumò, opûr inzorne par aprovâ lis modifichis e otignî la gnove version.
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } al domande altris impostazions
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = { $extension } al domande altris dâts di tirâ sù
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -103,3 +162,8 @@ webext-site-perms-header-unsigned-with-perms = Zontâ { $extension }? Cheste est
 
 webext-site-perms-midi = Acedi a dispositîfs MIDI
 webext-site-perms-midi-sysex = Acedi a dispositîfs MIDI cun supuart SysEx
+
+## Colorway theme migration
+
+webext-colorway-theme-migration-notification-message = <b>La tonalitât e je stade gjavade.</b> { -brand-shorter-name } al à inzornade la sô colezion di tonalitâts. Tu puedis cjatâ lis ultimis versions sul sît dai components adizionâi.
+webext-colorway-theme-migration-notification-button = Oten tonalitâts inzornadis

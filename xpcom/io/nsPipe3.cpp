@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -58,6 +56,49 @@ enum SegmentChangeResult { SegmentNotChanged, SegmentAdvanceBufferRead };
 
 //-----------------------------------------------------------------------------
 
+// Prioritizable runnable for async I/O callbacks
+class PipeCallbackRunnable final : public CancelableRunnable,
+                                   public nsIRunnablePriority {
+ public:
+  PipeCallbackRunnable(const char* aName, std::function<void()>&& aFunc,
+                       nsISupports* aCallback, uint32_t aPriority)
+      : CancelableRunnable(aName),
+        mFunc(std::move(aFunc)),
+        mPriority(aPriority) {}
+
+  NS_DECL_ISUPPORTS_INHERITED
+  NS_DECL_NSIRUNNABLEPRIORITY
+
+  NS_IMETHOD Run() override {
+    if (mFunc) {
+      mFunc();
+    }
+    return NS_OK;
+  }
+
+  nsresult Cancel() override {
+    mFunc = nullptr;
+    return NS_OK;
+  }
+
+ private:
+  ~PipeCallbackRunnable() = default;
+
+  std::function<void()> mFunc;
+  uint32_t mPriority = nsIRunnablePriority::PRIORITY_NORMAL;
+};
+
+NS_IMPL_ISUPPORTS_INHERITED(PipeCallbackRunnable, CancelableRunnable,
+                            nsIRunnablePriority)
+
+NS_IMETHODIMP
+PipeCallbackRunnable::GetPriority(uint32_t* aPriority) {
+  *aPriority = mPriority;
+  return NS_OK;
+}
+
+//-----------------------------------------------------------------------------
+
 class CallbackHolder {
  public:
   CallbackHolder() = default;
@@ -65,26 +106,30 @@ class CallbackHolder {
 
   CallbackHolder(nsIAsyncInputStream* aStream,
                  nsIInputStreamCallback* aCallback, uint32_t aFlags,
-                 nsIEventTarget* aEventTarget)
-      : mRunnable(aCallback ? NS_NewCancelableRunnableFunction(
+                 nsIEventTarget* aEventTarget,
+                 uint32_t aPriority = nsIRunnablePriority::PRIORITY_NORMAL)
+      : mRunnable(aCallback ? new PipeCallbackRunnable(
                                   "nsPipeInputStream AsyncWait Callback",
                                   [stream = nsCOMPtr{aStream},
                                    callback = nsCOMPtr{aCallback}]() {
                                     callback->OnInputStreamReady(stream);
-                                  })
+                                  },
+                                  aCallback, aPriority)
                             : nullptr),
         mEventTarget(aEventTarget),
         mFlags(aFlags) {}
 
   CallbackHolder(nsIAsyncOutputStream* aStream,
                  nsIOutputStreamCallback* aCallback, uint32_t aFlags,
-                 nsIEventTarget* aEventTarget)
-      : mRunnable(aCallback ? NS_NewCancelableRunnableFunction(
+                 nsIEventTarget* aEventTarget,
+                 uint32_t aPriority = nsIRunnablePriority::PRIORITY_NORMAL)
+      : mRunnable(aCallback ? new PipeCallbackRunnable(
                                   "nsPipeOutputStream AsyncWait Callback",
                                   [stream = nsCOMPtr{aStream},
                                    callback = nsCOMPtr{aCallback}]() {
                                     callback->OnOutputStreamReady(stream);
-                                  })
+                                  },
+                                  aCallback, aPriority)
                             : nullptr),
         mEventTarget(aEventTarget),
         mFlags(aFlags) {}
@@ -128,9 +173,10 @@ class CallbackHolder {
 
 //-----------------------------------------------------------------------------
 
-// this class is used to delay notifications until the end of a particular
-// scope.  it helps avoid the complexity of issuing callbacks while inside
-// a critical section.
+// This class is used to delay notifications until the end of a particular
+// scope. It helps to avoid the complexity of issuing callbacks while inside
+// a critical section. It also holds a list of segments that have become
+// obsolete during that particular scope to be bulk-freed later.
 class nsPipeEvents {
  public:
   nsPipeEvents() = default;
@@ -140,8 +186,13 @@ class nsPipeEvents {
     mCallbacks.AppendElement(std::move(aCallback));
   }
 
+  inline void FreeSegment(mozilla::UniqueFreePtr<char> aSegment) {
+    mSegmentsToFree.AppendElement(std::move(aSegment));
+  }
+
  private:
-  nsTArray<CallbackHolder> mCallbacks;
+  AutoTArray<CallbackHolder, 4> mCallbacks;
+  AutoTArray<mozilla::UniqueFreePtr<char>, 4> mSegmentsToFree;
 };
 
 //-----------------------------------------------------------------------------
@@ -181,7 +232,6 @@ struct nsPipeReadState {
 // an input end of a pipe (maintained as a list of refs within the pipe)
 class nsPipeInputStream final : public nsIAsyncInputStream,
                                 public nsITellableStream,
-                                public nsISearchableInputStream,
                                 public nsICloneableInputStream,
                                 public nsIClassInfo,
                                 public nsIBufferedInputStream,
@@ -191,7 +241,6 @@ class nsPipeInputStream final : public nsIAsyncInputStream,
   NS_DECL_NSIINPUTSTREAM
   NS_DECL_NSIASYNCINPUTSTREAM
   NS_DECL_NSITELLABLESTREAM
-  NS_DECL_NSISEARCHABLEINPUTSTREAM
   NS_DECL_NSICLONEABLEINPUTSTREAM
   NS_DECL_NSICLASSINFO
   NS_DECL_NSIBUFFEREDINPUTSTREAM
@@ -212,7 +261,9 @@ class nsPipeInputStream final : public nsIAsyncInputStream,
         mBlocking(aOther.mBlocking),
         mBlocked(false),
         mReadState(aOther.mReadState),
-        mPriority(nsIRunnablePriority::PRIORITY_NORMAL) {}
+        mPriority(nsIRunnablePriority::PRIORITY_NORMAL) {
+    MOZ_ASSERT(!mReadState.mActiveRead);
+  }
 
   void SetNonBlocking(bool aNonBlocking) { mBlocking = !aNonBlocking; }
 
@@ -353,6 +404,7 @@ class nsPipe final {
                    char*& aCursor, char*& aLimit)
       MOZ_REQUIRES(mReentrantMonitor);
   SegmentChangeResult AdvanceReadSegment(nsPipeReadState& aReadState,
+                                         nsPipeEvents& aEvents,
                                          const ReentrantMonitorAutoEnter& ev)
       MOZ_REQUIRES(mReentrantMonitor);
   bool ReadSegmentBeingWritten(nsPipeReadState& aReadState)
@@ -614,7 +666,7 @@ nsresult nsPipe::GetReadSegment(nsPipeReadState& aReadState,
   // order to avoid deleting the buffer out from under this lockless read
   // set a flag to indicate a read is active.  This flag is only modified
   // while the lock is held.
-  MOZ_DIAGNOSTIC_ASSERT(!aReadState.mActiveRead);
+  MOZ_RELEASE_ASSERT(!aReadState.mActiveRead);
   aReadState.mActiveRead = true;
 
   aSegment = aReadState.mReadCursor;
@@ -666,7 +718,8 @@ void nsPipe::AdvanceReadCursor(nsPipeReadState& aReadState,
       // Advance the segment position.  If we have read any segments from the
       // advance buffer then we can potentially notify blocked writers.
       mOutput.Monitor().AssertCurrentThreadIn();
-      if (AdvanceReadSegment(aReadState, mon) == SegmentAdvanceBufferRead &&
+      if (AdvanceReadSegment(aReadState, events, mon) ==
+              SegmentAdvanceBufferRead &&
           mOutput.OnOutputWritable(events) == NotifyMonitor) {
         mon.NotifyAll();
       }
@@ -677,7 +730,8 @@ void nsPipe::AdvanceReadCursor(nsPipeReadState& aReadState,
 }
 
 SegmentChangeResult nsPipe::AdvanceReadSegment(
-    nsPipeReadState& aReadState, const ReentrantMonitorAutoEnter& ev) {
+    nsPipeReadState& aReadState, nsPipeEvents& aEvents,
+    const ReentrantMonitorAutoEnter& ev) {
   // Calculate how many segments are buffered for this stream to start.
   uint32_t startBufferSegments = GetBufferSegmentCount(aReadState, ev);
 
@@ -706,7 +760,7 @@ SegmentChangeResult nsPipe::AdvanceReadSegment(
     }
 
     // done with this segment
-    mBuffer.DeleteFirstSegment();
+    aEvents.FreeSegment(mBuffer.PopFirstSegment());
     LOG(("III deleting first segment\n"));
   }
 
@@ -770,7 +824,7 @@ void nsPipe::DrainInputStream(nsPipeReadState& aReadState,
     // Don't bother checking if this results in an advance buffer segment
     // read.  Since we are draining the entire stream we will read an
     // advance buffer segment no matter what.
-    AdvanceReadSegment(aReadState, mon);
+    AdvanceReadSegment(aReadState, aEvents, mon);
   }
 
   // Force the stream into an empty state.  Make sure mAvailable, mCursor, and
@@ -986,6 +1040,7 @@ void nsPipe::OnPipeException(nsresult aReason, bool aOutputOnly) {
 nsresult nsPipe::CloneInputStream(nsPipeInputStream* aOriginal,
                                   nsIInputStream** aCloneOut) {
   ReentrantMonitorAutoEnter mon(mReentrantMonitor);
+  MOZ_RELEASE_ASSERT(!aOriginal->ReadState().mActiveRead);
   RefPtr<nsPipeInputStream> ref = new nsPipeInputStream(*aOriginal);
   // don't add clones of closed pipes to mInputList.
   ref->Monitor().AssertCurrentThreadIn();
@@ -1155,6 +1210,17 @@ nsPipeEvents::~nsPipeEvents() {
     callback.Notify();
   }
   mCallbacks.Clear();
+
+  // free segments which are no longer required. use a background task if we're
+  // freeing a large number of segments to avoid blocking the current thread.
+  if (mSegmentsToFree.Length() > 128) {
+    NS_DispatchBackgroundTask(NS_NewRunnableFunction(
+        "nsPipe FreeSegments",
+        [segments = std::move(mSegmentsToFree)]() mutable {
+          segments.Clear();
+        }));
+  }
+  mSegmentsToFree.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -1168,7 +1234,6 @@ NS_INTERFACE_TABLE_HEAD(nsPipeInputStream)
   NS_INTERFACE_TABLE_BEGIN
     NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsIAsyncInputStream)
     NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsITellableStream)
-    NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsISearchableInputStream)
     NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsICloneableInputStream)
     NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsIBufferedInputStream)
     NS_INTERFACE_TABLE_ENTRY(nsPipeInputStream, nsIClassInfo)
@@ -1182,8 +1247,7 @@ NS_INTERFACE_TABLE_TAIL
 
 NS_IMPL_CI_INTERFACE_GETTER(nsPipeInputStream, nsIInputStream,
                             nsIAsyncInputStream, nsITellableStream,
-                            nsISearchableInputStream, nsICloneableInputStream,
-                            nsIBufferedInputStream)
+                            nsICloneableInputStream, nsIBufferedInputStream)
 
 NS_IMPL_THREADSAFE_CI(nsPipeInputStream)
 
@@ -1413,7 +1477,7 @@ nsPipeInputStream::AsyncWait(nsIInputStreamCallback* aCallback, uint32_t aFlags,
       return NS_OK;
     }
 
-    CallbackHolder callback(this, aCallback, aFlags, aTarget);
+    CallbackHolder callback(this, aCallback, aFlags, aTarget, mPriority);
 
     if (NS_FAILED(Status(mon)) ||
         (mReadState.mAvailable && !(aFlags & WAIT_CLOSURE_ONLY))) {
@@ -1438,88 +1502,6 @@ nsPipeInputStream::Tell(int64_t* aOffset) {
 
   *aOffset = mLogicalOffset;
   return NS_OK;
-}
-
-static bool strings_equal(bool aIgnoreCase, const char* aS1, const char* aS2,
-                          uint32_t aLen) {
-  return aIgnoreCase ? !nsCRT::strncasecmp(aS1, aS2, aLen)
-                     : !strncmp(aS1, aS2, aLen);
-}
-
-NS_IMETHODIMP
-nsPipeInputStream::Search(const char* aForString, bool aIgnoreCase,
-                          bool* aFound, uint32_t* aOffsetSearchedTo) {
-  LOG(("III Search [for=%s ic=%u]\n", aForString, aIgnoreCase));
-
-  ReentrantMonitorAutoEnter mon(mPipe->mReentrantMonitor);
-
-  char* cursor1;
-  char* limit1;
-  uint32_t index = 0, offset = 0;
-  uint32_t strLen = strlen(aForString);
-
-  mPipe->PeekSegment(mReadState, 0, cursor1, limit1);
-  if (cursor1 == limit1) {
-    *aFound = false;
-    *aOffsetSearchedTo = 0;
-    LOG(("  result [aFound=%u offset=%u]\n", *aFound, *aOffsetSearchedTo));
-    return NS_OK;
-  }
-
-  while (true) {
-    uint32_t i, len1 = limit1 - cursor1;
-
-    // check if the string is in the buffer segment
-    for (i = 0; i < len1 - strLen + 1; i++) {
-      if (strings_equal(aIgnoreCase, &cursor1[i], aForString, strLen)) {
-        *aFound = true;
-        *aOffsetSearchedTo = offset + i;
-        LOG(("  result [aFound=%u offset=%u]\n", *aFound, *aOffsetSearchedTo));
-        return NS_OK;
-      }
-    }
-
-    // get the next segment
-    char* cursor2;
-    char* limit2;
-    uint32_t len2;
-
-    index++;
-    offset += len1;
-
-    mPipe->PeekSegment(mReadState, index, cursor2, limit2);
-    if (cursor2 == limit2) {
-      *aFound = false;
-      *aOffsetSearchedTo = offset - strLen + 1;
-      LOG(("  result [aFound=%u offset=%u]\n", *aFound, *aOffsetSearchedTo));
-      return NS_OK;
-    }
-    len2 = limit2 - cursor2;
-
-    // check if the string is straddling the next buffer segment
-    uint32_t lim = XPCOM_MIN(strLen, len2 + 1);
-    for (i = 0; i < lim; ++i) {
-      uint32_t strPart1Len = strLen - i - 1;
-      uint32_t strPart2Len = strLen - strPart1Len;
-      const char* strPart2 = &aForString[strLen - strPart2Len];
-      uint32_t bufSeg1Offset = len1 - strPart1Len;
-      if (strings_equal(aIgnoreCase, &cursor1[bufSeg1Offset], aForString,
-                        strPart1Len) &&
-          strings_equal(aIgnoreCase, cursor2, strPart2, strPart2Len)) {
-        *aFound = true;
-        *aOffsetSearchedTo = offset - strPart1Len;
-        LOG(("  result [aFound=%u offset=%u]\n", *aFound, *aOffsetSearchedTo));
-        return NS_OK;
-      }
-    }
-
-    // finally continue with the next buffer
-    cursor1 = cursor2;
-    limit1 = limit2;
-  }
-
-  MOZ_ASSERT_UNREACHABLE("can't get here");
-  return NS_ERROR_UNEXPECTED;  // keep compiler happy
 }
 
 NS_IMETHODIMP

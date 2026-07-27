@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } försöker a
 autofill-edit-payment-method-os-prompt-macos = visa lagrad information om betalningssätt
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } försöker visa lagrad information om betalningssätt. Bekräfta åtkomst till detta Windows-konto nedan.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } försöker visa lagrad information om betalningssätt.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Inställningar för autofyll av formulär
 autofill-options-link-osx = Inställningar för autofyll av formulär
 
@@ -81,3 +81,6 @@ autofill-category-name = namn
 autofill-category-organization = organisation
 autofill-category-tel = telefon
 autofill-category-email = e-post
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } har upptäckt en osäker webbplats. Autofyll av formulär är tillfälligt inaktiverat

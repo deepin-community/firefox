@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -173,13 +171,8 @@ xpcAccessible::GetId(nsAString& aID) {
     return NS_ERROR_FAILURE;
   }
 
-  RemoteAccessible* proxy = IntlGeneric()->AsRemote();
-  if (!proxy) {
-    return NS_ERROR_FAILURE;
-  }
-
   nsString id;
-  proxy->DOMNodeID(id);
+  IntlGeneric()->DOMNodeID(id);
   aID.Assign(id);
 
   return NS_OK;
@@ -308,13 +301,15 @@ xpcAccessible::GetAttributes(nsIPersistentProperties** aAttributes) {
   NS_ENSURE_ARG_POINTER(aAttributes);
   *aAttributes = nullptr;
 
-  if (!IntlGeneric()) {
+  Accessible* acc = IntlGeneric();
+  if (!acc) {
     return NS_ERROR_FAILURE;
   }
 
-  RefPtr<nsPersistentProperties> props = new nsPersistentProperties();
+  auto props = MakeRefPtr<nsPersistentProperties>();
 
-  RefPtr<AccAttributes> attributes = IntlGeneric()->Attributes();
+  RefPtr<AccAttributes> attributes = acc->Attributes();
+  nsAccUtils::SetAccGroupAttrs(attributes, acc);
 
   nsAutoString unused;
   for (auto iter : *attributes) {
@@ -340,7 +335,7 @@ xpcAccessible::GetCache(nsIPersistentProperties** aCachedFields) {
     return NS_ERROR_FAILURE;
   }
 
-  RefPtr<nsPersistentProperties> props = new nsPersistentProperties();
+  auto props = MakeRefPtr<nsPersistentProperties>();
   if (RemoteAccessible* remoteAcc = IntlGeneric()->AsRemote()) {
     if (RefPtr<AccAttributes> cachedFields = remoteAcc->mCachedFields) {
       nsAutoString unused;
@@ -636,18 +631,10 @@ xpcAccessible::ScrollToPoint(uint32_t aCoordinateType, int32_t aX, int32_t aY) {
 
 NS_IMETHODIMP
 xpcAccessible::Announce(const nsAString& aAnnouncement, uint16_t aPriority) {
-  RemoteAccessible* proxy = IntlGeneric()->AsRemote();
-  if (proxy) {
-#if defined(XP_WIN)
+  if (IntlGeneric()->IsRemote()) {
     return NS_ERROR_NOT_IMPLEMENTED;
-#else
-    nsString announcement(aAnnouncement);
-    proxy->Announce(announcement, aPriority);
-#endif
-  } else {
-    Intl()->Announce(aAnnouncement, aPriority);
   }
-
+  Intl()->Announce(aAnnouncement, aPriority);
   return NS_OK;
 }
 

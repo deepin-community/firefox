@@ -11,43 +11,52 @@
 
 [package]
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.64"
 name = "serde_yaml"
-version = "0.8.26"
+version = "0.9.34+deprecated"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-description = "YAML support for Serde"
+description = "YAML data format for Serde"
 documentation = "https://docs.rs/serde_yaml/"
 readme = "README.md"
 keywords = [
     "yaml",
     "serde",
+    "serialization",
 ]
-categories = ["encoding"]
+categories = [
+    "encoding",
+    "parser-implementations",
+]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/serde-yaml"
-resolver = "2"
 
 [package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]
 targets = ["x86_64-unknown-linux-gnu"]
 
+[lib]
+doc-scrape-examples = false
+
 [dependencies.indexmap]
-version = "1.5.2"
-features = ["std"]
+version = "2.2.1"
+
+[dependencies.itoa]
+version = "1.0"
 
 [dependencies.ryu]
 version = "1.0"
 
 [dependencies.serde]
-version = "1.0.69"
+version = "1.0.195"
 
-[dependencies.yaml-rust]
-version = "0.4.5"
+[dependencies.unsafe-libyaml]
+version = "0.2.11"
 
 [dev-dependencies.anyhow]
-version = "1.0"
+version = "1.0.79"
 
 [dev-dependencies.indoc]
-version = "1.0"
+version = "2.0"
 
 [dev-dependencies.serde_derive]
-version = "1.0"
+version = "1.0.195"

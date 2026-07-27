@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,6 +5,7 @@
 #include "CSSEditUtils.h"
 
 #include "ChangeStyleTransaction.h"
+#include "EditorDOMAPIWrapper.h"
 #include "HTMLEditHelpers.h"
 #include "HTMLEditor.h"
 #include "HTMLEditUtils.h"
@@ -15,6 +15,7 @@
 #include "mozilla/mozalloc.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/ServoCSSParser.h"
+#include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/StaticPrefs_editor.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
@@ -406,8 +407,9 @@ nsresult CSSEditUtils::SetCSSPropertyInternal(HTMLEditor& aHTMLEditor,
                                               nsAtom& aProperty,
                                               const nsAString& aValue,
                                               bool aSuppressTxn) {
-  RefPtr<ChangeStyleTransaction> transaction =
-      ChangeStyleTransaction::Create(aStyledElement, aProperty, aValue);
+  const RefPtr<ChangeStyleTransaction> transaction =
+      ChangeStyleTransaction::Create(aHTMLEditor, aStyledElement, aProperty,
+                                     aValue);
   if (aSuppressTxn) {
     nsresult rv = transaction->DoTransaction();
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
@@ -438,10 +440,8 @@ nsresult CSSEditUtils::SetCSSPropertyPixelsWithTransaction(
 
 // static
 nsresult CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction(
-    nsStyledElement& aStyledElement, const nsAtom& aProperty,
-    int32_t aIntValue) {
-  nsCOMPtr<nsICSSDeclaration> cssDecl = aStyledElement.Style();
-
+    HTMLEditor& aHTMLEditor, nsStyledElement& aStyledElement,
+    const nsAtom& aProperty, int32_t aIntValue) {
   nsAutoCString propertyNameString;
   aProperty.ToUTF8String(propertyNameString);
 
@@ -449,11 +449,11 @@ nsresult CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction(
   s.AppendInt(aIntValue);
   s.AppendLiteral("px");
 
-  ErrorResult error;
-  cssDecl->SetProperty(propertyNameString, s, EmptyCString(), error);
-  if (error.Failed()) {
-    NS_WARNING("nsICSSDeclaration::SetProperty() failed");
-    return error.StealNSResult();
+  nsresult rv = AutoCSSDeclarationAPIWrapper(aHTMLEditor, aStyledElement)
+                    .SetProperty(propertyNameString, s, EmptyCString());
+  if (NS_FAILED(rv)) {
+    NS_WARNING("AutoCSSDeclarationAPIWrapper::SetProperty() failed");
+    return rv;
   }
 
   return NS_OK;
@@ -467,8 +467,9 @@ nsresult CSSEditUtils::SetCSSPropertyPixelsWithoutTransaction(
 nsresult CSSEditUtils::RemoveCSSPropertyInternal(
     HTMLEditor& aHTMLEditor, nsStyledElement& aStyledElement, nsAtom& aProperty,
     const nsAString& aValue, bool aSuppressTxn) {
-  RefPtr<ChangeStyleTransaction> transaction =
-      ChangeStyleTransaction::CreateToRemove(aStyledElement, aProperty, aValue);
+  const RefPtr<ChangeStyleTransaction> transaction =
+      ChangeStyleTransaction::CreateToRemove(aHTMLEditor, aStyledElement,
+                                             aProperty, aValue);
   if (aSuppressTxn) {
     nsresult rv = transaction->DoTransaction();
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
@@ -549,18 +550,18 @@ nsresult CSSEditUtils::GetSpecifiedCSSInlinePropertyBase(nsIContent& aContent,
     return NS_ERROR_INVALID_ARG;
   }
 
-  RefPtr<DeclarationBlock> decl = element->GetInlineStyleDeclaration();
+  RefPtr decl = element->GetInlineStyleDeclaration();
   if (!decl) {
     return NS_OK;
   }
 
   // FIXME: Same comments as above.
-  nsCSSPropertyID prop =
+  NonCustomCSSPropertyId prop =
       nsCSSProps::LookupProperty(nsAtomCString(&aCSSProperty));
   MOZ_ASSERT(prop != eCSSProperty_UNKNOWN);
 
   nsAutoCString value;
-  decl->GetPropertyValueByID(prop, value);
+  Servo_DeclarationBlock_GetPropertyValueByNonCustomId(decl, prop, &value);
   CopyUTF8toUTF16(value, aValue);
   return NS_OK;
 }
@@ -614,27 +615,26 @@ CSSEditUtils::RemoveCSSInlineStyleWithTransaction(
 
 // static
 void CSSEditUtils::GetDefaultBackgroundColor(nsAString& aColor) {
+  aColor.AssignLiteral("#ffffff");  // Default to white
+
   if (MOZ_UNLIKELY(StaticPrefs::editor_use_custom_colors())) {
-    nsresult rv = Preferences::GetString("editor.background_color", aColor);
+    DebugOnly<nsresult> rv =
+        Preferences::GetString("editor.background_color", aColor);
     // XXX Why don't you validate the pref value?
-    if (NS_FAILED(rv)) {
-      NS_WARNING("failed to get editor.background_color");
-      aColor.AssignLiteral("#ffffff");  // Default to white
-    }
+    NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                         "failed to get editor.background_color");
     return;
   }
 
-  if (Preferences::GetBool("browser.display.use_system_colors", false)) {
+  if (StaticPrefs::browser_display_document_color_use() != 2) {
     return;
   }
 
-  nsresult rv =
+  DebugOnly<nsresult> rv =
       Preferences::GetString("browser.display.background_color", aColor);
   // XXX Why don't you validate the pref value?
-  if (NS_FAILED(rv)) {
-    NS_WARNING("failed to get browser.display.background_color");
-    aColor.AssignLiteral("#ffffff");  // Default to white
-  }
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "failed to get browser.display.background_color");
 }
 
 // static
@@ -689,7 +689,7 @@ nsStaticAtom* CSSEditUtils::GetCSSPropertyAtom(
     nsCSSEditableProperty aProperty) {
   switch (aProperty) {
     case eCSSEditableProperty_background_color:
-      return nsGkAtoms::backgroundColor;
+      return nsGkAtoms::background_color;
     case eCSSEditableProperty_background_image:
       return nsGkAtoms::background_image;
     case eCSSEditableProperty_border:
@@ -707,7 +707,7 @@ nsStaticAtom* CSSEditUtils::GetCSSPropertyAtom(
     case eCSSEditableProperty_font_style:
       return nsGkAtoms::font_style;
     case eCSSEditableProperty_font_weight:
-      return nsGkAtoms::fontWeight;
+      return nsGkAtoms::font_weight;
     case eCSSEditableProperty_height:
       return nsGkAtoms::height;
     case eCSSEditableProperty_list_style_type:

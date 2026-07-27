@@ -4,7 +4,6 @@
 
 page-title = Nosozliklarni to‘g‘rilash ma’lumoti
 page-subtitle = Bu sahifa muammolarni hal qilishingizda foydasi tegishi mumkin bo‘lgan  texnik ma’lumotlarga ega. Agar siz { -brand-short-name } haqida umumiy savollarga javob izlayotgan bo‘lsangiz, bizning <a data-l10n-name="support-link">yordam saytimiz</a>nitekshirib ko‘ring.
-
 crashes-title = Nosozlik ma’lumotlari
 crashes-id = Hisobot xos raqami
 crashes-send-date = Jo‘natildi
@@ -35,7 +34,6 @@ app-basics-service-workers = Ro‘yxatdan o‘tgan Service Workers
 app-basics-profiles = Profillar
 app-basics-multi-process-support = Multijarayon oynalari
 app-basics-safe-mode = Xavfsiz rejim
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Topgichda koʻrsatish
@@ -77,21 +75,6 @@ clear-startup-cache-title = Ishga tushish keshini tozalashga harakat qiling
 
 audio-backend = Audio Server
 
-## Codec support table
-
-##
-
-
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
@@ -101,7 +84,6 @@ report-crash-for-days =
         [one] So‘nggi { $days } kun uchun nosozlik xabarlari
        *[other] So‘nggi { $days } kun uchun nosozlik xabarlari
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -109,7 +91,6 @@ crashes-time-minutes =
         [one] { $minutes } daqiqa oldin
        *[other] { $minutes } daqiqa oldin
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -117,7 +98,6 @@ crashes-time-hours =
         [one] { $hours } soat oldin
        *[other] { $hours } soat oldin
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -125,7 +105,6 @@ crashes-time-days =
         [one] { $days } kun oldin
        *[other] { $days } kun oldin
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -133,7 +112,6 @@ pending-reports =
         [one] Barcha nosozlik xabarlari (berilgan vaqt oralig‘idagi { $reports } ta nosozlik bilan birga)
        *[other] Barcha nosozlik xabarlari (berilgan vaqt oralig‘idagi { $reports } ta nosozlik bilan birga)
     }
-
 raw-data-copied = Manba ma’lumotlar vaqtinchalik xotiraga nusxa olingan
 text-copied = Matn vaqtinchalik xotiraga nusxa olingan
 
@@ -146,11 +124,9 @@ blocked-mismatched-version = Video kartangiz drayveri versiyasi DLL fayli va ro�
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Video kartangiz drayveri tufayli bloklangan. Video kartangiz versiyasini { $driverVersion } versiyasiga yoki yangirog‘iga yangilashga urinib ko‘ring.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType parameterlari
-
 compositing = Yozish
 hardware-h264 = H264 qurilmasida dekoding qo‘llab-quvvatlanadi
 main-thread-no-omtc = asosiy mavzu, OMTC yo‘q
@@ -170,31 +146,24 @@ gpu-ram = RAM
 gpu-driver-version = Drayver versiyasi
 gpu-driver-date = Drayver sanasi
 gpu-active = Aktiv
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Blok ro‘yxatiga qo‘shildi; xatolik kodi: { $failureCode }
-
 d3d11layers-crash-guard = D3D11 Compositor
 glcontext-crash-guard = OpenGL
-
 reset-on-next-restart = Keyingi ishga tushishda tiklash
-
 min-lib-versions = Kutilgan minimum versiya
 loaded-lib-versions = Foydalanilayotgan versiya
-
 has-seccomp-bpf = Seccomp-BPF (Tizimni chaqirishni filterlash)
 has-seccomp-tsync = Seccomp mavzularini sinxronlash
 has-user-namespaces = Foydalanuvchilar nomlari maydonchalari
 has-privileged-user-namespaces = Imtiyozli jarayonlar uchun foydalanuvchilar nomlari maydonchalari
 can-sandbox-content = Kontent sandbokslash jarayoni
 can-sandbox-media = Media plugin Sandbokslash
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = Asinxronlanadigan Nov/Mastshab
 apz-none = yo‘q
 wheel-enabled = g‘ildirakdan foydalanish yoqildi
@@ -207,12 +176,3 @@ zooming-enabled = silliq chimdib masshtabni oʻzgartirish yoqilgan
 
 wheel-warning = async g‘ildirakdan foydalanish mos kelmadyigan qo‘shimcha tufayli o‘chirib qo‘yildi: { $preferenceKey }
 touch-warning = async teginib kiritish mos kelmadyigan qo‘shimcha tufayli o‘chirib qo‘yildi: { $preferenceKey }
-
-## Strings representing the status of the Enterprise Policies engine.
-
-
-## Printing section
-
-
-## Normandy sections
-

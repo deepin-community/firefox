@@ -32,22 +32,6 @@ tabbrowser-mute-tab-audio-background-tooltip =
 
 tabbrowser-confirm-close-tabs-button = Затвори ги јазичињата
 
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
-## Confirmation dialog when opening multiple tabs simultaneously
-
-
-## Confirmation dialog for enabling caret browsing
-
-
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 tabbrowser-customizemode-tab-title = Прилагодување на { -brand-short-name }
@@ -56,16 +40,16 @@ tabbrowser-customizemode-tab-title = Прилагодување на { -brand-sh
 
 tabbrowser-context-mute-tab =
     .label = Замолчи јазиче
-    .accesskey = M
+    .accesskey = м
 # The accesskey should match the accesskey for tabbrowser-context-mute-tab
 tabbrowser-context-mute-selected-tabs =
     .label = Замолчи јазичиња
-    .accesskey = M
-
-## Ctrl-Tab dialog
-
+    .accesskey = м
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Замолчи јазиче

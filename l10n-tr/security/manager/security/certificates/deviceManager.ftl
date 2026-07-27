@@ -50,7 +50,7 @@ load-device-filename =
     .value = Modülün dosya adı
     .accesskey = o
 load-device-browse =
-    .label = Gözat…
+    .label = Göz at…
     .accesskey = G
 
 ## Token Manager
@@ -74,9 +74,9 @@ devinfo-desc =
 devinfo-man-id =
     .label = Üretici
 devinfo-hwversion =
-    .label = HW Sürümü
+    .label = HW sürümü
 devinfo-fwversion =
-    .label = FW Sürümü
+    .label = FW sürümü
 devinfo-modname =
     .label = Modül
 devinfo-modpath =

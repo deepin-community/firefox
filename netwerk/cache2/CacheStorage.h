@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef CacheStorage__h__
-#define CacheStorage__h__
+#ifndef CacheStorage_h_
+#define CacheStorage_h_
 
 #include "nsICacheStorage.h"
 #include "CacheEntry.h"
@@ -24,11 +24,12 @@ class CacheEntryTable : public TCacheEntryTable {
   enum EType { MEMORY_ONLY, ALL_ENTRIES };
 
   explicit CacheEntryTable(EType aType) : mType(aType) {}
+  CacheEntryTable() = delete;
+
   EType Type() const { return mType; }
 
  private:
   EType const mType;
-  CacheEntryTable() = delete;
 };
 
 class CacheStorage : public nsICacheStorage {

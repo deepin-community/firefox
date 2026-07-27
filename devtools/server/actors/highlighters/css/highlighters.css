@@ -2,7 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-:host { display: contents; }
+:host {
+  display: contents;
+}
 
 .highlighter-container {
   --highlighter-accessibility-bounds-color: #6a5acd;
@@ -19,8 +21,11 @@
   --highlighter-font-size: 11px;
   --highlighter-guide-color: hsl(200, 100%, 40%);
   --highlighter-infobar-color: hsl(210, 30%, 85%);
+  --highlighter-rulers-opacity: 0.8;
+  --highlighter-viewport-size-background-color: rgba(255, 255, 255, var(--highlighter-rulers-opacity));
 
   --grey-40: #b1b1b3;
+  --grey-80: #2a2a2e;
   --red-40: #ff3b6b;
   --yellow-60: #d7b600;
   --blue-60: #0060df;
@@ -44,6 +49,10 @@
      If your highlighter has UI that needs to be interacted with, add
      'pointer-events:auto;' on its container element. */
   pointer-events: none;
+
+  /* Don't allow forced colors for now. We might revisit this once we have High Contrast Mode
+     support in the DevTools toolbox */
+  forced-color-adjust: none;
 }
 
 .highlighter-container.box-model {
@@ -105,12 +114,7 @@
 }
 
 @media (prefers-reduced-motion) {
-  .use-simple-highlighters :is(
-     .box-model-content,
-     .box-model-padding,
-     .box-model-border,
-     .box-model-margin
-  ) {
+  .use-simple-highlighters :is(.box-model-content, .box-model-padding, .box-model-border, .box-model-margin) {
     fill: none;
     stroke-width: 3;
   }
@@ -161,8 +165,7 @@
 
 [class$="infobar-container"] > [class$="infobar"]:before {
   left: calc(50% - var(--highlighter-bubble-arrow-size));
-  border: var(--highlighter-bubble-arrow-size) solid
-    var(--highlighter-bubble-border-color);
+  border: var(--highlighter-bubble-arrow-size) solid var(--highlighter-bubble-border-color);
 }
 
 [class$="infobar-container"] > [class$="infobar"]:after {
@@ -181,19 +184,15 @@
   border-right-color: transparent;
 }
 
-[class$="infobar-container"][position="top"]:not([hide-arrow])
-  > [class$="infobar"]:before,
-[class$="infobar-container"][position="top"]:not([hide-arrow])
-  > [class$="infobar"]:after {
+[class$="infobar-container"][position="top"]:not([hide-arrow]) > [class$="infobar"]:before,
+[class$="infobar-container"][position="top"]:not([hide-arrow]) > [class$="infobar"]:after {
   border-bottom: 0;
   top: 100%;
   display: block;
 }
 
-[class$="infobar-container"][position="bottom"]:not([hide-arrow])
-  > [class$="infobar"]:before,
-[class$="infobar-container"][position="bottom"]:not([hide-arrow])
-  > [class$="infobar"]:after {
+[class$="infobar-container"][position="bottom"]:not([hide-arrow]) > [class$="infobar"]:before,
+[class$="infobar-container"][position="bottom"]:not([hide-arrow]) > [class$="infobar"]:after {
   border-top: 0;
   bottom: 100%;
   display: block;
@@ -398,7 +397,7 @@
 }
 
 .rulers-highlighter-elements > g {
-  opacity: 0.8;
+  opacity: var(--highlighter-rulers-opacity);
 }
 
 .rulers-highlighter-elements > g > rect {
@@ -410,13 +409,13 @@
 }
 
 .rulers-highlighter-ruler-markers {
-  stroke: #202020;
+  stroke: var(--grey-80);
 }
 
 .rulers-highlighter-horizontal-labels > text,
 .rulers-highlighter-vertical-labels > text {
   stroke: none;
-  fill: #202020;
+  fill: var(--grey-80);
   font: var(--highlighter-font-family);
   font-size: 9px;
   dominant-baseline: hanging;
@@ -431,23 +430,21 @@
   text-anchor: end;
 }
 
-:is(
-  .viewport-size-highlighter-viewport-infobar-container,
-  .viewport-size-on-resize-highlighter-viewport-infobar-container
-) {
+.viewport-size-highlighter-viewport-infobar-container {
   shape-rendering: crispEdges;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: var(--highlighter-viewport-size-background-color);
+  color: var(--grey-80);
   font: var(--highlighter-font-family);
   font-variant-numeric: tabular-nums;
   position: fixed;
   top: 30px;
-  right: 0px;
+  right: 0;
   font-size: 12px;
   padding: 4px;
-}
 
-.viewport-size-on-resize-highlighter-viewport-infobar-container {
-  top: 0;
+  &.viewport-size-on-resize-highlighter {
+    top: 0;
+  }
 }
 
 /* Measuring Tool Highlighter */
@@ -520,7 +517,7 @@
   cursor: nwse-resize;
 }
 
-[class^=measuring-tool-handler].dragging {
+[class^="measuring-tool-handler"].dragging {
   fill: var(--highlighter-guide-color);
 }
 
@@ -557,7 +554,7 @@
   line-height: 1.5em;
 }
 
-[class^=measuring-tool-guide] {
+[class^="measuring-tool-guide"] {
   stroke: var(--highlighter-guide-color);
   stroke-dasharray: 5 3;
   shape-rendering: crispEdges;
@@ -583,10 +580,7 @@
   pointer-events: auto;
 
   /* Offset the UI so it is centered around the pointer */
-  transform: translate(
-    calc(var(--magnifier-width) / -2),
-    calc(var(--magnifier-height) / -2)
-  );
+  transform: translate(calc(var(--magnifier-width) / -2), calc(var(--magnifier-height) / -2));
 
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
 
@@ -612,16 +606,10 @@
   height: var(--label-height);
   position: relative;
 
-  --label-horizontal-center: translateX(
-    calc((var(--magnifier-width) - var(--label-width)) / 2)
-  );
-  --label-horizontal-left: translateX(
-    calc((-1 * var(--label-width) + var(--magnifier-width) / 2))
-  );
+  --label-horizontal-center: translateX(calc((var(--magnifier-width) - var(--label-width)) / 2));
+  --label-horizontal-left: translateX(calc((-1 * var(--label-width) + var(--magnifier-width) / 2)));
   --label-horizontal-right: translateX(calc(var(--magnifier-width) / 2));
-  --label-vertical-top: translateY(
-    calc((-1 * var(--magnifier-height)) - var(--label-height))
-  );
+  --label-vertical-top: translateY(calc((-1 * var(--magnifier-height)) - var(--label-height)));
 
   /* By default the color label container sits below the canvas.
      Here we just center it horizontally */
@@ -660,7 +648,7 @@
   position: absolute;
   inset-inline-start: 3px;
   inset-block-start: 3px;
-  box-shadow: 0px 0px 0px black;
+  box-shadow: 0 0 0 black;
   border: solid 1px #fff;
   forced-color-adjust: none;
 }
@@ -677,13 +665,8 @@
 
 .paused-dbg-root {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  width: 100vw;
-  height: 100vh;
+  /* Don't set explicit height/width as those might cause issues when resizing the page (see Bug 1865312) */
+  inset: 0;
 
   display: flex;
   align-items: center;
@@ -728,7 +711,7 @@
   mask-size: 16px 16px;
   background-color: var(--text-color);
 
-  border: 0px;
+  border: 0;
   appearance: none;
 }
 
@@ -773,11 +756,10 @@ button.paused-dbg-resume-button {
 
 .paused-dbg-reason {
   padding: 3px 16px;
-  margin: 8px 0px;
+  margin: 8px 0;
   font: var(--highlighter-font-family);
   font-size: var(--highlighter-font-size);
 }
-
 
 /* Remote Node Picker Notice Highlighter */
 
@@ -849,9 +831,8 @@ button.paused-dbg-resume-button {
   background-image: url(resource://devtools-shared-images/command-pick-remote-touch.svg);
 }
 
-
 #node-picker-notice-hide-button {
-  border: 0px;
+  border: 0;
   border-radius: 2px;
   appearance: none;
   background-color: var(--toolbar-border);
@@ -959,7 +940,8 @@ button.paused-dbg-resume-button {
   width: 8px;
   display: inline-flex;
   background-color: var(--accessibility-highlighter-contrast-ratio-color);
-  box-shadow: 0 0 0 1px var(--grey-40),
+  box-shadow:
+    0 0 0 1px var(--grey-40),
     4px 3px var(--accessibility-highlighter-contrast-ratio-bg),
     4px 3px 0 1px var(--grey-40);
   margin-inline-start: 3px;
@@ -972,7 +954,7 @@ button.paused-dbg-resume-button {
 
 .accessible-infobar-audit .accessible-contrast-ratio.AA::after,
 .accessible-infobar-audit .accessible-contrast-ratio.AAA::after {
-  color: #90E274;
+  color: #90e274;
 }
 
 .accessible-infobar-audit .accessible-audit::before,
@@ -988,7 +970,7 @@ button.paused-dbg-resume-button {
 }
 
 .accessible-infobar-audit .accessible-contrast-ratio.FAIL:after {
-  color: #E57180;
+  color: #e57180;
   margin-inline-start: 3px;
   background-image: url(resource://devtools-shared-images/error-small.svg);
   fill: var(--red-40);
@@ -1054,7 +1036,7 @@ button.paused-dbg-resume-button {
 }
 
 .tabbing-order .tabbing-order-infobar-container {
-  font-size:calc(var(--highlighter-font-size) + 2px);
+  font-size: calc(var(--highlighter-font-size) + 2px);
 }
 
 .tabbing-order .tabbing-order-bounds {

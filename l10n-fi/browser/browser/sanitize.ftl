@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Viimeiset 2 tuntia
 clear-time-duration-value-last-4-hours =
     .label = Viimeiset 4 tuntia
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = { $midnightTime } lähtien
 clear-time-duration-value-today =
     .label = Tämä päivä
 clear-time-duration-value-everything =
@@ -55,10 +59,7 @@ history-section-label = Historiatiedot
 item-history-and-downloads =
     .label = Sivu- ja lataushistoria
     .accesskey = S
-item-history-form-data-downloads =
-    .label = Historia
-    .accesskey = H
-item-history-form-data-downloads-description = Tyhjentää sivusto- ja lataushistorian, tallennetut lomaketiedot ja haut
+item-history-and-downloads-description2 = Tyhjentää sivusto- ja lataushistorian
 item-cookies =
     .label = Evästeet
     .accesskey = E
@@ -94,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Sivuston asetukset
     .accesskey = i
+item-formdata-prefs =
+    .label = Tallennetut lomaketiedot
+    .accesskey = o
+item-formdata-description = Tyhjentää tiedot, kuten nimet, sähköpostiosoitteet ja muut lomakkeisiin syöttämäsi asiat
 item-site-prefs-description = Palauttaa käyttöoikeudet ja sivustoasetukset alkuperäisiin asetuksiin
 data-section-label = Muut tiedot
 item-site-settings =
@@ -123,3 +128,6 @@ sanitize-everything-warning = Kaikki historiatiedot poistetaan.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Kaikki valitut tiedot poistetaan.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Lasketaan…

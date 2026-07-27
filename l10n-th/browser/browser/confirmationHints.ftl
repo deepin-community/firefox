@@ -11,11 +11,11 @@ confirmation-hint-password-removed = ลบรหัสผ่านออกแ�
 confirmation-hint-page-bookmarked = บันทึกไปยังที่คั่นหน้าแล้ว
 confirmation-hint-password-saved = บันทึกรหัสผ่านแล้ว!
 confirmation-hint-password-created = บันทึกรหัสผ่านแล้ว
-confirmation-hint-password-updated = ปรับปรุงรหัสผ่านแล้ว
+confirmation-hint-password-updated = อัปเดตรหัสผ่านแล้ว
 confirmation-hint-address-created = บันทึกที่อยู่แล้ว
-confirmation-hint-address-updated = ปรับปรุงที่อยู่แล้ว
+confirmation-hint-address-updated = อัปเดตที่อยู่แล้ว
 confirmation-hint-credit-card-created = บันทึกบัตรแล้ว
-confirmation-hint-credit-card-updated = ปรับปรุงบัตรแล้ว
+confirmation-hint-credit-card-updated = อัปเดตบัตรแล้ว
 confirmation-hint-pin-tab = ปักหมุดแล้ว!
 confirmation-hint-pin-tab-description = คลิกขวาที่แท็บเพื่อถอนหมุด
 confirmation-hint-send-to-device = ส่งแล้ว!
@@ -25,3 +25,5 @@ confirmation-hint-screenshot-copied = คัดลอกภาพหน้าจ
 # Variables:
 #   $tabCount (Number): The number of duplicate tabs closed, at least 1.
 confirmation-hint-duplicate-tabs-closed = ปิด { $tabCount } แท็บ
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = ย้ายไปที่เมนูแล้ว

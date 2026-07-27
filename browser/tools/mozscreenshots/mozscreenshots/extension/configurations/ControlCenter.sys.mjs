@@ -32,7 +32,7 @@ export var ControlCenter = {
     about: {
       selectors: CC_SELECTORS,
       async applyConfig() {
-        await loadPage("about:rights");
+        await loadPage("about:policies");
         await openIdentityPopup();
       },
     },
@@ -179,40 +179,6 @@ export var ControlCenter = {
       },
     },
 
-    mixedActiveUnblocked: {
-      selectors: CC_SELECTORS,
-      async applyConfig() {
-        let browserWindow =
-          Services.wm.getMostRecentWindow("navigator:browser");
-        let gBrowser = browserWindow.gBrowser;
-        await loadPage(MIXED_ACTIVE_CONTENT_URL);
-        gBrowser.ownerGlobal.gIdentityHandler.disableMixedContentProtection();
-        await BrowserTestUtils.browserLoaded(
-          gBrowser.selectedBrowser,
-          false,
-          MIXED_ACTIVE_CONTENT_URL
-        );
-        await openIdentityPopup();
-      },
-    },
-
-    mixedActiveUnblockedSubView: {
-      selectors: CC_SELECTORS,
-      async applyConfig() {
-        let browserWindow =
-          Services.wm.getMostRecentWindow("navigator:browser");
-        let gBrowser = browserWindow.gBrowser;
-        await loadPage(MIXED_ACTIVE_CONTENT_URL);
-        gBrowser.ownerGlobal.gIdentityHandler.disableMixedContentProtection();
-        await BrowserTestUtils.browserLoaded(
-          gBrowser.selectedBrowser,
-          false,
-          MIXED_ACTIVE_CONTENT_URL
-        );
-        await openIdentityPopup(true);
-      },
-    },
-
     httpPassword: {
       selectors: CC_SELECTORS,
       async applyConfig() {
@@ -267,7 +233,7 @@ export var ControlCenter = {
           false,
           TRACKING_PAGE
         );
-        gBrowser.ownerGlobal.gProtectionsHandler.disableForCurrentPage();
+        gBrowser.documentGlobal.gProtectionsHandler.disableForCurrentPage();
         await loaded;
         await openProtectionsPopup();
       },
@@ -285,7 +251,7 @@ async function loadPage(url) {
 async function openIdentityPopup(expand) {
   let browserWindow = Services.wm.getMostRecentWindow("navigator:browser");
   let gBrowser = browserWindow.gBrowser;
-  let { gIdentityHandler } = gBrowser.ownerGlobal;
+  let { gIdentityHandler } = gBrowser.documentGlobal;
   // Ensure the popup is available, if it's never been opened.
   gIdentityHandler._initializePopup();
   gIdentityHandler._identityPopup.hidePopup();
@@ -306,7 +272,7 @@ async function openIdentityPopup(expand) {
 async function openProtectionsPopup() {
   let browserWindow = Services.wm.getMostRecentWindow("navigator:browser");
   let gBrowser = browserWindow.gBrowser;
-  let { gProtectionsHandler } = gBrowser.ownerGlobal;
+  let { gProtectionsHandler } = gBrowser.documentGlobal;
   // Force initializing the popup; we can't add classes otherwise.
   gProtectionsHandler._initializePopup();
   gProtectionsHandler._protectionsPopup.hidePopup();

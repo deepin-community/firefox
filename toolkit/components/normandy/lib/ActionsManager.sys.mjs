@@ -14,8 +14,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   BranchedAddonStudyAction:
     "resource://normandy/actions/BranchedAddonStudyAction.sys.mjs",
   ConsoleLogAction: "resource://normandy/actions/ConsoleLogAction.sys.mjs",
-  MessagingExperimentAction:
-    "resource://normandy/actions/MessagingExperimentAction.sys.mjs",
   PreferenceExperimentAction:
     "resource://normandy/actions/PreferenceExperimentAction.sys.mjs",
   PreferenceRollbackAction:
@@ -24,7 +22,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource://normandy/actions/PreferenceRolloutAction.sys.mjs",
   ShowHeartbeatAction:
     "resource://normandy/actions/ShowHeartbeatAction.sys.mjs",
-  Uptake: "resource://normandy/lib/Uptake.sys.mjs",
 });
 
 const log = LogManager.getLogger("recipe-runner");
@@ -49,7 +46,6 @@ export class ActionsManager {
     "addon-rollout": lazy.AddonRolloutAction,
     "branched-addon-study": lazy.BranchedAddonStudyAction,
     "console-log": lazy.ConsoleLogAction,
-    "messaging-experiment": lazy.MessagingExperimentAction,
     "multi-preference-experiment": lazy.PreferenceExperimentAction,
     "preference-rollback": lazy.PreferenceRollbackAction,
     "preference-rollout": lazy.PreferenceRolloutAction,
@@ -82,7 +78,6 @@ export class ActionsManager {
         `Could not execute recipe ${recipe.name}:`,
         `Action ${recipe.action} is either missing or invalid.`
       );
-      await lazy.Uptake.reportRecipe(recipe, lazy.Uptake.RECIPE_INVALID_ACTION);
     }
   }
 

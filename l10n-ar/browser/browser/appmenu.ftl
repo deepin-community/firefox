@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = تعذّر التحديث — النظام غير متطابق
 appmenuitem-banner-update-restart =
     .label = يتوفّر تحديث — أعِد التشغيل
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = احصل على إنعاش { -brand-short-name }. احتفظ بجميع علاماتك.
+appmenu-nova-update-link = أعد التشغيل للتحديث
+appmenu-nova-fxa-sign-in = لِج
+appmenu-nova-switch-device-promo =
+    .message = هل ستحصل على جهازًا جديدًا قريبًا؟ خذ معك { -brand-short-name }!
+appmenu-nova-switch-device-link = كيفية نقل بياناتك
 appmenuitem-new-tab =
     .label = لسان جديد
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = نافذة خاصة جديدة
 appmenuitem-history =
     .label = التأريخ
+appmenuitem-tab-groups =
+    .label = مجموعات الألسنة
 appmenuitem-downloads =
     .label = التنزيلات
 appmenuitem-passwords =
     .label = كلمات السر
+appmenuitem-extensions-and-themes =
+    .label = الامتدادات والسمات
+appmenuitem-extensions =
+    .label = الامتدادات
 appmenuitem-addons-and-themes =
     .label = الإضافات والسمات
 appmenuitem-print =
@@ -34,7 +48,7 @@ appmenuitem-print =
 appmenuitem-find-in-page =
     .label = ابحث في الصفحة…
 appmenuitem-translate =
-    .label = ترجِم الصفحة…
+    .label = ترجم الصفحة…
 appmenuitem-zoom =
     .value = قرّب
 appmenuitem-more-tools =
@@ -77,6 +91,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = أظهِر ألسنة أكثر
     .tooltiptext = اعرض المزيد من الألسنة من هذا الجهاز
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = الألسنة غير النشطة
+    .tooltiptext = أظهِر الألسنة غير النشطة على هذا الجهاز
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = لا ألسنة مفتوحة
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = زامِن واحفظ البيانات
 appmenu-fxa-signed-in-label = لِج
 appmenu-fxa-setup-sync =
     .label = فعّل المزامنة…
+appmenu-fxa-setup-sync-new = فعّل
 appmenuitem-save-page =
     .label = احفظ الصفحة باسم…
+appmenuitem-fxa-sync-off-title = التزامن متوقف
+appmenuitem-fxa-sync-off-description = احمِ و اطلع على علاماتك وكلمات سرك والمزيد في أي مكان.
 
 ## What's New panel in App menu.
 
@@ -159,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = افتح لوحة محلّل الأداء
+    .tooltiptext = افتح لوحة محلّل الأداء
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -185,9 +209,15 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = إعداد مسبق للتحرّي عن مشاكل الصوت والفيديو في { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = الوسائط
+profiler-popup-presets-ml-description = الإعداد المسبق لتشخيص أخطاء التعلُّم الآلي في { -brand-shorter-name }
+profiler-popup-presets-ml-label =
+    .label = التعلم الآلي
 profiler-popup-presets-networking-description = إعداد مسبق للتحرّي عن مشاكل الشبكة في { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = الشبكة
+profiler-popup-presets-networking-with-logs-description = إعداد مسبق للتحقيق في أخطاء الشبكة في { -brand-shorter-name }، بما في ذلك سجلات الشبكة. قد تحتوي هذه السجلات على معلومات حساسة مثل عناوين المواقع التي تزورها.
+profiler-popup-presets-networking-with-logs-label =
+    .label = التواصل الشبكي باستخدام السجلات
 profiler-popup-presets-power-description = إعداد مسبق للتحرّي عن العلل التي تستخدم الطاقة في { -brand-shorter-name }، مع حمل منخفض.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
@@ -195,6 +225,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = إعداد مسبق للتنقيح في { -brand-shorter-name }. تكلفة إضافية عالية، لا تستخدمه لأعمال الأداء ولكن استخدمه للتركيز على فهم سلوك المتصفح.
 profiler-popup-presets-debug-label =
     .label = نقّح
+profiler-popup-presets-web-compat-description = الإعداد المسبق الموصى به لتصحيح أخطاء توافق الوِب في مواقع الوِب، بدلاً من تتبع الأداء.
+profiler-popup-presets-web-compat-label =
+    .label = توافق الوِب
 profiler-popup-presets-custom-label =
     .label = مخصّص
 
@@ -260,6 +293,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = خصّص شريط الأدوات…
+appmenu-abouttranslations =
+    .label = ترجم…
 appmenu-developer-tools-subheader = أدوات المتصفّح
 appmenu-developer-tools-extensions =
     .label = الامتدادات التي تخصّ المطوّرين
@@ -268,4 +303,45 @@ appmenuitem-report-broken-site =
 
 ## Panel for privacy and security products
 
+appmenuitem-sign-in-account = لِج إلى حسابك
+appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = احصل على تنبيهات تسريب البيانات
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = أخفِ بريدك الإلكتروني ورقم هاتفك الحقيقي
+appmenuitem-services-relay-description = إطلاق لوحة معلومات أقنعة البريد الإلكتروني
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = احصل على حماية كاملة للجهاز
+appmenuitem-vpn-description = احمِ نشاطك على الإنترنت
+appmenu-services-header = خدماتي
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = أدوات الخصوصية
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = جرّب أدوات الحماية الأخرى من Mozilla:
+appmenu-other-protection-header = جرّب أدوات حماية أخرى من { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = ملفات تعريف أخرى
+appmenu-manage-profiles =
+    .label = أدِر ملفات التعريف
+appmenu-copy-profile =
+    .label = انسخ هذا الملف الشخصي
+appmenu-create-profile2 =
+    .label = أنشئ ملف شخصي جديد
+appmenu-create-profile =
+    .label = ملف شخصي جديد
+appmenu-edit-profile =
+    .aria-label = حرّر الملف الشخصي
+appmenu-edit-this-profile =
+    .label = حرّر هذا الملف الشخصي
+appmenu-profile-current-in-use = الملف الشخصي الحالي قيد الاستخدام
+appmenu-profiles-2 =
+    .label = ملفات تعريف
+appmenu-profiles-header = الملفات الشخصية
+appmenu-all-profiles =
+    .label = جميع الملفات الشخصية
+appmenu-secure-sync-header = مزامنة آمنة

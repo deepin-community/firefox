@@ -3,8 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env node */
-
 /*
  * A small test runner/reporter for node-based tests,
  * which are run via taskcluster node(debugger).
@@ -16,17 +14,24 @@
 const { readFileSync, rmSync } = require("fs");
 const chalk = require("chalk");
 const path = require("path");
+const prettier = require("prettier");
 const StyleDictionary = require("style-dictionary");
-const config = require("../tokens-config.js");
+const config = require("../config/tokens-config.js");
 
-const TEST_BUILD_PATH = "tests/build/css/";
+const TEST_BUILD_PATH = "tests/build/design-system/tokens/css/";
+const PROJECT_ROOT = path.resolve(__dirname, "../../../../../");
 
 function buildFilesWithTestConfig() {
   // Use our real config, just modify some values for the test. This prevents us
   // from re-building the CSS files that get checked in when we run the tests.
   let testConfig = Object.assign({}, config);
-  testConfig.source = [path.join(__dirname, "../design-tokens.json")];
+  testConfig.source = [
+    path.join(__dirname, "../src/tokens/**/*.json"),
+    path.join(PROJECT_ROOT, "toolkit/content/widgets/**/*.tokens.json"),
+  ];
   testConfig.platforms.css.buildPath = TEST_BUILD_PATH;
+  testConfig.platforms.tables.buildPath = TEST_BUILD_PATH;
+  testConfig.platforms.figma.buildPath = TEST_BUILD_PATH;
 
   // This is effectively the same as running `npm run build` and allows us to
   // use the modified config.
@@ -46,22 +51,42 @@ function logStart(name) {
 
 const FILE_PATHS = {
   "tokens-brand.css": {
-    path: path.join("tokens-brand.css"),
-    testPath: path.join(TEST_BUILD_PATH, "tokens-brand.css"),
+    path: path.join("dist/tokens-brand.css"),
+    testPath: path.join(TEST_BUILD_PATH, "dist/tokens-brand.css"),
   },
   "tokens-platform.css": {
-    path: path.join("tokens-platform.css"),
-    testPath: path.join(TEST_BUILD_PATH, "tokens-platform.css"),
+    path: path.join("dist/tokens-platform.css"),
+    testPath: path.join(TEST_BUILD_PATH, "dist/tokens-platform.css"),
   },
   "tokens-shared.css": {
-    path: path.join("tokens-shared.css"),
-    testPath: path.join(TEST_BUILD_PATH, "tokens-shared.css"),
+    path: path.join("dist/tokens-shared.css"),
+    testPath: path.join(TEST_BUILD_PATH, "dist/tokens-shared.css"),
+  },
+  "moz-badge.tokens.css": {
+    path: path.join(
+      PROJECT_ROOT,
+      "toolkit/content/widgets/moz-badge/moz-badge.tokens.css"
+    ),
+    testPath: path.join(
+      TEST_BUILD_PATH,
+      "../../../content/widgets/moz-badge/moz-badge.tokens.css"
+    ),
+  },
+  "moz-toggle.tokens.css": {
+    path: path.join(
+      PROJECT_ROOT,
+      "toolkit/content/widgets/moz-toggle/moz-toggle.tokens.css"
+    ),
+    testPath: path.join(
+      TEST_BUILD_PATH,
+      "../../../content/widgets/moz-toggle/moz-toggle.tokens.css"
+    ),
   },
 };
 
 const tests = {
   // Verify the CSS files build successfully and are up to date.
-  buildCSS() {
+  async buildCSS() {
     logStart("build CSS");
 
     let errors = [];
@@ -78,13 +103,20 @@ const tests = {
       errors.push("CSS build did not run successfully");
     }
 
+    let prettierConfig = require(path.resolve(PROJECT_ROOT, ".prettierrc.js"));
+
     // Build CSS files to the test directory and compare them to the current CSS
     // files that get checked in. If the contents don't match we either forgot
     // to build the files after making a change, or edited the CSS files directly.
     for (let [fileName, { testPath }] of Object.entries(FILE_PATHS)) {
       let builtCSS = readFileSync(testPath, "utf8");
+      let formattedCSS = await prettier.format(builtCSS, {
+        ...prettierConfig,
+        parser: "css",
+        printWidth: 160,
+      });
 
-      if (builtCSS !== currentCSS[fileName]) {
+      if (formattedCSS !== currentCSS[fileName]) {
         errors.push(`${fileName} is out of date`);
       }
 

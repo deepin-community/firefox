@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,7 +48,7 @@ function ensureSignatureVerificationFailure(certificatePath) {
     certdb,
     cert,
     SEC_ERROR_BAD_SIGNATURE,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 
@@ -60,7 +59,7 @@ function tamperWithSignatureAndEnsureVerificationFailure(certificatePath) {
     certdb,
     cert,
     SEC_ERROR_BAD_SIGNATURE,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 
@@ -92,7 +91,7 @@ function tamperWithSerialNumberAndEnsureVerificationFailure(certificatePath) {
     certdb,
     cert,
     SEC_ERROR_BAD_SIGNATURE,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 

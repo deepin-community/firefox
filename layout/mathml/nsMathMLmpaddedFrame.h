@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMathMLmpaddedFrame_h___
-#define nsMathMLmpaddedFrame_h___
+#ifndef nsMathMLmpaddedFrame_h_
+#define nsMathMLmpaddedFrame_h_
 
-#include "mozilla/Attributes.h"
 #include "nsCSSValue.h"
 #include "nsMathMLContainerFrame.h"
 
@@ -34,12 +31,8 @@ class nsMathMLmpaddedFrame final : public nsMathMLContainerFrame {
     return TransmitAutomaticDataForMrowLikeElement();
   }
 
-  virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
-                      const ReflowInput& aReflowInput,
-                      nsReflowStatus& aStatus) override;
-
-  nsresult Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                 ReflowOutput& aDesiredSize) override;
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) override;
 
   bool IsMrowLike() override {
     return mFrames.FirstChild() != mFrames.LastChild() || !mFrames.FirstChild();
@@ -48,52 +41,57 @@ class nsMathMLmpaddedFrame final : public nsMathMLContainerFrame {
  protected:
   explicit nsMathMLmpaddedFrame(ComputedStyle* aStyle,
                                 nsPresContext* aPresContext)
-      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID),
-        mWidthSign(0),
-        mHeightSign(0),
-        mDepthSign(0),
-        mLeadingSpaceSign(0),
-        mVerticalOffsetSign(0),
-        mWidthPseudoUnit(0),
-        mHeightPseudoUnit(0),
-        mDepthPseudoUnit(0),
-        mLeadingSpacePseudoUnit(0),
-        mVerticalOffsetPseudoUnit(0) {}
+      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID) {}
 
   virtual ~nsMathMLmpaddedFrame();
 
-  virtual nsresult MeasureForWidth(DrawTarget* aDrawTarget,
-                                   ReflowOutput& aDesiredSize) override;
-
  private:
-  nsCSSValue mWidth;
-  nsCSSValue mHeight;
-  nsCSSValue mDepth;
-  nsCSSValue mLeadingSpace;
-  nsCSSValue mVerticalOffset;
+  struct Attribute {
+    enum class Sign : uint8_t {
+      Unspecified,
+      Minus,
+      Plus,
+    };
+    enum class PseudoUnit : uint8_t {
+      Unspecified,
+      ItSelf,
+      Width,
+      Height,
+      Depth,
+      NamedSpace,
+    };
+    nsCSSValue mValue;
+    Sign mSign = Sign::Unspecified;
+    PseudoUnit mPseudoUnit = PseudoUnit::Unspecified;
+    enum class ParsingState : uint8_t {
+      Valid,
+      Invalid,
+      Dirty,
+    };
+    ParsingState mState = ParsingState::Dirty;
+    void Reset() {
+      mValue.Reset();
+      mSign = Sign::Unspecified;
+      mPseudoUnit = PseudoUnit::Unspecified;
+      mState = ParsingState::Dirty;
+    }
+    bool IsValid() const { return mState == ParsingState::Valid; }
+  };
 
-  int32_t mWidthSign;
-  int32_t mHeightSign;
-  int32_t mDepthSign;
-  int32_t mLeadingSpaceSign;
-  int32_t mVerticalOffsetSign;
+  Attribute mWidth;
+  Attribute mHeight;
+  Attribute mDepth;
+  Attribute mLeadingSpace;
+  Attribute mVerticalOffset;
 
-  int32_t mWidthPseudoUnit;
-  int32_t mHeightPseudoUnit;
-  int32_t mDepthPseudoUnit;
-  int32_t mLeadingSpacePseudoUnit;
-  int32_t mVerticalOffsetPseudoUnit;
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) final;
+  void ParseAttribute(nsAtom* aAtom, Attribute& aAttribute);
+  bool ParseAttribute(nsString& aString, Attribute& aAttribute);
 
-  // helpers to process the attributes
-  void ProcessAttributes();
-
-  bool ParseAttribute(nsString& aString, int32_t& aSign, nsCSSValue& aCSSValue,
-                      int32_t& aPseudoUnit);
-
-  void UpdateValue(int32_t aSign, int32_t aPseudoUnit,
-                   const nsCSSValue& aCSSValue,
+  void UpdateValue(const Attribute& aAttribute, Attribute::PseudoUnit aSelfUnit,
                    const ReflowOutput& aDesiredSize, nscoord& aValueToUpdate,
-                   float aFontSizeInflation) const;
+                   float aFontSizeInflation);
 };
 
-#endif /* nsMathMLmpaddedFrame_h___ */
+#endif /* nsMathMLmpaddedFrame_h_ */

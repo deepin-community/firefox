@@ -1,23 +1,28 @@
+//! The Value enum, a loosely typed way of representing any valid YAML value.
+
 mod de;
+mod debug;
 mod from;
 mod index;
 mod partial_eq;
 mod ser;
+pub(crate) mod tagged;
 
-use crate::ser::SerializerToYaml;
-use crate::{Error, Mapping};
+use crate::error::{self, Error, ErrorImpl};
 use serde::de::{Deserialize, DeserializeOwned, IntoDeserializer};
 use serde::Serialize;
-use std::f64;
 use std::hash::{Hash, Hasher};
-use std::str::FromStr;
-use yaml_rust::Yaml;
+use std::mem;
 
 pub use self::index::Index;
+pub use self::ser::Serializer;
+pub use self::tagged::{Tag, TaggedValue};
+#[doc(inline)]
+pub use crate::mapping::Mapping;
 pub use crate::number::Number;
 
 /// Represents any valid YAML value.
-#[derive(Clone, PartialOrd, Debug)]
+#[derive(Clone, PartialEq, PartialOrd)]
 pub enum Value {
     /// Represents a YAML null value.
     Null,
@@ -33,6 +38,8 @@ pub enum Value {
     /// Represents a YAML mapping in which the keys and values are both
     /// `serde_yaml::Value`.
     Mapping(Mapping),
+    /// A representation of YAML's `!Tag` syntax, used for enums.
+    Tagged(Box<TaggedValue>),
 }
 
 /// The default value is `Value::Null`.
@@ -89,7 +96,7 @@ pub fn to_value<T>(value: T) -> Result<Value, Error>
 where
     T: Serialize,
 {
-    value.serialize(SerializerToYaml).map(yaml_to_value)
+    value.serialize(Serializer)
 }
 
 /// Interpret a `serde_yaml::Value` as an instance of type `T`.
@@ -126,19 +133,20 @@ impl Value {
     /// or the given index is not within the bounds of the sequence.
     ///
     /// ```
-    /// # use serde_yaml::Value;
-    /// #
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let object: Value = yaml(r#"{ A: 65, B: 66, C: 67 }"#);
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// use serde_yaml::Value;
+    ///
+    /// let object: Value = serde_yaml::from_str(r#"{ A: 65, B: 66, C: 67 }"#)?;
     /// let x = object.get("A").unwrap();
     /// assert_eq!(x, 65);
     ///
-    /// let sequence: Value = yaml(r#"[ "A", "B", "C" ]"#);
+    /// let sequence: Value = serde_yaml::from_str(r#"[ "A", "B", "C" ]"#)?;
     /// let x = sequence.get(2).unwrap();
     /// assert_eq!(x, &Value::String("C".into()));
     ///
     /// assert_eq!(sequence.get("A"), None);
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// Square brackets can also be used to index into a value in a more concise
@@ -148,15 +156,13 @@ impl Value {
     /// ```
     /// # use serde_yaml::Value;
     /// #
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let object = yaml(r#"
-    /// ---
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let object: Value = serde_yaml::from_str(r#"
     /// A: [a, á, à]
     /// B: [b, b́]
     /// C: [c, ć, ć̣, ḉ]
     /// 42: true
-    /// "#);
+    /// "#)?;
     /// assert_eq!(object["B"][0], Value::String("b".into()));
     ///
     /// assert_eq!(object[Value::String("D".into())], Value::Null);
@@ -164,6 +170,8 @@ impl Value {
     /// assert_eq!(object[0]["x"]["y"]["z"], Value::Null);
     ///
     /// assert_eq!(object[42], Value::Bool(true));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn get<I: Index>(&self, index: I) -> Option<&Value> {
         index.index_into(self)
@@ -198,7 +206,7 @@ impl Value {
     /// assert!(!v.is_null());
     /// ```
     pub fn is_null(&self) -> bool {
-        if let Value::Null = *self {
+        if let Value::Null = self.untag_ref() {
             true
         } else {
             false
@@ -219,7 +227,7 @@ impl Value {
     /// assert_eq!(v.as_null(), None);
     /// ```
     pub fn as_null(&self) -> Option<()> {
-        match self {
+        match self.untag_ref() {
             Value::Null => Some(()),
             _ => None,
         }
@@ -260,7 +268,7 @@ impl Value {
     /// assert_eq!(v.as_bool(), None);
     /// ```
     pub fn as_bool(&self) -> Option<bool> {
-        match self {
+        match self.untag_ref() {
             Value::Bool(b) => Some(*b),
             _ => None,
         }
@@ -280,7 +288,7 @@ impl Value {
     /// assert!(!v.is_number());
     /// ```
     pub fn is_number(&self) -> bool {
-        match self {
+        match self.untag_ref() {
             Value::Number(_) => true,
             _ => false,
         }
@@ -322,7 +330,7 @@ impl Value {
     /// assert_eq!(v.as_i64(), None);
     /// ```
     pub fn as_i64(&self) -> Option<i64> {
-        match self {
+        match self.untag_ref() {
             Value::Number(n) => n.as_i64(),
             _ => None,
         }
@@ -364,7 +372,7 @@ impl Value {
     /// assert_eq!(v.as_u64(), None);
     /// ```
     pub fn as_u64(&self) -> Option<u64> {
-        match self {
+        match self.untag_ref() {
             Value::Number(n) => n.as_u64(),
             _ => None,
         }
@@ -390,7 +398,7 @@ impl Value {
     /// assert!(!v.is_f64());
     /// ```
     pub fn is_f64(&self) -> bool {
-        match self {
+        match self.untag_ref() {
             Value::Number(n) => n.is_f64(),
             _ => false,
         }
@@ -411,7 +419,7 @@ impl Value {
     /// assert_eq!(v.as_f64(), None);
     /// ```
     pub fn as_f64(&self) -> Option<f64> {
-        match self {
+        match self.untag_ref() {
             Value::Number(i) => i.as_f64(),
             _ => None,
         }
@@ -452,7 +460,7 @@ impl Value {
     /// assert_eq!(v.as_str(), None);
     /// ```
     pub fn as_str(&self) -> Option<&str> {
-        match self {
+        match self.untag_ref() {
             Value::String(s) => Some(s),
             _ => None,
         }
@@ -490,7 +498,7 @@ impl Value {
     /// assert_eq!(v.as_sequence(), None);
     /// ```
     pub fn as_sequence(&self) -> Option<&Sequence> {
-        match self {
+        match self.untag_ref() {
             Value::Sequence(seq) => Some(seq),
             _ => None,
         }
@@ -513,7 +521,7 @@ impl Value {
     /// assert_eq!(v.as_sequence_mut(), None);
     /// ```
     pub fn as_sequence_mut(&mut self) -> Option<&mut Sequence> {
-        match self {
+        match self.untag_mut() {
             Value::Sequence(seq) => Some(seq),
             _ => None,
         }
@@ -555,7 +563,7 @@ impl Value {
     /// assert_eq!(v.as_mapping(), None);
     /// ```
     pub fn as_mapping(&self) -> Option<&Mapping> {
-        match self {
+        match self.untag_ref() {
             Value::Mapping(map) => Some(map),
             _ => None,
         }
@@ -583,58 +591,100 @@ impl Value {
     /// assert_eq!(v.as_mapping_mut(), None);
     /// ```
     pub fn as_mapping_mut(&mut self) -> Option<&mut Mapping> {
-        match self {
+        match self.untag_mut() {
             Value::Mapping(map) => Some(map),
             _ => None,
         }
     }
-}
 
-fn yaml_to_value(yaml: Yaml) -> Value {
-    match yaml {
-        Yaml::Real(f) => {
-            if f == ".inf" {
-                Value::Number(f64::INFINITY.into())
-            } else if f == "-.inf" {
-                Value::Number(f64::NEG_INFINITY.into())
-            } else if f == ".nan" {
-                Value::Number(f64::NAN.into())
-            } else if let Ok(n) = u64::from_str(&f) {
-                Value::Number(n.into())
-            } else if let Ok(n) = i64::from_str(&f) {
-                Value::Number(n.into())
-            } else if let Ok(n) = f64::from_str(&f) {
-                Value::Number(n.into())
-            } else {
-                Value::String(f)
+    /// Performs merging of `<<` keys into the surrounding mapping.
+    ///
+    /// The intended use of this in YAML is described in
+    /// <https://yaml.org/type/merge.html>.
+    ///
+    /// ```
+    /// use serde_yaml::Value;
+    ///
+    /// let config = "\
+    /// tasks:
+    ///   build: &webpack_shared
+    ///     command: webpack
+    ///     args: build
+    ///     inputs:
+    ///       - 'src/**/*'
+    ///   start:
+    ///     <<: *webpack_shared
+    ///     args: start
+    /// ";
+    ///
+    /// let mut value: Value = serde_yaml::from_str(config).unwrap();
+    /// value.apply_merge().unwrap();
+    ///
+    /// assert_eq!(value["tasks"]["start"]["command"], "webpack");
+    /// assert_eq!(value["tasks"]["start"]["args"], "start");
+    /// ```
+    pub fn apply_merge(&mut self) -> Result<(), Error> {
+        let mut stack = Vec::new();
+        stack.push(self);
+        while let Some(node) = stack.pop() {
+            match node {
+                Value::Mapping(mapping) => {
+                    match mapping.remove("<<") {
+                        Some(Value::Mapping(merge)) => {
+                            for (k, v) in merge {
+                                mapping.entry(k).or_insert(v);
+                            }
+                        }
+                        Some(Value::Sequence(sequence)) => {
+                            for value in sequence {
+                                match value {
+                                    Value::Mapping(merge) => {
+                                        for (k, v) in merge {
+                                            mapping.entry(k).or_insert(v);
+                                        }
+                                    }
+                                    Value::Sequence(_) => {
+                                        return Err(error::new(ErrorImpl::SequenceInMergeElement));
+                                    }
+                                    Value::Tagged(_) => {
+                                        return Err(error::new(ErrorImpl::TaggedInMerge));
+                                    }
+                                    _unexpected => {
+                                        return Err(error::new(ErrorImpl::ScalarInMergeElement));
+                                    }
+                                }
+                            }
+                        }
+                        None => {}
+                        Some(Value::Tagged(_)) => return Err(error::new(ErrorImpl::TaggedInMerge)),
+                        Some(_unexpected) => return Err(error::new(ErrorImpl::ScalarInMerge)),
+                    }
+                    stack.extend(mapping.values_mut());
+                }
+                Value::Sequence(sequence) => stack.extend(sequence),
+                Value::Tagged(tagged) => stack.push(&mut tagged.value),
+                _ => {}
             }
         }
-        Yaml::Integer(i) => Value::Number(i.into()),
-        Yaml::String(s) => Value::String(s),
-        Yaml::Boolean(b) => Value::Bool(b),
-        Yaml::Array(sequence) => Value::Sequence(sequence.into_iter().map(yaml_to_value).collect()),
-        Yaml::Hash(hash) => Value::Mapping(
-            hash.into_iter()
-                .map(|(k, v)| (yaml_to_value(k), yaml_to_value(v)))
-                .collect(),
-        ),
-        Yaml::Alias(_) => panic!("alias unsupported"),
-        Yaml::Null => Value::Null,
-        Yaml::BadValue => panic!("bad value"),
+        Ok(())
     }
 }
 
 impl Eq for Value {}
 
+// NOTE: This impl must be kept consistent with HashLikeValue's Hash impl in
+// mapping.rs in order for value[str] indexing to work.
 impl Hash for Value {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        mem::discriminant(self).hash(state);
         match self {
-            Value::Null => 0.hash(state),
-            Value::Bool(b) => (1, b).hash(state),
-            Value::Number(i) => (2, i).hash(state),
-            Value::String(s) => (3, s).hash(state),
-            Value::Sequence(seq) => (4, seq).hash(state),
-            Value::Mapping(map) => (5, map).hash(state),
+            Value::Null => {}
+            Value::Bool(v) => v.hash(state),
+            Value::Number(v) => v.hash(state),
+            Value::String(v) => v.hash(state),
+            Value::Sequence(v) => v.hash(state),
+            Value::Mapping(v) => v.hash(state),
+            Value::Tagged(v) => v.hash(state),
         }
     }
 }

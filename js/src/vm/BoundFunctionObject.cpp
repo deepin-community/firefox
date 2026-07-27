@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -321,6 +319,7 @@ BoundFunctionObject* BoundFunctionObject::functionBindImpl(
   // If this assertion fails, make sure we use the correct AllocKind and that we
   // use all of its slots (consider increasing MaxInlineBoundArgs).
   static_assert(gc::GetGCKindSlots(allocKind) == SlotCount);
+  static_assert(gc::GetFinalizeKind(allocKind) == gc::FinalizeKind::None);
 
   // ES2023 10.4.1.3 BoundFunctionCreate
   // Steps 1-5.
@@ -354,7 +353,9 @@ BoundFunctionObject* BoundFunctionObject::functionBindImpl(
         return nullptr;
       }
     } else {
-      bound = NewObjectWithGivenProto<BoundFunctionObject>(cx, proto);
+      bound = NewObjectWithGivenProto<BoundFunctionObject>(
+          cx, proto,
+          ObjectFlags({ObjectFlag::HasNonWritableOrAccessorPropExclProto}));
       if (!bound) {
         return nullptr;
       }
@@ -468,7 +469,10 @@ BoundFunctionObject* BoundFunctionObject::functionBindSpecializedBaseline(
 BoundFunctionObject* BoundFunctionObject::createTemplateObject(JSContext* cx) {
   Rooted<JSObject*> proto(cx, &cx->global()->getFunctionPrototype());
   Rooted<BoundFunctionObject*> bound(
-      cx, NewTenuredObjectWithGivenProto<BoundFunctionObject>(cx, proto));
+      cx,
+      NewTenuredObjectWithGivenProto<BoundFunctionObject>(
+          cx, proto,
+          ObjectFlags({ObjectFlag::HasNonWritableOrAccessorPropExclProto})));
   if (!bound) {
     return nullptr;
   }
@@ -498,16 +502,8 @@ bool BoundFunctionObject::initTemplateSlotsForSpecializedBind(
 }
 
 static const JSClassOps classOps = {
-    nullptr,                         // addProperty
-    nullptr,                         // delProperty
-    nullptr,                         // enumerate
-    nullptr,                         // newEnumerate
-    nullptr,                         // resolve
-    nullptr,                         // mayResolve
-    nullptr,                         // finalize
-    BoundFunctionObject::call,       // call
-    BoundFunctionObject::construct,  // construct
-    nullptr,                         // trace
+    .call = BoundFunctionObject::call,
+    .construct = BoundFunctionObject::construct,
 };
 
 static const ObjectOps objOps = {

@@ -1,4 +1,3 @@
-/* -*- js-indent-level: 2; indent-tabs-mode: nil -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,6 +10,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManagerPrivate: "resource://gre/modules/AddonManager.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   TelemetryController: "resource://gre/modules/TelemetryController.sys.mjs",
   TelemetryEnvironment: "resource://gre/modules/TelemetryEnvironment.sys.mjs",
   TelemetryReportingPolicy:
@@ -51,8 +51,6 @@ const IS_UNIFIED_TELEMETRY = Services.prefs.getBoolPref(
   false
 );
 
-var gWasDebuggerAttached = false;
-
 function generateUUID() {
   let str = Services.uuid.generateUUID().toString();
   // strip {}
@@ -71,8 +69,9 @@ export var Policy = {
 
 /**
  * Get the ping type based on the payload.
- * @param {Object} aPayload The ping payload.
- * @return {String} A string representing the ping type.
+ *
+ * @param {object} aPayload The ping payload.
+ * @return {string} A string representing the ping type.
  */
 function getPingType(aPayload) {
   // To remain consistent with server-side ping handling, set "saved-session" as the ping
@@ -161,6 +160,7 @@ export var TelemetrySession = Object.freeze({
   },
   /**
    * Returns the current telemetry payload.
+   *
    * @param reason Optional, the reason to trigger the payload.
    * @param clearSubsession Optional, whether to clear subsession specific data.
    * @returns Object
@@ -254,6 +254,7 @@ export var TelemetrySession = Object.freeze({
   /**
    * Does the "heavy" Telemetry initialization later on, so we
    * don't impact startup performance.
+   *
    * @return {Promise} Resolved when the initialization completes.
    */
   delayedInit() {
@@ -267,6 +268,7 @@ export var TelemetrySession = Object.freeze({
   },
   /**
    * Marks the "new-profile" ping as sent in the telemetry state file.
+   *
    * @return {Promise} A promise resolved when the new telemetry state is saved to disk.
    */
   markNewProfilePingSent() {
@@ -276,7 +278,7 @@ export var TelemetrySession = Object.freeze({
    * Returns if the "new-profile" ping has ever been sent for this profile.
    * Please note that the returned value is trustworthy only after the delayed setup.
    *
-   * @return {Boolean} True if the new profile ping was sent on this profile,
+   * @return {boolean} True if the new profile ping was sent on this profile,
    *         false otherwise.
    */
   get newProfilePingSent() {
@@ -340,6 +342,8 @@ var Impl = {
   _newProfilePingSent: false,
   // Keep track of the active observers
   _observedTopics: new Set(),
+  _earlyObserversRegistered: false,
+  _delayedObserversRegistered: false,
 
   addObserver(aTopic) {
     Services.obs.addObserver(this, aTopic);
@@ -364,8 +368,9 @@ var Impl = {
   /**
    * Gets a series of simple measurements (counters). At the moment, this
    * only returns startup data from nsIAppStartup.getStartupInfo().
-   * @param {Boolean} isSubsession True if this is a subsession, false otherwise.
-   * @param {Boolean} clearSubsession True if a new subsession is being started, false otherwise.
+   *
+   * @param {boolean} isSubsession True if this is a subsession, false otherwise.
+   * @param {boolean} clearSubsession True if a new subsession is being started, false otherwise.
    *
    * @return simple measurements as a dictionary.
    */
@@ -374,6 +379,11 @@ var Impl = {
     isSubsession,
     clearSubsession
   ) {
+    // Only activeTicks, blankWindowShown, firstPaint, main, sessionRestored,
+    // and totalTime are recognized by the pipeline, so only report those.
+
+    // Supplies `process` for calculations, `firstPaint`, `main`,
+    // `sessionRestored`.
     let si = Services.startup.getStartupInfo();
 
     // Measurements common to chrome and content processes.
@@ -388,15 +398,9 @@ var Impl = {
       let { TelemetryTimestamps } = ChromeUtils.importESModule(
         "resource://gre/modules/TelemetryTimestamps.sys.mjs"
       );
+      // Supplies `blankWindowShown`
       appTimestamps = TelemetryTimestamps.get();
     } catch (ex) {}
-
-    // Only submit this if the extended set is enabled.
-    if (!Utils.isContentProcess && Services.telemetry.canRecordExtended) {
-      try {
-        ret.addonManager = lazy.AddonManagerPrivate.getSimpleMeasures();
-      } catch (ex) {}
-    }
 
     if (si.process) {
       for (let field of Object.keys(si)) {
@@ -413,34 +417,20 @@ var Impl = {
       }
     }
 
-    ret.startupInterrupted = Number(Services.startup.interrupted);
+    // Remove all fields in `ret` that the pipeline doesn't know about:
+    const knownFields = [
+      "blankWindowShown",
+      "firstPaint",
+      "main",
+      "sessionRestored",
+      "totalTime",
+    ];
+    ret = Object.fromEntries(
+      Object.entries(ret).filter(([key, _v]) => knownFields.includes(key))
+    );
 
     if (Utils.isContentProcess) {
       return ret;
-    }
-
-    // Measurements specific to chrome process
-
-    // Update debuggerAttached flag
-    let debugService = Cc["@mozilla.org/xpcom/debug;1"].getService(
-      Ci.nsIDebug2
-    );
-    let isDebuggerAttached = debugService.isDebuggerAttached;
-    gWasDebuggerAttached = gWasDebuggerAttached || isDebuggerAttached;
-    ret.debuggerAttached = Number(gWasDebuggerAttached);
-
-    let shutdownDuration = Services.telemetry.lastShutdownDuration;
-    if (shutdownDuration) {
-      ret.shutdownDuration = shutdownDuration;
-    }
-
-    let failedProfileLockCount = Services.telemetry.failedProfileLockCount;
-    if (failedProfileLockCount) {
-      ret.failedProfileLockCount = failedProfileLockCount;
-    }
-
-    for (let ioCounter in this._startupIO) {
-      ret[ioCounter] = this._startupIO[ioCounter];
     }
 
     let activeTicks = this._sessionActiveTicks;
@@ -458,27 +448,44 @@ var Impl = {
   },
 
   getHistograms: function getHistograms(clearSubsession) {
-    return Services.telemetry.getSnapshotForHistograms(
+    const snapshot = Services.telemetry.getSnapshotForHistograms(
       "main",
       clearSubsession,
       !this._testing
     );
+    if (
+      lazy.NimbusFeatures.legacyTelemetry.getVariable("disableMainPingHgrams")
+    ) {
+      this._log.trace("getHistograms - Main ping histograms are disabled.");
+      return {};
+    }
+    return snapshot;
   },
 
   getKeyedHistograms(clearSubsession) {
-    return Services.telemetry.getSnapshotForKeyedHistograms(
+    const snapshot = Services.telemetry.getSnapshotForKeyedHistograms(
       "main",
       clearSubsession,
       !this._testing
     );
+    if (
+      lazy.NimbusFeatures.legacyTelemetry.getVariable("disableMainPingHgrams")
+    ) {
+      this._log.trace(
+        "getKeyedHistograms - Main ping histograms are disabled."
+      );
+      return {};
+    }
+    return snapshot;
   },
 
   /**
    * Get a snapshot of the scalars and clear them.
+   *
    * @param {subsession} If true, then we collect the data for a subsession.
    * @param {clearSubsession} If true, we  need to clear the subsession.
    * @param {keyed} Take a snapshot of keyed or non keyed scalars.
-   * @return {Object} The scalar data as a Javascript object, including the
+   * @return {object} The scalar data as a Javascript object, including the
    *         data from child processes, in the following format:
    *            {'content': { 'scalarName': ... }, 'gpu': { ... } }
    */
@@ -500,6 +507,31 @@ var Impl = {
           clearSubsession,
           !this._testing
         );
+
+    if (
+      lazy.NimbusFeatures.legacyTelemetry.getVariable("disableMainPingScalars")
+    ) {
+      this._log.trace("getScalars - Main ping scalars are disabled.");
+      if (keyed) {
+        // We don't need to preserve any keyed scalars.
+        scalarsSnapshot = {};
+      } else {
+        let filteredSnapshot = {};
+        const scalarsToKeep = [
+          "browser.engagement.total_uri_count_normal_and_private_mode",
+          "browser.engagement.active_ticks",
+        ];
+        for (let scalar of scalarsToKeep) {
+          if ("parent" in scalarsSnapshot && scalar in scalarsSnapshot.parent) {
+            if (!("parent" in filteredSnapshot)) {
+              filteredSnapshot.parent = {};
+            }
+            filteredSnapshot.parent[scalar] = scalarsSnapshot.parent[scalar];
+          }
+        }
+        scalarsSnapshot = filteredSnapshot;
+      }
+    }
 
     return scalarsSnapshot;
   },
@@ -633,21 +665,14 @@ var Impl = {
       key => "socket" in measurements[key]
     );
 
-    let measurementsContainUtility = Object.keys(measurements).some(
-      key => "utility" in measurements[key]
-    );
-
     payloadObj.processes = {};
-    let processTypes = ["parent", "content", "extension", "dynamic"];
+    let processTypes = ["parent", "content", "dynamic"];
     // Only include the GPU process if we've accumulated data for it.
     if (measurementsContainGPU) {
       processTypes.push("gpu");
     }
     if (measurementsContainSocket) {
       processTypes.push("socket");
-    }
-    if (measurementsContainUtility) {
-      processTypes.push("utility");
     }
 
     // Collect per-process measurements.
@@ -688,7 +713,6 @@ var Impl = {
       payloadObj.fileIOReports = protect(
         () => Services.telemetry.fileIOReports
       );
-      payloadObj.lateWrites = protect(() => Services.telemetry.lateWrites);
 
       payloadObj.addonDetails = protect(() =>
         lazy.AddonManagerPrivate.getTelemetryDetails()
@@ -739,12 +763,10 @@ var Impl = {
       // been suspended since boot, we want the previous property to hold,
       // regardless of the delay during or between the two
       // `msSinceProcessStart*` calls.
-      Services.telemetry.scalarSet(
-        "browser.engagement.session_time_excluding_suspend",
+      Glean.browserEngagement.sessionTimeExcludingSuspend.set(
         Services.telemetry.msSinceProcessStartExcludingSuspend()
       );
-      Services.telemetry.scalarSet(
-        "browser.engagement.session_time_including_suspend",
+      Glean.browserEngagement.sessionTimeIncludingSuspend.set(
         Services.telemetry.msSinceProcessStartIncludingSuspend()
       );
 
@@ -809,15 +831,18 @@ var Impl = {
    * chrome process.
    */
   attachEarlyObservers() {
-    this.addObserver("sessionstore-windows-restored");
-    if (AppConstants.platform === "android") {
-      this.addObserver("application-background");
-    }
-    this.addObserver("xul-window-visible");
+    if (!this._earlyObserversRegistered) {
+      this.addObserver("sessionstore-windows-restored");
+      if (AppConstants.platform === "android") {
+        this.addObserver("application-background");
+      }
+      this.addObserver("xul-window-visible");
 
-    // Attach the active-ticks related observers.
-    this.addObserver("user-interaction-active");
-    this.addObserver("user-interaction-inactive");
+      // Attach the active-ticks related observers.
+      this.addObserver("user-interaction-active");
+      this.addObserver("user-interaction-inactive");
+      this._earlyObserversRegistered = true;
+    }
   },
 
   /**
@@ -844,10 +869,14 @@ var Impl = {
     // Generate a unique id once per session so the server can cope with duplicate
     // submissions, orphaning and other oddities. The id is shared across subsessions.
     this._sessionId = Policy.generateSessionUUID();
+    Glean.legacyTelemetry.sessionId.set(this._sessionId);
     this.startNewSubsession();
     // startNewSubsession sets |_subsessionStartDate| to the current date/time. Use
     // the very same value for |_sessionStartDate|.
     this._sessionStartDate = this._subsessionStartDate;
+    Glean.legacyTelemetry.sessionStartDate.set(
+      this._sessionStartDate.getTime() * 1000
+    );
 
     annotateCrashReport(this._sessionId);
 
@@ -873,6 +902,7 @@ var Impl = {
   /**
    * Does the "heavy" Telemetry initialization later on, so we
    * don't impact startup performance.
+   *
    * @return {Promise} Resolved when the initialization completes.
    */
   delayedInit() {
@@ -889,7 +919,10 @@ var Impl = {
           this._getSessionDataObject()
         );
 
-        this.addObserver("idle-daily");
+        if (!this._delayedObserversRegistered) {
+          this.addObserver("idle-daily");
+          this._delayedObserversRegistered = true;
+        }
         await Services.telemetry.gatherMemory();
 
         Services.telemetry.asyncFetchTelemetryData(function () {});
@@ -1064,6 +1097,8 @@ var Impl = {
         this._log.warn("uninstall - Failed to remove " + topic, e);
       }
     }
+    this._earlyObserversRegistered = false;
+    this._delayedObserversRegistered = false;
   },
 
   getPayload: function getPayload(reason, clearSubsession) {
@@ -1086,6 +1121,8 @@ var Impl = {
         this._startupIO.startupSessionRestoreReadBytes,
         this._startupIO.startupSessionRestoreWriteBytes,
       ] = counters;
+      Glean.startupIo.read.sessionRestore.set(counters[0]);
+      Glean.startupIo.write.sessionRestore.set(counters[1]);
     }
     this._slowSQLStartup = Services.telemetry.slowSQL;
   },
@@ -1109,7 +1146,6 @@ var Impl = {
     // inactivity, because it is just the start of this active tick.
     if (needsUpdate) {
       this._sessionActiveTicks++;
-      Services.telemetry.scalarAdd("browser.engagement.active_ticks", 1);
       Glean.browserEngagement.activeTicks.add(1);
     }
   },
@@ -1129,29 +1165,22 @@ var Impl = {
             this._startupIO.startupWindowVisibleReadBytes,
             this._startupIO.startupWindowVisibleWriteBytes,
           ] = counters;
+          Glean.startupIo.read.windowVisible.set(counters[0]);
+          Glean.startupIo.write.windowVisible.set(counters[1]);
         }
         break;
-      case "sessionstore-windows-restored":
+      case "sessionstore-windows-restored": {
         this.removeObserver("sessionstore-windows-restored");
-        // Check whether debugger was attached during startup
-        let debugService = Cc["@mozilla.org/xpcom/debug;1"].getService(
-          Ci.nsIDebug2
-        );
-        gWasDebuggerAttached = debugService.isDebuggerAttached;
         this.gatherStartup();
         break;
+      }
       case "idle-daily":
         // Enqueue to main-thread, otherwise components may be inited by the
-        // idle-daily category and miss the gather-telemetry notification.
-        Services.tm.dispatchToMainThread(function () {
-          // Notify that data should be gathered now.
-          // TODO: We are keeping this behaviour for now but it will be removed as soon as
-          // bug 1127907 lands.
-          Services.obs.notifyObservers(null, "gather-telemetry");
-        });
+        // idle-daily category and miss the notification.
+        Services.tm.dispatchToMainThread(function () {});
         break;
 
-      case "application-background":
+      case "application-background": {
         if (AppConstants.platform !== "android") {
           break;
         }
@@ -1182,6 +1211,7 @@ var Impl = {
           options
         );
         break;
+      }
       case "user-interaction-active":
         this._onActiveTick(true);
         break;
@@ -1246,6 +1276,7 @@ var Impl = {
 
   /**
    * Gather and send a daily ping.
+   *
    * @return {Promise} Resolved when the ping is sent.
    */
   _sendDailyPing() {
@@ -1277,7 +1308,9 @@ var Impl = {
     return promise;
   },
 
-  /** Loads session data from the session data file.
+  /**
+   * Loads session data from the session data file.
+   *
    * @return {Promise<object>} A promise which is resolved with an object when
    *                            loading has completed, with null otherwise.
    */
@@ -1295,9 +1328,6 @@ var Impl = {
       !("sessionId" in data)
     ) {
       this._log.error("_loadSessionData - session data is invalid");
-      Services.telemetry
-        .getHistogramById("TELEMETRY_SESSIONDATA_FAILED_VALIDATION")
-        .add(1);
       return null;
     }
 
@@ -1379,7 +1409,8 @@ var Impl = {
 
   /**
    * Saves the aborted session ping to disk.
-   * @param {Object} [aProvidedPayload=null] A payload object to be used as an aborted
+   *
+   * @param {object} [aProvidedPayload=null] A payload object to be used as an aborted
    *                 session ping. The reason of this payload is changed to aborted-session.
    *                 If not provided, a new payload is gathered.
    */

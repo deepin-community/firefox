@@ -75,9 +75,16 @@ var tests = [
   },
   {
     name: "chrome:",
-    location: "chrome://global/skin/in-content/info-pages.css",
-    hostForDisplay: "chrome://global/skin/in-content/info-pages.css",
+    location: "chrome://global/content/mozilla.html",
+    hostForDisplay: "chrome://global/content/mozilla.html",
     hasSubview: false,
+  },
+  {
+    name: "about:blank?foo with nested moz-safe-about:",
+    location: "about:blank?foo",
+    hostForDisplay: "about:blank",
+    hasSubview: true,
+    nestedInnerURI: "moz-safe-about:blank?foo",
   },
 ];
 
@@ -146,6 +153,18 @@ async function runTest(i, forward) {
       gIdentityHandler.getHostForDisplay(),
       currentTest.hostForDisplay,
       "hostForDisplay matches for test " + testDesc
+    );
+  }
+  if (currentTest.nestedInnerURI) {
+    ok(
+      gIdentityHandler._uri instanceof Ci.nsINestedURI,
+      "Is nested URI for test " + testDesc
+    );
+    const nestedURI = gIdentityHandler._uri.QueryInterface(Ci.nsINestedURI);
+    is(
+      nestedURI.innerURI.spec,
+      currentTest.nestedInnerURI,
+      "nested inner URI matches for test " + testDesc
     );
   }
 

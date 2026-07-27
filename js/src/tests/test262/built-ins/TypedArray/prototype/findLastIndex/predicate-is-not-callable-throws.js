@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Microsoft. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -52,7 +51,7 @@ testWithTypedArrayConstructors(function(TA) {
   assert.throws(TypeError, function() {
     sample.findLastIndex(/./);
   }, "/./");
-});
+}, null, ["passthrough"]);
 
 
 reportCompare(0, 0);

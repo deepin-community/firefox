@@ -1,5 +1,6 @@
-use crate::{Mapping, Value};
-use std::fmt;
+use crate::mapping::Entry;
+use crate::{mapping, private, Mapping, Value};
+use std::fmt::{self, Debug};
 use std::ops;
 
 /// A type that can be used to index into a `serde_yaml::Value`. See the `get`
@@ -26,98 +27,121 @@ pub trait Index: private::Sealed {
 
 impl Index for usize {
     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
-        match v {
+        match v.untag_ref() {
             Value::Sequence(vec) => vec.get(*self),
             Value::Mapping(vec) => vec.get(&Value::Number((*self).into())),
             _ => None,
         }
     }
     fn index_into_mut<'v>(&self, v: &'v mut Value) -> Option<&'v mut Value> {
-        match v {
+        match v.untag_mut() {
             Value::Sequence(vec) => vec.get_mut(*self),
             Value::Mapping(vec) => vec.get_mut(&Value::Number((*self).into())),
             _ => None,
         }
     }
-    fn index_or_insert<'v>(&self, v: &'v mut Value) -> &'v mut Value {
-        match v {
-            Value::Sequence(vec) => {
-                let len = vec.len();
-                vec.get_mut(*self).unwrap_or_else(|| {
-                    panic!(
-                        "cannot access index {} of YAML sequence of length {}",
-                        self, len
-                    )
-                })
-            }
-            Value::Mapping(map) => {
-                let n = Value::Number((*self).into());
-                // TODO: use entry() once LinkedHashMap supports entry()
-                // https://github.com/contain-rs/linked-hash-map/issues/5
-                if !map.contains_key(&n) {
-                    map.insert(n.clone(), Value::Null);
+    fn index_or_insert<'v>(&self, mut v: &'v mut Value) -> &'v mut Value {
+        loop {
+            match v {
+                Value::Sequence(vec) => {
+                    let len = vec.len();
+                    return vec.get_mut(*self).unwrap_or_else(|| {
+                        panic!(
+                            "cannot access index {} of YAML sequence of length {}",
+                            self, len
+                        )
+                    });
                 }
-                map.get_mut(&n).unwrap()
+                Value::Mapping(map) => {
+                    let n = Value::Number((*self).into());
+                    return map.entry(n).or_insert(Value::Null);
+                }
+                Value::Tagged(tagged) => v = &mut tagged.value,
+                _ => panic!("cannot access index {} of YAML {}", self, Type(v)),
             }
-            _ => panic!("cannot access index {} of YAML {}", self, Type(v)),
+        }
+    }
+}
+
+fn index_into_mapping<'v, I>(index: &I, v: &'v Value) -> Option<&'v Value>
+where
+    I: ?Sized + mapping::Index,
+{
+    match v.untag_ref() {
+        Value::Mapping(map) => map.get(index),
+        _ => None,
+    }
+}
+
+fn index_into_mut_mapping<'v, I>(index: &I, v: &'v mut Value) -> Option<&'v mut Value>
+where
+    I: ?Sized + mapping::Index,
+{
+    match v.untag_mut() {
+        Value::Mapping(map) => map.get_mut(index),
+        _ => None,
+    }
+}
+
+fn index_or_insert_mapping<'v, I>(index: &I, mut v: &'v mut Value) -> &'v mut Value
+where
+    I: ?Sized + mapping::Index + ToOwned + Debug,
+    Value: From<I::Owned>,
+{
+    if let Value::Null = *v {
+        *v = Value::Mapping(Mapping::new());
+        return match v {
+            Value::Mapping(map) => match map.entry(index.to_owned().into()) {
+                Entry::Vacant(entry) => entry.insert(Value::Null),
+                Entry::Occupied(_) => unreachable!(),
+            },
+            _ => unreachable!(),
+        };
+    }
+    loop {
+        match v {
+            Value::Mapping(map) => {
+                return map.entry(index.to_owned().into()).or_insert(Value::Null);
+            }
+            Value::Tagged(tagged) => v = &mut tagged.value,
+            _ => panic!("cannot access key {:?} in YAML {}", index, Type(v)),
         }
     }
 }
 
 impl Index for Value {
     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
-        match v {
-            Value::Mapping(map) => map.get(self),
-            _ => None,
-        }
+        index_into_mapping(self, v)
     }
     fn index_into_mut<'v>(&self, v: &'v mut Value) -> Option<&'v mut Value> {
-        match v {
-            Value::Mapping(map) => map.get_mut(self),
-            _ => None,
-        }
+        index_into_mut_mapping(self, v)
     }
     fn index_or_insert<'v>(&self, v: &'v mut Value) -> &'v mut Value {
-        if let Value::Null = *v {
-            let mut map = Mapping::new();
-            map.insert(self.clone(), Value::Null);
-            *v = Value::Mapping(map);
-        }
-        match v {
-            Value::Mapping(map) => {
-                // TODO: use entry() once LinkedHashMap supports entry()
-                // https://github.com/contain-rs/linked-hash-map/issues/5
-                if !map.contains_key(self) {
-                    map.insert(self.clone(), Value::Null);
-                }
-                map.get_mut(self).unwrap()
-            }
-            _ => panic!("cannot access key {:?} in YAML {}", self, Type(v)),
-        }
+        index_or_insert_mapping(self, v)
     }
 }
 
 impl Index for str {
     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
-        Value::String(self.into()).index_into(v)
+        index_into_mapping(self, v)
     }
     fn index_into_mut<'v>(&self, v: &'v mut Value) -> Option<&'v mut Value> {
-        Value::String(self.into()).index_into_mut(v)
+        index_into_mut_mapping(self, v)
     }
     fn index_or_insert<'v>(&self, v: &'v mut Value) -> &'v mut Value {
-        Value::String(self.into()).index_or_insert(v)
+        index_or_insert_mapping(self, v)
     }
 }
 
 impl Index for String {
     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
-        Value::String(self.clone()).index_into(v)
+        self.as_str().index_into(v)
     }
     fn index_into_mut<'v>(&self, v: &'v mut Value) -> Option<&'v mut Value> {
-        Value::String(self.clone()).index_into_mut(v)
+        self.as_str().index_into_mut(v)
     }
     fn index_or_insert<'v>(&self, v: &'v mut Value) -> &'v mut Value {
-        Value::String(self.clone()).index_or_insert(v)
+        self.as_str().index_or_insert(v)
     }
 }
 
@@ -136,16 +160,6 @@ where
     }
 }
 
-// Prevent users from implementing the Index trait.
-mod private {
-    pub trait Sealed {}
-    impl Sealed for usize {}
-    impl Sealed for str {}
-    impl Sealed for String {}
-    impl Sealed for super::Value {}
-    impl<'a, T> Sealed for &'a T where T: ?Sized + Sealed {}
-}
-
 /// Used in panic messages.
 struct Type<'a>(&'a Value);
 
@@ -158,6 +172,7 @@ impl<'a> fmt::Display for Type<'a> {
             Value::String(_) => formatter.write_str("string"),
             Value::Sequence(_) => formatter.write_str("sequence"),
             Value::Mapping(_) => formatter.write_str("mapping"),
+            Value::Tagged(_) => unreachable!(),
         }
     }
 }
@@ -201,15 +216,18 @@ where
     /// # Examples
     ///
     /// ```
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
+    /// # use serde_yaml::Value;
     /// #
-    /// let data = yaml(r#"{ x: { y: [z, zz] } }"#);
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let data: serde_yaml::Value = serde_yaml::from_str(r#"{ x: { y: [z, zz] } }"#)?;
     ///
-    /// assert_eq!(data["x"]["y"], yaml(r#"["z", "zz"]"#));
-    /// assert_eq!(data["x"]["y"][0], yaml(r#""z""#));
+    /// assert_eq!(data["x"]["y"], serde_yaml::from_str::<Value>(r#"["z", "zz"]"#).unwrap());
+    /// assert_eq!(data["x"]["y"][0], serde_yaml::from_str::<Value>(r#""z""#).unwrap());
     ///
-    /// assert_eq!(data["a"], yaml(r#"null"#)); // returns null for undefined values
-    /// assert_eq!(data["a"]["b"], yaml(r#"null"#)); // does not panic
+    /// assert_eq!(data["a"], serde_yaml::from_str::<Value>(r#"null"#).unwrap()); // returns null for undefined values
+    /// assert_eq!(data["a"]["b"], serde_yaml::from_str::<Value>(r#"null"#).unwrap()); // does not panic
+    /// # Ok(())
+    /// # }
     /// ```
     fn index(&self, index: I) -> &Value {
         static NULL: Value = Value::Null;
@@ -236,23 +254,24 @@ where
     /// # Examples
     ///
     /// ```
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let mut data = yaml(r#"{x: 0}"#);
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let mut data: serde_yaml::Value = serde_yaml::from_str(r#"{x: 0}"#)?;
     ///
     /// // replace an existing key
-    /// data["x"] = yaml(r#"1"#);
+    /// data["x"] = serde_yaml::from_str(r#"1"#)?;
     ///
     /// // insert a new key
-    /// data["y"] = yaml(r#"[false, false, false]"#);
+    /// data["y"] = serde_yaml::from_str(r#"[false, false, false]"#)?;
     ///
     /// // replace a value in a sequence
-    /// data["y"][0] = yaml(r#"true"#);
+    /// data["y"][0] = serde_yaml::from_str(r#"true"#)?;
     ///
     /// // inserted a deeply nested key
-    /// data["a"]["b"]["c"]["d"] = yaml(r#"true"#);
+    /// data["a"]["b"]["c"]["d"] = serde_yaml::from_str(r#"true"#)?;
     ///
     /// println!("{:?}", data);
+    /// # Ok(())
+    /// # }
     /// ```
     fn index_mut(&mut self, index: I) -> &mut Value {
         index.index_or_insert(self)

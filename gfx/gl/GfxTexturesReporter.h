@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -41,7 +39,13 @@ class GfxTexturesReporter final : public nsIMemoryReporter {
   // the value reported by this memory reporter.
   static void UpdateAmount(MemoryUse action, size_t amount);
 
-  static void UpdateWasteAmount(size_t delta) { sTileWasteAmount += delta; }
+  static void UpdateWasteAmount(int32_t delta) {
+    if (delta >= 0) {
+      sTileWasteAmount += static_cast<size_t>(delta);
+    } else {
+      sTileWasteAmount -= static_cast<size_t>(-delta);
+    }
+  }
 
   NS_IMETHOD CollectReports(nsIHandleReportCallback* aHandleReport,
                             nsISupports* aData, bool aAnonymize) override {
@@ -73,6 +77,8 @@ class GfxTextureWasteTracker {
     MOZ_COUNT_CTOR(GfxTextureWasteTracker);
   }
 
+  GfxTextureWasteTracker(const GfxTextureWasteTracker& aRef) = delete;
+
   void Update(int32_t aPixelArea, int32_t aBytesPerPixel) {
     GfxTexturesReporter::UpdateWasteAmount(-mBytes);
     mBytes = aPixelArea * aBytesPerPixel;
@@ -85,8 +91,6 @@ class GfxTextureWasteTracker {
   }
 
  private:
-  GfxTextureWasteTracker(const GfxTextureWasteTracker& aRef);
-
   int32_t mBytes;
 };
 

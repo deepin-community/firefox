@@ -11,21 +11,23 @@
 #include "modules/remote_bitrate_estimator/congestion_control_feedback_generator.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
 #include "api/environment/environment_factory.h"
+#include "api/transport/ecn_marking.h"
 #include "api/units/data_rate.h"
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
+#include "modules/rtp_rtcp/source/rtcp_packet.h"
+#include "modules/rtp_rtcp/source/rtcp_packet/common_header.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/congestion_control_feedback.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
-#include "rtc_base/logging.h"
-#include "rtc_base/network/ecn_marking.h"
+#include "rtc_base/buffer.h"
 #include "system_wrappers/include/clock.h"
-#include "test/explicit_key_value_config.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 
@@ -37,40 +39,11 @@ using ::testing::MockFunction;
 using ::testing::SizeIs;
 using ::testing::WithoutArgs;
 
-bool PacketInfoIsExpected(const CongestionControlFeedback::PacketInfo& a,
-                          const RtpPacketReceived b,
-                          Timestamp feedback_send_time) {
-  bool equal =
-      a.ssrc == b.Ssrc() && a.sequence_number == b.SequenceNumber() &&
-      (feedback_send_time - a.arrival_time_offset) == b.arrival_time() &&
-      a.ecn == b.ecn();
-  RTC_LOG_IF(LS_INFO, !equal)
-      << " Not equal got ssrc: " << a.ssrc << ", seq: " << a.sequence_number
-      << " arrival_time_offset: " << a.arrival_time_offset.ms()
-      << " ecn: " << a.ecn << " expected ssrc:" << b.Ssrc()
-      << ", seq: " << b.SequenceNumber() << " ecn: " << b.ecn();
-  return equal;
-}
-
-MATCHER_P2(PacketInfosAreExpected, expected_vector, feedback_send_time, "") {
-  if (expected_vector.size() != arg.size()) {
-    RTC_LOG(LS_INFO) << " Wrong size, expected: " << expected_vector.size()
-                     << " got: " << arg.size();
-    return false;
-  }
-  for (size_t i = 0; i < expected_vector.size(); ++i) {
-    if (!PacketInfoIsExpected(arg[i], expected_vector[i], feedback_send_time)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 RtpPacketReceived CreatePacket(Timestamp arrival_time,
                                bool marker,
                                uint32_t ssrc = 1234,
                                uint16_t seq = 1,
-                               rtc::EcnMarking ecn = rtc::EcnMarking::kNotEct) {
+                               EcnMarking /* ecn */ = EcnMarking::kNotEct) {
   RtpPacketReceived packet;
   packet.SetSsrc(ssrc);
   packet.SetSequenceNumber(seq);
@@ -158,93 +131,90 @@ TEST(CongestionControlFeedbackGeneratorTest,
 }
 
 TEST(CongestionControlFeedbackGeneratorTest,
-     FeedbackUtilizeMax5PercentOfConfiguredBwe) {
+     FeedbackFor30KPacketsUtilizeLessThan500kbitPerSecond) {
   MockFunction<void(std::vector<std::unique_ptr<rtcp::RtcpPacket>>)>
       rtcp_sender;
   SimulatedClock clock(123456);
-  constexpr TimeDelta kSmallTimeInterval = TimeDelta::Millis(2);
   CongestionControlFeedbackGenerator generator(CreateEnvironment(&clock),
                                                rtcp_sender.AsStdFunction());
 
-  const DataRate kSendBandwidthEstimate = DataRate::BytesPerSec(10'000);
-  const DataSize kPacketOverHead = DataSize::Bytes(25);
-  generator.OnSendBandwidthEstimateChanged(kSendBandwidthEstimate);
-  generator.SetTransportOverhead(kPacketOverHead);
-  TimeDelta time_to_next_process = generator.Process(clock.CurrentTime());
-  clock.AdvanceTime(kSmallTimeInterval);
-  time_to_next_process -= kSmallTimeInterval;
-
-  // Two packets with marker bit is received within a short duration.
-  // Expect the first feedback to be sent immidately and the second to be
-  // delayed. Delay depend on send bandwith estimate.
-  Timestamp expected_feedback_time = clock.CurrentTime();
+  int number_of_feedback_packets = 0;
+  DataSize total_feedback_size;
   EXPECT_CALL(rtcp_sender, Call)
-      .Times(2)
       .WillRepeatedly(
           [&](std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets) {
-            EXPECT_EQ(clock.CurrentTime(), expected_feedback_time);
             ASSERT_THAT(rtcp_packets, SizeIs(1));
-            rtcp::CongestionControlFeedback* rtcp =
-                static_cast<rtcp::CongestionControlFeedback*>(
-                    rtcp_packets[0].get());
-            int rtcp_len = rtcp->BlockLength();
-            // Expect at most 5% of send bandwidth to be used. This decide the
-            // time to next feedback.
-            expected_feedback_time +=
-                (DataSize::Bytes(rtcp_len) + kPacketOverHead) /
-                (0.05 * kSendBandwidthEstimate);
+            number_of_feedback_packets++;
+            total_feedback_size +=
+                DataSize::Bytes(rtcp_packets[0]->BlockLength());
           });
-  generator.OnReceivedPacket(
-      CreatePacket(clock.CurrentTime(), /*marker=*/true));
-  clock.AdvanceTime(kSmallTimeInterval);
-  time_to_next_process -= kSmallTimeInterval;
-  generator.OnReceivedPacket(
-      CreatePacket(clock.CurrentTime(), /*marker=*/true));
+  Timestamp start_time = clock.CurrentTime();
+  Timestamp last_process_time = clock.CurrentTime();
+  TimeDelta time_to_next_process = generator.Process(clock.CurrentTime());
+  uint16_t rtp_sequence_number = 0;
+  // Receive 30 packet per ms in 1s => 30'0000 packets.
+  while (clock.CurrentTime() < start_time + TimeDelta::Seconds(1)) {
+    for (int i = 0; i < 30; ++i) {
+      generator.OnReceivedPacket(CreatePacket(clock.CurrentTime(),
+                                              /*marker=*/true, /*ssrc=*/1234,
+                                              rtp_sequence_number++));
+    }
+    if (clock.CurrentTime() >= last_process_time + time_to_next_process) {
+      last_process_time = clock.CurrentTime();
+      time_to_next_process = generator.Process(clock.CurrentTime());
+    }
+    clock.AdvanceTime(TimeDelta::Millis(1));
+  }
 
-  clock.AdvanceTime(time_to_next_process);
-  time_to_next_process = generator.Process(clock.CurrentTime());
-  clock.AdvanceTime(time_to_next_process);
-  time_to_next_process = generator.Process(clock.CurrentTime());
+  EXPECT_LE(total_feedback_size / TimeDelta::Seconds(1),
+            DataRate::KilobitsPerSec(500));
+  EXPECT_EQ(number_of_feedback_packets, 40);
 }
 
 TEST(CongestionControlFeedbackGeneratorTest,
-     SendsFeedbackAfterMax250MsIfBweVeryLow) {
-  test::ExplicitKeyValueConfig field_trials(
-      "WebRTC-RFC8888CongestionControlFeedback/max_send_delta:250ms/");
+     FeedbackFor60KPacketsUtilizeApproximately500kbitPerSecond) {
   MockFunction<void(std::vector<std::unique_ptr<rtcp::RtcpPacket>>)>
       rtcp_sender;
   SimulatedClock clock(123456);
-  constexpr TimeDelta kSmallTimeInterval = TimeDelta::Millis(2);
-  CongestionControlFeedbackGenerator generator(
-      CreateEnvironment(&clock, &field_trials), rtcp_sender.AsStdFunction());
-  // Regardless of BWE, feedback is sent at least every 250ms.
-  generator.OnSendBandwidthEstimateChanged(DataRate::BytesPerSec(100));
+  CongestionControlFeedbackGenerator generator(CreateEnvironment(&clock),
+                                               rtcp_sender.AsStdFunction());
+
+  int number_of_feedback_packets = 0;
+  DataSize total_feedback_size;
+  DataSize last_feedback_size;
+  EXPECT_CALL(rtcp_sender, Call)
+      .WillRepeatedly(
+          [&](std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets) {
+            ASSERT_THAT(rtcp_packets, SizeIs(1));
+            number_of_feedback_packets++;
+            last_feedback_size =
+                DataSize::Bytes(rtcp_packets[0]->BlockLength());
+            total_feedback_size += last_feedback_size;
+          });
+  Timestamp start_time = clock.CurrentTime();
+  Timestamp last_process_time = clock.CurrentTime();
   TimeDelta time_to_next_process = generator.Process(clock.CurrentTime());
-  clock.AdvanceTime(kSmallTimeInterval);
-  time_to_next_process -= kSmallTimeInterval;
-
-  Timestamp expected_feedback_time = clock.CurrentTime();
-  EXPECT_CALL(rtcp_sender, Call).Times(2).WillRepeatedly(WithoutArgs([&] {
-    EXPECT_EQ(clock.CurrentTime(), expected_feedback_time);
-    // Next feedback is not expected to be sent until 250ms after the
-    // previouse due to low send bandwidth.
-    expected_feedback_time += TimeDelta::Millis(250);
-  }));
-  generator.OnReceivedPacket(
-      CreatePacket(clock.CurrentTime(), /*marker=*/true));
-  clock.AdvanceTime(kSmallTimeInterval);
-  time_to_next_process -= kSmallTimeInterval;
-  generator.OnReceivedPacket(
-      CreatePacket(clock.CurrentTime(), /*marker=*/true));
-
-  clock.AdvanceTime(time_to_next_process);
-  time_to_next_process = generator.Process(clock.CurrentTime());
-  clock.AdvanceTime(time_to_next_process);
-  time_to_next_process = generator.Process(clock.CurrentTime());
+  uint16_t rtp_sequence_number = 0;
+  // Receive 60 packet per ms in 1s => 60'0000 packets.
+  while (clock.CurrentTime() < start_time + TimeDelta::Seconds(1)) {
+    for (int i = 0; i < 60; ++i) {
+      generator.OnReceivedPacket(CreatePacket(clock.CurrentTime(),
+                                              /*marker=*/true, /*ssrc=*/1234,
+                                              rtp_sequence_number++));
+    }
+    if (clock.CurrentTime() >= last_process_time + time_to_next_process) {
+      last_process_time = clock.CurrentTime();
+      time_to_next_process = generator.Process(clock.CurrentTime());
+    }
+    clock.AdvanceTime(TimeDelta::Millis(1));
+  }
+  EXPECT_LE(total_feedback_size,
+            DataSize::Bytes(500'000 / 8) + last_feedback_size);
+  EXPECT_LT(number_of_feedback_packets, 40);
 }
 
 TEST(CongestionControlFeedbackGeneratorTest,
-     SortsReceivedPacketsBySsrcAndSeqno) {
+     CanGenerateRtcpPacketFromTwoSsrcWithMissingPacketsAndWrap) {
   MockFunction<void(std::vector<std::unique_ptr<rtcp::RtcpPacket>>)>
       rtcp_sender;
   SimulatedClock clock(123456);
@@ -254,7 +224,9 @@ TEST(CongestionControlFeedbackGeneratorTest,
 
   TimeDelta time_to_next_process = generator.Process(clock.CurrentTime());
 
-  const std::vector<RtpPacketReceived> kExpectedRtcpPackInfoOrder = {
+  // Receive packets out of order, with missing packets (between  0xFFA and 1 =
+  // 6  and FFFC and 1 = 4) => total 14 packets is expected in the feedback.
+  const std::vector<RtpPacketReceived> kReceivedPackets = {
       // Reordered packet.
       CreatePacket(clock.CurrentTime() + kSmallTimeInterval, /*marker*/ false,
                    /*ssrc=*/123,
@@ -264,7 +236,7 @@ TEST(CongestionControlFeedbackGeneratorTest,
       // Reordered packet.
       CreatePacket(clock.CurrentTime() + kSmallTimeInterval,
                    /*marker*/ false, /*ssrc=*/
-                   234,
+                   /*ssrc=*/234,
                    /*seq=*/0xFFFC),
       CreatePacket(clock.CurrentTime(), /*marker*/ false, /*ssrc=*/234,
                    /*seq=*/1),
@@ -277,14 +249,17 @@ TEST(CongestionControlFeedbackGeneratorTest,
             rtcp::CongestionControlFeedback* rtcp =
                 static_cast<rtcp::CongestionControlFeedback*>(
                     rtcp_packets[0].get());
-            Timestamp feedback_send_time = clock.CurrentTime();
-            EXPECT_THAT(rtcp->packets(),
-                        PacketInfosAreExpected(kExpectedRtcpPackInfoOrder,
-                                               feedback_send_time));
+
+            ASSERT_THAT(rtcp->packets(), SizeIs(14));
+            Buffer buffer = rtcp->Build();
+            CongestionControlFeedback parsed_fb;
+            rtcp::CommonHeader header;
+            EXPECT_TRUE(header.Parse(buffer.data(), buffer.size()));
+            EXPECT_TRUE(parsed_fb.Parse(header));
+            EXPECT_THAT(parsed_fb.packets(), SizeIs(14));
           });
 
-  std::vector<RtpPacketReceived> receive_time_sorted =
-      kExpectedRtcpPackInfoOrder;
+  std::vector<RtpPacketReceived> receive_time_sorted = kReceivedPackets;
   std::sort(receive_time_sorted.begin(), receive_time_sorted.end(),
             [](const RtpPacketReceived& a, const RtpPacketReceived& b) {
               return a.arrival_time() < b.arrival_time();
@@ -313,11 +288,11 @@ TEST(CongestionControlFeedbackGeneratorTest,
   TimeDelta time_to_next_process = generator.Process(clock.CurrentTime());
   RtpPacketReceived packet_1 =
       CreatePacket(clock.CurrentTime(), /*marker=*/false, /* ssrc=*/1,
-                   /* seq=*/2, rtc::EcnMarking::kEct1);
+                   /* seq=*/2, EcnMarking::kEct1);
   generator.OnReceivedPacket(packet_1);
   RtpPacketReceived packet_2 = packet_1;
   packet_2.set_arrival_time(clock.CurrentTime() + kSmallTimeInterval);
-  packet_2.set_ecn(rtc::EcnMarking::kCe);
+  packet_2.set_ecn(EcnMarking::kCe);
   time_to_next_process -= kSmallTimeInterval;
   clock.AdvanceTime(kSmallTimeInterval);
   generator.OnReceivedPacket(packet_2);
@@ -331,7 +306,7 @@ TEST(CongestionControlFeedbackGeneratorTest,
                     rtcp_packets[0].get());
             Timestamp feedback_send_time = clock.CurrentTime();
             ASSERT_THAT(rtcp->packets(), SizeIs(1));
-            EXPECT_EQ(rtcp->packets()[0].ecn, rtc::EcnMarking::kCe);
+            EXPECT_EQ(rtcp->packets()[0].ecn, EcnMarking::kCe);
             EXPECT_EQ(rtcp->packets()[0].arrival_time_offset,
                       feedback_send_time - packet_1.arrival_time());
           });

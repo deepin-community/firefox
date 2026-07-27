@@ -10,6 +10,9 @@ var { AppConstants } = ChromeUtils.importESModule(
 const { SitePermissions } = ChromeUtils.importESModule(
   "resource:///modules/SitePermissions.sys.mjs"
 );
+const { PermissionUI } = ChromeUtils.importESModule(
+  "resource:///modules/PermissionUI.sys.mjs"
+);
 
 const sitePermissionsL10n = {
   "desktop-notification": {
@@ -49,6 +52,18 @@ const sitePermissionsL10n = {
   "autoplay-media": {
     window: "permissions-site-autoplay-window2",
     description: "permissions-site-autoplay-desc",
+  },
+  "loopback-network": {
+    window: "permissions-site-localhost-window",
+    description: "permissions-site-localhost-desc",
+    disableLabel: "permissions-site-localhost-disable-label",
+    disableDescription: "permissions-site-localhost-disable-desc",
+  },
+  "local-network": {
+    window: "permissions-site-local-network-window",
+    description: "permissions-site-local-network-desc",
+    disableLabel: "permissions-site-local-network-disable-label",
+    disableDescription: "permissions-site-local-network-disable-desc",
   },
 };
 
@@ -155,13 +170,29 @@ var gSitePermissionsManager = {
       this._isObserving = true;
     }
 
-    document.addEventListener("dialogaccept", () => this.onApplyChanges());
+    document.addEventListener("command", this);
+    document.addEventListener("dialogaccept", this);
+    window.addEventListener("unload", this);
+
+    document
+      .getElementById("siteCol")
+      .addEventListener("click", event =>
+        this.buildPermissionsList(event.target)
+      );
+    document
+      .getElementById("statusCol")
+      .addEventListener("click", event =>
+        this.buildPermissionsList(event.target)
+      );
 
     this._type = params.permissionType;
     this._list = document.getElementById("permissionsBox");
     this._removeButton = document.getElementById("removePermission");
     this._removeAllButton = document.getElementById("removeAllPermissions");
     this._searchBox = document.getElementById("searchBox");
+    this._searchBox.addEventListener("MozInputSearch:search", () =>
+      this.buildPermissionsList()
+    );
     this._checkbox = document.getElementById("permissionsDisableCheckbox");
     this._disableExtensionButton = document.getElementById(
       "disableNotificationsPermissionExtension"
@@ -170,6 +201,11 @@ var gSitePermissionsManager = {
       "permissionsDisableDescription"
     );
     this._setAutoplayPref = document.getElementById("setAutoplayPref");
+
+    this._list.addEventListener("keypress", event =>
+      this.onPermissionKeyPress(event)
+    );
+    this._list.addEventListener("select", () => this.onPermissionSelect());
 
     let permissionsText = document.getElementById("permissionsText");
 
@@ -258,6 +294,30 @@ var gSitePermissionsManager = {
       }
     }
     this.buildPermissionsList();
+  },
+
+  handleEvent(event) {
+    switch (event.type) {
+      case "command":
+        switch (event.target.id) {
+          case "key_close":
+            window.close();
+            break;
+          case "removePermission":
+            this.onPermissionDelete();
+            break;
+          case "removeAllPermissions":
+            this.onAllPermissionsDelete();
+            break;
+        }
+        break;
+      case "dialogaccept":
+        this.onApplyChanges();
+        break;
+      case "unload":
+        this.uninit();
+        break;
+    }
   },
 
   _handleCheckboxUIUpdates() {
@@ -372,6 +432,7 @@ var gSitePermissionsManager = {
     if (
       type !== this._type ||
       !PERMISSION_STATES.includes(perm.capability) ||
+      !SitePermissions.isSupportedPrincipal(perm.principal) ||
       // Skip private browsing session permissions
       (perm.principal.privateBrowsingId !==
         Services.scriptSecurityManager.DEFAULT_PRIVATE_BROWSING_ID &&
@@ -532,6 +593,15 @@ var gSitePermissionsManager = {
     // to update the UI
     this.uninit();
 
+    // Record telemetry for notification permission revocation via preferences
+    if (this._type === "desktop-notification") {
+      for (let group of this._permissionsToDelete.values()) {
+        Glean.webNotificationPermission.permissionRevokedPreferences.record({
+          site_category: PermissionUI.getSiteCategory(group.principal),
+        });
+      }
+    }
+
     // Delete even _permissionsToChange to clear out double-keyed permissions
     for (let group of [
       ...this._permissionsToDelete.values(),
@@ -609,7 +679,7 @@ var gSitePermissionsManager = {
       SitePermissions.setDefault("autoplay-media", Number(menulist.value));
     });
 
-    menulist.menupopup.setAttribute("incontentshell", "false");
+    menulist.menupopup.setAttribute("escapecontentshell", true);
 
     menulist.disabled = Services.prefs.prefIsLocked(AUTOPLAY_PREF);
 
@@ -677,3 +747,5 @@ var gSitePermissionsManager = {
     column.setAttribute("data-last-sortDirection", sortDirection);
   },
 };
+
+window.addEventListener("load", () => gSitePermissionsManager.onLoad());

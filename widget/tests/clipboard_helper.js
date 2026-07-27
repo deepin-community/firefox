@@ -14,7 +14,18 @@ const clipboardTypes = [
   clipboard.kSelectionCache,
 ];
 
-function emptyClipboardData(aType) {
+async function getWindowProtocol() {
+  return await SpecialPowers.spawnChrome([], () => {
+    try {
+      return Cc["@mozilla.org/gfx/info;1"].getService(Ci.nsIGfxInfo)
+        .windowProtocol;
+    } catch {
+      return "";
+    }
+  });
+}
+
+async function emptyClipboardData(aType) {
   // XXX gtk doesn't support emptying clipboard data which is stored from
   // other application (bug 1853884). As a workaround, we set dummy data
   // to the clipboard first to ensure the subsequent emptyClipboard call
@@ -24,15 +35,23 @@ function emptyClipboardData(aType) {
   }
 
   clipboard.emptyClipboard(aType);
+
+  // Give some time for GTK to process owner change callback.
+  await new Promise(resolve => SimpleTest.executeSoon(resolve));
+  // XXX wayland does not support clearing clipboard, see bug 1857075.
+  if ((await getWindowProtocol()) !== "wayland") {
+    let snapshot = getClipboardDataSnapshotSync(aType);
+    isDeeply(snapshot.flavorList, [], "Clipboard should be empty");
+  }
 }
 
-function cleanupAllClipboard() {
-  clipboardTypes.forEach(function (type) {
+async function cleanupAllClipboard() {
+  for (let type of clipboardTypes) {
     if (clipboard.isClipboardTypeSupported(type)) {
       info(`cleanup clipboard ${type}`);
-      emptyClipboardData(type);
+      await emptyClipboardData(type);
     }
-  });
+  }
 }
 
 function generateRandomString() {
@@ -180,11 +199,11 @@ function getClipboardDataSnapshot(
             "nsIClipboardGetDataSnapshotCallback",
           ]),
           // nsIClipboardGetDataSnapshotCallback
-          onSuccess: SpecialPowers.wrapCallback(function (
-            aAsyncGetClipboardData
-          ) {
-            resolve(aAsyncGetClipboardData);
-          }),
+          onSuccess: SpecialPowers.wrapCallback(
+            function (aAsyncGetClipboardData) {
+              resolve(aAsyncGetClipboardData);
+            }
+          ),
           onError: SpecialPowers.wrapCallback(function (aResult) {
             reject(aResult);
           }),
@@ -234,7 +253,37 @@ function asyncClipboardRequestGetData(aRequest, aFlavor, aThrows = false) {
           aThrows ? "throw" : "success"
         }`
       );
-      reject(e);
+      reject(e.result);
     }
   });
+}
+
+function syncClipboardRequestGetData(aRequest, aFlavor, aResult = Cr.NS_OK) {
+  var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(
+    Ci.nsITransferable
+  );
+  trans.init(null);
+  trans.addDataFlavor(aFlavor);
+  let result = Cr.NS_OK;
+  try {
+    aRequest.getDataSync(trans);
+    try {
+      var data = SpecialPowers.createBlankObject();
+      trans.getTransferData(aFlavor, data);
+      return data.value.QueryInterface(Ci.nsISupportsString).data;
+    } catch (ex) {
+      // should widget set empty string to transferable when there no
+      // data in system clipboard?
+      return "";
+    }
+  } catch (e) {
+    result = e.result;
+  } finally {
+    is(
+      result,
+      aResult,
+      `nsIAsyncGetClipboardData.getData should ${aResult == Cr.NS_OK ? "throw" : "success"}`
+    );
+  }
+  return "";
 }

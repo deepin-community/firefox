@@ -8,18 +8,30 @@ password-quality-meter = Мерач на квалитетот на лозинк�
 
 change-device-password-window =
     .title = Промени лозинка
-
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
 change-password-token = Безбедносен уред: { $tokenName }
 change-password-old = Актуелна лозинка:
 change-password-new = Нова лозинка:
 change-password-reenter = Нова лозинка (повторно):
+pippki-failed-pw-change = Не може да се промени лозинката.
+pippki-incorrect-pw = Не ја внесовте точната тековна лозника. Обидете се повторно.
+pippki-pw-change-ok = Лозинката е успешно променета.
+pippki-pw-empty-warning = Вашите зачувани лозинки и приватни клучеви нема да бидат заштитени.
+pippki-pw-erased-ok = Ја избришавте Вашата лозинка. { pippki-pw-empty-warning }
+pippki-pw-not-wanted = Предупредување! Одлучивте да не користите лозинка. { pippki-pw-empty-warning }
+pippki-pw-change2empty-in-fips-mode = Моментално сте во FIPS режим. FIPS бара лозинка која не е празна.
 
 ## Reset Primary Password dialog
 
+reset-primary-password-window2 =
+    .title = Ресетирање на главна лозинка
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Ресетирај
+reset-primary-password-text = Ако ја ресетирате главната лозинка сите Ваши снимени лозикни, лични сертификати и приватни клучеви ќе бидат заборавени. Сигурно сакате да ја ресетирате главната лозинка?
+pippki-reset-password-confirmation-title = Ресетирање на главна лозинка
+pippki-reset-password-confirmation-message = Вашата главна лозинка е ресетирана.
 
 ## Downloading cert dialog
 
@@ -36,13 +48,47 @@ download-cert-view-cert =
     .label = Поглед
 download-cert-view-text = Испитај го CA сертификатот
 
-## Client Authorization Ask dialog
+## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Барање за идентификација на корисникот
 client-auth-site-description = Ова место побара од вас да се идентификувате со сертификат:
 client-auth-choose-cert = Изберете сертификат кој ќе служи како идентификација:
+client-auth-send-no-certificate =
+    .label = Не испраќај сертификат
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” побара да се идентификувате со сертификат:
 client-auth-cert-details = Детали за избраниот сертификат:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = Издадено до: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = Сериски број: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = Важи од { $notBefore } до { $notAfter }
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = Користења на клуч: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = Адреси за е-пошта: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = Издаден од: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = Складиран на: { $storedOn }
+client-auth-cert-remember-label = Запомни ја оваа одлука:
+client-auth-cert-remember-never =
+    .label = Еднаш
+client-auth-cert-remember-always =
+    .label = Трајно
+client-auth-cert-remember-temporarily =
+    .label = За оваа сесија
 
 ## Set password (p12) dialog
 
@@ -55,7 +101,16 @@ set-password-repeat-backup-pw =
     .value = Резервна лозинка за сертификатот (повторно):
 set-password-reminder = Важно: ако ја заборавите лозинката за резервниот сертификат, нема да можете да му пристапите на истиот. Чувајте ја лозинката на сигурно место.
 
-## Protected Auth dialog
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Заштитена автентикација
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Автентицирајте се со безбедностниот уред ({ $tokenName }). Како да го направите тоа зависи од токенот (на пример, со користење на читач на отпечатоци од прсти или со внесување код со тастатура).
 
 ## Protected authentication alert
 
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Ве молиме, автентицирајте се со токенот “{ $tokenName }“. Како да го направите тоа зависи од токенот (на пример, со користење на читач на отпечатоци од прсти или со внесување код со тастатура).

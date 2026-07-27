@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,6 @@
 #include "mozilla/TextControlElement.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
-#include "mozilla/dom/HTMLInputElementBinding.h"
 #include "mozilla/dom/Nullable.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsITimer.h"
@@ -40,6 +37,7 @@ enum class SelectionDirection : uint8_t {
 };
 
 namespace dom {
+enum class SelectionMode : uint8_t;
 class Element;
 class HTMLInputElement;
 }  // namespace dom
@@ -119,11 +117,6 @@ struct PasswordMaskData final {
  * only used when there is no frame for the control, or when the editor object
  * has not been initialized yet.
  *
- *  * The control's associated frame.  This value is stored in the mBoundFrame
- * member. A text control might never have an associated frame during its life
- * cycle, or might have several different ones, but at any given moment in time
- * there is a maximum of 1 bound frame to each text control.
- *
  *  * The control's associated editor.  This value is stored in the mTextEditor
  * member. An editor is initialized for the control only when necessary (that
  * is, when either the user is about to interact with the text control, or when
@@ -154,17 +147,10 @@ struct PasswordMaskData final {
  * accordingly. It is created when an a frame is first bound to the control, and
  * will be destroyed when the frame is unbound from the text control element.
  *
- *  * The editor's cached value.  This value is stored in the mCachedValue
- * member. It is used to improve the performance of append operations to the
- * text control.  A mutation observer stored in the mMutationObserver has the
- * job of invalidating this cache when the anonymous contect containing the
- * value is changed.
- *
  *  * The editor's cached selection properties.  These vales are stored in the
  *    mSelectionProperties member, and include the selection's start, end and
  *    direction. They are only used when there is no frame available for the
  *    text field.
- *
  *
  * As a general rule, TextControlState objects own the value of the text
  * control, and any attempt to retrieve or set the value must be made through
@@ -217,16 +203,16 @@ class TextControlState final : public SupportsWeakPtr {
   void Traverse(nsCycleCollectionTraversalCallback& cb);
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void Unlink();
 
-  bool IsBusy() const { return !!mHandlingState || mValueTransferInProgress; }
+  bool IsBusy() const { return !!mHandlingState; }
 
   MOZ_CAN_RUN_SCRIPT TextEditor* GetTextEditor();
-  TextEditor* GetTextEditorWithoutCreation() const;
+  TextEditor* GetExtantTextEditor() const;
   nsISelectionController* GetSelectionController() const;
-  nsFrameSelection* GetConstFrameSelection();
-  nsresult BindToFrame(nsTextControlFrame* aFrame);
-  MOZ_CAN_RUN_SCRIPT void UnbindFromFrame(nsTextControlFrame* aFrame);
-  MOZ_CAN_RUN_SCRIPT nsresult PrepareEditor(const nsAString* aValue = nullptr);
-  void InitializeKeyboardEventListeners();
+  nsFrameSelection* GetIndependentFrameSelection() const;
+  nsresult InitializeSelection(PresShell*);
+  MOZ_CAN_RUN_SCRIPT void DeinitSelection();
+  MOZ_CAN_RUN_SCRIPT nsresult PrepareEditor();
+  MOZ_CAN_RUN_SCRIPT void UpdateEditorOnTypeChange();
 
   /**
    * OnEditActionHandled() is called when mTextEditor handles something
@@ -292,7 +278,7 @@ class TextControlState final : public SupportsWeakPtr {
    * GetValue() returns current value either with or without TextEditor.
    * The result never includes \r.
    */
-  void GetValue(nsAString& aValue, bool aIgnoreWrap, bool aForDisplay) const;
+  void GetValue(nsAString& aValue, bool aForDisplay) const;
 
   /**
    * ValueEquals() is designed for internal use so that aValue shouldn't
@@ -336,10 +322,6 @@ class TextControlState final : public SupportsWeakPtr {
   }
   int32_t GetRows() { return mTextCtrlElement->GetRows(); }
 
-  // preview methods
-  void SetPreviewText(const nsAString& aValue, bool aNotify);
-  void GetPreviewText(nsAString& aValue);
-
   struct SelectionProperties {
    public:
     bool IsDefault() const {
@@ -349,18 +331,17 @@ class TextControlState final : public SupportsWeakPtr {
     uint32_t GetStart() const { return mStart; }
     bool SetStart(uint32_t value) {
       uint32_t newValue = std::min(value, *mMaxLength);
-      bool changed = mStart != newValue;
-      mStart = newValue;
-      mIsDirty |= changed;
-      return changed;
+      return SetStartInternal(newValue);
     }
     uint32_t GetEnd() const { return mEnd; }
     bool SetEnd(uint32_t value) {
       uint32_t newValue = std::min(value, *mMaxLength);
-      bool changed = mEnd != newValue;
-      mEnd = newValue;
-      mIsDirty |= changed;
-      return changed;
+      return SetEndInternal(newValue);
+    }
+    void CollapseToStart() {
+      // 0 is always a fine value regardless of max length.
+      SetStartInternal(0);
+      SetEndInternal(0);
     }
     SelectionDirection GetDirection() const { return mDirection; }
     bool SetDirection(SelectionDirection value) {
@@ -376,6 +357,7 @@ class TextControlState final : public SupportsWeakPtr {
       SetEnd(GetEnd());
     }
     bool HasMaxLength() { return mMaxLength.isSome(); }
+    const Maybe<uint32_t>& GetMaxLength() { return mMaxLength; }
 
     // return true only if mStart, mEnd, or mDirection have been modified,
     // or if SetIsDirty() was explicitly called.
@@ -383,6 +365,20 @@ class TextControlState final : public SupportsWeakPtr {
     void SetIsDirty() { mIsDirty = true; }
 
    private:
+    bool SetStartInternal(uint32_t aNewValue) {
+      bool changed = mStart != aNewValue;
+      mStart = aNewValue;
+      mIsDirty |= changed;
+      return changed;
+    }
+
+    bool SetEndInternal(uint32_t aNewValue) {
+      bool changed = mEnd != aNewValue;
+      mEnd = aNewValue;
+      mIsDirty |= changed;
+      return changed;
+    }
+
     uint32_t mStart = 0;
     uint32_t mEnd = 0;
     Maybe<uint32_t> mMaxLength;
@@ -394,10 +390,6 @@ class TextControlState final : public SupportsWeakPtr {
   SelectionProperties& GetSelectionProperties() { return mSelectionProperties; }
   MOZ_CAN_RUN_SCRIPT void SetSelectionProperties(SelectionProperties& aProps);
   bool HasNeverInitializedBefore() const { return !mEverInited; }
-  // Sync up our selection properties with our editor prior to being destroyed.
-  // This will invoke UnbindFromFrame() to ensure that we grab whatever
-  // selection state may be at the moment.
-  MOZ_CAN_RUN_SCRIPT void SyncUpSelectionPropertiesBeforeDestruction();
 
   // Get the selection range start and end points in our text.
   void GetSelectionRange(uint32_t* aSelectionStart, uint32_t* aSelectionEnd,
@@ -465,6 +457,8 @@ class TextControlState final : public SupportsWeakPtr {
       const Maybe<uint32_t>& aSelectionStart = Nothing(),
       const Maybe<uint32_t>& aSelectionEnd = Nothing());
 
+  MOZ_CAN_RUN_SCRIPT void EnsureEditorInitialized();
+
  private:
   explicit TextControlState(TextControlElement* aOwningElement);
   MOZ_CAN_RUN_SCRIPT ~TextControlState();
@@ -476,6 +470,7 @@ class TextControlState final : public SupportsWeakPtr {
 
   MOZ_CAN_RUN_SCRIPT void UnlinkInternal();
 
+  void EnsureTextInputListener();
   MOZ_CAN_RUN_SCRIPT void DestroyEditor();
   MOZ_CAN_RUN_SCRIPT void Clear();
 
@@ -487,9 +482,8 @@ class TextControlState final : public SupportsWeakPtr {
 
   /**
    * SetValueWithTextEditor() modifies the editor value with mTextEditor.
-   * This may cause destroying mTextEditor, mBoundFrame, the TextControlState
-   * itself.  Must be called when both mTextEditor and mBoundFrame are not
-   * nullptr.
+   * This may cause destroying mTextEditor, the TextControlState
+   * itself.  Must be called when both mTextEditor is not nullptr.
    *
    * @param aHandlingSetValue   Must be inner-most handling state for SetValue.
    * @return                    false if fallible allocation failed.  Otherwise,
@@ -500,8 +494,8 @@ class TextControlState final : public SupportsWeakPtr {
 
   /**
    * SetValueWithoutTextEditor() modifies the value without editor.  I.e.,
-   * modifying the value in this instance and mBoundFrame.  Must be called
-   * when at least mTextEditor or mBoundFrame is nullptr.
+   * modifying the value in this instance. Must be called when
+   * mEditorInitialized is false.
    *
    * @param aHandlingSetValue   Must be inner-most handling state for SetValue.
    * @return                    false if fallible allocation failed.  Otherwise,
@@ -509,8 +503,6 @@ class TextControlState final : public SupportsWeakPtr {
    */
   MOZ_CAN_RUN_SCRIPT bool SetValueWithoutTextEditor(
       AutoTextControlHandlingState& aHandlingSetValue);
-
-  IMEContentObserver* GetIMEContentObserver() const;
 
   // When this class handles something which may run script, this should be
   // set to non-nullptr.  If so, this class claims that it's busy and that
@@ -521,11 +513,11 @@ class TextControlState final : public SupportsWeakPtr {
   // has a smaller lifetime except the owner releases the instance while it
   // does something with this.
   TextControlElement* MOZ_NON_OWNING_REF mTextCtrlElement;
-  RefPtr<TextInputSelectionController> mSelCon;
-  RefPtr<RestoreSelectionState> mRestoringSelection;
+  RefPtr<TextInputSelectionController> mSelCon;  // Alive until frame destroyed
+  // Alive until node removal (or type change if <input>)
   RefPtr<TextEditor> mTextEditor;
-  nsTextControlFrame* mBoundFrame = nullptr;
-  RefPtr<TextInputListener> mTextListener;
+  // Alive until node removal (or type change if <input>)
+  RefPtr<TextInputListener> mTextInputListener;
   UniquePtr<PasswordMaskData> mPasswordMaskData;
 
   nsString mValue{VoidString()};  // Void if there's no value.
@@ -539,9 +531,7 @@ class TextControlState final : public SupportsWeakPtr {
 
   bool mEverInited : 1;  // Have we ever been initialized?
   bool mEditorInitialized : 1;
-  bool mValueTransferInProgress : 1;  // Whether a value is being transferred to
-                                      // the frame
-  bool mSelectionCached : 1;          // Whether mSelectionProperties is valid
+  bool mSelectionCached : 1;  // Whether mSelectionProperties is valid
 
   friend class AutoTextControlHandlingState;
   friend class PrepareEditorEvent;

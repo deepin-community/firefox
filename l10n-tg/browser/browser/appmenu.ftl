@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Навсозӣ намешавад — низом мувофиқат намекунад
 appmenuitem-banner-update-restart =
     .label = Навсозӣ дастрас аст — ҳозир браузерро аз нав оғоз кунед
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Навсозии «{ -brand-short-name }»-ро ба даст оред. Ҳамаи варақаҳои худро нигоҳ доред.
+appmenu-nova-update-link = Барои татбиқи навсозӣ аз нав оғоз кунед
+appmenu-nova-fxa-sign-in = Ворид шудан
+appmenu-nova-switch-device-promo =
+    .message = Ба қарибӣ дастгоҳи навро мегиред? Браузери «{ -brand-short-name }»-ро бо худ гиред!
+appmenu-nova-switch-device-link = Тарзи интиқол додани маълумоти худ
 appmenuitem-new-tab =
     .label = Варақаи нав
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Равзанаи хусусии нав
 appmenuitem-history =
     .label = Таърих
+appmenuitem-tab-groups =
+    .label = Гурӯҳҳои варақаҳо
 appmenuitem-downloads =
     .label = Боргириҳо
 appmenuitem-passwords =
     .label = Ниҳонвожаҳо
+appmenuitem-extensions-and-themes =
+    .label = Васеъшавиҳо ва мавзуъҳо
+appmenuitem-extensions =
+    .label = Васеъшавиҳо
 appmenuitem-addons-and-themes =
     .label = Ҷузъҳои иловагӣ ва мавзуъҳо
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Ҳамоҳангсозӣ ва нигоҳ до�
 appmenu-fxa-signed-in-label = Ворид шудан
 appmenu-fxa-setup-sync =
     .label = Фаъол кардани ҳамоҳангсозӣ…
+appmenu-fxa-setup-sync-new = Фаъол кардан
 appmenuitem-save-page =
     .label = Нигоҳ доштани саҳифа ҳамчун…
+appmenuitem-fxa-sync-off-title = Ҳамоҳангсозӣ ғайрифаъол аст
+appmenuitem-fxa-sync-off-description = Ба хатбаракҳо, ниҳонвожаҳо ва чизҳои дигар аз ҷойҳои дилхоҳ дастрасӣ пайдо намоед ва онҳоро ҳифз намоед.
 
 ## What's New panel in App menu.
 
@@ -126,7 +143,7 @@ whatsnew-panel-footer-checkbox =
 
 profiler-popup-button-idle =
     .label = Профилсоз
-    .tooltiptext = Профили самаранокро сабт кунед
+    .tooltiptext = Профили самаранокиро сабт кунед
 profiler-popup-button-recording =
     .label = Профилсоз
     .tooltiptext = Профилсоз профилеро сабт карда истодааст
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Кушодани лавҳаи профилсоз
+    .tooltiptext = Кушодани лавҳаи профилсоз
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Танзимот барои тафтиши хатоҳои аудио ва видео дар { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Расона
+profiler-popup-presets-ml-description = Танзимот барои тафтиши хатоҳои омӯзиши мошинӣ дар «{ -brand-shorter-name }».
+profiler-popup-presets-ml-label =
+    .label = Омӯзиши мошинӣ
 profiler-popup-presets-networking-description = Танзимот барои тафтиши хатоҳои шабакасозӣ дар { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Шабакасозӣ
@@ -199,6 +222,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Танзими пешбинишуда барои ислоҳ кардани хатоҳо дар «{ -brand-shorter-name }». Ба сабаби хароҷоти изофӣ, аз он барои кори самаранок истифода набаред, аммо аз он барои таваҷҷуҳ ба фаҳмидани рафтори браузер истифода баред.
 profiler-popup-presets-debug-label =
     .label = Ислоҳ кардани хатоҳо
+profiler-popup-presets-web-compat-description = Пешниҳоди танзими тавсияшуда барои ислоҳ кардани хатоҳои мутобиқати веб дар сомонаҳо, ба ҷойи пайгирии самаранокӣ.
+profiler-popup-presets-web-compat-label =
+    .label = Мутобиқати веб
 profiler-popup-presets-custom-label =
     .label = Фармоишӣ
 
@@ -264,6 +290,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Танзимоти навори абзорҳо…
+appmenu-abouttranslations =
+    .label = Тарҷума кунед…
 appmenu-developer-tools-subheader = Абзорҳои браузер
 appmenu-developer-tools-extensions =
     .label = Васеъшавиҳо барои барномасозон
@@ -277,5 +305,34 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Гирифтани огоҳӣ дар бораи дӯздӣ кардани маълумот
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Почтаи электронӣ ва рақами телефони воқеии худро бо ниқоб пинҳон намоед
+appmenuitem-services-relay-description = Оғоз кардани лавҳаи вазъияти ниқобҳои почтаи электронӣ
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Муҳофизати пурраи дастгоҳро татбиқ кунед
 appmenuitem-vpn-description = Фаъолияти худро дар Интернет муҳофизат намоед
+appmenu-services-header = Хизматҳои ман
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Воситаҳои дигари муҳофизатро аз ҷониби «Mozilla» санҷед:
+appmenu-other-protection-header = Абзорҳои муҳофизати дигарро аз ҷониби «{ -vendor-short-name }» кӯшиш намоед:
+
+## Profiles panel
+
+appmenu-other-profiles = Профилҳои дигар
+appmenu-manage-profiles =
+    .label = Идоракунии профилҳо
+appmenu-copy-profile =
+    .label = Нусха бардоштани ин профил
+appmenu-create-profile2 =
+    .label = Эҷод кардани профили нав
+appmenu-create-profile =
+    .label = Профили нав
+appmenu-edit-profile =
+    .aria-label = Таҳрир кардани профил
+appmenu-edit-this-profile =
+    .label = Таҳрир кардани ин профил
+appmenu-profiles-2 =
+    .label = Профилҳо
+appmenu-profiles-header = Профилҳо
+appmenu-all-profiles =
+    .label = Ҳамаи профилҳо

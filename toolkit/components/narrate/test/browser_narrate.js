@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
+// spawnInNewReaderTab calls SpecialPowers.spawn, which injects ContentTaskUtils
+// in the scope of the callback. Eslint doesn't know about that.
+/* global ContentTaskUtils */
 
 registerCleanupFunction(teardown);
 
@@ -32,7 +35,7 @@ add_task(async function testNarrate() {
     $(NarrateTestUtils.VOICE_SELECT).click();
     ok(NarrateTestUtils.isVisible(voiceOptions), "voice options pop up");
 
-    let prefChanged = NarrateTestUtils.waitForPrefChange("narrate.voice");
+    let prefChanged = TestUtils.waitForPrefChange("narrate.voice");
     ok(
       NarrateTestUtils.selectVoice(content, TEST_VOICE),
       "test voice selected"
@@ -84,7 +87,7 @@ add_task(async function testNarrate() {
     let eventUtils = NarrateTestUtils.getEventUtils(content);
 
     promiseEvent = ContentTaskUtils.waitForEvent(content, "paragraphstart");
-    prefChanged = NarrateTestUtils.waitForPrefChange("narrate.rate");
+    prefChanged = TestUtils.waitForPrefChange("narrate.rate");
     $(NarrateTestUtils.RATE).focus();
     eventUtils.sendKey("UP", content);
     let newspeechinfo = (await promiseEvent).detail;

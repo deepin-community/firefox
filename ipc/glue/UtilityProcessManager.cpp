@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,8 +11,8 @@
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/SyncRunnable.h"  // for LaunchUtilityProcess
 #include "mozilla/ipc/UtilityProcessParent.h"
-#include "mozilla/ipc/UtilityAudioDecoderChild.h"
-#include "mozilla/ipc/UtilityAudioDecoderParent.h"
+#include "mozilla/ipc/UtilityMediaServiceChild.h"
+#include "mozilla/ipc/UtilityMediaServiceParent.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/UtilityProcessSandboxing.h"
@@ -28,6 +26,10 @@
 #endif
 
 #include "mozilla/GeckoArgs.h"
+
+#if defined(NIGHTLY_BUILD) && !defined(MOZ_NO_SMART_CARDS)
+#  include "mozilla/psm/PPKCS11ModuleChild.h"
+#endif  // NIGHTLY_BUILD && !MOZ_NO_SMART_CARDS
 
 namespace mozilla::ipc {
 
@@ -124,7 +126,7 @@ void UtilityProcessManager::OnPreferenceChange(const char16_t* aData) {
     }
 
     if (p->mProcessParent) {
-      Unused << p->mProcessParent->SendPreferenceUpdate(pref);
+      (void)p->mProcessParent->SendPreferenceUpdate(pref);
     } else if (IsProcessLaunching(p->mSandbox)) {
       p->mQueuedPrefs.AppendElement(pref);
     }
@@ -171,14 +173,14 @@ UtilityProcessManager::LaunchProcess(SandboxingKind aSandbox) {
     mProcesses[aSandbox] = p;
   }
 
-  std::vector<std::string> extraArgs;
+  geckoargs::ChildProcessArgs extraArgs;
   ProcessChild::AddPlatformBuildID(extraArgs);
   geckoargs::sSandboxingKind.Put(aSandbox, extraArgs);
 
   // The subprocess is launched asynchronously, so we
   // wait for the promise to be resolved to acquire the IPDL actor.
   p->mProcess = new UtilityProcessHost(aSandbox, this);
-  if (!p->mProcess->Launch(extraArgs)) {
+  if (!p->mProcess->Launch(std::move(extraArgs))) {
     p->mNumProcessAttempts++;
     DestroyProcess(aSandbox);
     NS_WARNING("Reject LaunchProcess() for mNumProcessAttempts++");
@@ -214,7 +216,7 @@ UtilityProcessManager::LaunchProcess(SandboxingKind aSandbox) {
         // launch and weren't included in the blobs set
         // up in LaunchUtilityProcess.
         for (const mozilla::dom::Pref& pref : p->mQueuedPrefs) {
-          Unused << NS_WARN_IF(!p->mProcessParent->SendPreferenceUpdate(pref));
+          (void)NS_WARN_IF(!p->mProcessParent->SendPreferenceUpdate(pref));
         }
         p->mQueuedPrefs.Clear();
 
@@ -287,6 +289,12 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
         // The tests within browser_utility_multipleAudio.js should be able to
         // catch that behavior.
         if (!aActor->CanSend()) {
+          if (!utilityParent->CanSend()) {
+            NS_WARNING("Utility process died before IPC could be established");
+            return RetPromise::CreateAndReject(
+                LaunchError("UPM::UtilityParent died"), __func__);
+          }
+
           nsresult rv = aActor->BindToUtilityProcess(utilityParent);
           if (NS_FAILED(rv)) {
             MOZ_ASSERT(false, "Protocol endpoints failure");
@@ -341,54 +349,54 @@ UtilityProcessManager::StartProcessForRemoteMediaDecoding(
   TimeStamp remoteDecodingStart = TimeStamp::Now();
 
   RefPtr<UtilityProcessManager> self = this;
-  RefPtr<UtilityAudioDecoderChild> uadc =
-      UtilityAudioDecoderChild::GetSingleton(aSandbox);
-  MOZ_ASSERT(uadc, "Unable to get a singleton for UtilityAudioDecoderChild");
-  return StartUtility(uadc, aSandbox)
+  RefPtr<UtilityMediaServiceChild> umsc =
+      UtilityMediaServiceChild::GetSingleton(aSandbox);
+  MOZ_ASSERT(umsc, "Unable to get a singleton for UtilityMediaServiceChild");
+  return StartUtility(umsc, aSandbox)
       ->Then(
           GetMainThreadSerialEventTarget(), __func__,
-          [self, uadc, aOtherProcess, aChildId, aSandbox,
+          [self, umsc, aOtherProcess, aChildId, aSandbox,
            remoteDecodingStart]() {
             RefPtr<UtilityProcessParent> parent =
                 self->GetProcessParent(aSandbox);
             if (!parent) {
-              NS_WARNING("UtilityAudioDecoderParent lost in the middle");
+              NS_WARNING("UtilityMediaServiceParent lost in the middle");
               return RetPromise::CreateAndReject(
                   LaunchError("Start...MediaDecoding: parent lost"), __func__);
             }
 
-            if (!uadc->CanSend()) {
-              NS_WARNING("UtilityAudioDecoderChild lost in the middle");
+            if (!umsc->CanSend()) {
+              NS_WARNING("UtilityMediaServiceChild lost in the middle");
               return RetPromise::CreateAndReject(
                   LaunchError("Start...MediaDecoding: child lost"), __func__);
             }
 
             EndpointProcInfo process = parent->OtherEndpointProcInfo();
 
-            Endpoint<PRemoteDecoderManagerChild> childPipe;
-            Endpoint<PRemoteDecoderManagerParent> parentPipe;
-            if (nsresult const rv = PRemoteDecoderManager::CreateEndpoints(
+            Endpoint<PRemoteMediaManagerChild> childPipe;
+            Endpoint<PRemoteMediaManagerParent> parentPipe;
+            if (nsresult const rv = PRemoteMediaManager::CreateEndpoints(
                     process, aOtherProcess, &parentPipe, &childPipe);
                 NS_FAILED(rv)) {
               MOZ_ASSERT(false, "Could not create content remote decoder");
               return RetPromise::CreateAndReject(
-                  LaunchError("PRemoteDecoderManager::CreateEndpoints", rv),
+                  LaunchError("PRemoteMediaManager::CreateEndpoints", rv),
                   __func__);
             }
 
-            if (!uadc->SendNewContentRemoteDecoderManager(std::move(parentPipe),
-                                                          aChildId)) {
-              MOZ_ASSERT(false, "SendNewContentRemoteDecoderManager failure");
+            if (!umsc->SendNewContentRemoteMediaManager(std::move(parentPipe),
+                                                        aChildId)) {
+              MOZ_ASSERT(false, "SendNewContentRemoteMediaManager failure");
               return RetPromise::CreateAndReject(
-                  LaunchError("UADC::SendNewCRDM"), __func__);
+                  LaunchError("UMSC::SendNewCRDM"), __func__);
             }
 
 #ifdef MOZ_WMF_MEDIA_ENGINE
             if (aSandbox == SandboxingKind::MF_MEDIA_ENGINE_CDM &&
-                !uadc->CreateVideoBridge()) {
+                !umsc->CreateVideoBridge(process)) {
               MOZ_ASSERT(false, "Failed to create video bridge");
               return RetPromise::CreateAndReject(
-                  LaunchError("UADC::CreateVideoBridge"), __func__);
+                  LaunchError("UMSC::CreateVideoBridge"), __func__);
             }
 #endif
             PROFILER_MARKER_TEXT(
@@ -513,6 +521,31 @@ UtilityProcessManager::CreateWinFileDialogActor() {
 }
 
 #endif  // XP_WIN
+
+#if defined(NIGHTLY_BUILD) && !defined(MOZ_NO_SMART_CARDS)
+RefPtr<UtilityProcessManager::PKCS11ModulePromise>
+UtilityProcessManager::StartPKCS11Module() {
+  using RetPromise = PKCS11ModulePromise;
+  auto parent = MakeRefPtr<psm::PKCS11ModuleParent>();
+  auto startPromise = StartUtility(parent, SandboxingKind::PKCS11_MODULE);
+  return startPromise->Then(
+      GetMainThreadSerialEventTarget(), __func__,
+      [parent = std::move(parent)]() mutable {
+        if (!parent->CanSend()) {
+          MOZ_ASSERT(false, "PKCS11ModuleParent lost in the middle");
+          return RetPromise::CreateAndReject(
+              LaunchError("StartPKCS11Module: !parent->CanSend()"),
+              __PRETTY_FUNCTION__);
+        }
+        return RetPromise::CreateAndResolve(std::move(parent), __func__);
+      },
+      [](LaunchError&& aError) {
+        MOZ_ASSERT_UNREACHABLE(
+            "StartPKCS11Module: failure when starting actor");
+        return RetPromise::CreateAndReject(std::move(aError), __func__);
+      });
+}
+#endif  // NIGHTLY_BUILD && !MOZ_NO_SMART_CARDS
 
 bool UtilityProcessManager::IsProcessLaunching(SandboxingKind aSandbox) {
   MOZ_ASSERT(NS_IsMainThread());

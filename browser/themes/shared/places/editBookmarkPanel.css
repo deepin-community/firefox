@@ -11,25 +11,29 @@
 #editBMPanel_newFolderButton {
   appearance: none;
   margin: 0;
-  border: 0;
-  border-radius: 4px;
-  background-color: var(--button-bgcolor);
-  color: var(--button-color, inherit);
-  font-weight: 600;
+  border: var(--button-border);
+  border-radius: var(--button-border-radius);
+  background-color: var(--button-background-color);
+  color: var(--button-text-color);
+  font-weight: var(--font-weight-semibold);
   min-width: 0;
   padding: 8px 16px;
 
   /* This button is deeper in the visual hierarchy than others (notably the
      buttons at the bottom of the panel), so it should be slightly smaller. */
   font-size: 90%;
-}
 
-#editBMPanel_newFolderButton:hover {
-  background-color: var(--button-hover-bgcolor);
-}
+  &:hover {
+    background-color: var(--button-background-color-hover);
+    border-color: var(--button-border-color-hover);
+    color: var(--button-text-color-hover);
+  }
 
-#editBMPanel_newFolderButton:hover:active {
-  background-color: var(--button-active-bgcolor);
+  &:hover:active {
+    background-color: var(--button-background-color-active);
+    border-color: var(--button-border-color-active);
+    color: var(--button-text-color-active);
+  }
 }
 
 #editBookmarkPanel > #editBookmarkHeaderSeparator {
@@ -42,7 +46,7 @@
 }
 
 #editBookmarkPanelContent > label:not(.editBMPanel_nameRow) {
-  padding-top: var(--arrowpanel-padding);
+  padding-top: var(--panel-padding);
 }
 
 #editBookmarkPanelContent > #editBMPanel_folderTreeRow,
@@ -61,7 +65,7 @@
 }
 
 #editBookmarkPanelContent {
-  padding: 0.8em var(--arrowpanel-padding) var(--arrowpanel-padding);
+  padding: 0.8em var(--panel-padding) var(--panel-padding);
 }
 
 #editBMPanel_selectionCount {
@@ -69,7 +73,7 @@
 }
 
 #editBookmarkPanelBottomContent {
-  padding: 0 var(--arrowpanel-padding) calc(var(--arrowpanel-padding) / 2);
+  padding: 0 var(--panel-padding) calc(var(--panel-padding) / 2);
 }
 
 #editBookmarkPanelBottomContent > checkbox {
@@ -94,24 +98,22 @@
   margin-inline-start: 4px;
   min-width: 32px;
   min-height: 32px;
-  color: var(--button-color);
-  background-color: var(--button-bgcolor);
-  border-radius: 4px;
-}
+  color: var(--button-text-color);
+  background-color: var(--button-background-color);
+  border: var(--button-border);
+  border-radius: var(--button-border-radius);
 
-#editBookmarkPanel .expander-up:hover,
-#editBookmarkPanel .expander-down:hover {
-  background-color: var(--button-hover-bgcolor);
-}
+  &:hover {
+    background-color: var(--button-background-color-hover);
+    border-color: var(--button-border-color-hover);
+    color: var(--button-text-color-hover);
+  }
 
-#editBookmarkPanel .expander-up:hover:active,
-#editBookmarkPanel .expander-down:hover:active {
-  /**
-   * We override the colour here because on macOS, buttons default to
-   * having :hover:active buttons have color -moz-buttonactivetext
-   */
-  color: var(--button-color);
-  background-color: var(--button-active-bgcolor);
+  &:hover:active {
+    background-color: var(--button-background-color-active);
+    border-color: var(--button-border-color-active);
+    color: var(--button-text-color-active);
+  }
 }
 
 #editBookmarkPanel .expander-up {

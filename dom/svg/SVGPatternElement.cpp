@@ -1,17 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGPatternElement.h"
 
+#include "DOMSVGAnimatedTransformList.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGPatternElementBinding.h"
 #include "mozilla/dom/SVGUnitTypesBinding.h"
-#include "DOMSVGAnimatedTransformList.h"
 #include "nsGkAtoms.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Pattern)
@@ -28,14 +25,14 @@ JSObject* SVGPatternElement::WrapNode(JSContext* aCx,
 //--------------------- Patterns ------------------------
 
 SVGElement::LengthInfo SVGPatternElement::sLengthInfo[4] = {
-    {nsGkAtoms::x, 0, SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE,
-     SVGContentUtils::X},
-    {nsGkAtoms::y, 0, SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE,
-     SVGContentUtils::Y},
-    {nsGkAtoms::width, 0, SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE,
-     SVGContentUtils::X},
-    {nsGkAtoms::height, 0, SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE,
-     SVGContentUtils::Y},
+    {nsGkAtoms::x, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
+     SVGLength::Axis::X},
+    {nsGkAtoms::y, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
+     SVGLength::Axis::Y},
+    {nsGkAtoms::width, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
+     SVGLength::Axis::X},
+    {nsGkAtoms::height, 0, SVGLength_Binding::SVG_LENGTHTYPE_NUMBER,
+     SVGLength::Axis::Y},
 };
 
 SVGElement::EnumInfo SVGPatternElement::sEnumInfo[2] = {
@@ -66,6 +63,11 @@ already_AddRefed<SVGAnimatedRect> SVGPatternElement::ViewBox() {
   return mViewBox.ToSVGAnimatedRect(this);
 }
 
+bool SVGPatternElement::IsAttributeMapped(const nsAtom* aAttribute) const {
+  return aAttribute == nsGkAtoms::patternTransform ||
+         SVGPatternElementBase::IsAttributeMapped(aAttribute);
+}
+
 already_AddRefed<DOMSVGAnimatedPreserveAspectRatio>
 SVGPatternElement::PreserveAspectRatio() {
   return mPreserveAspectRatio.ToDOMAnimatedPreserveAspectRatio(this);
@@ -84,10 +86,8 @@ SVGPatternElement::PatternContentUnits() {
 
 already_AddRefed<DOMSVGAnimatedTransformList>
 SVGPatternElement::PatternTransform() {
-  // We're creating a DOM wrapper, so we must tell GetAnimatedTransformList
-  // to allocate the DOMSVGAnimatedTransformList if it hasn't already done so:
   return DOMSVGAnimatedTransformList::GetDOMWrapper(
-      GetAnimatedTransformList(DO_ALLOCATE), this);
+      GetOrCreateAnimatedTransformList(), this);
 }
 
 already_AddRefed<DOMSVGAnimatedLength> SVGPatternElement::X() {
@@ -107,7 +107,8 @@ already_AddRefed<DOMSVGAnimatedLength> SVGPatternElement::Height() {
 }
 
 already_AddRefed<DOMSVGAnimatedString> SVGPatternElement::Href() {
-  return mStringAttributes[HREF].IsExplicitlySet()
+  return mStringAttributes[HREF].IsExplicitlySet() ||
+                 !mStringAttributes[XLINK_HREF].IsExplicitlySet()
              ? mStringAttributes[HREF].ToDOMAnimatedString(this)
              : mStringAttributes[XLINK_HREF].ToDOMAnimatedString(this);
 }
@@ -115,10 +116,10 @@ already_AddRefed<DOMSVGAnimatedString> SVGPatternElement::Href() {
 //----------------------------------------------------------------------
 // SVGElement methods
 
-SVGAnimatedTransformList* SVGPatternElement::GetAnimatedTransformList(
-    uint32_t aFlags) {
-  if (!mPatternTransform && (aFlags & DO_ALLOCATE)) {
-    mPatternTransform = MakeUnique<SVGAnimatedTransformList>();
+SVGAnimatedTransformList*
+SVGPatternElement::GetOrCreateAnimatedTransformList() {
+  if (!mPatternTransform) {
+    mPatternTransform = std::make_unique<SVGAnimatedTransformList>();
   }
   return mPatternTransform.get();
 }
@@ -133,11 +134,11 @@ bool SVGPatternElement::HasValidDimensions() const {
 
 SVGElement::LengthAttributesInfo SVGPatternElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGPatternElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGAnimatedViewBox* SVGPatternElement::GetAnimatedViewBox() {
@@ -151,7 +152,7 @@ SVGPatternElement::GetAnimatedPreserveAspectRatio() {
 
 SVGElement::StringAttributesInfo SVGPatternElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

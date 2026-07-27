@@ -11,11 +11,15 @@ const {
 
 const lazy = {};
 
-ChromeUtils.defineESModuleGetters(lazy, {
-  NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
-  NetworkUtils:
-    "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
-});
+ChromeUtils.defineESModuleGetters(
+  lazy,
+  {
+    NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
+    NetworkUtils:
+      "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
+  },
+  { global: "contextual" }
+);
 
 loader.lazyRequireGetter(
   this,
@@ -33,8 +37,7 @@ const {
  * This actor manages all network functionality runnning
  * in the content process.
  *
- * @constructor
- *
+ * @class
  */
 class NetworkContentActor extends Actor {
   constructor(conn, targetActor) {
@@ -49,14 +52,14 @@ class NetworkContentActor extends Actor {
   /**
    *  Send an HTTP request
    *
-   * @param {Object} request
+   * @param {object} request
    *        The details of the HTTP Request.
-   * @return {Number}
+   * @return {number}
    *        The channel id for the request
    */
   async sendHTTPRequest(request) {
     return new Promise(resolve => {
-      const { url, method, headers, body, cause } = request;
+      const { url, method, headers, body, cause, securityFlags } = request;
       // Set the loadingNode and loadGroup to the target document - otherwise the
       // request won't show up in the opened netmonitor.
       const doc = this.targetActor.window.document;
@@ -66,6 +69,7 @@ class NetworkContentActor extends Actor {
         uri: channelURI,
         loadingNode: doc,
         securityFlags:
+          securityFlags ||
           Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_INHERITS_SEC_CONTEXT,
         contentPolicyType:
           lazy.NetworkUtils.stringToCauseType(cause.type) ||
@@ -119,7 +123,7 @@ class NetworkContentActor extends Actor {
         const bodyStream = Cc[
           "@mozilla.org/io/string-input-stream;1"
         ].createInstance(Ci.nsIStringInputStream);
-        bodyStream.setData(body, body.length);
+        bodyStream.setByteStringData(body);
         channel.explicitSetUploadStream(bodyStream, null, -1, method, false);
       }
 
@@ -134,9 +138,10 @@ class NetworkContentActor extends Actor {
 
   /**
    * Gets the stacktrace for the specified network resource.
-   *  @param {Number} resourceId
+   *
+   *  @param {number} resourceId
    *         The id for the network resource
-   * @return {Object}
+   * @return {object}
    *         The response packet - stack trace.
    */
   getStackTrace(resourceId) {

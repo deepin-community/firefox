@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Баптаулар
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Баптаулар…
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } негізгі браузер ету
 menu-application-services =
     .label = Қызметтер
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Бөлісу
     .accesskey = Б
+menu-file-share-qrcode =
+    .label = QR кодын генерациялау…
+    .accesskey = к
+menu-file-share-qrcode2 =
+    .label = QR кодын генерациялау
+    .accesskey = Q
 menu-file-print-setup =
     .label = Парақ баптаулары…
     .accesskey = П
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Тарих
 menu-view-synced-tabs-sidebar =
     .label = Синхрондалған беттер
-menu-view-megalist-sidebar =
-    .label = Парольдер
 menu-view-full-zoom =
     .label = Масштаб
     .accesskey = М
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Мобильді бетбелгілер
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Профильдер
+menu-profiles-manage-profiles =
+    .label = Профильдерді басқару
+menu-profiles-new-profile =
+    .label = Жаңа профиль
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ағымдағы)
+menu-profiles-menu =
+    .label = Профильдер
+    .accesskey = П
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Жүктемелер
     .accesskey = Ж
+menu-tools-extensions-and-themes =
+    .label = Кеңейтулер және темалар
+    .accesskey = е
 menu-tools-addons-and-themes =
     .label = Кеңейтулер және темалар
     .accesskey = а
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Бет ақпараты
     .accesskey = а
+menu-tools-edit-pdf =
+    .label = PDF өңдеу…
+    .accesskey = д
 menu-settings =
     .label = Баптаулар
     .accesskey =

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,34 +8,29 @@
 
 #include <tuple>
 
+#include "Units.h"
 #include "gfx2DGlue.h"
-#include "mozilla/ArrayUtils.h"
+#include "gfxContext.h"
+#include "gfxGradientCache.h"
+#include "gfxUtils.h"
 #include "mozilla/ComputedStyle.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/gfx/Helpers.h"
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/ProfilerLabels.h"
-
-#include "nsLayoutUtils.h"
-#include "nsStyleConsts.h"
-#include "nsPresContext.h"
-#include "nsPoint.h"
-#include "nsRect.h"
-#include "nsCSSColorUtils.h"
-#include "gfxContext.h"
-#include "nsStyleStructInlines.h"
-#include "nsCSSProps.h"
-#include "gfxUtils.h"
-#include "gfxGradientCache.h"
-
+#include "mozilla/StaticPrefs_layout.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/gfx/Helpers.h"
 #include "mozilla/layers/StackingContextHelper.h"
 #include "mozilla/layers/WebRenderLayerManager.h"
-#include "mozilla/webrender/WebRenderTypes.h"
 #include "mozilla/webrender/WebRenderAPI.h"
-#include "Units.h"
-
-#include "mozilla/StaticPrefs_layout.h"
+#include "mozilla/webrender/WebRenderTypes.h"
+#include "nsCSSColorUtils.h"
+#include "nsCSSProps.h"
+#include "nsLayoutUtils.h"
+#include "nsPoint.h"
+#include "nsPresContext.h"
+#include "nsRect.h"
+#include "nsStyleConsts.h"
+#include "nsStyleStructInlines.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -258,7 +251,7 @@ static StyleAbsoluteColor Interpolate(const StyleAbsoluteColor& aLeft,
       StyleColorSpace::Srgb,
       StyleHueInterpolationMethod::Shorter,
   };
-  return Servo_InterpolateColor(kMethod, &aRight, &aLeft, aFrac);
+  return Servo_InterpolateColor(kMethod, &aLeft, &aRight, aFrac);
 }
 
 static nscoord FindTileStart(nscoord aDirtyCoord, nscoord aTilePos,
@@ -366,6 +359,11 @@ static void ResolveMidpoints(nsTArray<ColorStop>& stops) {
       continue;
     }
 
+    // Calculate the intermediate color stops per the formula of the CSS
+    // images spec. http://dev.w3.org/csswg/css-images/#color-stop-syntax
+    // 9 points were chosen since it is the minimum number of stops that always
+    // give the smoothest appearace regardless of midpoint position and
+    // difference in luminance of the end points.
     float midpoint = (offset - offset1) / (offset2 - offset1);
     ColorStop newStops[9];
     if (midpoint > .5f) {
@@ -383,34 +381,13 @@ static void ResolveMidpoints(nsTArray<ColorStop>& stops) {
         newStops[y + 2].mPosition = offset + (offset2 - offset) * y / 13;
       }
     }
-    // calculate colors
 
+    // calculate colors
     for (auto& newStop : newStops) {
-      // Calculate the intermediate color stops per the formula of the CSS
-      // images spec. http://dev.w3.org/csswg/css-images/#color-stop-syntax 9
-      // points were chosen since it is the minimum number of stops that always
-      // give the smoothest appearace regardless of midpoint position and
-      // difference in luminance of the end points.
       const float relativeOffset =
           (newStop.mPosition - offset1) / (offset2 - offset1);
       const float multiplier = powf(relativeOffset, logf(.5f) / logf(midpoint));
-
-      auto srgb1 = color1.ToColorSpace(StyleColorSpace::Srgb);
-      auto srgb2 = color2.ToColorSpace(StyleColorSpace::Srgb);
-
-      const float red =
-          srgb1.components._0 +
-          multiplier * (srgb2.components._0 - srgb1.components._0);
-      const float green =
-          srgb1.components._1 +
-          multiplier * (srgb2.components._1 - srgb1.components._1);
-      const float blue =
-          srgb1.components._2 +
-          multiplier * (srgb2.components._2 - srgb1.components._2);
-      const float alpha =
-          srgb1.alpha + multiplier * (srgb2.alpha - srgb1.alpha);
-
-      newStop.mColor = StyleAbsoluteColor::SrgbLegacy(red, green, blue, alpha);
+      newStop.mColor = Interpolate(color1, color2, multiplier);
     }
 
     stops.ReplaceElementsAt(x, 1, newStops, 9);
@@ -608,8 +585,8 @@ static nsTArray<ColorStop> ComputeColorStopsForItems(
     ComputedStyle* aComputedStyle,
     Span<const StyleGenericGradientItem<StyleColor, T>> aItems,
     CSSCoord aLineLength) {
-  MOZ_ASSERT(aItems.Length() >= 2,
-             "The parser should reject gradients with less than two stops");
+  MOZ_ASSERT(!aItems.IsEmpty(),
+             "The parser should reject gradients with no stops");
 
   nsTArray<ColorStop> stops(aItems.Length());
 
@@ -1015,9 +992,9 @@ void nsCSSGradientRenderer::Paint(gfxContext& aContext, const nsRect& aDest,
       GradientStopInterpolator(
           const nsTArray<ColorStop>& aStops,
           const StyleColorInterpolationMethod& aStyleColorInterpolationMethod,
-          bool aExtendLastStop, nsTArray<gfx::GradientStop>& aResult)
+          bool aExtend, nsTArray<gfx::GradientStop>& aResult)
           : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod,
-                                  aExtendLastStop),
+                                  aExtend),
             mStops(aResult) {}
       void CreateStop(float aPosition, gfx::DeviceColor aColor) {
         mStops.AppendElement(gfx::GradientStop{aPosition, aColor});
@@ -1027,10 +1004,10 @@ void nsCSSGradientRenderer::Paint(gfxContext& aContext, const nsRect& aDest,
       nsTArray<gfx::GradientStop>& mStops;
     };
 
-    bool extendLastStop = !isRepeat && styleColorInterpolationMethod.hue ==
-                                           StyleHueInterpolationMethod::Longer;
+    bool extend = !isRepeat && styleColorInterpolationMethod.hue ==
+                                   StyleHueInterpolationMethod::Longer;
     GradientStopInterpolator interpolator(mStops, styleColorInterpolationMethod,
-                                          extendLastStop, rawStops);
+                                          extend, rawStops);
     interpolator.CreateStops();
   } else {
     rawStops.SetLength(mStops.Length());
@@ -1051,7 +1028,9 @@ void nsCSSGradientRenderer::Paint(gfxContext& aContext, const nsRect& aDest,
   // up by drawing tiles into temporary surfaces and copying those to the
   // destination, but after pixel-snapping tiles may not all be the same size.
   nsRect dirty;
-  if (!dirty.IntersectRect(aDirtyRect, aFillArea)) return;
+  if (!dirty.IntersectRect(aDirtyRect, aFillArea)) {
+    return;
+  }
 
   gfxRect areaToFill =
       nsLayoutUtils::RectToGfxRect(aFillArea, appUnitsPerDevPixel);
@@ -1224,9 +1203,8 @@ class MOZ_STACK_CLASS WrColorStopInterpolator
   WrColorStopInterpolator(
       const nsTArray<ColorStop>& aStops,
       const StyleColorInterpolationMethod& aStyleColorInterpolationMethod,
-      float aOpacity, nsTArray<wr::GradientStop>& aResult, bool aExtendLastStop)
-      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod,
-                              aExtendLastStop),
+      float aOpacity, nsTArray<wr::GradientStop>& aResult, bool aExtend)
+      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod, aExtend),
         mResult(aResult),
         mOpacity(aOpacity),
         mOutputStop(0) {}
@@ -1302,11 +1280,11 @@ void nsCSSGradientRenderer::BuildWebRenderParameters(
     // gradient, we have to pretend there is another stop at position=1.0 that
     // duplicates the last stop, this is probably only used for things like a
     // color wheel.  No such problem for SVG as it doesn't have that complexity.
-    bool extendLastStop = aMode == wr::ExtendMode::Clamp &&
-                          styleColorInterpolationMethod.hue ==
-                              StyleHueInterpolationMethod::Longer;
+    bool extend = aMode == wr::ExtendMode::Clamp &&
+                  styleColorInterpolationMethod.hue ==
+                      StyleHueInterpolationMethod::Longer;
     WrColorStopInterpolator interpolator(mStops, styleColorInterpolationMethod,
-                                         aOpacity, aStops, extendLastStop);
+                                         aOpacity, aStops, extend);
     interpolator.CreateStops();
   } else {
     aStops.SetLength(mStops.Length());

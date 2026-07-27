@@ -2,8 +2,8 @@
 // META: script=/resources/idlharness.js
 
 idl_test(
-  ['sanitizer-api.tentative'],
-  ['html'],
+  ['sanitizer-api'],
+  ['html', 'dom'],
   idl_array => {
     idl_array.add_objects({
       Sanitizer: ['new Sanitizer({})']

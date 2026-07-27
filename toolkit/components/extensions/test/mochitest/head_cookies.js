@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 /* exported testCookies */
@@ -129,14 +127,14 @@ async function testCookies(options) {
         options.secure,
         false,
         false,
-        options.expiry,
+        options.expiry * 1000,
         {},
-        Ci.nsICookie.SAMESITE_NONE,
+        Ci.nsICookie.SAMESITE_UNSET,
         options.url.startsWith("https")
           ? Ci.nsICookie.SCHEME_HTTPS
           : Ci.nsICookie.SCHEME_HTTP
       );
-      // This will be modified by the background script.
+      // This will be modified by the background script
       Services.cookies.add(
         domain,
         "/",
@@ -145,9 +143,9 @@ async function testCookies(options) {
         options.secure,
         false,
         false,
-        options.expiry,
+        options.expiry * 1000,
         {},
-        Ci.nsICookie.SAMESITE_NONE,
+        Ci.nsICookie.SAMESITE_UNSET,
         options.url.startsWith("https")
           ? Ci.nsICookie.SCHEME_HTTPS
           : Ci.nsICookie.SCHEME_HTTP
@@ -161,9 +159,9 @@ async function testCookies(options) {
         options.secure,
         false,
         false,
-        options.expiry,
+        options.expiry * 1000,
         {},
-        Ci.nsICookie.SAMESITE_NONE,
+        Ci.nsICookie.SAMESITE_UNSET,
         options.url.startsWith("https")
           ? Ci.nsICookie.SCHEME_HTTPS
           : Ci.nsICookie.SCHEME_HTTP
@@ -184,6 +182,7 @@ async function testCookies(options) {
     addMessageListener("options", options => {
       let domain = options.domain.replace(/^\.?/, ".");
 
+      // this is the fourth cookie, it triggers a purge
       Services.cookies.add(
         domain,
         "/",
@@ -192,13 +191,14 @@ async function testCookies(options) {
         options.secure,
         false,
         false,
-        options.expiry,
+        options.expiry * 1000,
         {},
-        Ci.nsICookie.SAMESITE_NONE,
+        Ci.nsICookie.SAMESITE_UNSET,
         options.url.startsWith("https")
           ? Ci.nsICookie.SCHEME_HTTPS
           : Ci.nsICookie.SCHEME_HTTP
       );
+      // overwrite the latest cookie
       Services.cookies.add(
         domain,
         "/",
@@ -207,9 +207,9 @@ async function testCookies(options) {
         options.secure,
         false,
         false,
-        options.expiry,
+        options.expiry * 1000,
         {},
-        Ci.nsICookie.SAMESITE_NONE,
+        Ci.nsICookie.SAMESITE_UNSET,
         options.url.startsWith("https")
           ? Ci.nsICookie.SCHEME_HTTPS
           : Ci.nsICookie.SCHEME_HTTP

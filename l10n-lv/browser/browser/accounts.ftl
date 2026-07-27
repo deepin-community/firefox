@@ -38,6 +38,7 @@ account-send-tab-to-device-connectdevice = Savienot citu ierīci…
 ## and the Sync account is unverified. Redirects to the Sync preferences page.
 
 account-send-tab-to-device-verify-status = Konts nav pārbaudīts
+account-send-tab-to-device-verify2 = Verificē savu kontu
 account-send-tab-to-device-verify = Pārbaudiet savu kontu…
 
 ## These strings are used in a notification shown when a new device joins the Firefox account.
@@ -107,7 +108,7 @@ account-multiple-tabs-arriving-from-unknown-device =
 
 account-view-recently-closed-tabs = Skatīt nesen aizvērtās cilnes
 account-tabs-closed-remotely =
-    { NUMBER($closedCount) ->
+    { $closedCount ->
         [zero] { $closedCount } { -brand-short-name } cilne ir aizvērta
         [one] { $closedCount } { -brand-short-name } cilnes ir aizvērtas
        *[other] { $closedCount } { -brand-short-name } cilnes ir aizvērtas

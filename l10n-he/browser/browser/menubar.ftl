@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = העדפות
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = הגדרות…
+menu-application-set-as-default =
+    .label = הגדרת { -brand-shorter-name } כדפדפן ברירת המחדל
 menu-application-services =
     .label = שירותים
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = שיתוף
     .accesskey = ש
+menu-file-share-qrcode =
+    .label = יצירת קוד QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = יצירת קוד QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = הגדרת עמוד…
     .accesskey = ה
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = היסטוריה
 menu-view-synced-tabs-sidebar =
     .label = לשוניות מסונכרנות
-menu-view-megalist-sidebar =
-    .label = ססמאות
 menu-view-full-zoom =
     .label = מרחק מתצוגה
     .accesskey = ת
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = סימניות מהנייד
 
+## Profiles Menu
+
+menu-profiles =
+    .label = פרופילים
+menu-profiles-manage-profiles =
+    .label = ניהול פרופילים
+menu-profiles-new-profile =
+    .label = פרופיל חדש
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = ‏{ $profileName } (נוכחי)
+menu-profiles-menu =
+    .label = פרופילים
+    .accesskey = פ
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = הורדות
     .accesskey = ד
+menu-tools-extensions-and-themes =
+    .label = הרחבות וערכות נושא
+    .accesskey = ה
 menu-tools-addons-and-themes =
     .label = תוספות וערכות נושא
     .accesskey = ת
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = מידע על הדף
     .accesskey = מ
+menu-tools-edit-pdf =
+    .label = עריכת PDF…
+    .accesskey = P
 menu-settings =
     .label = הגדרות
     .accesskey =

@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = ਅੱਪਡੇਟ ਨਾ ਕਰੋ
     .accesskey = D
+primary-password-prompt-message = ਆਪਣਾ ਮੁੱਖ ਪਾਸਵਰਡ ਦਿਓ
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = ਕੋਈ ਵਰਤੋਂਕਾਰ ਨਾਂ ਨਹੀਂ
-password-manager-toggle-password =
-    .label = ਪਾਸਵਰਡ ਨੂੰ ਵੇਖਾਓ
-    .accesskey = h
 password-manager-confirm-password-change = ਪਾਸਵਰਡ ਨੂੰ ਬਦਲਣ ਦੀ ਪੁਸ਼ਟੀ
 password-manager-select-username = ਲਾਗਇਨ, ਜਿਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਹੈ, ਚੁਣੋ:

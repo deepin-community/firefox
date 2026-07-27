@@ -29,11 +29,17 @@ macro_rules! with_metric {
     (MEMORY_DISTRIBUTION_MAP, $id:ident, $m:ident, $f:expr) => {
         maybe_labeled_with_metric!(MEMORY_DISTRIBUTION_MAP, $id, $m, $f)
     };
+    (QUANTITY_MAP, $id:ident, $m:ident, $f:expr) => {
+        maybe_labeled_with_metric!(QUANTITY_MAP, $id, $m, $f)
+    };
     (STRING_MAP, $id:ident, $m:ident, $f:expr) => {
         maybe_labeled_with_metric!(STRING_MAP, $id, $m, $f)
     };
     (TIMING_DISTRIBUTION_MAP, $id:ident, $m:ident, $f:expr) => {
         maybe_labeled_with_metric!(TIMING_DISTRIBUTION_MAP, $id, $m, $f)
+    };
+    (DUAL_COUNTER_MAP, $id:ident, $m:ident, $f: expr) => {
+        just_labeled_with_metric!(DUAL_COUNTER_MAP, $id, $m, $f)
     };
     ($map:ident, $id:ident, $m:ident, $f:expr) => {
         just_with_metric!($map, $id, $m, $f)
@@ -112,17 +118,36 @@ macro_rules! just_with_metric {
 macro_rules! maybe_labeled_with_metric {
     ($map:ident, $id:ident, $m:ident, $f:expr) => {
         if $id & (1 << $crate::metrics::__glean_metric_maps::submetric_maps::SUBMETRIC_BIT) > 0 {
-            let map = $crate::metrics::__glean_metric_maps::submetric_maps::$map
-                .read()
-                .expect("Read lock for labeled metric map was poisoned");
-            match map.get(&$id.into()) {
-                Some($m) => $f,
-                None => panic!("No submetric for id {}", $id),
-            }
+            just_labeled_with_metric!($map, $id, $m, $f)
         } else {
             just_with_metric!($map, $id, $m, $f)
         }
     };
+}
+
+/// Get a submetric object instance by id from the corresponding map,
+/// then execute the providing closure with it.
+///
+/// # Arguments
+///
+/// * `$map` - The name of the hash map within
+///            `metrics::__glean_metric_maps::submetric_maps` as generated
+///            by glean_parser.
+/// * `$id`  - The ID of the metric to get.
+///            Definitely has `submetric_maps::SUBMETRIC_BIT` set.
+/// * `$m`   - The identifier to use for the retrieved metric.
+///            The expression `$f` can use this identifier.
+/// * `$f`   - The expression to execute with the retrieved metric `$m`.
+macro_rules! just_labeled_with_metric {
+    ($map:ident, $id:ident, $m:ident, $f:expr) => {{
+        let map = $crate::metrics::__glean_metric_maps::submetric_maps::$map
+            .read()
+            .expect("Read lock for labeled metric map was poisoned");
+        match map.get(&$id.into()) {
+            Some($m) => $f,
+            None => panic!("No submetric for id {}", $id),
+        }
+    }};
 }
 
 /// Test whether a value is stored for the given metric.
@@ -136,9 +161,9 @@ macro_rules! test_has {
         let storage = if $storage.is_empty() {
             None
         } else {
-            Some($storage.to_utf8())
+            Some($storage.to_utf8().into_owned())
         };
-        $metric.test_get_value(storage.as_deref()).is_some()
+        $metric.test_get_value(storage).is_some()
     }};
 }
 
@@ -153,9 +178,9 @@ macro_rules! test_get {
         let storage = if $storage.is_empty() {
             None
         } else {
-            Some($storage.to_utf8())
+            Some($storage.to_utf8().into_owned())
         };
-        $metric.test_get_value(storage.as_deref()).unwrap()
+        $metric.test_get_value(storage).unwrap()
     }};
 }
 
@@ -174,6 +199,12 @@ macro_rules! test_get_errors {
             glean::ErrorType::InvalidOverflow,
         ];
         let mut error_str = None;
+        // Only `events` use this trait right now
+        // Ignoring the unused import simplifies the macro right now.
+        // This might change in the future.
+        #[allow(unused_imports)]
+        use crate::private::TestGetNumErrors;
+
         for &error_type in error_types.iter() {
             let num_errors = $metric.test_get_num_recorded_errors(error_type);
             if num_errors > 0 {
@@ -189,110 +220,34 @@ macro_rules! test_get_errors {
     }};
 }
 
-/// Get the submetric id for a given labeled metric and label.
+/// Check the provided method on the metric map in the provided storage for errors.
+/// On finding one, return an error string.
 ///
 /// # Arguments
 ///
-/// * `$id`						- The id of the labeled metric.
-/// * `$label`				- The (string) label of the submetric.
-/// * `$labeled_map`	- The name of the labeled metric's map for retrieval (JOG only).
-/// * `$labeled_get`	- The name of the labeled metric's get fn for retrieval.
-/// * `$submetric_map`- The name of the submetrics' map for storage.
-/// * `$metric_type`  - The submetric's type (needed for an internal closure).
-macro_rules! labeled_submetric_get {
-    ($id:ident, $label:ident, $labeled_map:ident, $labeled_get:ident, $submetric_map:ident, $metric_type:ty) => {{
-        let tuple = ($id, $label.to_utf8().into());
-        {
-            let map = $crate::metrics::__glean_metric_maps::submetric_maps::LABELED_METRICS_TO_IDS
-                .read()
-                .expect("read lock of submetric ids was poisoned");
-            if let Some(submetric_id) = map.get(&tuple) {
-                return *submetric_id;
+/// * `$metric_map`  - The metric map to use.
+/// * `$method`      - The `labeled_<type>_test_get_num_recorded_errors` method to use.
+/// * `$metric_id`   - The metric id to find in the metric map.
+macro_rules! test_get_errors_with_method {
+    ($metric_map:ident, $method:ident, $metric_id:path) => {{
+        let error_types = [
+            glean::ErrorType::InvalidValue,
+            glean::ErrorType::InvalidLabel,
+            glean::ErrorType::InvalidState,
+            glean::ErrorType::InvalidOverflow,
+        ];
+        let mut error_str = None;
+        for &error_type in error_types.iter() {
+            let num_errors = $metric_map::$method($metric_id, error_type);
+            if num_errors > 0 {
+                error_str = Some(format!(
+                    "Metric had {} error(s) of type {}!",
+                    num_errors,
+                    error_type.as_str()
+                ));
+                break;
             }
         }
-
-        // Gotta actually create a new submetric with a new id.
-        let submetric_id =
-            $crate::metrics::__glean_metric_maps::submetric_maps::NEXT_LABELED_SUBMETRIC_ID
-                .fetch_add(1, Ordering::SeqCst);
-        {
-            if $id & (1 << $crate::factory::DYNAMIC_METRIC_BIT) > 0 {
-                just_with_jog_metric!($labeled_map, $id, metric, {
-                    let submetric = metric.get(&tuple.1);
-                    let mut map =
-                        $crate::metrics::__glean_metric_maps::submetric_maps::$submetric_map
-                            .write()
-                            .expect("write lock of submetric map was poisoned");
-                    map.insert(submetric_id.into(), submetric);
-                });
-            } else {
-                let mut map = $crate::metrics::__glean_metric_maps::submetric_maps::$submetric_map
-                    .write()
-                    .expect("write lock of submetric map was poisoned");
-                map.insert(
-                    submetric_id.into(),
-                    $crate::metrics::__glean_metric_maps::$labeled_get($id, &tuple.1),
-                );
-            }
-        }
-
-        let mut map = $crate::metrics::__glean_metric_maps::submetric_maps::LABELED_METRICS_TO_IDS
-            .write()
-            .expect("write lock of submetric ids was poisoned");
-        map.insert(tuple, submetric_id);
-        submetric_id
-    }};
-}
-
-/// Get the submetric id for a given labeled metric and label enum.
-///
-/// # Arguments
-///
-/// * `$id`						- The id of the labeled metric.
-/// * `$label`				- The (enum) label of the submetric.
-/// * `$labeled_get`	- The name of the labeled metric's get fn for retrieval.
-/// * `$submetric_map`- The name of the submetrics' map for storage.
-/// * `$metric_type`  - The submetric's type (needed for an internal closure).
-macro_rules! labeled_submetric_enum_get {
-    ($id:ident, $label_enum:ident, $labeled_get:ident, $submetric_map:ident, $metric_type:ty) => {{
-        let tuple = ($id, $label_enum.into());
-        // First: Have we seen this enum before? If so, give out the same submetric id.
-        {
-            let map = $crate::metrics::__glean_metric_maps::submetric_maps::LABELED_ENUMS_TO_IDS
-                .read()
-                .expect("read lock of enum submetric ids was poisoned");
-            if let Some(submetric_id) = map.get(&tuple) {
-                return *submetric_id;
-            }
-        }
-
-        // Alas, this is the first time we've needed to handle this metric with this enum.
-        // Gotta actually create a new submetric with a new id.
-        let submetric_id =
-            $crate::metrics::__glean_metric_maps::submetric_maps::NEXT_LABELED_SUBMETRIC_ID
-                .fetch_add(1, Ordering::SeqCst);
-        {
-            // What if the dynamic bit is set?
-            // JOG only supports JS, and enum_get isn't (yet) supported in JS.
-            assert_eq!(
-                0,
-                $id & (1 << $crate::factory::DYNAMIC_METRIC_BIT),
-                "No enum_get support for JOG"
-            );
-            let mut map = $crate::metrics::__glean_metric_maps::submetric_maps::$submetric_map
-                .write()
-                .expect("write lock of submetric map was poisoned");
-            map.insert(
-                submetric_id.into(),
-                $crate::metrics::__glean_metric_maps::$labeled_get($id, tuple.1),
-            );
-        }
-
-        // And now ensure we store the submetric so we need not create it on subsequent calls.
-        let mut map = $crate::metrics::__glean_metric_maps::submetric_maps::LABELED_ENUMS_TO_IDS
-            .write()
-            .expect("write lock of submetric ids was poisoned");
-        map.insert(tuple, submetric_id);
-        submetric_id
+        error_str
     }};
 }

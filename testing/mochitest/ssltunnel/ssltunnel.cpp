@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,21 +16,18 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <algorithm>
 #include <stdarg.h>
 #include "prinit.h"
 #include "prerror.h"
 #include "prenv.h"
 #include "prnetdb.h"
 #include "prtpool.h"
-#include "nsAlgorithm.h"
 #include "nss.h"
 #include "keyhi.h"
 #include "ssl.h"
 #include "sslproto.h"
 #include "plhash.h"
 #include "mozilla/Sprintf.h"
-#include "mozilla/Unused.h"
 
 using namespace mozilla;
 using namespace mozilla::psm;
@@ -204,8 +200,8 @@ const uint32_t MAX_THREADS = 100;
 const uint32_t DEFAULT_STACKSIZE = (512 * 1024);
 
 // global data
-string nssconfigdir;
-vector<server_info_t> servers;
+MOZ_GLIBCXX_CONSTINIT string nssconfigdir;
+MOZ_GLIBCXX_CONSTINIT vector<server_info_t> servers;
 PRNetAddr remote_addr;
 PRNetAddr websocket_server;
 PRThreadPool* threads = nullptr;
@@ -403,7 +399,7 @@ bool ConfigureSSLServerSocket(PRFileDesc* socket, server_info_t* si,
       LOG_ERROR(("Failed to add issuer to issuerList\n"));
       return false;
     }
-    Unused << issuer.release();  // Ownership transferred to issuerList.
+    (void)issuer.release();  // Ownership transferred to issuerList.
     if (SSL_SetTrustAnchors(ssl_socket, issuerList.get()) != SECSuccess) {
       LOG_ERROR(
           ("Failed to set certificate_authorities list for client "
@@ -1276,7 +1272,7 @@ int processConfigLine(char* configLine) {
         return 1;
       }
 
-      servers.push_back(server);
+      servers.push_back(std::move(server));
     }
 
     return 0;

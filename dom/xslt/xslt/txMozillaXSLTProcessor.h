@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,15 +5,14 @@
 #ifndef TRANSFRMX_TXMOZILLAXSLTPROCESSOR_H
 #define TRANSFRMX_TXMOZILLAXSLTPROCESSOR_H
 
-#include "nsStubMutationObserver.h"
-#include "nsIDocumentTransformer.h"
-#include "txExpandedNameMap.h"
-#include "txNamespaceMap.h"
-#include "nsCycleCollectionParticipant.h"
-#include "nsWrapperCache.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/XSLTProcessorBinding.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsIDocumentTransformer.h"
+#include "nsStubMutationObserver.h"
+#include "nsWrapperCache.h"
+#include "txExpandedNameMap.h"
+#include "txNamespaceMap.h"
 
 class nsINode;
 class nsIURI;
@@ -92,12 +90,12 @@ class txMozillaXSLTProcessor final : public nsIDocumentTransformer,
   static already_AddRefed<txMozillaXSLTProcessor> Constructor(
       const mozilla::dom::GlobalObject& aGlobal);
 
-  void ImportStylesheet(nsINode& stylesheet, mozilla::ErrorResult& aRv);
+  void ImportStylesheet(nsINode& aStylesheet, mozilla::ErrorResult& aRv);
   already_AddRefed<mozilla::dom::DocumentFragment> TransformToFragment(
-      nsINode& source, mozilla::dom::Document& docVal,
+      nsINode& aSource, mozilla::dom::Document& aOutput,
       mozilla::ErrorResult& aRv);
   already_AddRefed<mozilla::dom::Document> TransformToDocument(
-      nsINode& source, mozilla::ErrorResult& aRv);
+      nsINode& aSource, mozilla::ErrorResult& aRv);
 
   void SetParameter(const nsAString& aNamespaceURI, const nsAString& aLocalName,
                     const XSLTParameterValue& aValue,
@@ -107,8 +105,8 @@ class txMozillaXSLTProcessor final : public nsIDocumentTransformer,
                     mozilla::ErrorResult& aRv);
   void RemoveParameter(const nsAString& aNamespaceURI,
                        const nsAString& aLocalName, mozilla::ErrorResult& aRv);
-  void ClearParameters();
-  void Reset();
+  void ClearParameters(mozilla::ErrorResult& aError);
+  void Reset(mozilla::ErrorResult& aError);
 
   uint32_t Flags(mozilla::dom::SystemCallerGuarantee);
   void SetFlags(uint32_t aFlags, mozilla::dom::SystemCallerGuarantee);
@@ -131,6 +129,8 @@ class txMozillaXSLTProcessor final : public nsIDocumentTransformer,
   static void Shutdown();
 
  private:
+  friend class nsTransformBlockerEvent;
+
   explicit txMozillaXSLTProcessor(nsISupports* aOwner);
   /**
    * Default destructor for txMozillaXSLTProcessor
@@ -144,7 +144,7 @@ class txMozillaXSLTProcessor final : public nsIDocumentTransformer,
   nsCOMPtr<nsISupports> mOwner;
 
   RefPtr<txStylesheet> mStylesheet;
-  mozilla::dom::Document* mStylesheetDocument;  // weak
+  RefPtr<mozilla::dom::Document> mStylesheetDocument;
   nsCOMPtr<nsIContent> mEmbeddedStylesheetRoot;
 
   nsCOMPtr<nsINode> mSource;
@@ -157,6 +157,13 @@ class txMozillaXSLTProcessor final : public nsIDocumentTransformer,
   RefPtr<txResultRecycler> mRecycler;
 
   uint32_t mFlags;
+
+  enum class State {
+    None,
+    Compiling,
+    Transforming,
+  };
+  State mState = State::None;
 };
 
 extern nsresult TX_LoadSheet(nsIURI* aUri, txMozillaXSLTProcessor* aProcessor,

@@ -57,6 +57,8 @@ addon-domain-blocked-by-policy = Quen administra o teu sistema impediu que este 
 #   $addonName (String): the name of the add-on.
 #   $addonId (String): the ID of add-on.
 addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) está bloqueado pola súa organización.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = A túa organización impediu que este sitio che pedise que instalaras software no teu ordenador.
 addon-install-full-screen-blocked = Non está permitida a instalación de complementos durante ou antes de entrar no modo de pantalla completa.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -79,6 +81,8 @@ addon-removal-title = Retirar { $name }?
 addon-removal-message = Retirar { $name } de { -brand-shorter-name }?
 addon-removal-button = Retirar
 addon-removal-abuse-report-checkbox = Denunciar esta extensión a { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Se utilizas as funcións ou extensións que usa este modelo, volverase a engadir.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -121,12 +125,18 @@ addon-install-error-corrupt-file = Non foi posíbel instalar o complemento desca
 addon-install-error-file-access = Non foi posíbel instalar { $addonName } porque non é posíbel que { -brand-short-name } modifique o ficheiro necesario.
 addon-install-error-not-signed = { -brand-short-name } evitou que este sitio instale un complemento sen comprobar.
 addon-install-error-invalid-domain = O complemento «{ $addonName }» non se pode instalar desde este lugar.
+addon-install-error-no-addon-name-file-access = Non se puido instalar o complemento porque { -brand-short-name } non pode modificar o arquivo precisado
 addon-local-install-error-network-failure = Non foi posíbel instalar este complemento por un erro no sistema de ficheiros.
 addon-local-install-error-incorrect-hash = Non foi posíbel instalar o complemento porque non coincide co complemento { -brand-short-name } esperado.
 addon-local-install-error-corrupt-file = Non foi posíbel instalar este complemento porque parece estar danado.
 addon-local-install-error-file-access = Non foi posíbel instalar { $addonName } porque non é posíbel que { -brand-short-name } modifique o ficheiro necesario.
 addon-local-install-error-not-signed = Non foi posíbel instalar este complemento porque non foi verificado.
+addon-local-install-no-addon-name-error-file-access = Non se puido instalar o complemento porque { -brand-short-name } non se pode modificar o arquivo precisado.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Non foi posíbel instalar { $addonName } porque non é compatíbel con { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } infrinxe as políticas de Mozilla e non se pode instalar en { -brand-short-name }.
 addon-install-error-blocklisted = Non foi posíbel instalar { $addonName } porque o risco de que cause problemas de estabilidade ou seguranza é alto.
+addon-install-error-soft-blocked = { $addonName } infrinxe as políticas de Mozilla e non se pode instalar en { -brand-short-name }.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Non podes instalar { $addonName } como usuario final, só pode ser instalado por unha organización mediante políticas empresariais.

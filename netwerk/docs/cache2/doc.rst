@@ -3,8 +3,7 @@ HTTP Cache
 
 This document describes the **HTTP cache implementation**.
 
-The code resides in `/netwerk/cache2 (searchfox)
-<https://searchfox.org/mozilla-central/source/netwerk/cache2>`_
+The code resides in :searchfox:`/netwerk/cache2 (searchfox) <netwerk/cache2>`
 
 API
 ---
@@ -16,7 +15,7 @@ be clear directly from the `IDL files <https://searchfox.org/mozilla-central/sea
 -  The cache API is **completely thread-safe** and **non-blocking**.
 -  There is **no IPC support**.  It's only accessible on the default
    chrome process.
--  When there is no profile the new HTTP cache works, but everything is
+-  When there is no profile the HTTP cache works, but everything is
    stored only in memory not obeying any particular limits.
 
 .. _nsICacheStorageService:
@@ -27,7 +26,7 @@ nsICacheStorageService
 -  The HTTP cache entry-point. Accessible as a service only, fully
    thread-safe, scriptable.
 
--  `nsICacheStorageService.idl (searchfox) <https://searchfox.org/mozilla-central/source/netwerk/cache2/nsICacheStorageService.idl>`_
+-  :searchfox:`nsICacheStorageService.idl (searchfox) <netwerk/cache2/nsICacheStorageService.idl>`
 
 -   \ ``"@mozilla.org/netwerk/cache-storage-service;1"``
 
@@ -73,7 +72,7 @@ nsILoadContextInfo
 
 -  Mandatory argument to ``*Storage`` methods of :ref:`nsICacheStorageService <nsICacheStorageService>`.
 
--  `nsILoadContextInfo.idl (searchfox) <https://searchfox.org/mozilla-central/source/netwerk/base/nsILoadContextInfo.idl>`_
+-  :searchfox:`nsILoadContextInfo.idl (searchfox) <netwerk/base/nsILoadContextInfo.idl>`
 
 
 -  It is a helper interface wrapping following four arguments into a single one:
@@ -105,7 +104,7 @@ nsILoadContextInfo
 nsICacheStorage
 ---------------
 
--  `nsICacheStorage.idl (searchfox) <https://searchfox.org/mozilla-central/source/netwerk/cache2/nsICacheStorage.idl>`_
+-  :searchfox:`nsICacheStorage.idl (searchfox) <netwerk/cache2/nsICacheStorage.idl>`
 
 -  Obtained from call to one of the ``*Storage`` methods on
    :ref:`nsICacheStorageService <nsICacheStorageService>`.
@@ -120,7 +119,7 @@ nsICacheStorage
 nsICacheEntryOpenCallback
 -------------------------
 
--  `nsICacheEntryOpenCallback.idl (searchfox) <https://searchfox.org/mozilla-central/source/netwerk/cache2/nsICacheEntryOpenCallback.idl>`_
+-  :searchfox:`nsICacheEntryOpenCallback.idl (searchfox) <netwerk/cache2/nsICacheEntryOpenCallback.idl>`
 
 -  The result of ``nsICacheStorage.asyncOpenURI`` is always and only
    sent to callbacks on this interface.
@@ -145,7 +144,7 @@ nsICacheEntryOpenCallback
 nsICacheEntry
 -------------
 
--  `nsICacheEntry.idl (searchfox) <https://searchfox.org/mozilla-central/source/netwerk/cache2/nsICacheEntry.idl>`_
+-  :searchfox:`nsICacheEntry.idl (searchfox) <netwerk/cache2/nsICacheEntry.idl>`
 
 -  Obtained asynchronously or pseudo-asynchronously by a call to
    ``nsICacheStorage.asyncOpenURI``.
@@ -567,3 +566,67 @@ checking - the memory cache pool is controlled by
 ``browser.cache.memory.capacity``, the disk entries pool is already
 described above. The pool can be accessed and modified only on the cache
 background thread.
+
+Compression Dictionaries
+---------------------------
+
+Compression Dictionaries are specced by the IETF:
+https://datatracker.ietf.org/doc/draft-ietf-httpbis-compression-dictionary/
+
+See also: https://developer.chrome.com/blog/shared-dictionary-compression
+and https://github.com/WICG/compression-dictionary-transport
+
+Gecko's design for compression dictionary support:
+
+We have special dict:<origin> entries with a listing of all dictionaries
+for that origin, stored in metadata.
+
+When a fetch is made, we check if there's a dict:<origin> cache entry.  If
+not, we know there are no dictionaries.  If there is an entry, and we
+haven't previously loaded it into memory, we read and parse the metadata
+and create in-memory structures for all dictionaries for <origin>.   This
+includes the data needed to match and decide if we want to send a
+"Available-Dictionary:" header with the request.
+
+If a response to any request is received and it has a "Use-As-Dictionary"
+header, we create a new dictionary entry in-memory and flag it for saving
+to the dict:<origin> metadata.  We set the stream up to decompress before
+storing into the cache (see later options for alternatives in the future),
+so that we can be ensured to be able to decompress later.   We start
+accumulating a hash value for the metadata entry.  Once the resource is
+fully received, we finalize the hash value and the metadata can be written.
+
+When a response is received with dcb or dcz compress (dictionaries), we use
+the cache entry for the dictionary that we sent in Available-Dictionary to
+decompress the resource.  This means reading it into memory and then
+allowing the decompression to occur.
+
+Several of these actions require a level of asynchronous action (waiting
+for a cache entry to be loaded for use as a dictionary, or waiting for a
+dict:<origin> entry to be loaded.  This is generally handled via lambdas.
+
+The metadata and in-memory entries are kept in sync with the cache by
+clearing entries out when cache entries are Doomed.  This also interacts
+with Clear Site Data and cookie clear headers (see IETF spec).
+
+Dictionary loading can also be triggered via <link rel="Compression
+Dictionary" ...> and link headers.  These will cause prefetches of the
+dictionaries.
+
+Things to watch on landing:
+- Cache hitrate
+- dictionary utilization
+-- Add probes
+- pageload metrics
+-- Would require OHTTP-based collection
+
+Future optimizations:
+- Compressing dictionaries with zstd in the cache
+--  Trades CPU use and some latency decoding dictionary-encoded files for hitrate
+-- Perhaps only above some size
+- Compressing dictionary-encoded files with zstd in the cache
+--  Trades CPU use for hitrate
+-- Perhaps only above some size
+- Preemptively reading dict:<origin> entries into memory in the background at startup
+-- Up to some limit
+- LRU-ing dict:<origin> entries and dropping old ones from memory

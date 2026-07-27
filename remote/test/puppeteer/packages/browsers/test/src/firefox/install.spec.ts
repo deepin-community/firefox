@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import {install, Browser, BrowserPlatform} from '../../../lib/cjs/main.js';
+import {install, Browser, BrowserPlatform} from '../../../lib/esm/main.js';
 import {setupTestServer, getServerUrl, clearCache} from '../utils.js';
 import {testFirefoxBuildId} from '../versions.js';
 
@@ -35,7 +35,7 @@ describe('Firefox install', () => {
     const expectedOutputPath = path.join(
       tmpDir,
       'firefox',
-      `${BrowserPlatform.LINUX}-${testFirefoxBuildId}`
+      `${BrowserPlatform.LINUX}-${testFirefoxBuildId}`,
     );
     assert.strictEqual(fs.existsSync(expectedOutputPath), false);
     const browser = await install({
@@ -53,7 +53,7 @@ describe('Firefox install', () => {
     const expectedOutputPath = path.join(
       tmpDir,
       'chrome',
-      `${BrowserPlatform.LINUX}-${testFirefoxBuildId}`
+      `${BrowserPlatform.LINUX}-${testFirefoxBuildId}`,
     );
     assert.strictEqual(fs.existsSync(expectedOutputPath), false);
 
@@ -84,7 +84,7 @@ describe('Firefox install', () => {
       const expectedOutputPath = path.join(
         tmpDir,
         'firefox',
-        `${BrowserPlatform.MAC}-${testFirefoxBuildId}`
+        `${BrowserPlatform.MAC}-${testFirefoxBuildId}`,
       );
       assert.strictEqual(fs.existsSync(expectedOutputPath), false);
       const browser = await install({
@@ -96,6 +96,6 @@ describe('Firefox install', () => {
       });
       assert.strictEqual(browser.path, expectedOutputPath);
       assert.ok(fs.existsSync(expectedOutputPath));
-    }
+    },
   );
 });

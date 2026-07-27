@@ -1,15 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/FontLoaderUtils.h"
 
+#include "gfxUserFontSet.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/ReferrerInfo.h"
 #include "mozilla/dom/WorkerPrivate.h"
-#include "gfxUserFontSet.h"
 #include "nsCOMPtr.h"
 #include "nsIChannel.h"
 #include "nsIClassOfService.h"
@@ -65,7 +63,7 @@ namespace mozilla {
       MOZ_ASSERT(aFontFaceSrc);
 
       rv = aHttpChannel->SetReferrerInfo(aFontFaceSrc->mReferrerInfo);
-      Unused << NS_WARN_IF(NS_FAILED(rv));
+      (void)NS_WARN_IF(NS_FAILED(rv));
 
       // For WOFF and WOFF2, we should tell servers/proxies/etc NOT to try
       // and apply additional compression at the content-encoding layer
@@ -128,8 +126,8 @@ nsresult FontLoaderUtils::BuildChannel(
   nsCOMPtr<nsIHttpChannel> httpChannel(do_QueryInterface(channel));
   nsCOMPtr<nsIReferrerInfo> referrerInfo;
   if (httpChannel && !aFontFaceSrc) {
-    referrerInfo = new dom::ReferrerInfo(aDocument->GetDocumentURIAsReferrer(),
-                                         aReferrerPolicy);
+    referrerInfo = MakeAndAddRef<dom::ReferrerInfo>(
+        aDocument->GetDocumentURIAsReferrer(), aReferrerPolicy);
     rv = httpChannel->SetReferrerInfoWithoutClone(referrerInfo);
     MOZ_ASSERT(NS_SUCCEEDED(rv));
   }

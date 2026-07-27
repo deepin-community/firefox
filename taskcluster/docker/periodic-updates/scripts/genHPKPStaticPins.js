@@ -19,6 +19,7 @@ if (arguments.length != 2) {
 }
 
 Services.prefs.setBoolPref("security.osclientcerts.autoload", false);
+Services.prefs.setBoolPref("network.xhr.block_sync_system_requests", false);
 
 var { NetUtil } = ChromeUtils.importESModule(
   "resource://gre/modules/NetUtil.sys.mjs"
@@ -120,15 +121,7 @@ function download(filename) {
     );
   }
 
-  let resultDecoded;
-  try {
-    resultDecoded = atob(req.responseText);
-  } catch (e) {
-    throw new Error(
-      "ERROR: could not decode data as base64 from '" + filename + "': " + e
-    );
-  }
-  return resultDecoded;
+  return req.responseText;
 }
 
 function downloadAsJson(filename) {

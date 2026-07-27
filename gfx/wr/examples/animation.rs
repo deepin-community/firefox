@@ -73,12 +73,10 @@ impl App {
         );
 
         builder.push_simple_stacking_context_with_filters(
-            LayoutPoint::zero(),
             spatial_id,
             PrimitiveFlags::IS_BACKFACE_VISIBLE,
             &filters,
             &[],
-            &[]
         );
 
         let space_and_clip = SpaceAndClipInfo {
@@ -178,19 +176,20 @@ impl Example for App {
 
         match win_event {
             winit::event::WindowEvent::KeyboardInput {
-                input: winit::event::KeyboardInput {
+                event: winit::event::KeyEvent {
                     state: winit::event::ElementState::Pressed,
-                    virtual_keycode: Some(key),
+                    ref logical_key,
                     ..
                 },
                 ..
             } => {
-                let (delta_angle, delta_opacity) = match key {
-                    winit::event::VirtualKeyCode::Down => (0.0, -0.1),
-                    winit::event::VirtualKeyCode::Up => (0.0, 0.1),
-                    winit::event::VirtualKeyCode::Right => (1.0, 0.0),
-                    winit::event::VirtualKeyCode::Left => (-1.0, 0.0),
-                    winit::event::VirtualKeyCode::R => {
+                use winit::keyboard::{Key, NamedKey};
+                let (delta_angle, delta_opacity) = match logical_key.as_ref() {
+                    Key::Named(NamedKey::ArrowDown) => (0.0, -0.1),
+                    Key::Named(NamedKey::ArrowUp) => (0.0, 0.1),
+                    Key::Named(NamedKey::ArrowRight) => (1.0, 0.0),
+                    Key::Named(NamedKey::ArrowLeft) => (-1.0, 0.0),
+                    Key::Character("r") | Key::Character("R") => {
                         rebuild_display_list = true;
                         (0.0, 0.0)
                     }
@@ -233,7 +232,7 @@ impl Example for App {
                         colors: vec![],
                     },
                 );
-                txn.generate_frame(0, RenderReasons::empty());
+                txn.generate_frame(0, true, false, RenderReasons::empty());
                 api.send_transaction(document_id, txn);
             }
             _ => (),

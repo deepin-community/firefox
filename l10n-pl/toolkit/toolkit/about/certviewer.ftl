@@ -36,10 +36,17 @@ certificate-viewer-key-size = Rozmiar klucza
 certificate-viewer-inc-locality = Region założenia
 certificate-viewer-locality = Region
 certificate-viewer-location = Położenie
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Nazwa dziennika
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Identyfikator dziennika
 certificate-viewer-method = Metoda
 certificate-viewer-modulus = Modulo
 certificate-viewer-name = Nazwa
+certificate-viewer-surname = Nazwisko
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Imię
 certificate-viewer-not-after = Nieważny po
 certificate-viewer-not-before = Nieważny przed
 certificate-viewer-organization = Organizacja
@@ -60,7 +67,7 @@ certificate-viewer-sha-256 = SHA-256
 certificate-viewer-serial-number = Numer seryjny
 certificate-viewer-signature-algorithm = Algorytm podpisu
 certificate-viewer-signature-scheme = Schemat podpisu
-certificate-viewer-timestamp = Czas
+certificate-viewer-timestamp = Data
 certificate-viewer-value = Wartość
 certificate-viewer-version = Wersja
 certificate-viewer-business-category = Rodzaj firmy
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Informacje o organie (AIA)
 certificate-viewer-certificate-policies = Zasady certyfikatu
 certificate-viewer-embedded-scts = Osadzone SCT
 certificate-viewer-crl-endpoints = Punkty końcowe CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Pobierz
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (certyfikat)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (łańcuch)
     .download = { $fileName }-łańcuch.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = To rozszerzenie zostało oznaczone jako krytyczne, co oznacza, że klienci muszą odrzucić certyfikat, jeśli go nie rozumieją.
@@ -112,6 +117,8 @@ certificate-viewer-export = Eksportuj
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (nieznane)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certyfikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

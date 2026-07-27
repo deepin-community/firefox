@@ -4,12 +4,17 @@
 "use strict";
 
 add_task(async function test_customize_sidebar_actions() {
+  SpecialPowers.pushPrefEnv({
+    set: [[VERTICAL_TABS_PREF, true]],
+  });
+  await SidebarTestUtils.waitForTabstripOrientation(window, "vertical");
   const win = await BrowserTestUtils.openNewBrowserWindow();
+  await SidebarTestUtils.waitForTabstripOrientation(win, "vertical");
+
   const { document } = win;
   const sidebar = document.querySelector("sidebar-main");
   ok(sidebar, "Sidebar is shown.");
-  await sidebar.updateComplete;
-  await toggleSidebarPanel(win, "viewCustomizeSidebar");
+  await SidebarTestUtils.showPanel(win, "viewCustomizeSidebar");
 
   const initialViewportOuterWidth = win.outerWidth;
   const initialViewportOuterHeight = win.outerHeight;
@@ -29,6 +34,7 @@ add_task(async function test_customize_sidebar_actions() {
   // Resize window with new width value
   const newWidth = 540;
   win.resizeTo(newWidth, initialViewportOuterHeight);
+  await waitForRepaint();
 
   await TestUtils.waitForCondition(
     async () =>
@@ -40,7 +46,7 @@ add_task(async function test_customize_sidebar_actions() {
       .getComputedStyle(sidebarBox)
       .getPropertyValue("max-width")}.`
   );
-  const newMaxWidth = parseInt(
+  let newMaxWidth = parseInt(
     window.getComputedStyle(sidebarBox).getPropertyValue("max-width")
   );
   Assert.less(
@@ -54,5 +60,6 @@ add_task(async function test_customize_sidebar_actions() {
     "The max-width of the sidebar is approximately 75% of the viewport width."
   );
 
+  SpecialPowers.popPrefEnv();
   await BrowserTestUtils.closeWindow(win);
 });

@@ -19,7 +19,7 @@ add_task(async function () {
   );
 
   const wait = waitForNetworkEvents(monitor, 1);
-  await reloadBrowser();
+  await reloadSelectedTab();
   await wait;
 
   EventUtils.sendMouseEvent(
@@ -42,8 +42,8 @@ add_task(async function () {
     `${method} ${SIMPLE_URL.split("example.com")[1]} ${httpVersion}`,
     "Host: example.com",
     "User-Agent: " + navigator.userAgent + "",
-    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8",
-    "Accept-Language: " + navigator.languages.join(",") + ";q=0.5",
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language: " + navigator.languages.join(",") + ";q=0.9",
     "Accept-Encoding: gzip, deflate",
     "Connection: keep-alive",
     "Upgrade-Insecure-Requests: 1",

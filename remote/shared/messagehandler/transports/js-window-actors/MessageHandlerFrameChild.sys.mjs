@@ -6,7 +6,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   isBrowsingContextCompatible:
-    "chrome://remote/content/shared/messagehandler/transports/BrowsingContextUtils.sys.mjs",
+    "chrome://remote/content/shared/BrowsingContextUtils.sys.mjs",
   MessageHandlerRegistry:
     "chrome://remote/content/shared/messagehandler/MessageHandlerRegistry.sys.mjs",
   WindowGlobalMessageHandler:
@@ -85,6 +85,8 @@ export class MessageHandlerFrameChild extends JSWindowActorChild {
         }
         throw e;
       }
+    } else if (message.name === "MessageHandlerFrameParent:sendPing") {
+      return true;
     }
 
     return null;

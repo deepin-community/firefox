@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,20 +7,14 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const { DefaultWeakMap, ExtensionError } = ExtensionUtils;
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   ExtensionCommon: "resource://gre/modules/ExtensionCommon.sys.mjs",
   JSONFile: "resource://gre/modules/JSONFile.sys.mjs",
+  enforceSessionQuota: {
+    pref: "webextensions.storage.session.enforceQuota",
+    default: false,
+  },
 });
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "enforceSessionQuota",
-  "webextensions.storage.session.enforceQuota",
-  false
-);
 
 function isStructuredCloneHolder(value) {
   return (
@@ -97,8 +89,10 @@ function serialize(name, anonymizedName, value) {
   return value;
 }
 
+/** @import {JSONFile} from "resource://gre/modules/JSONFile.sys.mjs" */
+
 export var ExtensionStorage = {
-  /** @type {Map<string, Promise<typeof lazy.JSONFile>>} */
+  /** @type {Map<string, Promise<JSONFile>>} */
   jsonFilePromises: new Map(),
 
   listeners: new Map(),
@@ -109,7 +103,7 @@ export var ExtensionStorage = {
    *
    * @param {string} extensionId
    *        The ID of the extension for which to return a file.
-   * @returns {Promise<InstanceType<Lazy['JSONFile']>>}
+   * @returns {Promise<JSONFile>}
    */
   async _readFile(extensionId) {
     await IOUtils.makeDirectory(this.getExtensionDir(extensionId));
@@ -133,7 +127,7 @@ export var ExtensionStorage = {
    *
    * @param {string} extensionId
    *        The ID of the extension for which to return a file.
-   * @returns {Promise<InstanceType<Lazy['JSONFile']>>}
+   * @returns {Promise<JSONFile>}
    */
   getFile(extensionId) {
     let promise = this.jsonFilePromises.get(extensionId);
@@ -348,6 +342,45 @@ export var ExtensionStorage = {
     return this._filterProperties(extensionId, jsonFile.data, keys);
   },
 
+  /**
+   * Asynchronously retrieves the bytes in use for the given storage items.
+   *
+   * @param {string} extensionId
+   * @param {Array<string>|string|null} [keys]
+   * @returns {Promise<number>}
+   */
+  async getBytesInUse(extensionId, keys) {
+    const jsonFile = await this.getFile(extensionId);
+    const dataObj = Object.assign({}, jsonFile.data.toJSON());
+    if (typeof keys === "string") {
+      keys = [keys];
+    }
+    let bytesInUse = 0;
+    const utf8Encoder = new TextEncoder();
+    for (let key in dataObj) {
+      if (keys === null || keys.includes(key)) {
+        bytesInUse += utf8Encoder.encode(
+          key + JSON.stringify(dataObj[key])
+        ).length;
+      }
+    }
+    return bytesInUse;
+  },
+
+  /**
+   * Asynchronously retrieves the keys for the given extension ID.
+   *
+   * @param {string} extensionId
+   *        The ID of the extension for which to get storage keys.
+   * @returns {Promise<Array<string>>}
+   *        An array of keys for the given extension ID.
+   */
+
+  async getKeys(extensionId) {
+    let jsonFile = await this.getFile(extensionId);
+    return jsonFile.data.keys().toArray();
+  },
+
   async _filterProperties(extensionId, data, keys) {
     let result = {};
     if (keys === null) {
@@ -522,7 +555,8 @@ class QuotaMap extends Map {
     for (let [key, holder] of Object.entries(items)) {
       after += this.getSizeDelta(key, holder);
     }
-    if (lazy.enforceSessionQuota && after > QuotaMap.QUOTA_BYTES) {
+
+    if (after > QuotaMap.QUOTA_BYTES && lazy.enforceSessionQuota) {
       throw new ExtensionError(
         "QuotaExceededError: storage.session API call exceeded its quota limitations."
       );
@@ -587,6 +621,17 @@ export var extensionStorageSession = {
       }
     }
     return result;
+  },
+
+  /**
+   * Returns an array of keys for the given extension.
+   *
+   * @param {Extension} extension
+   * @returns {Array<string>}
+   */
+  getKeys(extension) {
+    let bucket = this.buckets.get(extension);
+    return Array.from(bucket.keys().toArray());
   },
 
   set(extension, items) {

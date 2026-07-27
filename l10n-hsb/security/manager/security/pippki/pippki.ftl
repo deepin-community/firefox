@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Napohlad
 download-cert-view-text = Certifikat certifikatoweje awtority přepruwować
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Wudaty wot: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Składowany na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Tutón rozsud sej spomjatkować
+client-auth-cert-remember-label = Tutón rozsud sej spomjatkować:
+client-auth-cert-remember-never =
+    .label = Jónu
+client-auth-cert-remember-always =
+    .label = Stajnje
+client-auth-cert-remember-temporarily =
+    .label = Za tute posedźenje
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Hesło zawěsćenja certifikata (hišće raz):
 set-password-reminder = Wažny: Jeli swoje hesło za zawěsćenje certifikata zabudźeće, njemóžeće tute zawěsćenje pozdźišo wobnowić. Prošu wobchowajće jo na wěstym městnje.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Škitana awtentifikacija
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Prošu awtentifikujće so pola wěstotneho grata ({ $tokenName }). Kak dyrbiće to činić, wotwisuje wot grata (na přikład přez wužiwanje čitaka porstowych wotćišćow abo přez zapodawanje koda z tastaturu).
 
 ## Protected authentication alert
 

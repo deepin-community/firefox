@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,12 @@
 #ifndef LAYOUT_SVG_SVGPATTERNFRAME_H_
 #define LAYOUT_SVG_SVGPATTERNFRAME_H_
 
-#include "mozilla/Attributes.h"
+#include <memory>
+
 #include "gfxMatrix.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/RefPtr.h"
+#include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/SVGPaintServerFrame.h"
-#include "mozilla/UniquePtr.h"
+#include "mozilla/gfx/2D.h"
 
 class nsIFrame;
 
@@ -45,9 +43,9 @@ class SVGPatternFrame final : public SVGPaintServerFrame {
   // SVGPaintServerFrame methods:
   already_AddRefed<gfxPattern> GetPaintServerPattern(
       nsIFrame* aSource, const DrawTarget* aDrawTarget,
-      const gfxMatrix& aContextMatrix, StyleSVGPaint nsStyleSVG::*aFillOrStroke,
-      float aGraphicOpacity, imgDrawingParams& aImgParams,
-      const gfxRect* aOverrideBounds) override;
+      const gfxMatrix& aContextMatrix,
+      StyleSVGPaint nsStyleSVG::* aFillOrStroke, float aGraphicOpacity,
+      imgDrawingParams& aImgParams, const gfxRect* aOverrideBounds) override;
 
  public:
   // SVGContainerFrame methods:
@@ -55,7 +53,7 @@ class SVGPatternFrame final : public SVGPaintServerFrame {
 
   // nsIFrame interface:
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
 #ifdef DEBUG
   void Init(nsIContent* aContent, nsContainerFrame* aParent,
@@ -80,7 +78,7 @@ class SVGPatternFrame final : public SVGPaintServerFrame {
   uint16_t GetEnumValue(uint32_t aIndex) {
     return GetEnumValue(aIndex, mContent);
   }
-  SVGAnimatedTransformList* GetPatternTransformList(nsIContent* aDefault);
+  SVGPatternFrame* GetPatternTransformFrame(SVGPatternFrame* aDefault);
   gfxMatrix GetPatternTransform();
   const SVGAnimatedViewBox& GetViewBox(nsIContent* aDefault);
   const SVGAnimatedViewBox& GetViewBox() { return GetViewBox(mContent); }
@@ -102,7 +100,7 @@ class SVGPatternFrame final : public SVGPaintServerFrame {
   already_AddRefed<SourceSurface> PaintPattern(
       const DrawTarget* aDrawTarget, Matrix* patternMatrix,
       const Matrix& aContextMatrix, nsIFrame* aSource,
-      StyleSVGPaint nsStyleSVG::*aFillOrStroke, float aGraphicOpacity,
+      StyleSVGPaint nsStyleSVG::* aFillOrStroke, float aGraphicOpacity,
       const gfxRect* aOverrideBounds, imgDrawingParams& aImgParams);
 
   /**
@@ -127,7 +125,7 @@ class SVGPatternFrame final : public SVGPaintServerFrame {
   // referencing our pattern.  This must be temporary because different
   // referencing frames will all reference this one frame
   SVGGeometryFrame* mSource;
-  UniquePtr<gfxMatrix> mCTM;
+  std::unique_ptr<gfxMatrix> mCTM;
 
  protected:
   // This flag is used to detect loops in xlink:href processing

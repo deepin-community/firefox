@@ -15,7 +15,7 @@ default-browser-notification-button =
 default-browser-prompt-title-pin = { -brand-short-name }를 기본 브라우저로 설정하시겠습니까?
 default-browser-prompt-message-pin = { -brand-short-name }를 손쉽게 사용할 수 있습니다. 기본 브라우저로 만들고 작업 표시줄에 고정하세요.
 default-browser-prompt-message-pin-msix = { -brand-short-name }를 손쉽게 사용할 수 있습니다. 기본 브라우저로 설정하고 작업 표시줄과 시작 메뉴에 고정하세요.
-default-browser-prompt-message-pin-mac = { -brand-short-name }를 손쉽게 사용할 수 있습니다. 기본 브라우저로 만들고 Dock에 넣으세요.
+default-browser-prompt-message-pin-mac = { -brand-short-name }를 손쉽게 사용할 수 있습니다. 기본 브라우저로 만들고 독에 넣으세요.
 default-browser-prompt-button-primary-set = 기본 브라우저로 설정
 default-browser-prompt-button-primary-pin = 기본 브라우저로 설정
 default-browser-prompt-title-alt = { -brand-short-name }를 기본 브라우저로 설정하시겠습니까?
@@ -28,7 +28,7 @@ default-browser-prompt-button-secondary = 나중에
 ## use Windows Settings to set the default browser. Instructions differ for
 ## Windows 10 and 11.
 
-default-browser-guidance-notification-title = { -brand-short-name }를 기본 브라우저로 설정 완료
+default-browser-guidance-notification-title = { -brand-short-name }를 기본 브라우저로 설정 완료하기
 # Quoted text are keywords to look for in the Windows Settings app.
 default-browser-guidance-notification-body-instruction-win10 =
     1단계: 설정 > 기본 앱으로 이동
@@ -38,5 +38,8 @@ default-browser-guidance-notification-body-instruction-win10 =
 default-browser-guidance-notification-body-instruction-win11 =
     1단계: 설정 > 기본 앱으로 이동
     2단계: { -brand-short-name }에 대해 "기본값 설정"을 선택
-default-browser-guidance-notification-info-page = 더 보기
+default-browser-guidance-notification-info-page = 더보기
 default-browser-guidance-notification-dismiss = 완료
+default-browser-guidance-notification-v2-title = { -brand-short-name }를 기본 브라우저로 설정 완료하기
+default-browser-guidance-notification-v2-body = 설정에서 { -brand-short-name }에 대해 "기본 브라우저로 설정"을 선택하세요.
+default-browser-guidance-notification-v2-title-only = { -brand-short-name }를 설정에서 기본 브라우저로 설정 완료하세요

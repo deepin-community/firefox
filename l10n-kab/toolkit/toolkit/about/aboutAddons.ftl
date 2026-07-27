@@ -167,6 +167,7 @@ extensions-warning-update-security2 =
     .message = Asenqed n ileqman n tɣellist n izegrar ur yermid ara. Yezmer ad tesɛuḍ yir izegrar.
 extensions-warning-update-security-button = Rmed
     .title = Rmed asenqed n ileqman n tɣellist i yezgrar isemmadanen
+extensions-warning-imported-addons-button = Asbeddi n yisiɣzaf
 
 ## Strings connected to add-on updates
 
@@ -203,6 +204,10 @@ addon-updates-manual-updates-found = Sken ileqman yellan
 
 addon-install-from-file = Sebded azegrir seg ufaylu…
     .accesskey = S
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Sbedd neɣ leqqem azegrir seg ufaylu…
+    .accesskey = l
 addon-install-from-file-dialog-title = Fren azegrir ad tesbeddeḍ
 addon-install-from-file-filter-name = Izegrar
 addon-open-about-debugging = Izegrar n tseɣtit
@@ -217,6 +222,9 @@ shortcuts-no-addons = Ur ɣur-k ara ula d yiwen n usiɣzef iremden.
 shortcuts-no-commands = Isiɣzaf id-iteddun ur sɛin ara inegzumen:
 shortcuts-input =
     .placeholder = Sekcem anegzum
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = Kkes anegzum
 shortcuts-browserAction2 = Rmed taqeffalt n ufeggag n yifecka
 shortcuts-pageAction = Rmed tigawt n usebter
 shortcuts-sidebarAction = Sken/Fer agalis adisan
@@ -266,6 +274,7 @@ discopane-notice-recommendations2 =
         Kra seg yiwellihen-a d udmawanen. Tagrumma-a tebna ɣef yisiɣzaf-nniḍen
         i tesbeddeḍ, iɣewwaren n umaɣnu-ik akked tiddadanin n useqdec.
 discopane-notice-learn-more = Lmed ugar
+colorway-removal-notice-learn-more = Issin ugar
 privacy-policy = Tasertit n tbaḍnit
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -372,6 +381,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Yettusireg def usfaylu uslig kan
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Yettusireg def usfaylu uslig kan
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -386,6 +399,8 @@ addon-detail-group-label-private-browsing =
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Selkem ɣef yismal yesɛan tilas
 # Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
 addon-detail-quarantined-domains-allow = Sireg
 addon-detail-quarantined-domains-disallow = Ur ttaǧǧa ara
@@ -407,6 +422,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Asiɣzef-a yettusenqed i wakken ara yemṣada d yilugan-nneɣ icudden ɣer tɣellist akked timellit.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Asiɣzef unṣib tebna Mozila. Iteddu d yilugan n tɣellist d temlellit.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Asiɣzef-a yettusenqed i wakken ara yemṣada d yilugan icudden ɣer tɣellist akked timellit.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox ur ittwelleh ala isiɣzaf yemṣadan d yilugan icudden ɣer tɣellist akked timellit.
 
 ##
 
@@ -414,6 +447,10 @@ available-updates-heading = Ileqman yellan
 recent-updates-heading = Ileqman n melmi kan
 release-notes-loading = Asali…
 release-notes-error = Suref-aɣ, teḍṛa-d tuccḍa deg usali n iwenniten n lqem.
+addon-permissions-heading = Tisirag
+addon-permissions-empty2 = Asiɣzef ur yesri kra n tsiregt.
+addon-permissions-required-label = Yettawsra:
+addon-permissions-optional-label = D axetṛan:
 addon-permissions-empty = Asiɣzef-agi ur yesra ara tisirag
 addon-permissions-required = Tisirag yettwasran i tmahilin n uzadur:
 addon-permissions-optional = Tisirag tifrayanin i tmahilin yettwarnan:
@@ -441,6 +478,9 @@ shortcuts-heading = Sefrek inegzumen n isiɣzaf
 default-heading-search-label = Aff-d ugar n yizegrar
 addons-heading-search-input =
     .placeholder = Nadi addons.mozilla.org
+addons-heading-search-button =
+    .title = Nadi addons.mozilla.org
+    .aria-label = Nadi addons.mozilla.org
 addon-page-options-button =
     .title = Ifecka i yizegrar imaṛṛa
 
@@ -463,14 +503,24 @@ details-notification-unsigned-and-disabled-link = Ugar n telɣut
 details-notification-unsigned = { $name } ur iţusenqed ara i weseqdec-ines ɣef { -brand-short-name }. Ɣuṛ-k.
 details-notification-unsigned2 =
     .message = { $name } ur iţusenqed ara i weseqdec-ines ɣef { -brand-short-name }. Ɣuṛ-k.
+details-notification-hard-blocked-extension =
+    .message = Asiɣzef-a yettusewḥel acku yetεedda ɣef tsertit n Mozilla ɣef waya yensa.
+details-notification-hard-blocked-other =
+    .message = Azegrir-a yettusewḥel acku yetεedda ɣef tsertit n Mozilla ɣef waya yensa.
 details-notification-unsigned-link = Ugar n telɣut
 details-notification-blocked = { $name } yensa imi d-imuger uguren n tɣellist neɣ n urkad.
-details-notification-blocked2 =
-    .message = { $name } yensa imi d-imuger uguren n tɣellist neɣ n urkad.
+details-notification-blocked-link2 = Wali talqayt
+details-notification-soft-blocked-extension-disabled =
+    .message = Asiɣzef-a yesεa tilas, ur iquder ara tasertit n Mozilla, yettwakkes. Tzemreḍ ad t-tremdeḍ, d acu yezmer ad tesεḍ uguren.
+details-notification-soft-blocked-extension-enabled =
+    .message = Asiɣzef-a ur iquder ara tasertit n Mozilla. Aseqdec-is yezmer ad d-yeglu s wuguren.
+details-notification-soft-blocked-other-disabled =
+    .message = Azegrir-a yesεa tilas, ur iquder ara tasertit n Mozilla, yettwakkes. Tzemreḍ ad t-tremdeḍ, d acu yezmer ad tesεḍ uguren.
+details-notification-soft-blocked-other-enabled =
+    .message = Azegrir-a ur iquder ara tasertit n Mozilla. Aseqdec-is yezmer ad d-yeglu s wuguren.
+details-notification-softblocked-link2 = Wali talqayt
 details-notification-blocked-link = Ugar n telɣut
 details-notification-softblocked = { $name } iţwassen dakken iggar-d uguren n tɣellist neɣ n urkad.
-details-notification-softblocked2 =
-    .message = { $name } iţwassen dakken iggar-d uguren n tɣellist neɣ n urkad.
 details-notification-softblocked-link = Ugar n telɣut
 details-notification-gmp-pending = { $name } ad iţwasebded si sya ɣer da.
 details-notification-gmp-pending2 =
@@ -484,3 +534,35 @@ plugins-openh264-name = OpenH264 Video Codec imudd-it-id Cisco Systems, Inc
 plugins-openh264-description = Azegrir-agi isbedd-it Mozilla s wudem awurman s uqadaṛ n ilugan WebRTC akken daɣen ad isireg isawalen WebRTC akked ibenkan isran akudic tamwalit H.264. Ddu ɣer  http://www.openh264.org/ iwakken ad twaliḍ tangalt aɣbalu n ukudik udiɣ ad tissineḍ ugar ɣef usebded ines.
 plugins-widevine-name = Azgrir n uzmek n ugbur Widevine imudd-it-id Google Inc.
 plugins-widevine-description = Azegrir-agi ad irmed taɣuri n wallalen n teywalt iwgelhanen s uqadaṛ n ilugan n wallalen n teywalt iwgelhanen. Allalen n teywalt iwgelhanen seqdacenten ismal akken ad i weḥraz mgal anɣal n ugbur premium. Rzu ɣer https://www.w3.org/TR/encrypted-media/ i ugar n talɣut ɣef isiɣzaf n wallalen n teywalt iwgelhanen.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Yesra alqaḍ n yisefka:
+addon-permissions-optional-data-collection = Alqaḍ n yisefka axetṛan:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Tisirag akked yisefka
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Yesseqdac-it usiɣzaf { $extensionName }
+addon-permissions-data-collection-heading = Alqaḍ n yisefka
+addon-data-collection-learnmore = Issin ugar ɣef ulqaḍ n yifeska
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI ɣef yibenk
+addon-category-mlmodel-title =
+    .title = AI ɣef yibenk
+mlmodel-heading = Sefrek tumudmiwin AI ɣef yibenk
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Kkes
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Tiddi n ufaylu
+mlmodel-addon-detail-last-used-label = Aseqdec aneggaru
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Isqed-it
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Wali-t deg Huggin Face

@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Захоплені файли �
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Автооновлення
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Типове автооновлення
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Оновити
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Зберегти сторінку
 about-webrtc-debug-mode-msg-label = Режим налагодження
 about-webrtc-debug-mode-off-state-label = Запустити режим налагодження
 about-webrtc-debug-mode-on-state-label = Зупинити режим налагодження
-about-webrtc-enable-logging-label = Увімкнути попередні налаштування журналу WebRTC
 about-webrtc-stats-heading = Статистика сеансу
+about-webrtc-enable-logging-label = Увімкнути заданий параметр журналу WebRTC
 about-webrtc-peerconnections-section-heading = Статистика RTCPeerConnection
 about-webrtc-peerconnections-section-show-msg = Показати статистику RTCPeerConnection
 about-webrtc-peerconnections-section-hide-msg = Приховати статистику RTCPeerConnection
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT мс
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Статистика відеокадру - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = сторінку збережено до: { $path }
 about-webrtc-debug-mode-off-state-msg = журнал відстеження можна знайти в: { $path }
@@ -327,6 +322,3 @@ about-webrtc-hide-msg-sdp = Приховати SDP
 about-webrtc-media-context-show-msg = Показати медіаконтекст
 about-webrtc-media-context-hide-msg = Приховати медіаконтекст
 about-webrtc-media-context-heading = Медіаконтекст
-
-##
-

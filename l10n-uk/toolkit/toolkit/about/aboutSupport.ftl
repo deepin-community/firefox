@@ -18,6 +18,10 @@ support-addons-type = Тип
 support-addons-enabled = Увімкнено
 support-addons-version = Версія
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Розташування
 legacy-user-stylesheets-title = Застарілі користувацькі таблиці стилів
 legacy-user-stylesheets-enabled = Активні
 legacy-user-stylesheets-stylesheet-types = Таблиці стилів
@@ -66,7 +70,7 @@ app-basics-os-theme = Тема ОС
 # instructions on Apple Silicon. This should remain in English.
 app-basics-rosetta = Перекладено Rosetta
 app-basics-memory-use = Використання пам'яті
-app-basics-performance = Швидкодія
+app-basics-performance = Продуктивність
 app-basics-service-workers = Зареєстровані Service Workers
 app-basics-third-party = Сторонні модулі
 app-basics-profiles = Профілі
@@ -132,13 +136,17 @@ place-database-stats-efficiency-perc = Ефективність (%)
 place-database-stats-sequentiality-perc = Послідовність (%)
 place-database-integrity = Цілісність
 place-database-verify-integrity = Перевірити цілісність
+place-database-last-idle-maintenance-data = Дата останнього обслуговування під час неактивності
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Дата останнього очищення
+place-database-last-integrity-corruption-date = Дата останнього порушення цілісності
 a11y-title = Доступність
 a11y-activated = Активовано
 a11y-force-disabled = Блокувати можливості доступності
 a11y-handler-used = Використовується обробник доступності
 a11y-instantiator = Виконуваний файл доступності
 library-version-title = Версії бібліотек
-copy-text-to-clipboard-label = Копіювати текст у буфер
+copy-text-to-clipboard-label = Копіювати текст у буфер обміну
 copy-raw-data-to-clipboard-label = Копіювати необроблені дані в буфер
 sandbox-title = Пісочниця
 sandbox-sys-call-log-title = Відхилені системні виклики
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Перерахувати базу даних
 
 media-codec-support-sw-decoding = Програмне декодування
 media-codec-support-hw-decoding = Апаратне декодування
+media-codec-support-sw-encoding = Програмне кодування
+media-codec-support-hw-encoding = Апаратне кодування
 media-codec-support-codec-name = Назва кодека
 media-codec-support-supported = Підтримується
 media-codec-support-unsupported = Не підтримується

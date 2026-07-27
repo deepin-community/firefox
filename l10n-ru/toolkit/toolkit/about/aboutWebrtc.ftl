@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Файлы журнала за�
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Автообновление
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Автообновление по умолчанию
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Обновить
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Сохранить страницу
 about-webrtc-debug-mode-msg-label = Режим отладки
 about-webrtc-debug-mode-off-state-label = Войти в режим отладки
 about-webrtc-debug-mode-on-state-label = Выйти из режима отладки
-about-webrtc-enable-logging-label = Включить предварительную настройку журнала WebRTC
 about-webrtc-stats-heading = Статистика сессии
+about-webrtc-enable-logging-label = Включить предварительную настройку журнала WebRTC
 about-webrtc-peerconnections-section-heading = Статистика RTCPeerConnection
 about-webrtc-peerconnections-section-show-msg = Показать статистику RTCPeerConnection
 about-webrtc-peerconnections-section-hide-msg = Скрыть статистику RTCPeerConnection
@@ -203,8 +201,8 @@ about-webrtc-user-modified-configuration-heading = Пользователь из
 ## These are displayed on the button that shows or hides the
 ## user modified configuration disclosure
 
-about-webrtc-user-modified-configuration-show-msg = Показать измененную пользователем конфигурацию
-about-webrtc-user-modified-configuration-hide-msg = Скрыть измененную пользователем конфигурацию
+about-webrtc-user-modified-configuration-show-msg = Показать изменённую пользователем конфигурацию
+about-webrtc-user-modified-configuration-hide-msg = Скрыть изменённую пользователем конфигурацию
 
 ##
 
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT (мс)
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Статистика видеокадров - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = страница сохранена в: { $path }
 about-webrtc-debug-mode-off-state-msg = журнал отслеживания можно найти в: { $path }
@@ -327,6 +322,3 @@ about-webrtc-hide-msg-sdp = Скрыть SDP
 about-webrtc-media-context-show-msg = Показать контекст медиа
 about-webrtc-media-context-hide-msg = Скрыть контекст медиа
 about-webrtc-media-context-heading = Контекст медиа
-
-##
-

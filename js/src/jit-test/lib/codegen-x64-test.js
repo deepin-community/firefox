@@ -22,6 +22,9 @@
 //  no_suffix: by default, the required pattern must be immediately followed
 //             by `x64_suffix`, and this is checked.  Setting this to true skips
 //             the check.
+//  baseline: by default, the output to be tested is expected to be produced
+//            at the tier "ion".  Setting this to true changes the expected
+//            tier to "baseline".
 //  memory: if present, add a memory of length given by this property
 //  log: for debugging -- print the disassembly, then the preprocessed pattern
 
@@ -30,14 +33,15 @@ load(libdir + "codegen-test-common.js");
 // RIP-relative address following the instruction mnemonic
 var RIPR = `0x${HEXES}`;
 
-// RIP-relative address in the binary encoding
-var RIPRADDR = `${HEX}{2} ${HEX}{2} ${HEX}{2} ${HEX}{2}`;
-
-// End of prologue
-var x64_prefix = `48 89 e5                  mov %rsp, %rbp`
+// End of prologue. The move from r14 to rbp is writing the callee's wasm
+// instance into the frame for debug checks -- see WasmFrame.h.
+var x64_prefix = `
+mov %rsp, %rbp(
+movq %r14, (0x10|0x30)\\(%rbp\\))?
+`
 
 // Start of epilogue
-var x64_suffix = `5d                        pop %rbp`;
+var x64_suffix = `pop %rbp`;
 
 // v128 OP v128 -> v128
 // inputs: [[complete-opname, expected-pattern], ...]
@@ -151,7 +155,9 @@ function codegenTestX64_adhoc(module_text, export_name, expected, options = {}) 
     let ins = wasmEvalText(module_text, {}, options.features);
     if (options.instanceBox)
         options.instanceBox.value = ins;
-    let output = wasmDis(ins.exports[export_name], {tier:"ion", asString:true});
+    let tierTxt = options.baseline ? "baseline" : "ion";
+    let output = wasmDis(ins.exports[export_name],
+                         {tier:tierTxt, asString:true});
     if (!options.no_prefix)
         expected = x64_prefix + '\n' + expected;
     if (!options.no_suffix)
@@ -159,15 +165,19 @@ function codegenTestX64_adhoc(module_text, export_name, expected, options = {}) 
     const expected_pretty = striplines(expected);
     expected = fixlines(expected);
 
-    const success = output.match(new RegExp(expected)) != null;
+    const output_simple = stripencoding(output, `(?:${HEX}{2} )*`);
+    const success = output_simple.match(new RegExp(expected)) != null;
     if (options.log || !success) {
         print("Module text:")
         print(module_text);
         print("Actual output:")
         print(output);
-        print("Expected output (easy-to-read and fully-regex'd):")
+        print("Expected output (as text):")
         print(expected_pretty);
+        print("");
+        print("Expected output (as regex):")
         print(expected);
+        print("");
     }
     assertEq(success, true);
 }

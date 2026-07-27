@@ -1,11 +1,14 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 with Files("**"):
     BUG_COMPONENT = ("Core", "Security: PSM")
+
+DIRS += [
+    "/security/lockstore",
+    "/security/mls",
+]
 
 with Files("generate*.py"):
     BUG_COMPONENT = ("Firefox Build System", "General")
@@ -22,7 +25,7 @@ if CONFIG["MOZ_SYSTEM_NSS"]:
 
 include("/build/gyp_base.mozbuild")
 if CONFIG["MOZ_FOLD_LIBS"]:
-    GeckoSharedLibrary("nss", linkage=None)
+    GeckoSharedLibrary("nss")
     # TODO: The library name can be changed when bug 845217 is fixed.
     SHARED_LIBRARY_NAME = "nss3"
 
@@ -106,6 +109,13 @@ gyp_vars["enable_draft_hpke"] = 1
 # doesn't actually matter because it's for xcode settings, which the
 # build system ignores.
 gyp_vars["iphone_deployment_target"] = "doesntmatter"
+# The definition of CK_PKCS5_PBKD2_PARAMS in PKCS#11 v2.4 has a bug which was
+# fixed, by the introduction of CK_PKCS5_PBKD2_PARAMS2, in v3.0. Starting in
+# NSS 3.114 (Bug 1836559), softoken uses an unsafe heuristic to choose which of
+# the two structs is intended. We don't need our copy of softoken to support
+# CK_PKCS5_PBKD2_PARAMS at all, so we avoid the unsafe heuristic by disabling
+# it.
+gyp_vars["use_pkcs5_pbkd2_params2_only"] = 1
 
 # Clang can build NSS with its integrated assembler since version 9.
 if (
@@ -158,20 +168,15 @@ if CONFIG["OS_TARGET"] == "WINNT":
         "-Wno-error=unused-function",  # bug 1856445
     ]
     if CONFIG["TARGET_CPU"] == "x86":
-        # This should really be the default.
-        sandbox_vars["ASFLAGS"] = ["-safeseh"]
+        # Only add -safeseh for MSVC builds (clang-cl), not MinGW builds.
+        # MinGW uses GNU as which doesn't recognize the -safeseh flag.
+        if CONFIG["CC_TYPE"] == "clang-cl":
+            sandbox_vars["ASFLAGS"] = ["-safeseh"]
 
     DELAYLOAD_DLLS += [
         "winmm.dll",
     ]
 
-if CONFIG["OS_TARGET"] == "Android":
-    sandbox_vars["CFLAGS"] = [
-        "-include",
-        TOPSRCDIR + "/security/manager/android_stub.h",
-    ]
-    if CONFIG["ANDROID_VERSION"]:
-        sandbox_vars["CFLAGS"] += ["-DANDROID_VERSION=" + CONFIG["ANDROID_VERSION"]]
 if CONFIG["MOZ_SYSTEM_NSS"]:
     sandbox_vars["CXXFLAGS"] = CONFIG["NSS_CFLAGS"]
 GYP_DIRS["nss"].sandbox_vars = sandbox_vars

@@ -1,37 +1,33 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* the features that media queries can test */
 
-#include "nsGkAtoms.h"
-#include "nsStyleConsts.h"
-#include "nsPresContext.h"
+#include "PreferenceSheet.h"
+#include "mozilla/GeckoBindings.h"
+#include "mozilla/LookAndFeel.h"
+#include "mozilla/RelativeLuminanceUtils.h"
+#include "mozilla/StaticPrefs_browser.h"
+#include "mozilla/StaticPrefs_gfx.h"
+#include "mozilla/StyleSheet.h"
+#include "mozilla/StyleSheetInlines.h"
+#include "mozilla/dom/BrowsingContextBinding.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/DocumentInlines.h"
+#include "mozilla/dom/ScreenBinding.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "nsCSSProps.h"
 #include "nsCSSValue.h"
-#include "mozilla/LookAndFeel.h"
+#include "nsContentUtils.h"
 #include "nsDeviceContext.h"
+#include "nsGlobalWindowOuter.h"
 #include "nsIBaseWindow.h"
 #include "nsIDocShell.h"
 #include "nsIPrintSettings.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/DocumentInlines.h"
-#include "mozilla/dom/BrowsingContextBinding.h"
-#include "mozilla/dom/ScreenBinding.h"
 #include "nsIWidget.h"
-#include "nsContentUtils.h"
-#include "mozilla/RelativeLuminanceUtils.h"
-#include "mozilla/StaticPrefs_browser.h"
-#include "mozilla/StyleSheet.h"
-#include "mozilla/StyleSheetInlines.h"
-#include "mozilla/GeckoBindings.h"
-#include "PreferenceSheet.h"
-#include "nsGlobalWindowOuter.h"
-#ifdef XP_WIN
-#  include "mozilla/WindowsVersion.h"
-#endif
+#include "nsPresContext.h"
+#include "nsStyleConsts.h"
 
 using namespace mozilla;
 using mozilla::dom::DisplayMode;
@@ -74,6 +70,15 @@ static nsSize GetDeviceSize(const Document& aDocument) {
     return CSSPixel::ToAppUnits(deviceSize.value());
   }
 
+  // Media queries in documents should use an override set with WebDriver BiDi
+  // if it exists.
+  if (dom::BrowsingContext* bc = aDocument.GetBrowsingContext()) {
+    Maybe<CSSIntSize> screenSize = bc->GetScreenAreaOverride();
+    if (screenSize.isSome()) {
+      return CSSPixel::ToAppUnits(screenSize.value());
+    }
+  }
+
   nsPresContext* pc = aDocument.GetPresContext();
   // NOTE(emilio): We should probably figure out how to return an appropriate
   // device size here, though in a multi-screen world that makes no sense
@@ -89,13 +94,15 @@ static nsSize GetDeviceSize(const Document& aDocument) {
     return pc->GetPageSize();
   }
 
-  nsSize size;
-  pc->DeviceContext()->GetDeviceSurfaceDimensions(size.width, size.height);
-  return size;
+  return pc->DeviceContext()->GetDeviceSurfaceDimensions();
 }
 
 bool Gecko_MediaFeatures_IsResourceDocument(const Document* aDocument) {
   return aDocument->IsResourceDoc();
+}
+
+bool Gecko_MediaFeatures_InAndroidPipMode(const Document* aDocument) {
+  return aDocument->InAndroidPipMode();
 }
 
 bool Gecko_MediaFeatures_UseOverlayScrollbars(const Document* aDocument) {
@@ -142,15 +149,20 @@ int32_t Gecko_MediaFeatures_GetMonochromeBitsPerPixel(
   return color ? 0 : kDefaultMonochromeBpp;
 }
 
-dom::ScreenColorGamut Gecko_MediaFeatures_ColorGamut(
-    const Document* aDocument) {
-  auto colorGamut = dom::ScreenColorGamut::Srgb;
-  if (!aDocument->ShouldResistFingerprinting(RFPTarget::CSSColorInfo)) {
-    if (auto* dx = GetDeviceContextFor(aDocument)) {
-      colorGamut = dx->GetColorGamut();
-    }
+StyleColorGamut Gecko_MediaFeatures_ColorGamut(const Document* aDocument) {
+  auto* dx = GetDeviceContextFor(aDocument);
+  if (!dx || aDocument->ShouldResistFingerprinting(RFPTarget::CSSColorInfo)) {
+    return StyleColorGamut::Srgb;
   }
-  return colorGamut;
+  switch (dx->GetColorGamut()) {
+    case dom::ScreenColorGamut::Srgb:
+      return StyleColorGamut::Srgb;
+    case dom::ScreenColorGamut::Rec2020:
+      return StyleColorGamut::Rec2020;
+    case dom::ScreenColorGamut::P3:
+      return StyleColorGamut::P3;
+  }
+  return StyleColorGamut::Srgb;
 }
 
 int32_t Gecko_MediaFeatures_GetColorDepth(const Document* aDocument) {
@@ -190,7 +202,7 @@ float Gecko_MediaFeatures_GetResolution(const Document* aDocument) {
   }
 
   if (aDocument->ShouldResistFingerprinting(RFPTarget::CSSResolution)) {
-    return pc->DeviceContext()->GetFullZoom();
+    return float(nsRFPService::GetDevicePixelRatioAtZoom(pc->GetFullZoom()));
   }
   // Get the actual device pixel ratio, which also takes zoom into account.
   return float(AppUnitsPerCSSPixel()) /
@@ -210,22 +222,24 @@ StyleDisplayMode Gecko_MediaFeatures_GetDisplayMode(const Document* aDocument) {
 
   nsCOMPtr<nsISupports> container = rootDocument->GetContainer();
   if (nsCOMPtr<nsIBaseWindow> baseWindow = do_QueryInterface(container)) {
-    nsCOMPtr<nsIWidget> mainWidget;
-    baseWindow->GetMainWidget(getter_AddRefs(mainWidget));
+    nsCOMPtr<nsIWidget> mainWidget = baseWindow->GetMainWidget();
     if (mainWidget && mainWidget->SizeMode() == nsSizeMode_Fullscreen) {
       return StyleDisplayMode::Fullscreen;
     }
   }
 
-  static_assert(static_cast<int32_t>(DisplayMode::Browser) ==
-                        static_cast<int32_t>(StyleDisplayMode::Browser) &&
-                    static_cast<int32_t>(DisplayMode::Minimal_ui) ==
-                        static_cast<int32_t>(StyleDisplayMode::MinimalUi) &&
-                    static_cast<int32_t>(DisplayMode::Standalone) ==
-                        static_cast<int32_t>(StyleDisplayMode::Standalone) &&
-                    static_cast<int32_t>(DisplayMode::Fullscreen) ==
-                        static_cast<int32_t>(StyleDisplayMode::Fullscreen),
-                "DisplayMode must mach nsStyleConsts.h");
+  static_assert(
+      static_cast<int32_t>(DisplayMode::Browser) ==
+              static_cast<int32_t>(StyleDisplayMode::Browser) &&
+          static_cast<int32_t>(DisplayMode::Minimal_ui) ==
+              static_cast<int32_t>(StyleDisplayMode::MinimalUi) &&
+          static_cast<int32_t>(DisplayMode::Standalone) ==
+              static_cast<int32_t>(StyleDisplayMode::Standalone) &&
+          static_cast<int32_t>(DisplayMode::Fullscreen) ==
+              static_cast<int32_t>(StyleDisplayMode::Fullscreen) &&
+          static_cast<int32_t>(DisplayMode::Picture_in_picture) ==
+              static_cast<int32_t>(StyleDisplayMode::PictureInPicture),
+      "DisplayMode must mach nsStyleConsts.h");
 
   dom::BrowsingContext* browsingContext = aDocument->GetBrowsingContext();
   if (!browsingContext) {
@@ -264,6 +278,20 @@ bool Gecko_MediaFeatures_PrefersReducedMotion(const Document* aDocument) {
           RFPTarget::CSSPrefersReducedMotion)) {
     return false;
   }
+
+  // Check for DevTools override first
+  if (dom::BrowsingContext* bc = aDocument->GetBrowsingContext()) {
+    auto* top = bc->Top();
+    switch (top->GetPrefersReducedMotionOverride()) {
+      case dom::PrefersReducedMotionOverride::Reduce:
+        return true;
+      case dom::PrefersReducedMotionOverride::No_preference:
+        return false;
+      case dom::PrefersReducedMotionOverride::None:
+        break;
+    }
+  }
+
   return LookAndFeel::GetInt(LookAndFeel::IntID::PrefersReducedMotion, 0) == 1;
 }
 
@@ -282,6 +310,11 @@ StylePrefersColorScheme Gecko_MediaFeatures_PrefersColorScheme(
                             : aDocument->PreferredColorScheme();
   return scheme == ColorScheme::Dark ? StylePrefersColorScheme::Dark
                                      : StylePrefersColorScheme::Light;
+}
+
+bool Gecko_MediaFeatures_MacRTL(const Document* aDocument) {
+  auto* widget = nsContentUtils::WidgetForDocument(aDocument);
+  return widget && widget->IsMacTitlebarDirectionRTL();
 }
 
 // Neither Linux, Windows, nor Mac have a way to indicate that low contrast is
@@ -336,8 +369,16 @@ StyleDynamicRange Gecko_MediaFeatures_DynamicRange(const Document* aDocument) {
 
 StyleDynamicRange Gecko_MediaFeatures_VideoDynamicRange(
     const Document* aDocument) {
-  if (aDocument->ShouldResistFingerprinting(RFPTarget::CSSVideoDynamicRange) ||
-      !StaticPrefs::layout_css_video_dynamic_range_allows_high()) {
+  if (aDocument->ShouldResistFingerprinting(RFPTarget::CSSVideoDynamicRange)) {
+    return StyleDynamicRange::Standard;
+  }
+  // Usually compositors can process HDR content even without HDR displays.
+  //
+  // This parallels logic in gfxPlatform::UseHDR().
+  if (StaticPrefs::gfx_color_management_hdr_force_enabled()) {
+    return StyleDynamicRange::High;
+  }
+  if (!StaticPrefs::gfx_color_management_hdr() || !gfx::gfxVars::VideoHDR()) {
     return StyleDynamicRange::Standard;
   }
   // video-dynamic-range: high has 3 requirements:

@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Njeaktualizować
     .accesskey = N
+primary-password-prompt-message = Prošu zapodajće swoje hłowne hesło.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Žane wužiwarske mjeno
-password-manager-toggle-password =
-    .label = Hesło pokazać
-    .accesskey = h
 password-manager-confirm-password-change = Změnjenje hesła wobkrućic
 password-manager-select-username = Wubjerće přizjewjenje, kotrež ma so aktualizować:

@@ -7,8 +7,9 @@
 package org.mozilla.fenix.ui.robots
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
@@ -116,10 +117,10 @@ class SettingsRobot {
         onView(withText(R.string.preferences_autofill)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         Log.i(TAG, "verifyAutofillButton: Verified that the \"Autofill\" button is visible")
     }
-    fun verifyLanguageButton() {
-        scrollToElementByText(getStringResource(R.string.preferences_language))
+    fun verifyLanguageButton(localizedText: String = getStringResource(R.string.preferences_language)) {
+        scrollToElementByText(localizedText)
         Log.i(TAG, "verifyLanguageButton: Trying to verify that the \"Language\" button is visible")
-        onView(withText(R.string.preferences_language)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+        onView(withText(localizedText)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         Log.i(TAG, "verifyLanguageButton: Verified that the \"Language\" button is visible")
     }
     fun verifyDefaultBrowserToggle(isEnabled: Boolean) {
@@ -217,12 +218,12 @@ class SettingsRobot {
             .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         Log.i(TAG, "verifyPrivateBrowsingButton: Verified that the \"Private browsing\" button is visible")
     }
-    fun verifySitePermissionsButton() {
-        scrollToElementByText("Site permissions")
-        Log.i(TAG, "verifySitePermissionsButton: Trying to verify that the \"Site permissions\" button is visible")
-        onView(withText("Site permissions"))
+    fun verifySiteSettingsButton() {
+        scrollToElementByText("Site settings")
+        Log.i(TAG, "verifySiteSettingsButton: Trying to verify that the \"Site permissions\" button is visible")
+        onView(withText("Site settings"))
             .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
-        Log.i(TAG, "verifySitePermissionsButton: Verified that the \"Site permissions\" button is visible")
+        Log.i(TAG, "verifySiteSettingsButton: Verified that the \"Site permissions\" button is visible")
     }
     fun verifyDeleteBrowsingDataButton() {
         scrollToElementByText("Delete browsing data")
@@ -253,7 +254,13 @@ class SettingsRobot {
         Log.i(TAG, "verifyDataCollectionButton: Verified that the \"Data collection\" button is visible")
     }
     fun verifyOpenLinksInAppsButton() {
-        scrollToElementByText("Open links in apps")
+        Log.i(TAG, "verifyOpenLinksInAppsButton: Trying to perform scroll to the \"Open links in apps\" button")
+        onView(withId(R.id.recycler_view)).perform(
+            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
+                hasDescendant(withText(R.string.preferences_open_links_in_apps)),
+            ),
+        )
+        Log.i(TAG, "verifyOpenLinksInAppsButton: Performed scroll to the \"Open links in apps\" button")
         Log.i(TAG, "verifyOpenLinksInAppsButton: Trying to verify that the \"Open links in apps\" button is visible")
         openLinksInAppsButton()
             .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
@@ -341,42 +348,12 @@ class SettingsRobot {
         Log.i(TAG, "verifyAddons: Verified that the \"$extensions\" button is completely displayed")
     }
 
-    fun verifyExternalDownloadManagerButton() {
-        Log.i(TAG, "verifyExternalDownloadManagerButton: Trying to verify that the \"External download manager\" button is visible")
-        onView(withId(R.id.recycler_view)).perform(
-            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
-                hasDescendant(withText(R.string.preferences_external_download_manager)),
-            ),
-        )
-        onView(
-            withText(R.string.preferences_external_download_manager),
-        ).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
-        Log.i(TAG, "verifyExternalDownloadManagerButton: Verified that the \"External download manager\" button is visible")
-    }
-
-    fun verifyExternalDownloadManagerToggle(enabled: Boolean) {
-        onView(withId(R.id.recycler_view)).perform(
-            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
-                hasDescendant(withText(R.string.preferences_external_download_manager)),
-            ),
-        )
-        Log.i(TAG, "verifyExternalDownloadManagerToggle: Trying to verify that the \"External download manager\" toggle is enabled: $enabled")
-        onView(withText(R.string.preferences_external_download_manager))
-            .check(
-                matches(
-                    hasCousin(
-                        allOf(
-                            withClassName(endsWith("Switch")),
-                            if (enabled) {
-                                isChecked()
-                            } else {
-                                isNotChecked()
-                            },
-                        ),
-                    ),
-                ),
-            )
-        Log.i(TAG, "verifyExternalDownloadManagerToggle: Verified that the \"External download manager\" toggle is enabled: $enabled")
+    fun verifyDownloadsButton() {
+        scrollToElementByText(getStringResource(R.string.preferences_downloads_2))
+        Log.i(TAG, "verifyExternalDownloadsButton: Trying to verify that the \"Downloads\" button is visible")
+        onView(withText(getStringResource(R.string.preferences_downloads_2)))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+        Log.i(TAG, "verifyExternalDownloadsButton: Verified that the \"Downloads\" button is visible")
     }
 
     fun verifyLeakCanaryToggle(enabled: Boolean) {
@@ -466,7 +443,7 @@ class SettingsRobot {
         assertUIObjectExists(aboutFirefoxHeading())
     }
 
-    fun verifyGooglePlayRedirect() {
+    fun verifyGooglePlayRedirect(composeTestRule: ComposeTestRule) {
         if (isPackageInstalled(GOOGLE_PLAY_SERVICES)) {
             Log.i(TAG, "verifyGooglePlayRedirect: $GOOGLE_PLAY_SERVICES is installed")
             try {
@@ -474,18 +451,18 @@ class SettingsRobot {
                 intended(
                     allOf(
                         hasAction(Intent.ACTION_VIEW),
-                        hasData(Uri.parse(SupportUtils.RATE_APP_URL)),
+                        hasData(SupportUtils.RATE_APP_URL.toUri()),
                     ),
                 )
                 Log.i(TAG, "verifyGooglePlayRedirect: Verified intent to: $GOOGLE_PLAY_SERVICES")
             } catch (e: AssertionFailedError) {
                 Log.i(TAG, "verifyGooglePlayRedirect: AssertionFailedError caught, executing fallback methods")
-                BrowserRobot().verifyRateOnGooglePlayURL()
+                BrowserRobot(composeTestRule).verifyRateOnGooglePlayURL()
             } finally {
                 forceCloseApp(GOOGLE_PLAY_SERVICES)
             }
         } else {
-            BrowserRobot().verifyRateOnGooglePlayURL()
+            BrowserRobot(composeTestRule).verifyRateOnGooglePlayURL()
         }
     }
 
@@ -502,16 +479,18 @@ class SettingsRobot {
     }
 
     class Transition {
-        fun goBack(interact: HomeScreenRobot.() -> Unit): HomeScreenRobot.Transition {
+        fun goBack(composeTestRule: ComposeTestRule, interact: HomeScreenRobot.() -> Unit): HomeScreenRobot.Transition {
             Log.i(TAG, "goBack: Trying to click the navigate up button")
             goBackButton().click()
             Log.i(TAG, "goBack: Clicked the navigate up button")
+            composeTestRule.waitForIdle()
+            mDevice.waitForIdle()
 
-            HomeScreenRobot().interact()
-            return HomeScreenRobot.Transition()
+            HomeScreenRobot(composeTestRule).interact()
+            return HomeScreenRobot.Transition(composeTestRule)
         }
 
-        fun goBackToOnboardingScreen(interact: HomeScreenRobot.() -> Unit): HomeScreenRobot.Transition {
+        fun goBackToOnboardingScreen(composeTestRule: ComposeTestRule, interact: HomeScreenRobot.() -> Unit): HomeScreenRobot.Transition {
             Log.i(TAG, "goBackToOnboardingScreen: Trying to click device back button")
             mDevice.pressBack()
             Log.i(TAG, "goBackToOnboardingScreen: Clicked device back button")
@@ -519,17 +498,17 @@ class SettingsRobot {
             mDevice.waitForIdle(waitingTimeShort)
             Log.i(TAG, "goBackToOnboardingScreen: Device was idle for $waitingTimeShort ms")
 
-            HomeScreenRobot().interact()
-            return HomeScreenRobot.Transition()
+            HomeScreenRobot(composeTestRule).interact()
+            return HomeScreenRobot.Transition(composeTestRule)
         }
 
-        fun goBackToBrowser(interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+        fun goBackToBrowser(composeTestRule: ComposeTestRule, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
             Log.i(TAG, "goBackToBrowser: Trying to click the navigate up button")
             goBackButton().click()
             Log.i(TAG, "goBackToBrowser: Clicked the navigate up button")
 
-            BrowserRobot().interact()
-            return BrowserRobot.Transition()
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
 
         fun openAboutFirefoxPreview(interact: SettingsSubMenuAboutRobot.() -> Unit): SettingsSubMenuAboutRobot.Transition {
@@ -566,15 +545,14 @@ class SettingsRobot {
         }
 
         fun openTabsSubMenu(interact: SettingsSubMenuTabsRobot.() -> Unit): SettingsSubMenuTabsRobot.Transition {
-            itemWithText(getStringResource(R.string.preferences_tabs))
-                .also {
-                    Log.i(TAG, "openTabsSubMenu: Waiting for $waitingTime ms for the \"Tabs\" button to exist")
-                    it.waitForExists(waitingTime)
-                    Log.i(TAG, "openTabsSubMenu: Waited for $waitingTime ms for the \"Tabs\" button to exist")
-                    Log.i(TAG, "openTabsSubMenu: Trying to click the \"Tabs\" button and wait for $waitingTimeShort ms for a new window")
-                    it.clickAndWaitForNewWindow(waitingTimeShort)
-                    Log.i(TAG, "openTabsSubMenu: Clicked the \"Tabs\" button and wait for $waitingTimeShort ms for a new window")
-                }
+            Log.i(TAG, "openTabsSubMenu: Waiting for $waitingTime ms for the \"Tabs\" button to exist")
+            val tabsButton = mDevice.wait(
+                Until.findObject(By.text(getStringResource(R.string.preferences_tabs))),
+                waitingTime,
+            ) ?: throw AssertionError("Tabs settings button not found after $waitingTime ms")
+            Log.i(TAG, "openTabsSubMenu: Trying to click the \"Tabs\" button and wait for $waitingTimeShort ms for a new window")
+            tabsButton.clickAndWait(Until.newWindow(), waitingTimeShort)
+            Log.i(TAG, "openTabsSubMenu: Clicked the \"Tabs\" button and waited for $waitingTimeShort ms for a new window")
 
             SettingsSubMenuTabsRobot().interact()
             return SettingsSubMenuTabsRobot.Transition()
@@ -592,19 +570,18 @@ class SettingsRobot {
             return SettingsSubMenuHomepageRobot.Transition()
         }
 
-        fun openAutofillSubMenu(interact: SettingsSubMenuAutofillRobot.() -> Unit): SettingsSubMenuAutofillRobot.Transition {
-            mDevice.findObject(UiSelector().textContains(getStringResource(R.string.preferences_autofill)))
-                .also {
-                    Log.i(TAG, "openAutofillSubMenu: Waiting for $waitingTime ms for the \"Autofill\" button to exist")
-                    it.waitForExists(waitingTime)
-                    Log.i(TAG, "openAutofillSubMenu: Waited for $waitingTime ms for the \"Autofill\" button to exist")
-                    Log.i(TAG, "openAutofillSubMenu: Trying to click the \"Autofill\" button")
-                    it.click()
-                    Log.i(TAG, "openAutofillSubMenu: Clicked the \"Autofill\" button")
-                }
+        fun openAutofillSubMenu(composeTestRule: ComposeTestRule, interact: SettingsSubMenuAutofillRobot.() -> Unit): SettingsSubMenuAutofillRobot.Transition {
+            Log.i(TAG, "openAutofillSubMenu: Waiting for $waitingTime ms for the \"Autofill\" button to exist")
+            val autofillButton = mDevice.wait(
+                Until.findObject(By.textContains(getStringResource(R.string.preferences_autofill))),
+                waitingTime,
+            ) ?: throw AssertionError("Autofill settings button not found after $waitingTime ms")
+            Log.i(TAG, "openAutofillSubMenu: Trying to click the \"Autofill\" button")
+            autofillButton.click()
+            Log.i(TAG, "openAutofillSubMenu: Clicked the \"Autofill\" button")
 
-            SettingsSubMenuAutofillRobot().interact()
-            return SettingsSubMenuAutofillRobot.Transition()
+            SettingsSubMenuAutofillRobot(composeTestRule).interact()
+            return SettingsSubMenuAutofillRobot.Transition(composeTestRule)
         }
 
         fun openAccessibilitySubMenu(interact: SettingsSubMenuAccessibilityRobot.() -> Unit): SettingsSubMenuAccessibilityRobot.Transition {
@@ -625,6 +602,7 @@ class SettingsRobot {
             interact: SettingsSubMenuLanguageRobot.() -> Unit,
         ): SettingsSubMenuLanguageRobot.Transition {
             Log.i(TAG, "openLanguageSubMenu: Trying to click the $localizedText button")
+            mDevice.waitForIdle()
             onView(withId(R.id.recycler_view))
                 .perform(
                     RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
@@ -670,13 +648,13 @@ class SettingsRobot {
             return SettingsSubMenuLoginsAndPasswordRobot.Transition()
         }
 
-        fun openTurnOnSyncMenu(interact: SettingsTurnOnSyncRobot.() -> Unit): SettingsTurnOnSyncRobot.Transition {
+        fun openTurnOnSyncMenu(composeTestRule: ComposeTestRule, interact: SettingsSignInToSyncRobot.() -> Unit): SettingsSignInToSyncRobot.Transition {
             Log.i(TAG, "openTurnOnSyncMenu: Trying to click the \"Sync and save your data\" button")
-            onView(withText("Sync and save your data")).click()
+            onView(withText("Sign in")).click()
             Log.i(TAG, "openTurnOnSyncMenu: Clicked the \"Sync and save your data\" button")
 
-            SettingsTurnOnSyncRobot().interact()
-            return SettingsTurnOnSyncRobot.Transition()
+            SettingsSignInToSyncRobot().interact()
+            return SettingsSignInToSyncRobot.Transition(composeTestRule)
         }
 
         fun openPrivateBrowsingSubMenu(interact: SettingsSubMenuPrivateBrowsingRobot.() -> Unit): SettingsSubMenuPrivateBrowsingRobot.Transition {
@@ -689,11 +667,11 @@ class SettingsRobot {
             return SettingsSubMenuPrivateBrowsingRobot.Transition()
         }
 
-        fun openSettingsSubMenuSitePermissions(interact: SettingsSubMenuSitePermissionsRobot.() -> Unit): SettingsSubMenuSitePermissionsRobot.Transition {
-            scrollToElementByText("Site permissions")
-            Log.i(TAG, "openSettingsSubMenuSitePermissions: Trying to click the \"Site permissions\" button")
-            mDevice.findObject(textContains("Site permissions")).click()
-            Log.i(TAG, "openSettingsSubMenuSitePermissions: Clicked the \"Site permissions\" button")
+        fun openSettingsSubMenuSiteSettings(interact: SettingsSubMenuSitePermissionsRobot.() -> Unit): SettingsSubMenuSitePermissionsRobot.Transition {
+            scrollToElementByText("Site settings")
+            Log.i(TAG, "openSettingsSubMenuSiteSettings: Trying to click the \"Site settings\" button")
+            mDevice.findObject(textContains("Site settings")).click()
+            Log.i(TAG, "openSettingsSubMenuSiteSettings: Clicked the \"Site settings\" button")
 
             SettingsSubMenuSitePermissionsRobot().interact()
             return SettingsSubMenuSitePermissionsRobot.Transition()
@@ -739,13 +717,13 @@ class SettingsRobot {
             return SettingsSubMenuDataCollectionRobot.Transition()
         }
 
-        fun openAddonsManagerMenu(interact: SettingsSubMenuAddonsManagerRobot.() -> Unit): SettingsSubMenuAddonsManagerRobot.Transition {
+        fun openAddonsManagerMenu(composeTestRule: ComposeTestRule, interact: SettingsSubMenuAddonsManagerRobot.() -> Unit): SettingsSubMenuAddonsManagerRobot.Transition {
             Log.i(TAG, "openAddonsManagerMenu: Trying to click the \"Add-ons\" button")
             addonsManagerButton().click()
             Log.i(TAG, "openAddonsManagerMenu: Clicked the \"Add-ons\" button")
 
-            SettingsSubMenuAddonsManagerRobot().interact()
-            return SettingsSubMenuAddonsManagerRobot.Transition()
+            SettingsSubMenuAddonsManagerRobot(composeTestRule).interact()
+            return SettingsSubMenuAddonsManagerRobot.Transition(composeTestRule)
         }
 
         fun openOpenLinksInAppsMenu(interact: SettingsSubMenuOpenLinksInAppsRobot.() -> Unit): SettingsSubMenuOpenLinksInAppsRobot.Transition {

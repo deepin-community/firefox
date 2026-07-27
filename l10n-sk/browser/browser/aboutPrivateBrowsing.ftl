@@ -24,7 +24,7 @@ about-private-browsing-info-description-simplified = { -brand-short-name } vyma�
 about-private-browsing-learn-more-link = Ďalšie informácie
 about-private-browsing-hide-activity = Skryte svoju aktivitu a polohu, nech ste kdekoľvek
 about-private-browsing-get-privacy = Získajte ochranu súkromia všade, kde prehliadate
-about-private-browsing-hide-activity-1 = Skryte svoju aktivitu a polohu pri prehliadaní pomocou služby { -mozilla-vpn-brand-name }. Jedným kliknutím vytvoríte zabezpečené pripojenie, dokonca aj na verejných sieťach Wi-Fi.
+about-private-browsing-hide-activity-1 = Skryte svoju aktivitu a polohu pri prehliadaní pomocou služby { -mozilla-vpn-brand-name }. Jedným kliknutím vytvoríte zabezpečené pripojenie, dokonca aj na verejných sieťach Wi‑Fi.
 about-private-browsing-prominent-cta = Ochráňte svoje súkromie so službou { -mozilla-vpn-brand-name }
 about-private-browsing-focus-promo-cta = Nainštalujte si { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: súkromné prehliadanie na cestách
@@ -40,11 +40,11 @@ about-private-browsing-focus-promo-text-c = { -focus-brand-name } blokuje reklam
 # in a private window.
 # Variables:
 #   $engineName (String) - The engine name that will currently be used for the private window.
-about-private-browsing-search-banner-title = V súkromnom prehliadaní je vašim predvoleným vyhľadávacím modulom { $engineName }
+about-private-browsing-search-banner-title = V súkromnom prehliadaní je vašim predvoleným vyhľadávačom { $engineName }
 about-private-browsing-search-banner-description =
     { PLATFORM() ->
-        [windows] Ak chcete vybrať iný vyhľadávací modul, prejdite do <a data-l10n-name="link-options">Možností</a>
-       *[other] Ak chcete vybrať iný vyhľadávací modul, prejdite do <a data-l10n-name="link-options">Možností</a>
+        [windows] Ak chcete vybrať iný vyhľadávač, prejdite do <a data-l10n-name="link-options">Možností</a>
+       *[other] Ak chcete vybrať iný vyhľadávač, prejdite do <a data-l10n-name="link-options">Možností</a>
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Zavrieť
@@ -67,14 +67,24 @@ about-private-browsing-pin-promo-title = Žiadne uložené súbory cookie alebo 
 # in your language: `See fewer cookie requests`.
 about-private-browsing-cookie-banners-promo-header = Bannery k súborom cookie sú preč!
 about-private-browsing-cookie-banners-promo-button = Znižovať počet bannerov k súborom cookie
-about-private-browsing-cookie-banners-promo-message = Nechajte { -brand-short-name } automaticky odpovedať na žiadosti o súhlas s používaním súborov cookie za vás, aby ste sa mohli vrátiť k prehliadaniu bez rozptyľovania. { -brand-short-name } odmietne všetky požiadavky, kde je to možné.
+about-private-browsing-cookie-banners-promo-message = Nechajte { -brand-short-name(case: "acc") } automaticky odpovedať na žiadosti o súhlas s používaním súborov cookie za vás, aby ste sa mohli vrátiť k prehliadaniu bez rozptyľovania. { -brand-short-name } odmietne všetky požiadavky, kde je to možné.
 # Simplified version of the headline if the original text doesn't work
 # in your language: `{ -brand-short-name } will show fewer cookie requests`
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } sa za vás postará o bannery k súborom cookie
 about-private-browsing-cookie-banners-promo-body = Teraz automaticky odmietame množstvo žiadostí o povolenie používania súborov cookie, aby ste mohli byť menej sledovaní a mohli sa vrátiť k prehliadaniu bez rozptyľovania.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Nezanechávajte na tomto zariadení žiadne stopy
 about-private-browsing-felt-privacy-v1-info-body = Keď zatvoríte všetky súkromné okná, { -brand-short-name } odstráni vaše súbory cookie, históriu prehliadania a údaje stránok.
 about-private-browsing-felt-privacy-v1-info-link = Kto však môže vidieť moju aktivitu?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Zatvorením všetkých súkromných okien sa vymažú súbory cookie, história a údaje stránok.
+about-private-browsing-nova-info-link = Kto by mohol stále vidieť moju aktivitu?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = História vášho prehliadania nebude zaznamenaná
+about-private-browsing-nova-info-subheader = Po zatvorení tohto okna vymažeme všetky vyhľadávania a prihlásenia. Vstavané ochrany { -brand-short-name(case: "gen") } sú tiež zapnuté, napríklad blokovanie sledovacích prvkov.

@@ -3,10 +3,11 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/MediaTransportParent.h"
-#include "jsapi/MediaTransportHandler.h"
 
-#include "transport/sigslot.h"
+#include "MediaEventSource.h"
 #include "common/browser_logging/CSFLog.h"
+#include "jsapi/MediaTransportHandler.h"
+#include "transport/sigslot.h"
 
 namespace mozilla {
 
@@ -15,28 +16,53 @@ namespace mozilla {
 class MediaTransportParent::Impl : public sigslot::has_slots<> {
  public:
   explicit Impl(MediaTransportParent* aParent)
-      : mHandler(MediaTransportHandler::Create(GetCurrentSerialEventTarget())),
-        mParent(aParent) {
-    mHandler->SignalCandidate.connect(this,
-                                      &MediaTransportParent::Impl::OnCandidate);
-    mHandler->SignalAlpnNegotiated.connect(
-        this, &MediaTransportParent::Impl::OnAlpnNegotiated);
-    mHandler->SignalGatheringStateChange.connect(
-        this, &MediaTransportParent::Impl::OnGatheringStateChange);
-    mHandler->SignalConnectionStateChange.connect(
-        this, &MediaTransportParent::Impl::OnConnectionStateChange);
-    mHandler->SignalPacketReceived.connect(
-        this, &MediaTransportParent::Impl::OnPacketReceived);
-    mHandler->SignalEncryptedSending.connect(
-        this, &MediaTransportParent::Impl::OnEncryptedSending);
-    mHandler->SignalStateChange.connect(
-        this, &MediaTransportParent::Impl::OnStateChange);
-    mHandler->SignalRtcpStateChange.connect(
-        this, &MediaTransportParent::Impl::OnRtcpStateChange);
+      : mHandler(MediaTransportHandler::Create()), mParent(aParent) {
+    mCandidateListener = mHandler->GetCandidateGathered().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnCandidate);
+    mCandidateErrorListener = mHandler->GetCandidateError().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnCandidateError);
+    mAlpnNegotiatedListener = mHandler->GetAlpnNegotiated().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnAlpnNegotiated);
+    mGatheringStateChangeListener = mHandler->GetGatheringStateChange().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnGatheringStateChange);
+    mConnectionStateChangeListener =
+        mHandler->GetConnectionStateChange().Connect(
+            GetCurrentSerialEventTarget(), this,
+            &MediaTransportParent::Impl::OnConnectionStateChange);
+    mRtpPacketListener = mHandler->GetRtpPacketReceived().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnPacketReceived);
+    mSctpPacketListener = mHandler->GetSctpPacketReceived().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnPacketReceived);
+    mEncryptedSendingListener = mHandler->GetEncryptedSending().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnEncryptedSending);
+    mStateChangeListener = mHandler->GetStateChange().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnStateChange);
+    mRtcpStateChangeListener = mHandler->GetRtcpStateChange().Connect(
+        GetCurrentSerialEventTarget(), this,
+        &MediaTransportParent::Impl::OnRtcpStateChange);
+    mTarget = GetCurrentSerialEventTarget();
   }
 
   virtual ~Impl() {
-    disconnect_all();
+    MOZ_ASSERT(mTarget->IsOnCurrentThread());
+    mCandidateListener.DisconnectIfExists();
+    mCandidateErrorListener.DisconnectIfExists();
+    mAlpnNegotiatedListener.DisconnectIfExists();
+    mGatheringStateChangeListener.DisconnectIfExists();
+    mConnectionStateChangeListener.DisconnectIfExists();
+    mRtpPacketListener.DisconnectIfExists();
+    mSctpPacketListener.DisconnectIfExists();
+    mEncryptedSendingListener.DisconnectIfExists();
+    mStateChangeListener.DisconnectIfExists();
+    mRtcpStateChangeListener.DisconnectIfExists();
     mHandler = nullptr;
   }
 
@@ -45,20 +71,24 @@ class MediaTransportParent::Impl : public sigslot::has_slots<> {
     NS_ENSURE_TRUE_VOID(mParent->SendOnCandidate(aTransportId, aCandidateInfo));
   }
 
+  void OnCandidateError(const IceCandidateErrorInfo& aErrorInfo) {
+    NS_ENSURE_TRUE_VOID(mParent->SendOnCandidateError(aErrorInfo));
+  }
+
   void OnAlpnNegotiated(const std::string& aAlpn, bool aPrivacyRequested) {
     NS_ENSURE_TRUE_VOID(mParent->SendOnAlpnNegotiated(aAlpn));
   }
 
   void OnGatheringStateChange(const std::string& aTransportId,
                               dom::RTCIceGathererState aState) {
-    NS_ENSURE_TRUE_VOID(mParent->SendOnGatheringStateChange(
-        aTransportId, static_cast<int>(aState)));
+    NS_ENSURE_TRUE_VOID(
+        mParent->SendOnGatheringStateChange(aTransportId, aState));
   }
 
   void OnConnectionStateChange(const std::string& aTransportId,
                                dom::RTCIceTransportState aState) {
-    NS_ENSURE_TRUE_VOID(mParent->SendOnConnectionStateChange(
-        aTransportId, static_cast<int>(aState)));
+    NS_ENSURE_TRUE_VOID(
+        mParent->SendOnConnectionStateChange(aTransportId, aState));
   }
 
   void OnPacketReceived(const std::string& aTransportId,
@@ -85,11 +115,22 @@ class MediaTransportParent::Impl : public sigslot::has_slots<> {
 
  private:
   MediaTransportParent* mParent;
+  MediaEventListener mCandidateListener;
+  MediaEventListener mCandidateErrorListener;
+  MediaEventListener mAlpnNegotiatedListener;
+  MediaEventListener mGatheringStateChangeListener;
+  MediaEventListener mConnectionStateChangeListener;
+  MediaEventListener mRtpPacketListener;
+  MediaEventListener mSctpPacketListener;
+  MediaEventListener mEncryptedSendingListener;
+  MediaEventListener mStateChangeListener;
+  MediaEventListener mRtcpStateChangeListener;
+  RefPtr<nsISerialEventTarget> mTarget;
 };
 
 MediaTransportParent::MediaTransportParent() : mImpl(new Impl(this)) {}
 
-MediaTransportParent::~MediaTransportParent() {}
+MediaTransportParent::~MediaTransportParent() = default;
 
 mozilla::ipc::IPCResult MediaTransportParent::RecvGetIceLog(
     const nsCString& pattern, GetIceLogResolver&& aResolve) {
@@ -175,12 +216,12 @@ mozilla::ipc::IPCResult MediaTransportParent::RecvActivateTransport(
     const string& transportId, const string& localUfrag, const string& localPwd,
     const int& componentCount, const string& remoteUfrag,
     const string& remotePwd, nsTArray<uint8_t>&& keyDer,
-    nsTArray<uint8_t>&& certDer, const int& authType, const bool& dtlsClient,
-    const DtlsDigestList& digests, const bool& privacyRequested) {
+    nsTArray<uint8_t>&& certDer, const SSLKEAType& authType,
+    const bool& dtlsClient, const DtlsDigestList& digests,
+    const bool& privacyRequested) {
   mImpl->mHandler->ActivateTransport(
       transportId, localUfrag, localPwd, componentCount, remoteUfrag, remotePwd,
-      keyDer, certDer, static_cast<SSLKEAType>(authType), dtlsClient, digests,
-      privacyRequested);
+      keyDer, certDer, authType, dtlsClient, digests, privacyRequested);
   return ipc::IPCResult::Ok();
 }
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,8 +23,8 @@ class MockHitTester final : public IAPZHitTester {
       const RecursiveMutexAutoLock& aProofOfTreeLock) override;
 
   // Queue a hit test result whose target APZC is the APZC
-  // with scroll id |aScrollId|, and the provided hit test flags.
-  void QueueHitResult(ScrollableLayerGuid::ViewID aScrollId,
+  // with guid |aGuid|, and the provided hit test flags.
+  void QueueHitResult(ScrollableLayerGuid aGuid,
                       gfx::CompositorHitTestInfo aHitInfo);
 
   // Queue a hit test result whose target is the scrollbar of the APZC

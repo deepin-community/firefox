@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -64,7 +63,7 @@ LazyLogModule gCocoaUtilsLog("nsCocoaUtils");
  * For each audio and video capture request, we hold an owning reference
  * to a promise to be resolved when the request's async callback is invoked.
  * sVideoCapturePromises and sAudioCapturePromises are arrays of video and
- * audio promises waiting for to be resolved. Each array is protected by a
+ * audio promises waiting to be resolved. Each array is protected by a
  * mutex.
  */
 nsCocoaUtils::PromiseArray nsCocoaUtils::sVideoCapturePromises;
@@ -266,9 +265,8 @@ nsIWidget* nsCocoaUtils::GetHiddenWindowWidget() {
     return nullptr;
   }
 
-  nsCOMPtr<nsIWidget> hiddenWindowWidget;
-  if (NS_FAILED(baseHiddenWindow->GetMainWidget(
-          getter_AddRefs(hiddenWindowWidget)))) {
+  nsCOMPtr<nsIWidget> hiddenWindowWidget = baseHiddenWindow->GetMainWidget();
+  if (!hiddenWindowWidget) {
     NS_WARNING("Couldn't get nsIWidget from hidden window (nsIBaseWindow)");
     return nullptr;
   }
@@ -303,8 +301,8 @@ BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLogin() {
 
   CFStringRef lgnwPlistName = CFSTR("com.apple.loginwindow");
   CFStringRef saveStateKey = CFSTR("TALLogoutSavesState");
-  CFPropertyListRef lgnwPlist = (CFPropertyListRef)(::CFPreferencesCopyAppValue(
-      saveStateKey, lgnwPlistName));
+  auto lgnwPlist = CFTypeRefPtr<CFPropertyListRef>::WrapUnderCreateRule(
+      ::CFPreferencesCopyAppValue(saveStateKey, lgnwPlistName));
   // The .plist doesn't exist unless the user changed the "Reopen windows..."
   // preference. If it doesn't exist, restore by default (as this is the macOS
   // default).
@@ -313,67 +311,16 @@ BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLogin() {
     return YES;
   }
 
-  if (CFBooleanRef shouldRestoreState = static_cast<CFBooleanRef>(lgnwPlist)) {
+  if (::CFGetTypeID(lgnwPlist.get()) != ::CFBooleanGetTypeID()) {
+    return YES;
+  }
+
+  if (CFBooleanRef shouldRestoreState =
+          static_cast<CFBooleanRef>(lgnwPlist.get())) {
     return ::CFBooleanGetValue(shouldRestoreState);
   }
 
   return NO;
-}
-
-void nsCocoaUtils::PrepareForNativeAppModalDialog() {
-  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
-
-  // Don't do anything if this is embedding. We'll assume that if there is no
-  // hidden window we shouldn't do anything, and that should cover the embedding
-  // case.
-  nsMenuBarX* hiddenWindowMenuBar = nsMenuUtilsX::GetHiddenWindowMenuBar();
-  if (!hiddenWindowMenuBar) return;
-
-  // First put up the hidden window menu bar so that app menu event handling is
-  // correct.
-  hiddenWindowMenuBar->Paint();
-
-  NSMenu* mainMenu = [NSApp mainMenu];
-  NS_ASSERTION(
-      [mainMenu numberOfItems] > 0,
-      "Main menu does not have any items, something is terribly wrong!");
-
-  // Create new menu bar for use with modal dialog
-  NSMenu* newMenuBar = [[NSMenu alloc] initWithTitle:@""];
-
-  // Swap in our app menu. Note that the event target is whatever window is up
-  // when the app modal dialog goes up.
-  NSMenuItem* firstMenuItem = [[mainMenu itemAtIndex:0] retain];
-  [mainMenu removeItemAtIndex:0];
-  [newMenuBar insertItem:firstMenuItem atIndex:0];
-  [firstMenuItem release];
-
-  // Add standard edit menu
-  [newMenuBar addItem:nsMenuUtilsX::GetStandardEditMenuItem()];
-
-  // Show the new menu bar
-  [NSApp setMainMenu:newMenuBar];
-  [newMenuBar release];
-
-  NS_OBJC_END_TRY_IGNORE_BLOCK;
-}
-
-void nsCocoaUtils::CleanUpAfterNativeAppModalDialog() {
-  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
-
-  // Don't do anything if this is embedding. We'll assume that if there is no
-  // hidden window we shouldn't do anything, and that should cover the embedding
-  // case.
-  nsMenuBarX* hiddenWindowMenuBar = nsMenuUtilsX::GetHiddenWindowMenuBar();
-  if (!hiddenWindowMenuBar) return;
-
-  NSWindow* mainWindow = [NSApp mainWindow];
-  if (!mainWindow)
-    hiddenWindowMenuBar->Paint();
-  else
-    [WindowDelegate paintMenubarForWindow:mainWindow];
-
-  NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
 static void data_ss_release_callback(void* aDataSourceSurface, const void* data,
@@ -438,8 +385,7 @@ nsresult nsCocoaUtils::CreateCGImageFromSurface(SourceSurface* aSurface,
   CGDataProviderRef dataProvider = ::CGDataProviderCreateWithData(
       dataSurface.forget().take(), map.mData, map.mStride * height,
       data_ss_release_callback);
-  CGColorSpaceRef colorSpace =
-      ::CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGColorSpaceRef colorSpace = ::CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
   *aResult = ::CGImageCreate(
       width, height, 8, 32, map.mStride, colorSpace,
       kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst, dataProvider,
@@ -506,9 +452,8 @@ nsresult nsCocoaUtils::CreateNSImageFromCGImage(CGImageRef aInputImage,
 
 nsresult nsCocoaUtils::CreateNSImageFromImageContainer(
     imgIContainer* aImage, uint32_t aWhichFrame,
-    const nsPresContext* aPresContext, const ComputedStyle* aComputedStyle,
-    const NSSize& aPreferredSize, NSImage** aResult, CGFloat scaleFactor,
-    bool* aIsEntirelyBlack) {
+    const SVGImageContext* aSVGContext, const NSSize& aPreferredSize,
+    NSImage** aResult, CGFloat scaleFactor, bool* aIsEntirelyBlack) {
   RefPtr<SourceSurface> surface;
   int32_t width = 0;
   int32_t height = 0;
@@ -518,13 +463,13 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(
     if (auto ratio = aImage->GetIntrinsicRatio()) {
       if (gotWidth != gotHeight) {
         if (gotWidth) {
-          height = ratio->Inverted().ApplyTo(width);
+          height = ratio.Inverted().ApplyTo(width);
         } else {
-          width = ratio->ApplyTo(height);
+          width = ratio.ApplyTo(height);
         }
       } else if (!gotWidth) {
         height = std::ceil(aPreferredSize.height);
-        width = ratio->ApplyTo(height);
+        width = ratio.ApplyTo(height);
       }
     }
   }
@@ -544,15 +489,17 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(
 
     gfxContext context(drawTarget);
 
-    SVGImageContext svgContext;
-    if (aPresContext && aComputedStyle) {
-      SVGImageContext::MaybeStoreContextPaint(svgContext, *aPresContext,
-                                              *aComputedStyle, aImage);
+    UniquePtr<SVGImageContext> svgContext;
+    if (!aSVGContext) {
+      svgContext = MakeUnique<SVGImageContext>();
+      aSVGContext = svgContext.get();
     }
-    mozilla::image::ImgDrawResult res =
-        aImage->Draw(&context, scaledSize, ImageRegion::Create(scaledSize),
-                     aWhichFrame, SamplingFilter::POINT, svgContext,
-                     imgIContainer::FLAG_SYNC_DECODE, 1.0);
+
+    mozilla::image::ImgDrawResult res = aImage->Draw(
+        &context, scaledSize, ImageRegion::Create(scaledSize), aWhichFrame,
+        SamplingFilter::POINT, *aSVGContext,
+        imgIContainer::FLAG_SYNC_DECODE | imgIContainer::FLAG_ASYNC_NOTIFY,
+        1.0);
 
     if (res != mozilla::image::ImgDrawResult::SUCCESS) {
       return NS_ERROR_FAILURE;
@@ -575,10 +522,10 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(
   }
 
   rv = nsCocoaUtils::CreateNSImageFromCGImage(imageRef, aResult);
-  if (NS_FAILED(rv) || !aResult) {
+  ::CGImageRelease(imageRef);
+  if (NS_FAILED(rv) || !*aResult) {
     return NS_ERROR_FAILURE;
   }
-  ::CGImageRelease(imageRef);
 
   // Ensure the image will be rendered the correct size on a retina display
   NSSize size = NSMakeSize(width, height);
@@ -589,12 +536,12 @@ nsresult nsCocoaUtils::CreateNSImageFromImageContainer(
 
 nsresult nsCocoaUtils::CreateDualRepresentationNSImageFromImageContainer(
     imgIContainer* aImage, uint32_t aWhichFrame,
-    const nsPresContext* aPresContext, const ComputedStyle* aComputedStyle,
-    const NSSize& aPreferredSize, NSImage** aResult, bool* aIsEntirelyBlack) {
+    const SVGImageContext* aSVGContext, const NSSize& aPreferredSize,
+    NSImage** aResult, bool* aIsEntirelyBlack) {
   NSImage* newRepresentation = nil;
   nsresult rv = CreateNSImageFromImageContainer(
-      aImage, aWhichFrame, aPresContext, aComputedStyle, aPreferredSize,
-      &newRepresentation, 1.0f, aIsEntirelyBlack);
+      aImage, aWhichFrame, aSVGContext, aPreferredSize, &newRepresentation,
+      1.0f, aIsEntirelyBlack);
   if (NS_FAILED(rv) || !newRepresentation) {
     return NS_ERROR_FAILURE;
   }
@@ -609,10 +556,12 @@ nsresult nsCocoaUtils::CreateDualRepresentationNSImageFromImageContainer(
   [newRepresentation release];
   newRepresentation = nil;
 
-  rv = CreateNSImageFromImageContainer(
-      aImage, aWhichFrame, aPresContext, aComputedStyle, aPreferredSize,
-      &newRepresentation, 2.0f, aIsEntirelyBlack);
+  rv = CreateNSImageFromImageContainer(aImage, aWhichFrame, aSVGContext,
+                                       aPreferredSize, &newRepresentation, 2.0f,
+                                       aIsEntirelyBlack);
   if (NS_FAILED(rv) || !newRepresentation) {
+    [*aResult release];
+    *aResult = nil;
     return NS_ERROR_FAILURE;
   }
 
@@ -682,7 +631,7 @@ NSEvent* nsCocoaUtils::MakeNewCocoaEventWithType(NSEventType aEventType,
 }
 
 // static
-NSEvent* nsCocoaUtils::MakeNewCococaEventFromWidgetEvent(
+NSEvent* nsCocoaUtils::MakeNewCocoaEventFromWidgetEvent(
     const WidgetKeyboardEvent& aKeyEvent, NSInteger aWindowNumber,
     NSGraphicsContext* aContext) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
@@ -701,10 +650,11 @@ NSEvent* nsCocoaUtils::MakeNewCococaEventFromWidgetEvent(
       {MODIFIER_ALTGRAPH, NSEventModifierFlagOption},
       {MODIFIER_META, NSEventModifierFlagCommand},
       {MODIFIER_CAPSLOCK, NSEventModifierFlagCapsLock},
-      {MODIFIER_NUMLOCK, NSEventModifierFlagNumericPad}};
+      {MODIFIER_NUMLOCK, NSEventModifierFlagNumericPad},
+      {MODIFIER_FN, NSEventModifierFlagFunction}};
 
   NSUInteger modifierFlags = 0;
-  for (uint32_t i = 0; i < ArrayLength(sModifierFlagMap); ++i) {
+  for (uint32_t i = 0; i < std::size(sModifierFlagMap); ++i) {
     if (aKeyEvent.mModifiers & sModifierFlagMap[i][0]) {
       modifierFlags |= sModifierFlagMap[i][1];
     }
@@ -786,9 +736,19 @@ Modifiers nsCocoaUtils::ModifiersForEvent(NSEvent* aNativeEvent) {
     result |= MODIFIER_NUMLOCK;
   }
 
-  // Be aware, NSEventModifierFlagFunction is included when arrow keys, home key
-  // or some other keys are pressed. We cannot check whether 'fn' key is pressed
-  // or not by the flag.
+  // Be aware, NSEventModifierFlagFunction is also set on the native event when
+  // arrow keys, the home key or some other keys are pressed. We cannot check
+  // whether the 'fn' key is pressed or not by the flag alone. We need to check
+  // that the event's keyCode falls outside the range of keys that will also set
+  // the function modifier.
+  if (!!(modifiers & NSEventModifierFlagFunction) &&
+      (aNativeEvent.type == NSEventTypeKeyDown ||
+       aNativeEvent.type == NSEventTypeKeyUp ||
+       aNativeEvent.type == NSEventTypeFlagsChanged) &&
+      !(kVK_Return <= aNativeEvent.keyCode &&
+        aNativeEvent.keyCode <= NSModeSwitchFunctionKey)) {
+    result |= MODIFIER_FN;
+  }
 
   return result;
 }
@@ -1065,7 +1025,7 @@ uint32_t nsCocoaUtils::ConvertGeckoNameToMacCharCode(
 
   uint32_t keyCodeNameLength = keyCodeName.Length();
   const char* keyCodeNameStr = keyCodeName.get();
-  for (uint16_t i = 0; i < ArrayLength(gKeyConversions); ++i) {
+  for (uint16_t i = 0; i < std::size(gKeyConversions); ++i) {
     if (keyCodeNameLength == gKeyConversions[i].strLength &&
         nsCRT::strcmp(gKeyConversions[i].str, keyCodeNameStr) == 0) {
       return gKeyConversions[i].charCode;
@@ -1080,7 +1040,7 @@ uint32_t nsCocoaUtils::ConvertGeckoKeyCodeToMacCharCode(uint32_t aKeyCode) {
     return 0;
   }
 
-  for (uint16_t i = 0; i < ArrayLength(gKeyConversions); ++i) {
+  for (uint16_t i = 0; i < std::size(gKeyConversions); ++i) {
     if (gKeyConversions[i].geckoKeyCode == aKeyCode) {
       return gKeyConversions[i].charCode;
     }
@@ -1330,8 +1290,8 @@ nsresult nsCocoaUtils::GetScreenCapturePermissionState(
   // names if the calling application has been authorized to record the
   // screen. We use the window name, window level, and owning PID as
   // heuristics to determine if we have screen recording permission.
-  AutoCFRelease<CFArrayRef> windowArray =
-      CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID);
+  AutoCFTypeRef<CFArrayRef> windowArray(
+      CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID));
   if (!windowArray) {
     LOG("GetScreenCapturePermissionState() ERROR: got NULL window info list");
     return NS_ERROR_UNEXPECTED;
@@ -1458,7 +1418,7 @@ nsresult nsCocoaUtils::RequestCapturePermission(
 
   sMediaCaptureMutex.Unlock();
 
-  LOG("RequestCapturePermission(%s): %ld promise(s) unresolved",
+  LOG("RequestCapturePermission(%s): %zu promise(s) unresolved",
       AVMediaTypeToString(aType), nPromises);
 
   // If we had one or more more existing promises waiting to be resolved
@@ -1526,8 +1486,8 @@ void nsCocoaUtils::ResolveAudioCapturePromises(bool aGranted) {
 //
 nsresult nsCocoaUtils::MaybeRequestScreenCapturePermission() {
   LOG("MaybeRequestScreenCapturePermission()");
-  AutoCFRelease<CGImageRef> image =
-      CGDisplayCreateImageForRect(kCGDirectMainDisplay, CGRectMake(0, 0, 1, 1));
+  AutoCFTypeRef<CGImageRef> image(CGDisplayCreateImageForRect(
+      kCGDirectMainDisplay, CGRectMake(0, 0, 1, 1)));
   return NS_OK;
 }
 
@@ -1638,7 +1598,13 @@ NSString* nsCocoaUtils::GetStringForTypeFromPasteboardItem(
   NSString* availableType =
       [aItem availableTypeFromArray:[NSArray arrayWithObjects:(id)aType, nil]];
   if (availableType && IsValidPasteboardType(availableType, aAllowFileURL)) {
-    return [aItem stringForType:(id)availableType];
+    NSString* str = [aItem stringForType:(id)availableType];
+    if (!str) {
+      return nil;
+    }
+    // Sanitize (remove NULs, etc) to align with other platforms.
+    return [NSString stringWithCString:[str UTF8String]
+                              encoding:NSUTF8StringEncoding];
   }
 
   return nil;
@@ -1683,25 +1649,23 @@ NSString* nsCocoaUtils::GetTitleForURLFromPasteboardItem(
   NS_OBJC_END_TRY_BLOCK_RETURN(nil);
 }
 
-void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
-    nsITransferable* aTransferable, const nsCString& aFlavor,
-    NSPasteboardItem* aItem) {
-  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
+already_AddRefed<nsISupports> nsCocoaUtils::GetDataFromPasteboardItem(
+    const nsACString& aFlavor, NSPasteboardItem* aItem) {
+  NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  if (!aTransferable || !aItem) {
-    return;
+  if (!aItem) {
+    return nullptr;
   }
 
   MOZ_LOG(gCocoaUtilsLog, LogLevel::Info,
-          ("nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem: looking "
-           "for pasteboard data of "
-           "type %s\n",
-           aFlavor.get()));
+          ("nsCocoaUtils::GetDataFromPasteboardItem: looking for pasteboard "
+           "data of type %s\n",
+           PromiseFlatCString(aFlavor).get()));
 
   if (aFlavor.EqualsLiteral(kFileMime)) {
     NSString* filePath = nsCocoaUtils::GetFilePathFromPasteboardItem(aItem);
     if (!filePath) {
-      return;
+      return nullptr;
     }
 
     unsigned int stringLength = [filePath length];
@@ -1709,22 +1673,21 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
         (stringLength + 1) * sizeof(char16_t);  // in bytes
     char16_t* clipboardDataPtr = (char16_t*)malloc(dataLength);
     if (!clipboardDataPtr) {
-      return;
+      return nullptr;
     }
 
     [filePath getCharacters:reinterpret_cast<unichar*>(clipboardDataPtr)];
     clipboardDataPtr[stringLength] = 0;  // null terminate
 
     nsCOMPtr<nsIFile> file;
-    nsresult rv = NS_NewLocalFile(nsDependentString(clipboardDataPtr), true,
+    nsresult rv = NS_NewLocalFile(nsDependentString(clipboardDataPtr),
                                   getter_AddRefs(file));
     free(clipboardDataPtr);
     if (NS_FAILED(rv)) {
-      return;
+      return nullptr;
     }
 
-    aTransferable->SetTransferData(aFlavor.get(), file);
-    return;
+    return file.forget();
   }
 
   if (aFlavor.EqualsLiteral(kCustomTypesMime)) {
@@ -1733,17 +1696,17 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
                                    arrayWithObject:kMozCustomTypesPboardType]];
     if (!availableType ||
         !nsCocoaUtils::IsValidPasteboardType(availableType, false)) {
-      return;
+      return nullptr;
     }
     NSData* pasteboardData = [aItem dataForType:availableType];
     if (!pasteboardData) {
-      return;
+      return nullptr;
     }
 
     unsigned int dataLength = [pasteboardData length];
     void* clipboardDataPtr = malloc(dataLength);
     if (!clipboardDataPtr) {
-      return;
+      return nullptr;
     }
     [pasteboardData getBytes:clipboardDataPtr length:dataLength];
 
@@ -1752,9 +1715,8 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
         aFlavor, clipboardDataPtr, dataLength,
         getter_AddRefs(genericDataWrapper));
 
-    aTransferable->SetTransferData(aFlavor.get(), genericDataWrapper);
     free(clipboardDataPtr);
-    return;
+    return genericDataWrapper.forget();
   }
 
   NSString* pString = nil;
@@ -1773,6 +1735,22 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
         title = pString;
       }
       pString = [NSString stringWithFormat:@"%@\n%@", pString, title];
+    } else {
+      // Try to convert file to file:// URL
+      nsCOMPtr<nsISupports> fileData =
+          GetDataFromPasteboardItem(nsDependentCString(kFileMime), aItem);
+      nsCOMPtr<nsIFile> file = do_QueryInterface(fileData);
+      if (file) {
+        nsAutoCString urlSpec;
+        if (NS_SUCCEEDED(NS_GetURLSpecFromFile(file, urlSpec))) {
+          nsAutoString leafName;
+          file->GetLeafName(leafName);
+
+          NSString* url = nsCocoaUtils::ToNSString(urlSpec);
+          NSString* title = nsCocoaUtils::ToNSString(leafName);
+          pString = [NSString stringWithFormat:@"%@\n%@", url, title];
+        }
+      }
     }
   } else if (aFlavor.EqualsLiteral(kURLDataMime)) {
     pString = nsCocoaUtils::GetStringForTypeFromPasteboardItem(
@@ -1794,7 +1772,7 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
     unsigned int dataLength = [stringData length];
     void* clipboardDataPtr = malloc(dataLength);
     if (!clipboardDataPtr) {
-      return;
+      return nullptr;
     }
     [stringData getBytes:clipboardDataPtr length:dataLength];
 
@@ -1817,12 +1795,11 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
     nsPrimitiveHelpers::CreatePrimitiveForData(
         aFlavor, clipboardDataPtrNoBOM, dataLength,
         getter_AddRefs(genericDataWrapper));
-    aTransferable->SetTransferData(aFlavor.get(), genericDataWrapper);
     free(clipboardDataPtr);
-    return;
+    return genericDataWrapper.forget();
   }
 
-  // We have never supported this on Mac OS X, we should someday. Normally
+  // We have never supported this on macOS, we should someday. Normally
   // dragging images in is accomplished with a file path drag instead of the
   // image data itself.
   /*
@@ -1832,6 +1809,29 @@ void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
 
   }
   */
+
+  return nullptr;
+
+  NS_OBJC_END_TRY_BLOCK_RETURN(nullptr);
+}
+
+void nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem(
+    nsITransferable* aTransferable, const nsCString& aFlavor,
+    NSPasteboardItem* aItem) {
+  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
+
+  if (!aTransferable || !aItem) {
+    return;
+  }
+
+  MOZ_LOG(gCocoaUtilsLog, LogLevel::Info,
+          ("nsCocoaUtils::SetTransferDataForTypeFromPasteboardItem: looking "
+           "for pasteboard data of type %s\n",
+           aFlavor.get()));
+
+  if (nsCOMPtr<nsISupports> data = GetDataFromPasteboardItem(aFlavor, aItem)) {
+    aTransferable->SetTransferData(aFlavor.get(), data);
+  }
 
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }

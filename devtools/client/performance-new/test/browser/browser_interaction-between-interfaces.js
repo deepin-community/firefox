@@ -7,7 +7,7 @@
 add_task(async function test_change_in_popup() {
   // This test assumes that the Web Developer preset is set by default, which is
   // not the case on Nightly and custom builds.
-  BackgroundJSM.changePreset(
+  PrefsPresets.changePreset(
     "aboutprofiling",
     "web-developer",
     Services.profiler.GetFeatures()
@@ -66,7 +66,12 @@ add_task(async function test_change_in_popup() {
         // Select "graphics" using the popup
         ok(!graphics.checked, "The Graphics preset is not checked.");
 
+        let popupPromise = BrowserTestUtils.waitForEvent(
+          presetsInPopup.menupopup,
+          "popupshown"
+        );
         presetsInPopup.menupopup.openPopup();
+        await popupPromise;
         presetsInPopup.menupopup.activateItem(
           await getElementByLabel(presetsInPopup, "Graphics")
         );
@@ -91,7 +96,12 @@ add_task(async function test_change_in_popup() {
         // Select "firefox frontend" using the popup
         ok(!media.checked, "The Media preset is not checked.");
 
+        popupPromise = BrowserTestUtils.waitForEvent(
+          presetsInPopup.menupopup,
+          "popupshown"
+        );
         presetsInPopup.menupopup.openPopup();
+        await popupPromise;
         presetsInPopup.menupopup.activateItem(
           await getElementByLabel(presetsInPopup, "Media")
         );
@@ -122,7 +132,7 @@ add_task(async function test_change_in_popup() {
 add_task(async function test_change_in_about_profiling() {
   // This test assumes that the Web Developer preset is set by default, which is
   // not the case on Nightly and custom builds, or after previous tests.
-  BackgroundJSM.changePreset(
+  PrefsPresets.changePreset(
     "aboutprofiling",
     "web-developer",
     Services.profiler.GetFeatures()
@@ -307,7 +317,7 @@ add_task(async function test_change_in_about_profiling() {
 add_task(async function test_change_in_devtools_panel() {
   // This test assumes that the Web Developer preset is set by default, which is
   // not the case on Nightly and custom builds, or after previous tests.
-  BackgroundJSM.changePreset(
+  PrefsPresets.changePreset(
     "aboutprofiling",
     "web-developer",
     Services.profiler.GetFeatures()

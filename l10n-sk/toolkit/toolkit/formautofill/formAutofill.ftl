@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } chce použi�
 autofill-edit-payment-method-os-prompt-macos = zobraziť uložené informácie o spôsoboch platby
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } chce zobraziť uložené informácie o spôsoboch platby. Prosím, potvrďte prístup k účtu systému Windows.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } chce zobraziť uložené informácie o spôsoboch platby.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Možnosti automatického dopĺňania formulárov
 autofill-options-link-osx = Predvoľby automatického dopĺňania formulárov
 
@@ -81,3 +81,6 @@ autofill-category-name = meno
 autofill-category-organization = organizáciu
 autofill-category-tel = telefónne číslo
 autofill-category-email = e‑mailovú adresu
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = Aplikácia { -brand-short-name } rozpoznala nezabezpečenú stránku. Automatické dopĺňanie formulárov je dočasne zakázané.

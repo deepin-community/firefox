@@ -32,17 +32,21 @@ private fun reducer(state: MenuState, action: MenuAction): MenuState {
         is MenuAction.RemoveShortcut,
         is MenuAction.DeleteBrowsingDataAndQuit,
         is MenuAction.FindInPage,
+        is MenuAction.MenuBanner,
+        is MenuAction.DismissMenuBanner,
         is MenuAction.OpenInApp,
         is MenuAction.OpenInFirefox,
         is MenuAction.InstallAddon,
         is MenuAction.CustomMenuItemAction,
-        is MenuAction.ToggleReaderView,
         is MenuAction.CustomizeReaderView,
         is MenuAction.Navigate,
-        is MenuAction.ShowCFR,
-        is MenuAction.DismissCFR,
+        is MenuAction.OnCFRShown,
+        is MenuAction.OnCFRDismiss,
+        is MenuAction.OnSummarizationMenuExposed,
+        is MenuAction.MoveToNonPrivateTab,
         -> state
 
+        is MenuAction.OnMoreMenuClicked -> state.copy(isMoreMenuExpanded = !state.isMoreMenuExpanded)
         is MenuAction.RequestDesktopSite -> state.copy(isDesktopMode = true)
 
         is MenuAction.RequestMobileSite -> state.copy(isDesktopMode = false)
@@ -53,6 +57,10 @@ private fun reducer(state: MenuState, action: MenuAction): MenuState {
             )
         }
 
+        is MenuAction.UpdateWebExtensionBrowserMenuItems -> state.copyWithExtensionMenuState {
+            it.copy(browserWebExtensionMenuItem = action.webExtensionBrowserMenuItem)
+        }
+
         is MenuAction.UpdateBookmarkState -> state.copyWithBrowserMenuState {
             it.copy(bookmarkState = action.bookmarkState)
         }
@@ -60,6 +68,34 @@ private fun reducer(state: MenuState, action: MenuAction): MenuState {
         is MenuAction.UpdatePinnedState -> state.copyWithBrowserMenuState {
             it.copy(isPinned = action.isPinned)
         }
+
+        is MenuAction.UpdateInstallAddonInProgress -> state.copyWithExtensionMenuState {
+            it.copy(addonInstallationInProgress = action.addon)
+        }
+
+        is MenuAction.InstallAddonFailed -> state.copyWithExtensionMenuState {
+            it.copy(addonInstallationInProgress = null)
+        }
+
+        is MenuAction.InstallAddonSuccess -> state.copyWithExtensionMenuState { extensionState ->
+            extensionState.copy(
+                recommendedAddons = state.extensionMenuState.recommendedAddons.filter { it != action.addon },
+                availableAddons = state.extensionMenuState.availableAddons.plus(action.addon),
+                addonInstallationInProgress = null,
+            )
+        }
+
+        is MenuAction.UpdateAvailableAddons -> state.copyWithExtensionMenuState {
+            it.copy(availableAddons = action.availableAddons)
+        }
+
+        is MenuAction.InitializeSummarizationMenuState -> state.copyWithSummarizationMenuState {
+            action.state
+        }
+
+        is MenuAction.UpdateIPProtectionMenuState -> state.copy(
+            ipProtectionMenuState = action.state,
+        )
     }
 }
 
@@ -75,4 +111,10 @@ internal inline fun MenuState.copyWithExtensionMenuState(
     crossinline update: (ExtensionMenuState) -> ExtensionMenuState,
 ): MenuState {
     return this.copy(extensionMenuState = update(this.extensionMenuState))
+}
+
+private inline fun MenuState.copyWithSummarizationMenuState(
+    crossinline update: (SummarizationMenuState) -> SummarizationMenuState,
+): MenuState {
+    return this.copy(summarizationMenuState = update(this.summarizationMenuState))
 }

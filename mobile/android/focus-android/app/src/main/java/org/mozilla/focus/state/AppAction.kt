@@ -59,11 +59,25 @@ sealed class AppAction : Action {
      */
     data class Unlock(val tabId: String?) : AppAction()
 
+    /**
+     * Action for opening the settings screen at a specific settings [page].
+     */
     data class OpenSettings(val page: Screen.Settings.Page) : AppAction()
 
+    /**
+     * Show the content of about:crashes
+     */
+    internal object OpenCrashList : AppAction()
+
+    /**
+     * Action for opening the site permission options screen for a given [sitePermission].
+     */
     data class OpenSitePermissionOptionsScreen(val sitePermission: SitePermission) : AppAction()
 
-    data class NavigateUp(val tabId: String?) : AppAction()
+    /**
+     * Action for navigating up, optionally specifying a [tabId].
+     */
+    data class NavigateUp(val tabId: String? = null) : AppAction()
 
     /**
      * Forces showing the first run screen.
@@ -121,4 +135,9 @@ sealed class AppAction : Action {
      * State of start Cookie Banner CFR has changed
      */
     data class ShowCookieBannerCfrChange(val value: Boolean) : AppAction()
+
+    /**
+     * State of isPinningSupported has changed
+     */
+    data class UpdateIsPinningSupported(val value: Boolean) : AppAction()
 }

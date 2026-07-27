@@ -3,55 +3,83 @@
 /* import-globals-from browser_content_sandbox_utils.js */
 "use strict";
 
+const lazy = {};
+
+/* getLibcConstants is only present on *nix */
+ChromeUtils.defineLazyGetter(lazy, "LIBC", () =>
+  ChromeUtils.getLibcConstants()
+);
+
 // Test if the content process can create in $HOME, this should fail
 async function createFileInHome() {
   let browser = gBrowser.selectedBrowser;
   let homeFile = fileInHomeDir();
   let path = homeFile.path;
   let fileCreated = await SpecialPowers.spawn(browser, [path], createFile);
-  ok(!fileCreated.ok, "creating a file in home dir is not permitted");
+  ok(!fileCreated.ok, "creating a file in home dir failed");
+  is(
+    fileCreated.code,
+    Cr.NS_ERROR_FILE_ACCESS_DENIED,
+    "creating a file in home dir failed with access denied"
+  );
   if (fileCreated.ok) {
     // content process successfully created the file, now remove it
     homeFile.remove(false);
   }
 }
 
-// Test if the content process can create a temp file, this is disallowed on
-// macOS and Windows but allowed everywhere else. Also test that the content
-// process cannot create symlinks on macOS or delete files.
+// Test if the content process can create a temp file, this is forbidden on all
+// platforms. Also test that the content process cannot create symlinks on
+// macOS/Linux or delete files.
 async function createTempFile() {
   // On Windows we allow access to the temp dir for DEBUG builds, because of
   // logging that uses that dir.
-  let isOptWin = isWin() && !SpecialPowers.isDebugBuild;
+  let isDbgWin = isWin() && SpecialPowers.isDebugBuild;
 
   let browser = gBrowser.selectedBrowser;
   let path = fileInTempDir().path;
   let fileCreated = await SpecialPowers.spawn(browser, [path], createFile);
-  if (isMac() || isOptWin) {
-    ok(!fileCreated.ok, "creating a file in temp is not permitted");
+  if (isDbgWin) {
+    ok(fileCreated.ok, "creating a file in temp suceeded");
   } else {
-    ok(!!fileCreated.ok, "creating a file in temp is permitted");
-  }
-  // now delete the file
-  let fileDeleted = await SpecialPowers.spawn(browser, [path], deleteFile);
-  if (isMac() || isOptWin) {
-    // On macOS we do not allow file deletion - it is not needed by the content
-    // process itself, and macOS uses a different permission to control access
-    // so revoking it is easy.
-    ok(!fileDeleted.ok, "deleting a file in temp is not permitted");
-  } else {
-    ok(!!fileDeleted.ok, "deleting a file in temp is permitted");
+    ok(!fileCreated.ok, "creating a file in temp failed");
+    is(
+      fileCreated.code,
+      Cr.NS_ERROR_FILE_ACCESS_DENIED,
+      "creating a file in temp failed with access denied"
+    );
   }
 
-  // Test that symlink creation is not allowed on macOS.
-  if (isMac()) {
+  // now delete the file
+  let fileDeleted = await SpecialPowers.spawn(browser, [path], deleteFile);
+  if (isDbgWin) {
+    ok(fileDeleted.ok, "deleting a file in temp succeeded");
+  } else {
+    ok(!fileDeleted.ok, "deleting a file in temp failed");
+    const expectedError = isLinux()
+      ? Cr.NS_ERROR_FILE_ACCESS_DENIED
+      : Cr.NS_ERROR_FILE_NOT_FOUND;
+    is(
+      fileDeleted.code,
+      expectedError,
+      "deleting a file in temp failed with access denied"
+    );
+  }
+
+  // Test that symlink creation is not allowed on macOS/Linux.
+  if (isMac() || isLinux()) {
     let path = fileInTempDir().path;
     let symlinkCreated = await SpecialPowers.spawn(
       browser,
       [path],
       createSymlink
     );
-    ok(!symlinkCreated.ok, "created a symlink in temp is not permitted");
+    ok(!symlinkCreated.ok, "created a symlink in temp failed");
+    is(
+      symlinkCreated.code,
+      lazy.LIBC.EPERM,
+      "created a symlink in temp failed with access denied"
+    );
   }
 }
 
@@ -167,8 +195,9 @@ async function testFileAccessAllPlatforms() {
       // Mac sandbox rules use /private/var because /var is a symlink
       // to /private/var on OS X. Make sure that hasn't changed.
       varDir.normalize();
-      Assert.ok(
-        varDir.path === "/private/var",
+      Assert.strictEqual(
+        varDir.path,
+        "/private/var",
         "/var resolves to /private/var"
       );
     }
@@ -303,20 +332,6 @@ async function testFileAccessMacOnly() {
     func: readDir,
   });
 
-  // /Network is not present on macOS 10.15 (xnu 19). Don't
-  // test this directory on 10.15 and later.
-  if (AppConstants.isPlatformAndVersionAtMost("macosx", 18)) {
-    // Test that we cannot read from /Network at level 3
-    let network = GetDir("/Network");
-    tests.push({
-      desc: "/Network",
-      ok: false,
-      browser: webBrowser,
-      file: network,
-      minLevel: minHomeReadSandboxLevel(),
-      func: readDir,
-    });
-  }
   // Test that we cannot read from /Users at level 3
   let users = GetDir("/Users");
   tests.push({
@@ -410,34 +425,33 @@ async function testFileAccessLinuxOnly() {
   let configDir = GetHomeSubdir(".config");
 
   const xdgConfigHome = Services.env.get("XDG_CONFIG_HOME");
-
-  if (xdgConfigHome.length > 1) {
+  if (xdgConfigHome) {
     configDir = GetDir(xdgConfigHome);
     configDir.normalize();
-
-    tests.push({
-      desc: `$XDG_CONFIG_HOME (${configDir.path})`,
-      ok: true,
-      browser: webBrowser,
-      file: configDir,
-      minLevel: minHomeReadSandboxLevel(),
-      func: readDir,
-    });
   }
 
-  // $HOME/.config/ or $XDG_CONFIG_HOME/ should have rdonly access
   tests.push({
-    desc: `${configDir.path} dir`,
-    ok: true,
+    desc: `$XDG_CONFIG_HOME (${configDir.path})`,
+    ok: true, // access should not be granted outside of XDG support
     browser: webBrowser,
     file: configDir,
     minLevel: minHomeReadSandboxLevel(),
     func: readDir,
   });
+
+  tests.push({
+    desc: `XDG_CONFIG_HOME=${configDir.path} dir should have rdonly`,
+    ok: true, // should be allowed only if XDG support is there
+    browser: webBrowser,
+    file: configDir,
+    minLevel: minHomeReadSandboxLevel(),
+    func: readDir,
+  });
+
   if (fileContentProcessEnabled) {
     tests.push({
       desc: `${configDir.path} dir`,
-      ok: true,
+      ok: true, // should be allowed only if XDG support is there
       browser: fileBrowser,
       file: configDir,
       minLevel: 0,
@@ -445,11 +459,10 @@ async function testFileAccessLinuxOnly() {
     });
   }
 
-  if (xdgConfigHome.length > 1) {
-    // When XDG_CONFIG_HOME is set, dont allow $HOME/.config
+  if (isXdgEnabled() && xdgConfigHome) {
     const homeConfigDir = GetHomeSubdir(".config");
     tests.push({
-      desc: `${homeConfigDir.path} dir`,
+      desc: `XDG_CONFIG_HOME=${homeConfigDir.path} dir should deny $HOME/.config`,
       ok: false,
       browser: webBrowser,
       file: homeConfigDir,
@@ -473,7 +486,7 @@ async function testFileAccessLinuxOnly() {
     // Checking $HOME/.config is already done above.
     const homeConfigPrefix = GetHomeSubdir(".configlol");
     tests.push({
-      desc: `${homeConfigPrefix.path} dir`,
+      desc: `No XDG_CONFIG_HOME we dont allow ${homeConfigPrefix.path} access`,
       ok: false,
       browser: webBrowser,
       file: homeConfigPrefix,
@@ -482,7 +495,7 @@ async function testFileAccessLinuxOnly() {
     });
     if (fileContentProcessEnabled) {
       tests.push({
-        desc: `${homeConfigPrefix.path} dir`,
+        desc: `No XDG_CONFIG_HOME we dont allow ${homeConfigPrefix.path} access`,
         ok: false,
         browser: fileBrowser,
         file: homeConfigPrefix,
@@ -609,7 +622,7 @@ async function testFileAccessLinuxOnly() {
   });
 
   // Only needed to perform cleanup
-  if (xdgConfigHome.length > 1) {
+  if (isXdgEnabled()) {
     tests.push({
       desc: `$XDG_CONFIG_HOME (${configDir.path}) cleanup`,
       ok: true,
@@ -668,6 +681,13 @@ async function testFileAccessWindowsOnly() {
   let tests = [];
 
   let extDir = GetPerUserExtensionDir();
+  // We used to unconditionally create this directory from Firefox, but that
+  // was dropped in bug 2001887. The value of this directory is questionable;
+  // the test was added in Firefox 56 (bug 1403744) to cover legacy add-ons,
+  // but legacy add-on support was discontinued in Firefox 57, and we stopped
+  // sideloading add-ons from this directory on all builds except ESR in
+  // Firefox 74 (bug 1602840).
+  await IOUtils.makeDirectory(extDir.path);
   tests.push({
     desc: "per-user extensions dir",
     ok: true,

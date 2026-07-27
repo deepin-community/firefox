@@ -8,8 +8,8 @@
 "use strict";
 
 add_task(async function test_all_cookies() {
-  const expiry = Date.now() + 24 * 60 * 60;
-  Services.cookies.add(
+  const expiry = Date.now() + 24 * 60 * 60 * 1000;
+  const cv = Services.cookies.add(
     "example.net",
     "path",
     "name",
@@ -22,6 +22,7 @@ add_task(async function test_all_cookies() {
     Ci.nsICookie.SAMESITE_NONE,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
   Assert.equal(Services.cookies.countCookiesFromHost("example.net"), 1);
 
   await new Promise(aResolve => {
@@ -38,8 +39,8 @@ add_task(async function test_all_cookies() {
 });
 
 add_task(async function test_range_cookies() {
-  const expiry = Date.now() + 24 * 60 * 60;
-  Services.cookies.add(
+  const expiry = Date.now() + 24 * 60 * 60 * 1000;
+  const cv = Services.cookies.add(
     "example.net",
     "path",
     "name",
@@ -52,6 +53,7 @@ add_task(async function test_range_cookies() {
     Ci.nsICookie.SAMESITE_NONE,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
   Assert.equal(Services.cookies.countCookiesFromHost("example.net"), 1);
 
   // The cookie is out of time range here.
@@ -90,8 +92,8 @@ add_task(async function test_range_cookies() {
 });
 
 add_task(async function test_principal_cookies() {
-  const expiry = Date.now() + 24 * 60 * 60;
-  Services.cookies.add(
+  const expiry = Date.now() + 24 * 60 * 60 * 1000;
+  const cv = Services.cookies.add(
     "example.net",
     "path",
     "name",
@@ -104,6 +106,7 @@ add_task(async function test_principal_cookies() {
     Ci.nsICookie.SAMESITE_NONE,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
   Assert.equal(Services.cookies.countCookiesFromHost("example.net"), 1);
 
   let uri = Services.io.newURI("http://example.com");
@@ -144,8 +147,8 @@ add_task(async function test_principal_cookies() {
 });
 
 add_task(async function test_localfile_cookies() {
-  const expiry = Date.now() + 24 * 60 * 60;
-  Services.cookies.add(
+  const expiry = Date.now() + 24 * 60 * 60 * 1000;
+  const cv = Services.cookies.add(
     "", // local file
     "path",
     "name",
@@ -155,10 +158,10 @@ add_task(async function test_localfile_cookies() {
     false /* session */,
     expiry,
     {},
-    Ci.nsICookie.SAMESITE_NONE,
+    Ci.nsICookie.SAMESITE_UNSET,
     Ci.nsICookie.SCHEME_HTTP
   );
-
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
   Assert.notEqual(Services.cookies.countCookiesFromHost(""), 0);
 
   await new Promise(aResolve => {
@@ -172,7 +175,7 @@ add_task(async function test_localfile_cookies() {
 });
 
 // The following tests ensure we properly clear (partitioned/unpartitioned)
-// cookies when using deleteDataFromBaseDomain and deleteDataFromHost.
+// cookies when using deleteDataFromSite and deleteDataFromHost.
 
 function getTestCookieName(host, topLevelBaseDomain) {
   if (!topLevelBaseDomain) {
@@ -263,8 +266,9 @@ add_task(async function test_baseDomain_cookies() {
 
   // Clear cookies of example.net including partitions.
   await new Promise(aResolve => {
-    Services.clearData.deleteDataFromBaseDomain(
+    Services.clearData.deleteDataFromSite(
       "example.net",
+      {},
       false,
       Ci.nsIClearDataService.CLEAR_COOKIES,
       aResolve
@@ -352,10 +356,11 @@ add_task(async function test_baseDomain_cookies_subdomain() {
   Services.cookies.removeAll();
   setTestCookies();
 
-  // Clear cookies of test.example.net including partitions.
+  // Clear cookies of example.net including partitions.
   await new Promise(aResolve => {
-    Services.clearData.deleteDataFromBaseDomain(
-      "test.example.net",
+    Services.clearData.deleteDataFromSite(
+      "example.net",
+      {},
       false,
       Ci.nsIClearDataService.CLEAR_COOKIES,
       aResolve
@@ -393,8 +398,8 @@ add_task(async function test_baseDomain_cookies_subdomain() {
 });
 
 function addCookiesForHost(host) {
-  const expiry = Date.now() + 24 * 60 * 60;
-  Services.cookies.add(
+  const expiry = Date.now() + 24 * 60 * 60 * 1000;
+  const cv = Services.cookies.add(
     host,
     "path",
     "name",
@@ -407,6 +412,7 @@ function addCookiesForHost(host) {
     Ci.nsICookie.SAMESITE_NONE,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
 }
 
 function addIpv6Cookies() {
@@ -460,5 +466,19 @@ add_task(async function test_ipv6_cookies() {
   });
 
   // Assert that all cookies were removed.
+  Assert.equal(Services.cookies.cookies.length, 0);
+
+  // bug 1962120 - check that ipv6-host cookies are removed by data cleaner
+  addCookiesForHost("[::1]");
+  Assert.equal(Services.cookies.cookies.length, 1);
+  await new Promise(aResolve => {
+    Services.clearData.deleteDataFromSite(
+      "[::1]",
+      {},
+      false,
+      Ci.nsIClearDataService.CLEAR_COOKIES,
+      aResolve
+    );
+  });
   Assert.equal(Services.cookies.cookies.length, 0);
 });

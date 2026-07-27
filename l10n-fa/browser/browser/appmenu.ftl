@@ -23,10 +23,16 @@ appmenuitem-new-private-window =
     .label = پنجرهٔ ناشناس جدید
 appmenuitem-history =
     .label = تاریخچه
+appmenuitem-tab-groups =
+    .label = گروه‌های زبانه
 appmenuitem-downloads =
     .label = بارگیری‌ها
 appmenuitem-passwords =
     .label = گذرواژه‌ها
+appmenuitem-extensions-and-themes =
+    .label = افزونه‌ها و زمینه‌ها
+appmenuitem-extensions =
+    .label = افزونه‌ها
 appmenuitem-addons-and-themes =
     .label = افزایه‌ها و زمینه‌ها
 appmenuitem-print =
@@ -77,6 +83,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = نمایش زبانه‌های بیشتر
     .tooltiptext = نمایش زبانه‌های بیشتر از این دستگاه
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = زبانه‌های خاموش
+    .tooltiptext = زبانه‌های خاموش این دستگاه را ببینید
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = بدون زبانهٔ باز
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -94,6 +104,7 @@ appmenuitem-fxa-toolbar-sync-now2 = اکنون همگام شود
 appmenuitem-fxa-sign-in = ورود به { -brand-product-name }
 appmenuitem-fxa-manage-account = مدیریت حساب
 appmenu-fxa-header2 = { -fxaccount-brand-name }
+appmenu-account-header = حساب کاربری
 # Variables
 # $time (string) - Localized relative time since last sync (e.g. 1 second ago,
 # 3 hours ago, etc.)
@@ -103,8 +114,11 @@ appmenu-fxa-sync-and-save-data2 = همگام‌سازی و ذخیرهٔ داده
 appmenu-fxa-signed-in-label = ورود
 appmenu-fxa-setup-sync =
     .label = روشن کردن همگام‌سازی…
+appmenu-fxa-setup-sync-new = روشن کردن
 appmenuitem-save-page =
     .label = ذخیرهٔ صفحه به عنوان…
+appmenuitem-fxa-sync-off-title = همگام‌سازی خاموش است
+appmenuitem-fxa-sync-off-description = محافظت و دسترسی به نشانک‌ها، گذرواژه‌ها و موارد دیگر در هر مکان
 
 ## What's New panel in App menu.
 
@@ -167,6 +181,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = تنظیمات پیشنهادی برای اشکال‌زدایی بیشتر کاره‌های وب، با سربار پایین.
 profiler-popup-presets-web-developer-label =
     .label = توسعه‌دهنده وب
@@ -179,6 +198,8 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = تنظیمات مربوط به بررسی اشکالات صوتی و تصویری در { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = رسانه
+profiler-popup-presets-ml-label =
+    .label = یادگیری ماشین
 profiler-popup-presets-networking-description = تنظیمات مربوط به بررسی اشکالات شبکه در { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = شبکه
@@ -186,6 +207,9 @@ profiler-popup-presets-power-description = تنظیمات مربوط به برر
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = نیرو
+profiler-popup-presets-debug-description = پیش‌تنظیم برای اشکال‌زدایی در { -brand-shorter-name }. سربار بالا، برای کارهای عملکردی استفاده نشود بلکه برای تمرکز بر درک رفتار مرورگر استفاده شود.
+profiler-popup-presets-debug-label =
+    .label = اشکال‌زدایی
 profiler-popup-presets-custom-label =
     .label = سفارشی
 
@@ -251,6 +275,37 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = سفارشی‌سازی نوار ابزار…
+appmenu-abouttranslations =
+    .label = ترجمه…
 appmenu-developer-tools-subheader = ابزارهای مرورگر
 appmenu-developer-tools-extensions =
     .label = افزونه‌ها برای توسعه‌دهندگان
+appmenuitem-report-broken-site =
+    .label = گزارش وبگاه خراب
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = وارد حساب کاربری خود شوید
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = دریافت هشدارهای نشت اطلاعاتی
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = پنهان کردن رایانامه و شماره تلفن واقعی شما
+appmenuitem-services-relay-description = پیش‌خوان راه‌اندازی نقاب‌های رایانامه
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = حفاظت از فعالیت آنلاین شما
+appmenu-services-header = خدمات من
+appmenu-other-protection-header = سایر ابزارهای حفاظتی از { -vendor-short-name } را امتحان کنید:
+
+## Profiles panel
+
+appmenu-other-profiles = نمایه‌های دیگر
+appmenu-manage-profiles =
+    .label = مدیریت نمایه‌ها
+appmenu-copy-profile =
+    .label = رونوشت این نمایه
+appmenu-create-profile =
+    .label = نمایه جدید
+appmenu-edit-profile =
+    .aria-label = ویرایش نمایه
+appmenu-profiles-2 =
+    .label = نمایه‌ها

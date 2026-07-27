@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,20 +5,20 @@
 #ifndef mozilla_dom_FetchDriver_h
 #define mozilla_dom_FetchDriver_h
 
+#include "mozilla/ConsoleReportCollector.h"
+#include "mozilla/Mutex.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/UniquePtr.h"
+#include "mozilla/dom/AbortSignal.h"
+#include "mozilla/dom/SRIMetadata.h"
+#include "mozilla/dom/SafeRefPtr.h"
+#include "mozilla/dom/SerializedStackHolder.h"
 #include "nsIChannelEventSink.h"
+#include "nsIClassifiedChannel.h"
 #include "nsIInterfaceRequestor.h"
 #include "nsINetworkInterceptController.h"
 #include "nsIStreamListener.h"
 #include "nsIThreadRetargetableStreamListener.h"
-#include "mozilla/ConsoleReportCollector.h"
-#include "mozilla/dom/AbortSignal.h"
-#include "mozilla/dom/SafeRefPtr.h"
-#include "mozilla/dom/SerializedStackHolder.h"
-#include "mozilla/dom/SRIMetadata.h"
-#include "mozilla/RefPtr.h"
-#include "mozilla/UniquePtr.h"
-
-#include "mozilla/DebugOnly.h"
 
 class nsIConsoleReportCollector;
 class nsICookieJarSettings;
@@ -111,7 +109,8 @@ class FetchDriver final : public nsIChannelEventSink,
   FetchDriver(SafeRefPtr<InternalRequest> aRequest, nsIPrincipal* aPrincipal,
               nsILoadGroup* aLoadGroup, nsIEventTarget* aMainThreadEventTarget,
               nsICookieJarSettings* aCookieJarSettings,
-              PerformanceStorage* aPerformanceStorage, bool aIsTrackingFetch);
+              PerformanceStorage* aPerformanceStorage,
+              net::ClassificationFlags aTrackingFlags);
 
   nsresult Fetch(AbortSignalImpl* aSignalImpl, FetchDriverObserver* aObserver);
 
@@ -145,8 +144,12 @@ class FetchDriver final : public nsIChannelEventSink,
     mAssociatedBrowsingContextID = aID;
   }
 
-  void SetIsThirdPartyWorker(const Maybe<bool> aIsThirdPartyWorker) {
-    mIsThirdPartyWorker = aIsThirdPartyWorker;
+  void SetIsThirdPartyContext(const Maybe<bool> aIsThirdPartyWorker) {
+    mIsThirdPartyContext = aIsThirdPartyWorker;
+  }
+
+  void SetIsOn3PCBExceptionList(bool aIsOn3PCBExceptionList) {
+    mIsOn3PCBExceptionList = aIsOn3PCBExceptionList;
   }
 
  private:
@@ -155,9 +158,13 @@ class FetchDriver final : public nsIChannelEventSink,
   SafeRefPtr<InternalRequest> mRequest;
   SafeRefPtr<InternalResponse> mResponse;
   nsCOMPtr<nsIOutputStream> mPipeOutputStream;
-  // Access to mObserver can be racy from OnDataAvailable and
-  // FetchAbortActions. This must not be modified
-  // in either of these functions.
+
+  // mutex to prevent race between OnDataAvailable (OMT) and main thread
+  // functions
+  Mutex mODAMutex;
+  // access to mObserver can race between FetchDriverAbortActions (main thread)
+  // and OnDataAvailable (OMT)
+  // See Bug 1810805
   RefPtr<FetchDriverObserver> mObserver;
   RefPtr<Document> mDocument;
   nsCOMPtr<nsICSPEventListener> mCSPEventListener;
@@ -182,10 +189,13 @@ class FetchDriver final : public nsIChannelEventSink,
   bool mNeedToObserveOnDataAvailable;
 
   bool mIsTrackingFetch;
+  net::ClassificationFlags mTrackingFlags;
 
-  // Indicates whether the fetch request is from a third-party worker. Nothing
-  // if the fetch request is not from a worker.
-  Maybe<bool> mIsThirdPartyWorker;
+  // Indicates whether the fetch request is from a third-party context.
+  Maybe<bool> mIsThirdPartyContext;
+
+  // Indicates whether the fetch request is on the 3PCB exception list.
+  bool mIsOn3PCBExceptionList;
 
   RefPtr<AlternativeDataStreamListener> mAltDataListener;
   bool mOnStopRequestCalled;

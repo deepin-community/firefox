@@ -1,7 +1,9 @@
 [DEFAULT]
 subsuite = "media-bc"
 tags = "media-engine-compatible"
-run-if = ["wmfme"]
+run-if = [
+  "wmfme",
+]
 support-files = [
   "file_video.html",
   "head.js",
@@ -13,7 +15,9 @@ support-files = [
 ]
 
 ["browser_wmfme_crash.js"]
+skip-if = ["!crashreporter"]
 
 ["browser_wmfme_glean_first_frame_loaded_time.js"]
 
 ["browser_wmfme_max_crashes.js"]
+skip-if = ["!crashreporter"]

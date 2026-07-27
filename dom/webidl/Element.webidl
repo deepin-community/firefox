@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,8 +13,7 @@
 
 interface nsIScreen;
 
-[Exposed=Window,
- InstrumentedProps=(computedStyleMap,onmousewheel,scrollIntoViewIfNeeded)]
+[Exposed=Window]
 interface Element : Node {
   [Constant]
   readonly attribute DOMString? namespaceURI;
@@ -41,7 +39,6 @@ interface Element : Node {
 
   [SameObject]
   readonly attribute NamedNodeMap attributes;
-  [Pure]
   sequence<DOMString> getAttributeNames();
   [Pure]
   DOMString? getAttribute(DOMString name);
@@ -50,9 +47,9 @@ interface Element : Node {
   [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
   boolean toggleAttribute(DOMString name, optional boolean force);
   [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
-  undefined setAttribute(DOMString name, DOMString value);
+  undefined setAttribute(DOMString name, (TrustedType or DOMString) value);
   [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
-  undefined setAttributeNS(DOMString? namespace, DOMString name, DOMString value);
+  undefined setAttributeNS(DOMString? namespace, DOMString name, (TrustedType or DOMString) value);
   [CEReactions, Throws]
   undefined removeAttribute(DOMString name);
   [CEReactions, Throws]
@@ -152,12 +149,12 @@ interface Element : Node {
 
   // Obsolete methods.
   Attr? getAttributeNode(DOMString name);
-  [CEReactions, Throws]
+  [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
   Attr? setAttributeNode(Attr newAttr);
   [CEReactions, Throws]
   Attr? removeAttributeNode(Attr oldAttr);
   Attr? getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
-  [CEReactions, Throws]
+  [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
   Attr? setAttributeNodeNS(Attr newAttr);
 
   [Func="nsContentUtils::IsCallerChromeOrElementTransformGettersEnabled"]
@@ -174,7 +171,8 @@ dictionary FocusOptions {
   boolean focusVisible;
 };
 
-interface mixin HTMLOrForeignElement {
+// https://html.spec.whatwg.org/multipage/dom.html#htmlorsvgelement
+interface mixin HTMLOrSVGOrMathMLElement {
   [SameObject] readonly attribute DOMStringMap dataset;
   // See bug 1389421
   // attribute DOMString nonce; // intentionally no [CEReactions]
@@ -188,14 +186,14 @@ interface mixin HTMLOrForeignElement {
 // https://drafts.csswg.org/cssom/#the-elementcssinlinestyle-mixin
 interface mixin ElementCSSInlineStyle {
   [SameObject, PutForwards=cssText]
-  readonly attribute CSSStyleDeclaration style;
+  readonly attribute CSSStyleProperties style;
 };
 
 // https://drafts.csswg.org/cssom-view/
-enum ScrollLogicalPosition { "start", "center", "end", "nearest" };
+enum ScrollLogicalPosition { "start", "center", "end", "nearest", "auto" };
 dictionary ScrollIntoViewOptions : ScrollOptions {
-  ScrollLogicalPosition block = "start";
-  ScrollLogicalPosition inline = "nearest";
+  ScrollLogicalPosition block = "auto";
+  ScrollLogicalPosition inline = "auto";
 };
 
 dictionary CheckVisibilityOptions {
@@ -217,8 +215,12 @@ partial interface Element {
   // scrolling
   undefined scrollIntoView(optional (boolean or ScrollIntoViewOptions) arg = {});
   // None of the CSSOM attributes are [Pure], because they flush
-           attribute long scrollTop;   // scroll on setting
-           attribute long scrollLeft;  // scroll on setting
+           attribute unrestricted double scrollTop;   // scroll on setting
+           attribute unrestricted double scrollLeft;  // scroll on setting
+
+  // FIXME(emilio): A bit weird that these are long instead of doubles, see:
+  // https://lists.w3.org/Archives/Public/www-style/2015Feb/0195.html
+  // https://github.com/w3c/csswg-drafts/issues/5260
   readonly attribute long scrollWidth;
   readonly attribute long scrollHeight;
 
@@ -251,22 +253,22 @@ partial interface Element {
   /* The minimum/maximum offset that the element can be scrolled to
      (i.e., the value that scrollLeft/scrollTop would be clamped to if they were
      set to arbitrarily large values. */
-  [ChromeOnly] readonly attribute long scrollTopMin;
-               readonly attribute long scrollTopMax;
-  [ChromeOnly] readonly attribute long scrollLeftMin;
-               readonly attribute long scrollLeftMax;
+  [ChromeOnly] readonly attribute unrestricted double scrollTopMin;
+               readonly attribute unrestricted double scrollTopMax;
+  [ChromeOnly] readonly attribute unrestricted double scrollLeftMin;
+               readonly attribute unrestricted double scrollLeftMax;
 
   [Pref="layout.css.zoom.enabled"] readonly attribute double currentCSSZoom;
 };
 
-// http://domparsing.spec.whatwg.org/#extensions-to-the-element-interface
+// https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsing-and-serialization
 partial interface Element {
   [CEReactions, SetterNeedsSubjectPrincipal=NonSystem, Pure, SetterThrows, GetterCanOOM]
-  attribute [LegacyNullToEmptyString] DOMString innerHTML;
-  [CEReactions, Pure, SetterThrows]
-  attribute [LegacyNullToEmptyString] DOMString outerHTML;
-  [CEReactions, Throws]
-  undefined insertAdjacentHTML(DOMString position, DOMString text);
+  attribute (TrustedHTML or [LegacyNullToEmptyString] DOMString) innerHTML;
+  [CEReactions, SetterNeedsSubjectPrincipal=NonSystem, Pure, SetterThrows]
+  attribute (TrustedHTML or [LegacyNullToEmptyString] DOMString) outerHTML;
+  [CEReactions, NeedsSubjectPrincipal=NonSystem, Throws]
+  undefined insertAdjacentHTML(DOMString position, (TrustedHTML or DOMString) text);
 };
 
 // https://dom.spec.whatwg.org/#dictdef-shadowrootinit
@@ -274,10 +276,12 @@ dictionary ShadowRootInit {
   required ShadowRootMode mode;
   boolean delegatesFocus = false;
   SlotAssignmentMode slotAssignment = "named";
-  [Pref="dom.webcomponents.shadowdom.declarative.enabled"]
   boolean clonable = false;
-  [Pref="dom.webcomponents.shadowdom.declarative.enabled"]
   boolean serializable = false;
+
+  // https://github.com/whatwg/dom/pull/1353
+  [Pref="dom.shadowdom.referenceTarget.enabled"]
+  DOMString? referenceTarget;
 };
 
 // https://dom.spec.whatwg.org/#element
@@ -285,10 +289,10 @@ partial interface Element {
   // Shadow DOM v1
   [Throws, UseCounter]
   ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
-  [BinaryName="shadowRootByMode"]
+  [BinaryName="shadowRootForBindings"]
   readonly attribute ShadowRoot? shadowRoot;
 
-  [Func="Document::IsCallerChromeOrAddon", BinaryName="shadowRoot"]
+  [NeedsSubjectPrincipal, Func="Document::IsCallerChromeOrAddon"]
   readonly attribute ShadowRoot? openOrClosedShadowRoot;
 
   [BinaryName="assignedSlotByMode"]
@@ -299,6 +303,9 @@ partial interface Element {
 
   [CEReactions, Unscopable, SetterThrows]
            attribute DOMString slot;
+
+  [Pref="dom.scoped-custom-element-registries.enabled"]
+  readonly attribute CustomElementRegistry? customElementRegistry;
 };
 
 Element includes ChildNode;
@@ -307,23 +314,45 @@ Element includes ParentNode;
 Element includes Animatable;
 Element includes GeometryUtils;
 Element includes ARIAMixin;
+Element includes ARIANotifyMixin;
+
+// Fullscreen Keyboard Lock API
+// See https://github.com/whatwg/fullscreen/issues/231
+// and https://github.com/whatwg/fullscreen/pull/232
+// for details of the as-of-yet unspecified API.
+enum FullscreenKeyboardLock {
+  "none",
+  "browser",
+};
+
+// https://fullscreen.spec.whatwg.org/#dictdef-fullscreenoptions
+dictionary FullscreenOptions {
+  [Pref="dom.fullscreen.keyboard_lock.enabled"]
+  FullscreenKeyboardLock keyboardLock = "none";
+};
 
 // https://fullscreen.spec.whatwg.org/#api
 partial interface Element {
-  [NewObject, NeedsCallerType]
-  Promise<undefined> requestFullscreen();
+  [NewObject, NeedsCallerType, UseCounter]
+  Promise<undefined> requestFullscreen(optional FullscreenOptions options = {});
   [NewObject, BinaryName="requestFullscreen", NeedsCallerType, Deprecated="MozRequestFullScreenDeprecatedPrefix"]
-  Promise<undefined> mozRequestFullScreen();
+  Promise<undefined> mozRequestFullScreen(optional FullscreenOptions options = {});
 
   // Events handlers
   attribute EventHandler onfullscreenchange;
   attribute EventHandler onfullscreenerror;
 };
 
+// https://w3c.github.io/pointerlock/#pointerlockoptions-dictionary
+dictionary PointerLockOptions {
+  [Pref="dom.pointer-lock.unadjusted-movement.enabled"]
+  boolean unadjustedMovement = false;
+};
+
 // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
 partial interface Element {
-  [NeedsCallerType, Pref="dom.pointer-lock.enabled"]
-  undefined requestPointerLock();
+  [NewObject, NeedsCallerType, UseCounter, Pref="dom.pointer-lock.enabled"]
+  Promise<undefined> requestPointerLock(optional PointerLockOptions options = {});
 };
 
 // Mozilla-specific additions to support devtools
@@ -335,7 +364,7 @@ partial interface Element {
    * properties, as well as a property that exposes the flex lines
    * in this container.
    */
-  [ChromeOnly, Pure]
+  [ChromeOnly]
   Flex? getAsFlexContainer();
 
   // Support reporting of Grid properties
@@ -344,13 +373,13 @@ partial interface Element {
    * this property returns an object with computed values for grid
    * tracks and lines.
    */
-  [ChromeOnly, Pure]
+  [ChromeOnly]
   sequence<Grid> getGridFragments();
 
   /**
    * Returns whether there are any grid fragments on this element.
    */
-  [ChromeOnly, Pure]
+  [ChromeOnly]
   boolean hasGridFragments();
 
   /**
@@ -358,7 +387,7 @@ partial interface Element {
    * that have display:grid or display:inline-grid style and generate
    * a frame.
    */
-  [ChromeOnly, Pure]
+  [ChromeOnly]
   sequence<Element> getElementsWithGrid();
 
   /**
@@ -396,12 +425,8 @@ partial interface Element {
 
 
 // Sanitizer API, https://wicg.github.io/sanitizer-api/
-dictionary SetHTMLOptions {
-  SanitizerConfig sanitizer;
-};
-
 partial interface Element {
-  [SecureContext, UseCounter, Throws, Pref="dom.security.setHTML.enabled"]
+  [CEReactions, UseCounter, Throws, Pref="dom.security.sanitizer.enabled"]
   undefined setHTML(DOMString aInnerHTML, optional SetHTMLOptions options = {});
 };
 
@@ -412,8 +437,21 @@ dictionary GetHTMLOptions {
 
 partial interface Element {
   // https://html.spec.whatwg.org/#dom-element-sethtmlunsafe
-  [Pref="dom.webcomponents.shadowdom.declarative.enabled"]
-  undefined setHTMLUnsafe(DOMString html);
-  [Pref="dom.webcomponents.shadowdom.declarative.enabled"]
+  [NeedsSubjectPrincipal=NonSystem, Throws]
+  undefined setHTMLUnsafe((TrustedHTML or DOMString) html, optional SetHTMLUnsafeOptions options = {});
   DOMString getHTML(optional GetHTMLOptions options = {});
+};
+
+// https://w3c.github.io/trusted-types/dist/spec/#integrations
+typedef (TrustedHTML or TrustedScript or TrustedScriptURL) TrustedType;
+
+// https://drafts.css-houdini.org/css-typed-om-1/#computed-stylepropertymapreadonly-objects
+partial interface Element {
+    [Pref="layout.css.typed-om.enabled"]
+    StylePropertyMapReadOnly computedStyleMap();
+};
+
+// https://drafts.css-houdini.org/css-typed-om-1/#declared-stylepropertymap-objects
+partial interface mixin ElementCSSInlineStyle {
+  [SameObject, Pref="layout.css.typed-om.enabled"] readonly attribute StylePropertyMap attributeStyleMap;
 };

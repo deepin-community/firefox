@@ -6,7 +6,9 @@
 
 import {ESLintUtils} from '@typescript-eslint/utils';
 
-const createRule = ESLintUtils.RuleCreator(name => {
+const createRule = ESLintUtils.RuleCreator<{
+  requiresTypeChecking: boolean;
+}>(name => {
   return `https://github.com/puppeteer/puppeteer/tree/main/tools/eslint/${name}.js`;
 });
 
@@ -45,4 +47,4 @@ const enforceExtensionRule = createRule<[], 'extensionsRule'>({
   },
 });
 
-export = enforceExtensionRule;
+export default enforceExtensionRule;

@@ -1,9 +1,8 @@
-/* -*- Mode: C++; c-basic-offset: 2; indent-tabs-mode: nil; tab-width: 8 -*- */
-/* vim: set sw=2 ts=8 et tw=80 ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+include "ipc/ErrorIPCUtils.h";
 include "mozilla/dom/DocShellMessageUtils.h";
 include "mozilla/dom/IdentityCredentialSerializationHelpers.h";
 include "mozilla/dom/PermissionMessageUtils.h";
@@ -14,17 +13,23 @@ include "mozilla/ipc/URIUtils.h";
 include protocol PBrowser;
 include protocol PInProcess;
 include protocol PBrowserBridge;
+include protocol PDigitalCredential;
+include protocol PSerialManager;
+include protocol PWebAuthnTransaction;
+include protocol PWebIdentity;
 
 include DOMTypes;
 include ClientIPCTypes;
-include IPCIdentityCredential;
+include JSIPCValue;
 include NeckoChannelParams;
 include SessionStoreTypes;
+include ModelContextTypes;
 
 include "mozilla/layers/LayersMessageUtils.h";
 
 using mozilla::dom::JSActorMessageKind from "mozilla/dom/JSActor.h";
 using mozilla::gfx::IntRect from "mozilla/gfx/Rect.h";
+using mozilla::gfx::CrossProcessPaintFlags from "mozilla/gfx/CrossProcessPaint.h";
 [MoveOnly] using mozilla::gfx::PaintFragment from "mozilla/gfx/CrossProcessPaint.h";
 using nscolor from "nsColor.h";
 using mozilla::dom::XPCOMPermitUnloadAction from "nsIDocumentViewer.h";
@@ -35,9 +40,10 @@ using mozilla::UseCounters from "mozilla/UseCounter.h";
 using mozilla::dom::MaybeDiscardedWindowContext from "mozilla/dom/WindowContext.h";
 [RefCounted] using mozilla::dom::SessionStoreRestoreData from "mozilla/dom/SessionStoreRestoreData.h";
 using mozilla::dom::CredentialMediationRequirement from "mozilla/dom/CredentialManagementBinding.h";
-using mozilla::dom::IdentityCredentialInit from "mozilla/dom/IdentityCredentialBinding.h";
+using mozilla::dom::IdentityCredentialDisconnectOptions from "mozilla/dom/IdentityCredentialBinding.h";
 using mozilla::dom::IdentityCredentialRequestOptions from "mozilla/dom/IdentityCredentialBinding.h";
-using mozilla::dom::IdentityLoginTargetType from "mozilla/dom/IdentityCredentialBinding.h";
+using mozilla::dom::LoginStatus from "mozilla/dom/LoginStatusBinding.h";
+using mozilla::CopyableErrorResult from "mozilla/ErrorResult.h";
 
 namespace mozilla {
 namespace dom {
@@ -65,6 +71,10 @@ struct IPCWebShareData
 async protocol PWindowGlobal
 {
   manager PBrowser or PInProcess;
+  manages PDigitalCredential;
+  manages PSerialManager;
+  manages PWebAuthnTransaction;
+  manages PWebIdentity;
 
 child:
   async __delete__();
@@ -76,9 +86,10 @@ child:
                         TabId aTabId, LayersId aLayersId) returns (bool success);
 
   async DrawSnapshot(IntRect? aRect, float aScale, nscolor aBackgroundColor,
-                     uint32_t aFlags) returns (PaintFragment retval);
+                     CrossProcessPaintFlags aFlags) returns (PaintFragment retval);
 
-  async DispatchSecurityPolicyViolation(nsString aViolationEventJSON);
+  async DispatchSecurityPolicyViolation(nsString aViolationEventJSON,
+                                        nsString aReportGroupName);
 
   async SaveStorageAccessPermissionGranted();
 
@@ -94,11 +105,9 @@ child:
 
   async RestoreTabContent(nullable SessionStoreRestoreData aData) returns (bool success);
 
-  async NavigateForIdentityCredentialDiscovery(nsCString aUri, IdentityLoginTargetType aType);
-
 both:
-  async RawMessage(JSActorMessageMeta aMetadata, ClonedMessageData? aData,
-                   ClonedMessageData? aStack);
+  async RawMessage(JSActorMessageMeta aMetadata, JSIPCValue aData,
+                   nullable StructuredCloneData aStack);
 
 parent:
   // Load the given URI load state into the current owner process of the given
@@ -144,6 +153,9 @@ parent:
 
   /// Send down initial document bit to the parent.
   [LazySend] async SetIsInitialDocument(bool aIsInitialDocument);
+
+  /// Indicate that the initial document is being navigated to.
+  [LazySend] async CommitToInitialDocument();
 
   // Attempts to perform a "Web Share".
   async Share(IPCWebShareData aData) returns (nsresult rv);
@@ -199,20 +211,11 @@ parent:
 
   async SetDocumentDomain(nsIURI aDomain);
 
+  async SetSiteIntegrityProtected(nsIURI aSourceURI, uint64_t aMaxAge);
+
   async Destroy();
 
   async ReloadWithHttpsOnlyException();
-
-  // Used by the Credential Manager API and FedCM to keep the discovery of
-  // a credential abstracted from the content process. This is required because
-  // credentialed requests that are specifically not partitioned are made and
-  // the results must not enter the child process until the user consents via
-  // purpose built UI.
-  async GetIdentityCredential(IdentityCredentialRequestOptions aOptions, CredentialMediationRequirement aMediationRequirement)
-      returns (IPCIdentityCredential? identityCredential, nsresult rv);
-  async StoreIdentityCredential(IPCIdentityCredential aCredential)
-      returns (nsresult rv);
-  async PreventSilentAccess() returns (nsresult rv);
 
   async GetStorageAccessPermission(bool aIncludeIdentityCredential) returns(uint32_t permission_action);
 
@@ -220,19 +223,29 @@ parent:
   async SetCookies(nsCString baseDomain,
                                       OriginAttributes attrs,
                                       nullable nsIURI host,
-                                      bool fromHttp,
                                       bool isThirdParty,
                                       CookieStruct[] cookies);
-
-  // Notify parent of storage access in the content process. This only happens
-  // once per window lifetime to avoid redundant IPC.
-  async OnInitialStorageAccess();
 
   // User activation notifications for BounceTrackingProtection.
   async RecordUserActivationForBTP();
 
+  // User interaction notification for permission expiry tracking.
+  async RecordUserInteractionForPermissions();
+
+  async PDigitalCredential();
+  async PSerialManager();
+  async PWebAuthnTransaction();
+  async PWebIdentity();
+
 child:
   async NotifyPermissionChange(nsCString type, uint32_t permission);
+
+  async ProcessCloseRequest(MaybeDiscardedBrowsingContext aFocused);
+
+  async GetModelContextTools() returns (nsresult rv, IPCModelContextToolDefinition[] tools);
+
+  async InvokeModelContextTool(nsCString toolName, StructuredCloneData input)
+      returns (CopyableErrorResult rv, nullable StructuredCloneData output);
 };
 
 } // namespace dom

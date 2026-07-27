@@ -12,6 +12,13 @@ about-networking-dns-trr-url = Adresa DoH
 about-networking-dns-trr-mode = Režim DoH
 about-networking-dns-suffix = Prípona DNS
 about-networking-websockets = WebSockety
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Pôvod
+about-networking-alt-svc-alternate = Alternatívne
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Overený
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Izolačný kľúč
 about-networking-refresh = Obnoviť
 about-networking-auto-refresh = Automaticky obnoviť každé 3 sekundy
 about-networking-hostname = Názov servera
@@ -39,6 +46,7 @@ about-networking-dns-lookup = Vyhľadávanie DNS
 about-networking-dns-lookup-button = Vyriešiť
 about-networking-dns-domain = Doména:
 about-networking-dns-lookup-table-column = Adresy IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR
 about-networking-dns-https-rr-lookup-table-column = RR HTTP
 about-networking-rcwn = Štatistiky RCWN
 about-networking-rcwn-status = Stav RCWN
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Táto stránka bola presunutá na stránk
 
 about-networking-networkid-is-up = Spojenie je aktívne
 about-networking-networkid-status-known = Stav spojenia je známy
-
-##
-

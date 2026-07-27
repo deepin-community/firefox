@@ -21,17 +21,17 @@ graph-total-tracker-summary =
     { $count ->
         [zero] <b>{ $count }</b> tracwyr wedi eu rhwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
         [one] <b>{ $count }</b> traciwr wedi ei rwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-        [two] <b>{ $count }</b> draciwr wedi eu rwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-        [few] <b>{ $count }</b> traciwr wedi eu rwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-        [many] <b>{ $count }</b> thraciwr wedi eu rwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-       *[other] <b>{ $count }</b> traciwr wedi eu rwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+        [two] <b>{ $count }</b> draciwr wedi eu rhwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+        [few] <b>{ $count }</b> traciwr wedi eu rhwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+        [many] <b>{ $count }</b> thraciwr wedi eu rhwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+       *[other] <b>{ $count }</b> traciwr wedi eu rhwystro ers{ DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
     }
 # Text displayed instead of the graph when in Private Mode
 graph-private-window = Mae { -brand-short-name } yn parhau i rwystro tracwyr mewn Ffenestri Preifat, ond nid yw'n cadw cofnod o'r hyn gafodd ei rwystro.
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = Tracwyr rhwystrodd { -brand-short-name } yr wythnos hon
-protection-report-webpage-title = Bwrdd Gwaith Diogelwch
-protection-report-page-content-title = Bwrdd Gwaith Diogelwch
+protection-report-webpage-title = Diogeleddau Bwrdd Gwaith
+protection-report-page-content-title = Diogeleddau Bwrdd Gwaith
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
 protection-report-page-summary = Gall { -brand-short-name } ddiogelu eich preifatrwydd y tu ôl i'r llenni wrth i chi bori. Mae hwn yn grynodeb wedi'i bersonoli o'r diogelwch hynny, gan gynnwys offer i reoli eich diogelwch ar-lein.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
@@ -48,7 +48,7 @@ graph-today = Heddiw
 # This string is used to describe the graph for screenreader users.
 graph-legend-description = Graff sy'n cynnwys cyfanswm nifer pob math o draciwr gafodd ei rwystro yr wythnos hon.
 social-tab-title = Tracwyr Cyfryngau Cymdeithasol
-social-tab-contant = Mae rhwydweithiau cymdeithasol yn gosod tracwyr ar wefannau eraill i ddilyn yr hyn rydych chi'n ei wneud, ei weld, a'i wylio ar-lein. Mae hyn yn caniatáu i gwmnïau cyfryngau cymdeithasol ddysgu rhagor amdanoch chi y tu hwnt i'r hyn rydych chi'n ei rannu ar eich proffiliau cyfryngau cymdeithasol. <a data-l10n-name="learn-more-link">Darllen rhagor</a>
+social-tab-contant = Mae rhwydweithiau cymdeithasol yn gosod tracwyr ar wefannau eraill i ddilyn yr hyn rydych chi'n ei wneud, ei weld, a'i wylio ar-lein. Mae hyn yn caniatáu i gwmnïau cyfryngau cymdeithasol ddysgu rhagor amdanoch chi y tu hwnt i'r hyn rydych chi'n ei rannu ar eich proffiliau cyfryngau cymdeithasol. <a data-l10n-name="learn-more-link">Rhagor</a>
 cookie-tab-title = Cwcis Tracio Traws-Gwefan
 cookie-tab-content = Mae'r cwcis hyn yn eich dilyn o wefan i wefan i gasglu data am yr hyn rydych chi'n ei wneud ar-lein. Mae nhw'n cael eu gosod gan drydydd partïon fel hysbysebwyr a chwmnïau dadansoddeg. Mae rhwystro cwcis tracio traws-safle yn lleihau'r nifer o hysbysebion sy'n eich dilyn. <a data-l10n-name="learn-more-link">Darllen rhagor</a>
 tracker-tab-title = Cynnwys Tracio
@@ -61,7 +61,7 @@ protections-close-button2 =
     .aria-label = Cau
     .title = Cau
 mobile-app-title = Rhwystrwch dracwyr hysbysebion ar draws rhagor o ddyfeisiau
-mobile-app-card-content = Defnyddiwch y porwr symudol gydag diogelwch mewnol rhag tracio gan hysbysebion.
+mobile-app-card-content = Defnyddiwch y porwr symudol gydag diogelwch cynhenid rhag tracio gan hysbysebion.
 mobile-app-links = Porwr { -brand-product-name } ar gyfer <a data-l10n-name="android-mobile-inline-link">Android</a> a <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 lockwise-title = Peidiwch byth ag anghofio cyfrinair eto
 passwords-title-logged-in = Rheoli'ch cyfrineiriau
@@ -263,3 +263,85 @@ bar-tooltip-cryptominer =
             [many] { $count } cryptogloddwyr ({ $percentage }%)
            *[other] { $count } cryptogloddwyr ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Diogelu Preifatrwydd
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week =
+    { $count ->
+        [zero] Does { $count } wedi'u rhwystro'r wythnos hon
+        [one] Mae { $count } wedi'i rwystro'r wythnos hon
+        [two] Mae { $count } wedi'u rhwystro'r wythnos hon
+        [few] Mae { $count } wedi'u rhwystro'r wythnos hon
+        [many] Mae { $count } wedi'u rhwystro'r wythnos hon
+       *[other] Mae { $count } wedi'u rhwystro'r wythnos hon
+    }
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [zero] { $count } tracwyr
+        [one] { $count } traciwr
+        [two] { $count } draciwr
+        [few] { $count } traciwr
+        [many] { $count } traciwr
+       *[other] { $count } traciwr
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [zero] { $count } bysbrintwyr
+        [one] { $count } bysbrintiwr
+        [two] { $count } bysbrintiwr
+        [few] { $count } bysbrintiwr
+        [many] { $count } bysbrintiwr
+       *[other] { $count } bysbrintiwr
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [zero] { $count } cwcis tracio
+        [one] { $count } cwcis tracio
+        [two] { $count } gwcis tracio
+        [few] { $count } cwcis tracio
+        [many] { $count } cwcis tracio
+       *[other] { $count } cwcis tracio
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [zero] { $count } tracwyr cymdeithasol
+        [one] { $count } traciwr cymdeithasol
+        [two] { $count } draciwr cymdeithasol
+        [few] { $count } traciwr cymdeithasol
+        [many] { $count } thraciwr cymdeithasol
+       *[other] { $count } traciwr cymdeithasol
+    }
+privacy-metrics-empty = Does dim tracwyr wedi'u rhwystro'r wythnos hon. Mae { -brand-short-name } yn eich diogelu rhag y bygythiadau canlynol wrth i chi bori.
+privacy-metrics-loading = Wrthi'n llwytho ystadegau diogelu…
+privacy-metrics-error = Methu llwytho ystadegau diogelu.
+privacy-metrics-private-window = Mae { -brand-short-name } yn parhau i rwystro tracwyr mewn Ffenestri Preifat, ond nid yw'n cadw cofnod o'r hyn sydd wedi'u rhwystro.
+
+## VPN promo card and banner
+
+protections-vpn-title = Ewch â diogelwch preifatrwydd y tu hwnt i'r porwr
+protections-vpn-header-content = Diogelwch eich dyfais gyfan gyda { -mozilla-vpn-brand-name }. Mae un tap yn amgryptio'r holl draffig ac yn cuddio'ch lleoliad.
+protections-get-vpn-link = Cael { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: Wedi tanysgrifio
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+        [zero] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } dyfeisiau. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+        [one] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } dyfais. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+        [two] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } ddyfais. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+        [few] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } dyfais. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+        [many] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } dyfais. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+       *[other] Mae defnyddio { -mozilla-vpn-brand-name } yn amgryptio eich holl draffig ac yn cuddio eich lleoliad — ar hyd at { $count } dyfais. Manteisiwch i'r eithaf ar eich tanysgrifiad — ychwanegwch ef o'r <a data-l10n-name="playstore-link">Google Play Store</a> neu <a data-l10n-name="appstore-link">Apple App Store </a>.
+    }
+protections-vpn-banner-header = Diogelwch sy'n ymestyn y tu hwnt i'r porwr
+protections-vpn-banner-content = Rhowch gynnig ar { -mozilla-vpn-brand-name } yn ddiamod a gweld pam mae TechRadar yn dweud, “mae ei gyflymder, ei symlrwydd a’i bris misol isel yn ei gwneud hi’n werth ei ystyried.”
+protections-vpn-banner-link = Cael { -mozilla-vpn-brand-name }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,7 +15,6 @@
 #include "mozilla/StaticPrefs_image.h"
 #include "mozilla/PresShell.h"
 #include "nsRefreshDriver.h"
-#include "nsView.h"
 
 namespace mozilla {
 namespace layers {
@@ -220,7 +217,7 @@ nsresult SharedSurfacesChild::ShareInternal(SourceSurfaceSharedData* aSurface,
   // Attempt to share a handle with the GPU process. The handle may or may not
   // be available -- it will only be available if it is either not yet finalized
   // and/or if it has been finalized but never used for drawing in process.
-  ipc::SharedMemory::Handle handle = ipc::SharedMemory::NULLHandle();
+  ipc::ReadOnlySharedMemoryHandle handle;
   nsresult rv = aSurface->CloneHandle(handle);
   if (rv == NS_ERROR_NOT_AVAILABLE) {
     // It is at least as expensive to copy the image to the GPU process if we
@@ -474,25 +471,6 @@ void SharedSurfacesAnimation::HoldSurfaceForRecycling(
   aEntry.mPendingRelease.AppendElement(aSurface);
 }
 
-// This will get the widget listener that handles painting. Generally, this is
-// the attached widget listener (or previously attached if the attached is paint
-// suppressed). Otherwise it is the widget listener. There should be a function
-// in nsIWidget that does this for us but there isn't yet.
-static nsIWidgetListener* GetPaintWidgetListener(nsIWidget* aWidget) {
-  if (auto* attached = aWidget->GetAttachedWidgetListener()) {
-    if (attached->GetView() &&
-        attached->GetView()->IsPrimaryFramePaintSuppressed()) {
-      if (auto* previouslyAttached =
-              aWidget->GetPreviouslyAttachedWidgetListener()) {
-        return previouslyAttached;
-      }
-    }
-    return attached;
-  }
-
-  return aWidget->GetWidgetListener();
-}
-
 nsresult SharedSurfacesAnimation::SetCurrentFrame(
     SourceSurfaceSharedData* aSurface, const gfx::IntRect& aDirtyRect) {
   MOZ_ASSERT(aSurface);
@@ -522,14 +500,9 @@ nsresult SharedSurfacesAnimation::SetCurrentFrame(
     // Only root compositor bridge childs record if they are paused, so check
     // the refresh driver.
     if (auto* widget = entry.mManager->LayerManager()->GetWidget()) {
-      nsIWidgetListener* wl = GetPaintWidgetListener(widget);
-      // Note call to wl->GetView() to make sure this is view type widget
-      // listener even though we don't use the view in this code.
-      if (wl && wl->GetView() && wl->GetPresShell()) {
-        if (auto* rd = wl->GetPresShell()->GetRefreshDriver()) {
-          if (rd->IsThrottled()) {
-            continue;
-          }
+      if (auto* ps = widget->GetPresShell()) {
+        if (auto* rd = ps->GetRefreshDriver(); rd && rd->IsThrottled()) {
+          continue;
         }
       }
     }

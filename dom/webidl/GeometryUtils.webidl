@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,14 +10,22 @@
  */
 
 enum CSSBoxType { "margin", "border", "padding", "content" };
-dictionary BoxQuadOptions {
+
+dictionary GeometryUtilsOptions {
+  [ChromeOnly]
+  boolean createFramesForSuppressedWhitespace = true;
+  [ChromeOnly]
+  boolean flush = true;
+};
+
+dictionary BoxQuadOptions : GeometryUtilsOptions {
   CSSBoxType box = "border";
   GeometryNode relativeTo;
   [ChromeOnly]
-  boolean createFramesForSuppressedWhitespace = true;
+  boolean ignoreTransforms = false;
 };
 
-dictionary ConvertCoordinateOptions {
+dictionary ConvertCoordinateOptions : GeometryUtilsOptions {
   CSSBoxType fromBox = "border";
   CSSBoxType toBox = "border";
 };

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -34,6 +33,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.sameValue(sample["-1"], undefined, 'The value of sample["-1"] is expected to equal `undefined`');
   assert.sameValue(sample["1"], undefined, 'The value of sample["1"] is expected to equal `undefined`');
   assert.sameValue(sample["2"], undefined, 'The value of sample["2"] is expected to equal `undefined`');
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

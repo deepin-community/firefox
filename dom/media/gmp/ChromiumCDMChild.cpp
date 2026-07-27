@@ -1,24 +1,24 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ChromiumCDMChild.h"
-#include "GMPContentChild.h"
-#include "WidevineUtils.h"
-#include "WidevineFileIO.h"
-#include "WidevineVideoFrame.h"
-#include "GMPLog.h"
-#include "GMPPlatform.h"
-#include "mozilla/Unused.h"
-#include "nsPrintfCString.h"
-#include "base/time.h"
-#include "GMPUtils.h"
-#include "mozilla/ScopeExit.h"
-#include "CDMStorageIdProvider.h"
-#include "nsReadableUtils.h"
 
 #include <type_traits>
+
+#include "CDMStorageIdProvider.h"
+#include "GMPContentChild.h"
+#include "GMPLog.h"
+#include "GMPMessageUtils.h"
+#include "GMPPlatform.h"
+#include "GMPUtils.h"
+#include "WidevineFileIO.h"
+#include "WidevineUtils.h"
+#include "WidevineVideoFrame.h"
+#include "base/time.h"
+#include "mozilla/ScopeExit.h"
+#include "nsPrintfCString.h"
+#include "nsReadableUtils.h"
 
 namespace mozilla::gmp {
 
@@ -28,7 +28,36 @@ ChromiumCDMChild::ChromiumCDMChild(GMPContentChild* aPlugin)
   GMP_LOG_DEBUG("ChromiumCDMChild:: ctor this=%p", this);
 }
 
-void ChromiumCDMChild::Init(cdm::ContentDecryptionModule_10* aCDM,
+cdm::Exception ChromiumCDMChild::ClampException(cdm::Exception aValue) const {
+  if (NS_WARN_IF(!IPC::CDMExceptionEnumValidator::IsLegalValue(aValue))) {
+    GMP_LOG_DEBUG("ChromiumCDMChild::ClampException: unhandled %" PRIu32,
+                  aValue);
+    return cdm::Exception::kExceptionInvalidStateError;
+  }
+  return aValue;
+}
+
+cdm::Status ChromiumCDMChild::ClampStatus(cdm::Status aValue,
+                                          cdm::Status aFallback) const {
+  if (NS_WARN_IF(!IPC::CDMStatusEnumValidator::IsLegalValue(aValue))) {
+    GMP_LOG_DEBUG("ChromiumCDMChild::ClampStatus: unhandled %" PRIu32, aValue);
+    return aFallback;
+  }
+  return aValue;
+}
+
+cdm::KeyStatus ChromiumCDMChild::ClampKeyStatus(cdm::KeyStatus aValue) const {
+  if (NS_WARN_IF(!IPC::CDMKeyStatusEnumValidator::IsLegalValue(aValue))) {
+    // TODO(aosmond): When we switch to Host_12/KeyStatus_2, we should return
+    // cdm::KeyStatus_2::kUsableInFuture.
+    GMP_LOG_DEBUG("ChromiumCDMChild::ClampKeyStatus: unhandled %" PRIu32,
+                  aValue);
+    return cdm::KeyStatus::kInternalError;
+  }
+  return aValue;
+}
+
+void ChromiumCDMChild::Init(cdm::ContentDecryptionModule_11* aCDM,
                             const nsACString& aStorageId) {
   MOZ_ASSERT(IsOnMessageLoopThread());
   mCDM = aCDM;
@@ -98,12 +127,13 @@ class CDMShmemBuffer : public CDMBuffer {
 
   CDMShmemBuffer* AsShmemBuffer() override { return this; }
 
+  CDMShmemBuffer(const CDMShmemBuffer&) = delete;
+  void operator=(const CDMShmemBuffer&) = delete;
+
  private:
   RefPtr<ChromiumCDMChild> mProtocol;
   uint32_t mSize;
   mozilla::ipc::Shmem mShmem;
-  CDMShmemBuffer(const CDMShmemBuffer&);
-  void operator=(const CDMShmemBuffer&);
 };
 
 static auto ToString(const nsTArray<ipc::Shmem>& aBuffers) {
@@ -119,7 +149,7 @@ cdm::Buffer* ChromiumCDMChild::Allocate(uint32_t aCapacity) {
   MOZ_ASSERT(IsOnMessageLoopThread());
 
   if (mBuffers.IsEmpty()) {
-    Unused << SendIncreaseShmemPoolSize();
+    (void)SendIncreaseShmemPoolSize();
   }
 
   // Find the shmem with the least amount of wasted space if we were to
@@ -168,7 +198,7 @@ void ChromiumCDMChild::CallMethod(MethodType aMethod, ParamType&&... aParams) {
   MOZ_ASSERT(IsOnMessageLoopThread());
   // Avoid calling member function after destroy.
   if (!mDestroyed) {
-    Unused << (this->*aMethod)(std::forward<ParamType>(aParams)...);
+    (void)(this->*aMethod)(std::forward<ParamType>(aParams)...);
   }
 }
 
@@ -200,7 +230,7 @@ void ChromiumCDMChild::OnResolveKeyStatusPromise(uint32_t aPromiseId,
                 aPromiseId, aKeyStatus);
   CallOnMessageLoopThread("gmp::ChromiumCDMChild::OnResolveKeyStatusPromise",
                           &ChromiumCDMChild::SendOnResolvePromiseWithKeyStatus,
-                          aPromiseId, static_cast<uint32_t>(aKeyStatus));
+                          aPromiseId, ClampKeyStatus(aKeyStatus));
 }
 
 bool ChromiumCDMChild::OnResolveNewSessionPromiseInternal(
@@ -252,7 +282,7 @@ void ChromiumCDMChild::OnRejectPromise(uint32_t aPromiseId,
                 aPromiseId, aException, aSystemCode, aErrorMessage);
   CallOnMessageLoopThread("gmp::ChromiumCDMChild::OnRejectPromise",
                           &ChromiumCDMChild::SendOnRejectPromise, aPromiseId,
-                          static_cast<uint32_t>(aException), aSystemCode,
+                          ClampException(aException), aSystemCode,
                           nsCString(aErrorMessage, aErrorMessageSize));
 }
 
@@ -264,12 +294,19 @@ void ChromiumCDMChild::OnSessionMessage(const char* aSessionId,
   GMP_LOG_DEBUG("ChromiumCDMChild::OnSessionMessage(sid=%s, type=%" PRIu32
                 " size=%" PRIu32 ")",
                 aSessionId, aMessageType, aMessageSize);
+  if (NS_WARN_IF(
+          !IPC::CDMMessageTypeEnumValidator::IsLegalValue(aMessageType))) {
+    GMP_LOG_DEBUG(
+        "ChromiumCDMChild::OnSessionMessage: unhandled message %" PRIu32,
+        aMessageType);
+    return;
+  }
   CopyableTArray<uint8_t> message;
   message.AppendElements(aMessage, aMessageSize);
   CallOnMessageLoopThread("gmp::ChromiumCDMChild::OnSessionMessage",
                           &ChromiumCDMChild::SendOnSessionMessage,
-                          nsCString(aSessionId, aSessionIdSize),
-                          static_cast<uint32_t>(aMessageType), message);
+                          nsCString(aSessionId, aSessionIdSize), aMessageType,
+                          message);
 }
 
 static auto ToString(const cdm::KeyInformation* aKeysInfo,
@@ -294,6 +331,15 @@ void ChromiumCDMChild::OnSessionKeysChange(const char* aSessionId,
   keys.SetCapacity(aKeysInfoCount);
   for (uint32_t i = 0; i < aKeysInfoCount; i++) {
     const cdm::KeyInformation& key = aKeysInfo[i];
+    if (NS_WARN_IF(!IPC::CDMKeyStatusEnumValidator::IsLegalValue(key.status))) {
+      // TODO(aosmond): When we switch to Host_12/KeyStatus_2, we should use
+      // cdm::KeyStatus_2::kUsableInFuture.
+      GMP_LOG_DEBUG(
+          "ChromiumCDMChild::OnSessionKeysChange: unhandled key status "
+          "%" PRIu32,
+          key.status);
+      continue;
+    }
     nsTArray<uint8_t> kid;
     kid.AppendElements(key.key_id, key.key_id_size);
     keys.AppendElement(CDMKeyInformation(kid, key.status, key.system_code));
@@ -367,6 +413,13 @@ void ChromiumCDMChild::RequestStorageId(uint32_t aVersion) {
                     mStorageId.Length());
 }
 
+void ChromiumCDMChild::ReportMetrics(cdm::MetricName aMetricName,
+                                     uint64_t aValue) {
+  GMP_LOG_DEBUG("ChromiumCDMChild::ReportMetrics() aMetricName=%" PRIu32
+                ", aValue=%" PRIu64,
+                aMetricName, aValue);
+}
+
 ChromiumCDMChild::~ChromiumCDMChild() {
   GMP_LOG_DEBUG("ChromiumCDMChild:: dtor this=%p", this);
 }
@@ -376,7 +429,15 @@ bool ChromiumCDMChild::IsOnMessageLoopThread() {
 }
 
 void ChromiumCDMChild::ActorDestroy(ActorDestroyReason aReason) {
+  mInitPromise.RejectIfExists(NS_ERROR_ABORT, __func__);
+
+  if (mCDM) {
+    mCDM->Destroy();
+    mCDM = nullptr;
+  }
+
   mPlugin = nullptr;
+  mDestroyed = true;
 }
 
 void ChromiumCDMChild::PurgeShmems() {
@@ -442,36 +503,35 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvSetServerCertificate(
 }
 
 mozilla::ipc::IPCResult ChromiumCDMChild::RecvCreateSessionAndGenerateRequest(
-    const uint32_t& aPromiseId, const uint32_t& aSessionType,
-    const uint32_t& aInitDataType, nsTArray<uint8_t>&& aInitData) {
+    const uint32_t& aPromiseId, const cdm::SessionType& aSessionType,
+    const cdm::InitDataType& aInitDataType, nsTArray<uint8_t>&& aInitData) {
   MOZ_ASSERT(IsOnMessageLoopThread());
   GMP_LOG_DEBUG(
       "ChromiumCDMChild::RecvCreateSessionAndGenerateRequest("
       "pid=%" PRIu32 ", sessionType=%" PRIu32 ", initDataType=%" PRIu32
       ") initDataLen=%zu",
-      aPromiseId, aSessionType, aInitDataType, aInitData.Length());
-  MOZ_ASSERT(aSessionType <= cdm::SessionType::kPersistentLicense);
-  MOZ_ASSERT(aInitDataType <= cdm::InitDataType::kWebM);
+      aPromiseId, static_cast<uint32_t>(aSessionType),
+      static_cast<uint32_t>(aInitDataType), aInitData.Length());
   if (mCDM) {
-    mCDM->CreateSessionAndGenerateRequest(
-        aPromiseId, static_cast<cdm::SessionType>(aSessionType),
-        static_cast<cdm::InitDataType>(aInitDataType), aInitData.Elements(),
-        aInitData.Length());
+    mCDM->CreateSessionAndGenerateRequest(aPromiseId, aSessionType,
+                                          aInitDataType, aInitData.Elements(),
+                                          aInitData.Length());
   }
   return IPC_OK();
 }
 
 mozilla::ipc::IPCResult ChromiumCDMChild::RecvLoadSession(
-    const uint32_t& aPromiseId, const uint32_t& aSessionType,
+    const uint32_t& aPromiseId, const cdm::SessionType& aSessionType,
     const nsACString& aSessionId) {
   MOZ_ASSERT(IsOnMessageLoopThread());
   GMP_LOG_DEBUG(
       "ChromiumCDMChild::RecvLoadSession(pid=%u, type=%u, sessionId=%s)",
-      aPromiseId, aSessionType, PromiseFlatCString(aSessionId).get());
+      aPromiseId, static_cast<uint32_t>(aSessionType),
+      PromiseFlatCString(aSessionId).get());
   if (mCDM) {
     mLoadSessionPromiseIds.AppendElement(aPromiseId);
-    mCDM->LoadSession(aPromiseId, static_cast<cdm::SessionType>(aSessionType),
-                      aSessionId.BeginReading(), aSessionId.Length());
+    mCDM->LoadSession(aPromiseId, aSessionType, aSessionId.BeginReading(),
+                      aSessionId.Length());
   }
   return IPC_OK();
 }
@@ -550,33 +610,41 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvGetStatusForPolicy(
   return IPC_OK();
 }
 
-static void InitInputBuffer(const CDMInputBuffer& aBuffer,
+static bool InitInputBuffer(const CDMInputBuffer& aBuffer,
                             nsTArray<cdm::SubsampleEntry>& aSubSamples,
                             cdm::InputBuffer_2& aInputBuffer) {
   aInputBuffer.data = aBuffer.mData().get<uint8_t>();
   aInputBuffer.data_size = aBuffer.mData().Size<uint8_t>();
 
-  if (aBuffer.mEncryptionScheme() != cdm::EncryptionScheme::kUnencrypted) {
-    MOZ_ASSERT(aBuffer.mEncryptionScheme() == cdm::EncryptionScheme::kCenc ||
-               aBuffer.mEncryptionScheme() == cdm::EncryptionScheme::kCbcs);
-    aInputBuffer.key_id = aBuffer.mKeyId().Elements();
-    aInputBuffer.key_id_size = aBuffer.mKeyId().Length();
+  switch (aBuffer.mEncryptionScheme()) {
+    case cdm::EncryptionScheme::kCenc:
+    case cdm::EncryptionScheme::kCbcs:
+      aInputBuffer.key_id = aBuffer.mKeyId().Elements();
+      aInputBuffer.key_id_size = aBuffer.mKeyId().Length();
 
-    aInputBuffer.iv = aBuffer.mIV().Elements();
-    aInputBuffer.iv_size = aBuffer.mIV().Length();
+      aInputBuffer.iv = aBuffer.mIV().Elements();
+      aInputBuffer.iv_size = aBuffer.mIV().Length();
 
-    aSubSamples.SetCapacity(aBuffer.mClearBytes().Length());
-    for (size_t i = 0; i < aBuffer.mCipherBytes().Length(); i++) {
-      aSubSamples.AppendElement(cdm::SubsampleEntry{aBuffer.mClearBytes()[i],
-                                                    aBuffer.mCipherBytes()[i]});
-    }
-    aInputBuffer.subsamples = aSubSamples.Elements();
-    aInputBuffer.num_subsamples = aSubSamples.Length();
-    aInputBuffer.encryption_scheme = aBuffer.mEncryptionScheme();
+      aSubSamples.SetCapacity(aBuffer.mClearBytes().Length());
+      for (size_t i = 0; i < aBuffer.mCipherBytes().Length(); i++) {
+        aSubSamples.AppendElement(cdm::SubsampleEntry{
+            aBuffer.mClearBytes()[i], aBuffer.mCipherBytes()[i]});
+      }
+      aInputBuffer.subsamples = aSubSamples.Elements();
+      aInputBuffer.num_subsamples = aSubSamples.Length();
+      break;
+    case cdm::EncryptionScheme::kUnencrypted:
+      break;
+    default:
+      GMP_LOG_ERROR("InitInputBuffer: Unhandled encryption scheme %" PRIu32,
+                    static_cast<uint32_t>(aBuffer.mEncryptionScheme()));
+      return false;
   }
+  aInputBuffer.encryption_scheme = aBuffer.mEncryptionScheme();
   aInputBuffer.pattern.crypt_byte_block = aBuffer.mCryptByteBlock();
   aInputBuffer.pattern.skip_byte_block = aBuffer.mSkipByteBlock();
   aInputBuffer.timestamp = aBuffer.mTimestamp();
+  return true;
 }
 
 bool ChromiumCDMChild::HasShmemOfSize(size_t aSize) const {
@@ -618,44 +686,53 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecrypt(
 
   if (!mCDM) {
     GMP_LOG_DEBUG("ChromiumCDMChild::RecvDecrypt() no CDM");
-    Unused << SendDecryptFailed(aId, cdm::kDecryptError);
+    (void)SendDecryptFailed(aId, cdm::kDecryptError);
     return IPC_OK();
   }
   if (aBuffer.mClearBytes().Length() != aBuffer.mCipherBytes().Length()) {
     GMP_LOG_DEBUG(
         "ChromiumCDMChild::RecvDecrypt() clear/cipher bytes length doesn't "
         "match");
-    Unused << SendDecryptFailed(aId, cdm::kDecryptError);
+    (void)SendDecryptFailed(aId, cdm::kDecryptError);
     return IPC_OK();
   }
 
   cdm::InputBuffer_2 input = {};
   nsTArray<cdm::SubsampleEntry> subsamples;
-  InitInputBuffer(aBuffer, subsamples, input);
+  if (!InitInputBuffer(aBuffer, subsamples, input)) {
+    (void)SendDecryptFailed(aId, cdm::kDecryptError);
+    return IPC_OK();
+  }
 
   WidevineDecryptedBlock output;
   cdm::Status status = mCDM->Decrypt(input, &output);
 
   // CDM should have allocated a cdm::Buffer for output.
-  CDMShmemBuffer* buffer =
-      output.DecryptedBuffer()
-          ? static_cast<CDMShmemBuffer*>(output.DecryptedBuffer())
-          : nullptr;
-  MOZ_ASSERT_IF(buffer, buffer->AsShmemBuffer());
-  if (status != cdm::kSuccess || !buffer) {
-    Unused << SendDecryptFailed(aId, status);
+  if (status != cdm::kSuccess || !output.DecryptedBuffer()) {
+    (void)SendDecryptFailed(aId, ClampStatus(status, cdm::kDecryptError));
     return IPC_OK();
   }
 
-  // Success! Return the decrypted sample to parent.
-  MOZ_ASSERT(!HasShmemOfSize(outputShmemSize));
-  ipc::Shmem shmem = buffer->ExtractShmem();
-  if (SendDecrypted(aId, cdm::kSuccess, std::move(shmem))) {
-    // No need to deallocate the output shmem; it should have been returned
-    // to the content process.
-    autoDeallocateOutputShmem.release();
+  auto* buffer = static_cast<CDMBuffer*>(output.DecryptedBuffer());
+  if (auto* shmemBuffer = buffer->AsShmemBuffer()) {
+    MOZ_ASSERT(!HasShmemOfSize(outputShmemSize));
+    ipc::Shmem shmem = shmemBuffer->ExtractShmem();
+    if (SendDecryptedShmem(aId, cdm::kSuccess, std::move(shmem))) {
+      // No need to deallocate the output shmem; it should have been returned
+      // to the content process.
+      autoDeallocateOutputShmem.release();
+    }
+    return IPC_OK();
   }
 
+  if (auto* arrayBuffer = buffer->AsArrayBuffer()) {
+    (void)SendDecryptedData(aId, cdm::kSuccess, arrayBuffer->ExtractBuffer());
+    return IPC_OK();
+  }
+
+  MOZ_ASSERT_UNREACHABLE("Unexpected CDMBuffer type!");
+  GMP_LOG_DEBUG("ChromiumCDMChild::RecvDecrypt() unexpected CDMBuffer type");
+  (void)SendDecryptFailed(aId, cdm::kDecryptError);
   return IPC_OK();
 }
 
@@ -665,13 +742,13 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvInitializeVideoDecoder(
   MOZ_ASSERT(!mDecoderInitialized);
   if (!mCDM) {
     GMP_LOG_DEBUG("ChromiumCDMChild::RecvInitializeVideoDecoder() no CDM");
-    Unused << SendOnDecoderInitDone(cdm::kInitializationError);
+    (void)SendOnDecoderInitDone(cdm::kInitializationError);
     return IPC_OK();
   }
   cdm::VideoDecoderConfig_2 config = {};
-  config.codec = static_cast<cdm::VideoCodec>(aConfig.mCodec());
-  config.profile = static_cast<cdm::VideoCodecProfile>(aConfig.mProfile());
-  config.format = static_cast<cdm::VideoFormat>(aConfig.mFormat());
+  config.codec = aConfig.mCodec();
+  config.profile = aConfig.mProfile();
+  config.format = aConfig.mFormat();
   config.coded_size =
       mCodedSize = {aConfig.mImageWidth(), aConfig.mImageHeight()};
   nsTArray<uint8_t> extraData(aConfig.mExtraData().Clone());
@@ -681,7 +758,8 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvInitializeVideoDecoder(
   cdm::Status status = mCDM->InitializeVideoDecoder(config);
   GMP_LOG_DEBUG("ChromiumCDMChild::RecvInitializeVideoDecoder() status=%u",
                 status);
-  Unused << SendOnDecoderInitDone(status);
+  (void)SendOnDecoderInitDone(
+      ClampStatus(status, cdm::Status::kInitializationError));
   mDecoderInitialized = status == cdm::kSuccess;
   return IPC_OK();
 }
@@ -704,7 +782,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvResetVideoDecoder() {
   if (mDecoderInitialized && mCDM) {
     mCDM->ResetDecoder(cdm::kStreamTypeVideo);
   }
-  Unused << SendResetVideoDecoderComplete();
+  (void)SendResetVideoDecoderComplete();
   return IPC_OK();
 }
 
@@ -715,15 +793,22 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecryptAndDecodeFrame(
                 aBuffer.mTimestamp());
   MOZ_ASSERT(mDecoderInitialized);
 
-  if (!mCDM) {
-    GMP_LOG_DEBUG("ChromiumCDMChild::RecvDecryptAndDecodeFrame() no CDM");
-    Unused << SendDecodeFailed(cdm::kDecodeError);
-    return IPC_OK();
-  }
-
   RefPtr<ChromiumCDMChild> self = this;
   auto autoDeallocateShmem =
       MakeScopeExit([&, self] { self->DeallocShmem(aBuffer.mData()); });
+
+  if (!mCDM) {
+    GMP_LOG_DEBUG("ChromiumCDMChild::RecvDecryptAndDecodeFrame() no CDM");
+    (void)SendDecodeFailed(cdm::kDecodeError);
+    return IPC_OK();
+  }
+
+  cdm::InputBuffer_2 input = {};
+  nsTArray<cdm::SubsampleEntry> subsamples;
+  if (!InitInputBuffer(aBuffer, subsamples, input)) {
+    (void)SendDecodeFailed(cdm::kDecodeError);
+    return IPC_OK();
+  }
 
   // The output frame may not have the same timestamp as the frame we put in.
   // We may need to input a number of frames before we receive output. The
@@ -731,10 +816,6 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecryptAndDecodeFrame(
   // So we need to store the durations of the frames input, and retrieve them
   // on output.
   mFrameDurations.Insert(aBuffer.mTimestamp(), aBuffer.mDuration());
-
-  cdm::InputBuffer_2 input = {};
-  nsTArray<cdm::SubsampleEntry> subsamples;
-  InitInputBuffer(aBuffer, subsamples, input);
 
   WidevineVideoFrame frame;
   cdm::Status rv = mCDM->DecryptAndDecodeFrame(input, &frame);
@@ -744,7 +825,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecryptAndDecodeFrame(
 
   switch (rv) {
     case cdm::kNeedMoreData:
-      Unused << SendDecodeFailed(rv);
+      (void)SendDecodeFailed(rv);
       break;
     case cdm::kNoKey:
       GMP_LOG_DEBUG("NoKey for sample at time=%" PRId64 "!", input.timestamp);
@@ -757,7 +838,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecryptAndDecodeFrame(
       // pipeline rolling, just output a black frame. See bug 1343140.
       if (!frame.InitToBlack(mCodedSize.width, mCodedSize.height,
                              input.timestamp)) {
-        Unused << SendDecodeFailed(cdm::kDecodeError);
+        (void)SendDecodeFailed(cdm::kDecodeError);
         break;
       }
       [[fallthrough]];
@@ -769,7 +850,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDecryptAndDecodeFrame(
       // CDM didn't set a frame buffer on the sample, report it as an error.
       [[fallthrough]];
     default:
-      Unused << SendDecodeFailed(rv);
+      (void)SendDecodeFailed(ClampStatus(rv, cdm::kDecodeError));
       break;
   }
 
@@ -783,34 +864,38 @@ void ChromiumCDMChild::ReturnOutput(WidevineVideoFrame& aFrame) {
   output.mFormat() = static_cast<cdm::VideoFormat>(aFrame.Format());
   output.mImageWidth() = aFrame.Size().width;
   output.mImageHeight() = aFrame.Size().height;
-  output.mYPlane() = {aFrame.PlaneOffset(cdm::VideoPlane::kYPlane),
-                      aFrame.Stride(cdm::VideoPlane::kYPlane)};
-  output.mUPlane() = {aFrame.PlaneOffset(cdm::VideoPlane::kUPlane),
-                      aFrame.Stride(cdm::VideoPlane::kUPlane)};
-  output.mVPlane() = {aFrame.PlaneOffset(cdm::VideoPlane::kVPlane),
-                      aFrame.Stride(cdm::VideoPlane::kVPlane)};
+  output.mYPlane() = {aFrame.PlaneOffset(cdm::kYPlane),
+                      aFrame.Stride(cdm::kYPlane)};
+  output.mUPlane() = {aFrame.PlaneOffset(cdm::kUPlane),
+                      aFrame.Stride(cdm::kUPlane)};
+  output.mVPlane() = {aFrame.PlaneOffset(cdm::kVPlane),
+                      aFrame.Stride(cdm::kVPlane)};
   output.mTimestamp() = aFrame.Timestamp();
 
-  uint64_t duration = 0;
-  if (mFrameDurations.Find(aFrame.Timestamp(), duration)) {
-    output.mDuration() = duration;
+  if (Maybe<uint64_t> duration = mFrameDurations.Take(aFrame.Timestamp())) {
+    output.mDuration() = *duration;
   }
 
   CDMBuffer* base = reinterpret_cast<CDMBuffer*>(aFrame.FrameBuffer());
-  if (base->AsShmemBuffer()) {
-    ipc::Shmem shmem = base->AsShmemBuffer()->ExtractShmem();
-    Unused << SendDecodedShmem(output, std::move(shmem));
-  } else {
-    MOZ_ASSERT(base->AsArrayBuffer());
-    Unused << SendDecodedData(output, base->AsArrayBuffer()->ExtractBuffer());
+  if (auto* shmemBase = base->AsShmemBuffer()) {
+    ipc::Shmem shmem = shmemBase->ExtractShmem();
+    (void)SendDecodedShmem(output, std::move(shmem));
+    return;
   }
+
+  if (auto* arrayBase = base->AsArrayBuffer()) {
+    (void)SendDecodedData(output, arrayBase->ExtractBuffer());
+    return;
+  }
+
+  MOZ_ASSERT_UNREACHABLE("Unexpected CDMBuffer type!");
 }
 
 mozilla::ipc::IPCResult ChromiumCDMChild::RecvDrain() {
   MOZ_ASSERT(IsOnMessageLoopThread());
   if (!mCDM) {
     GMP_LOG_DEBUG("ChromiumCDMChild::RecvDrain() no CDM");
-    Unused << SendDrainComplete();
+    (void)SendDrainComplete();
     return IPC_OK();
   }
   WidevineVideoFrame frame;
@@ -822,7 +907,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDrain() {
     MOZ_ASSERT(frame.Format() != cdm::kUnknownVideoFormat);
     ReturnOutput(frame);
   } else {
-    Unused << SendDrainComplete();
+    (void)SendDrainComplete();
   }
   return IPC_OK();
 }
@@ -833,15 +918,7 @@ mozilla::ipc::IPCResult ChromiumCDMChild::RecvDestroy() {
 
   MOZ_ASSERT(!mDecoderInitialized);
 
-  mInitPromise.RejectIfExists(NS_ERROR_ABORT, __func__);
-
-  if (mCDM) {
-    mCDM->Destroy();
-    mCDM = nullptr;
-  }
-  mDestroyed = true;
-
-  Unused << Send__delete__(this);
+  (void)Send__delete__(this);
 
   return IPC_OK();
 }

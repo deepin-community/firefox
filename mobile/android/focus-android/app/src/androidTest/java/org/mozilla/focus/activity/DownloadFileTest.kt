@@ -4,7 +4,6 @@
 package org.mozilla.focus.activity
 
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
-import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -15,11 +14,11 @@ import org.mozilla.focus.activity.robots.notificationTray
 import org.mozilla.focus.activity.robots.searchScreen
 import org.mozilla.focus.helpers.DeleteFilesHelper.deleteFileUsingDisplayName
 import org.mozilla.focus.helpers.FeatureSettingsHelper
+import org.mozilla.focus.helpers.FocusTestRule
 import org.mozilla.focus.helpers.MainActivityIntentsTestRule
-import org.mozilla.focus.helpers.MockWebServerHelper
 import org.mozilla.focus.helpers.RetryTestRule
 import org.mozilla.focus.helpers.StringsHelper.GOOGLE_PHOTOS
-import org.mozilla.focus.helpers.TestAssetHelper.getImageTestAsset
+import org.mozilla.focus.helpers.TestAssetHelper.imageTestAsset
 import org.mozilla.focus.helpers.TestHelper.assertNativeAppOpens
 import org.mozilla.focus.helpers.TestHelper.getTargetContext
 import org.mozilla.focus.helpers.TestHelper.mDevice
@@ -28,17 +27,20 @@ import org.mozilla.focus.helpers.TestHelper.verifyDownloadedFileOnStorage
 import org.mozilla.focus.helpers.TestHelper.verifySnackBarText
 import org.mozilla.focus.helpers.TestHelper.waitingTime
 import org.mozilla.focus.testAnnotations.SmokeTest
-import java.io.IOException
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 class DownloadFileTest {
-    private lateinit var webServer: MockWebServer
     private val featureSettingsHelper = FeatureSettingsHelper()
     private val downloadTestPage = "https://storage.googleapis.com/mobile_test_assets/test_app/downloads.html"
     private var downloadFileName: String = ""
 
+    @get:Rule(order = 0)
+    val focusTestRule: FocusTestRule = FocusTestRule()
+
+    private val webServerRule get() = focusTestRule.mockWebServerRule
+
     @get:Rule
-    var mActivityTestRule = MainActivityIntentsTestRule(showFirstRun = false)
+    val mActivityTestRule = MainActivityIntentsTestRule(showFirstRun = false)
 
     @Rule
     @JvmField
@@ -47,19 +49,10 @@ class DownloadFileTest {
     @Before
     fun setUp() {
         featureSettingsHelper.setCfrForTrackingProtectionEnabled(false)
-        webServer = MockWebServer().apply {
-            dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
-            start()
-        }
     }
 
     @After
     fun tearDown() {
-        try {
-            webServer.shutdown()
-        } catch (e: IOException) {
-            throw AssertionError("Could not stop web server", e)
-        }
         deleteFileUsingDisplayName(getTargetContext.applicationContext, downloadFileName)
         featureSettingsHelper.resetAllFeatureFlags()
     }
@@ -67,7 +60,7 @@ class DownloadFileTest {
     @SmokeTest
     @Test
     fun downloadNotificationTest() {
-        val downloadPageUrl = getImageTestAsset(webServer).url
+        val downloadPageUrl = webServerRule.server.imageTestAsset.url
         downloadFileName = "download.jpg"
 
         notificationTray {
@@ -98,7 +91,7 @@ class DownloadFileTest {
     @SmokeTest
     @Test
     fun cancelDownloadTest() {
-        val downloadPageUrl = getImageTestAsset(webServer).url
+        val downloadPageUrl = webServerRule.server.imageTestAsset.url
 
         searchScreen {
         }.loadPage(downloadPageUrl) { }
@@ -117,7 +110,7 @@ class DownloadFileTest {
     @SmokeTest
     @Test
     fun downloadAndOpenJpgFileTest() {
-        val downloadPageUrl = getImageTestAsset(webServer).url
+        val downloadPageUrl = webServerRule.server.imageTestAsset.url
         downloadFileName = "download.jpg"
 
         // Load website with service worker

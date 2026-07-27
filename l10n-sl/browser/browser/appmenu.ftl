@@ -6,7 +6,7 @@
 ## App Menu
 
 appmenuitem-banner-update-downloading =
-    .label = Prenašanje posodobitve za { -brand-shorter-name }
+    .label = Prenašanje posodobitve za { -brand-shorter-name(sklon: "tozilnik") }
 appmenuitem-banner-update-available =
     .label = Na voljo je posodobitev – prenesi zdaj
 appmenuitem-banner-update-manual =
@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Posodobitev ni mogoča – nezdružljiv sistem
 appmenuitem-banner-update-restart =
     .label = Na voljo je posodobitev – zaženi znova
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Pridobite novi { -brand-short-name(sklon: "tozilnik") }. Obdržite vse zavihke.
+appmenu-nova-update-link = Ponovno zaženi za posodobitev
+appmenu-nova-fxa-sign-in = Prijava
+appmenu-nova-switch-device-promo =
+    .message = Se vam obeta nov računalnik? Vzemite { -brand-short-name(sklon: "tozilnik") } s seboj!
+appmenu-nova-switch-device-link = Kako preseliti svoje podatke
 appmenuitem-new-tab =
     .label = Nov zavihek
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Novo zasebno okno
 appmenuitem-history =
     .label = Zgodovina
+appmenuitem-tab-groups =
+    .label = Skupine zavihkov
 appmenuitem-downloads =
     .label = Prenosi
 appmenuitem-passwords =
     .label = Gesla
+appmenuitem-extensions-and-themes =
+    .label = Razširitve in teme
+appmenuitem-extensions =
+    .label = Razširitve
 appmenuitem-addons-and-themes =
     .label = Dodatki in teme
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Sinhroniziraj in shrani podatke
 appmenu-fxa-signed-in-label = Prijava
 appmenu-fxa-setup-sync =
     .label = Vklopi sinhronizacijo …
+appmenu-fxa-setup-sync-new = Vklopi
 appmenuitem-save-page =
     .label = Shrani stran kot …
+appmenuitem-fxa-sync-off-title = Sinhronizacija je izklopljena
+appmenuitem-fxa-sync-off-description = Zavarujte svoje zaznamke, gesla in druge podatke ter jih imejte povsod pri roki.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Odpri ploščo za spremljanje delovanja
+    .tooltiptext = Odpri ploščo za spremljanje delovanja
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Prednastavitev za preiskovanje napak zvoka in videa v { -brand-shorter-name(sklon: "mestnik") }.
 profiler-popup-presets-media-label =
     .label = Predstavnost
+profiler-popup-presets-ml-description = Prednastavitev za preiskovanje napak pri strojnem učenju v { -brand-shorter-name(sklon: "mestnik") }.
+profiler-popup-presets-ml-label =
+    .label = Strojno učenje
 profiler-popup-presets-networking-description = Prednastavitev za preiskovanje napak v delovanju omrežja v { -brand-shorter-name(sklon: "mestnik") }
 profiler-popup-presets-networking-label =
     .label = Omrežno povezovanje
@@ -199,6 +222,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Prednastavitev za razhroščevanje v { -brand-shorter-name(sklon: "mestnik") }. Visoka poraba sredstev – ne uporabljajte za delo pri visoki zmogljivosti, temveč za osredotočanje na razumevanje delovanja brskalnika.
 profiler-popup-presets-debug-label =
     .label = Razhroščevanje
+profiler-popup-presets-web-compat-description = Priporočena prednastavitev za razhroščevanje težav s spletno združljivostjo na spletnih mestih in ne za sledenje učinkovitosti.
+profiler-popup-presets-web-compat-label =
+    .label = Spletna združljivost
 profiler-popup-presets-custom-label =
     .label = Po meri
 
@@ -238,7 +264,7 @@ appmenu-help-share-ideas =
     .label = Sporoči ideje in povratne informacije …
     .accesskey = D
 appmenu-help-switch-device =
-    .label = Preklapljanje na novo napravo
+    .label = Prehod na novo napravo
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -264,6 +290,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Prilagodi orodno vrstico …
+appmenu-abouttranslations =
+    .label = Prevedi …
 appmenu-developer-tools-subheader = Orodja brskalnika
 appmenu-developer-tools-extensions =
     .label = Razširitve za razvijalce
@@ -277,5 +305,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Prejemajte opozorila o krajah podatkov
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Zakrijte svoj pravi e-poštni naslov in telefonsko številko
+appmenuitem-services-relay-description = Odpri pregledno ploščo e-poštnih mask
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Zagotovite si zaščito za celotno napravo
 appmenuitem-vpn-description = Zaščitite svojo spletno dejavnost
+appmenu-services-header = Moje storitve
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Preskusite druga Mozillina orodja za zaščito:
+appmenu-other-protection-header = Preskusite druga orodja { -vendor-short-name(sklon: "rodilnik") } za zaščito:
+
+## Profiles panel
+
+appmenu-other-profiles = Drugi profili
+appmenu-manage-profiles =
+    .label = Upravljanje profilov
+appmenu-copy-profile =
+    .label = Kopiraj ta profil
+appmenu-create-profile =
+    .label = Nov profil
+appmenu-edit-profile =
+    .aria-label = Urejanje profila
+appmenu-profiles-2 =
+    .label = Profili

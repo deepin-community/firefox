@@ -27,6 +27,12 @@ const middleShiftEvent = { button: 1, shiftKey: true };
 const middleMetaEvent = { button: 1, [metaKey]: true };
 const middleMetaShiftEvent = { button: 1, [metaKey]: true, shiftKey: true };
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function testMouse() {
   await BrowserTestUtils.withNewTab(TEST_URL, async function (browser) {
     const tests = [
@@ -207,12 +213,12 @@ async function runWindowOpenTests(browser, tests) {
       BrowserTestUtils.synthesizeMouseAtCenter(id, { ...event }, browser);
     } else {
       // Make sure the keyboard activates a simple button on the page.
-      await ContentTask.spawn(browser, id, () => {
+      await SpecialPowers.spawn(browser, [], () => {
         content.document.querySelector("#focus-result").value = "";
         content.document.querySelector("#focus-check").focus();
       });
       BrowserTestUtils.synthesizeKey("VK_SPACE", {}, browser);
-      await ContentTask.spawn(browser, {}, async () => {
+      await SpecialPowers.spawn(browser, [], async () => {
         await ContentTaskUtils.waitForCondition(
           () => content.document.querySelector("#focus-result").value === "ok"
         );
@@ -220,7 +226,7 @@ async function runWindowOpenTests(browser, tests) {
 
       // Once confirmed the keyboard event works, send the actual event
       // that calls window.open.
-      await ContentTask.spawn(browser, id, elementId => {
+      await SpecialPowers.spawn(browser, [id], elementId => {
         content.document.querySelector(elementId).focus();
       });
       BrowserTestUtils.synthesizeKey(type, { ...event }, browser);

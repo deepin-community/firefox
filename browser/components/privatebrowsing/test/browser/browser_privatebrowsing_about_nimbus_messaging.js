@@ -6,6 +6,12 @@ const { sinon } = ChromeUtils.importESModule(
   "resource://testing-common/Sinon.sys.mjs"
 );
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.privatebrowsing.felt-privacy-v1", false]],
+  });
+});
+
 add_task(async function test_experiment_messaging_system() {
   const LOCALE = Services.locale.appLocaleAsBCP47;
   let doExperimentCleanup = await setupMSExperimentWithMessage({
@@ -66,7 +72,7 @@ add_task(async function test_experiment_messaging_system() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_promo_action() {
@@ -156,7 +162,7 @@ add_task(async function test_experiment_promo_action() {
     "Should be called with right URL"
   );
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_open_spotlight_action() {
@@ -243,5 +249,5 @@ add_task(async function test_experiment_open_spotlight_action() {
     "Should be called with metrics property set as allow for experiments"
   );
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });

@@ -30,7 +30,7 @@ def resolve_keys(config, tasks):
         for key in (
             "index",
             "signing-format",
-            "notify",
+            "notifications",
             "treeherder.platform",
         ):
             resolve_keyed_by(
@@ -59,16 +59,15 @@ def set_worker_type(config, tasks):
 
 
 @transforms.add
-def add_signing_cert_scope(config, tasks):
-    scope_prefix = config.graph_config["scriptworker"]["scope-prefix"]
+def set_signing_type(config, tasks):
     for task in tasks:
-        cert = "dep-signing"
+        signing_type = "dep-signing"
         if str(config.params["level"]) == "3":
             if task["attributes"]["build-type"] in ("fenix-beta", "fenix-release"):
-                cert = "fennec-production-signing"
+                signing_type = "fennec-production-signing"
             elif task["attributes"]["build-type"] in PRODUCTION_SIGNING_BUILD_TYPES:
-                cert = "production-signing"
-        task.setdefault("scopes", []).append(f"{scope_prefix}:signing:cert:{cert}")
+                signing_type = "production-signing"
+        task["worker"]["signing-type"] = signing_type
         yield task
 
 
@@ -93,18 +92,4 @@ def set_signing_format(config, tasks):
         signing_format = task.pop("signing-format")
         for upstream_artifact in task["worker"]["upstream-artifacts"]:
             upstream_artifact["formats"] = [signing_format]
-        yield task
-
-
-@transforms.add
-def format_email(config, tasks):
-    version = config.params["version"]
-
-    for task in tasks:
-        if "notify" in task:
-            email = task["notify"].get("email")
-            if email:
-                email["subject"] = email["subject"].format(version=version)
-                email["content"] = email["content"].format(version=version)
-
         yield task

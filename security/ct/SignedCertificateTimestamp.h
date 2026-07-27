@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define SignedCertificateTimestamp_h
 
 #include "Buffer.h"
+#include "mozilla/Maybe.h"
 #include "mozpkix/Input.h"
 #include "mozpkix/Result.h"
 
@@ -65,12 +64,17 @@ struct SignedCertificateTimestamp {
     V1 = 0,
   };
 
+  pkix::Result DecodeExtensions();
+
   Version version;
   Buffer logId;
   // "timestamp" is the current time in milliseconds, measured since the epoch,
   // ignoring leap seconds. See RFC 6962, Section 3.2.
   uint64_t timestamp;
   Buffer extensions;
+  // Maybe the index of the entry in the log, if specified by a LeafIndex
+  // extension in `extensions`.
+  Maybe<uint64_t> leafIndex;
   DigitallySigned signature;
 };
 

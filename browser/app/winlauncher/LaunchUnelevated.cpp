@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/CmdLineAndEnvUtils.h"
 #include "mozilla/mscom/ProcessRuntime.h"
-#include "mozilla/RefPtr.h"
 #include "mozilla/ShellHeaderOnlyUtils.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
 #include "../BrowserDefines.h"
@@ -109,7 +106,7 @@ static mozilla::LauncherResult<bool> IsAdminByAppCompat(
   wchar_t* tokenContext = nullptr;
   const wchar_t* token = wcstok_s(valueData.get(), kDelimiters, &tokenContext);
   while (token) {
-    if (!_wcsnicmp(token, kRunAsAdmin, mozilla::ArrayLength(kRunAsAdmin))) {
+    if (!_wcsnicmp(token, kRunAsAdmin, std::size(kRunAsAdmin))) {
       return true;
     }
     token = wcstok_s(nullptr, kDelimiters, &tokenContext);

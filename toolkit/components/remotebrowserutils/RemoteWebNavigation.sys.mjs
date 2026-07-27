@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +7,19 @@ ChromeUtils.defineESModuleGetters(lazy, {
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
 
+function NotificationCallbacks(browser) {
+  this._browser = browser;
+}
+NotificationCallbacks.prototype = {
+  QueryInterface: ChromeUtils.generateQI(["nsIInterfaceRequestor"]),
+  getInterface(iid) {
+    if (iid.equals(Ci.nsILoadContext)) {
+      return this._browser.browsingContext;
+    }
+    throw Components.Exception("", Cr.NS_ERROR_NO_INTERFACE);
+  },
+};
+
 // This object implements the JS parts of nsIWebNavigation.
 export class RemoteWebNavigation {
   constructor(aBrowser) {
@@ -15,6 +27,7 @@ export class RemoteWebNavigation {
     this._cancelContentJSEpoch = 1;
     this._currentURI = null;
     this._canGoBack = false;
+    this._canGoBackIgnoringUserInteraction = false;
     this._canGoForward = false;
     this.referringURI = null;
   }
@@ -33,18 +46,18 @@ export class RemoteWebNavigation {
   }
 
   get canGoBack() {
-    if (Services.appinfo.sessionHistoryInParent) {
-      return this._browser.browsingContext.sessionHistory?.index > 0;
-    }
-    return this._canGoBack;
+    const sessionHistory = this._browser.browsingContext.sessionHistory;
+    return sessionHistory?.canGoBackFromEntryAtIndex(sessionHistory?.index);
+  }
+
+  get canGoBackIgnoringUserInteraction() {
+    const sessionHistory = this._browser.browsingContext.sessionHistory;
+    return sessionHistory?.index > 0;
   }
 
   get canGoForward() {
-    if (Services.appinfo.sessionHistoryInParent) {
-      let sessionHistory = this._browser.browsingContext.sessionHistory;
-      return sessionHistory?.index < sessionHistory?.count - 1;
-    }
-    return this._canGoForward;
+    let sessionHistory = this._browser.browsingContext.sessionHistory;
+    return sessionHistory?.index < sessionHistory?.count - 1;
   }
 
   goBack(requireUserInteraction = false) {
@@ -99,7 +112,12 @@ export class RemoteWebNavigation {
             attrs
           );
         }
-        Services.io.speculativeConnect(uri, principal, null, false);
+        Services.io.speculativeConnect(
+          uri,
+          principal,
+          new NotificationCallbacks(this._browser),
+          false
+        );
       }
     } catch (ex) {
       // Can't setup speculative connection for this uri for some

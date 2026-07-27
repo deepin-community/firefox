@@ -1,5 +1,3 @@
-// |reftest| skip-if(!this.hasOwnProperty("Intl"))
-
 if (typeof getAvailableLocalesOf === "undefined") {
   var getAvailableLocalesOf = SpecialPowers.Cu.getJSTestingFunctions().getAvailableLocalesOf;
 }
@@ -13,9 +11,9 @@ const numbers = [
 
 const options = {notation: "compact"};
 
-// List of known approximately sign in CLDR 40.
+// List of known approximately sign in CLDR 46.
 const approximatelySigns = [
-  "~", "∼", "≈", "≃", "ca.", "約", "dáàṣì", "dáàshì",
+  "-", "~", "∼", "≈", "≃", "ca.", "約", "dáàṣì", "dáàshì",
 ];
 
 // Iterate over all locales and ensure we find exactly one approximately sign.

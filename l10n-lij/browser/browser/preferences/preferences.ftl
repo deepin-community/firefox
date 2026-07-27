@@ -12,17 +12,29 @@ pane-general-title = Generale
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Pagina prinçipâ
+pane-search-title2 = Çerca
+    .title = Çerca
+pane-privacy-title3 = Privacy e seguessa
+    .title = Privacy e seguessa
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Çerca
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Privacy e seguessa
 pane-privacy-title = Privacy e seguessa
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = Sopòrto de { -brand-short-name }
+    .title = Sopòrto de { -brand-short-name }
+addons-button-label2 = Estenscioin e Temi
+    .title = Estenscioin e Temi
 help-button-label = Sopòrto de { -brand-short-name }
 addons-button-label = Estenscioin e Temi
 focus-search =
@@ -76,6 +88,8 @@ startup-restore-warn-on-quit =
     .label = Avertime quande særo o navegatô
 disable-extension =
     .label = Dizabilita estençion
+tabs-group-header2 =
+    .label = Feuggi
 tabs-group-header = Feuggi
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab mostra l'anteprimma di feuggi averti
@@ -97,6 +111,8 @@ browser-containers-settings =
     .label = Inpostaçioin…
     .accesskey = i
 containers-disable-alert-title = Særa tutti i contegnitoî de feuggi?
+startup-group =
+    .label = Iniçio
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -117,7 +133,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Lascia abilitou
 containers-remove-alert-title = Scancelâ sto contegnitô?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Se ti ti scancelli sto Contegnitô òua, { $count } contegnitô de feuggi saiâ seròu. T'ê seguo de scancelâ sto Contegnitô?
@@ -147,6 +163,8 @@ manage-browser-languages-button =
     .accesskey = I
 confirm-browser-language-change-description = Arvi torna { -brand-short-name } pe conpletâ i cangiamenti
 confirm-browser-language-change-button = Conpleta e Arvi torna
+browser-language-install-error =
+    .message = { -brand-short-name } o no agiornâ a lengoa òua. Contròlla che ti ê conesso a l'internet e preuva torna.
 translate-web-pages =
     .label = Traduxi contegnui web
     .accesskey = T
@@ -163,6 +181,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Schedai e aplicaçioin
+download-save-files-header =
+    .label = Sarva schedai in
+download-save-where-3 =
+    .aria-label = Sarva schedai in
 download-header = Descaregamenti
 download-save-where = Sarva schedai in
     .accesskey = v
@@ -187,9 +209,11 @@ applications-filter =
 applications-type-column =
     .label = Tipo de contegnuo
     .accesskey = T
+applications-type-heading = Tipo de contegnuo
 applications-action-column =
     .label = Açion
     .accesskey = A
+applications-action-heading = Açion
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = schedaio { $extension }
@@ -211,11 +235,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Domanda de longo
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Adeuvia { $plugin-name } (in { -brand-short-name })
 
@@ -236,8 +260,10 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = Contegnuo da Gestion di Diritti Digitali (DRM)
 drm-content-header = Contegnuo da Gestion di Diritti Digitali (DRM)
 play-drm-content =
     .label = Riproduxi o contegnuo DRM-controlled
@@ -245,7 +271,12 @@ play-drm-content =
 play-drm-content-learn-more = Atre informaçioin
 update-application-title = Agiornamenti de { -brand-short-name }
 update-application-description = Mantegni { -brand-short-name } agiornou pe de megio prestaçioin, stabilitæ e seguessa.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Verscion { $version } <a data-l10n-name="learn-more">Novitæ</a>
+update-history-2 =
+    .label = Fanni vedde a stöia di agiornamenti
+    .accesskey = g
 update-history =
     .label = Fanni vedde a stöia di agiornamenti…
     .accesskey = g
@@ -279,11 +310,13 @@ performance-limit-content-process-option = Limite de contegnuo do processo
 performance-limit-content-process-enabled-desc = Deuviâ ciù contegnui do processo o peu megiorâ e prestaçioin quande ti deuvi tanti feuggi insemme, ma te faiâ stragiâ ciù memöia.
 performance-limit-content-process-blocked-desc = Cangiâ o numero de contegnui de processo o l'é poscibile solo in { -brand-short-name } moltiprocesso. <a data-l10n-name="learn-more">Amia comme controlâ se o moltiprocesso o l'é ativo</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (predefinio)
+performance-group =
+    .label = Prestaçioin
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Riçerca
 browsing-use-autoscroll =
@@ -309,6 +342,8 @@ browsing-cfr-features =
     .label = Consegime fonçioin quande navego
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Atre informaçioin
+browsing-group =
+    .label = Riçerca
 
 ## General Section - Proxy
 
@@ -324,10 +359,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = Neuvi Barcoin e feuggi
 home-new-windows-tabs-description2 = Çerni cöse ti veu vedde quande ti arvi a pagina prinçipâ, neuvi barcoin e neuvi feuggi.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Adeuvia comme predefinio
+    .accesskey = A
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pagina prinçipâ e neuvi barcoin
 home-newtabs-mode-label = Neuvi feuggi
+home-homepage-new-tabs =
+    .label = Neuvi feuggi
 home-restore-defaults =
     .label = Repiggia predefinii
     .accesskey = R
@@ -357,11 +400,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Çerca into Web
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = Consegiou da { $provider }
 
@@ -384,6 +424,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Snippet
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -405,6 +447,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Fanni vedde conseggi de riçerca tra i rizoltæ da bara di indirissi
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = I conseggi de riçerca no saian mostræ tra i exiti da-a bara di indirissi perché { -brand-short-name } o l'é inpostou pe no sarvâ a stöia.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -429,13 +473,19 @@ search-find-more-link = Treuva ciù motoî de riçerca
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Sta paròlla ciave a gh'é za
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Ti æ çernuo 'na paròlla ciave ch'a l'é uzâ da "{ $name }". Pe piaxei che ti ne çerni 'n'atra.
 search-keyword-warning-bookmark = Ti æ çernuo 'na paròlla ciave che a l'é uzâ da un segnalibbro. Pe piaxei che ti ne çerni 'n'atra.
+search-engine-group =
+    .label = Motô de riçerca predefinio
+search-default-engine =
+    .aria-label = Motô de riçerca predefinio
 
 ## Containers Section
 
 containers-header = Contegnitô di feuggi
+containers-section-header =
+    .heading = Contegnitô di feuggi
 containers-add-button =
     .label = Azonzi neuvo contegnitô
     .accesskey = A
@@ -465,9 +515,13 @@ sync-profile-picture-with-alt =
     .alt = Cangia l’inmagine do profî
 sync-manage-account = Gestisci conto
     .accesskey = o
+sync-manage-account2 =
+    .label = Gestisci conto
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } no l'é verificou.
 sync-signedin-login-failure = Acedi pe ativâ torna a conescion { $email }
@@ -483,12 +537,6 @@ sync-remove-account =
 sync-sign-in =
     .label = Intra
     .accesskey = t
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -518,6 +566,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = Nomme dispoxitivo
+sync-device-name-header-2 =
+    .label = Nomme dispoxitivo
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nomme dispoxitivo
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Cangia nomme dispoxitivo
+    .accesskey = n
 sync-device-name-change =
     .label = Cangia nomme dispoxitivo…
     .accesskey = n
@@ -528,6 +586,8 @@ sync-device-name-save =
     .label = Sarva
     .accesskey = v
 sync-connect-another-device = Conetti atro dispoxitivo
+sync-connect-another-device-2 =
+    .label = Conetti atro dispoxitivo
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -548,11 +608,12 @@ privacy-header = Privacy do navegatô
 # The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
 pane-privacy-logins-and-passwords-header = Login e Poule segrete
     .searchkeywords = { -lockwise-brand-short-name }
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = Domanda se sarvâ acessi e poule segrete pe-i sciti
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = Eceçioin…
@@ -560,16 +621,13 @@ forms-exceptions =
 forms-saved-logins =
     .label = Acessi sarvæ…
     .accesskey = s
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Cangia a paròlla segreta prinçipâ…
     .accesskey = C
 forms-master-pw-fips-desc = Cangio de paròlla segreta no riescio
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -591,6 +649,12 @@ history-remember-option-never =
     .label = no se aregordiâ mai a stöia
 history-remember-option-custom =
     .label = Deuvia inpostaçioin personalizæ pe-a stöia
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } o s'aregòrda de teu navegaçioin, descaregamenti e stöia de riçerche.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } o deuvia e mæxime preferense da-a navegaçion privâ, e o no se aregòrda da stöia de teu navegaçioin.
 history-remember-description = { -brand-short-name } o s'aregòrda de teu navegaçioin, descaregamenti e stöia de riçerche.
 history-dontremember-description = { -brand-short-name } o deuvia e mæxime preferense da-a navegaçion privâ, e o no se aregòrda da stöia de teu navegaçioin.
 history-private-browsing-permanent =
@@ -611,14 +675,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Scancella Stöia…
     .accesskey = s
+history-group =
+    .label = Stöia
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookie e Dæti di Sciti
 sitedata-total-size-calculating = Conto a dimenscion di dæti e da cache…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = I cookie, dæti do scito e cache deuvian { $value } { $unit } de spaçion in sciô disco.
 sitedata-learn-more = Pe saveine de ciù
 sitedata-allow-cookies-option =
@@ -641,14 +707,10 @@ sitedata-clear =
 sitedata-settings =
     .label = Gestisci dæti…
     .accesskey = G
+cookies-site-data-group =
+    .label = Cookie e Dæti di Sciti
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Bara di indirissi
 addressbar-suggest = Quande ti deuvi a bara di indirissi, conseggia
@@ -755,6 +817,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Eceçioin…
     .accesskey = E
+permissions-location2 =
+    .label = Indirisso
+permissions-camera2 =
+    .label = Fòtocamera
+permissions-microphone2 =
+    .label = Micròfono
+permissions-notification2 =
+    .label = Notifiche
 
 ## Privacy Section - Data Collection
 
@@ -772,9 +842,8 @@ addon-recommendations-link = Atre informaçioin
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = O report di dæti o l'é dizabilitou pe sta configuraçion
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = Amia i studde de { -brand-short-name }
 
 ## Privacy Section - Security
 ##
@@ -806,12 +875,7 @@ certs-view =
 certs-devices =
     .label = Aparati de Seguessa…
     .accesskey = S
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Abilita FIPS
 
 ## The following strings are used in the Download section of settings
 

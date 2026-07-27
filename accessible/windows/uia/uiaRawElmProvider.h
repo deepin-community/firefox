@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_a11y_uiaRawElmProvider_h__
-#define mozilla_a11y_uiaRawElmProvider_h__
+#ifndef mozilla_a11y_uiaRawElmProvider_h_
+#define mozilla_a11y_uiaRawElmProvider_h_
 
 #include <objbase.h>
 #include <stdint.h>
@@ -26,6 +24,10 @@ namespace a11y {
 class Accessible;
 enum class RelationType;
 
+struct UiaRegistrations {
+  PROPERTYID mAccessibleActions = 0;
+};
+
 /**
  * IRawElementProviderSimple implementation (maintains IAccessibleEx approach).
  */
@@ -39,7 +41,8 @@ class uiaRawElmProvider : public IAccessibleEx,
                           public IValueProvider,
                           public IRangeValueProvider,
                           public ISelectionProvider,
-                          public ISelectionItemProvider {
+                          public ISelectionItemProvider,
+                          public ITextChildProvider {
  public:
   static constexpr enum ProviderOptions kProviderOptions =
       static_cast<enum ProviderOptions>(ProviderOptions_ServerSideProvider |
@@ -50,6 +53,9 @@ class uiaRawElmProvider : public IAccessibleEx,
                                          uint32_t aGeckoEvent);
   static void RaiseUiaEventForStateChange(Accessible* aAcc, uint64_t aState,
                                           bool aEnabled);
+  static void RaiseUiaNotificationEvent(Accessible* aAcc,
+                                        const nsAString& aAnnouncement,
+                                        uint16_t aPriority);
 
   // IUnknown
   STDMETHODIMP QueryInterface(REFIID aIid, void** aInterface);
@@ -181,6 +187,14 @@ class uiaRawElmProvider : public IAccessibleEx,
       /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderSimple**
           aRetVal);
 
+  // ITextChildProvider
+  virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_TextContainer(
+      /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderSimple**
+          aRetVal);
+
+  virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_TextRange(
+      /* [retval][out] */ __RPC__deref_out_opt ITextRangeProvider** aRetVal);
+
  private:
   Accessible* Acc() const;
   bool IsControl();
@@ -200,6 +214,15 @@ class uiaRawElmProvider : public IAccessibleEx,
 };
 
 SAFEARRAY* AccessibleArrayToUiaArray(const nsTArray<Accessible*>& aAccs);
+
+/**
+ * Get ids for custom UI Automation properties and events which are not defined
+ * by Windows and therefore need to be registered at runtime. This function will
+ * register the properties and events the first time it is called. Thereafter,
+ * cached ids will be returned, since they are valid for the lifetime of the
+ * process.
+ */
+const UiaRegistrations& GetUiaRegistrations();
 
 }  // namespace a11y
 }  // namespace mozilla

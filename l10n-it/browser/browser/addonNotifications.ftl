@@ -8,13 +8,12 @@ xpinstall-prompt = { -brand-short-name } ha impedito a questo sito di richiedere
 ##   $host (String): The hostname of the site the add-on is being installed from.
 
 xpinstall-prompt-header = Consentire a { $host } di installare un componente aggiuntivo?
-xpinstall-prompt-message = Si sta cercando di installare un componente aggiuntivo da { $host }. Assicurarsi che il sito sia affidabile prima di proseguire.
+xpinstall-prompt-message = Si sta cercando di installare un componente aggiuntivo da { $host }. Assicurarsi che il sito sia attendibile prima di proseguire.
 
 ##
 
 xpinstall-prompt-header-unknown = Consentire a questo sito sconosciuto di installare un componente aggiuntivo?
-xpinstall-prompt-message-unknown = Si sta cercando di installare un componente aggiuntivo da un sito sconosciuto. Assicurarsi che il sito sia affidabile prima di proseguire.
-
+xpinstall-prompt-message-unknown = Si sta cercando di installare un componente aggiuntivo da un sito sconosciuto. Assicurarsi che il sito sia attendibile prima di proseguire.
 xpinstall-prompt-dont-allow =
     .label = Non consentire
     .accesskey = N
@@ -36,7 +35,9 @@ xpinstall-prompt-install =
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
 site-permission-install-first-prompt-midi-header = Questo sito sta richiedendo accesso ai tuoi dispositivi MIDI (Musical Instrument Digital Interface). È possibile garantire l’accesso installando un componente aggiuntivo.
-site-permission-install-first-prompt-midi-message = Questo accesso potrebbe non essere completamente sicuro. Procedere solo se si considera il sito affidabile.
+site-permission-install-first-prompt-midi-message = Questo accesso potrebbe non essere completamente sicuro. Procedere solo se si considera il sito attendibile.
+site-permission-install-first-prompt-serial-header = Questo sito richiede l’accesso ai tuoi dispositivi seriali. È possibile garantire l’accesso installando un componente aggiuntivo.
+site-permission-install-first-prompt-serial-message = Questo accesso potrebbe non essere completamente sicuro. Procedere solo se si considera il sito attendibile.
 
 ##
 
@@ -46,25 +47,27 @@ xpinstall-disabled = L’installazione di software è attualmente disattivata. F
 xpinstall-disabled-button =
     .label = Attiva
     .accesskey = A
-
 # This message is shown when the installation of an add-on is blocked by enterprise policy.
 # Variables:
 #   $addonName (String): the name of the add-on.
 #   $addonId (String): the ID of add-on.
 addon-install-blocked-by-policy = { $addonName } ({ $addonId }) è stato bloccato dall’amministratore di sistema.
-addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) è stato bloccato dalla tua organizzazione.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = L’amministratore di sistema ha impedito a questo sito di richiedere l’installazione di software sul computer.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) è stato bloccato dalla tua organizzazione.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-install-domain-blocked-by-policy = La tua organizzazione ha impedito a questo sito di richiedere l’installazione di software sul computer.
 addon-install-full-screen-blocked = L’installazione di un componente aggiuntivo non è consentita in modalità a schermo intero, oppure prima di passare a schermo intero.
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } installato in { -brand-short-name }
 # Variables:
 #   $addonName (String): the localized name of the extension which has been updated.
 webext-perms-update-menu-item = { $addonName } richiede nuovi permessi
-
 # This message is shown when one or more extensions have been imported from a
 # different browser into Firefox, and the user needs to complete the import to
 # start these extensions. This message is shown in the appmenu.
@@ -80,7 +83,8 @@ addon-removal-title = Rimuovere { $name }?
 addon-removal-message = Rimuovere { $name } da { -brand-shorter-name }?
 addon-removal-button = Rimuovi
 addon-removal-abuse-report-checkbox = Segnala questa estensione a { -vendor-short-name }
-
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Se utilizzi funzioni o estensioni che utilizzano questo modello, verrà aggiunto nuovamente.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -89,7 +93,6 @@ addon-downloading-and-verifying =
        *[other] Download e verifica { $addonCount } comp. aggiuntivi…
     }
 addon-download-verifying = Verifica in corso
-
 addon-install-cancel-button =
     .label = Annulla
     .accesskey = n
@@ -124,14 +127,19 @@ addon-install-error-corrupt-file = Impossibile installare il componente aggiunti
 addon-install-error-file-access = Impossibile installare { $addonName } in quanto { -brand-short-name } non è in grado di modificare il file richiesto.
 addon-install-error-not-signed = L’installazione di un componente aggiuntivo non verificato è stata bloccata da { -brand-short-name }.
 addon-install-error-invalid-domain = Impossibile installare il componente aggiuntivo { $addonName } da questo indirizzo.
+addon-install-error-no-addon-name-file-access = Impossibile installare questo componente aggiuntivo in quanto { -brand-short-name } non è in grado di modificare il file richiesto.
 addon-local-install-error-network-failure = Impossibile installare questo componente aggiuntivo in quanto si è verificato un errore nel filesystem.
 addon-local-install-error-incorrect-hash = Impossibile installare questo componente aggiuntivo in quanto non corrisponde al componente aggiuntivo previsto da { -brand-short-name }.
 addon-local-install-error-corrupt-file = Impossibile installare questo componente aggiuntivo in quanto risulta danneggiato.
 addon-local-install-error-file-access = Impossibile installare { $addonName } in quanto { -brand-short-name } non è in grado di modificare il file richiesto.
 addon-local-install-error-not-signed = Impossibile installare questo componente aggiuntivo in quanto non verificato.
+addon-local-install-no-addon-name-error-file-access = Impossibile installare questo componente aggiuntivo in quanto { -brand-short-name } non è in grado di modificare il file richiesto.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Impossibile installare { $addonName } in quanto non compatibile con { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } viola i criteri di Mozilla e non è possibile installarlo in { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } è soggetto a restrizioni e non può essere installato in { -brand-short-name }.
 addon-install-error-blocklisted = Impossibile installare { $addonName } in quanto comporta un rischio elevato per la stabilità o la sicurezza.
+addon-install-error-soft-blocked = { $addonName } viola i criteri di Mozilla e non è possibile installarlo in { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Non è possibile installare { $addonName } come utente finale, può essere installato solo da un’organizzazione che utilizza criteri aziendali.

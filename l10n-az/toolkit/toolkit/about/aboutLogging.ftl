@@ -8,10 +8,3 @@ about-logging-set-log-file = Qeydiyyat Faylını Qur
 about-logging-set-log-modules = Qeydiyyat Modullarını Qur
 about-logging-start-logging = Qeydiyyatı Başlat
 about-logging-stop-logging = Qeydiyyatı Dayandır
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

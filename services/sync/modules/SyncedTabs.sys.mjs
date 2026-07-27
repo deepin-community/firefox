@@ -12,13 +12,20 @@ ChromeUtils.defineESModuleGetters(lazy, {
   getRemoteCommandStore: "resource://services-sync/TabsStore.sys.mjs",
   RemoteCommand: "resource://services-sync/TabsStore.sys.mjs",
   FxAccounts: "resource://gre/modules/FxAccounts.sys.mjs",
+  TRUSTED_FAVICON_SCHEMES: "moz-src:///toolkit/modules/FaviconUtils.sys.mjs",
+  getMozRemoteImageURL: "moz-src:///toolkit/modules/FaviconUtils.sys.mjs",
 });
 
 // The Sync XPCOM service
 ChromeUtils.defineLazyGetter(lazy, "weaveXPCService", function () {
-  return Cc["@mozilla.org/weave/service;1"].getService(
-    Ci.nsISupports
-  ).wrappedJSObject;
+  return Cc["@mozilla.org/weave/service;1"].getService(Ci.nsISupports)
+    .wrappedJSObject;
+});
+
+ChromeUtils.defineLazyGetter(lazy, "fxAccounts", () => {
+  return ChromeUtils.importESModule(
+    "resource://gre/modules/FxAccounts.sys.mjs"
+  ).getFxAccountsSingleton();
 });
 
 // from MDN...
@@ -66,10 +73,24 @@ XPCOMUtils.defineLazyPreferenceGetter(
 // A private singleton that does the work.
 let SyncedTabsInternal = {
   /* Make a "tab" record. Returns a promise */
-  async _makeTab(client, tab, url, showRemoteIcons) {
+  async _makeTab(client, tab, url, showRemoteIcons, iconSize, iconColorScheme) {
     let icon;
     if (showRemoteIcons) {
       icon = tab.icon;
+      if (icon) {
+        try {
+          const iconUri = Services.io.newURI(icon);
+          if (!lazy.TRUSTED_FAVICON_SCHEMES.includes(iconUri.scheme)) {
+            icon = lazy.getMozRemoteImageURL(iconUri.spec, {
+              size: iconSize,
+              colorScheme: iconColorScheme,
+            });
+          }
+        } catch (e) {
+          lazy.log.error("Failed to fixup icon URL", e);
+          icon = "";
+        }
+      }
     }
     if (!icon) {
       // By not specifying a size the favicon service will pick the default,
@@ -105,6 +126,12 @@ let SyncedTabsInternal = {
     return reFilter.test(tab.url) || reFilter.test(tab.title);
   },
 
+  // A wrapper for grabbing the fxaDeviceId, to make it easier for stubbing
+  // for tests
+  _getClientFxaDeviceId(clientId) {
+    return lazy.Weave.Service.clientsEngine.getClientFxaDeviceId(clientId);
+  },
+
   _createRecentTabsList(
     clients,
     maxCount,
@@ -116,9 +143,21 @@ let SyncedTabsInternal = {
       if (extraParams.removeDeviceDupes) {
         client.tabs = this._filterRecentTabsDupes(client.tabs);
       }
+
+      // We have the client obj but we need the FxA device obj so we use the clients
+      // engine to get us the FxA device
+      let device =
+        lazy.fxAccounts.device.recentDeviceList &&
+        lazy.fxAccounts.device.recentDeviceList.find(
+          d => d.id === this._getClientFxaDeviceId(client.id)
+        );
+
       for (let tab of client.tabs) {
         tab.device = client.name;
         tab.deviceType = client.clientType;
+        // Surface broadcasted commmands for things like close remote tab
+        tab.fxaDeviceId = device.id;
+        tab.availableCommands = device.availableCommands;
       }
       tabs = [...tabs, ...client.tabs.reverse()];
     }
@@ -159,6 +198,13 @@ let SyncedTabsInternal = {
     );
 
     let engine = lazy.Weave.Service.engineManager.get("tabs");
+    let win = Services.wm.getMostRecentWindow("navigator:browser");
+    // default values when no win, primarily for tests.
+    let iconSize = win ? Math.floor(16 * win.devicePixelRatio) : 16;
+    let iconColorScheme = win?.matchMedia("(prefers-color-scheme: dark)")
+      ?.matches
+      ? "dark"
+      : "light";
 
     let ntabs = 0;
     let clientTabList = await engine.getAllClients();
@@ -196,7 +242,14 @@ let SyncedTabsInternal = {
         if (!url) {
           continue;
         }
-        let tabRepr = await this._makeTab(client, tab, url, showRemoteIcons);
+        let tabRepr = await this._makeTab(
+          client,
+          tab,
+          url,
+          showRemoteIcons,
+          iconSize,
+          iconColorScheme
+        );
         if (filter && !this._tabMatchesFilter(tabRepr, filter)) {
           continue;
         }
@@ -378,14 +431,18 @@ export var SyncedTabs = {
   },
 
   recordSyncedTabsTelemetry(object, tabEvent, extraOptions) {
-    Services.telemetry.setEventRecordingEnabled("synced_tabs", true);
-    Services.telemetry.recordEvent(
-      "synced_tabs",
-      tabEvent,
-      object,
-      null,
-      extraOptions
-    );
+    if (
+      !["fxa_avatar_menu", "fxa_app_menu", "synced_tabs_sidebar"].includes(
+        object
+      )
+    ) {
+      return;
+    }
+    object = object
+      .split("_")
+      .map(word => word[0].toUpperCase() + word.slice(1))
+      .join("");
+    Glean.syncedTabs[tabEvent + object].record(extraOptions);
   },
 
   // Get list of synced tabs across all devices/clients
@@ -407,7 +464,7 @@ export var SyncedTabsManagement = {
   /// Enqueue a tab to close on a remote device.
   async enqueueTabToClose(deviceId, url) {
     let store = await this._getStore();
-    let command = new lazy.RemoteCommand.CloseTab(url);
+    let command = new lazy.RemoteCommand.CloseTab({ url });
     if (!store.addRemoteCommand(deviceId, command)) {
       lazy.log.warn(
         "Could not queue a remote tab close - it was already queued"
@@ -424,7 +481,7 @@ export var SyncedTabsManagement = {
   /// Remove a tab from the queue of commands for a remote device.
   async removePendingTabToClose(deviceId, url) {
     let store = await this._getStore();
-    let command = new lazy.RemoteCommand.CloseTab(url);
+    let command = new lazy.RemoteCommand.CloseTab({ url });
     if (!store.removeRemoteCommand(deviceId, command)) {
       lazy.log.warn("Could not remove a remote tab close - it was not queued");
     } else {

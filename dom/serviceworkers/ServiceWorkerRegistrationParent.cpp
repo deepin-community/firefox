@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,7 @@
 #include <utility>
 
 #include "ServiceWorkerRegistrationProxy.h"
+#include "nsNetUtil.h"
 
 namespace mozilla::dom {
 
@@ -19,11 +18,6 @@ void ServiceWorkerRegistrationParent::ActorDestroy(ActorDestroyReason aReason) {
     mProxy->RevokeActor(this);
     mProxy = nullptr;
   }
-}
-
-IPCResult ServiceWorkerRegistrationParent::RecvTeardown() {
-  MaybeSendDelete();
-  return IPC_OK();
 }
 
 namespace {
@@ -94,6 +88,9 @@ IPCResult ServiceWorkerRegistrationParent::RecvSetNavigationPreloadEnabled(
 
 IPCResult ServiceWorkerRegistrationParent::RecvSetNavigationPreloadHeader(
     const nsACString& aHeader, SetNavigationPreloadHeaderResolver&& aResolver) {
+  if (!NS_IsReasonableHTTPHeaderValue(aHeader)) {
+    return IPC_FAIL(this, "Invalid navigation preload header value");
+  }
   if (!mProxy) {
     aResolver(false);
     return IPC_OK();
@@ -126,27 +123,43 @@ IPCResult ServiceWorkerRegistrationParent::RecvGetNavigationPreloadState(
   return IPC_OK();
 }
 
-ServiceWorkerRegistrationParent::ServiceWorkerRegistrationParent()
-    : mDeleteSent(false) {}
+IPCResult ServiceWorkerRegistrationParent::RecvGetNotifications(
+    const nsAString& aTag, GetNotificationsResolver&& aResolver) {
+  if (!mProxy) {
+    aResolver(NS_ERROR_DOM_INVALID_STATE_ERR);
+    return IPC_OK();
+  }
+
+  mProxy->GetNotifications(aTag)->Then(
+      GetCurrentSerialEventTarget(), __func__,
+      [aResolver](const CopyableTArray<IPCNotification>& aNotifications) {
+        aResolver(aNotifications);
+      },
+      [aResolver](nsresult) { aResolver(NS_ERROR_DOM_INVALID_STATE_ERR); });
+
+  return IPC_OK();
+}
+
+ServiceWorkerRegistrationParent::ServiceWorkerRegistrationParent() = default;
 
 ServiceWorkerRegistrationParent::~ServiceWorkerRegistrationParent() {
   MOZ_DIAGNOSTIC_ASSERT(!mProxy);
 }
 
 void ServiceWorkerRegistrationParent::Init(
-    const IPCServiceWorkerRegistrationDescriptor& aDescriptor) {
+    const IPCServiceWorkerRegistrationDescriptor& aDescriptor,
+    const IPCClientInfo& aForClient) {
   MOZ_DIAGNOSTIC_ASSERT(!mProxy);
   mProxy = new ServiceWorkerRegistrationProxy(
-      ServiceWorkerRegistrationDescriptor(aDescriptor));
+      ServiceWorkerRegistrationDescriptor(aDescriptor), ClientInfo(aForClient));
   mProxy->Init(this);
 }
 
 void ServiceWorkerRegistrationParent::MaybeSendDelete() {
-  if (mDeleteSent) {
+  if (!CanSend()) {
     return;
   }
-  mDeleteSent = true;
-  Unused << Send__delete__(this);
+  (void)Send__delete__(this);
 }
 
 }  // namespace mozilla::dom

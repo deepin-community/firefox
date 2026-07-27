@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,7 +5,6 @@
 #ifndef mozilla_ExtensionPolicyService_h
 #define mozilla_ExtensionPolicyService_h
 
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/extensions/WebExtensionPolicy.h"
 #include "mozIExtensionProcessScript.h"
 #include "nsCOMPtr.h"
@@ -103,7 +101,7 @@ class ExtensionPolicyService final : public nsIAddonPolicyService,
   bool IsExtensionProcess() const;
   bool GetQuarantinedDomainsEnabled() const;
 
-  nsresult InjectContentScripts(WebExtensionPolicy* aExtension);
+  void InjectContentScripts(WebExtensionPolicy* aExtension, ErrorResult& aRv);
 
  protected:
   virtual ~ExtensionPolicyService();
@@ -123,7 +121,7 @@ class ExtensionPolicyService final : public nsIAddonPolicyService,
       nsPIDOMWindowInner* aWindow,
       extensions::WebExtensionContentScript& aScript);
 
-  RefPtr<dom::Promise> ExecuteContentScripts(
+  already_AddRefed<dom::Promise> ExecuteContentScripts(
       JSContext* aCx, nsPIDOMWindowInner* aWindow,
       const nsTArray<RefPtr<extensions::WebExtensionContentScript>>& aScripts);
 

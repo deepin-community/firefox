@@ -5,25 +5,32 @@
 
 ## Permission Dialog
 ## Variables:
-##  $host - the hostname that is initiating the request
-##  $scheme - the type of link that's being opened.
-##  $appName - Name of the application that will be opened.
-
-## Permission Dialog
-## Variables:
 ##  $host (string) - The hostname that is initiating the request
 ##  $scheme (string) - The type of link that's being opened.
 ##  $appName (string) - Name of the application that will be opened.
 ##  $extension (string) - Name of extension that initiated the request
 
 permission-dialog-description = أتسمح لهذا الموقع بفتح رابط { $scheme }؟
-
+permission-dialog-description-file = أتسمح لهذا الملف بفتح رابط { $scheme }؟
+permission-dialog-description-host = أتسمح بأن يفتح { $host } رابط { $scheme }؟
+permission-dialog-description-extension = أأسمح لامتداد { $extension } بفتح رابط { $scheme }؟
 permission-dialog-description-app = أتسمح لهذا الموقع بفتح رابط { $scheme } في { $appName }؟
-
-## Please keep the emphasis around the hostname and scheme (ie the
-## `<strong>` HTML tags). Please also keep the hostname as close to the start
-## of the sentence as your language's grammar allows.
-
+permission-dialog-description-host-app = أتسمح بأن يفتح { $host } رابط { $scheme } بواسطة { $appName }؟
+permission-dialog-description-file-app = أتسمح لهذا الملف بفتح رابط { $scheme } بواسطة { $appName }؟
+permission-dialog-description-extension-app = أأسمح للامتداد { $extension } بفتح رابط { $scheme } باستخدام { $appName }؟
+permission-dialog-description-system-app = أأفتح رابط { $scheme } باستخدام { $appName }؟
+permission-dialog-description-system-noapp = أأفتح الرابط { $scheme }؟
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = أتسمح لهذا الموقع بفتح محفظتك الرقمية؟
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = يُتيح فتح رابط <strong>{ $scheme }</strong> لـ <strong>{ $host }</strong> طلب هويتك الحقيقية باستخدام <strong>{ $appName }</strong>. واصِل فقط إذا كنت تثق بهذا الموقع.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = يُتيح فتح رابط <strong>{ $scheme }</strong> لهذا الموقع طلب هويتك الحقيقية باستخدام <strong>{ $appName }</strong>. واصِل فقط إذا كنت تثق بهذا الموقع.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = يُتيح فتح رابط <strong>{ $scheme }</strong> لـ <strong>{ $host }</strong> طلب هويتك الحقيقية من محفظتك الرقمية. واصِل فقط إذا كنت تثق بهذا الموقع.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = يُتيح فتح رابط <strong>{ $scheme }</strong> لهذا الموقع طلب بيانات هويتك الحقيقية من محفظتك الرقمية. واصِل فقط إذا كنت تثق بهذا الموقع.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
@@ -32,22 +39,43 @@ permission-dialog-description-app = أتسمح لهذا الموقع بفتح ر
 ##  $host (string) - The hostname that is initiating the request
 ##  $scheme (string) - The type of link that's being opened.
 
+permission-dialog-remember = اسمح دائمًا لـ<strong>{ $host }</strong> بفتح روابط <strong>{ $scheme }</strong>
+permission-dialog-remember-file = اسمح دائمًا لهذا الملف بأن يفتح روابط <strong>{ $scheme }</strong>
+permission-dialog-remember-extension = اسمح دائمًا لهذا الامتداد بفتح روابط <strong>{ $scheme }</strong>
+
 ##
 
-
-## Chooser dialog
-## Variables:
-##  $scheme - the type of link that's being opened.
+permission-dialog-btn-open-link =
+    .label = افتح الرابط
+    .accessKey = ف
+permission-dialog-btn-choose-app =
+    .label = اختر تطبيقا
+    .accessKey = ا
+permission-dialog-unset-description = عليك اختيار تطبيق.
+permission-dialog-set-change-app-link = اختر تطبيقا مختلفا.
 
 ## Chooser dialog
 ## Variables:
 ##  $scheme (string) - The type of link that's being opened.
 
+chooser-window =
+    .title = اختر تطبيقا
+    .style = min-width: 26em; min-height: 26em;
+chooser-dialog =
+    .buttonlabelaccept = افتح الرابط
+    .buttonaccesskeyaccept = ف
+chooser-dialog-description = اختر تطبيقا لفتح رابط { $scheme }.
+# Please keep the emphasis around the scheme (ie the `<strong>` HTML tags).
+chooser-dialog-remember = استخدم هذا التطبيق دائمًا لفتح روابط <strong>{ $scheme }</strong>
+chooser-dialog-remember-extra =
+    { PLATFORM() ->
+        [windows] يُمكن تغيير هذا من خيارات { -brand-short-name }.
+       *[other] يُمكن تغيير هذا من تفضيلات { -brand-short-name }.
+    }
 choose-other-app-description = اختر تطبيقا آخر
 choose-app-btn =
     .label = اختر…
     .accessKey = خ
 choose-other-app-window-title = تطبيق آخر…
-
 # Displayed under the name of a protocol handler in the Launch Application dialog.
 choose-dialog-privatebrowsing-disabled = معطّل في النوافذ الخاصة

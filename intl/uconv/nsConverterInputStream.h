@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,12 +18,8 @@
   "@mozilla.org/intl/converter-input-stream;1"
 
 // {2BC2AD62-AD5D-4b7b-A9DB-F74AE203C527}
-#define NS_CONVERTERINPUTSTREAM_CID                 \
-  {                                                 \
-    0x2bc2ad62, 0xad5d, 0x4b7b, {                   \
-      0xa9, 0xdb, 0xf7, 0x4a, 0xe2, 0x3, 0xc5, 0x27 \
-    }                                               \
-  }
+#define NS_CONVERTERINPUTSTREAM_CID \
+  {0x2bc2ad62, 0xad5d, 0x4b7b, {0xa9, 0xdb, 0xf7, 0x4a, 0xe2, 0x3, 0xc5, 0x27}}
 
 class nsConverterInputStream : public nsIConverterInputStream,
                                public nsIUnicharLineInputStream {

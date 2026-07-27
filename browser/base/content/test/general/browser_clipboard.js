@@ -13,7 +13,10 @@ add_task(async function () {
 
   gBrowser.selectedTab = tab;
 
-  await promiseTabLoadEvent(tab, "data:text/html," + escape(testPage));
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: "data:text/html," + escape(testPage),
+  });
   await SimpleTest.promiseFocus(browser);
 
   function sendKey(key, code) {
@@ -279,7 +282,7 @@ add_task(async function () {
     var main = content.document.getElementById("main");
     Assert.equal(
       main.innerHTML,
-      '<i>Italic</i> <img id="img" tabindex="1" ' +
+      '<i>Italic</i>&nbsp;<img id="img" tabindex="1" ' +
         'src="http://example.org/browser/browser/base/content/test/general/moz.png">' +
         "Test <b>Bold</b> After<b></b>",
       "Paste after copy image"

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -11,6 +9,7 @@
 #define _js_vm_Logging_h_
 
 #include "mozilla/Assertions.h"
+#include "mozilla/LoggingCore.h"
 
 #include "jit/JitSpewer.h"
 #include "js/experimental/LoggingInterface.h"
@@ -18,6 +17,8 @@
 struct JSContext;
 
 namespace js {
+
+using mozilla::LogLevel;
 
 // [SMDOC] js::LogModule
 //
@@ -81,9 +82,18 @@ class LogModule {
   mutable mozilla::AtomicLogLevel* levelPtr{};
 };
 
-#define FOR_EACH_JS_LOG_MODULE(_) \
-  _(baselineCompileHandler)       \
-  JITSPEW_CHANNEL_LIST(_)
+#define FOR_EACH_JS_LOG_MODULE(_)                                            \
+  _(debug)                /* A predefined log module for casual debugging */ \
+  _(wasmPerf)             /* Wasm performance statistics */                  \
+  _(wasmApi)              /* Wasm JS-API tracing */                          \
+  _(fuseInvalidation)     /* Invalidation triggered by a fuse  */            \
+  _(thenable)             /* Thenable on standard proto*/                    \
+  _(startup)              /* engine startup logging */                       \
+  _(teleporting)          /* Shape Teleporting */                            \
+  _(selfHosted)           /* self-hosted script logging */                   \
+  _(gc)                   /* The garbage collector */                        \
+  _(mtq)                  /* MicroTask queue */                              \
+  JITSPEW_CHANNEL_LIST(_) /* A module for each JitSpew channel. */
 
 // Declare Log modules
 #define DECLARE_MODULE(X) inline constexpr LogModule X##Module(#X);
@@ -92,20 +102,35 @@ FOR_EACH_JS_LOG_MODULE(DECLARE_MODULE);
 
 #undef DECLARE_MODULE
 
+// By default JS_LOGGING is enabled; but if we would like this become
+// conditional this file-internal macro can be used to accomplish that.
+#define JS_LOGGING 1
+
 // The core logging macro for the JS Engine.
-// For now put this under JS_JITSPEW, but longer term this should be enabled
-// on release and so have its own flag.
-#ifdef JS_JITSPEW
-#  define JS_LOG(name, log_level, ...)                                  \
-    do {                                                                \
-      if (name##Module.shouldLog(log_level)) {                          \
-        name##Module.interface.logPrint(name##Module.logger, log_level, \
-                                        __VA_ARGS__);                   \
-      }                                                                 \
+#ifdef JS_LOGGING
+#  define JS_SHOULD_LOG(name, log_level) \
+    name##Module.shouldLog(LogLevel::log_level)
+
+#  define JS_LOG(name, log_level, ...)                                     \
+    do {                                                                   \
+      if (name##Module.shouldLog(LogLevel::log_level)) {                   \
+        name##Module.interface.logPrint(name##Module.logger,               \
+                                        LogLevel::log_level, __VA_ARGS__); \
+      }                                                                    \
+    } while (0);
+#  define JS_LOG_FMT(name, log_level, fmt, ...)                            \
+    do {                                                                   \
+      if (name##Module.shouldLog(LogLevel::log_level)) {                   \
+        name##Module.interface.logPrintFmt(                                \
+            name##Module.logger, LogLevel::log_level, fmt, ##__VA_ARGS__); \
+      }                                                                    \
     } while (0);
 #else
 #  define JS_LOG(module, log_level, ...)
+#  define JS_LOG_FMT(module, log_level, fmt, ...)
 #endif
+
+#undef JS_LOGGING
 
 }  // namespace js
 

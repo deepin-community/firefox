@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "LockManagerParent.h"
-#include "LockRequestParent.h"
 
+#include "LockRequestParent.h"
 #include "mozilla/PrincipalHashKey.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/StaticPtr.h"
@@ -95,7 +93,7 @@ void LockManagerParent::ProcessRequestQueue(
     }
     aQueue.RemoveElementAt(0);
     mManagedLocks->mHeldLocks.AppendElement(first);
-    Unused << NS_WARN_IF(!first->SendResolve(first->Data().lockMode(), true));
+    (void)NS_WARN_IF(!first->SendResolve(first->Data().lockMode(), true));
   }
 }
 
@@ -158,8 +156,7 @@ IPCResult LockManagerParent::RecvPLockRequestConstructor(
     mManagedLocks->mHeldLocks.RemoveElementsBy(
         [&aRequest](const RefPtr<LockRequestParent>& aHeld) {
           if (aHeld->Data().name() == aRequest.name()) {
-            Unused << NS_WARN_IF(
-                !PLockRequestParent::Send__delete__(aHeld, true));
+            (void)NS_WARN_IF(!PLockRequestParent::Send__delete__(aHeld, true));
             return true;
           }
           return false;
@@ -167,7 +164,7 @@ IPCResult LockManagerParent::RecvPLockRequestConstructor(
     queue.InsertElementAt(0, actor);
   } else if (aRequest.ifAvailable() &&
              (!queue.IsEmpty() || !IsGrantableRequest(actor->Data()))) {
-    Unused << NS_WARN_IF(!aActor->SendResolve(aRequest.lockMode(), false));
+    (void)NS_WARN_IF(!aActor->SendResolve(aRequest.lockMode(), false));
     return IPC_OK();
   } else {
     queue.AppendElement(actor);

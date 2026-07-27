@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Tiu ĉi retejo petas aliron al viaj aparatoj MIDI (Musical Instrument Digital Interface). Vi povas aktivigi tiun aliron per instalo de aldonaĵo.
 site-permission-install-first-prompt-midi-message = Tiu ĉi aliro ne estas nepre sekura. Daŭrigu nur se vi fidas tiun ĉi retejon.
+site-permission-install-first-prompt-serial-header = Tiu ĉi retejo petas aliron al viaj seriaj aparatoj. Aliro al la aparato povas esti aktivigita per instalo de aldonaĵo.
+site-permission-install-first-prompt-serial-message = Tiu ĉi aliro ne estas nepre sekura. Daŭrigu nur se vi fidas tiun ĉi retejon.
 
 ##
 
@@ -69,7 +71,7 @@ webext-perms-update-menu-item = { $addonName } postulas novajn permesojn
 # This message is shown when one or more extensions have been imported from a
 # different browser into Firefox, and the user needs to complete the import to
 # start these extensions. This message is shown in the appmenu.
-webext-imported-addons = Fini instalon de etendaĵoj enportitaj en { -brand-short-name }
+webext-imported-addons = Fini instalon de etendaĵoj importitaj en { -brand-short-name }
 
 ## Add-on removal warning
 
@@ -81,6 +83,8 @@ addon-removal-title = Ĉu forigi { $name }?
 addon-removal-message = Ĉu forigi { $name } el { -brand-shorter-name }?
 addon-removal-button = Forigi
 addon-removal-abuse-report-checkbox = Denunci tiun ĉi etendaĵon al { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Se vi uzas trajtojn aŭ etendaĵojn kiuj bezonas tiun ĉi modelon, ĝi estos denove aldonita.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = La aldonaĵo elŝutita el tiu ĉi retejo ne p
 addon-install-error-file-access = { $addonName } no povis esti instalita ĉar { -brand-short-name } ne povas modifi la bezonatan dosieron.
 addon-install-error-not-signed = { -brand-short-name } evitis ke tiu ĉi retejo instalu nekontrolitan aldonaĵon.
 addon-install-error-invalid-domain = La aldonaĵo { $addonName } ne povas esti instalita el tiu ĉi ejo.
+addon-install-error-no-addon-name-file-access = La etendaĵo ne povis esti instalita ĉar { -brand-short-name } ne povas modifi bezonatan dosieron.
 addon-local-install-error-network-failure = Tiu ĉi aldonaĵo ne povis esti instalita pro eraro en la dosiersistemo.
 addon-local-install-error-incorrect-hash = Tiu ĉi aldonaĵo ne povis esti instalita ĉar ĝi ne kongruas kun la aldonaĵo, kiun atendis { -brand-short-name }.
 addon-local-install-error-corrupt-file = Tiu ĉi aldonaĵo ne povis esti instalita ĉar ĝi aspektas difektite.
 addon-local-install-error-file-access = { $addonName } ne povis esti instalita ĉar { -brand-short-name } ne povas modifi la bezonatan dosieron.
 addon-local-install-error-not-signed = Tiu ĉi aldonaĵo ne povis esti instalita ĉar ĝi ne estas kontrolita.
+addon-local-install-no-addon-name-error-file-access = La etendaĵo ne povis esti instalita ĉar { -brand-short-name } ne povas modifi bezonatan dosieron.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ne povis esti instalita ĉar ĝi ne kongruas kun { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } malobservas politikojn de Mozilla kaj ne povas esti instalita en { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } estas limigita kaj ne povas esti instalita en { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } ne povis esti instalita ĉar ĝi tre riskas okazigi stabilecajn aŭ sekurecajn problemojn.
+addon-install-error-soft-blocked = { $addonName } malobservas politikojn de Mozilla kaj ne povas esti instalita en { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Vi ne povas instali { $addonName } kiel normala uzanto, ĝi povas esti instalita nur de organizo, per entreprenaj politikoj.

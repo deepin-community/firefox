@@ -1,7 +1,7 @@
 Process Model
 =============
 
-The complete set of recognized process types is defined in `GeckoProcessTypes <https://searchfox.org/mozilla-central/source/xpcom/geckoprocesstypes_generator/geckoprocesstypes/__init__.py>`_.
+The complete set of recognized process types is defined in :searchfox:`GeckoProcessTypes <xpcom/geckoprocesstypes_generator/geckoprocesstypes/__init__.py>`.
 
 For more details on how process types are added and managed by IPC, see the process creation documentation :ref:`Gecko Processes`.
 
@@ -63,7 +63,6 @@ Diagram
                     <TR><TD BORDER="1">Data Decoder (RDD) Process</TD></TR>
                     <TR><TD BORDER="1">Network (Socket) Process</TD></TR>
                     <TR><TD BORDER="1">Utility Process</TD></TR>
-                    <TR><TD BORDER="1">Remote Sandbox Broker Process</TD></TR>
                     <TR><TD BORDER="1">Fork Server</TD></TR>
                 </TABLE>
             >
@@ -95,13 +94,13 @@ As the parent process can display HTML and JS, such as the browser UI and privil
 Content Process
 ---------------
 
-:primary protocol: `PContent <https://searchfox.org/mozilla-central/source/dom/ipc/PContent.ipdl>`_
+:primary protocol: :searchfox:`PContent <dom/ipc/PContent.ipdl>`
 :other names: Renderer Process
 :sandboxed?: yes (content sandbox policy)
 
 Content processes are used to load web content, and are the only process type (other than the parent process) which can load and execute JS code. These processes are further subdivided into specific "remote types", which specify the type of content loaded within them, their sandboxing behavior, and can gate access to certain privileged IPC methods.
 
-The specific remote type and isolation behaviour used for a specific resource is currently controlled in 2 major places. When performing a document navigation, the final process to load the document in is selected by the logic in `ProcessIsolation.cpp <https://searchfox.org/mozilla-central/source/dom/ipc/ProcessIsolation.cpp>`_. This will combine information about the specific response, such as the site and headers, with other state to select which process and other isolating actions should be taken. When selecting which process to create the initial process for a new tab in, and when selecting processes for serviceworkers and shared workers, the logic in :searchfox:`E10SUtils.sys.mjs <toolkit/modules/E10SUtils.sys.mjs>` is used to select a process. The logic in ``E10SUtils.sys.mjs`` will likely be removed and replaced with ``ProcessIsolation.cpp`` in the future.
+The specific remote type and isolation behaviour used for a specific resource is currently controlled in 2 major places. When performing a document navigation, the final process to load the document in is selected by the logic in :searchfox:`ProcessIsolation.cpp <dom/ipc/ProcessIsolation.cpp>`. This will combine information about the specific response, such as the site and headers, with other state to select which process and other isolating actions should be taken. When selecting which process to create the initial process for a new tab in, and when selecting processes for serviceworkers and shared workers, the logic in :searchfox:`E10SUtils.sys.mjs <toolkit/modules/E10SUtils.sys.mjs>` is used to select a process. The logic in ``E10SUtils.sys.mjs`` will likely be removed and replaced with ``ProcessIsolation.cpp`` in the future.
 
 .. note::
 
@@ -233,7 +232,7 @@ ServiceWorker web content processes are used to host ServiceWorkers on a per-sit
 Gecko Media Plugins (GMP) Process
 ---------------------------------
 
-:primary protocol: `PGMP <https://searchfox.org/mozilla-central/source/dom/media/gmp/PGMP.ipdl>`_
+:primary protocol: :searchfox:`PGMP <dom/media/gmp/PGMP.ipdl>`
 :sandboxed?: yes (GMP sandbox policy)
 
 The GMP process is used to sandbox third-party "Content Decryption Module" (CDM) binaries used for media playback in a sandboxed environment. This process is only launched when DRM-enabled content is loaded.
@@ -243,7 +242,7 @@ The GMP process is used to sandbox third-party "Content Decryption Module" (CDM)
 GPU Process
 -----------
 
-:primary protocol: `PGPU <https://searchfox.org/mozilla-central/source/gfx/ipc/PGPU.ipdl>`_
+:primary protocol: :searchfox:`PGPU <gfx/ipc/PGPU.ipdl>`
 :other names: Compositor Process
 :sandboxed?: no (`bug 1347710 <https://bugzilla.mozilla.org/show_bug.cgi?id=1347710>`_ tracks sandboxing on windows)
 
@@ -256,7 +255,7 @@ The GPU process is not used on all platforms. Platforms which do not use it, suc
 VR Process
 ----------
 
-:primary protocol: `PVR <https://searchfox.org/mozilla-central/source/gfx/vr/ipc/PVR.ipdl>`_
+:primary protocol: :searchfox:`PVR <gfx/vr/ipc/PVR.ipdl>`
 :sandboxed?: no (`bug 1430043 <https://bugzilla.mozilla.org/show_bug.cgi?id=1430043>`_ tracks sandboxing on windows)
 
 VR headset libraries require access to specific OS level features and other requirements which we would generally like to block with the sandbox in other processes. In order to allow the GPU process to have tighter sandboxing rules, these VR libraries are loaded into the less-restricted VR process. Like the GPU process, this serves to isolate them from the rest of Firefox and reduce the impact of bugs in these libraries on the rest of the browser. The VR process is launched only after a user visits a site which uses WebVR.
@@ -266,7 +265,7 @@ VR headset libraries require access to specific OS level features and other requ
 Data Decoder (RDD) Process
 --------------------------
 
-:primary protocol: `PRDD <https://searchfox.org/mozilla-central/source/dom/media/ipc/PRDD.ipdl>`_
+:primary protocol: :searchfox:`PRDD <dom/media/ipc/PRDD.ipdl>`
 :sandboxed?: yes (RDD sandbox policy)
 
 This process is used to run media data decoders within their own sandboxed process, allowing the code to be isolated from other code in Gecko. This aims to reduce the severity of potential bugs in media decoder libraries, and improve the security of the browser.
@@ -286,21 +285,10 @@ This process is used to run media data decoders within their own sandboxed proce
 Network (Socket) Process
 ------------------------
 
-:primary protocol: `PSocketProcess <https://searchfox.org/mozilla-central/source/netwerk/ipc/PSocketProcess.ipdl>`_
+:primary protocol: :searchfox:`PSocketProcess <netwerk/ipc/PSocketProcess.ipdl>`
 :sandboxed?: yes (socket sandbox policy)
 
 The socket process is used to separate certain networking operations from the parent process, allowing them to be performed more directly in a partially sandboxed process. The eventual goal is to move all TCP/UDP network operations into this dedicated process, and is being tracked in `Bug 1322426 <https://bugzilla.mozilla.org/show_bug.cgi?id=1322426>`_.
-
-.. _remote-sandbox-process:
-
-Remote Sandbox Broker Process
------------------------------
-
-:platform: Windows on ARM only
-:primary protocol: `PRemoteSandboxBroker <https://searchfox.org/mozilla-central/source/security/sandbox/win/src/remotesandboxbroker/PRemoteSandboxBroker.ipdl>`_
-:sandboxed?: no
-
-In order to run sandboxed x86 plugin processes from Windows-on-ARM, the remote sandbox broker process is launched in x86-mode, and used to launch sandboxed x86 subprocesses. This avoids issues with the sandboxing layer, which unfortunately assumes that pointer width matches between the sandboxer and sandboxing process. To avoid this, the remote sandbox broker is used as an x86 sandboxing process which wraps these plugins.
 
 .. _fork-server:
 
@@ -332,14 +320,14 @@ IPDLUnitTest
 
 :primary protocol: varies
 
-This test-only process type is intended for use when writing IPDL unit tests. However, it is currently broken, due to these tests having never been run in CI. The type may be removed or re-used when these unit tests are fixed.
+This test-only process type is intended for use when writing IPDL unit tests. However, it is currently broken, due to these tests having never been run in CI. The type may be removed or reused when these unit tests are fixed.
 
 .. _utility-process:
 
 Utility Process
 ---------------
 
-:primary protocol: `PUtilityProcess <https://searchfox.org/mozilla-central/source/ipc/glue/PUtilityProcess.ipdl>`_
+:primary protocol: :searchfox:`PUtilityProcess <ipc/glue/PUtilityProcess.ipdl>`
 :metabug: `Bug 1722051 <https://bugzilla.mozilla.org/show_bug.cgi?id=1722051>`_
 :sandboxed?: yes, customizable
 

@@ -5,11 +5,16 @@
 url-classifier-title = Thông tin về trình phân loại URL
 url-classifier-search-title = Tìm kiếm
 url-classifier-search-result-title = Kết quả
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Danh sách các bảng: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = URL không hợp lệ
 url-classifier-search-error-no-features = Không có tính năng được chọn
+url-classifier-search-error-no-results = Không tìm thấy mục nào cho URL
 url-classifier-search-btn = Bắt đầu tìm kiếm
 url-classifier-search-features = Tính năng
 url-classifier-search-listType = Kiểu danh sách
@@ -21,7 +26,7 @@ url-classifier-provider-back-off-time = Độ trễ
 url-classifier-provider-last-update-status = Trạng thái cập nhật cuối
 url-classifier-provider-update-btn = Cập nhật
 url-classifier-cache-title = Bộ nhớ đệm
-url-classifier-cache-refresh-btn = Tải lại
+url-classifier-cache-refresh-btn = Làm mới
 url-classifier-cache-clear-btn = Xóa
 url-classifier-cache-table-name = Tên bảng
 url-classifier-cache-ncache-entries = Số lượng bộ nhớ đệm âm
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Mô-đun nhật ký duyệt web an toàn
 url-classifier-debug-modules = Mô-đun nhật ký hiện tại
 url-classifier-debug-sbjs-modules = Nhật ký JS duyệt web an toàn
 url-classifier-debug-file = Tập tin nhật ký hiện tại
-
 url-classifier-trigger-update = Cập nhật
 url-classifier-not-available = Không có
 url-classifier-disable-sbjs-log = Tắt nhật ký JS duyệt web an toàn

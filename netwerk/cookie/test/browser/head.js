@@ -19,8 +19,8 @@ const TEST_TOP_PAGE = TEST_DOMAIN + TEST_PATH + "file_empty.html";
 // permutations. This includes verifying that changing the permission while the
 // page is open still results in the state of the permission when the
 // document/global was created still applying. Code will execute in the
-// ContentTask.spawn frame-script context, use content to access the underlying
-// page.
+// SpecialPowers.spawn frame-script context, use content to access the
+// underlying page.
 this.CookiePolicyHelper = {
   runTest(testName, config) {
     // Testing allowed to blocked by cookie behavior
@@ -85,6 +85,11 @@ this.CookiePolicyHelper = {
       info("Starting " + testName + ": " + config.toSource());
 
       await SpecialPowers.flushPrefEnv();
+
+      // Allow eval below.
+      await SpecialPowers.pushPrefEnv({
+        set: [["security.allow_eval_with_system_principal", true]],
+      });
 
       if (prefs) {
         await SpecialPowers.pushPrefEnv({ set: prefs });

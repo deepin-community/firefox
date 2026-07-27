@@ -1,21 +1,26 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "EncoderTemplate.h"
 
+#include <algorithm>
+#include <type_traits>
+
 #include "EncoderTypes.h"
+#include "WebCodecsUtils.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
+#include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/Event.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/VideoFrame.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "nsGkAtoms.h"
+#include "nsRFPService.h"
 #include "nsString.h"
 #include "nsThreadUtils.h"
 
@@ -49,6 +54,9 @@ namespace mozilla::dom {
 #endif  // LOGV
 #define LOGV(msg, ...) LOG_INTERNAL(Verbose, msg, ##__VA_ARGS__)
 
+#define AUTO_ENCODER_MARKER(var, postfix) \
+  AutoWebCodecsMarker var(EncoderType::Name.get(), postfix);
+
 /*
  * Below are ControlMessage classes implementations
  */
@@ -65,9 +73,11 @@ EncoderTemplate<EncoderType>::ConfigureMessage::ConfigureMessage(
 
 template <typename EncoderType>
 EncoderTemplate<EncoderType>::EncodeMessage::EncodeMessage(
-    WebCodecsId aConfigureId, RefPtr<InputTypeInternal>&& aData,
+    WebCodecsId aConfigureId, already_AddRefed<InputTypeInternal> aData,
     Maybe<VideoEncoderEncodeOptions>&& aOptions)
-    : ControlMessage(aConfigureId), mData(aData) {}
+    : ControlMessage(aConfigureId) {
+  PushData(std::move(aData), std::move(aOptions));
+}
 
 template <typename EncoderType>
 EncoderTemplate<EncoderType>::FlushMessage::FlushMessage(
@@ -123,6 +133,11 @@ void EncoderTemplate<EncoderType>::Configure(const ConfigType& aConfig,
     return;
   }
 
+  // Audio encoders are all software, no need to do anything.
+  if constexpr (std::is_same_v<ConfigType, VideoEncoderConfig>) {
+    ApplyResistFingerprintingIfNeeded(config, GetRelevantGlobal());
+  }
+
   mState = CodecState::Configured;
   mEncodeCounter = 0;
   mFlushCounter = 0;
@@ -151,13 +166,13 @@ void EncoderTemplate<EncoderType>::EncodeAudioData(InputType& aInput,
     return;
   }
 
-  mEncodeQueueSize += 1;
+  mAsyncDurationTracker.Start(
+      aInput.Timestamp(),
+      AutoWebCodecsMarker(EncoderType::Name.get(), ".encode-duration-a"));
   // Dummy options here as a shortcut
-  mControlMessageQueue.push(MakeRefPtr<EncodeMessage>(
+  PushEncodeRequest(
       mLatestConfigureId,
-      EncoderType::CreateInputInternal(aInput, VideoEncoderEncodeOptions())));
-  LOGV("%s %p enqueues %s", EncoderType::Name.get(), this,
-       mControlMessageQueue.back()->ToString().get());
+      EncoderType::CreateInputInternal(aInput, VideoEncoderEncodeOptions()));
   ProcessControlMessageQueue();
 }
 
@@ -180,12 +195,12 @@ void EncoderTemplate<EncoderType>::EncodeVideoFrame(
     return;
   }
 
-  mEncodeQueueSize += 1;
-  mControlMessageQueue.push(MakeRefPtr<EncodeMessage>(
-      mLatestConfigureId, EncoderType::CreateInputInternal(aInput, aOptions),
-      Some(aOptions)));
-  LOGV("%s %p enqueues %s", EncoderType::Name.get(), this,
-       mControlMessageQueue.back()->ToString().get());
+  mAsyncDurationTracker.Start(
+      aInput.Timestamp(),
+      AutoWebCodecsMarker(EncoderType::Name.get(), ".encode-duration-v"));
+  PushEncodeRequest(mLatestConfigureId,
+                    EncoderType::CreateInputInternal(aInput, aOptions),
+                    Some(aOptions));
   ProcessControlMessageQueue();
 }
 
@@ -284,6 +299,12 @@ void EncoderTemplate<EncoderType>::CloseInternal(const nsresult& aResult) {
   AssertIsOnOwningThread();
   MOZ_ASSERT(aResult != NS_ERROR_DOM_ABORT_ERR, "Use CloseInternalWithAbort");
 
+  // Return early if already closed. This can happen when async error handling
+  // tasks race with user-initiated close().
+  if (mState == CodecState::Closed) {
+    return;
+  }
+
   auto r = ResetInternal(aResult);
   if (r.isErr()) {
     nsCString name;
@@ -324,7 +345,7 @@ void EncoderTemplate<VideoEncoderTraits>::OutputEncodedVideoData(
   JSContext* cx = jsapi.cx();
 
   RefPtr<EncodedVideoChunkOutputCallback> cb(mOutputCallback);
-  for (auto& data : aData) {
+  for (const auto& data : aData) {
     // It's possible to have reset() called in between this task having been
     // dispatched, and running -- no output callback should happen when that's
     // the case.
@@ -362,6 +383,7 @@ void EncoderTemplate<VideoEncoderTraits>::OutputEncodedVideoData(
 
     LOG("EncoderTemplate:: output callback (ts: % " PRId64 ")%s",
         encodedData->Timestamp(), metadataInfo.get());
+    mAsyncDurationTracker.End(encodedData->Timestamp());
     cb->Call((EncodedVideoChunk&)(*encodedData), metadata);
   }
 }
@@ -384,7 +406,7 @@ void EncoderTemplate<AudioEncoderTraits>::OutputEncodedAudioData(
   JSContext* cx = jsapi.cx();
 
   RefPtr<EncodedAudioChunkOutputCallback> cb(mOutputCallback);
-  for (auto& data : aData) {
+  for (const auto& data : aData) {
     // It's possible to have reset() called in between this task having been
     // dispatched, and running -- no output callback should happen when that's
     // the case.
@@ -418,6 +440,7 @@ void EncoderTemplate<AudioEncoderTraits>::OutputEncodedAudioData(
             ? encodedData->GetDuration().Value()
             : 0,
         data->Size(), mPacketsOutput++);
+    mAsyncDurationTracker.End(encodedData->Timestamp());
     cb->Call((EncodedAudioChunk&)(*encodedData), metadata);
   }
 }
@@ -510,6 +533,9 @@ void EncoderTemplate<EncoderType>::CancelPendingControlMessagesAndFlushPromises(
     const nsresult& aResult) {
   AssertIsOnOwningThread();
 
+  mReconfigureRequest.DisconnectIfExists();
+  mDrainAfterReconfigureRequest.DisconnectIfExists();
+
   // Cancel the message that is being processed.
   if (mProcessingMessage) {
     LOG("%s %p cancels current %s", EncoderType::Name.get(), this,
@@ -528,13 +554,11 @@ void EncoderTemplate<EncoderType>::CancelPendingControlMessagesAndFlushPromises(
   }
 
   // If there are pending flush promises, reject them.
-  mPendingFlushPromises.ForEach(
-      [&](const int64_t& id, const RefPtr<Promise>& p) {
-        LOG("%s %p, reject the promise for flush %" PRId64,
-            EncoderType::Name.get(), this, id);
-        p->MaybeReject(aResult);
-      });
-  mPendingFlushPromises.Clear();
+  mPendingFlushPromises.Clear([&](const int64_t& id, const RefPtr<Promise>& p) {
+    LOG("%s %p, reject the promise for flush %" PRId64, EncoderType::Name.get(),
+        this, id);
+    p->MaybeReject(aResult);
+  });
 }
 
 template <typename EncoderType>
@@ -611,6 +635,64 @@ void EncoderTemplate<EncoderType>::OutputEncodedData(
 }
 
 template <typename EncoderType>
+void EncoderTemplate<EncoderType>::DrainAndReconfigure(
+    RefPtr<ConfigureMessage> aMessage) {
+  MOZ_ASSERT(mAgent);
+
+  mAgent->Drain()
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          [self = RefPtr{this}, id = mAgent->mId, message = aMessage](
+              EncoderAgent::EncodePromise::ResolveOrRejectValue&& aResult) {
+            self->mDrainAfterReconfigureRequest.Complete();
+
+            if (aResult.IsReject()) {
+              const MediaResult& error = aResult.RejectValue();
+              LOGE(
+                  "%s %p, EncoderAgent #%zu failed to drain during "
+                  "reconfigure: %s",
+                  EncoderType::Name.get(), self.get(), id,
+                  error.Description().get());
+              self->QueueATask(
+                  "Error during drain during reconfigure",
+                  [self = RefPtr{self}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                    self->CloseInternal(
+                        NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
+                  });
+              return;
+            }
+
+            LOG("%s %p flush during reconfiguration succeeded.",
+                EncoderType::Name.get(), self.get());
+
+            nsTArray<RefPtr<MediaRawData>> data =
+                std::move(aResult.ResolveValue());
+
+            if (!data.IsEmpty()) {
+              LOG("%s %p Outputing %zu frames during flush "
+                  " for reconfiguration with encoder destruction",
+                  EncoderType::Name.get(), self.get(), data.Length());
+              self->QueueATask("Output encoded Data",
+                               [self = RefPtr{self}, data = std::move(data)]()
+                                   MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                                     self->OutputEncodedData(std::move(data));
+                                   });
+            }
+
+            self->QueueATask(
+                "Destroy + recreate encoder after failed reconfigure",
+                [self = RefPtr(self), message]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                  if (self->mState != CodecState::Configured) {
+                    return;
+                  }
+                  self->DestroyEncoderAgentIfAny();
+                  self->Configure(message);
+                });
+          })
+      ->Track(mDrainAfterReconfigureRequest);
+}
+
+template <typename EncoderType>
 void EncoderTemplate<EncoderType>::Reconfigure(
     RefPtr<ConfigureMessage> aMessage) {
   MOZ_ASSERT(mAgent);
@@ -619,7 +701,7 @@ void EncoderTemplate<EncoderType>::Reconfigure(
 
   RefPtr<ConfigTypeInternal> config = aMessage->Config();
   RefPtr<WebCodecsConfigurationChangeList> configDiff =
-      config->Diff(*mActiveConfig);
+      mActiveConfig->Diff(*config);
 
   // Nothing to do, return now, but per spec the config
   // must be output next time a packet is output.
@@ -635,20 +717,25 @@ void EncoderTemplate<EncoderType>::Reconfigure(
       mActiveConfig->ToString().get(), config->ToString().get(),
       configDiff->ToString().get());
 
+  // Changes like codec or hardware acceleration cannot be done on the fly:
+  // drain the encoder and create a fresh one with the new config.
+  if (!configDiff->CanAttemptReconfigure()) {
+    DrainAndReconfigure(aMessage);
+    return;
+  }
+
   RefPtr<EncoderConfigurationChangeList> changeList =
       configDiff->ToPEMChangeList();
 
-  // Attempt to reconfigure the encoder, if the config is similar enough.
-  // Otherwise, or if reconfiguring on the fly didn't work, flush the encoder
-  // and recreate a new one.
-
+  // Attempt to reconfigure the encoder on the fly.
+  // If reconfiguring on the fly didn't work, flush the encoder and recreate.
   mAgent->Reconfigure(changeList)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
-          [self = RefPtr{this}, id = mAgent->mId,
-           message = std::move(aMessage)](
+          [self = RefPtr{this}, id = mAgent->mId, message = aMessage](
               const EncoderAgent::ReconfigurationPromise::ResolveOrRejectValue&
                   aResult) {
+            self->mReconfigureRequest.Complete();
             MOZ_ASSERT(self->mProcessingMessage);
             MOZ_ASSERT(self->mProcessingMessage->AsConfigureMessage());
             MOZ_ASSERT(self->mState == CodecState::Configured);
@@ -660,65 +747,7 @@ void EncoderTemplate<EncoderType>::Reconfigure(
               LOGE(
                   "Reconfiguring on the fly didn't succeed, flushing and "
                   "configuring a new encoder");
-              self->mAgent->Drain()->Then(
-                  GetCurrentSerialEventTarget(), __func__,
-                  [self, id,
-                   message](EncoderAgent::EncodePromise::ResolveOrRejectValue&&
-                                aResult) {
-                    if (aResult.IsReject()) {
-                      // The spec asks to close the encoder with an
-                      // NotSupportedError so we log the exact error here.
-                      const MediaResult& error = aResult.RejectValue();
-                      LOGE("%s %p, EncoderAgent #%zu failed to configure: %s",
-                           EncoderType::Name.get(), self.get(), id,
-                           error.Description().get());
-
-                      self->QueueATask(
-                          "Error during drain during reconfigure",
-                          [self = RefPtr{self}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                            MOZ_ASSERT(self->mState != CodecState::Closed);
-                            self->CloseInternal(
-                                NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
-                          });
-                      return;
-                    }
-
-                    LOG("%s %p flush during reconfiguration succeeded.",
-                        EncoderType::Name.get(), self.get());
-
-                    // If flush succeeded, schedule to output encoded data
-                    // first, destroy the current encoder, and proceed to create
-                    // a new one.
-                    MOZ_ASSERT(aResult.IsResolve());
-                    nsTArray<RefPtr<MediaRawData>> data =
-                        std::move(aResult.ResolveValue());
-
-                    if (data.IsEmpty()) {
-                      LOG("%s %p no data during flush for reconfiguration with "
-                          "encoder destruction",
-                          EncoderType::Name.get(), self.get());
-                    } else {
-                      LOG("%s %p Outputing %zu frames during flush "
-                          " for reconfiguration with encoder destruction",
-                          EncoderType::Name.get(), self.get(), data.Length());
-                      self->QueueATask(
-                          "Output encoded Data",
-                          [self = RefPtr{self}, data = std::move(data)]()
-                              MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                                self->OutputEncodedData(std::move(data));
-                              });
-                    }
-
-                    self->QueueATask(
-                        "Destroy + recreate encoder after failed reconfigure",
-                        [self = RefPtr(self), message]()
-                            MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                              // Destroy the agent, and finally create a fresh
-                              // encoder with the new configuration.
-                              self->DestroyEncoderAgentIfAny();
-                              self->Configure(message);
-                            });
-                  });
+              self->DrainAndReconfigure(message);
               return;
             }
 
@@ -732,13 +761,16 @@ void EncoderTemplate<EncoderType>::Reconfigure(
             self->mProcessingMessage = nullptr;
             self->StopBlockingMessageQueue();
             self->ProcessControlMessageQueue();
-          });
+          })
+      ->Track(mReconfigureRequest);
 }
 
 template <typename EncoderType>
 void EncoderTemplate<EncoderType>::Configure(
     RefPtr<ConfigureMessage> aMessage) {
   MOZ_ASSERT(!mAgent);
+
+  AUTO_ENCODER_MARKER(marker, ".configure");
 
   LOG("Configuring encoder: %s", aMessage->Config()->ToString().get());
 
@@ -757,7 +789,6 @@ void EncoderTemplate<EncoderType>::Configure(
     QueueATask(
         "Error when configuring encoder (encoder agent creation failed)",
         [self = RefPtr(this)]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-          MOZ_ASSERT(self->mState != CodecState::Closed);
           LOGE(
               "%s %p ProcessConfigureMessage (async close): encoder agent "
               "creation failed",
@@ -776,9 +807,10 @@ void EncoderTemplate<EncoderType>::Configure(
   EncoderConfig config = mActiveConfig->ToEncoderConfig();
   mAgent->Configure(config)
       ->Then(GetCurrentSerialEventTarget(), __func__,
-             [self = RefPtr{this}, id = mAgent->mId, aMessage](
+             [self = RefPtr{this}, id = mAgent->mId, aMessage,
+              m = std::move(marker)](
                  const EncoderAgent::ConfigurePromise::ResolveOrRejectValue&
-                     aResult) MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                     aResult) mutable {
                MOZ_ASSERT(self->mProcessingMessage);
                MOZ_ASSERT(self->mProcessingMessage->AsConfigureMessage());
                MOZ_ASSERT(self->mState == CodecState::Configured);
@@ -806,12 +838,16 @@ void EncoderTemplate<EncoderType>::Configure(
                  self->QueueATask(
                      "Error during configure",
                      [self = RefPtr{self}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                       MOZ_ASSERT(self->mState != CodecState::Closed);
                        self->CloseInternal(
                            NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
                      });
                  return;
                }
+
+               LOG("%s %p, EncoderAgent #%zu configured successfully. %u "
+                   "encode requests are pending",
+                   EncoderType::Name.get(), self.get(), id,
+                   self->mEncodeQueueSize);
 
                self->StopBlockingMessageQueue();
                self->ProcessControlMessageQueue();
@@ -825,6 +861,9 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
   AssertIsOnOwningThread();
   MOZ_ASSERT(mState == CodecState::Configured);
   MOZ_ASSERT(aMessage->AsEncodeMessage());
+  MOZ_ASSERT(mEncodeQueueSize > 0);
+
+  AUTO_ENCODER_MARKER(marker, ".encode-process");
 
   if (mProcessingMessage) {
     return MessageProcessedResult::NotProcessed;
@@ -836,7 +875,8 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
   LOGV("%s %p processing %s", EncoderType::Name.get(), this,
        aMessage->ToString().get());
 
-  mEncodeQueueSize -= 1;
+  MOZ_ASSERT(AssertedCast<uint32_t>(aMessage->BatchSize()) <= mEncodeQueueSize);
+  mEncodeQueueSize -= AssertedCast<uint32_t>(aMessage->BatchSize());
   ScheduleDequeueEvent();
 
   // Treat it like decode error if no EncoderAgent is available or the encoded
@@ -845,7 +885,6 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
     mProcessingMessage = nullptr;
     QueueATask("Error during encode",
                [self = RefPtr{this}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                 MOZ_ASSERT(self->mState != CodecState::Closed);
                  self->CloseInternal(NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
                });
     return MessageProcessedResult::Processed;
@@ -857,17 +896,17 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
   }
 
   MOZ_ASSERT(mActiveConfig);
-  RefPtr<InputTypeInternal> data = aMessage->mData;
-  if (!data) {
-    LOGE("%s %p, data for %s is empty or invalid", EncoderType::Name.get(),
-         this, aMessage->ToString().get());
+  if (!aMessage->IsValid()) {
+    LOGE("%s %p, %s has empty data", EncoderType::Name.get(), this,
+         aMessage->ToString().get());
     return closeOnError();
   }
 
-  mAgent->Encode(data.get())
+  mAgent->Encode(aMessage->TakeData())
       ->Then(GetCurrentSerialEventTarget(), __func__,
-             [self = RefPtr{this}, id = mAgent->mId, aMessage](
-                 EncoderAgent::EncodePromise::ResolveOrRejectValue&& aResult) {
+             [self = RefPtr{this}, id = mAgent->mId, m = std::move(marker)](
+                 EncoderAgent::EncodePromise::ResolveOrRejectValue&&
+                     aResult) mutable {
                MOZ_ASSERT(self->mProcessingMessage);
                MOZ_ASSERT(self->mProcessingMessage->AsEncodeMessage());
                MOZ_ASSERT(self->mState == CodecState::Configured);
@@ -875,9 +914,11 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
                MOZ_ASSERT(id == self->mAgent->mId);
                MOZ_ASSERT(self->mActiveConfig);
 
-               nsCString msgStr = aMessage->ToString();
+               RefPtr<EncodeMessage> msg =
+                   self->mProcessingMessage->AsEncodeMessage();
+               nsCString msgStr = msg->ToString();
 
-               aMessage->Complete();
+               msg->Complete();
                self->mProcessingMessage = nullptr;
 
                if (aResult.IsReject()) {
@@ -890,7 +931,6 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
                  self->QueueATask(
                      "Error during encode runnable",
                      [self = RefPtr{self}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                       MOZ_ASSERT(self->mState != CodecState::Closed);
                        self->CloseInternal(
                            NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
                      });
@@ -907,10 +947,15 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessEncodeMessage(
                  LOGV("%s %p, schedule %zu encoded data output for %s",
                       EncoderType::Name.get(), self.get(), data.Length(),
                       msgStr.get());
+
+                 m.End();
+                 AUTO_ENCODER_MARKER(outMarker, ".encode-output");
+
                  self->QueueATask(
                      "Output encoded Data",
-                     [self = RefPtr{self}, data2 = std::move(data)]()
-                         MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                     [self = RefPtr{self}, data2 = std::move(data),
+                      om = std::move(outMarker)]()
+                         MOZ_CAN_RUN_SCRIPT_BOUNDARY mutable {
                            self->OutputEncodedData(std::move(data2));
                          });
                }
@@ -927,6 +972,8 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessFlushMessage(
   AssertIsOnOwningThread();
   MOZ_ASSERT(mState == CodecState::Configured);
   MOZ_ASSERT(aMessage->AsFlushMessage());
+
+  AUTO_ENCODER_MARKER(marker, ".flush");
 
   if (mProcessingMessage) {
     return MessageProcessedResult::NotProcessed;
@@ -948,8 +995,10 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessFlushMessage(
 
   mAgent->Drain()
       ->Then(GetCurrentSerialEventTarget(), __func__,
-             [self = RefPtr{this}, id = mAgent->mId, aMessage, this](
-                 EncoderAgent::EncodePromise::ResolveOrRejectValue&& aResult) {
+             [self = RefPtr{this}, id = mAgent->mId, aMessage,
+              m = std::move(marker),
+              this](EncoderAgent::EncodePromise::ResolveOrRejectValue&&
+                        aResult) mutable {
                MOZ_ASSERT(self->mProcessingMessage);
                MOZ_ASSERT(self->mProcessingMessage->AsFlushMessage());
                MOZ_ASSERT(self->mState == CodecState::Configured);
@@ -985,7 +1034,6 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessFlushMessage(
                        // Otherwise, the promise is going to be rejected by
                        // CloseInternal() below.
                        self->mProcessingMessage = nullptr;
-                       MOZ_ASSERT(self->mState != CodecState::Closed);
                        self->CloseInternal(
                            NS_ERROR_DOM_ENCODING_NOT_SUPPORTED_ERR);
                      });
@@ -1010,10 +1058,15 @@ MessageProcessedResult EncoderTemplate<EncoderType>::ProcessFlushMessage(
 
                const auto flushPromiseId =
                    static_cast<int64_t>(aMessage->mMessageId);
+
+               m.End();
+               AUTO_ENCODER_MARKER(outMarker, ".flush-output");
+
                self->QueueATask(
                    "Flush: output encoded data task",
-                   [self = RefPtr{self}, data = std::move(data),
-                    flushPromiseId]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
+                   [self = RefPtr{self}, data = std::move(data), flushPromiseId,
+                    om = std::move(
+                        outMarker)]() MOZ_CAN_RUN_SCRIPT_BOUNDARY mutable {
                      self->OutputEncodedData(std::move(data));
                      // If Reset() was invoked before this task executes, or
                      // during the output callback above in the execution of
@@ -1077,7 +1130,7 @@ bool EncoderTemplate<EncoderType>::CreateEncoderAgent(
         [self = RefPtr{this}]() {
           LOG("%s %p, worker is going away", EncoderType::Name.get(),
               self.get());
-          Unused << self->ResetInternal(NS_ERROR_DOM_ABORT_ERR);
+          (void)self->ResetInternal(NS_ERROR_DOM_ABORT_ERR);
         });
     if (NS_WARN_IF(!workerRef)) {
       return false;
@@ -1113,7 +1166,7 @@ bool EncoderTemplate<EncoderType>::CreateEncoderAgent(
         LOG("%s %p gets xpcom-will-shutdown notification for EncoderAgent "
             "#%zu",
             EncoderType::Name.get(), self.get(), id);
-        Unused << self->ResetInternal(NS_ERROR_DOM_ABORT_ERR);
+        (void)self->ResetInternal(NS_ERROR_DOM_ABORT_ERR);
       },
       [self = RefPtr{this}, id = mAgent->mId,
        ref = mWorkerRef](bool /* aUnUsed*/) {
@@ -1159,6 +1212,45 @@ void EncoderTemplate<EncoderType>::DestroyEncoderAgentIfAny() {
             EncoderType::Name.get(), self.get(), id,
             aResult.IsResolve() ? "resolved" : "rejected");
       });
+}
+
+template <typename EncoderType>
+void EncoderTemplate<EncoderType>::PushEncodeRequest(
+    WebCodecsId aConfigureId, RefPtr<InputTypeInternal>&& aData,
+    Maybe<VideoEncoderEncodeOptions>&& aOptions) {
+  AssertIsOnOwningThread();
+  MOZ_ASSERT(mState == CodecState::Configured);
+
+  // TODO(Bug 1984936): Enable batch encoding for selected encoders now.
+  const size_t batchSize =
+      (StaticPrefs::media_use_remote_encoder_video() && mActiveConfig &&
+       IsH264CodecString(mActiveConfig->mCodec))
+          ? std::max<size_t>(
+                StaticPrefs::dom_media_webcodecs_batch_encoding_size(), 1)
+          : 1;
+
+  RefPtr<EncodeMessage> msg;
+  if (!mControlMessageQueue.empty()) {
+    msg = mControlMessageQueue.back()->AsEncodeMessage();
+    if (msg &&
+        (msg->mConfigureId != aConfigureId || msg->BatchSize() >= batchSize)) {
+      msg = nullptr;
+    }
+  }
+
+  const bool isNewMessage = !msg;
+  if (isNewMessage) {
+    msg = MakeRefPtr<EncodeMessage>(aConfigureId, aData.forget(),
+                                    std::move(aOptions));
+    mControlMessageQueue.push(msg);
+  } else {
+    msg->PushData(aData.forget(), std::move(aOptions));
+  }
+
+  mEncodeQueueSize += 1;
+  LOGV("%s %p %s %s, encode queue size: %u", EncoderType::Name.get(), this,
+       isNewMessage ? "queued a new" : "appended data to",
+       msg->ToString().get(), mEncodeQueueSize);
 }
 
 template class EncoderTemplate<VideoEncoderTraits>;

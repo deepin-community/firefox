@@ -45,11 +45,12 @@ impl super::AdapterShared {
                 glow::RGBA,
                 glow::UNSIGNED_INT_2_10_10_10_REV,
             ),
-            Tf::Rg11b10UFloat => (
+            Tf::Rg11b10Ufloat => (
                 glow::R11F_G11F_B10F,
                 glow::RGB,
                 glow::UNSIGNED_INT_10F_11F_11F_REV,
             ),
+            Tf::R64Uint => (glow::RG32UI, glow::RED_INTEGER, glow::UNSIGNED_INT),
             Tf::Rg32Uint => (glow::RG32UI, glow::RG_INTEGER, glow::UNSIGNED_INT),
             Tf::Rg32Sint => (glow::RG32I, glow::RG_INTEGER, glow::INT),
             Tf::Rg32Float => (glow::RG32F, glow::RG, glow::FLOAT),
@@ -88,6 +89,7 @@ impl super::AdapterShared {
                 glow::UNSIGNED_INT_24_8,
             ),
             Tf::NV12 => unreachable!(),
+            Tf::P010 => unreachable!(),
             Tf::Rgb9e5Ufloat => (glow::RGB9_E5, glow::RGB, glow::UNSIGNED_INT_5_9_9_9_REV),
             Tf::Bc1RgbaUnorm => (glow::COMPRESSED_RGBA_S3TC_DXT1_EXT, glow::RGBA, 0),
             Tf::Bc1RgbaUnormSrgb => (glow::COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, glow::RGBA, 0),
@@ -182,6 +184,10 @@ pub(super) fn describe_vertex_format(vertex_format: wgt::VertexFormat) -> super:
     use wgt::VertexFormat as Vf;
 
     let (element_count, element_format, attrib_kind) = match vertex_format {
+        Vf::Unorm8 => (1, glow::UNSIGNED_BYTE, Vak::Float),
+        Vf::Snorm8 => (1, glow::BYTE, Vak::Float),
+        Vf::Uint8 => (1, glow::UNSIGNED_BYTE, Vak::Integer),
+        Vf::Sint8 => (1, glow::BYTE, Vak::Integer),
         Vf::Unorm8x2 => (2, glow::UNSIGNED_BYTE, Vak::Float),
         Vf::Snorm8x2 => (2, glow::BYTE, Vak::Float),
         Vf::Uint8x2 => (2, glow::UNSIGNED_BYTE, Vak::Integer),
@@ -190,6 +196,11 @@ pub(super) fn describe_vertex_format(vertex_format: wgt::VertexFormat) -> super:
         Vf::Snorm8x4 => (4, glow::BYTE, Vak::Float),
         Vf::Uint8x4 => (4, glow::UNSIGNED_BYTE, Vak::Integer),
         Vf::Sint8x4 => (4, glow::BYTE, Vak::Integer),
+        Vf::Unorm16 => (1, glow::UNSIGNED_SHORT, Vak::Float),
+        Vf::Snorm16 => (1, glow::SHORT, Vak::Float),
+        Vf::Uint16 => (1, glow::UNSIGNED_SHORT, Vak::Integer),
+        Vf::Sint16 => (1, glow::SHORT, Vak::Integer),
+        Vf::Float16 => (1, glow::HALF_FLOAT, Vak::Float),
         Vf::Unorm16x2 => (2, glow::UNSIGNED_SHORT, Vak::Float),
         Vf::Snorm16x2 => (2, glow::SHORT, Vak::Float),
         Vf::Uint16x2 => (2, glow::UNSIGNED_SHORT, Vak::Integer),
@@ -212,7 +223,8 @@ pub(super) fn describe_vertex_format(vertex_format: wgt::VertexFormat) -> super:
         Vf::Uint32x4 => (4, glow::UNSIGNED_INT, Vak::Integer),
         Vf::Sint32x4 => (4, glow::INT, Vak::Integer),
         Vf::Float32x4 => (4, glow::FLOAT, Vak::Float),
-        Vf::Unorm10_10_10_2 => (4, glow::UNSIGNED_INT_10_10_10_2, Vak::Float),
+        Vf::Unorm10_10_10_2 => (4, glow::UNSIGNED_INT_2_10_10_10_REV, Vak::Float),
+        Vf::Unorm8x4Bgra => (glow::BGRA as i32, glow::UNSIGNED_BYTE, Vak::Float),
         Vf::Float64 | Vf::Float64x2 | Vf::Float64x3 | Vf::Float64x4 => unimplemented!(),
     };
 
@@ -226,9 +238,10 @@ pub(super) fn describe_vertex_format(vertex_format: wgt::VertexFormat) -> super:
 pub fn map_filter_modes(
     min: wgt::FilterMode,
     mag: wgt::FilterMode,
-    mip: wgt::FilterMode,
+    mip: wgt::MipmapFilterMode,
 ) -> (u32, u32) {
     use wgt::FilterMode as Fm;
+    use wgt::MipmapFilterMode as Mfm;
 
     let mag_filter = match mag {
         Fm::Nearest => glow::NEAREST,
@@ -236,10 +249,10 @@ pub fn map_filter_modes(
     };
 
     let min_filter = match (min, mip) {
-        (Fm::Nearest, Fm::Nearest) => glow::NEAREST_MIPMAP_NEAREST,
-        (Fm::Nearest, Fm::Linear) => glow::NEAREST_MIPMAP_LINEAR,
-        (Fm::Linear, Fm::Nearest) => glow::LINEAR_MIPMAP_NEAREST,
-        (Fm::Linear, Fm::Linear) => glow::LINEAR_MIPMAP_LINEAR,
+        (Fm::Nearest, Mfm::Nearest) => glow::NEAREST_MIPMAP_NEAREST,
+        (Fm::Nearest, Mfm::Linear) => glow::NEAREST_MIPMAP_LINEAR,
+        (Fm::Linear, Mfm::Nearest) => glow::LINEAR_MIPMAP_NEAREST,
+        (Fm::Linear, Mfm::Linear) => glow::LINEAR_MIPMAP_LINEAR,
     };
 
     (min_filter, mag_filter)
@@ -404,6 +417,7 @@ pub(super) fn map_storage_access(access: wgt::StorageTextureAccess) -> u32 {
         wgt::StorageTextureAccess::ReadOnly => glow::READ_ONLY,
         wgt::StorageTextureAccess::WriteOnly => glow::WRITE_ONLY,
         wgt::StorageTextureAccess::ReadWrite => glow::READ_WRITE,
+        wgt::StorageTextureAccess::Atomic => glow::READ_WRITE,
     }
 }
 

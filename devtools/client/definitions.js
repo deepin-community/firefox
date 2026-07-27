@@ -77,6 +77,13 @@ loader.lazyGetter(
   () =>
     require("resource://devtools/client/application/panel.js").ApplicationPanel
 );
+loader.lazyGetter(
+  this,
+  "AntiTrackingPanel",
+  () =>
+    require("resource://devtools/client/anti-tracking/panel.js")
+      .AntiTrackingPanel
+);
 
 // Other dependencies
 loader.lazyRequireGetter(
@@ -475,6 +482,26 @@ Tools.application = {
   },
 };
 
+Tools.antitracking = {
+  id: "antitracking",
+  ordinal: 11,
+  visibilityswitch: "devtools.anti-tracking.enabled",
+  icon: "chrome://browser/skin/tracking-protection.svg",
+  url: "chrome://devtools/content/anti-tracking/index.html",
+  label: "Anti tracking",
+  panelLabel: "Anti tracking",
+  tooltip: "Anti tracking",
+  inMenu: false,
+
+  isToolSupported() {
+    return true;
+  },
+
+  build(iframeWindow, toolbox, commands) {
+    return new AntiTrackingPanel(iframeWindow, toolbox, commands);
+  },
+};
+
 var defaultTools = [
   Tools.options,
   Tools.webConsole,
@@ -489,6 +516,11 @@ var defaultTools = [
   Tools.accessibility,
   Tools.application,
 ];
+
+// The Anti tracking panel is an internal tool, to be enabled manually via about:config
+if (Services.prefs.getBoolPref("devtools.anti-tracking.enabled", false)) {
+  defaultTools.push(Tools.antitracking);
+}
 
 exports.defaultTools = defaultTools;
 
@@ -619,11 +651,15 @@ exports.ToolboxButtons = [
       "toolbox.buttons.jstracer",
       osString == "Darwin" ? "Cmd+Shift+5" : "Ctrl+Shift+5"
     ),
-    isToolSupported: () =>
-      Services.prefs.getBoolPref(
-        "devtools.debugger.features.javascript-tracing",
-        false
-      ),
+    isToolSupported: () => {
+      return (
+        lazy.AppConstants.NIGHTLY_BUILD ||
+        Services.prefs.getBoolPref(
+          "devtools.debugger.features.javascript-tracing",
+          false
+        )
+      );
+    },
     async onClick(event, toolbox) {
       await toolbox.commands.tracerCommand.toggle();
     },
@@ -641,6 +677,20 @@ exports.ToolboxButtons = [
     isToggle: true,
     setup(toolbox, onChange) {
       toolbox.commands.tracerCommand.on("toggle", onChange);
+
+      // Automatically enable the button if this old preference was set to true.
+      // When enabling the tracer on all channels we will remove this preference.
+      if (
+        Services.prefs.getBoolPref(
+          "devtools.debugger.features.javascript-tracing",
+          false
+        )
+      ) {
+        Services.prefs.setBoolPref(
+          "devtools.command-button-jstracer.enabled",
+          true
+        );
+      }
     },
     teardown(toolbox, onChange) {
       toolbox.commands.tracerCommand.off("toggle", onChange);
@@ -781,9 +831,8 @@ function createHighlightButton(highlighters, id) {
 
       await Promise.all(
         highlighters.map(async name => {
-          const highlighter = await inspectorFront.getOrCreateHighlighterByType(
-            name
-          );
+          const highlighter =
+            await inspectorFront.getOrCreateHighlighterByType(name);
 
           if (highlighter.isShown()) {
             await highlighter.hide();

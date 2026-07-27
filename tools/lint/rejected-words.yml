@@ -3,15 +3,19 @@ avoid-blacklist-and-whitelist:
     description: "Use words like 'skip', 'select', 'allow' or 'deny' instead"
     level: error
     include: ['.']
-    type: regex
-    payload: (black|white)[-_]?list
-    ignore-case: true
+    type: external
+    payload: mozcheck:lint
+    check: rejected-words
+    check-config:
+        regex-pattern: (black|white)[-_]?list
+        ignore-case: true
+    support-files:
+        - 'tools/lint/mozcheck/**'
     # Based on codespell with idl and webidl added.
     extensions:
         - js
-        - jsm
         - mjs
-        - jxs
+        - jsx
         - idl
         - webidl
         - xml
@@ -29,14 +33,14 @@ avoid-blacklist-and-whitelist:
         - yml
         - java
         - kt
+        - rs
     exclude:
-        - '**/.eslintrc-rollouts.js'
+        - eslint-rollouts.config.mjs
+        - eslint-file-globals.config.mjs
         - browser/app/profile/firefox.js
         - browser/app/winlauncher/LauncherProcessWin.cpp
         - browser/base/content/browser.js
         - browser/base/content/contentTheme.js
-        - browser/base/content/test/general/browser_remoteTroubleshoot.js
-        - browser/base/content/test/general/browser_tab_drag_drop_perwindow.js
         - browser/base/content/test/performance/browser_preferences_usage.js
         - browser/base/content/test/protectionsUI/browser_protectionsUI_cryptominers.js
         - browser/base/content/test/protectionsUI/browser_protectionsUI_fingerprinters.js
@@ -45,24 +49,26 @@ avoid-blacklist-and-whitelist:
         - browser/base/content/test/protectionsUI/browser_protectionsUI_state.js
         - browser/base/content/test/protectionsUI/browser_protectionsUI_subview_shim.js
         - browser/base/content/test/siteIdentity/browser_no_mcb_for_loopback.js
-        - browser/base/content/test/tabMediaIndicator/browser_mute_webAudio.js
         - browser/components/enterprisepolicies/Policies.sys.mjs
         - browser/components/migration/ChromeMigrationUtils.sys.mjs
         - browser/components/migration/ChromeProfileMigrator.sys.mjs
-        - browser/components/newtab/data/content/activity-stream.bundle.js
+        - browser/components/preferences/config/privacy.mjs
+        - browser/components/preferences/config/permissions-data.mjs
         - browser/components/preferences/privacy.inc.xhtml
         - browser/components/preferences/privacy.js
         - browser/components/resistfingerprinting/test/mochitest/test_bug1354633_media_error.html
         - browser/components/safebrowsing/content/test/browser_whitelisted.js
         - browser/components/sessionstore/test/browser_crashedTabs.js
+        - browser/components/tabbrowser/test/browser/tabMediaIndicator/browser_mute_webAudio.js
         - browser/components/tabbrowser/test/browser/tabs/browser_new_file_whitelisted_http_tab.js
-        - browser/components/uitour/UITourChild.sys.mjs
+        - browser/components/tabbrowser/test/browser/tabs/browser_tab_drag_drop_perwindow.js
         - browser/components/urlbar/tests/browser/browser_searchSingleWordNotification.js
-        - browser/components/urlbar/tests/browser/browser_UrlbarInput_trimURLs.js
+        - browser/components/urlbar/tests/browser/browser_trust_panel.js
+        - browser/components/urlbar/tests/browser-UrlbarInput/browser_trimURLs.js
         - browser/components/urlbar/tests/unit/test_providerHeuristicFallback.js
         - browser/components/urlbar/tests/unit/test_search_suggestions.js
         - browser/components/urlbar/tests/unit/test_tokenizer.js
-        - browser/extensions/screenshots/background/main.js
+        - browser/extensions/newtab/data/content/activity-stream.bundle.js
         - browser/extensions/webcompat/shims/nielsen.js
         - browser/modules/SitePermissions.sys.mjs
         - browser/tools/mozscreenshots/mozscreenshots/extension/configurations/PermissionPrompts.sys.mjs
@@ -71,7 +77,6 @@ avoid-blacklist-and-whitelist:
         - build/clang-plugin/NaNExprChecker.cpp
         - build/clang-plugin/NoPrincipalGetURI.cpp
         - build/clang-plugin/tests/TestNANTestingExpr.cpp
-        - build/compare-mozconfig/compare-mozconfigs.py
         - build/moz.configure/bindgen.configure
         - build/moz.configure/toolchain.configure
         - config/check_vanilla_allocations.py
@@ -80,8 +85,8 @@ avoid-blacklist-and-whitelist:
         - devtools/client/debugger/test/mochitest/examples/ember/quickstart/dist/assets/vendor.js
         - devtools/client/debugger/test/mochitest/examples/react/build/main.js
         - devtools/client/debugger/test/mochitest/examples/react/build/service-worker.js
-        - devtools/client/inspector/markup/test/lib_babel_6.21.0_min.js
-        - devtools/client/inspector/markup/test/lib_react_dom_15.4.1.js
+        - devtools/client/inspector/markup/test/events/lib_babel_6.21.0_min.js
+        - devtools/client/inspector/markup/test/events/lib_react_dom_15.4.1.js
         - docshell/base/nsDocShell.cpp
         - docshell/base/URIFixup.sys.mjs
         - docshell/test/unit/test_URIFixup_info.js
@@ -100,7 +105,6 @@ avoid-blacklist-and-whitelist:
         - dom/bindings/RemoteObjectProxy.cpp
         - dom/events/EventStateManager.cpp
         - dom/events/KeyboardEvent.cpp
-        - dom/html/MediaError.cpp
         - dom/indexedDB/ActorsParent.cpp
         - dom/ipc/ContentParent.cpp
         - dom/ipc/URLClassifierParent.cpp
@@ -114,6 +118,7 @@ avoid-blacklist-and-whitelist:
         - dom/media/autoplay/test/mochitest/file_autoplay_policy_key_blacklist.html
         - dom/media/autoplay/test/mochitest/test_autoplay_policy_key_blacklist.html
         - dom/media/autoplay/test/mochitest/test_autoplay_policy_permission.html
+        - dom/media/mediaelement/MediaError.cpp
         - dom/media/webm/WebMDecoder.cpp
         - dom/media/webrtc/transport/stun_socket_filter.cpp
         - dom/media/webrtc/transport/test/ice_unittest.cpp
@@ -154,10 +159,8 @@ avoid-blacklist-and-whitelist:
         - layout/tools/reftest/reftestcommandline.py
         - layout/tools/reftest/runreftest.py
         - layout/tools/reftest/selftest/conftest.py
-        - mobile/android/android-components/components/feature/webcompat/src/main/assets/extensions/webcompat/shims/nielsen.js
         - mobile/android/android-components/docs/changelog.md
         - mobile/android/app/geckoview-prefs.js
-        - mobile/android/fenix/app/src/main/java/org/mozilla/fenix/ext/Bitmap.kt
         - mobile/android/fenix/app/src/main/java/org/mozilla/fenix/perf/StrictModeManager.kt
         - mobile/android/fenix/app/src/main/java/org/mozilla/fenix/translations/preferences/downloadlanguages/DownloadLanguagesFeature.kt
         - mobile/android/fenix/app/src/test/java/org/mozilla/fenix/translations/preferences/downloadlanguages/DownloadLanguagesFeatureTest.kt
@@ -201,7 +204,6 @@ avoid-blacklist-and-whitelist:
         - python/mozbuild/mozbuild/backend/recursivemake.py
         - python/mozbuild/mozbuild/configure/options.py
         - python/mozbuild/mozbuild/vendor/vendor_rust.py
-        - remote/cdp/Protocol.sys.mjs
         - security/manager/ssl/tests/unit/test_intermediate_preloads.js
         - security/sandbox/linux/broker/SandboxBroker.cpp
         - security/sandbox/linux/broker/SandboxBroker.h
@@ -215,7 +217,6 @@ avoid-blacklist-and-whitelist:
         - taskcluster/kinds/docker-image/kind.yml
         - taskcluster/gecko_taskgraph/actions/create_interactive.py
         - taskcluster/gecko_taskgraph/transforms/test/other.py
-        - taskcluster/gecko_taskgraph/try_option_syntax.py
         - testing/condprofile/condprof/client.py
         - testing/condprofile/condprof/tests/profile/prefs.js
         - testing/condprofile/condprof/tests/test_client.py
@@ -233,7 +234,6 @@ avoid-blacklist-and-whitelist:
         - testing/raptor/browsertime/browsertime_scenario.js
         - testing/web-platform/tests/tools/manifest/tests/test_manifest.py
         - toolkit/actors/RemotePageChild.sys.mjs
-        - toolkit/actors/WebChannelChild.sys.mjs
         - toolkit/components/antitracking/docs/tracking-lists/index.md
         - toolkit/components/antitracking/test/browser/browser_socialtracking_save_image.js
         - toolkit/components/reputationservice/ApplicationReputation.cpp
@@ -269,39 +269,22 @@ avoid-blacklist-and-whitelist:
         - toolkit/content/tests/browser/browser_delay_autoplay_webAudio.js
         - toolkit/modules/PermissionsUtils.sys.mjs
         - toolkit/modules/tests/browser/browser_AsyncPrefs.js
-        - toolkit/modules/tests/browser/browser_web_channel.js
         - toolkit/modules/tests/xpcshell/test_PermissionsUtils.js
         - toolkit/modules/third_party/jsesc/jsesc.mjs
         - toolkit/modules/Troubleshoot.sys.mjs
         - toolkit/mozapps/extensions/internal/XPIInstall.sys.mjs
         - toolkit/mozapps/extensions/test/browser/browser_html_discover_view.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Device.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_DriverNew.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Equal_DriverNew.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Equal_DriverOld.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Equal_OK.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_GTE_DriverOld.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_GTE_OK.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_No_Comparison.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_OK.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_OS.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_OSVersion_match.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_OSVersion_mismatch_DriverVersion.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_OSVersion_mismatch_OSVersion.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_prefs.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Vendor.js
-        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlacklist_Version.js
+        - toolkit/mozapps/extensions/test/xpcshell/rs-blocklist/test_gfxBlocklist_prefs.js
         - toolkit/mozapps/extensions/test/xpcshell/test_permissions.js
         - toolkit/mozapps/extensions/test/xpcshell/test_permissions_prefs.js
-        - toolkit/mozapps/extensions/test/xpinstall/browser_bug645699.js
-        - toolkit/mozapps/extensions/test/xpinstall/browser_doorhanger_installs.js
         - toolkit/mozapps/extensions/test/xpinstall/browser_localfile3.js
         - toolkit/mozapps/extensions/test/xpinstall/browser_localfile4.js
         - toolkit/mozapps/extensions/test/xpinstall/browser_localfile4_postDownload.js
         - toolkit/mozapps/extensions/test/xpinstall/head.js
         - tools/fuzzing/messagemanager/MessageManagerFuzzer.cpp
         - tools/fuzzing/messagemanager/MessageManagerFuzzer.h
-        - tools/lint/eslint/eslint-plugin-mozilla/lib/rules/no-define-cc-etc.js
+        - tools/lint/mozcheck/src/batch.rs
+        - tools/lint/mozcheck/src/rejected_words.rs
         - tools/lint/rejected-words.yml
         - widget/android/GfxInfo.cpp
         - widget/GfxInfoBase.cpp
@@ -312,6 +295,9 @@ avoid-blacklist-and-whitelist:
         - widget/windows/WinUtils.h
         - xpcom/io/FilePreferences.cpp
         - xpcom/tests/gtest/TestFilePreferencesUnix.cpp
+        - gfx/webrender_bindings/src/moz2d_renderer.rs
+        - gfx/webrender_bindings/src/program_cache.rs
+        - servo/components/style/values/computed/font.rs
 
 # ---
 # Disable for now. Needs some dev to handle this
@@ -322,11 +308,17 @@ avoid-gobbledygook:
     description: "American English colloquialism. Use 'nonsense' instead."
     level: error
     include: ['.']
-    type: regex
-    payload: \b(gobbledy)?-?gook
-    ignore-case: true
+    type: external
+    payload: mozcheck:lint
+    check: rejected-words
+    check-config:
+        regex-pattern: \b(gobbledy)?-?gook
+        ignore-case: true
+    support-files:
+        - 'tools/lint/mozcheck/**'
     exclude:
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/orig/en_US-custom.dic
         - extensions/spellcheck/locales/en-US/hunspell/dictionary-sources/utf8/en-US-utf8.dic
         - extensions/spellcheck/locales/en-US/hunspell/en-US.dic
+        - taskcluster/test/params
         - tools/lint/rejected-words.yml

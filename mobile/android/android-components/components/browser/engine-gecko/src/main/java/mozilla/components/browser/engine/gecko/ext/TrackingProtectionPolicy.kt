@@ -4,16 +4,20 @@
 
 package mozilla.components.browser.engine.gecko.ext
 
+import androidx.annotation.OptIn
 import mozilla.components.concept.engine.EngineSession
+import mozilla.components.concept.engine.EngineSession.BounceTrackingProtectionMode
 import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy
 import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy.TrackingCategory
 import org.mozilla.geckoview.ContentBlocking
+import org.mozilla.geckoview.ExperimentalGeckoViewApi
 import org.mozilla.geckoview.GeckoRuntimeSettings
 
 /**
  * Converts a [TrackingProtectionPolicy] into a GeckoView setting that can be used with [GeckoRuntimeSettings.Builder].
  * Also contains the cookie banner handling settings for regular and private browsing.
  */
+@OptIn(ExperimentalGeckoViewApi::class)
 @Suppress("SpreadOperator")
 fun TrackingProtectionPolicy.toContentBlockingSetting(
     safeBrowsingPolicy: Array<EngineSession.SafeBrowsingPolicy> = arrayOf(EngineSession.SafeBrowsingPolicy.RECOMMENDED),
@@ -27,8 +31,19 @@ fun TrackingProtectionPolicy.toContentBlockingSetting(
     queryParameterStrippingPrivateBrowsing: Boolean = false,
     queryParameterStrippingAllowList: String = "",
     queryParameterStrippingStripList: String = "",
+    bounceTrackingProtectionMode: BounceTrackingProtectionMode = BounceTrackingProtectionMode.DISABLED,
+    allowListBaselineTrackingProtection: Boolean = true,
+    allowListConvenienceTrackingProtection: Boolean = true,
+    safeBrowsingGlobalCacheEnabled: Boolean = false,
+    safeBrowsingRealTimeEnabled: Boolean = false,
+    safeBrowsingRealTimeSimulationEnabled: Boolean = false,
+    safeBrowsingRealTimeSimulationHitProbability: Int = 5,
+    safeBrowsingRealTimeSimulationCacheTTLSec: Int = 300,
+    safeBrowsingRealTimeSimulationNegativeCacheEnabled: Boolean = false,
+    safeBrowsingRealTimeSimulationNegativeCacheTTLSec: Int = 300,
 ) = ContentBlocking.Settings.Builder().apply {
     enhancedTrackingProtectionLevel(getEtpLevel())
+    enhancedTrackingProtectionCategory(getEtpCategory())
     antiTracking(getAntiTrackingPolicy())
     cookieBehavior(cookiePolicy.id)
     cookieBehaviorPrivateMode(cookiePolicyPrivateMode.id)
@@ -44,6 +59,16 @@ fun TrackingProtectionPolicy.toContentBlockingSetting(
     queryParameterStrippingPrivateBrowsingEnabled(queryParameterStrippingPrivateBrowsing)
     queryParameterStrippingAllowList(*queryParameterStrippingAllowList.split(",").toTypedArray())
     queryParameterStrippingStripList(*queryParameterStrippingStripList.split(",").toTypedArray())
+    bounceTrackingProtectionMode(bounceTrackingProtectionMode.mode)
+    allowListBaselineTrackingProtection(allowListBaselineTrackingProtection)
+    allowListConvenienceTrackingProtection(allowListConvenienceTrackingProtection)
+    safeBrowsingGlobalCacheEnabled(safeBrowsingGlobalCacheEnabled)
+    safeBrowsingRealTimeEnabled(safeBrowsingRealTimeEnabled)
+    safeBrowsingRealTimeSimulationEnabled(safeBrowsingRealTimeSimulationEnabled)
+    safeBrowsingRealTimeSimulationHitProbability(safeBrowsingRealTimeSimulationHitProbability)
+    safeBrowsingRealTimeSimulationCacheTTLSec(safeBrowsingRealTimeSimulationCacheTTLSec)
+    safeBrowsingRealTimeSimulationNegativeCacheEnabled(safeBrowsingRealTimeSimulationNegativeCacheEnabled)
+    safeBrowsingRealTimeSimulationNegativeCacheTTLSec(safeBrowsingRealTimeSimulationNegativeCacheTTLSec)
 }.build()
 
 /**
@@ -59,7 +84,22 @@ internal fun TrackingProtectionPolicy.getStrictSocialTrackingProtection(): Boole
 internal fun TrackingProtectionPolicy.getEtpLevel(): Int {
     return when {
         trackingCategories.contains(TrackingCategory.NONE) -> ContentBlocking.EtpLevel.NONE
-        else -> ContentBlocking.EtpLevel.STRICT
+        trackingCategories.contains(TrackingCategory.STRICT) -> ContentBlocking.EtpLevel.STRICT
+        else -> ContentBlocking.EtpLevel.DEFAULT
+    }
+}
+
+/**
+ * Returns the [TrackingProtectionPolicy] categories as an Enhanced Tracking
+ * Protection category preset for GeckoView.
+ * If no preset matches the configured categories CUSTOM is returned.
+ */
+internal fun TrackingProtectionPolicy.getEtpCategory(): Int {
+    val categorySum = trackingCategories.sumOf { it.id }
+    return when (categorySum) {
+        TrackingCategory.STRICT.id -> ContentBlocking.EtpCategory.STRICT
+        TrackingCategory.RECOMMENDED.id -> ContentBlocking.EtpCategory.STANDARD
+        else -> ContentBlocking.EtpCategory.CUSTOM
     }
 }
 

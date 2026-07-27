@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Gelişmiş izlenme koruması hakkında daha fazla bilgi
 protections-panel-etp-on-header = Bu sitede gelişmiş izlenme koruması AÇIK
 protections-panel-etp-off-header = Bu sitede gelişmiş izlenme koruması KAPALI
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Site çalışmıyor mu?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Site çalışmıyor mu?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Gelişmiş izlenme koruması
     .description = Bu sitede kapalı
     .aria-label = Gelişmiş izlenme koruması: { $host } için kapalı
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Site çalışmıyor mu?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Site çalışmıyor mu?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -72,6 +72,24 @@ protections-panel-blocking-label = Engellendi
 protections-panel-not-blocking-label = İzin verildi
 protections-panel-not-found-label = Bulunmadı
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name }, siz izin vermediğiniz sürece bu sitedeki takip amaçlı içerikleri engeller.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = { $trackername } takip koduna izin ver
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = { $trackername } takip kodu ve içeriği engellendi
+smartblock-placeholder-desc = { -brand-short-name } ayarlarınız, bu içeriğin sizi siteler arasında izlemesini veya reklam amacıyla kullanılmasını engelledi.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = { $websitehost } sitesinde izin ver
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = Engellenen gömülü içerik
+
 ##
 
 protections-panel-settings-label = Koruma ayarları
@@ -93,7 +111,7 @@ protections-panel-site-not-working-view-send-report = Rapor gönderin
 
 ##
 
-protections-panel-cross-site-tracking-cookies = Bu çerezler, internette yaptığınız şeyler hakkında veri toplamak için sizi siteden siteye takip eder. Reklam verenler ve analiz şirketleri gibi üçüncü taraflar tarafından yerleştirilirler.
+protections-panel-cross-site-tracking-cookies = Bu çerezler, internette yaptığınız şeyler hakkında veri toplamak için sizi siteden siteye takip eder. Reklam verenler ve analiz şirketleri gibi üçüncü taraflarca yerleştirilirler.
 protections-panel-cryptominers = Kripto madencileri dijital para madenciliğinde bulunmak için sisteminizin hesaplama gücünü kullanır. Kripto madencilik betikleri pilinizi tüketir, bilgisayarınızı yavaşlatır ve elektrik faturanızı kabartabilir.
 protections-panel-fingerprinters = Parmak izi toplayıcılar profilinizi oluşturmak için tarayıcı ve bilgisayarınızdaki ayarları toplar. Bu dijital parmak izini kullanarak farklı web siteler arasında sizi takip edebilirler.
 protections-panel-tracking-content = Web siteleri; takip kodu içeren harici reklamlar, videolar ve başka içerikler yükleyebilir. Takip amaçlı içerikleri engellemek sitelerin daha hızlı yüklenmesini sağlayabilir ama bazı düğmeler, formlar ve giriş alanları çalışmayabilir.
@@ -108,7 +126,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Bozuk Bir Siteyi Bildirin
 protections-panel-content-blocking-breakage-report-view-description = Bazı takip kodlarını engellemek bazı web sitelerinde sorunlara yol açabilir. Bu sorunları bize bildirirseniz { -brand-short-name } tarayıcısını iyileştirme şansımız olur. Bu rapor, sayfanın adresini ve tarayıcı ayarlarınızla ilgili bilgileri Mozilla’ya gönderir. <label data-l10n-name="learn-more">Daha fazla bilgi alın</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Bazı takip kodlarını engellemek bazı web sitelerinde sorunlara yol açabilir. Bu sorunları bize bildirirseniz { -brand-short-name } tarayıcısını iyileştirme şansımız olur. Bu rapor, sayfanın adresini ve tarayıcı ayarlarınızla ilgili bilgileri { -vendor-short-name }’ya gönderir.
 protections-panel-content-blocking-breakage-report-view-collection-url = Adres
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = Adres

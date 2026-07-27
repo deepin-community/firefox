@@ -6,17 +6,26 @@ password-quality-meter = ឧបករណ៍​​វាស់​​​គុណ�
 
 ## Change Password dialog
 
+change-device-password-window =
+    .title = ផ្លាស់ប្ដូរ​ពាក្យ​សម្ងាត់
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
 change-password-token = ឧបករណ៍​សុវត្ថិភាព: { $tokenName }
 change-password-old = ពាក្យ​សម្ងាត់​បច្ចុប្បន្ន ៖
 change-password-new = ពាក្យ​សម្ងាត់​ថ្មី ៖
 change-password-reenter = ពាក្យ​សម្ងាត់​ថ្មី (ម្តង​ទៀត) ៖
+pippki-pw-change-ok = បានផ្លាស់ប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ។
 
 ## Reset Primary Password dialog
 
+reset-primary-password-window2 =
+    .title = កំណត់ពាក្យសម្ងាត់ចម្បងឡើងវិញ
+    .style = min-width: 40em
 reset-password-button-label =
     .label = កំណត់​ឡើង​វិញ
+reset-primary-password-text = ប្រសិនបើអ្នកកំណត់ពាក្យសម្ងាត់ចម្បងរបស់អ្នកឡើងវិញ ពាក្យសម្ងាត់គេហទំព័រ និងអ៊ីមែល វិញ្ញាបនបត្រផ្ទាល់ខ្លួន និងកូនសោឯកជនទាំងអស់ ដែលអ្នកបានរក្សាទុកនឹងត្រូវបានបំភ្លេចចោល។ តើអ្នកពិតជាចង់កំណត់ពាក្យសម្ងាត់ចម្បងរបស់អ្នកឡើងវិញមែនទេ?
+pippki-reset-password-confirmation-title = កំណត់ពាក្យសម្ងាត់ចម្បងឡើងវិញ
+pippki-reset-password-confirmation-message = ពាក្យសម្ងាត់ចម្បងរបស់អ្នកត្រូវបានកំណត់ឡើងវិញ។
 
 ## Downloading cert dialog
 
@@ -33,7 +42,7 @@ download-cert-view-cert =
     .label = មើល
 download-cert-view-text = ត្រួត​ពិនិត្យ​វិញ្ញាបនបត្រ​ CA
 
-## Client Authorization Ask dialog
+## Client Authentication Ask dialog
 
 client-auth-window =
     .title = ស្នើ​សុំ​អត្ត​សញ្ញាណ​អ្នក​ប្រើ
@@ -51,8 +60,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = ពាក្យសម្ងាត់​សម្រាប់​បម្រុងទុក​វិញ្ញាបនបត្រ (ម្ដងទៀត)៖
 set-password-reminder = សំខាន់ ៖ ប្រសិនបើ​អ្នក​ភ្លេច​ពាក្យសម្ងាត់​សម្រាប់​បម្រុងទុក​វិញ្ញាបនបត្រ​របស់​អ្នក អ្នក​នឹង​មិន​អាច​ស្ដារ​ឯកសារ​បម្រុង​ទុក​នេះ​នៅ​ពេល​ក្រោយ​បាន​ទេ ។  សូម​ចម្លង​វា​ទុក​នៅ​ក្នុង​ទីតាំង​សុវត្ថិភាព ។
-
-## Protected Auth dialog
-
-## Protected authentication alert
-

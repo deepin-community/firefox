@@ -73,8 +73,17 @@ about-private-browsing-cookie-banners-promo-message = Permet a { -brand-short-na
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } al viôt par te dai strissons pai cookies
 about-private-browsing-cookie-banners-promo-body = O refudìn in automatic tancj strissons pai cookies, cussì che tu vegnis spiât di mancul e tu podarâs tornâ a navigâ cence distrazions.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = No sta lassâ segns su chest dispositîf
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } al elimine i cookies, la cronologjie e i dâts dai sîts cuant che tu sieris ducj i barcons privâts.
 about-private-browsing-felt-privacy-v1-info-link = Cui podaressial viodi la mê ativitât?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Cuant che tu sieris ducj i barcons privâts a vegnin eliminâts i cookies, la cronologjie e i dâts dal sît.
+about-private-browsing-nova-info-link = Cui podaraial viodi in ogni câs la mê ativitât?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = La tô navigazion no vignarà salvade

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -315,19 +313,20 @@ static Maybe<ScrollTimelineOptions> GetScrollTimelineOptions(
   }
 
   const dom::ScrollTimeline* timeline = aTimeline->AsScrollTimeline();
-  MOZ_ASSERT(timeline->IsActive(),
+  const auto state = timeline->GetState();
+  MOZ_ASSERT(state.IsActive(),
              "We send scroll animation to the compositor only if its timeline "
              "is active");
 
   ScrollableLayerGuid::ViewID source = ScrollableLayerGuid::NULL_SCROLL_ID;
   DebugOnly<bool> success =
-      nsLayoutUtils::FindIDFor(timeline->SourceElement(), &source);
+      nsLayoutUtils::FindIDFor(state.SourceElement(), &source);
   MOZ_ASSERT(success, "We should have a valid ViewID for the scroller");
 
-  return Some(ScrollTimelineOptions(source, timeline->Axis()));
+  return Some(ScrollTimelineOptions(source, state.Axis()));
 }
 
-static void SetAnimatable(nsCSSPropertyID aProperty,
+static void SetAnimatable(NonCustomCSSPropertyId aProperty,
                           const AnimationValue& aAnimationValue,
                           nsIFrame* aFrame, TransformReferenceBox& aRefBox,
                           layers::Animatable& aAnimatable) {
@@ -456,12 +455,12 @@ void AnimationInfo::AddAnimationForProperty(
   animation->fillMode() = static_cast<uint8_t>(computedTiming.mFill);
   MOZ_ASSERT(!aProperty.mProperty.IsCustom(),
              "We don't animate custom properties in the compositor");
-  animation->property() = aProperty.mProperty.mID;
+  animation->property() = aProperty.mProperty.mId;
   animation->playbackRate() =
       static_cast<float>(aAnimation->CurrentOrPendingPlaybackRate());
   animation->previousPlaybackRate() =
       aAnimation->HasPendingPlaybackRate()
-          ? static_cast<float>(aAnimation->PlaybackRate())
+          ? static_cast<float>(aAnimation->PlaybackRateInternal())
           : std::numeric_limits<float>::quiet_NaN();
   animation->transformData() = aTransformData;
   animation->easingFunction() = timing.TimingFunction();
@@ -487,7 +486,7 @@ void AnimationInfo::AddAnimationForProperty(
       aAnimation->GetEffect()->AsKeyframeEffect()->BaseStyle(
           aProperty.mProperty);
   if (!baseStyle.IsNull()) {
-    SetAnimatable(aProperty.mProperty.mID, baseStyle, aFrame, refBox,
+    SetAnimatable(aProperty.mProperty.mId, baseStyle, aFrame, refBox,
                   animation->baseStyle());
   } else {
     animation->baseStyle() = null_t();
@@ -495,9 +494,9 @@ void AnimationInfo::AddAnimationForProperty(
 
   for (const AnimationPropertySegment& segment : aProperty.mSegments) {
     AnimationSegment* animSegment = animation->segments().AppendElement();
-    SetAnimatable(aProperty.mProperty.mID, segment.mFromValue, aFrame, refBox,
+    SetAnimatable(aProperty.mProperty.mId, segment.mFromValue, aFrame, refBox,
                   animSegment->startState());
-    SetAnimatable(aProperty.mProperty.mID, segment.mToValue, aFrame, refBox,
+    SetAnimatable(aProperty.mProperty.mId, segment.mToValue, aFrame, refBox,
                   animSegment->endState());
 
     animSegment->startPortion() = segment.mFromKey;
@@ -513,8 +512,7 @@ void AnimationInfo::AddAnimationForProperty(
     if (readyTime.IsNull()) {
       // TODO(emilio): This should generally not happen anymore, can we remove
       // this SetPendingReadyTime call?
-      readyTime = aFrame->PresContext()->RefreshDriver()->MostRecentRefresh(
-          /* aEnsureTimerStarted= */ false);
+      readyTime = aFrame->PresContext()->RefreshDriver()->MostRecentRefresh();
       MOZ_ASSERT(!readyTime.IsNull());
       aAnimation->SetPendingReadyTime(readyTime);
     }
@@ -553,10 +551,11 @@ void AnimationInfo::AddAnimationForProperty(
 // ]
 //
 // And then, for each transaction, we send this list to the compositor thread.
-static HashMap<nsCSSPropertyID, nsTArray<RefPtr<dom::Animation>>>
+static HashMap<NonCustomCSSPropertyId, nsTArray<RefPtr<dom::Animation>>>
 GroupAnimationsByProperty(const nsTArray<RefPtr<dom::Animation>>& aAnimations,
                           const nsCSSPropertyIDSet& aPropertySet) {
-  HashMap<nsCSSPropertyID, nsTArray<RefPtr<dom::Animation>>> groupedAnims;
+  HashMap<NonCustomCSSPropertyId, nsTArray<RefPtr<dom::Animation>>>
+      groupedAnims;
   for (const RefPtr<dom::Animation>& anim : aAnimations) {
     const dom::KeyframeEffect* effect = anim->GetEffect()->AsKeyframeEffect();
     MOZ_ASSERT(effect);
@@ -567,10 +566,10 @@ GroupAnimationsByProperty(const nsTArray<RefPtr<dom::Animation>>& aAnimations,
       }
 
       auto animsForPropertyPtr =
-          groupedAnims.lookupForAdd(property.mProperty.mID);
+          groupedAnims.lookupForAdd(property.mProperty.mId);
       if (!animsForPropertyPtr) {
         DebugOnly<bool> rv =
-            groupedAnims.add(animsForPropertyPtr, property.mProperty.mID,
+            groupedAnims.add(animsForPropertyPtr, property.mProperty.mId,
                              nsTArray<RefPtr<dom::Animation>>());
         MOZ_ASSERT(rv, "Should have enough memory");
       }
@@ -583,8 +582,9 @@ GroupAnimationsByProperty(const nsTArray<RefPtr<dom::Animation>>& aAnimations,
 bool AnimationInfo::AddAnimationsForProperty(
     nsIFrame* aFrame, const EffectSet* aEffects,
     const nsTArray<RefPtr<dom::Animation>>& aCompositorAnimations,
-    const Maybe<TransformData>& aTransformData, nsCSSPropertyID aProperty,
-    Send aSendFlag, WebRenderLayerManager* aLayerManager) {
+    const Maybe<TransformData>& aTransformData,
+    NonCustomCSSPropertyId aProperty, Send aSendFlag,
+    WebRenderLayerManager* aLayerManager) {
   bool addedAny = false;
   // Add from first to last (since last overrides)
   for (dom::Animation* anim : aCompositorAnimations) {
@@ -597,7 +597,7 @@ bool AnimationInfo::AddAnimationsForProperty(
     dom::KeyframeEffect* keyframeEffect = anim->GetEffect()->AsKeyframeEffect();
     const AnimationProperty* property =
         keyframeEffect->GetEffectiveAnimationOfProperty(
-            AnimatedPropertyID(aProperty), *aEffects);
+            CSSPropertyId(aProperty), *aEffects);
     if (!property) {
       continue;
     }
@@ -722,11 +722,13 @@ static PartialPrerenderData GetPartialPrerenderData(
       nsLayoutUtils::AsyncPanZoomEnabled(aFrame)) {
     const bool isInPositionFixed =
         nsLayoutUtils::IsInPositionFixedSubtree(aFrame);
-    const ActiveScrolledRoot* asr = aItem->GetActiveScrolledRoot();
+    // We need to find asynchronously scrollable ASRs, therefore we should
+    // ignore ASRs for pos:sticky display items.
+    const ActiveScrolledRoot* asr = aItem->GetNearestScrollASR();
     if (!isInPositionFixed && asr &&
-        aFrame->PresContext() == asr->mScrollContainerFrame->PresContext()) {
+        aFrame->PresContext() == asr->ScrollFrame()->PresContext()) {
       scrollId = asr->GetViewId();
-      MOZ_ASSERT(clipFrame == asr->mScrollContainerFrame);
+      MOZ_ASSERT(clipFrame == asr->ScrollFrame());
     } else {
       // Use the root scroll id in the same document if the target frame is in
       // position:fixed subtree or there is no ASR or the ASR is in a different
@@ -843,7 +845,7 @@ static Maybe<TransformData> CreateAnimationData(
 void AnimationInfo::AddNonAnimatingTransformLikePropertiesStyles(
     const nsCSSPropertyIDSet& aNonAnimatingProperties, nsIFrame* aFrame,
     Send aSendFlag) {
-  auto appendFakeAnimation = [this, aSendFlag](nsCSSPropertyID aProperty,
+  auto appendFakeAnimation = [this, aSendFlag](NonCustomCSSPropertyId aProperty,
                                                Animatable&& aBaseStyle) {
     layers::Animation* animation = (aSendFlag == Send::NextTransaction)
                                        ? AddAnimationForNextTransaction()
@@ -861,7 +863,7 @@ void AnimationInfo::AddNonAnimatingTransformLikePropertiesStyles(
       !display->mOffsetPath.IsNone() ||
       !aNonAnimatingProperties.HasProperty(eCSSProperty_offset_path);
 
-  for (nsCSSPropertyID id : aNonAnimatingProperties) {
+  for (NonCustomCSSPropertyId id : aNonAnimatingProperties) {
     switch (id) {
       case eCSSProperty_transform:
         if (!display->mTransform.IsNone()) {
@@ -955,7 +957,7 @@ void AnimationInfo::AddAnimationsForDisplayItem(
   // If the frame is not prerendered, bail out.
   // Do this check only during layer construction; during updating the
   // caller is required to check it appropriately.
-  if (aItem && !aItem->CanUseAsyncAnimations(aBuilder)) {
+  if (aItem && !aItem->CanUseAsyncAnimations()) {
     // EffectCompositor needs to know that we refused to run this animation
     // asynchronously so that it will not throttle the main thread
     // animation.
@@ -963,7 +965,7 @@ void AnimationInfo::AddAnimationsForDisplayItem(
     return;
   }
 
-  const HashMap<nsCSSPropertyID, nsTArray<RefPtr<dom::Animation>>>
+  const HashMap<NonCustomCSSPropertyId, nsTArray<RefPtr<dom::Animation>>>
       compositorAnimations =
           GroupAnimationsByProperty(matchedAnimations, propertySet);
   Maybe<TransformData> transformData =

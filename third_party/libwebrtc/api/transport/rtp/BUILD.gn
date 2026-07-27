@@ -16,11 +16,11 @@ rtc_source_set("rtp_source") {
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
     "../../../rtc_base:checks",
-    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/strings:str_format",
   ]
 }
 
-rtc_source_set("dependency_descriptor") {
+rtc_library("dependency_descriptor") {
   visibility = [ "*" ]
   sources = [
     "dependency_descriptor.cc",
@@ -31,6 +31,30 @@ rtc_source_set("dependency_descriptor") {
     "../../video:render_resolution",
     "//third_party/abseil-cpp/absl/container:inlined_vector",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
+}
+
+rtc_library("corruption_detection_message") {
+  visibility = [ "*" ]
+  sources = [
+    "corruption_detection_message.cc",
+    "corruption_detection_message.h",
+  ]
+  deps = [
+    "../../../rtc_base:checks",
+    "../../video/corruption_detection:frame_instrumentation_data",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
+  ]
+}
+
+if (rtc_include_tests && !build_with_chromium) {
+  rtc_library("corruption_detection_message_unittest") {
+    testonly = true
+    sources = [ "corruption_detection_message_unittest.cc" ]
+    deps = [
+      ":corruption_detection_message",
+      "../../../test:test_support",
+      "../../video/corruption_detection:frame_instrumentation_data",
+    ]
+  }
 }

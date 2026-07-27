@@ -4,10 +4,6 @@
 
 addons-page-title = Bainisteoir na mBreiseán
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -157,29 +153,6 @@ addon-install-from-file-filter-name = Breiseáin
 addon-open-about-debugging = Dífhabhtaigh Breiseáin
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 default-heading-search-label = Faigh tuilleadh breiseáin
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Níl { $name } comhoiriúnach le { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = Níorbh fhéidir { $name } a fhíorú le húsáid in { -brand-short-name }. Oibriú leat go faichilleach.
 details-notification-unsigned-link = Tuilleadh Eolais
 details-notification-blocked = Tá { $name } díchumasaithe mar gheall ar fhadhbanna slándála nó cobhsaíochta.
-details-notification-blocked2 =
-    .message = Tá { $name } díchumasaithe mar gheall ar fhadhbanna slándála nó cobhsaíochta.
 details-notification-blocked-link = Tuilleadh Eolais
 details-notification-softblocked = Tá { $name } freagrach as fadhbanna slándála nó cobhsaíochta.
-details-notification-softblocked2 =
-    .message = Tá { $name } freagrach as fadhbanna slándála nó cobhsaíochta.
 details-notification-softblocked-link = Tuilleadh Eolais
 details-notification-gmp-pending = Suiteálfar { $name } ar ball beag.
 details-notification-gmp-pending2 =

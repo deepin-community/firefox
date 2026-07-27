@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -307,6 +306,8 @@ interface TestExampleInterface {
   undefined passUint8ClampedArray(Uint8ClampedArray arg);
   undefined passFloat32Array(Float32Array arg);
   undefined passFloat64Array(Float64Array arg);
+  undefined passBigUint64Array(BigUint64Array arg);
+  undefined passBigInt64Array(BigInt64Array arg);
   undefined passSequenceOfArrayBuffers(sequence<ArrayBuffer> arg);
   undefined passSequenceOfNullableArrayBuffers(sequence<ArrayBuffer?> arg);
   undefined passRecordOfArrayBuffers(record<DOMString, ArrayBuffer> arg);
@@ -869,6 +870,23 @@ interface TestExampleInterface {
   undefined passAllowSharedNullableArrayBuffer([AllowShared] ArrayBuffer? foo);
   undefined passUnionArrayBuffer((DOMString or ArrayBuffer) foo);
   undefined passUnionAllowSharedArrayBuffer((DOMString or [AllowShared] ArrayBuffer) foo);
+  undefined passAllowSharedInt8ArrayOrInt16Array([AllowShared] (Int8Array or Int16Array) foo);
+
+  // [AllowLarge] tests
+  attribute [AllowLarge] ArrayBufferView allowLargeArrayBufferView;
+  attribute [AllowLarge] ArrayBufferView? allowLargeNullableArrayBufferView;
+  attribute [AllowLarge] ArrayBuffer allowLargeArrayBuffer;
+  attribute [AllowLarge] ArrayBuffer? allowLargeNullableArrayBuffer;
+
+  undefined passAllowLargeArrayBufferView([AllowLarge] ArrayBufferView foo);
+  undefined passAllowLargeNullableArrayBufferView([AllowLarge] ArrayBufferView? foo);
+  undefined passAllowLargeArrayBuffer([AllowLarge] ArrayBuffer foo);
+  undefined passAllowLargeNullableArrayBuffer([AllowLarge] ArrayBuffer? foo);
+  undefined passUnionAllowLargeArrayBuffer((DOMString or [AllowLarge] ArrayBuffer) foo);
+
+  // [AllowShared, AllowLarge] combined tests
+  attribute [AllowShared, AllowLarge] ArrayBufferView allowSharedAllowLargeArrayBufferView;
+  undefined passAllowSharedAllowLargeArrayBufferView([AllowShared, AllowLarge] ArrayBufferView foo);
 
   [Frozen, ReflectedHTMLAttributeReturningFrozenArray]
   attribute sequence<Element>? reflectedHTMLAttributeReturningFrozenArray;

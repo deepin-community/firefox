@@ -7,10 +7,6 @@ search-header =
     .placeholder = Çerca in addons.mozilla.org
     .searchbuttonlabel = Çerca
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -187,6 +183,8 @@ shortcuts-modifier-mac = Includde Ctrl, Alt, ò ⌘
 shortcuts-modifier-other = Includde Ctrl ò Alt
 shortcuts-invalid = Conbinaçion no bonn-a
 shortcuts-letter = Scrivi 'na letia
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Fanni vedde l'atro
@@ -196,29 +194,12 @@ shortcuts-card-collapse-button = Mostra meno
 header-back-button =
     .title = Vanni inderê
 
-## Recommended add-ons page
-
-
 ## Add-on actions
 
 remove-addon-button = Scancella
 disable-addon-button = Dizabilita
 enable-addon-button = Abilita
 permissions-addon-button = Permissi
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
 
 ## Page headings
 
@@ -238,7 +219,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } o no l'é conpatibile con { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -253,12 +234,8 @@ details-notification-unsigned2 =
     .message = { $name } o no l'é verificou pe l'uzo in { -brand-short-name }. Stanni atento.
 details-notification-unsigned-link = Atre informaçioin
 details-notification-blocked = { $name } o l'é stæto dizabilitou pe problemi de stabilitæ ò seguessa.
-details-notification-blocked2 =
-    .message = { $name } o l'é stæto dizabilitou pe problemi de stabilitæ ò seguessa.
 details-notification-blocked-link = Ciù informaçioin
 details-notification-softblocked = { $name } o l'é in angæzo ben conosciuo a caozâ problemi de stabilitæ ò seguessa.
-details-notification-softblocked2 =
-    .message = { $name } o l'é in angæzo ben conosciuo a caozâ problemi de stabilitæ ò seguessa.
 details-notification-softblocked-link = Ciù informaçioin
 details-notification-gmp-pending = { $name } o saiâ instalou tra quarche momento.
 details-notification-gmp-pending2 =

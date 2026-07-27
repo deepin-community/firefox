@@ -16,7 +16,6 @@ QM_TESTING_PREF = "dom.quotaManager.testing"
 
 
 class CacheAPIEncryptionPBM(QuotaTestCase):
-
     """
     Bug1856953: Ensure CacheAPI data gets encrypted in Private Browsing Mode.
     We need to ensure data inside both sqlite fields and request/response files
@@ -24,7 +23,7 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
     """
 
     def setUp(self):
-        super(CacheAPIEncryptionPBM, self).setUp()
+        super().setUp()
 
         self.testHTML = "dom/cache/basicCacheAPI_PBM.html"
         self.cacheName = "CachePBMTest"
@@ -46,7 +45,7 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
         self.dbCheckpointThresholdBytes = 512 * 1024
 
     def tearDown(self):
-        super(CacheAPIEncryptionPBM, self).setUp()
+        super().tearDown()
 
         self.marionette.set_pref(CACHEAPI_PBM_PREF, self.defaultCacheAPIPBMPref)
         self.marionette.set_pref(QM_TESTING_PREF, self.defaultQMPrefValue)
@@ -98,8 +97,10 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
     def validateBodyFile(self, validator):
         # Ensure response bodies have been flushed to the disk
         self.ensureInvariantHolds(
-            lambda _: self.findDirObj(self.getCacheAPIStoragePath(), "morgue", False)
-            is not None
+            lambda _: (
+                self.findDirObj(self.getCacheAPIStoragePath(), "morgue", False)
+                is not None
+            )
         )
 
         cacheResponseDir = self.findDirObj(
@@ -116,8 +117,9 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
 
         # Ensure bodies have been transferred to '.final' from '.tmp'
         self.ensureInvariantHolds(
-            lambda _: self.findDirObj(cacheResponseBodiesPath, ".final", True)
-            is not None
+            lambda _: (
+                self.findDirObj(cacheResponseBodiesPath, ".final", True) is not None
+            )
         )
         cacheResponseBodyPath = self.findDirObj(cacheResponseBodiesPath, ".final", True)
 
@@ -132,20 +134,24 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
 
     def validateSqlite(self, validator):
         self.ensureInvariantHolds(
-            lambda _: self.findDirObj(
-                self.getCacheAPIStoragePath(), self.cacheDBJournalFileName, True
+            lambda _: (
+                self.findDirObj(
+                    self.getCacheAPIStoragePath(), self.cacheDBJournalFileName, True
+                )
+                is not None
             )
-            is not None
         )
         dbJournalFile = self.findDirObj(
             self.getCacheAPIStoragePath(), self.cacheDBJournalFileName, True
         )
 
         self.ensureInvariantHolds(
-            lambda _: self.findDirObj(
-                self.getCacheAPIStoragePath(), self.cacheDBFileName, True
+            lambda _: (
+                self.findDirObj(
+                    self.getCacheAPIStoragePath(), self.cacheDBFileName, True
+                )
+                is not None
             )
-            is not None
         )
         dbFile = self.findDirObj(
             self.getCacheAPIStoragePath(), self.cacheDBFileName, True
@@ -165,7 +171,7 @@ class CacheAPIEncryptionPBM(QuotaTestCase):
         )
 
         self.assertTrue(
-            self.resetStoragesForPrincipal(self.origin, self.persistenceType, "cache")
+            self.resetStoragesForClient(self.persistenceType, self.origin, "cache")
         )
 
         self.assertFalse(os.path.getsize(dbJournalFile) > os.path.getsize(dbFile))

@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -118,6 +117,8 @@ class nsCertOverrideService final : public nsICertOverrideService,
 
   mozilla::Mutex mMutex;
   bool mDisableAllSecurityCheck MOZ_GUARDED_BY(mMutex);
+  mozilla::HashMap<uint32_t, bool> mUserContextIdsWithSecurityChecksOverride
+      MOZ_GUARDED_BY(mMutex);
   nsCOMPtr<nsIFile> mSettingsFile MOZ_GUARDED_BY(mMutex);
   nsTHashtable<nsCertOverrideEntry> mSettingsTable MOZ_GUARDED_BY(mMutex);
 
@@ -142,11 +143,11 @@ class nsCertOverrideService final : public nsICertOverrideService,
   uint64_t mPendingWriteCount;
 };
 
-#define NS_CERTOVERRIDE_CID                          \
-  { /* 67ba681d-5485-4fff-952c-2ee337ffdcd6 */       \
-    0x67ba681d, 0x5485, 0x4fff, {                    \
-      0x95, 0x2c, 0x2e, 0xe3, 0x37, 0xff, 0xdc, 0xd6 \
-    }                                                \
-  }
+#define NS_CERTOVERRIDE_CID                   \
+  {/* 67ba681d-5485-4fff-952c-2ee337ffdcd6 */ \
+   0x67ba681d,                                \
+   0x5485,                                    \
+   0x4fff,                                    \
+   {0x95, 0x2c, 0x2e, 0xe3, 0x37, 0xff, 0xdc, 0xd6}}
 
 #endif  // nsCertOverrideService_h

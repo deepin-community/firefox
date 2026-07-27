@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = اپ ڈیٹ  نہ کرو
     .accesskey = D
+primary-password-prompt-message = براہ مہربانی اپݨا منڈھلا پاس ورڈ درج کرو۔
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = کوئی صارف ناں کائنی
-password-manager-toggle-password =
-    .label = پاس ورڈ ݙکھاؤ
-    .accesskey = h
 password-manager-confirm-password-change = پاس ورڈ تبدیلی دی تصدیق کرو
 password-manager-select-username = منتخب کرو جو کیڑھا لاگ ان اپ ڈیٹ کرݨا ہے:

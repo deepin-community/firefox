@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Kopieren ohne Website-Tracking
-    .accesskey = n
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Saubere Link-Adresse kopieren
+    .accesskey = b
 text-action-paste =
     .label = Einfügen
     .accesskey = E
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Löschen
     .accesskey = L
+text-action-reveal-password =
+    .label = Passwort anzeigen
+    .accesskey = o
 text-action-select-all =
     .label = Alles auswählen
     .accesskey = u
@@ -64,3 +68,26 @@ text-action-search-text-box-clear =
     .title = Leeren
 text-action-highlight-selection =
     .label = Auswahl hervorheben
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Kommentar zur Auswahl hinzufügen
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Link zur Hervorhebung kopieren
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Sauberen Link zur Hervorhebung kopieren
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Hervorhebung entfernen
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Alle Hervorhebungen entfernen
+profile-window-menu-edit =
+    .label = Bearbeiten
+    .accesskey = B

@@ -1,15 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLMarqueeElement.h"
+
+#include "mozilla/AsyncEventDispatcher.h"
+#include "mozilla/dom/CustomEvent.h"
+#include "mozilla/dom/HTMLMarqueeElementBinding.h"
 #include "nsGenericHTMLElement.h"
 #include "nsStyleConsts.h"
-#include "mozilla/AsyncEventDispatcher.h"
-#include "mozilla/dom/HTMLMarqueeElementBinding.h"
-#include "mozilla/dom/CustomEvent.h"
 // This is to pick up the definition of FunctionStringCallback:
 #include "mozilla/dom/DataTransferItemBinding.h"
 #include "mozilla/dom/ShadowRoot.h"
@@ -22,17 +21,21 @@ HTMLMarqueeElement::~HTMLMarqueeElement() = default;
 
 NS_IMPL_ELEMENT_CLONE(HTMLMarqueeElement)
 
-static const nsAttrValue::EnumTable kBehaviorTable[] = {
-    {"scroll", 1}, {"slide", 2}, {"alternate", 3}, {nullptr, 0}};
+static constexpr nsAttrValue::EnumTableEntry kBehaviorTable[] = {
+    {"scroll", 1}, {"slide", 2}, {"alternate", 3}
+
+};
 
 // Default behavior value is "scroll".
-static const nsAttrValue::EnumTable* kDefaultBehavior = &kBehaviorTable[0];
+static constexpr const nsAttrValue::EnumTableEntry* kDefaultBehavior =
+    &kBehaviorTable[0];
 
-static const nsAttrValue::EnumTable kDirectionTable[] = {
-    {"left", 1}, {"right", 2}, {"up", 3}, {"down", 4}, {nullptr, 0}};
+static constexpr nsAttrValue::EnumTableEntry kDirectionTable[] = {
+    {"left", 1}, {"right", 2}, {"up", 3}, {"down", 4}};
 
 // Default direction value is "left".
-static const nsAttrValue::EnumTable* kDefaultDirection = &kDirectionTable[0];
+static constexpr const nsAttrValue::EnumTableEntry* kDefaultDirection =
+    &kDirectionTable[0];
 
 JSObject* HTMLMarqueeElement::WrapNode(JSContext* aCx,
                                        JS::Handle<JSObject*> aGivenProto) {
@@ -55,7 +58,7 @@ void HTMLMarqueeElement::UnbindFromTree(UnbindContext& aContext) {
   if (IsInComposedDoc()) {
     // We don't want to unattach the shadow root because it used to
     // contain a <slot>.
-    NotifyUAWidgetTeardown(UnattachShadowRoot::No);
+    TeardownUAShadowRoot(NotifyUAWidget::Yes, UnattachShadowRoot::No);
   }
 
   nsGenericHTMLElement::UnbindFromTree(aContext);

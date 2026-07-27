@@ -6,7 +6,7 @@
 const { ExperimentAPI } = ChromeUtils.importESModule(
   "resource://nimbus/ExperimentAPI.sys.mjs"
 );
-const { ExperimentFakes } = ChromeUtils.importESModule(
+const { NimbusTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/NimbusTestUtils.sys.mjs"
 );
 const { RemoteSettings } = ChromeUtils.importESModule(
@@ -77,7 +77,7 @@ add_task(async function () {
 
 add_task(async function test_nimbus_experiments() {
   await ExperimentAPI.ready();
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  let doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: { enabled: true },
   });
@@ -107,12 +107,12 @@ add_task(async function test_nimbus_experiments() {
     }
   );
 
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_remote_configuration() {
   await ExperimentAPI.ready();
-  let doCleanup = await ExperimentFakes.enrollWithFeatureConfig(
+  let doCleanup = await NimbusTestUtils.enrollWithFeatureConfig(
     {
       featureId: NimbusFeatures.aboutwelcome.featureId,
       value: { enabled: true },
@@ -152,6 +152,38 @@ add_task(async function test_remote_configuration() {
   );
 
   doCleanup();
+});
+
+add_task(async function test_sanitize_paths() {
+  await BrowserTestUtils.withNewTab(
+    { gBrowser, url: "about:support" },
+    async function (browser) {
+      let snapshot = {
+        secretPath: "/home/user",
+        "bool.pref.ending.with.path": true,
+        nullValue: null,
+        emptyString: "",
+        object: {
+          SOME_DIR: "/home/kit",
+        },
+        array: [{ myDirectory: "/home/kit" }],
+      };
+      snapshot = await SpecialPowers.spawn(
+        browser,
+        [snapshot],
+        async function (aSnapshot) {
+          content.sanitizeSnapshot(aSnapshot);
+          return aSnapshot;
+        }
+      );
+      Assert.strictEqual(snapshot["bool.pref.ending.with.path"], true);
+      Assert.strictEqual(snapshot.nullValue, null);
+      Assert.equal(snapshot.secretPath, "<non-empty string>");
+      Assert.equal(snapshot.object.SOME_DIR, "<non-empty string>");
+      Assert.equal(snapshot.array[0].myDirectory, "<non-empty string>");
+      Assert.equal(snapshot.emptyString, "");
+    }
+  );
 });
 
 add_task(async function test_remote_settings() {

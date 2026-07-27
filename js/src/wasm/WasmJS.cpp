@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2016 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,14 +16,12 @@
 
 #include "wasm/WasmJS.h"
 
-#include "mozilla/EndianUtils.h"
 #include "mozilla/Maybe.h"
 
 #include <algorithm>
 #include <cstdint>
 
 #include "jsapi.h"
-#include "jsexn.h"
 
 #include "ds/IdValuePair.h"            // js::IdValuePair
 #include "frontend/FrontendContext.h"  // AutoReportFrontendContext
@@ -97,6 +93,7 @@ using namespace js;
 using namespace js::jit;
 using namespace js::wasm;
 
+using mozilla::MakeStringSpan;
 using mozilla::Maybe;
 using mozilla::Nothing;
 using mozilla::Some;
@@ -166,7 +163,7 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
   const TableDescVector& tables = codeMeta.tables;
   for (const Import& import : moduleMeta.imports) {
     Maybe<BuiltinModuleId> builtinModule =
-        ImportMatchesBuiltinModule(import.module.utf8Bytes(), builtinModules);
+        ImportMatchesBuiltinModule(import, builtinModules);
     if (builtinModule) {
       if (*builtinModule == BuiltinModuleId::JSStringConstants) {
         isImportedStringModule = true;
@@ -174,9 +171,25 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
       } else {
         MutableHandle<JSObject*> builtinInstance =
             builtinInstances[*builtinModule];
-        if (!builtinInstance && !wasm::InstantiateBuiltinModule(
-                                    cx, *builtinModule, builtinInstance)) {
-          return false;
+
+        // If this module has not been instantiated yet, do so now.
+        if (!builtinInstance) {
+          // Use the first imported memory, if it exists, when compiling the
+          // builtin module.
+          const Import* firstMemoryImport =
+              (codeMeta.memories.empty() ||
+               codeMeta.memories[0].importIndex.isNothing())
+                  ? nullptr
+                  : &moduleMeta.imports[*codeMeta.memories[0].importIndex];
+
+          // Compile and instantiate the builtin module. This uses our module's
+          // importObj so that it can read the memory import that we provided
+          // above.
+          if (!wasm::InstantiateBuiltinModule(cx, *builtinModule,
+                                              firstMemoryImport, importObj,
+                                              builtinInstance)) {
+            return false;
+          }
         }
         isImportedStringModule = false;
         importModuleObject = builtinInstance;
@@ -236,6 +249,7 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
         }
 
         if (!imports->funcs.append(&importFieldValue.toObject())) {
+          ReportOutOfMemory(cx);
           return false;
         }
 
@@ -250,13 +264,14 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
 
         Rooted<WasmTableObject*> obj(
             cx, &importFieldValue.toObject().as<WasmTableObject>());
-        if (obj->table().elemType() != tables[index].elemType) {
+        if (obj->table().elemType() != tables[index].elemType()) {
           JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                                    JSMSG_WASM_BAD_TBL_TYPE_LINK);
           return false;
         }
 
         if (!imports->tables.append(obj)) {
+          ReportOutOfMemory(cx);
           return false;
         }
         break;
@@ -269,6 +284,7 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
 
         if (!imports->memories.append(
                 &importFieldValue.toObject().as<WasmMemoryObject>())) {
+          ReportOutOfMemory(cx);
           return false;
         }
         break;
@@ -285,7 +301,7 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
 
         // Checks whether the signature of the imported exception object matches
         // the signature declared in the exception import's TagDesc.
-        if (obj->resultType() != tags[index].type->resultType()) {
+        if (!TagType::matches(*obj->tagType(), *tags[index].type)) {
           UniqueChars fieldQuoted = import.field.toQuotedString(cx);
           UniqueChars moduleQuoted = import.module.toQuotedString(cx);
           if (!fieldQuoted || !moduleQuoted) {
@@ -359,6 +375,7 @@ bool js::wasm::GetImports(JSContext* cx, const Module& module,
         }
 
         if (!imports->globalValues.append(val)) {
+          ReportOutOfMemory(cx);
           return false;
         }
 
@@ -380,7 +397,7 @@ static bool DescribeScriptedCaller(JSContext* cx, ScriptedCaller* caller,
   // back to the more ordinary false-if-error form.
 
   JS::AutoFilename af;
-  if (JS::DescribeScriptedCaller(cx, &af, &caller->line)) {
+  if (JS::DescribeScriptedCaller(&af, cx, &caller->line)) {
     caller->filename =
         FormatIntroducedFilename(af.get(), caller->line, introducer);
     if (!caller->filename) {
@@ -392,7 +409,39 @@ static bool DescribeScriptedCaller(JSContext* cx, ScriptedCaller* caller,
   return true;
 }
 
-static SharedCompileArgs InitCompileArgs(JSContext* cx, FeatureOptions options,
+static bool CreateCompileError(JSContext* cx, const ScriptedCaller& caller,
+                               HandleObject stack, const char* error,
+                               MutableHandleObject errorObj) {
+  RootedString fileName(cx);
+  if (const char* fn = caller.filename.get()) {
+    fileName = JS_NewStringCopyUTF8N(cx, JS::UTF8Chars(fn, strlen(fn)));
+  } else {
+    fileName = JS_GetEmptyString(cx);
+  }
+  if (!fileName) {
+    return false;
+  }
+
+  UniqueChars str(JS_smprintf("wasm validation error: %s", error));
+  if (!str) {
+    return false;
+  }
+
+  RootedString message(cx,
+                       NewStringCopyN<CanGC>(cx, str.get(), strlen(str.get())));
+  if (!message) {
+    return false;
+  }
+
+  auto cause = JS::NothingHandleValue;
+  errorObj.set(ErrorObject::create(cx, JSEXN_WASMCOMPILEERROR, stack, fileName,
+                                   0, caller.line, JS::ColumnNumberOneOrigin(),
+                                   nullptr, message, cause));
+  return !!errorObj;
+}
+
+static SharedCompileArgs InitCompileArgs(JSContext* cx,
+                                         const FeatureOptions& options,
                                          const char* introducer) {
   ScriptedCaller scriptedCaller;
   if (!DescribeScriptedCaller(cx, &scriptedCaller, introducer)) {
@@ -412,27 +461,18 @@ bool wasm::Eval(JSContext* cx, Handle<TypedArrayObject*> code,
     return false;
   }
 
-  MutableBytes bytecode = cx->new_<ShareableBytes>();
-  if (!bytecode) {
-    return false;
-  }
-
-  if (!bytecode->append((uint8_t*)code->dataPointerEither().unwrap(),
-                        code->byteLength().valueOr(0))) {
-    ReportOutOfMemory(cx);
-    return false;
-  }
-
   FeatureOptions options;
   SharedCompileArgs compileArgs = InitCompileArgs(cx, options, "wasm_eval");
   if (!compileArgs) {
     return false;
   }
 
+  BytecodeSource source((uint8_t*)code->dataPointerEither().unwrap(),
+                        code->byteLength().valueOr(0));
   UniqueChars error;
   UniqueCharsVector warnings;
-  SharedModule module =
-      CompileBuffer(*compileArgs, *bytecode, &error, &warnings, nullptr);
+  SharedModule module = CompileBuffer(
+      *compileArgs, BytecodeBufferOrSource(source), &error, &warnings, nullptr);
   if (!module) {
     if (error) {
       JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
@@ -468,7 +508,8 @@ struct MOZ_STACK_CLASS SerializeListener : JS::OptimizedEncodingListener {
   }
 };
 
-bool wasm::CompileAndSerialize(JSContext* cx, const ShareableBytes& bytecode,
+bool wasm::CompileAndSerialize(JSContext* cx,
+                               const BytecodeSource& bytecodeSource,
                                Bytes* serialized) {
   // The caller must check that code caching is available
   MOZ_ASSERT(CodeCachingAvailable(cx));
@@ -502,7 +543,8 @@ bool wasm::CompileAndSerialize(JSContext* cx, const ShareableBytes& bytecode,
   UniqueChars error;
   UniqueCharsVector warnings;
   SharedModule module =
-      CompileBuffer(*compileArgs, bytecode, &error, &warnings, &listener);
+      CompileBuffer(*compileArgs, BytecodeBufferOrSource(bytecodeSource),
+                    &error, &warnings, &listener);
   if (!module) {
     fprintf(stderr, "Compilation error: %s\n", error ? error.get() : "oom");
     return false;
@@ -525,6 +567,175 @@ bool wasm::DeserializeModule(JSContext* cx, const Bytes& serialized,
   moduleObj.set(module->createObject(cx));
   return !!moduleObj;
 }
+
+static bool ReportCompileWarnings(JSContext* cx,
+                                  const UniqueCharsVector& warnings) {
+  // Avoid spamming the console.
+  size_t numWarnings = std::min<size_t>(warnings.length(), 3);
+
+  for (size_t i = 0; i < numWarnings; i++) {
+    if (!WarnNumberASCII(cx, JSMSG_WASM_COMPILE_WARNING, warnings[i].get())) {
+      return false;
+    }
+  }
+
+  if (warnings.length() > numWarnings) {
+    if (!WarnNumberASCII(cx, JSMSG_WASM_COMPILE_WARNING,
+                         "other warnings suppressed")) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+// https://webassembly.github.io/esm-integration/js-api/index.html#esm-integration
+bool js::wasm::CompileForESM(JSContext* cx,
+                             const JS::ReadOnlyCompileOptions& options,
+                             const BytecodeSource& bytecodeSource,
+                             MutableHandleObject moduleObj) {
+  // Step 1. Let stableBytes be a copy of the bytes held by the buffer bytes.
+  // (Performed by caller)
+
+  FeatureOptions featureOptions;
+  // Step 4 (reordered). Let builtinSetNames be « "js-string" ».
+  featureOptions.jsStringBuiltins = true;
+  // Step 5 (reordered). Let importedStringModule be "wasm:js/string-constants".
+  featureOptions.jsStringConstants = true;
+  UniqueChars ns = DuplicateString(cx, "wasm:js/string-constants");
+  if (!ns) {
+    return false;
+  }
+  featureOptions.jsStringConstantsNamespace =
+      cx->new_<ShareableChars>(std::move(ns));
+  if (!featureOptions.jsStringConstantsNamespace) {
+    return false;
+  }
+
+  // Step 2. Compile the WebAssembly module stableBytes and store the result
+  //         as module.
+  ScriptedCaller scriptedCaller;
+  if (options.filename()) {
+    scriptedCaller.filename = DuplicateString(cx, options.filename().c_str());
+    if (!scriptedCaller.filename) {
+      return false;
+    }
+    scriptedCaller.filenameIsURL = true;
+  }
+  SharedCompileArgs compileArgs = CompileArgs::buildAndReport(
+      cx, std::move(scriptedCaller), featureOptions, /* reportOOM */ true);
+  if (!compileArgs) {
+    return false;
+  }
+
+  UniqueChars error;
+  UniqueCharsVector warnings;
+  SharedModule module =
+      CompileBuffer(*compileArgs, BytecodeBufferOrSource(bytecodeSource),
+                    &error, &warnings, nullptr);
+
+  if (!ReportCompileWarnings(cx, warnings)) {
+    return false;
+  }
+
+  // Step 3. If module is error, throw a CompileError exception.
+  if (!module) {
+    if (!error) {
+      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                               JSMSG_OUT_OF_MEMORY);
+      return false;
+    }
+    RootedObject errorObj(cx);
+    RootedObject nullStack(cx, nullptr);
+    if (!CreateCompileError(cx, compileArgs->scriptedCaller, nullStack,
+                            error.get(), &errorObj)) {
+      return false;
+    }
+    RootedValue errorVal(cx, ObjectValue(*errorObj));
+    cx->setPendingException(errorVal, js::ShouldCaptureStack::Maybe);
+    return false;
+  }
+
+  // Step 6. Construct a WebAssembly module object from module, bytes,
+  //         builtinSetNames and importedStringModule, and let module
+  //         be the result.
+  RootedObject proto(
+      cx, GlobalObject::getOrCreatePrototype(cx, JSProto_WasmModule));
+  if (!proto) {
+    return false;
+  }
+
+  RootedObject wasmModuleObject(cx,
+                                WasmModuleObject::create(cx, *module, proto));
+  if (!wasmModuleObject) {
+    return false;
+  }
+
+  // Step 7. Let requestedModules be a set.
+  // TODO: Populate requestedModules for evaluation phase imports (Bug 2030454).
+
+  const ModuleMetadata& moduleMeta = module->moduleMeta();
+  const CodeMetadata& codeMeta = module->codeMeta();
+
+  // Step 8. For each (moduleName, name, type) in
+  // module_imports(module.[[Module]]),
+  for (const Import& import : moduleMeta.imports) {
+    Span<const char> moduleName = import.module.utf8Bytes();
+    Span<const char> name = import.field.utf8Bytes();
+
+    // Step 8.1. If moduleName starts with the prefix "wasm-js:",
+    if (CharsStartsWith(moduleName, MakeStringSpan("wasm-js:"))) {
+      // Step 8.1.1. Throw a LinkError exception.
+      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                               JSMSG_WASM_ESM_RESERVED_MODULE_NAME,
+                               moduleName.data());
+      return false;
+    }
+
+    // Step 8.2. If name starts with the prefix "wasm:" or "wasm-js:",
+    if (CharsStartsWith(name, MakeStringSpan("wasm:")) ||
+        CharsStartsWith(name, MakeStringSpan("wasm-js:"))) {
+      // Step 8.2.1. Throw a LinkError exception.
+      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                               JSMSG_WASM_ESM_RESERVED_FIELD_NAME, name.data());
+      return false;
+    }
+
+    // Step 8.3. Note: The following step only applies when integrating with the
+    // JS String Builtins proposal.
+
+    // Step 8.4. If Find a builtin with (moduleName, name, type) and builtins
+    // module.[[BuiltinSets]] is not null, then continue.
+    if (ImportMatchesBuiltinModule(moduleName,
+                                   codeMeta.features().builtinModules)) {
+      continue;
+    }
+
+    // Step 8.4.1. Append moduleName to requestedModules.
+    // TODO: Populate requestedModules for evaluation phase imports (Bug
+    // 2030454).
+  }
+
+  // Step 9. For each (name, type) in module_exports(module.[[Module]])
+  for (const Export& exp : moduleMeta.exports) {
+    Span<const char> name = exp.fieldName().utf8Bytes();
+
+    // Step 9.1. If name starts with the prefix "wasm:" or "wasm-js:",
+    if (CharsStartsWith(name, MakeStringSpan("wasm:")) ||
+        CharsStartsWith(name, MakeStringSpan("wasm-js:"))) {
+      // Step 9.1.1. Throw a LinkError exception.
+      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                               JSMSG_WASM_ESM_RESERVED_EXPORT_NAME,
+                               name.data());
+      return false;
+    }
+  }
+
+  moduleObj.set(wasmModuleObject);
+  return true;
+}
+#endif
 
 // ============================================================================
 // Common functions
@@ -589,7 +800,11 @@ static bool EnforceRangeU64(JSContext* cx, HandleValue v, const char* kind,
 
 static bool EnforceRangeBigInt64(JSContext* cx, HandleValue v, const char* kind,
                                  const char* noun, uint64_t* u64) {
-  if (!v.isBigInt() || !BigInt::isUint64(v.toBigInt(), u64)) {
+  RootedBigInt bi(cx, ToBigInt(cx, v));
+  if (!bi) {
+    return false;
+  }
+  if (!BigInt::isUint64(bi, u64)) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_BAD_ENFORCE_RANGE, kind, noun);
     return false;
@@ -597,11 +812,11 @@ static bool EnforceRangeBigInt64(JSContext* cx, HandleValue v, const char* kind,
   return true;
 }
 
-static bool EnforceIndexValue(JSContext* cx, HandleValue v, IndexType indexType,
-                              const char* kind, const char* noun,
-                              uint64_t* result) {
-  switch (indexType) {
-    case IndexType::I32: {
+static bool EnforceAddressValue(JSContext* cx, HandleValue v,
+                                AddressType addressType, const char* kind,
+                                const char* noun, uint64_t* result) {
+  switch (addressType) {
+    case AddressType::I32: {
       uint32_t result32;
       if (!EnforceRangeU32(cx, v, kind, noun, &result32)) {
         return false;
@@ -609,35 +824,45 @@ static bool EnforceIndexValue(JSContext* cx, HandleValue v, IndexType indexType,
       *result = uint64_t(result32);
       return true;
     }
-    case IndexType::I64:
+    case AddressType::I64:
       return EnforceRangeBigInt64(cx, v, kind, noun, result);
     default:
-      MOZ_CRASH("unknown index type");
+      MOZ_CRASH("unknown address type");
   }
 }
 
-// The IndexValue typedef, a union of number and bigint, is used in the JS API
+// The AddressValue typedef, a union of number and bigint, is used in the JS API
 // spec for memory and table arguments, where number is used for memory32 and
 // bigint is used for memory64.
-static Value IndexValue(JSContext* cx, uint64_t value, IndexType indexType) {
-  switch (indexType) {
-    case IndexType::I32:
+[[nodiscard]] static bool CreateAddressValue(JSContext* cx, uint64_t value,
+                                             AddressType addressType,
+                                             MutableHandleValue addressValue) {
+  switch (addressType) {
+    case AddressType::I32:
       MOZ_ASSERT(value <= UINT32_MAX);
-      return NumberValue(value);
-    case IndexType::I64:
-      return BigIntValue(BigInt::createFromUint64(cx, value));
+      addressValue.set(NumberValue(value));
+      return true;
+    case AddressType::I64: {
+      BigInt* bi = BigInt::createFromUint64(cx, value);
+      if (!bi) {
+        return false;
+      }
+      addressValue.set(BigIntValue(bi));
+      return true;
+    }
     default:
-      MOZ_CRASH("unknown index type");
+      MOZ_CRASH("unknown address type");
   }
 }
 
-// Gets an IndexValue property ("initial" or "maximum") from a MemoryDescriptor
-// or TableDescriptor. The values returned by this should be run through
-// CheckLimits to enforce the validation limits prescribed by the spec.
-static bool GetDescriptorIndexValue(JSContext* cx, HandleObject obj,
-                                    const char* name, const char* noun,
-                                    const char* msg, IndexType indexType,
-                                    bool* found, uint64_t* value) {
+// Gets an AddressValue property ("initial" or "maximum") from a
+// MemoryDescriptor or TableDescriptor. The values returned by this should be
+// run through CheckLimits to enforce the validation limits prescribed by the
+// spec.
+static bool GetDescriptorAddressValue(JSContext* cx, HandleObject obj,
+                                      const char* name, const char* noun,
+                                      const char* msg, AddressType addressType,
+                                      bool* found, uint64_t* value) {
   JSAtom* atom = Atomize(cx, name, strlen(name));
   if (!atom) {
     return false;
@@ -655,48 +880,39 @@ static bool GetDescriptorIndexValue(JSContext* cx, HandleObject obj,
   }
   *found = true;
 
-  return EnforceIndexValue(cx, val, indexType, noun, msg, value);
+  return EnforceAddressValue(cx, val, addressType, noun, msg, value);
 }
 
 static bool GetLimits(JSContext* cx, HandleObject obj, LimitsKind kind,
                       Limits* limits) {
-  limits->indexType = IndexType::I32;
+  limits->addressType = AddressType::I32;
 
-  // Limits may specify an alternate index type, and we need this to check the
-  // ranges for initial and maximum, so look for the index type first.
-#ifdef ENABLE_WASM_MEMORY64
-  // Get the index type field
-  JSAtom* indexTypeAtom = Atomize(cx, "index", strlen("index"));
-  if (!indexTypeAtom) {
+  // Limits may specify an alternate address type, and we need this to check the
+  // ranges for initial and maximum, so look for the address type first.
+  // Get the address type field
+  JSAtom* addressTypeAtom = Atomize(cx, "address", strlen("address"));
+  if (!addressTypeAtom) {
     return false;
   }
-  RootedId indexTypeId(cx, AtomToId(indexTypeAtom));
-
-  RootedValue indexTypeVal(cx);
-  if (!GetProperty(cx, obj, obj, indexTypeId, &indexTypeVal)) {
+  RootedId addressTypeId(cx, AtomToId(addressTypeAtom));
+  RootedValue addressTypeVal(cx);
+  if (!GetProperty(cx, obj, obj, addressTypeId, &addressTypeVal)) {
     return false;
   }
 
-  // The index type has a default value
-  if (!indexTypeVal.isUndefined()) {
-    if (!ToIndexType(cx, indexTypeVal, &limits->indexType)) {
-      return false;
-    }
-
-    if (limits->indexType == IndexType::I64 && !Memory64Available(cx)) {
-      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
-                                JSMSG_WASM_NO_MEM64_LINK);
+  // The address type has a default value
+  if (!addressTypeVal.isUndefined()) {
+    if (!ToAddressType(cx, addressTypeVal, &limits->addressType)) {
       return false;
     }
   }
-#endif
 
-  const char* noun = (kind == LimitsKind::Memory ? "Memory" : "Table");
+  const char* noun = ToString(kind);
   uint64_t limit = 0;
 
   bool haveInitial = false;
-  if (!GetDescriptorIndexValue(cx, obj, "initial", noun, "initial size",
-                               limits->indexType, &haveInitial, &limit)) {
+  if (!GetDescriptorAddressValue(cx, obj, "initial", noun, "initial size",
+                                 limits->addressType, &haveInitial, &limit)) {
     return false;
   }
   if (haveInitial) {
@@ -705,8 +921,8 @@ static bool GetLimits(JSContext* cx, HandleObject obj, LimitsKind kind,
 
   bool haveMinimum = false;
 #ifdef ENABLE_WASM_TYPE_REFLECTIONS
-  if (!GetDescriptorIndexValue(cx, obj, "minimum", noun, "initial size",
-                               limits->indexType, &haveMinimum, &limit)) {
+  if (!GetDescriptorAddressValue(cx, obj, "minimum", noun, "initial size",
+                                 limits->addressType, &haveMinimum, &limit)) {
     return false;
   }
   if (haveMinimum) {
@@ -726,8 +942,8 @@ static bool GetLimits(JSContext* cx, HandleObject obj, LimitsKind kind,
   }
 
   bool haveMaximum = false;
-  if (!GetDescriptorIndexValue(cx, obj, "maximum", noun, "maximum size",
-                               limits->indexType, &haveMaximum, &limit)) {
+  if (!GetDescriptorAddressValue(cx, obj, "maximum", noun, "maximum size",
+                                 limits->addressType, &haveMaximum, &limit)) {
     return false;
   }
   if (haveMaximum) {
@@ -771,6 +987,10 @@ static bool GetLimits(JSContext* cx, HandleObject obj, LimitsKind kind,
         }
       }
     }
+
+    // TODO: Should be updated when the JS API for custom page sizes
+    // is finalized, see https://bugzilla.mozilla.org/show_bug.cgi?id=1985679
+    limits->pageSize = PageSize::Standard;
   }
 
   return true;
@@ -778,7 +998,7 @@ static bool GetLimits(JSContext* cx, HandleObject obj, LimitsKind kind,
 
 static bool CheckLimits(JSContext* cx, uint64_t validationMax, LimitsKind kind,
                         Limits* limits) {
-  const char* noun = (kind == LimitsKind::Memory ? "Memory" : "Table");
+  const char* noun = ToString(kind);
 
   // There are several layers of validation and error-throwing here, including
   // one which is currently not defined by the JS API spec:
@@ -824,6 +1044,21 @@ static JSObject* CreateWasmConstructor(JSContext* cx, JSProtoKey key) {
   if (!className) {
     return nullptr;
   }
+
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+  if (JS::Prefs::experimental_source_phase_imports()) {
+    if constexpr (std::is_same_v<Class, WasmModuleObject>) {
+      RootedObject proto(cx, GlobalObject::getOrCreateConstructor(
+                                 cx, JSProto_AbstractModuleSource));
+      if (!proto) {
+        return nullptr;
+      }
+      return NewFunctionWithProto(
+          cx, Class::construct, 1, FunctionFlags::NATIVE_CTOR, nullptr,
+          className, proto, gc::AllocKind::FUNCTION, TenuredObject);
+    }
+  }
+#endif
 
   return NewNativeConstructor(cx, Class::construct, 1, className);
 }
@@ -878,11 +1113,9 @@ static JSString* TypeToString(JSContext* cx, T type) {
       cx, JS::ConstUTF8CharsZ(chars.get(), strlen(chars.get())));
 }
 
-#  ifdef ENABLE_WASM_MEMORY64
-static JSString* IndexTypeToString(JSContext* cx, IndexType type) {
+static JSString* AddressTypeToString(JSContext* cx, AddressType type) {
   return JS_NewStringCopyZ(cx, ToString(type));
 }
-#  endif
 
 [[nodiscard]] static JSObject* ValTypesToArray(JSContext* cx,
                                                const ValTypeVector& valTypes) {
@@ -923,7 +1156,7 @@ static JSObject* FuncTypeToObject(JSContext* cx, const FuncType& type) {
   return NewPlainObjectWithUniqueNames(cx, props);
 }
 
-static JSObject* TableTypeToObject(JSContext* cx, IndexType indexType,
+static JSObject* TableTypeToObject(JSContext* cx, AddressType addressType,
                                    RefType type, uint64_t initial,
                                    Maybe<uint64_t> maximum) {
   Rooted<IdValueVector> props(cx, IdValueVector(cx));
@@ -937,7 +1170,11 @@ static JSObject* TableTypeToObject(JSContext* cx, IndexType indexType,
 
   if (maximum.isSome()) {
     RootedId maximumId(cx, NameToId(cx->names().maximum));
-    Value maximumValue = IndexValue(cx, maximum.value(), indexType);
+    RootedValue maximumValue(cx);
+    if (!CreateAddressValue(cx, maximum.value(), addressType, &maximumValue)) {
+      ReportOutOfMemory(cx);
+      return nullptr;
+    }
     if (!props.append(IdValuePair(maximumId, maximumValue))) {
       ReportOutOfMemory(cx);
       return nullptr;
@@ -945,35 +1182,42 @@ static JSObject* TableTypeToObject(JSContext* cx, IndexType indexType,
   }
 
   RootedId minimumId(cx, NameToId(cx->names().minimum));
-  Value minimumValue = IndexValue(cx, initial, indexType);
+  RootedValue minimumValue(cx);
+  if (!CreateAddressValue(cx, initial, addressType, &minimumValue)) {
+    ReportOutOfMemory(cx);
+    return nullptr;
+  }
   if (!props.append(IdValuePair(minimumId, minimumValue))) {
     ReportOutOfMemory(cx);
     return nullptr;
   }
 
-#  ifdef ENABLE_WASM_MEMORY64
-  RootedString it(cx, IndexTypeToString(cx, indexType));
-  if (!it) {
+  RootedString at(cx, AddressTypeToString(cx, addressType));
+  if (!at) {
     return nullptr;
   }
   if (!props.append(
-          IdValuePair(NameToId(cx->names().index), StringValue(it)))) {
+          IdValuePair(NameToId(cx->names().address), StringValue(at)))) {
     ReportOutOfMemory(cx);
     return nullptr;
   }
-#  endif
 
   return NewPlainObjectWithUniqueNames(cx, props);
 }
 
 static JSObject* MemoryTypeToObject(JSContext* cx, bool shared,
-                                    wasm::IndexType indexType,
+                                    wasm::AddressType addressType,
                                     wasm::Pages minPages,
                                     Maybe<wasm::Pages> maxPages) {
   Rooted<IdValueVector> props(cx, IdValueVector(cx));
   if (maxPages) {
     RootedId maximumId(cx, NameToId(cx->names().maximum));
-    Value maximumValue = IndexValue(cx, maxPages.value().value(), indexType);
+    RootedValue maximumValue(cx);
+    if (!CreateAddressValue(cx, maxPages.value().pageCount(), addressType,
+                            &maximumValue)) {
+      ReportOutOfMemory(cx);
+      return nullptr;
+    }
     if (!props.append(IdValuePair(maximumId, maximumValue))) {
       ReportOutOfMemory(cx);
       return nullptr;
@@ -981,23 +1225,26 @@ static JSObject* MemoryTypeToObject(JSContext* cx, bool shared,
   }
 
   RootedId minimumId(cx, NameToId(cx->names().minimum));
-  Value minimumValue = IndexValue(cx, minPages.value(), indexType);
+  RootedValue minimumValue(cx);
+  if (!CreateAddressValue(cx, minPages.pageCount(), addressType,
+                          &minimumValue)) {
+    ReportOutOfMemory(cx);
+    return nullptr;
+  }
   if (!props.append(IdValuePair(minimumId, minimumValue))) {
     ReportOutOfMemory(cx);
     return nullptr;
   }
 
-#  ifdef ENABLE_WASM_MEMORY64
-  RootedString it(cx, IndexTypeToString(cx, indexType));
-  if (!it) {
+  RootedString at(cx, AddressTypeToString(cx, addressType));
+  if (!at) {
     return nullptr;
   }
   if (!props.append(
-          IdValuePair(NameToId(cx->names().index), StringValue(it)))) {
+          IdValuePair(NameToId(cx->names().address), StringValue(at)))) {
     ReportOutOfMemory(cx);
     return nullptr;
   }
-#  endif
 
   if (!props.append(
           IdValuePair(NameToId(cx->names().shared), BooleanValue(shared)))) {
@@ -1048,16 +1295,7 @@ static JSObject* TagTypeToObject(JSContext* cx,
 // WebAssembly.Module class and methods
 
 const JSClassOps WasmModuleObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmModuleObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    nullptr,                     // trace
+    .finalize = WasmModuleObject::finalize,
 };
 
 const JSClass WasmModuleObject::class_ = {
@@ -1073,9 +1311,31 @@ const JSClass& WasmModuleObject::protoClass_ = PlainObject::class_;
 
 static constexpr char WasmModuleName[] = "Module";
 
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+// https://webassembly.github.io/esm-integration/js-api/index.html#modules
+static JSObject* CreateWasmModulePrototype(JSContext* cx, JSProtoKey key) {
+  if (JS::Prefs::experimental_source_phase_imports()) {
+    RootedObject abstractModuleSourceProto(
+        cx,
+        GlobalObject::getOrCreatePrototype(cx, JSProto_AbstractModuleSource));
+    if (!abstractModuleSourceProto) {
+      return nullptr;
+    }
+    return GlobalObject::createBlankPrototypeInheriting(
+        cx, &WasmModuleObject::protoClass_, abstractModuleSourceProto);
+  }
+  return GlobalObject::createBlankPrototype(cx, cx->global(),
+                                            &WasmModuleObject::protoClass_);
+}
+#endif
+
 const ClassSpec WasmModuleObject::classSpec_ = {
     CreateWasmConstructor<WasmModuleObject, WasmModuleName>,
+#ifdef ENABLE_SOURCE_PHASE_IMPORTS
+    CreateWasmModulePrototype,
+#else
     GenericCreatePrototype<WasmModuleObject>,
+#endif
     WasmModuleObject::static_methods,
     nullptr,
     WasmModuleObject::methods,
@@ -1110,32 +1370,6 @@ void WasmModuleObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   }
   gcx->release(obj, &module, module.gcMallocBytesExcludingCode(),
                MemoryUse::WasmModule);
-}
-
-static bool IsModuleObject(JSObject* obj, const Module** module) {
-  WasmModuleObject* mobj = obj->maybeUnwrapIf<WasmModuleObject>();
-  if (!mobj) {
-    return false;
-  }
-
-  *module = &mobj->module();
-  return true;
-}
-
-static bool GetModuleArg(JSContext* cx, const CallArgs& args,
-                         uint32_t numRequired, const char* name,
-                         const Module** module) {
-  if (!args.requireAtLeast(cx, name, numRequired)) {
-    return false;
-  }
-
-  if (!args[0].isObject() || !IsModuleObject(&args[0].toObject(), module)) {
-    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_MOD_ARG);
-    return false;
-  }
-
-  return true;
 }
 
 struct KindNames {
@@ -1205,8 +1439,21 @@ static JSString* KindToString(JSContext* cx, const KindNames& names,
 bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
-  const Module* module;
-  if (!GetModuleArg(cx, args, 1, "WebAssembly.Module.imports", &module)) {
+  if (!args.requireAtLeast(cx, "WebAssembly.Module.imports", 1)) {
+    return false;
+  }
+
+  if (!args[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
+    return false;
+  }
+
+  Rooted<WasmModuleObject*> moduleObj(
+      cx, args[0].toObject().maybeUnwrapIf<WasmModuleObject>());
+  if (!moduleObj) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
     return false;
   }
 
@@ -1215,18 +1462,14 @@ bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  const ModuleMetadata& moduleMeta = module->moduleMeta();
+  const ModuleMetadata& moduleMeta = moduleObj->module().moduleMeta();
 
   RootedValueVector elems(cx);
   if (!elems.reserve(moduleMeta.imports.length())) {
     return false;
   }
 
-#if defined(ENABLE_WASM_JS_STRING_BUILTINS) || \
-    defined(ENABLE_WASM_TYPE_REFLECTIONS)
-  const CodeMetadata& codeMeta = module->codeMeta();
-#endif
-
+  const CodeMetadata& codeMeta = moduleObj->module().codeMeta();
 #if defined(ENABLE_WASM_TYPE_REFLECTIONS)
   size_t numFuncImport = 0;
   size_t numMemoryImport = 0;
@@ -1236,13 +1479,30 @@ bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
 #endif  // ENABLE_WASM_TYPE_REFLECTIONS
 
   for (const Import& import : moduleMeta.imports) {
-#ifdef ENABLE_WASM_JS_STRING_BUILTINS
-    Maybe<BuiltinModuleId> builtinModule = ImportMatchesBuiltinModule(
-        import.module.utf8Bytes(), codeMeta.features().builtinModules);
+    Maybe<BuiltinModuleId> builtinModule =
+        ImportMatchesBuiltinModule(import, codeMeta.features().builtinModules);
     if (builtinModule) {
+#ifdef ENABLE_WASM_TYPE_REFLECTIONS
+      switch (import.kind) {
+        case DefinitionKind::Function:
+          numFuncImport++;
+          break;
+        case DefinitionKind::Table:
+          numTableImport++;
+          break;
+        case DefinitionKind::Memory:
+          numMemoryImport++;
+          break;
+        case DefinitionKind::Global:
+          numGlobalImport++;
+          break;
+        case DefinitionKind::Tag:
+          numTagImport++;
+          break;
+      }
+#endif  // ENABLE_WASM_TYPE_REFLECTIONS
       continue;
     }
-#endif
 
     Rooted<IdValueVector> props(cx, IdValueVector(cx));
     if (!props.reserve(3)) {
@@ -1283,7 +1543,7 @@ bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
         size_t tableIndex = numTableImport++;
         const TableDesc& table = codeMeta.tables[tableIndex];
         typeObj =
-            TableTypeToObject(cx, table.indexType(), table.elemType,
+            TableTypeToObject(cx, table.addressType(), table.elemType(),
                               table.initialLength(), table.maximumLength());
         break;
       }
@@ -1291,7 +1551,7 @@ bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
         size_t memoryIndex = numMemoryImport++;
         const MemoryDesc& memory = codeMeta.memories[memoryIndex];
         typeObj =
-            MemoryTypeToObject(cx, memory.isShared(), memory.indexType(),
+            MemoryTypeToObject(cx, memory.isShared(), memory.addressType(),
                                memory.initialPages(), memory.maximumPages());
         break;
       }
@@ -1337,8 +1597,21 @@ bool WasmModuleObject::imports(JSContext* cx, unsigned argc, Value* vp) {
 bool WasmModuleObject::exports(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
-  const Module* module;
-  if (!GetModuleArg(cx, args, 1, "WebAssembly.Module.exports", &module)) {
+  if (!args.requireAtLeast(cx, "WebAssembly.Module.exports", 1)) {
+    return false;
+  }
+
+  if (!args[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
+    return false;
+  }
+
+  Rooted<WasmModuleObject*> moduleObj(
+      cx, args[0].toObject().maybeUnwrapIf<WasmModuleObject>());
+  if (!moduleObj) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
     return false;
   }
 
@@ -1347,7 +1620,7 @@ bool WasmModuleObject::exports(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  const ModuleMetadata& moduleMeta = module->moduleMeta();
+  const ModuleMetadata& moduleMeta = moduleObj->module().moduleMeta();
 
   RootedValueVector elems(cx);
   if (!elems.reserve(moduleMeta.exports.length())) {
@@ -1355,7 +1628,7 @@ bool WasmModuleObject::exports(JSContext* cx, unsigned argc, Value* vp) {
   }
 
 #ifdef ENABLE_WASM_TYPE_REFLECTIONS
-  const CodeMetadata& codeMeta = module->codeMeta();
+  const CodeMetadata& codeMeta = moduleObj->module().codeMeta();
 #endif  // ENABLE_WASM_TYPE_REFLECTIONS
 
   for (const Export& exp : moduleMeta.exports) {
@@ -1382,22 +1655,21 @@ bool WasmModuleObject::exports(JSContext* cx, unsigned argc, Value* vp) {
     RootedObject typeObj(cx);
     switch (exp.kind()) {
       case DefinitionKind::Function: {
-        const FuncType& funcType =
-            module->codeMeta().getFuncType(exp.funcIndex());
+        const FuncType& funcType = codeMeta.getFuncType(exp.funcIndex());
         typeObj = FuncTypeToObject(cx, funcType);
         break;
       }
       case DefinitionKind::Table: {
         const TableDesc& table = codeMeta.tables[exp.tableIndex()];
         typeObj =
-            TableTypeToObject(cx, table.indexType(), table.elemType,
+            TableTypeToObject(cx, table.addressType(), table.elemType(),
                               table.initialLength(), table.maximumLength());
         break;
       }
       case DefinitionKind::Memory: {
         const MemoryDesc& memory = codeMeta.memories[exp.memoryIndex()];
         typeObj =
-            MemoryTypeToObject(cx, memory.isShared(), memory.indexType(),
+            MemoryTypeToObject(cx, memory.isShared(), memory.addressType(),
                                memory.initialPages(), memory.maximumPages());
         break;
       }
@@ -1441,9 +1713,21 @@ bool WasmModuleObject::exports(JSContext* cx, unsigned argc, Value* vp) {
 bool WasmModuleObject::customSections(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
-  const Module* module;
-  if (!GetModuleArg(cx, args, 2, "WebAssembly.Module.customSections",
-                    &module)) {
+  if (!args.requireAtLeast(cx, "WebAssembly.Module.customSections", 2)) {
+    return false;
+  }
+
+  if (!args[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
+    return false;
+  }
+
+  Rooted<WasmModuleObject*> moduleObj(
+      cx, args[0].toObject().maybeUnwrapIf<WasmModuleObject>());
+  if (!moduleObj) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
     return false;
   }
 
@@ -1470,7 +1754,8 @@ bool WasmModuleObject::customSections(JSContext* cx, unsigned argc, Value* vp) {
 
   RootedValueVector elems(cx);
   Rooted<ArrayBufferObject*> buf(cx);
-  for (const CustomSection& cs : module->moduleMeta().customSections) {
+  for (const CustomSection& cs :
+       moduleObj->module().moduleMeta().customSections) {
     if (name.length() != cs.name.length()) {
       continue;
     }
@@ -1534,48 +1819,88 @@ WasmModuleObject* WasmModuleObject::create(JSContext* cx, const Module& module,
   return obj;
 }
 
-static bool GetBufferSource(JSContext* cx, JSObject* obj, unsigned errorNumber,
-                            MutableBytes* bytecode) {
-  *bytecode = cx->new_<ShareableBytes>();
-  if (!*bytecode) {
-    return false;
+struct MOZ_STACK_CLASS AutoPinBufferSourceLength {
+  explicit AutoPinBufferSourceLength(JSContext* cx, JSObject* bufferSource)
+      : bufferSource_(cx, bufferSource),
+        wasPinned_(!JS::PinArrayBufferOrViewLength(bufferSource_, true)) {}
+  ~AutoPinBufferSourceLength() {
+    if (!wasPinned_) {
+      JS::PinArrayBufferOrViewLength(bufferSource_, false);
+    }
   }
 
+ private:
+  Rooted<JSObject*> bufferSource_;
+  bool wasPinned_;
+};
+
+// Checks if the `obj` is a buffer source (according to WebIDL rules) and
+// returns a view to the underlying memory. Callers should be sure to use
+// AutoPinBufferSourceLength for the resulting lifetime of the bytecode
+// source.
+static bool GetBytecodeSource(JSContext* cx, Handle<JSObject*> obj,
+                              unsigned errorNumber, BytecodeSource* bytecode,
+                              bool* isShared) {
   JSObject* unwrapped = CheckedUnwrapStatic(obj);
 
   SharedMem<uint8_t*> dataPointer;
   size_t byteLength;
-  if (!unwrapped || !IsBufferSource(unwrapped, &dataPointer, &byteLength)) {
+  if (!unwrapped || !IsBufferSource(cx, unwrapped, /*allowShared*/ true,
+                                    /*allowResizable*/ true, &dataPointer,
+                                    &byteLength, isShared)) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr, errorNumber);
     return false;
   }
 
-  if (!(*bytecode)->append(dataPointer.unwrap(), byteLength)) {
+  *bytecode = BytecodeSource(dataPointer.unwrap(), byteLength);
+  return true;
+}
+
+// The same as `GetBytecodeSource`, but instead returns an owned bytecode
+// buffer copy. Callers don't need to use AutoPinBufferSourceLength because
+// they own the resulting memory.
+static bool GetBytecodeBuffer(JSContext* cx, Handle<JSObject*> obj,
+                              unsigned errorNumber, BytecodeBuffer* bytecode) {
+  BytecodeSource source;
+  bool isShared;
+  if (!GetBytecodeSource(cx, obj, errorNumber, &source, &isShared)) {
+    return false;
+  }
+  AutoPinBufferSourceLength pin(cx, obj);
+
+  if (!BytecodeBuffer::fromSource(source, bytecode)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+  return true;
+}
+
+// The same as `GetBytecodeSource`, but instead returns an owned bytecode
+// buffer if the buffer source is shared.
+static bool GetBytecodeBufferOrSource(JSContext* cx, Handle<JSObject*> obj,
+                                      unsigned errorNumber,
+                                      BytecodeBufferOrSource* bytecode) {
+  BytecodeSource source;
+  bool isShared;
+  if (!GetBytecodeSource(cx, obj, errorNumber, &source, &isShared)) {
+    return false;
+  }
+
+  if (!isShared) {
+    *bytecode = BytecodeBufferOrSource(source);
+    return true;
+  }
+
+  // The buffer source is shared, we need to make a copy to ensure it we have an
+  // immutable copy.
+  AutoPinBufferSourceLength pin(cx, obj);
+  BytecodeBuffer buffer;
+  if (!BytecodeBuffer::fromSource(source, &buffer)) {
     ReportOutOfMemory(cx);
     return false;
   }
 
-  return true;
-}
-
-static bool ReportCompileWarnings(JSContext* cx,
-                                  const UniqueCharsVector& warnings) {
-  // Avoid spamming the console.
-  size_t numWarnings = std::min<size_t>(warnings.length(), 3);
-
-  for (size_t i = 0; i < numWarnings; i++) {
-    if (!WarnNumberASCII(cx, JSMSG_WASM_COMPILE_WARNING, warnings[i].get())) {
-      return false;
-    }
-  }
-
-  if (warnings.length() > numWarnings) {
-    if (!WarnNumberASCII(cx, JSMSG_WASM_COMPILE_WARNING,
-                         "other warnings suppressed")) {
-      return false;
-    }
-  }
-
+  *bytecode = BytecodeBufferOrSource(std::move(buffer));
   return true;
 }
 
@@ -1589,7 +1914,16 @@ bool WasmModuleObject::construct(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+  JS::RootedVector<JSString*> parameterStrings(cx);
+  JS::RootedVector<Value> parameterArgs(cx);
+  bool canCompileStrings = false;
+  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                   JS::CompilationType::Undefined,
+                                   parameterStrings, nullptr, parameterArgs,
+                                   NullHandleValue, &canCompileStrings)) {
+    return false;
+  }
+  if (!canCompileStrings) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_CSP_BLOCKED_WASM, "WebAssembly.Module");
     return false;
@@ -1602,12 +1936,6 @@ bool WasmModuleObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   if (!callArgs[0].isObject()) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_BAD_BUF_ARG);
-    return false;
-  }
-
-  MutableBytes bytecode;
-  if (!GetBufferSource(cx, &callArgs[0].toObject(), JSMSG_WASM_BAD_BUF_ARG,
-                       &bytecode)) {
     return false;
   }
 
@@ -1624,8 +1952,21 @@ bool WasmModuleObject::construct(JSContext* cx, unsigned argc, Value* vp) {
 
   UniqueChars error;
   UniqueCharsVector warnings;
-  SharedModule module =
-      CompileBuffer(*compileArgs, *bytecode, &error, &warnings, nullptr);
+  SharedModule module;
+  {
+    // Limit the lifetime of the bytecode to just compilation and ensure we pin
+    // the buffer. No user code should be running here anyways, so this is very
+    // conservative.
+    BytecodeBufferOrSource bytecode;
+    Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
+    if (!GetBytecodeBufferOrSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG,
+                                   &bytecode)) {
+      return false;
+    }
+    AutoPinBufferSourceLength pin(cx, sourceObj.get());
+
+    module = CompileBuffer(*compileArgs, bytecode, &error, &warnings, nullptr);
+  }
 
   if (!ReportCompileWarnings(cx, warnings)) {
     return false;
@@ -1666,16 +2007,8 @@ const Module& WasmModuleObject::module() const {
 // WebAssembly.Instance class and methods
 
 const JSClassOps WasmInstanceObject::classOps_ = {
-    nullptr,                       // addProperty
-    nullptr,                       // delProperty
-    nullptr,                       // enumerate
-    nullptr,                       // newEnumerate
-    nullptr,                       // resolve
-    nullptr,                       // mayResolve
-    WasmInstanceObject::finalize,  // finalize
-    nullptr,                       // call
-    nullptr,                       // construct
-    WasmInstanceObject::trace,     // trace
+    .finalize = WasmInstanceObject::finalize,
+    .trace = WasmInstanceObject::trace,
 };
 
 const JSClass WasmInstanceObject::class_ = {
@@ -1903,8 +2236,15 @@ bool WasmInstanceObject::construct(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  const Module* module;
-  if (!args[0].isObject() || !IsModuleObject(&args[0].toObject(), &module)) {
+  if (!args[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_MOD_ARG);
+    return false;
+  }
+
+  Rooted<WasmModuleObject*> moduleObj(
+      cx, args[0].toObject().maybeUnwrapIf<WasmModuleObject>());
+  if (!moduleObj) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_BAD_MOD_ARG);
     return false;
@@ -1923,12 +2263,13 @@ bool WasmInstanceObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   }
 
   Rooted<ImportValues> imports(cx);
-  if (!GetImports(cx, *module, importObj, imports.address())) {
+  if (!GetImports(cx, moduleObj->module(), importObj, imports.address())) {
     return false;
   }
 
   Rooted<WasmInstanceObject*> instanceObj(cx);
-  if (!module->instantiate(cx, imports.get(), proto, &instanceObj)) {
+  if (!moduleObj->module().instantiate(cx, imports.get(), proto,
+                                       &instanceObj)) {
     return false;
   }
 
@@ -1947,6 +2288,15 @@ JSObject& WasmInstanceObject::exportsObj() const {
   return getReservedSlot(EXPORTS_OBJ_SLOT).toObject();
 }
 
+WasmFunctionScope* WasmInstanceObject::getExistingFunctionScope(
+    uint32_t funcIndex) const {
+  if (auto p = scopes().asWasmFunctionScopeMap().lookup(funcIndex)) {
+    return p->value();
+  }
+
+  return nullptr;
+}
+
 WasmInstanceObject::UnspecifiedScopeMap& WasmInstanceObject::scopes() const {
   return *(UnspecifiedScopeMap*)(getReservedSlot(SCOPES_SLOT).toPrivate());
 }
@@ -1962,14 +2312,6 @@ bool WasmInstanceObject::getExportedFunction(
     MutableHandleFunction fun) {
   Instance& instance = instanceObj->instance();
   return instance.getExportedFunction(cx, funcIndex, fun);
-}
-
-void WasmInstanceObject::getExportedFunctionCodeRange(
-    JSFunction* fun, const wasm::CodeRange** range, uint8_t** codeBase) {
-  uint32_t funcIndex = wasm::ExportedFunctionToFuncIndex(fun);
-  const CodeBlock& code = instance().code().funcCodeBlock(funcIndex);
-  *range = &code.codeRanges[code.funcToCodeRange[funcIndex]];
-  *codeBase = code.segment->base();
 }
 
 /* static */
@@ -2022,40 +2364,11 @@ WasmFunctionScope* WasmInstanceObject::getFunctionScope(
   return funcScope;
 }
 
-bool wasm::IsWasmExportedFunction(JSFunction* fun) {
-  return fun->kind() == FunctionFlags::Wasm;
-}
-
-Instance& wasm::ExportedFunctionToInstance(JSFunction* fun) {
-  return fun->wasmInstance();
-}
-
-WasmInstanceObject* wasm::ExportedFunctionToInstanceObject(JSFunction* fun) {
-  return fun->wasmInstance().object();
-}
-
-uint32_t wasm::ExportedFunctionToFuncIndex(JSFunction* fun) {
-  return fun->wasmInstance().code().getFuncIndex(fun);
-}
-
-const wasm::TypeDef& wasm::ExportedFunctionToTypeDef(JSFunction* fun) {
-  return *fun->wasmTypeDef();
-}
-
 // ============================================================================
 // WebAssembly.Memory class and methods
 
 const JSClassOps WasmMemoryObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmMemoryObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    nullptr,                     // trace
+    .finalize = WasmMemoryObject::finalize,
 };
 
 const JSClass WasmMemoryObject::class_ = {
@@ -2143,12 +2456,14 @@ bool WasmMemoryObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   RootedObject obj(cx, &args[0].toObject());
   Limits limits;
   if (!GetLimits(cx, obj, LimitsKind::Memory, &limits) ||
-      !CheckLimits(cx, MaxMemoryPagesValidation(limits.indexType),
-                   LimitsKind::Memory, &limits)) {
+      !CheckLimits(
+          cx, MaxMemoryPagesValidation(limits.addressType, limits.pageSize),
+          LimitsKind::Memory, &limits)) {
     return false;
   }
 
-  if (Pages(limits.initial) > MaxMemoryPages(limits.indexType)) {
+  if (Pages::fromPageCount(limits.initial, limits.pageSize) >
+      MaxMemoryPages(limits.addressType, limits.pageSize)) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_MEM_IMP_LIMIT);
     return false;
@@ -2170,7 +2485,8 @@ bool WasmMemoryObject::construct(JSContext* cx, unsigned argc, Value* vp) {
 
   Rooted<WasmMemoryObject*> memoryObj(
       cx, WasmMemoryObject::create(
-              cx, buffer, IsHugeMemoryEnabled(limits.indexType), proto));
+              cx, buffer,
+              IsHugeMemoryEnabled(limits.addressType, limits.pageSize), proto));
   if (!memoryObj) {
     return false;
   }
@@ -2184,35 +2500,57 @@ static bool IsMemory(HandleValue v) {
 }
 
 /* static */
-bool WasmMemoryObject::bufferGetterImpl(JSContext* cx, const CallArgs& args) {
-  Rooted<WasmMemoryObject*> memoryObj(
-      cx, &args.thisv().toObject().as<WasmMemoryObject>());
-  Rooted<ArrayBufferObjectMaybeShared*> buffer(cx, &memoryObj->buffer());
-
+ArrayBufferObjectMaybeShared* WasmMemoryObject::refreshBuffer(
+    JSContext* cx, Handle<WasmMemoryObject*> memoryObj,
+    Handle<ArrayBufferObjectMaybeShared*> buffer) {
   if (memoryObj->isShared()) {
     size_t memoryLength = memoryObj->volatileMemoryLength();
-    MOZ_ASSERT(memoryLength >= buffer->byteLength());
+    MOZ_ASSERT_IF(!buffer->is<GrowableSharedArrayBufferObject>(),
+                  memoryLength >= buffer->byteLength());
 
-    if (memoryLength > buffer->byteLength()) {
+    // The `length` field on a fixed length SAB cannot change even if
+    // the underlying memory has grown. The spec therefore requires that
+    // accessing the buffer property will create a new fixed length SAB
+    // with the current length if the underlying raw buffer's length has
+    // changed. We don't need to do this for growable SAB.
+    if (!buffer->is<GrowableSharedArrayBufferObject>() &&
+        memoryLength > buffer->byteLength()) {
       Rooted<SharedArrayBufferObject*> newBuffer(
           cx, SharedArrayBufferObject::New(
                   cx, memoryObj->sharedArrayRawBuffer(), memoryLength));
       if (!newBuffer) {
-        return false;
+        return nullptr;
       }
+      MOZ_ASSERT(newBuffer->is<FixedLengthSharedArrayBufferObject>());
       // OK to addReference after we try to allocate because the memoryObj
       // keeps the rawBuffer alive.
       if (!memoryObj->sharedArrayRawBuffer()->addReference()) {
         JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                                   JSMSG_SC_SAB_REFCNT_OFLO);
-        return false;
+        return nullptr;
       }
-      buffer = newBuffer;
       memoryObj->setReservedSlot(BUFFER_SLOT, ObjectValue(*newBuffer));
+      return newBuffer;
     }
   }
+  return buffer;
+}
 
-  args.rval().setObject(*buffer);
+/* static */
+bool WasmMemoryObject::bufferGetterImpl(JSContext* cx, const CallArgs& args) {
+  Rooted<WasmMemoryObject*> memoryObj(
+      cx, &args.thisv().toObject().as<WasmMemoryObject>());
+
+  Rooted<ArrayBufferObjectMaybeShared*> buffer(cx, &memoryObj->buffer());
+  MOZ_RELEASE_ASSERT(buffer->isWasm() && !buffer->isPreparedForAsmJS());
+
+  ArrayBufferObjectMaybeShared* refreshedBuffer =
+      WasmMemoryObject::refreshBuffer(cx, memoryObj, buffer);
+  if (!refreshedBuffer) {
+    return false;
+  }
+
+  args.rval().setObject(*refreshedBuffer);
   return true;
 }
 
@@ -2238,8 +2576,8 @@ bool WasmMemoryObject::growImpl(JSContext* cx, const CallArgs& args) {
   }
 
   uint64_t delta;
-  if (!EnforceIndexValue(cx, args.get(0), memory->indexType(), "Memory",
-                         "grow delta", &delta)) {
+  if (!EnforceAddressValue(cx, args.get(0), memory->addressType(), "Memory",
+                           "grow delta", &delta)) {
     return false;
   }
 
@@ -2251,7 +2589,12 @@ bool WasmMemoryObject::growImpl(JSContext* cx, const CallArgs& args) {
     return false;
   }
 
-  args.rval().set(IndexValue(cx, ret, memory->indexType()));
+  RootedValue result(cx);
+  if (!CreateAddressValue(cx, ret, memory->addressType(), &result)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+  args.rval().set(result);
   return true;
 }
 
@@ -2280,7 +2623,8 @@ bool WasmMemoryObject::discardImpl(JSContext* cx, const CallArgs& args) {
     return false;
   }
 
-  if (byteOffset % wasm::PageSize != 0 || byteLen % wasm::PageSize != 0) {
+  if (byteOffset % wasm::StandardPageSizeBytes != 0 ||
+      byteLen % wasm::StandardPageSizeBytes != 0) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_UNALIGNED_ACCESS);
     return false;
@@ -2305,11 +2649,125 @@ bool WasmMemoryObject::discard(JSContext* cx, unsigned argc, Value* vp) {
   return CallNonGenericMethod<IsMemory, discardImpl>(cx, args);
 }
 
+#ifdef ENABLE_WASM_RESIZABLE_ARRAYBUFFER
+/* static */
+bool WasmMemoryObject::toFixedLengthBufferImpl(JSContext* cx,
+                                               const CallArgs& args) {
+  Rooted<WasmMemoryObject*> memory(
+      cx, &args.thisv().toObject().as<WasmMemoryObject>());
+
+  Rooted<ArrayBufferObjectMaybeShared*> buffer(cx, &memory->buffer());
+  MOZ_RELEASE_ASSERT(buffer->isWasm() && !buffer->isPreparedForAsmJS());
+  // If IsFixedLengthArrayBuffer(buffer) is true, return buffer.
+  if (!buffer->isResizable()) {
+    ArrayBufferObjectMaybeShared* refreshedBuffer =
+        refreshBuffer(cx, memory, buffer);
+    if (!refreshedBuffer) {
+      return false;
+    }
+    args.rval().set(ObjectValue(*refreshedBuffer));
+    return true;
+  }
+
+  if (!memory->isShared() && buffer->as<ArrayBufferObject>().isLengthPinned()) {
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_ARRAYBUFFER_LENGTH_PINNED);
+    return false;
+  }
+
+  Rooted<ArrayBufferObjectMaybeShared*> fixedBuffer(cx);
+  if (memory->isShared()) {
+    Rooted<SharedArrayBufferObject*> oldBuffer(
+        cx, &buffer->as<SharedArrayBufferObject>());
+    fixedBuffer.set(SharedArrayBufferObject::createFromWasmObject<
+                    FixedLengthSharedArrayBufferObject>(cx, oldBuffer));
+  } else {
+    Rooted<ArrayBufferObject*> oldBuffer(cx, &buffer->as<ArrayBufferObject>());
+    fixedBuffer.set(
+        ArrayBufferObject::createFromWasmObject<FixedLengthArrayBufferObject>(
+            cx, oldBuffer));
+  }
+
+  if (!fixedBuffer) {
+    return false;
+  }
+  memory->setReservedSlot(BUFFER_SLOT, ObjectValue(*fixedBuffer));
+  args.rval().set(ObjectValue(*fixedBuffer));
+  return true;
+}
+
+/* static */
+bool WasmMemoryObject::toFixedLengthBuffer(JSContext* cx, unsigned argc,
+                                           Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+  return CallNonGenericMethod<IsMemory, toFixedLengthBufferImpl>(cx, args);
+}
+
+/* static */
+bool WasmMemoryObject::toResizableBufferImpl(JSContext* cx,
+                                             const CallArgs& args) {
+  Rooted<WasmMemoryObject*> memory(
+      cx, &args.thisv().toObject().as<WasmMemoryObject>());
+
+  Rooted<ArrayBufferObjectMaybeShared*> buffer(cx, &memory->buffer());
+  // If IsFixedLengthArrayBuffer(buffer) is false, return buffer.
+  if (buffer->isResizable()) {
+    args.rval().set(ObjectValue(*buffer));
+    return true;
+  }
+
+  if (buffer->wasmSourceMaxPages().isNothing()) {
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_WASM_MEMORY_NOT_RESIZABLE);
+    return false;
+  }
+
+  if (!memory->isShared() && buffer->as<ArrayBufferObject>().isLengthPinned()) {
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_ARRAYBUFFER_LENGTH_PINNED);
+    return false;
+  }
+
+  Rooted<ArrayBufferObjectMaybeShared*> resizableBuffer(cx);
+  if (memory->isShared()) {
+    Rooted<SharedArrayBufferObject*> oldBuffer(
+        cx, &buffer->as<SharedArrayBufferObject>());
+    resizableBuffer.set(SharedArrayBufferObject::createFromWasmObject<
+                        GrowableSharedArrayBufferObject>(cx, oldBuffer));
+  } else {
+    Rooted<ArrayBufferObject*> oldBuffer(cx, &buffer->as<ArrayBufferObject>());
+    resizableBuffer.set(
+        ArrayBufferObject::createFromWasmObject<ResizableArrayBufferObject>(
+            cx, oldBuffer));
+  }
+
+  if (!resizableBuffer) {
+    return false;
+  }
+  memory->setReservedSlot(BUFFER_SLOT, ObjectValue(*resizableBuffer));
+  args.rval().set(ObjectValue(*resizableBuffer));
+  return true;
+}
+
+/* static */
+bool WasmMemoryObject::toResizableBuffer(JSContext* cx, unsigned argc,
+                                         Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+  return CallNonGenericMethod<IsMemory, toResizableBufferImpl>(cx, args);
+}
+#endif  // ENABLE_WASM_RESIZABLE_ARRAYBUFFER
+
 const JSFunctionSpec WasmMemoryObject::methods[] = {
 #ifdef ENABLE_WASM_TYPE_REFLECTIONS
     JS_FN("type", WasmMemoryObject::type, 0, JSPROP_ENUMERATE),
 #endif
     JS_FN("grow", WasmMemoryObject::grow, 1, JSPROP_ENUMERATE),
+#ifdef ENABLE_WASM_RESIZABLE_ARRAYBUFFER
+    JS_FN("toFixedLengthBuffer", WasmMemoryObject::toFixedLengthBuffer, 0,
+          JSPROP_ENUMERATE),
+    JS_FN("toResizableBuffer", WasmMemoryObject::toResizableBuffer, 0,
+          JSPROP_ENUMERATE),
+#endif
     JS_FS_END,
 };
 
@@ -2337,10 +2795,10 @@ WasmSharedArrayRawBuffer* WasmMemoryObject::sharedArrayRawBuffer() const {
 bool WasmMemoryObject::typeImpl(JSContext* cx, const CallArgs& args) {
   Rooted<WasmMemoryObject*> memoryObj(
       cx, &args.thisv().toObject().as<WasmMemoryObject>());
-  RootedObject typeObj(
-      cx, MemoryTypeToObject(cx, memoryObj->isShared(), memoryObj->indexType(),
-                             memoryObj->volatilePages(),
-                             memoryObj->sourceMaxPages()));
+  RootedObject typeObj(cx, MemoryTypeToObject(cx, memoryObj->isShared(),
+                                              memoryObj->addressType(),
+                                              memoryObj->volatilePages(),
+                                              memoryObj->sourceMaxPages()));
   if (!typeObj) {
     return false;
   }
@@ -2382,11 +2840,11 @@ Maybe<wasm::Pages> WasmMemoryObject::sourceMaxPages() const {
   return buffer().wasmSourceMaxPages();
 }
 
-wasm::IndexType WasmMemoryObject::indexType() const {
+wasm::AddressType WasmMemoryObject::addressType() const {
   if (isShared()) {
-    return sharedArrayRawBuffer()->wasmIndexType();
+    return sharedArrayRawBuffer()->wasmAddressType();
   }
-  return buffer().wasmIndexType();
+  return buffer().wasmAddressType();
 }
 
 bool WasmMemoryObject::isShared() const {
@@ -2431,6 +2889,17 @@ size_t WasmMemoryObject::boundsCheckLimit() const {
   if (!buffer().isWasm() || isHuge()) {
     return buffer().byteLength();
   }
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+  // For tiny page sizes, we need to use the actual byte length as the bounds
+  // check as we cannot rely on virtual memory for accesses between the byte
+  // length and the mapped size.
+  if (buffer().wasmPageSize() == wasm::PageSize::Tiny) {
+    size_t limit = buffer().byteLength();
+    MOZ_ASSERT(limit <= MaxMemoryBoundsCheckLimit(addressType(),
+                                                  buffer().wasmPageSize()));
+    return limit;
+  }
+#endif
   size_t mappedSize = buffer().wasmMappedSize();
 #if !defined(JS_64BIT)
   // See clamping performed in CreateSpecificWasmBuffer().  On 32-bit systems
@@ -2439,12 +2908,20 @@ size_t WasmMemoryObject::boundsCheckLimit() const {
   // max field.
   MOZ_ASSERT(mappedSize < UINT32_MAX);
 #endif
-  MOZ_ASSERT(mappedSize % wasm::PageSize == 0);
+  MOZ_ASSERT(buffer().wasmPageSize() == wasm::PageSize::Standard);
+  MOZ_ASSERT(mappedSize % wasm::StandardPageSizeBytes == 0);
   MOZ_ASSERT(mappedSize >= wasm::GuardSize);
-  MOZ_ASSERT(wasm::IsValidBoundsCheckImmediate(mappedSize - wasm::GuardSize));
   size_t limit = mappedSize - wasm::GuardSize;
-  MOZ_ASSERT(limit <= MaxMemoryBoundsCheckLimit(indexType()));
+  MOZ_ASSERT(limit <= MaxMemoryBoundsCheckLimit(addressType(),
+                                                wasm::PageSize::Standard));
   return limit;
+}
+
+wasm::PageSize WasmMemoryObject::pageSize() const {
+  if (isShared()) {
+    return sharedArrayRawBuffer()->wasmPageSize();
+  }
+  return buffer().wasmPageSize();
 }
 
 bool WasmMemoryObject::addMovingGrowObserver(JSContext* cx,
@@ -2474,17 +2951,17 @@ uint64_t WasmMemoryObject::growShared(Handle<WasmMemoryObject*> memory,
 
   Pages oldNumPages = rawBuf->volatileWasmPages();
   Pages newPages = oldNumPages;
-  if (!newPages.checkedIncrement(Pages(delta))) {
+  if (!newPages.checkedIncrement(delta)) {
     return uint64_t(int64_t(-1));
   }
 
-  if (!rawBuf->wasmGrowToPagesInPlace(lock, memory->indexType(), newPages)) {
+  if (!rawBuf->wasmGrowToPagesInPlace(lock, memory->addressType(), newPages)) {
     return uint64_t(int64_t(-1));
   }
   // New buffer objects will be created lazily in all agents (including in
   // this agent) by bufferGetterImpl, above, so no more work to do here.
 
-  return oldNumPages.value();
+  return oldNumPages.pageCount();
 }
 
 /* static */
@@ -2500,23 +2977,24 @@ uint64_t WasmMemoryObject::grow(Handle<WasmMemoryObject*> memory,
 #if !defined(JS_64BIT)
   // TODO (large ArrayBuffer): See more information at the definition of
   // MaxMemoryBytes().
-  MOZ_ASSERT(MaxMemoryBytes(memory->indexType()) <= UINT32_MAX,
-             "Avoid 32-bit overflows");
+  MOZ_ASSERT(
+      MaxMemoryBytes(memory->addressType(), memory->pageSize()) <= UINT32_MAX,
+      "Avoid 32-bit overflows");
 #endif
 
   Pages oldNumPages = oldBuf->wasmPages();
   Pages newPages = oldNumPages;
-  if (!newPages.checkedIncrement(Pages(delta))) {
+  if (!newPages.checkedIncrement(delta)) {
     return uint64_t(int64_t(-1));
   }
 
   ArrayBufferObject* newBuf;
   if (memory->movingGrowable()) {
     MOZ_ASSERT(!memory->isHuge());
-    newBuf = ArrayBufferObject::wasmMovingGrowToPages(memory->indexType(),
+    newBuf = ArrayBufferObject::wasmMovingGrowToPages(memory->addressType(),
                                                       newPages, oldBuf, cx);
   } else {
-    newBuf = ArrayBufferObject::wasmGrowToPagesInPlace(memory->indexType(),
+    newBuf = ArrayBufferObject::wasmGrowToPagesInPlace(memory->addressType(),
                                                        newPages, oldBuf, cx);
   }
   if (!newBuf) {
@@ -2528,13 +3006,12 @@ uint64_t WasmMemoryObject::grow(Handle<WasmMemoryObject*> memory,
   // Only notify moving-grow-observers after the BUFFER_SLOT has been updated
   // since observers will call buffer().
   if (memory->hasObservers()) {
-    for (InstanceSet::Range r = memory->observers().all(); !r.empty();
-         r.popFront()) {
-      r.front()->instance().onMovingGrowMemory(memory);
+    for (auto iter = memory->observers().iter(); !iter.done(); iter.next()) {
+      iter.get()->instance().onMovingGrowMemory(memory);
     }
   }
 
-  return oldNumPages.value();
+  return oldNumPages.pageCount();
 }
 
 /* static */
@@ -2561,16 +3038,8 @@ bool js::wasm::IsSharedWasmMemoryObject(JSObject* obj) {
 // WebAssembly.Table class and methods
 
 const JSClassOps WasmTableObject::classOps_ = {
-    nullptr,                    // addProperty
-    nullptr,                    // delProperty
-    nullptr,                    // enumerate
-    nullptr,                    // newEnumerate
-    nullptr,                    // resolve
-    nullptr,                    // mayResolve
-    WasmTableObject::finalize,  // finalize
-    nullptr,                    // call
-    nullptr,                    // construct
-    WasmTableObject::trace,     // trace
+    .finalize = WasmTableObject::finalize,
+    .trace = WasmTableObject::trace,
 };
 
 const JSClass WasmTableObject::class_ = {
@@ -2629,8 +3098,7 @@ static Value RefTypeDefaultValue(wasm::RefType tableType) {
 }
 
 /* static */
-WasmTableObject* WasmTableObject::create(JSContext* cx, Limits limits,
-                                         wasm::RefType tableType,
+WasmTableObject* WasmTableObject::create(JSContext* cx, const TableType& type,
                                          HandleObject proto) {
   AutoSetNewObjectMetadata metadata(cx);
   Rooted<WasmTableObject*> obj(
@@ -2641,7 +3109,7 @@ WasmTableObject* WasmTableObject::create(JSContext* cx, Limits limits,
 
   MOZ_ASSERT(obj->isNewborn());
 
-  TableDesc td(limits, tableType, Nothing(),
+  TableDesc td(type, Nothing(),
                /*isAsmJS*/ false,
                /*isImported=*/true, /*isExported=*/true);
 
@@ -2689,14 +3157,14 @@ bool WasmTableObject::construct(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  RefType tableType;
-  if (!ToRefType(cx, elementVal, &tableType)) {
+  RefType elemType;
+  if (!ToRefType(cx, elementVal, &elemType)) {
     return false;
   }
 
   Limits limits;
   if (!GetLimits(cx, obj, LimitsKind::Table, &limits) ||
-      !CheckLimits(cx, MaxTableElemsValidation(limits.indexType),
+      !CheckLimits(cx, MaxTableElemsValidation(limits.addressType),
                    LimitsKind::Table, &limits)) {
     return false;
   }
@@ -2715,15 +3183,15 @@ bool WasmTableObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   }
 
   Rooted<WasmTableObject*> table(
-      cx, WasmTableObject::create(cx, limits, tableType, proto));
+      cx, WasmTableObject::create(cx, TableType(limits, elemType), proto));
   if (!table) {
     return false;
   }
 
   // Initialize the table to a default value
   RootedValue initValue(
-      cx, args.length() < 2 ? RefTypeDefaultValue(tableType) : args[1]);
-  if (!CheckRefType(cx, tableType, initValue)) {
+      cx, args.length() < 2 ? RefTypeDefaultValue(elemType) : args[1]);
+  if (!CheckRefType(cx, elemType, initValue)) {
     return false;
   }
 
@@ -2738,7 +3206,7 @@ bool WasmTableObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   if (initValue.isNull()) {
     table->table().assertRangeNull(0, limits.initial);
   }
-  if (!tableType.isNullable()) {
+  if (!elemType.isNullable()) {
     table->table().assertRangeNotNull(0, limits.initial);
   }
 #endif
@@ -2755,8 +3223,13 @@ static bool IsTable(HandleValue v) {
 bool WasmTableObject::lengthGetterImpl(JSContext* cx, const CallArgs& args) {
   const WasmTableObject& tableObj =
       args.thisv().toObject().as<WasmTableObject>();
-  args.rval().set(
-      IndexValue(cx, tableObj.table().length(), tableObj.table().indexType()));
+  RootedValue length(cx);
+  if (!CreateAddressValue(cx, tableObj.table().length(),
+                          tableObj.table().addressType(), &length)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+  args.rval().set(length);
   return true;
 }
 
@@ -2772,24 +3245,28 @@ const JSPropertySpec WasmTableObject::properties[] = {
     JS_PS_END,
 };
 
-// Gets an IndexValue parameter for a table. This differs from our general
-// EnforceIndexValue because our table implementation still uses 32-bit sizes
+// Gets an AddressValue parameter for a table. This differs from our general
+// EnforceAddressValue because our table implementation still uses 32-bit sizes
 // internally, and this function therefore returns a uint32_t. Values outside
 // the 32-bit range will be clamped to UINT32_MAX, which will always trigger
-// bounds checks for all Table uses of IndexValue. See
-// MacroAssembler::wasmClampTable64Index and its uses.
-static bool EnforceTableIndexValue(JSContext* cx, HandleValue v,
-                                   const Table& table, const char* noun,
-                                   uint32_t* result, bool isIndex) {
+// bounds checks for all Table uses of AddressValue. See
+// MacroAssembler::wasmClampTable64Address and its uses.
+//
+// isAddress should be true if the value is an actual address, and false if it
+// is a different quantity (e.g. a grow delta).
+static bool EnforceTableAddressValue(JSContext* cx, HandleValue v,
+                                     const Table& table, const char* noun,
+                                     uint32_t* result, bool isAddress) {
   uint64_t result64;
-  if (!EnforceIndexValue(cx, v, table.indexType(), "Table", noun, &result64)) {
+  if (!EnforceAddressValue(cx, v, table.addressType(), "Table", noun,
+                           &result64)) {
     return false;
   }
 
   static_assert(MaxTableElemsRuntime < UINT32_MAX);
   *result = result64 > UINT32_MAX ? UINT32_MAX : uint32_t(result64);
 
-  if (isIndex && *result >= table.length()) {
+  if (isAddress && *result >= table.length()) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_WASM_BAD_RANGE, "Table", noun);
     return false;
@@ -2803,7 +3280,7 @@ static bool EnforceTableIndexValue(JSContext* cx, HandleValue v,
 bool WasmTableObject::typeImpl(JSContext* cx, const CallArgs& args) {
   Table& table = args.thisv().toObject().as<WasmTableObject>().table();
   RootedObject typeObj(
-      cx, TableTypeToObject(cx, table.indexType(), table.elemType(),
+      cx, TableTypeToObject(cx, table.addressType(), table.elemType(),
                             table.length(), table.maximum()));
   if (!typeObj) {
     return false;
@@ -2829,13 +3306,13 @@ bool WasmTableObject::getImpl(JSContext* cx, const CallArgs& args) {
     return false;
   }
 
-  uint32_t index;
-  if (!EnforceTableIndexValue(cx, args.get(0), table, "get index", &index,
-                              /*isIndex=*/true)) {
+  uint32_t address;
+  if (!EnforceTableAddressValue(cx, args.get(0), table, "get address", &address,
+                                /*isAddress=*/true)) {
     return false;
   }
 
-  return table.getValue(cx, index, args.rval());
+  return table.getValue(cx, address, args.rval());
 }
 
 /* static */
@@ -2854,15 +3331,15 @@ bool WasmTableObject::setImpl(JSContext* cx, const CallArgs& args) {
     return false;
   }
 
-  uint32_t index;
-  if (!EnforceTableIndexValue(cx, args.get(0), table, "set index", &index,
-                              /*isIndex=*/true)) {
+  uint32_t address;
+  if (!EnforceTableAddressValue(cx, args.get(0), table, "set address", &address,
+                                /*isAddress=*/true)) {
     return false;
   }
 
   RootedValue fillValue(
       cx, args.length() < 2 ? RefTypeDefaultValue(table.elemType()) : args[1]);
-  if (!tableObj->fillRange(cx, index, 1, fillValue)) {
+  if (!tableObj->fillRange(cx, address, 1, fillValue)) {
     return false;
   }
 
@@ -2887,14 +3364,15 @@ bool WasmTableObject::growImpl(JSContext* cx, const CallArgs& args) {
   }
 
   uint32_t delta;
-  if (!EnforceTableIndexValue(cx, args.get(0), table, "grow delta", &delta,
-                              /*isIndex=*/false)) {
+  if (!EnforceTableAddressValue(cx, args.get(0), table, "grow delta", &delta,
+                                /*isAddress=*/false)) {
     return false;
   }
 
   RootedValue fillValue(
       cx, args.length() < 2 ? RefTypeDefaultValue(table.elemType()) : args[1]);
-  if (!CheckRefType(cx, table.elemType(), fillValue)) {
+  Rooted<wasm::AnyRef> fillRef(cx);
+  if (!CheckRefType(cx, table.elemType(), fillValue, &fillRef)) {
     return false;
   }
 
@@ -2908,13 +3386,12 @@ bool WasmTableObject::growImpl(JSContext* cx, const CallArgs& args) {
 
   // Skip filling the grown range of the table if the fill value is null, as
   // that is the default value.
-  if (!fillValue.isNull() &&
-      !tableObj->fillRange(cx, oldLength, delta, fillValue)) {
-    return false;
+  if (!fillRef.isNull()) {
+    table.fillUninitialized(oldLength, delta, fillRef, cx);
   }
 #ifdef DEBUG
   // Assert that null is the default value of the grown range.
-  if (fillValue.isNull()) {
+  if (fillRef.isNull()) {
     table.assertRangeNull(oldLength, delta);
   }
   if (!table.elemType().isNullable()) {
@@ -2922,7 +3399,12 @@ bool WasmTableObject::growImpl(JSContext* cx, const CallArgs& args) {
   }
 #endif
 
-  args.rval().set(IndexValue(cx, oldLength, table.indexType()));
+  RootedValue result(cx);
+  if (!CreateAddressValue(cx, oldLength, table.addressType(), &result)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+  args.rval().set(result);
   return true;
 }
 
@@ -2979,16 +3461,8 @@ bool WasmTableObject::fillRange(JSContext* cx, uint32_t index, uint32_t length,
 // WebAssembly.global class and methods
 
 const JSClassOps WasmGlobalObject::classOps_ = {
-    nullptr,                     // addProperty
-    nullptr,                     // delProperty
-    nullptr,                     // enumerate
-    nullptr,                     // newEnumerate
-    nullptr,                     // resolve
-    nullptr,                     // mayResolve
-    WasmGlobalObject::finalize,  // finalize
-    nullptr,                     // call
-    nullptr,                     // construct
-    WasmGlobalObject::trace,     // trace
+    .finalize = WasmGlobalObject::finalize,
+    .trace = WasmGlobalObject::trace,
 };
 
 const JSClass WasmGlobalObject::class_ = {
@@ -3271,16 +3745,7 @@ bool WasmGlobalObject::type(JSContext* cx, unsigned argc, Value* vp) {
 // WebAssembly.Tag class and methods
 
 const JSClassOps WasmTagObject::classOps_ = {
-    nullptr,                  // addProperty
-    nullptr,                  // delProperty
-    nullptr,                  // enumerate
-    nullptr,                  // newEnumerate
-    nullptr,                  // resolve
-    nullptr,                  // mayResolve
-    WasmTagObject::finalize,  // finalize
-    nullptr,                  // call
-    nullptr,                  // construct
-    nullptr,                  // trace
+    .finalize = WasmTagObject::finalize,
 };
 
 const JSClass WasmTagObject::class_ = {
@@ -3343,8 +3808,27 @@ bool WasmTagObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   if (!ParseValTypes(cx, paramsVal, params)) {
     return false;
   }
+  if (params.length() > MaxParams) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_EXN_TAG_PARAMS);
+    return false;
+  }
+
+  RefPtr<TypeContext> types = js_new<TypeContext>();
+  if (!types) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+  const TypeDef* tagTypeDef =
+      types->addType(FuncType(std::move(params), ValTypeVector()));
+  if (!tagTypeDef) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
   wasm::MutableTagType tagType = js_new<wasm::TagType>();
-  if (!tagType || !tagType->initialize(std::move(params))) {
+  if (!tagType || !tagType->initialize(tagTypeDef)) {
+    ReportOutOfMemory(cx);
     return false;
   }
 
@@ -3423,24 +3907,12 @@ const wasm::ValTypeVector& WasmTagObject::valueTypes() const {
   return tagType()->argTypes();
 };
 
-wasm::ResultType WasmTagObject::resultType() const {
-  return wasm::ResultType::Vector(valueTypes());
-}
-
 // ============================================================================
 // WebAssembly.Exception class and methods
 
 const JSClassOps WasmExceptionObject::classOps_ = {
-    nullptr,                        // addProperty
-    nullptr,                        // delProperty
-    nullptr,                        // enumerate
-    nullptr,                        // newEnumerate
-    nullptr,                        // resolve
-    nullptr,                        // mayResolve
-    WasmExceptionObject::finalize,  // finalize
-    nullptr,                        // call
-    nullptr,                        // construct
-    WasmExceptionObject::trace,     // trace
+    .finalize = WasmExceptionObject::finalize,
+    .trace = WasmExceptionObject::trace,
 };
 
 const JSClass WasmExceptionObject::class_ = {
@@ -3486,14 +3958,14 @@ void WasmExceptionObject::trace(JSTracer* trc, JSObject* obj) {
 
   wasm::SharedTagType tag = exnObj.tagType();
   const wasm::ValTypeVector& params = tag->argTypes();
-  const wasm::TagOffsetVector& offsets = tag->argOffsets();
+  const wasm::TagOffsetVector& offsets = tag->exceptionArgOffsets();
   uint8_t* typedMem = exnObj.typedMem();
   for (size_t i = 0; i < params.length(); i++) {
     ValType paramType = params[i];
     if (paramType.isRefRepr()) {
       GCPtr<wasm::AnyRef>* paramPtr =
           reinterpret_cast<GCPtr<AnyRef>*>(typedMem + offsets[i]);
-      TraceNullableEdge(trc, paramPtr, "wasm exception param");
+      TraceEdge(trc, paramPtr, "wasm exception param");
     }
   }
 }
@@ -3550,6 +4022,14 @@ bool WasmExceptionObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   }
   Rooted<WasmTagObject*> exnTag(cx, &args[0].toObject().as<WasmTagObject>());
 
+  // Per spec, WebAssembly.Exception can't be constructed with
+  // WebAssembly.JSTag.
+  if (exnTag->tagType() == sWrappedJSValueTagType) {
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_WASM_BAD_JSTAG_WRAP);
+    return false;
+  }
+
   if (!args.get(1).isObject()) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_BAD_EXN_PAYLOAD);
@@ -3569,7 +4049,10 @@ bool WasmExceptionObject::construct(JSContext* cx, unsigned argc, Value* vp) {
 
   // Trace the stack if requested
   RootedObject stack(cx);
-  if (options.traceStack && !CaptureStack(cx, &stack)) {
+  bool captureStack =
+      options.traceStack || JS::Prefs::wasm_exception_force_stack_trace();
+  if (captureStack && !CaptureStack(cx, &stack)) {
+    ReportOutOfMemory(cx);
     return false;
   }
 
@@ -3588,7 +4071,7 @@ bool WasmExceptionObject::construct(JSContext* cx, unsigned argc, Value* vp) {
 
   wasm::SharedTagType tagType = exnObj->tagType();
   const wasm::ValTypeVector& params = tagType->argTypes();
-  const wasm::TagOffsetVector& offsets = tagType->argOffsets();
+  const wasm::TagOffsetVector& offsets = tagType->exceptionArgOffsets();
 
   RootedValue nextArg(cx);
   for (size_t i = 0; i < params.length(); i++) {
@@ -3759,7 +4242,7 @@ bool WasmExceptionObject::getArgImpl(JSContext* cx, const CallArgs& args) {
     return false;
   }
 
-  uint32_t offset = exnTag->tagType()->argOffsets()[index];
+  uint32_t offset = exnTag->tagType()->exceptionArgOffsets()[index];
   RootedValue result(cx);
   if (!exnObj->loadArg(cx, offset, params[index], &result)) {
     return false;
@@ -3819,6 +4302,10 @@ bool WasmExceptionObject::loadArg(JSContext* cx, size_t offset,
 
 bool WasmExceptionObject::initArg(JSContext* cx, size_t offset,
                                   wasm::ValType type, HandleValue value) {
+  // We use writeToTenuredHeapLocation below as WasmExceptionObject is always
+  // tenured.
+  MOZ_ASSERT(isTenured());
+
   if (!type.isExposable()) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                              JSMSG_WASM_BAD_VAL_TYPE);
@@ -3828,22 +4315,23 @@ bool WasmExceptionObject::initArg(JSContext* cx, size_t offset,
   // Avoid rooting hazard of `this` being live across `fromJSValue`
   // which may GC.
   uint8_t* dest = typedMem() + offset;
+
   RootedVal val(cx);
   if (!Val::fromJSValue(cx, type, value, &val)) {
     return false;
   }
-  val.get().writeToHeapLocation(dest);
+  val.get().writeToTenuredHeapLocation(dest);
   return true;
 }
 
 void WasmExceptionObject::initRefArg(size_t offset, wasm::AnyRef ref) {
   uint8_t* dest = typedMem() + offset;
-  *((GCPtr<AnyRef>*)dest) = ref;
+  BarrieredInit(this, dest, ref);
 }
 
 wasm::AnyRef WasmExceptionObject::loadRefArg(size_t offset) const {
   uint8_t* src = typedMem() + offset;
-  return *((GCPtr<AnyRef>*)src);
+  return *(AnyRef*)src;
 }
 
 const JSFunctionSpec WasmExceptionObject::methods[] = {
@@ -3866,14 +4354,7 @@ WasmTagObject& WasmExceptionObject::tag() const {
 
 // ============================================================================
 // WebAssembly.Function and methods
-#ifdef ENABLE_WASM_TYPE_REFLECTIONS
-static JSObject* CreateWasmFunctionPrototype(JSContext* cx, JSProtoKey key) {
-  // WasmFunction's prototype should inherit from JSFunction's prototype.
-  RootedObject jsProto(cx, &cx->global()->getFunctionPrototype());
-  return GlobalObject::createBlankPrototypeInheriting(cx, &PlainObject::class_,
-                                                      jsProto);
-}
-
+#if defined(ENABLE_WASM_TYPE_REFLECTIONS) || defined(ENABLE_WASM_JSPI)
 [[nodiscard]] static bool IsWasmFunction(HandleValue v) {
   if (!v.isObject()) {
     return false;
@@ -3883,13 +4364,19 @@ static JSObject* CreateWasmFunctionPrototype(JSContext* cx, JSProtoKey key) {
   }
   return v.toObject().as<JSFunction>().isWasm();
 }
+#endif  // ENABLE_WASM_TYPE_REFLECTIONS || ENABLE_WASM_JSPI
+
+#ifdef ENABLE_WASM_TYPE_REFLECTIONS
+static JSObject* CreateWasmFunctionPrototype(JSContext* cx, JSProtoKey key) {
+  // WasmFunction's prototype should inherit from JSFunction's prototype.
+  RootedObject jsProto(cx, &cx->global()->getFunctionPrototype());
+  return GlobalObject::createBlankPrototypeInheriting(cx, &PlainObject::class_,
+                                                      jsProto);
+}
 
 bool WasmFunctionTypeImpl(JSContext* cx, const CallArgs& args) {
   RootedFunction function(cx, &args.thisv().toObject().as<JSFunction>());
-  Rooted<WasmInstanceObject*> instanceObj(
-      cx, ExportedFunctionToInstanceObject(function));
-  const TypeDef& funcTypeDef = ExportedFunctionToTypeDef(function);
-  const FuncType& funcType = funcTypeDef.funcType();
+  const FuncType& funcType = function->wasmTypeDef()->funcType();
   RootedObject typeObj(cx, FuncTypeToObject(cx, funcType));
   if (!typeObj) {
     return false;
@@ -3908,17 +4395,14 @@ static JSFunction* WasmFunctionCreate(JSContext* cx, HandleObject func,
                                       wasm::ValTypeVector&& results,
                                       HandleObject proto) {
   MOZ_ASSERT(IsCallableNonCCW(ObjectValue(*func)));
-  MOZ_RELEASE_ASSERT(!func->is<JSFunction>() ||
-                     !IsWasmExportedFunction(&func->as<JSFunction>()));
 
   // We want to import the function to a wasm module and then export it again so
   // that it behaves exactly like a normal wasm function and can be used like
   // one in wasm tables. We synthesize such a module below, instantiate it, and
   // then return the exported function as the result.
   FeatureOptions options;
-  ScriptedCaller scriptedCaller;
   SharedCompileArgs compileArgs =
-      CompileArgs::buildAndReport(cx, std::move(scriptedCaller), options);
+      CompileArgs::buildAndReport(cx, ScriptedCaller::selfHosted(cx), options);
   if (!compileArgs) {
     return nullptr;
   }
@@ -3943,6 +4427,7 @@ static JSFunction* WasmFunctionCreate(JSContext* cx, HandleObject func,
     return nullptr;
   }
   codeMeta->numFuncImports = 1;
+  codeMeta->funcImportsAreJS = true;
 
   // Add an (export (func 0))
   codeMeta->funcs[0].declareFuncExported(/* eager */ true,
@@ -3969,11 +4454,7 @@ static JSFunction* WasmFunctionCreate(JSContext* cx, HandleObject func,
   if (!mg.finishFuncDefs()) {
     return nullptr;
   }
-  SharedBytes shareableBytes = js_new<ShareableBytes>();
-  if (!shareableBytes) {
-    return nullptr;
-  }
-  SharedModule module = mg.finishModule(*shareableBytes, moduleMeta,
+  SharedModule module = mg.finishModule(BytecodeBufferOrSource(), *moduleMeta,
                                         /*maybeCompleteTier2Listener=*/nullptr);
   if (!module) {
     return nullptr;
@@ -4027,6 +4508,11 @@ bool WasmFunctionConstruct(JSContext* cx, unsigned argc, Value* vp) {
   if (!ParseValTypes(cx, parametersVal, params)) {
     return false;
   }
+  if (params.length() > MaxParams) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_FUNCTION_TYPE, "parameters");
+    return false;
+  }
 
   RootedValue resultsVal(cx);
   if (!JS_GetProperty(cx, typeObj, "results", &resultsVal)) {
@@ -4037,72 +4523,17 @@ bool WasmFunctionConstruct(JSContext* cx, unsigned argc, Value* vp) {
   if (!ParseValTypes(cx, resultsVal, results)) {
     return false;
   }
-
-#  ifdef ENABLE_WASM_JSPI
-  // Check suspeding and promising
-  SuspenderArgPosition suspending = SuspenderArgPosition::None;
-  SuspenderArgPosition promising = SuspenderArgPosition::None;
-  if (wasm::JSPromiseIntegrationAvailable(cx) && args.length() > 2 &&
-      args[2].isObject()) {
-    RootedObject usageObj(cx, &args[2].toObject());
-    RootedValue val(cx);
-    if (!JS_GetProperty(cx, usageObj, "suspending", &val)) {
-      return false;
-    }
-    if (!ParseSuspendingPromisingString(cx, val, suspending)) {
-      return false;
-    }
-    if (!JS_GetProperty(cx, usageObj, "promising", &val)) {
-      return false;
-    }
-    if (!ParseSuspendingPromisingString(cx, val, promising)) {
-      return false;
-    }
+  if (results.length() > MaxResults) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_FUNCTION_TYPE, "results");
+    return false;
   }
-
-  if (suspending > SuspenderArgPosition::None) {
-    if (!IsCallableNonCCW(args[1])) {
-      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                               JSMSG_WASM_BAD_FUNCTION_VALUE);
-      return false;
-    }
-
-    RootedObject func(cx, &args[1].toObject());
-    RootedFunction suspend(
-        cx, WasmSuspendingFunctionCreate(cx, func, std::move(params),
-                                         std::move(results), suspending));
-    if (!suspend) {
-      return false;
-    }
-    args.rval().setObject(*suspend);
-
-    return true;
-  }
-  if (promising > SuspenderArgPosition::None) {
-    if (!IsWasmFunction(args[1])) {
-      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                               JSMSG_WASM_BAD_FUNCTION_VALUE);
-      return false;
-    }
-
-    RootedObject func(cx, &args[1].toObject());
-    RootedFunction promise(
-        cx, WasmPromisingFunctionCreate(cx, func, std::move(params),
-                                        std::move(results), promising));
-    if (!promise) {
-      return false;
-    }
-    args.rval().setObject(*promise);
-
-    return true;
-  }
-#  endif  // ENABLE_WASM_JSPI
 
   // Get the target function
 
-  if (!IsCallableNonCCW(args[1]) || IsWasmFunction(args[1])) {
+  if (!IsCallableNonCCW(args[1])) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_FUNCTION_VALUE);
+                             JSMSG_WASM_BAD_FUNCTION_VALUE, "second");
     return false;
   }
   RootedObject func(cx, &args[1].toObject());
@@ -4196,46 +4627,20 @@ static bool Reject(JSContext* cx, const CompileArgs& args,
   }
 
   RootedObject stack(cx, promise->allocationSite());
-  RootedString fileName(cx);
-  if (const char* filename = args.scriptedCaller.filename.get()) {
-    fileName =
-        JS_NewStringCopyUTF8N(cx, JS::UTF8Chars(filename, strlen(filename)));
-  } else {
-    fileName = JS_GetEmptyString(cx);
-  }
-  if (!fileName) {
-    return false;
-  }
-
-  uint32_t line = args.scriptedCaller.line;
-
-  // Ideally we'd report a JSMSG_WASM_COMPILE_ERROR here, but there's no easy
-  // way to create an ErrorObject for an arbitrary error code with multiple
-  // replacements.
-  UniqueChars str(JS_smprintf("wasm validation error: %s", error.get()));
-  if (!str) {
-    return false;
-  }
-
-  size_t len = strlen(str.get());
-  RootedString message(cx, NewStringCopyN<CanGC>(cx, str.get(), len));
-  if (!message) {
-    return false;
-  }
-
-  // There's no error |cause| available here.
-  auto cause = JS::NothingHandleValue;
-
-  RootedObject errorObj(
-      cx, ErrorObject::create(cx, JSEXN_WASMCOMPILEERROR, stack, fileName, 0,
-                              line, JS::ColumnNumberOneOrigin(), nullptr,
-                              message, cause));
-  if (!errorObj) {
+  RootedObject errorObj(cx);
+  if (!CreateCompileError(cx, args.scriptedCaller, stack, error.get(),
+                          &errorObj)) {
     return false;
   }
 
   RootedValue rejectionValue(cx, ObjectValue(*errorObj));
   return PromiseObject::reject(cx, promise, rejectionValue);
+}
+
+static bool RejectWithOutOfMemory(JSContext* cx,
+                                  Handle<PromiseObject*> promise) {
+  ReportOutOfMemory(cx);
+  return RejectWithPendingException(cx, promise);
 }
 
 static void LogAsync(JSContext* cx, const char* funcName,
@@ -4316,14 +4721,14 @@ static bool AsyncInstantiate(JSContext* cx, const Module& module,
                              Handle<PromiseObject*> promise) {
   auto task = js::MakeUnique<AsyncInstantiateTask>(cx, module, ret, promise);
   if (!task || !task->init(cx)) {
-    return false;
+    return RejectWithOutOfMemory(cx, promise);
   }
 
   if (!GetImports(cx, module, importObj, &task->imports())) {
     return RejectWithPendingException(cx, promise);
   }
 
-  task.release()->dispatchResolveAndDestroy();
+  OffThreadPromiseTask::DispatchResolveAndDestroy(std::move(task));
   return true;
 }
 
@@ -4345,7 +4750,7 @@ static bool ResolveCompile(JSContext* cx, const Module& module,
 }
 
 struct CompileBufferTask : PromiseHelperTask {
-  MutableBytes bytecode;
+  BytecodeBuffer bytecode;
   SharedCompileArgs compileArgs;
   UniqueChars error;
   UniqueCharsVector warnings;
@@ -4362,7 +4767,8 @@ struct CompileBufferTask : PromiseHelperTask {
   CompileBufferTask(JSContext* cx, Handle<PromiseObject*> promise)
       : PromiseHelperTask(cx, promise), instantiate(false) {}
 
-  bool init(JSContext* cx, FeatureOptions options, const char* introducer) {
+  bool init(JSContext* cx, const FeatureOptions& options,
+            const char* introducer) {
     compileArgs = InitCompileArgs(cx, options, introducer);
     if (!compileArgs) {
       return false;
@@ -4371,7 +4777,9 @@ struct CompileBufferTask : PromiseHelperTask {
   }
 
   void execute() override {
-    module = CompileBuffer(*compileArgs, *bytecode, &error, &warnings, nullptr);
+    module =
+        CompileBuffer(*compileArgs, BytecodeBufferOrSource(std::move(bytecode)),
+                      &error, &warnings, nullptr);
   }
 
   bool resolve(JSContext* cx, Handle<PromiseObject*> promise) override {
@@ -4408,22 +4816,6 @@ static bool EnsurePromiseSupport(JSContext* cx) {
   return true;
 }
 
-static bool GetBufferSource(JSContext* cx, const CallArgs& callArgs,
-                            const char* name, MutableBytes* bytecode) {
-  if (!callArgs.requireAtLeast(cx, name, 1)) {
-    return false;
-  }
-
-  if (!callArgs[0].isObject()) {
-    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_BUF_ARG);
-    return false;
-  }
-
-  return GetBufferSource(cx, &callArgs[0].toObject(), JSMSG_WASM_BAD_BUF_ARG,
-                         bytecode);
-}
-
 static bool WebAssembly_compile(JSContext* cx, unsigned argc, Value* vp) {
   if (!EnsurePromiseSupport(cx)) {
     return false;
@@ -4438,7 +4830,16 @@ static bool WebAssembly_compile(JSContext* cx, unsigned argc, Value* vp) {
 
   CallArgs callArgs = CallArgsFromVp(argc, vp);
 
-  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+  JS::RootedVector<JSString*> parameterStrings(cx);
+  JS::RootedVector<Value> parameterArgs(cx);
+  bool canCompileStrings = false;
+  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                   JS::CompilationType::Undefined,
+                                   parameterStrings, nullptr, parameterArgs,
+                                   NullHandleValue, &canCompileStrings)) {
+    return RejectWithPendingException(cx, promise, callArgs);
+  }
+  if (!canCompileStrings) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_CSP_BLOCKED_WASM, "WebAssembly.compile");
     return RejectWithPendingException(cx, promise, callArgs);
@@ -4449,13 +4850,25 @@ static bool WebAssembly_compile(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  if (!GetBufferSource(cx, callArgs, "WebAssembly.compile", &task->bytecode)) {
+  if (!callArgs.requireAtLeast(cx, "WebAssembly.compile", 1)) {
     return RejectWithPendingException(cx, promise, callArgs);
   }
 
   FeatureOptions options;
   if (!options.init(cx, callArgs.get(1))) {
-    return false;
+    return RejectWithPendingException(cx, promise, callArgs);
+  }
+
+  if (!callArgs[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_BUF_ARG);
+    return RejectWithPendingException(cx, promise, callArgs);
+  }
+
+  Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
+  if (!GetBytecodeBuffer(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG,
+                         &task->bytecode)) {
+    return RejectWithPendingException(cx, promise, callArgs);
   }
 
   if (!task->init(cx, options, "WebAssembly.compile")) {
@@ -4516,13 +4929,24 @@ static bool WebAssembly_instantiate(JSContext* cx, unsigned argc, Value* vp) {
     return RejectWithPendingException(cx, promise, callArgs);
   }
 
-  const Module* module;
-  if (IsModuleObject(firstArg, &module)) {
-    if (!AsyncInstantiate(cx, *module, importObj, Ret::Instance, promise)) {
+  Rooted<WasmModuleObject*> moduleObj(
+      cx, firstArg->maybeUnwrapIf<WasmModuleObject>());
+  if (moduleObj) {
+    if (!AsyncInstantiate(cx, moduleObj->module(), importObj, Ret::Instance,
+                          promise)) {
       return false;
     }
   } else {
-    if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+    JS::RootedVector<JSString*> parameterStrings(cx);
+    JS::RootedVector<Value> parameterArgs(cx);
+    bool canCompileStrings = false;
+    if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                     JS::CompilationType::Undefined,
+                                     parameterStrings, nullptr, parameterArgs,
+                                     NullHandleValue, &canCompileStrings)) {
+      return RejectWithPendingException(cx, promise, callArgs);
+    }
+    if (!canCompileStrings) {
       JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                                 JSMSG_CSP_BLOCKED_WASM,
                                 "WebAssembly.instantiate");
@@ -4539,8 +4963,8 @@ static bool WebAssembly_instantiate(JSContext* cx, unsigned argc, Value* vp) {
       return false;
     }
 
-    if (!GetBufferSource(cx, firstArg, JSMSG_WASM_BAD_BUF_MOD_ARG,
-                         &task->bytecode)) {
+    if (!GetBytecodeBuffer(cx, firstArg, JSMSG_WASM_BAD_BUF_MOD_ARG,
+                           &task->bytecode)) {
       return RejectWithPendingException(cx, promise, callArgs);
     }
 
@@ -4556,8 +4980,7 @@ static bool WebAssembly_instantiate(JSContext* cx, unsigned argc, Value* vp) {
 static bool WebAssembly_validate(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs callArgs = CallArgsFromVp(argc, vp);
 
-  MutableBytes bytecode;
-  if (!GetBufferSource(cx, callArgs, "WebAssembly.validate", &bytecode)) {
+  if (!callArgs.requireAtLeast(cx, "WebAssembly.validate", 1)) {
     return false;
   }
 
@@ -4566,8 +4989,28 @@ static bool WebAssembly_validate(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
+  if (!callArgs[0].isObject()) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_BUF_ARG);
+    return false;
+  }
+
   UniqueChars error;
-  bool validated = Validate(cx, *bytecode, options, &error);
+  bool validated;
+  {
+    // Limit the lifetime of the bytecode to just validation and ensure we pin
+    // the buffer. No user code should be running here anyways, so this is very
+    // conservative.
+    BytecodeBufferOrSource bytecode;
+    Rooted<JSObject*> sourceObj(cx, &callArgs[0].toObject());
+    if (!GetBytecodeBufferOrSource(cx, sourceObj, JSMSG_WASM_BAD_BUF_ARG,
+                                   &bytecode)) {
+      return false;
+    }
+    AutoPinBufferSourceLength pin(cx, sourceObj.get());
+
+    validated = Validate(cx, bytecode.source(), options, &error);
+  }
 
   // If the reason for validation failure was OOM (signalled by null error
   // message), report out-of-memory so that validate's return is always
@@ -4637,18 +5080,18 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
   const MutableCompileArgs compileArgs_;
 
   // Immutable after Env state:
-  Bytes envBytes_;
-  SectionRange codeSection_;
+  MutableBytes envBytes_;
+  BytecodeRange codeSection_;
 
   // The code section vector is resized once during the Env state and filled
   // in chunk by chunk during the Code state, updating the end-pointer after
   // each chunk:
-  Bytes codeBytes_;
+  MutableBytes codeBytes_;
   uint8_t* codeBytesEnd_;
   ExclusiveBytesPtr exclusiveCodeBytesEnd_;
 
   // Immutable after Tail state:
-  Bytes tailBytes_;
+  MutableBytes tailBytes_;
   ExclusiveStreamEndData exclusiveStreamEnd_;
 
   // Written once before Closed state and read in Closed state on main thread:
@@ -4720,29 +5163,29 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
   bool consumeChunk(const uint8_t* begin, size_t length) override {
     switch (streamState_.lock().get()) {
       case Env: {
-        if (!envBytes_.append(begin, length)) {
+        if (!envBytes_->append(begin, length)) {
           return rejectAndDestroyBeforeHelperThreadStarted(StreamOOMCode);
         }
 
-        if (!StartsCodeSection(envBytes_.begin(), envBytes_.end(),
+        if (!StartsCodeSection(envBytes_->begin(), envBytes_->end(),
                                &codeSection_)) {
           return true;
         }
 
-        uint32_t extraBytes = envBytes_.length() - codeSection_.start;
+        uint32_t extraBytes = envBytes_->length() - codeSection_.start;
         if (extraBytes) {
-          envBytes_.shrinkTo(codeSection_.start);
+          envBytes_->shrinkTo(codeSection_.start);
         }
 
-        if (codeSection_.size > MaxCodeSectionBytes) {
+        if (codeSection_.size() > MaxCodeSectionBytes) {
           return rejectAndDestroyBeforeHelperThreadStarted(StreamOOMCode);
         }
 
-        if (!codeBytes_.resize(codeSection_.size)) {
+        if (!codeBytes_->vector.resize(codeSection_.size())) {
           return rejectAndDestroyBeforeHelperThreadStarted(StreamOOMCode);
         }
 
-        codeBytesEnd_ = codeBytes_.begin();
+        codeBytesEnd_ = codeBytes_->begin();
         exclusiveCodeBytesEnd_.lock().get() = codeBytesEnd_;
 
         if (!StartOffThreadPromiseHelperTask(this)) {
@@ -4762,7 +5205,7 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
       }
       case Code: {
         size_t copyLength =
-            std::min<size_t>(length, codeBytes_.end() - codeBytesEnd_);
+            std::min<size_t>(length, codeBytes_->end() - codeBytesEnd_);
         memcpy(codeBytesEnd_, begin, copyLength);
         codeBytesEnd_ += copyLength;
 
@@ -4772,7 +5215,7 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
           codeStreamEnd.notify_one();
         }
 
-        if (codeBytesEnd_ != codeBytes_.end()) {
+        if (codeBytesEnd_ != codeBytes_->end()) {
           return true;
         }
 
@@ -4785,7 +5228,7 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
         return true;
       }
       case Tail: {
-        if (!tailBytes_.append(begin, length)) {
+        if (!tailBytes_->append(begin, length)) {
           return rejectAndDestroyAfterHelperThreadStarted(StreamOOMCode);
         }
 
@@ -4801,24 +5244,36 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
       JS::OptimizedEncodingListener* completeTier2Listener) override {
     switch (streamState_.lock().get()) {
       case Env: {
-        SharedBytes bytecode = js_new<ShareableBytes>(std::move(envBytes_));
-        if (!bytecode) {
-          rejectAndDestroyBeforeHelperThreadStarted(StreamOOMCode);
-          return;
-        }
-        module_ = CompileBuffer(*compileArgs_, *bytecode, &compileError_,
-                                &warnings_, nullptr);
+        BytecodeBuffer bytecode(envBytes_, nullptr, nullptr);
+        module_ = CompileBuffer(*compileArgs_,
+                                BytecodeBufferOrSource(std::move(bytecode)),
+                                &compileError_, &warnings_, nullptr);
         setClosedAndDestroyBeforeHelperThreadStarted();
         return;
       }
-      case Code:
+      case Code: {
+        // Stream ended mid code section: declared code section size was
+        // larger than the bytes actually delivered. The helper thread is
+        // blocked in StreamingDecoder::waitForBytes()
+        // Report the error and unlock the thread.
+        // The order of the following operations is critical:
+        // - First set cancelled to true
+        // - Then wake up the helper thread waiting for bytes. This thread will
+        //   see the cancelled flag and returns. If we inverted this we could
+        //   wake up the thread and it would go back to sleep.
+        streamFailed_ = true;
+        exclusiveCodeBytesEnd_.lock().notify_one();
+        exclusiveStreamEnd_.lock().notify_one();
+        setClosedAndDestroyAfterHelperThreadStarted();
+        return;
+      }
       case Tail:
         // Unlock exclusiveStreamEnd_ before locking streamState_.
         {
           auto streamEnd = exclusiveStreamEnd_.lock();
           MOZ_ASSERT(!streamEnd->reached);
           streamEnd->reached = true;
-          streamEnd->tailBytes = &tailBytes_;
+          streamEnd->tailBytes = tailBytes_;
           streamEnd->completeTier2Listener = completeTier2Listener;
           streamEnd.notify_one();
         }
@@ -4854,7 +5309,7 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
   // Called on a helper thread:
 
   void execute() override {
-    module_ = CompileStreaming(*compileArgs_, envBytes_, codeBytes_,
+    module_ = CompileStreaming(*compileArgs_, *envBytes_, *codeBytes_,
                                exclusiveCodeBytesEnd_, exclusiveStreamEnd_,
                                streamFailed_, &compileError_, &warnings_);
 
@@ -4906,6 +5361,25 @@ class CompileStreamTask : public PromiseHelperTask, public JS::StreamConsumer {
         exclusiveStreamEnd_(mutexid::WasmStreamEnd),
         streamFailed_(false) {
     MOZ_ASSERT_IF(importObj_, instantiate_);
+  }
+
+  [[nodiscard]] bool init(JSContext* cx) {
+    envBytes_ = cx->new_<ShareableBytes>();
+    if (!envBytes_) {
+      return false;
+    }
+
+    codeBytes_ = js_new<ShareableBytes>();
+    if (!codeBytes_) {
+      return false;
+    }
+
+    tailBytes_ = js_new<ShareableBytes>();
+    if (!tailBytes_) {
+      return false;
+    }
+
+    return PromiseHelperTask::init(cx);
   }
 };
 
@@ -4964,16 +5438,7 @@ class ResolveResponseClosure : public NativeObject {
 };
 
 const JSClassOps ResolveResponseClosure::classOps_ = {
-    nullptr,                           // addProperty
-    nullptr,                           // delProperty
-    nullptr,                           // enumerate
-    nullptr,                           // newEnumerate
-    nullptr,                           // resolve
-    nullptr,                           // mayResolve
-    ResolveResponseClosure::finalize,  // finalize
-    nullptr,                           // call
-    nullptr,                           // construct
-    nullptr,                           // trace
+    .finalize = ResolveResponseClosure::finalize,
 };
 
 const JSClass ResolveResponseClosure::class_ = {
@@ -5012,7 +5477,7 @@ static bool ResolveResponse_OnFulfilled(JSContext* cx, unsigned argc,
   auto task = cx->make_unique<CompileStreamTask>(cx, promise, compileArgs,
                                                  instantiate, importObj);
   if (!task || !task->init(cx)) {
-    return false;
+    return RejectWithOutOfMemory(cx, promise);
   }
 
   if (!callArgs.get(0).isObject()) {
@@ -5115,7 +5580,16 @@ static bool WebAssembly_compileStreaming(JSContext* cx, unsigned argc,
 
   CallArgs callArgs = CallArgsFromVp(argc, vp);
 
-  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+  JS::RootedVector<JSString*> parameterStrings(cx);
+  JS::RootedVector<Value> parameterArgs(cx);
+  bool canCompileStrings = false;
+  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                   JS::CompilationType::Undefined,
+                                   parameterStrings, nullptr, parameterArgs,
+                                   NullHandleValue, &canCompileStrings)) {
+    return RejectWithPendingException(cx, resultPromise, callArgs);
+  }
+  if (!canCompileStrings) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_CSP_BLOCKED_WASM,
                               "WebAssembly.compileStreaming");
@@ -5148,7 +5622,16 @@ static bool WebAssembly_instantiateStreaming(JSContext* cx, unsigned argc,
 
   CallArgs callArgs = CallArgsFromVp(argc, vp);
 
-  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+  JS::RootedVector<JSString*> parameterStrings(cx);
+  JS::RootedVector<Value> parameterArgs(cx);
+  bool canCompileStrings = false;
+  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                   JS::CompilationType::Undefined,
+                                   parameterStrings, nullptr, parameterArgs,
+                                   NullHandleValue, &canCompileStrings)) {
+    return RejectWithPendingException(cx, resultPromise, callArgs);
+  }
+  if (!canCompileStrings) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_CSP_BLOCKED_WASM,
                               "WebAssembly.instantiateStreaming");
@@ -5174,8 +5657,10 @@ static bool WebAssembly_instantiateStreaming(JSContext* cx, unsigned argc,
 }
 
 #ifdef ENABLE_WASM_JSPI
+static constexpr char WasmSuspendingName[] = "Suspending";
+
 const ClassSpec WasmSuspendingObject::classSpec_ = {
-    GenericCreateConstructor<construct, 1, gc::AllocKind::FUNCTION>,
+    CreateWasmConstructor<WasmSuspendingObject, WasmSuspendingName>,
     GenericCreatePrototype<WasmSuspendingObject>,
     nullptr,
     nullptr,
@@ -5198,13 +5683,17 @@ const JSClass& WasmSuspendingObject::protoClass_ = PlainObject::class_;
 bool WasmSuspendingObject::construct(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
+  if (!ThrowIfNotConstructing(cx, args, "WebAssembly.Suspending")) {
+    return false;
+  }
+
   if (!args.requireAtLeast(cx, "WebAssembly.Suspending", 1)) {
     return false;
   }
 
   if (!IsCallableNonCCW(args[0])) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_FUNCTION_VALUE);
+                             JSMSG_WASM_BAD_FUNCTION_VALUE, "first");
     return false;
   }
 
@@ -5222,21 +5711,23 @@ bool WasmSuspendingObject::construct(JSContext* cx, unsigned argc, Value* vp) {
 static bool WebAssembly_promising(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
+  if (!JSPromiseIntegrationAvailable(cx)) {
+    JS_ReportErrorASCII(cx, "JS-PI is not enabled");
+    return false;
+  }
+
   if (!args.requireAtLeast(cx, "WebAssembly.promising", 1)) {
     return false;
   }
 
   if (!IsWasmFunction(args[0])) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_FUNCTION_VALUE);
+                             JSMSG_WASM_BAD_FUNCTION_VALUE, "first");
     return false;
   }
 
   RootedObject func(cx, &args[0].toObject());
-  RootedFunction promise(
-      cx, WasmPromisingFunctionCreate(cx, func, wasm::ValTypeVector(),
-                                      wasm::ValTypeVector(),
-                                      SuspenderArgPosition::None));
+  RootedFunction promise(cx, WasmPromisingFunctionCreate(cx, func));
   if (!promise) {
     return false;
   }
@@ -5269,7 +5760,7 @@ static bool WebAssembly_mozIntGemm(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
   Rooted<WasmModuleObject*> module(cx);
-  if (!wasm::CompileBuiltinModule(cx, wasm::BuiltinModuleId::IntGemm,
+  if (!wasm::CompileBuiltinModule(cx, wasm::BuiltinModuleId::IntGemm, nullptr,
                                   &module)) {
     ReportOutOfMemory(cx);
     return false;
@@ -5386,18 +5877,17 @@ static bool WebAssemblyClassFinish(JSContext* cx, HandleObject object,
 
   wasm->setWrappedJSValueTag(wrappedJSValueTagObject);
 
-  if (ExnRefAvailable(cx)) {
-    RootedId jsTagName(cx, NameToId(cx->names().jsTag));
-    RootedValue jsTagValue(cx, ObjectValue(*wrappedJSValueTagObject));
-    if (!DefineDataProperty(cx, wasm, jsTagName, jsTagValue,
-                            JSPROP_READONLY | JSPROP_ENUMERATE)) {
-      return false;
-    }
+  RootedId jsTagName(cx, NameToId(cx->names().jsTag));
+  RootedValue jsTagValue(cx, ObjectValue(*wrappedJSValueTagObject));
+  if (!DefineDataProperty(cx, wasm, jsTagName, jsTagValue,
+                          JSPROP_READONLY | JSPROP_ENUMERATE)) {
+    return false;
   }
 
 #ifdef ENABLE_WASM_JSPI
   constexpr NameAndProtoKey jspiEntries[] = {
       {"Suspending", JSProto_WasmSuspending},
+      {"SuspendError", GetExceptionProtoKey(JSEXN_WASMSUSPENDERROR)},
   };
   if (JSPromiseIntegrationAvailable(cx)) {
     if (!JS_DefineFunctions(cx, wasm, WebAssembly_jspi_methods)) {
@@ -5408,6 +5898,15 @@ static bool WebAssemblyClassFinish(JSContext* cx, HandleObject object,
         return false;
       }
     }
+
+    SharedTagType jsPromiseTagType(sJSPromiseTagType);
+    WasmTagObject* jsPromiseTagObject =
+        WasmTagObject::create(cx, jsPromiseTagType, tagProto);
+    if (!jsPromiseTagObject) {
+      return false;
+    }
+
+    wasm->setJSPromiseTag(jsPromiseTagObject);
   }
 #endif
 

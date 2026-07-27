@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,14 +7,12 @@
 #ifndef mozilla_dom_ScriptSettings_h
 #define mozilla_dom_ScriptSettings_h
 
-#include "xpcpublic.h"
-
-#include "mozilla/dom/JSExecutionManager.h"
-#include "mozilla/Maybe.h"
-
-#include "jsapi.h"
 #include "js/Exception.h"
 #include "js/Warnings.h"  // JS::WarningReporter
+#include "jsapi.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/dom/JSExecutionManager.h"
+#include "xpcpublic.h"
 
 class JSObject;
 class nsIGlobalObject;
@@ -35,6 +31,7 @@ namespace mozilla {
 namespace dom {
 
 class Document;
+class WebTaskSchedulingState;
 
 /*
  * Per thread setup/teardown routines. Init and Destroy should be invoked
@@ -94,6 +91,8 @@ nsIGlobalObject* GetIncumbentGlobal();
 
 // Returns the global associated with the current compartment. This may be null.
 nsIGlobalObject* GetCurrentGlobal();
+
+WebTaskSchedulingState* GetWebTaskSchedulingState();
 
 // JS-implemented WebIDL presents an interesting situation with respect to the
 // subject principal. A regular C++-implemented API can simply examine the

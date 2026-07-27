@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Igalia, S.L. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -19,8 +18,8 @@ features: [TypedArray, change-array-by-copy]
 includes: [testTypedArray.js, compareArray.js]
 ---*/
 
-testWithTypedArrayConstructors(TA => {
-  var arr = new TA([0, 4, 16]);
+testWithTypedArrayConstructors((TA, makeCtorArg) => {
+  var arr = new TA(makeCtorArg([0, 4, 16]));
 
   assert.compareArray(arr.with(1.2, 7), [0, 7, 16]);
   assert.compareArray(arr.with("1", 3), [0, 3, 16]);

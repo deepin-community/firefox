@@ -173,17 +173,19 @@ add_task(async function test_createNiceUniqueFile() {
   testCreateNiceUniqueFile(tempFile, "test(2).txt");
 
   // Double extension.
-  tempFile.leafName = "test.tar.gz";
-  testCreateNiceUniqueFile(tempFile, "test.tar.gz");
-  testCreateNiceUniqueFile(tempFile, "test(1).tar.gz");
-  testCreateNiceUniqueFile(tempFile, "test(2).tar.gz");
+  for (let suffix of ["gz", "lzma", "xz", "zst", "bz2"]) {
+    tempFile.leafName = "test.tar." + suffix;
+    testCreateNiceUniqueFile(tempFile, "test.tar." + suffix);
+    testCreateNiceUniqueFile(tempFile, "test(1).tar." + suffix);
+    testCreateNiceUniqueFile(tempFile, "test(2).tar." + suffix);
+  }
 
   // Test automatic shortening of long file names. We don't know exactly how
   // many characters are removed, because it depends on the name of the folder
   // where the file is located.
   tempFile.leafName = new Array(256).join("T") + ".txt";
   var newFile = DownloadPaths.createNiceUniqueFile(tempFile);
-  Assert.ok(newFile.leafName.length < tempFile.leafName.length);
+  Assert.less(newFile.leafName.length, tempFile.leafName.length);
   Assert.equal(newFile.leafName.slice(-4), ".txt");
 
   // Creating a valid file name from an invalid one is not always possible.

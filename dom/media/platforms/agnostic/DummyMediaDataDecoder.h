@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,9 @@
 #  define DummyMediaDataDecoder_h_
 
 #  include "MediaInfo.h"
-#  include "mozilla/UniquePtr.h"
 #  include "PlatformDecoderModule.h"
 #  include "ReorderQueue.h"
+#  include "mozilla/UniquePtr.h"
 
 namespace mozilla {
 
@@ -26,7 +24,7 @@ DDLoggedTypeDeclNameAndBase(DummyMediaDataDecoder, MediaDataDecoder);
 
 // Decoder that uses a passed in object's Create function to create Null
 // MediaData objects.
-class DummyMediaDataDecoder final
+class DummyMediaDataDecoder
     : public MediaDataDecoder,
       public DecoderDoctorLifeLogger<DummyMediaDataDecoder> {
  public:
@@ -52,12 +50,12 @@ class DummyMediaDataDecoder final
 
   ConversionRequired NeedsConversion() const override;
 
- private:
+ protected:
   ~DummyMediaDataDecoder() = default;
 
   UniquePtr<DummyDataCreator> mCreator;
   const bool mIsH264;
-  const uint32_t mMaxRefFrames;
+  uint32_t mMaxRefFrames;
   ReorderQueue mReorderQueue;
   TrackInfo::TrackType mType;
   nsCString mDescription;

@@ -9,7 +9,7 @@ urlbar-translations-button =
 # not be translated, as it is a reflection of the un-localized BETA icon that is in the
 # panel.
 urlbar-translations-button2 =
-    .tooltiptext = תרגום עמוד זה - Beta
+    .tooltiptext = תרגום דף זה - Beta
 # Note that here "Beta" should not be translated, as it is a reflection of the
 # un-localized BETA icon that is in the panel.
 urlbar-translations-button-intro =
@@ -75,7 +75,7 @@ translations-panel-intro-header = נסו תרגומים פרטיים ב־{ -bran
 translations-panel-intro-description = למען הפרטיות שלך, תרגומים לעולם אינם עוזבים את המכשיר שלך. שפות חדשות ושיפורים בקרוב!
 translations-panel-error-translating = אירעה שגיאה בתרגום. נא לנסות שוב.
 translations-panel-error-load-languages = לא ניתן לטעון שפות
-translations-panel-error-load-languages-hint = נא לבדוק את החיבור שלך לרשת ולנסות שוב.
+translations-panel-error-load-languages-hint = נא לבדוק את החיבור שלך לאינטרנט ולנסות שוב.
 translations-panel-error-load-languages-hint-button =
     .label = ניסיון חוזר
 translations-panel-error-unsupported = התרגום אינו זמין עבור דף זה
@@ -83,6 +83,14 @@ translations-panel-error-dismiss-button =
     .label = הבנתי
 translations-panel-error-change-button =
     .label = שינוי שפת המקור
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = איננו תומכים בתרגומים מ־{ $language } עדיין, עמך הסליחה.
+translations-panel-error-unsupported-hint-unknown-2 = איננו תומכים בתרגומים משפה זו עדיין, עמך הסליחה.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
@@ -126,13 +134,6 @@ translations-manage-description = הורדת שפות לתרגום לא מקוו
 translations-manage-all-language = כל השפות
 translations-manage-download-button = הורדה
 translations-manage-delete-button = מחיקה
-translations-manage-intro = באפשרותך להגדיר את השפה שלך ואת ההעדפות שלך לתרגום האתרים, ולנהל שפות המותקנות עבור תרגום לא מקוון.
-translations-manage-install-description = התקנת שפות לתרגום לא מקוון
-translations-manage-language-install-button =
-    .label = התקנה
-translations-manage-language-install-all-button =
-    .label = התקנת הכל
-    .accesskey = ת
 translations-manage-intro-2 = באפשרותך להגדיר את השפה שלך ואת ההעדפות שלך לתרגום האתרים, ולנהל שפות שהורדו עבור תרגום לא מקוון.
 translations-manage-download-description = הורדת שפות לתרגום לא מקוון
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = הסרת הכל
     .accesskey = ס
-translations-manage-error-install = אירעה שגיאה בהתקנת קובצי השפה. נא לנסות שוב.
 translations-manage-error-download = אירעה שגיאה בהורדת קובצי השפה. נא לנסות שוב.
 translations-manage-error-delete = אירעה שגיאה במחיקת קובצי השפה. נא לנסות שוב.
 translations-manage-error-remove = אירעה שגיאה בהסרת קובצי השפה. נא לנסות שוב.
@@ -180,7 +180,7 @@ translations-settings-close-dialog =
 # Text displayed in the right-click context menu for translating
 # selected text to a yet-to-be-determined language.
 main-context-menu-translate-selection =
-    .label = תרגום החלק הנבחר…
+    .label = תרגום הקטע הנבחר…
     .accesskey = ת
 # Text displayed in the right-click context menu for translating
 # selected text to a target language.
@@ -188,7 +188,7 @@ main-context-menu-translate-selection =
 # Variables:
 #   $language (string) - The localized display name of the target language
 main-context-menu-translate-selection-to-language =
-    .label = תרגום החלק הנבחר ל{ $language }
+    .label = תרגום הקטע הנבחר ל{ $language }
     .accesskey = ת
 # Text displayed in the right-click context menu for translating
 # the text of a hyperlink to a yet-to-be-determined language.
@@ -222,7 +222,7 @@ select-translations-panel-copy-button-copied =
 select-translations-panel-done-button =
     .label = סיום
 select-translations-panel-translate-full-page-button =
-    .label = תרגום כל העמוד
+    .label = תרגום כל הדף
 select-translations-panel-translate-button =
     .label = תרגום
 select-translations-panel-try-again-button =
@@ -232,10 +232,20 @@ select-translations-panel-idle-placeholder-text = הטקסט המתורגם יו
 # Text displayed as a placeholder when the panel is actively translating.
 select-translations-panel-translating-placeholder-text = בתהליך תרגום…
 select-translations-panel-init-failure-message =
-    .message = לא ניתן היה לטעון שפות. יש לבדוק את חיבור האינטרנט שלך ולנסות שוב.
+    .message = לא ניתן היה לטעון שפות. יש לבדוק את החיבור שלך לאינטרנט ולנסות שוב.
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = אירעה שגיאה בתרגום. נא לנסות שוב.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = איננו תומכים בתרגומים מ־{ $language } עדיין, עמך הסליחה.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = איננו תומכים בתרגומים משפה זו עדיין, עמך הסליחה.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

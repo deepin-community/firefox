@@ -11,7 +11,10 @@
 #ifndef MODULES_AUDIO_CODING_NETEQ_PACKET_BUFFER_H_
 #define MODULES_AUDIO_CODING_NETEQ_PACKET_BUFFER_H_
 
-#include "absl/types/optional.h"
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+
 #include "modules/audio_coding/neteq/decoder_database.h"
 #include "modules/audio_coding/neteq/packet.h"
 #include "modules/include/module_common_types_public.h"  // IsNewerTimestamp
@@ -49,6 +52,10 @@ class PacketBuffer {
   // Flushes the buffer and deletes all packets in it.
   virtual void Flush();
 
+  // Changes the maximum number of packets allowed in the buffer.
+  // If the buffer currently contains more packets, it will be flushed.
+  virtual void SetMaxNumberOfPackets(size_t max_number_of_packets);
+
   // Returns true for an empty buffer.
   virtual bool Empty() const;
 
@@ -78,7 +85,7 @@ class PacketBuffer {
 
   // Extracts the first packet in the buffer and returns it.
   // Returns an empty optional if the buffer is empty.
-  virtual absl::optional<Packet> GetNextPacket();
+  virtual std::optional<Packet> GetNextPacket();
 
   // Discards the first packet in the buffer. The packet is deleted.
   // Returns PacketBuffer::kBufferEmpty if the buffer is empty,

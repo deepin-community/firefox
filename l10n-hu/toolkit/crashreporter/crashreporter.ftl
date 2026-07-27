@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = A { -brand-short-name } problémába ütköz
 crashreporter-plea = Segítsen diagnosztizálni és megoldani a problémát, küldje el az összeomlási jelentést.
 crashreporter-information = Ez az alkalmazás egy összeomlás után fut le, hogy jelentse a problémát a { -vendor-short-name(ending: "accented") }nak. Közvetlenül nem futtatandó.
 crashreporter-error = A { -brand-short-name } problémába ütközött és összeomlott. Sajnos a hibajelentő nem tudta elküldeni a jelentést az összeomlásról.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Részletek: { $details }
+crashreporter-error-details-header = Részletek:
 crashreporter-no-run-message = Ez az alkalmazás egy összeomlás után fut le, hogy értesítse a problémáról az alkalmazás fejlesztőjét. Közvetlenül nem futtatható.
 crashreporter-button-details = Részletek...
 crashreporter-loading-details = Betöltés…
 crashreporter-view-report-title = A bejelentés tartalma
 crashreporter-comment-prompt = Megjegyzés hozzáadása (a megjegyzések nyilvánosságra kerülnek)
 crashreporter-report-info = A jelentés műszaki adatokat is tartalmaz az alkalmazás összeomláskori állapotáról.
-crashreporter-send-report = Értesítse a { -vendor-short-name(ending: "accented") }t, hogy kijavíthassák a hibát.
-crashreporter-include-url = Írja bele a meglátogatott oldal címét.
+crashreporter-checkbox-test-hardware = Hardver és konfigurációs problémák keresése az eszközömön.
+crashreporter-checkbox-send-report = Értesítse a { -vendor-short-name(ending: "accented") }t, hogy kijavíthassák a hibát.
+crashreporter-checkbox-include-url = Írja bele a meglátogatott oldal címét.
 crashreporter-submit-status = Az összeomlás-bejelentés a kilépés vagy újraindítás előtt lesz elküldve.
+crashreporter-submit-waiting-hardware-tests = Hardver- és konfigurációs problémák keresése…
 crashreporter-submit-in-progress = Bejelentés elküldése...
 crashreporter-submit-success = A bejelentés sikeresen el lett küldve!
 crashreporter-submit-failure = A bejelentés elküldésekor hiba lépett fel.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Az összeomlás részletei itt tekinthetők meg: {
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = A minidump-analyzer futtatása sikertelen
 # $path (String) - the file path
 crashreporter-error-opening-file = A fájl megnyitása sikertelen ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Hiányzó saját könyvtár
 # $to (String) - the destination path
 crashreporter-error-moving-path = A(z) { $from } áthelyezése sikertelen ide: { $to }
 crashreporter-error-version-eol = A verzió életciklusa lejárt: a hibajelentések már nem fogadhatók el.
+crashreporter-error-failed-to-generate-minidump = Az alkalmazás nem tudott összeomlási információkat előállítani.

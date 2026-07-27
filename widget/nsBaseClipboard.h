@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsBaseClipboard_h__
-#define nsBaseClipboard_h__
+#ifndef nsBaseClipboard_h_
+#define nsBaseClipboard_h_
 
 #include "mozilla/Array.h"
 #include "mozilla/dom/PContent.h"
@@ -76,12 +75,28 @@ class nsBaseClipboard : public nsIClipboard {
       mozilla::dom::WindowContext* aRequestingWindowContext,
       nsIClipboardGetDataSnapshotCallback* aCallback);
 
-  using GetDataCallback = mozilla::MoveOnlyFunction<void(nsresult)>;
+  using GetNativeDataCallback = mozilla::MoveOnlyFunction<void(
+      mozilla::Result<nsCOMPtr<nsISupports>, nsresult>)>;
   using HasMatchingFlavorsCallback = mozilla::MoveOnlyFunction<void(
       mozilla::Result<nsTArray<nsCString>, nsresult>)>;
 
   mozilla::Maybe<uint64_t> GetClipboardCacheInnerWindowId(
       ClipboardType aClipboardType);
+  virtual mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
+      ClipboardType aWhichClipboard) = 0;
+
+  class ClipboardPopulatedDataSnapshot final : public nsIClipboardDataSnapshot {
+   public:
+    explicit ClipboardPopulatedDataSnapshot(nsITransferable* aTransferable);
+
+    NS_DECL_ISUPPORTS
+    NS_DECL_NSICLIPBOARDDATASNAPSHOT
+   private:
+    virtual ~ClipboardPopulatedDataSnapshot() = default;
+    nsCOMPtr<nsITransferable> mTransferable;
+    // List of available data types for clipboard content.
+    nsTArray<nsCString> mFlavors;
+  };
 
  protected:
   virtual ~nsBaseClipboard();
@@ -89,14 +104,13 @@ class nsBaseClipboard : public nsIClipboard {
   // Implement the native clipboard behavior.
   NS_IMETHOD SetNativeClipboardData(nsITransferable* aTransferable,
                                     ClipboardType aWhichClipboard) = 0;
-  NS_IMETHOD GetNativeClipboardData(nsITransferable* aTransferable,
-                                    ClipboardType aWhichClipboard) = 0;
-  virtual void AsyncGetNativeClipboardData(nsITransferable* aTransferable,
+  virtual mozilla::Result<nsCOMPtr<nsISupports>, nsresult>
+  GetNativeClipboardData(const nsACString& aFlavor,
+                         ClipboardType aWhichClipboard) = 0;
+  virtual void AsyncGetNativeClipboardData(const nsACString& aFlavor,
                                            ClipboardType aWhichClipboard,
-                                           GetDataCallback&& aCallback);
+                                           GetNativeDataCallback&& aCallback);
   virtual nsresult EmptyNativeClipboardData(ClipboardType aWhichClipboard) = 0;
-  virtual mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
-      ClipboardType aWhichClipboard) = 0;
   virtual mozilla::Result<bool, nsresult> HasNativeClipboardDataMatchingFlavors(
       const nsTArray<nsCString>& aFlavorList,
       ClipboardType aWhichClipboard) = 0;
@@ -155,6 +169,12 @@ class nsBaseClipboard : public nsIClipboard {
     virtual ~ClipboardDataSnapshot() = default;
     bool IsValid();
 
+    using GetDataInternalCallback = mozilla::MoveOnlyFunction<void(nsresult)>;
+    void GetDataInternal(nsTArray<nsCString>&& aTypes,
+                         nsTArray<nsCString>::index_type aIndex,
+                         nsITransferable* aTransferable,
+                         GetDataInternalCallback&& aCallback);
+
     // The clipboard type defined in nsIClipboard.
     const nsIClipboard::ClipboardType mClipboardType;
     // The sequence number associated with the clipboard content for this
@@ -191,7 +211,7 @@ class nsBaseClipboard : public nsIClipboard {
       mTransferable = aTransferable;
       mClipboardOwner = aClipboardOwner;
       mSequenceNumber = aSequenceNumber;
-      mInnerWindowId = aInnerWindowId;
+      mInnerWindowId = std::move(aInnerWindowId);
     }
     nsITransferable* GetTransferable() const { return mTransferable; }
     nsIClipboardOwner* GetClipboardOwner() const { return mClipboardOwner; }
@@ -231,6 +251,10 @@ class nsBaseClipboard : public nsIClipboard {
       const nsTArray<nsCString>& aFlavorList, ClipboardType aClipboardType,
       mozilla::dom::WindowContext* aRequestingWindowContext);
 
+  // Clean up data in transferable for posting to clipboard or dragging.  This
+  // guarantees that text data does not include NUL characters.
+  static nsresult SanitizeForClipboard(nsITransferable* aTransferable);
+
   // Track the pending request for each clipboard type separately. And only need
   // to track the latest request for each clipboard type as the prior pending
   // request will be canceled when a new request is made.
@@ -245,4 +269,4 @@ class nsBaseClipboard : public nsIClipboard {
   bool mIgnoreEmptyNotification = false;
 };
 
-#endif  // nsBaseClipboard_h__
+#endif  // nsBaseClipboard_h_

@@ -30,10 +30,18 @@ options-context-inspector = Prieskumník
 options-show-user-agent-styles-label = Zobraziť štýly prehliadača
 options-show-user-agent-styles-tooltip =
     .title = Povolením tejto možnosti zobrazíte predvolené štýly, ktoré sú načítavané prehliadačom
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Zobraziť tieňový DOM prehliadača
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Po zapnutí tejto možnosti sa zobrazia prvky tieňového DOMu, ktoré prehliadač spracováva.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Skrátené DOM atribúty
 options-collapse-attrs-tooltip =
     .title = Skrátené dlhé atribúty v prieskumníkovi
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Zobrazovať komentáre
+options-show-comments-tooltip =
+    .title = Zobrazovať uzly komentárov v prieskumníkovi
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Kliknutím a potiahnutím upravíte hodnoty veľkosti
 options-inspector-draggable-properties-tooltip =
@@ -107,6 +115,40 @@ options-sourceeditor-tabsize-label = Veľkosť tabulátora
 options-sourceeditor-keybinding-label = Klávesové skratky
 options-sourceeditor-keybinding-default-label = Predvolené
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Lokálny režim
+options-local-mode-only-work-locally = Lokálny režim funguje iba lokálne a je vypnutý pri ladení vzdialených kontextov.
+options-local-mode-behavior = Lokálny režim umožňuje načítať lokálne súbory prostredníctvom URL adresy https bez akejkoľvek externej závislosti. URL adresy je možné načítať iba z kariet s otvorenými nástrojmi DevTools.
+options-local-mode-domain-label = Vlastná doména:
+options-local-mode-origin-input =
+    .placeholder = Zdroj pre lokálne mapovanie
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Tento zdroj je v konflikte s iným existujúcim mapovaním
+options-local-mode-origin-invalid = Tento zdroj nie je platný
+options-local-mode-folder-label = Lokálne priečinky
+options-local-mode-choose-folder = Prehľadávať…
+    .title = Vyberte lokálny priečinok pre toto mapovanie
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Vyberte priečinok lokálneho režimu pre: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Tento priečinok neexistuje alebo je neplatný.
+options-local-mode-toggle =
+    .title = Prepnúť toto lokálne mapovanie
+options-local-mode-toggle-enable = Povoliť
+options-local-mode-toggle-disable = Zakázať
+options-local-mode-navigate-to =
+    .title = Prejsť na túto URL adresu mapovania
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = Chcete odstrániť mapovanie “{ $mappingOrigin }”?
+options-local-mode-new-mapping = Pridať nové lokálne mapovanie
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +157,8 @@ options-context-advanced-settings = Rozšírené nastavenia
 options-disable-http-cache-label = Zakázať vyrovnávaciu pamäť HTTP (ak sú otvorené vývojárske nástroje)
 options-disable-http-cache-tooltip =
     .title = Zapnutím tejto voľby bude vyrovnávacia pamäť HTTP vypnutá pre všetky karty, ktoré majú otvorené nástroje. Skripty typu worker nebudú touto voľbou ovplyvnené.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Zakázať JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Zakázať JavaScript *
 options-disable-javascript-tooltip =
@@ -143,5 +187,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Povoliť mapy zdrojov
 options-source-maps-tooltip =
     .title = Ak túto voľbu zapnete, zdroje budú mapované v nástrojoch.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (iba pre aktuálnu reláciu, stránka sa znova načíta)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Len pre aktuálnu reláciu, opäť načíta obsah stránky
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (znovu načíta stránku)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Automatická
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Zastarané. Ďalšie informácie…

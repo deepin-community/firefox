@@ -20,7 +20,7 @@ downloads-panel-items =
     .style = width: 35em
 downloads-cmd-pause =
     .label = Ընդմիջել
-    .accesskey = P
+    .accesskey = Ը
 downloads-cmd-resume =
     .label = Շարունակել
     .accesskey = Շ
@@ -129,13 +129,13 @@ downloads-cmd-choose-unblock-panel =
 # blocked.This opens a dialog where the user can choose whether to open the
 # file or remove the download. Opening is the default option.
 downloads-cmd-choose-open =
-    .tooltiptext = Բացել կամ հեռացնել նիշքը
+    .tooltiptext = Բացել կամ հեռացնել ֆայլը
 downloads-cmd-choose-open-panel =
     .aria-label = Բացել կամ հեռացնել ֆայլը
 # Displayed when hovering a blocked download, indicates that it's possible to
 # show more information for user to take the next action.
 downloads-show-more-information =
-    .value = Ցուցադրել լր. տեղեկություն
+    .value = Ցուցադրել ավելի շատ տեղեկություն
 # Displayed when hovering a complete download, indicates that it's possible to
 # open the file using an app available in the system.
 downloads-open-file =
@@ -183,6 +183,18 @@ downloads-history =
 downloads-details =
     .title = Ներբեռնմանի մանրամասները
 
+## These strings are displayed in the private browsing view of the downloads panel
+
+downloads-private-browsing-details =
+    .title = Ֆայլերը մնում են ձեր սարքում
+downloads-private-browsing-message = Այս սարքն օգտագործող ցանկացած անձ կարող է տեսնել ներբեռնումները, նույնիսկ երբ դուք փակում եք բոլոր գաղտնի պատուհանները։
+downloads-private-browsing-delete-button =
+    .label = Ջնջել ֆայլերն ինքնաբերաբար
+    .accesskey = Ջ
+downloads-private-browsing-accept-button =
+    .label = Հասկացա
+    .accesskey = G
+
 ## Displayed when a site attempts to automatically download many files.
 ## Variables:
 ##   $num (number) - Number of blocked downloads.
@@ -222,11 +234,11 @@ downloads-more-downloading =
 downloads-error-alert-title = Ներբեռնման սխալ
 # Variables:
 #   $extension (String): the name of the blocking extension.
-downloads-error-blocked-by = Ներբեռնումը չի կարող պահպանվել, քանի որ այն արգելափակված է { $extension }-ի կողմից:
+downloads-error-blocked-by = Ներբեռնումը չի կարող պահվել, քանի որ այն արգելափակված է { $extension }-ի կողմից:
 # Used when the name of the blocking extension is unavailable.
-downloads-error-extension = Ներբեռնումը չի կարող պահպանվել, քանի որ այն արգելափակված է ընդլայնման կողմից:
+downloads-error-extension = Ներբեռնումը չի կարող պահվել, քանի որ այն արգելափակված է ընդլայնման կողմից:
 # Line breaks in this message are meaningful, and should be maintained.
 downloads-error-generic =
-    Բեռնումը չի կարող պահպանվել անհայտ վթարի պատճառով:
+    Բեռնումը չի կարող պահվել անհայտ վթարի պատճառով:
     
     Կրկին փորձեք:

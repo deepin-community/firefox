@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,7 +39,7 @@ XULButtonAccessible::XULButtonAccessible(nsIContent* aContent,
   }
 }
 
-XULButtonAccessible::~XULButtonAccessible() {}
+XULButtonAccessible::~XULButtonAccessible() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // XULButtonAccessible: nsISupports
@@ -102,6 +101,18 @@ bool XULButtonAccessible::AttributeChangesState(nsAtom* aAttribute) {
     return true;
   }
   return AccessibleWrap::AttributeChangesState(aAttribute);
+}
+
+void XULButtonAccessible::DOMAttributeChanged(int32_t aNameSpaceID,
+                                              nsAtom* aAttribute,
+                                              AttrModType aModType,
+                                              const nsAttrValue* aOldValue,
+                                              uint64_t aOldState) {
+  AccessibleWrap::DOMAttributeChanged(aNameSpaceID, aAttribute, aModType,
+                                      aOldValue, aOldState);
+  if (aAttribute == nsGkAtoms::label) {
+    mDoc->FireDelayedEvent(nsIAccessibleEvent::EVENT_NAME_CHANGE, this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +231,10 @@ ENameValueFlag XULGroupboxAccessible::NativeName(nsString& aName) const {
   // XXX: we use the first related accessible only.
   LocalAccessible* label =
       RelationByType(RelationType::LABELLED_BY).LocalNext();
-  if (label) return label->Name(aName);
+  if (label) {
+    label->Name(aName);
+    return eNameFromRelations;
+  }
 
   return eNameOK;
 }
@@ -251,17 +265,9 @@ XULRadioButtonAccessible::XULRadioButtonAccessible(nsIContent* aContent,
 uint64_t XULRadioButtonAccessible::NativeState() const {
   uint64_t state = LeafAccessible::NativeState();
   state |= states::CHECKABLE;
-
-  nsCOMPtr<nsIDOMXULSelectControlItemElement> radioButton =
-      Elm()->AsXULSelectControlItem();
-  if (radioButton) {
-    bool selected = false;  // Radio buttons can be selected
-    radioButton->GetSelected(&selected);
-    if (selected) {
-      state |= states::CHECKED;
-    }
+  if (Elm()->State().HasState(dom::ElementState::CHECKED)) {
+    state |= states::CHECKED;
   }
-
   return state;
 }
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -91,16 +89,16 @@ void SandboxTestingChild::Bind(Endpoint<PSandboxTestingChild>&& aEndpoint) {
     switch (s->mSandbox) {
       case ipc::SandboxingKind::GENERIC_UTILITY:
         RunTestsGenericUtility(this);
-        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        RunTestsUtilityMediaService(this, s->mSandbox);
         break;
 #ifdef MOZ_APPLEMEDIA
       case ipc::SandboxingKind::UTILITY_AUDIO_DECODING_APPLE_MEDIA:
-        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        RunTestsUtilityMediaService(this, s->mSandbox);
         break;
 #endif
 #ifdef XP_WIN
       case ipc::SandboxingKind::UTILITY_AUDIO_DECODING_WMF:
-        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        RunTestsUtilityMediaService(this, s->mSandbox);
         break;
 #endif
 

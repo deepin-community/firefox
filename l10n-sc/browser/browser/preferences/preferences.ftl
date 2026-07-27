@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Imbia a is sitos web su sinnale "Non mi sigas" pro ddi nàrrere chi non boles a ti sighire
-do-not-track-description2 =
-    .label = Imbia a is sitos web rechestas de “non sighidura”
-    .accesskey = I
+do-not-track-removal = Non suportamus prus su sinnale "non mi sigas"
 do-not-track-learn-more = Àteras informatziones
 do-not-track-option-default-content-blocking-known =
     .label = Isceti cando { -brand-short-name } est cunfiguradu pro blocare is sighidores connotos
@@ -14,12 +12,16 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Nara a is sitos web de non bèndere nen cumpartzire is datos mios
     .accesskey = N
+non-technical-privacy-group =
+    .label = Preferèntzias de riservadesa de su situ
 non-technical-privacy-header = Preferèntzias de riservadesa de su situ
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
 global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Cunfiguratzione
+category-nav-heading =
+    .heading = Cunfiguratzione
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
 #
@@ -34,23 +36,35 @@ search-input-box2 =
 managed-notice = Su navigadore est gestidu dae s'organizatzione tua.
 managed-notice-info-icon =
     .alt = Informatzione
+managed-notice-nav =
+    .label = Su navigadore est gestidu dae s'organizatzione tua.
 category-list =
     .aria-label = Categorias
 pane-general-title = Generale
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Pàgina printzipale
+pane-search-title2 = Chirca
+    .title = Chirca
+pane-privacy-title3 = Riservadesa e seguresa
+    .title = Riservadesa e seguresa
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Chirca
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Riservadesa e seguresa
 pane-privacy-title = Riservadesa e seguresa
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 pane-sync-title3 = Sincronizatzione
+pane-ai-controls-title2 = Controllos de s’IA
+    .title = Controllos de s’IA
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 pane-experimental-title = Esperimentos de { -brand-short-name }
 category-experimental =
     .tooltiptext = Esperimentos de { -brand-short-name }
@@ -60,15 +74,24 @@ pane-experimental-description2 = Sa modìfica de is paràmetros de cunfiguratzio
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Proa is funtziones nostras isperimentales. Sunt in isvilupu e evolutzione, e custu diat pòdere cambiare su funtzionamentu de { -brand-short-name }.
 pane-experimental-reset =
     .label = Recùpera valores predefinidos
     .accesskey = R
+help-button-label2 = Suportu de { -brand-short-name }
+    .title = Suportu de { -brand-short-name }
+addons-button-label2 = Estensiones e temas
+    .title = Estensiones e temas
 help-button-label = Suportu de { -brand-short-name }
 addons-button-label = Estensiones e temas
 focus-search =
     .key = f
 close-button =
     .aria-label = Serra
+do-not-track-removal2 =
+    .label = Non suportamus prus su sinnale “non mi sigas”
+applications-setting-new-file-types =
+    .label = Ite depet fàghere { -brand-short-name } cun is àteros archìvios?
 
 ## Browser Restart Dialog
 
@@ -132,26 +155,81 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Aberi ventanas e ischedas pretzedentes
     .accesskey = s
+startup-windows-launch-on-login-profile-disabled =
+    .message = Ativa custa preferèntzia ativende “{ profile-manager-use-selected.label }” in sa ventana “Sèbera unu profilu de utente”.
 windows-launch-on-login =
     .label = Aberi { -brand-short-name } in automàticu a s’aviu de s’elaboradore
     .accesskey = A
 windows-launch-on-login-disabled = Custa preferèntzia est disativada in Windows. Pro dda modificare, bae a <a data-l10n-name="startup-link">Aplicatziones de aviu</a> in cunfiguratziones de su sistema.
+windows-launch-on-login-profile-disabled = Ativa custa preferèntzia ativende “{ profile-manager-use-selected.label }” in sa ventana “Sèbera unu profilu de utente”.
 startup-restore-warn-on-quit =
     .label = Faghe ischire cando essis dae su navigadore
 disable-extension =
     .label = Disativa estensione
+preferences-data-migration-group =
+    .label = Importa datos de su navigadore
+    .description = Bati is sinnalibros, is craes, sa cronologia, is estensiones e is datos de cumpletamentu automàticu dae un'àteru navigadore.
 preferences-data-migration-header = Importa datos de su navigadore
 preferences-data-migration-description = Importa sinnalibros, craes, cronologia e datos de cumpletamentu automàticu in { -brand-short-name }.
 preferences-data-migration-button =
     .label = Importa is datos
     .accesskey = d
+preferences-profiles-group-header =
+    .heading = Profilos
+preferences-profiles-subpane-description =
+    .description = Onni profilu tenet cunfiguratziones e datos de navigatzione separados, includende sa cronologia, is craes e àteru
+preferences-profiles-section-header =
+    .label = Profilos
+    .description = Onni profilu tenet cunfiguratziones e datos de navigatzione separados, includende sa cronologia, is craes e àteru
+preferences-profiles-header = Profilos
+preferences-manage-profiles-description = Onni profilu tenet cunfiguratziones e datos de navigatzione separados, includende sa cronologia, is craes e àteru
+preferences-manage-profiles-learn-more = Àteras informatziones
+preferences-manage-profiles-button =
+    .label = Gesti is profilos
+preferences-profiles-settings-button =
+    .label = Cunfiguratzione
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Còpia unu profilu chi esistit giai
+    .description = Su profilu nou at a copiare is cunfiguratziones e is estensiones tuas, sa cronologia e datos sarvados comente is sinnalibros e is craes, ma non su contu tuo o is datos de sincronizatzione.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Profilu de copiare
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Seletziona unu profilu
+preferences-copy-profile-button = Còpia
+tabs-group-header2 =
+    .label = Ischedas
+tabs-opening-heading =
+    .label = Abertura
+tabs-interaction-heading =
+    .label = Interatzione
+tabs-closing-heading =
+    .label = Serrada
 tabs-group-header = Ischedas
 ctrl-tab-recently-used-order =
-    .label = Ctrl+Tab cuncàmbia ischedas in s'òrdine de impreu reghente
+    .label = Ctrl+Tab cuncàmbiat ischedas in s’òrdine de impreu reghente
     .accesskey = T
 open-new-link-as-tabs =
     .label = Aberi ligòngios in ischedas imbetzes de ventanas noas
     .accesskey = A
+open-external-link-next-to-active-tab =
+    .label = Aberi is ligòngios de àteras aplicatziones a su costadu de s’ischeda ativa
+ask-on-close-multiple-tabs =
+    .label = Pregunta in antis de serrare prus ischedas
+    .accesskey = P
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Pregunta in antis de essire cun { $quitKey }
+    .accesskey = P
 confirm-on-close-multiple-tabs =
     .label = Cunfirma prima de serrare prus ischedas
     .accesskey = C
@@ -167,7 +245,7 @@ warn-on-open-many-tabs =
     .label = Avisa cando abèrrere tropu ischedas potzat allentare { -brand-short-name }
     .accesskey = v
 switch-to-new-tabs =
-    .label = Cando aberis unu ligòngiu, un'immàgine o un'elementu multimediale in un'ischeda noa, cola·bi deretu
+    .label = Cando incarcas unu ligòngiu, un’immàgine o un’elementu multimediale in un’ischeda noa, aberi·ddu deretu
     .accesskey = n
 show-tabs-in-taskbar =
     .label = Ammustra previsualizatziones de ischeda in sa barra de tareas de Windows
@@ -180,6 +258,8 @@ browser-containers-settings =
     .label = Cunfiguratzione…
     .accesskey = u
 containers-disable-alert-title = Boles serrare totu is ischedas cuntenidoras?
+startup-group =
+    .label = Aviu
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -211,12 +291,45 @@ containers-remove-cancel-button = Non boghes custu cuntenidore
 settings-tabs-show-image-in-preview =
     .label = Ammustra un’anteprima de immàgine cando su puntadore est subra de un’ischeda.
     .accessKey = m
+settings-tabs-drag-to-create-tab-groups =
+    .label = Traga ischedas in paris pro creare grupos de ischedas
+browser-layout-header2 =
+    .label = Dispositzione de su navigadore
+browser-layout-horizontal-tabs2 =
+    .label = Ischedas orizontales
+    .title = Ischedas in sa parte superiore
+    .description = Ischedas in sa parte superiore
+browser-layout-vertical-tabs2 =
+    .label = Ischedas verticales
+    .title = Ischedas in sa barra laterale
+    .description = Ischedas in sa barra laterale
+browser-layout-show-sidebar2 =
+    .label = Ammustra sa barra laterale
+    .description = Atzede a sa lestra a sinnalibros, ischedas dae su telefoneddu tuo, chatbot IA e àteru chene lassare s’ischermu printzipale.
+browser-layout-header = Dispositzione de su navigadore
+browser-layout-horizontal-tabs =
+    .label = Ischedas orizontales
+browser-layout-horizontal-tabs-desc = Ammustra in sa parte de susu de su navigadore
+browser-layout-vertical-tabs =
+    .label = Ischedas verticales
+browser-layout-vertical-tabs-desc = Ammustra a un’ala, in sa barra laterale
+browser-layout-show-sidebar =
+    .label = Ammustra sa barra laterale
+browser-layout-show-sidebar-desc = Atzede a sa lestra a sinnalibros, ischedas dae su telefoneddu tuo, chatbot IA e àteru chene lassare s’ischermu printzipale.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Limbas e aspetu
 preferences-web-appearance-header = Aspetu de is sitos web
 preferences-web-appearance-description = Unos cantos sitos web adatant s'ischema de colore suo de acordu cun is preferèntzias tuas. Sèbera cale ischema de colore dias bòlere impreare pro cussos sitos.
+preferences-web-appearance-choice-light2 =
+    .label = Craru
+    .title = Imprea un'aspetu craru pro is isfundos e is cuntenutos de is sitos web.
+preferences-web-appearance-choice-dark2 =
+    .label = Iscuru
+    .title = Imprea un'aspetu iscuru pro is isfundos e is cuntenutos de is sitos web.
+web-appearance-group =
+    .aria-label = Aspetu de is sitos web
 preferences-web-appearance-choice-auto = Automàticu
 preferences-web-appearance-choice-light = Craru
 preferences-web-appearance-choice-dark = Iscuru
@@ -232,21 +345,35 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Gesti is temas de { -brand-short-name } in Estensiones e temas
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Is seletziones de colore tuas sunt sostituende s'aspetu de su situ web. <a data-l10n-name="colors-link">Gesti is colores</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Is seletziones de colore tuas sunt sostituende s'aspetu de su situ web.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Gesti is temas de { -brand-short-name } in <a data-l10n-name="themes-link">Estensiones e temas</a>
+preferences-contrast-control-header = Controllu de contrastu
+preferences-contrast-control-description = Is sitos web tenent una variedade de colores de primu pianu e de isfundu. Cunfigura { -brand-short-name } pro impreare is pròpiu colores in totu is sitos pro chi siat prus fàtzile a ddos lèghere.
+preferences-contrast-control-use-platform-settings =
+    .label = Automàticu (imprea is cunfiguratziones de sistema)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Disativadu
+    .accesskey = D
+preferences-contrast-control-custom =
+    .label = Personalizadu
+    .accesskey = P
+preferences-colors-manage-button2 =
+    .label = Gesti is colores
+    .accesskey = c
 preferences-colors-header = Colores
 preferences-colors-description = Sostitui is colores predefinidos de { -brand-short-name } pro is testos, is isfundos de is sitos web e is ligòngios.
 preferences-colors-manage-button =
     .label = Gesti is colores…
     .accesskey = c
+preferences-fonts-header2 =
+    .label = Caràteres
 preferences-fonts-header = Caràteres
 default-font = Caràtere predefinidu
     .accesskey = C
@@ -255,6 +382,9 @@ default-font-size = Mannària
 advanced-fonts =
     .label = Avantzadas…
     .accesskey = A
+preferences-default-zoom-label =
+    .label = Predefinidu
+    .accesskey = P
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Ingrandimentu
 preferences-default-zoom = Predefinidu
@@ -270,6 +400,25 @@ preferences-text-zoom-override-warning =
     .message = Atentzione: si sèberas “Ismànnia isceti su testu” e s'ingrandimentu predefinidu tuo no est cunfiguradu a su 100%, calicunu situ o cuntenutu diat pòdere funtzionare male.
 language-header = Limba
 choose-language-description = Sèbera sa limba preferida tua pro ammustrare pàginas
+website-preferred-language =
+    .label = Limbas preferidas
+website-add-language =
+    .label = Agiunghe una limba
+website-add-language-button =
+    .aria-label = Agiunghe sa limba seletzionada
+    .title = Agiunghe sa limba seletzionada
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = Cantzella sa limba: { $locale }
+    .title = Cantzella sa limba: { $locale }
 choose-button =
     .label = Sèbera…
     .accesskey = b
@@ -279,6 +428,8 @@ manage-browser-languages-button =
     .accesskey = u
 confirm-browser-language-change-description = Torra a aviare { -brand-short-name } pro aplicare custas modìficas
 confirm-browser-language-change-button = Àplica e torra a aviare
+browser-language-install-error =
+    .message = { -brand-short-name } non podet agiornare is limbas tuas, in custu momentu. Assegura·ti de èssere connessu a internet o torra a proare.
 translate-web-pages =
     .label = Borta su cuntenutu web
     .accesskey = B
@@ -289,17 +440,90 @@ translate-attribution = Tradutzione fata dae <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Etzetziones…
     .accesskey = z
+settings-translations-header =
+    .label = Tradutziones
+    .aria-label = Tradutziones
+    .description = Tradue pàginas o testu seletzionadu. Pro amparare sa riservadesa tua, is tradutziones abarrant in su dispositivu tuo.
+settings-translations-offer-to-translate-label =
+    .label = Propone sa tradutzione cumpleta de sa pàgina
+settings-translations-more-settings-button =
+    .label = Àteras cunfiguratziones de tradutzione
+    .description = Cunfigura is preferèntzias tuas pro cantu a is limbas, sitos web e tradutzione in foras de lìnia.
+settings-translations-subpage-header =
+    .heading = Àteras cunfiguratziones de tradutzione
+settings-translations-subpage-speed-up-translation-header =
+    .label = Allestra sa tradutzine
+    .description = Iscàrriga limbas cumpletas pro otènnere tradutziones prus lestras e pro tradùere in foras de lìnia
+settings-translations-subpage-automatic-translation-header =
+    .label = Tradutzione automàtica
+settings-translations-subpage-always-translate-header =
+    .label = Tradue semper custas limbas
+settings-translations-subpage-never-translate-header =
+    .label = Non traduas mai custas limbas
+settings-translations-subpage-never-translate-sites-header =
+    .label = Non traduas mai custos sitos
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = Pro agiùnghere unu situ, aberi su pannellu de tradutzione <img data-l10n-name="translations-icon"/>, seletziona sa cunfiguratzione de tradutzione <img data-l10n-name="settings-icon"/> e sèbera «Non traduas mai custu situ»
+settings-translations-subpage-language-select-option =
+    .label = Agiunghe una limba
+settings-translations-subpage-language-add-button =
+    .aria-label = Agiunghe una limba
+    .title = Agiunghe una limba
+settings-translations-subpage-download-languages-header =
+    .label = Iscàrriga limbas
+settings-translations-subpage-download-languages-select-option =
+    .label = Seletziona una limba
+settings-translations-subpage-download-languages-button =
+    .aria-label = Iscàrriga sa limba
+    .title = Iscàrriga sa limba
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size } MB)
+    .label = { $language } ({ $size } MB)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Nissuna limba iscarrigada
+settings-translations-subpage-no-languages-added =
+    .label = Nissuna limba agiunta
+settings-translations-subpage-download-progress = Iscarrigamentu in cursu…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Impossìbile iscarrigare sa limba { $language } ({ $size } MB)
+settings-translations-subpage-download-retry-button =
+    .label = Torra·nche a proare
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Boles cantzellare sa limba { $language } ({ $size } MB)?
+settings-translations-subpage-download-delete-button =
+    .label = Cantzella
+settings-translations-subpage-download-cancel-button =
+    .label = Annulla
+settings-translations-subpage-no-sites-added =
+    .label = Nissunu situ agiuntu
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
     .label = Imprea sa cunfiguratzione de su sistema operativu de “{ $localeName }” pro formatare datas, oras, nùmeros e medidas.
+settings-spellcheck-header =
+    .label = Curretzione ortogràfica
 check-user-spelling =
-    .label = Controlla s'ortografia comente iscries
+    .label = Controlla s’ortografia comente iscries
     .accesskey = o
+spellcheck-download-dictionaries =
+    .label = Iscàrriga ditzionàrios
+spellcheck-promo =
+    .heading = Comente s’impreat su controllu ortogràficu
+    .message = Incarca cun su butone deretu unu campu de testu pro ativare o disativare sa curretzione ortogràfica. Non totu is campos sunt cumpatìbiles cun sa curretzione ortogràfica.
 
 ## General Section - Files and Applications
 
 files-and-applications-title = Archìvios e aplicatziones
+download-save-files-header =
+    .label = Sarva archìvios in
+download-save-where-3 =
+    .aria-label = Sarva archìvios in
 download-header = Iscarrigamentos
 download-save-where = Sarva archìvios in
     .accesskey = v
@@ -315,7 +539,7 @@ download-choose-folder =
            *[other] n
         }
 download-always-ask-where =
-    .label = Pregonta semper su percursu de sarvamentu de archìvios
+    .label = Pregunta semper su percursu de sarvamentu de archìvios
     .accesskey = D
 applications-header = Aplicatziones
 applications-description = Sèbera comente { -brand-short-name } depet gestire is archìvios chi iscàrrigas dae su web o is aplicatziones chi impreas cando nàvigas.
@@ -324,14 +548,16 @@ applications-filter =
 applications-type-column =
     .label = Genias de cuntenutu
     .accesskey = G
+applications-type-heading = Genias de cuntenutu
 applications-action-column =
     .label = Atzione
     .accesskey = A
+applications-action-heading = Atzione
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = archìviu { $extension }
 applications-action-save =
-    .label = Sarva s'archìviu
+    .label = Sarva s’archìviu
 # Variables:
 #   $app-name (String) - Name of an application (e.g Adobe Acrobat)
 applications-use-app =
@@ -353,7 +579,7 @@ applications-select-helper = Sèbera s'aplicatzione ausiliare
 applications-manage-app =
     .label = Detàllios de s'aplicatzione…
 applications-always-ask =
-    .label = Pregonta semper
+    .label = Pregunta semper
 # Variables:
 #   $type-description (string) - Description of the type (e.g "Portable Document Format")
 #   $type (string) - The MIME type (e.g application/binary)
@@ -390,25 +616,30 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
 applications-handle-new-file-types-description = Ite depet fàghere { -brand-short-name } cun is àteros archìvios?
 applications-save-for-new-types =
     .label = Sarva is archìvios
     .accesskey = S
 applications-ask-before-handling =
-    .label = Pregonta si boles abèrrere o sarvare is archìvios
+    .label = Pregunta si boles abèrrere o sarvare is archìvios
     .accesskey = P
+drm-group =
+    .label = Cuntenutu DRM (Digital Rights Management, Gestione de deretos digitales)
 drm-content-header = Cuntenutu DRM (Digital Rights Management, Gestione de deretos digitales)
 play-drm-content =
     .label = Reprodue cuntenutu protetu dae DRM
     .accesskey = R
 play-drm-content-learn-more = Leghe àteru
 update-application-title = Atualizatziones de { -brand-short-name }
-update-application-description = Mantene { -brand-short-name } atualizada pro una seguresa, istabilidade e rendimentu òtimos.
+update-application-description = Mantene { -brand-short-name } atualizadu pro una seguresa, istabilidade e rendimentu òtimos.
 # Variables:
 # $version (string) - Firefox version
 update-application-version = Versione { $version }<a data-l10n-name="learn-more">Ite noas</a>
+update-history-2 =
+    .label = Ammustra sa cronologia de atualizatziones
+    .accesskey = z
 update-history =
     .label = Ammustra sa cronologia de atualizatziones…
     .accesskey = z
@@ -425,6 +656,8 @@ update-application-manual =
 update-application-background-enabled =
     .label = Cando { -brand-short-name } non siat in esecutzione
     .accesskey = C
+update-application-warning-cross-user-setting-2 =
+    .message = Custa cunfiguratzione at a èssere aplicada a totu is contos de Windows e a is profilos de { -brand-short-name } chi imperent custa installatzione de { -brand-short-name }
 update-application-warning-cross-user-setting = Custa cunfiguratzione at a èssere aplicada a totu is contos de Windows e a is profilos de { -brand-short-name } chi imperent custa installatzione de { -brand-short-name }
 update-application-use-service =
     .label = Installa is atualizatziones in segundu pranu
@@ -438,9 +671,9 @@ update-setting-write-failure-title2 = Faddina in su sarvamentu de is cunfiguratz
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
-    { -brand-short-name } at agatadu una faddina e no at sarvadu custa modìfica. Tene contu chi pro cambiare custa cunfiguratzione de atualizatzione serbit su permissu de iscrìere in s'archìviu in fatu. Tue o un'amministradore de sistema diais pòdere risòlvere s'errore, donende a su grupu Utentes su controllu totale de custu archìviu.
+    { -brand-short-name } at agatadu una faddina e no at sarvadu custa modìfica. Tene contu chi pro cambiare custa cunfiguratzione de atualizatzione serbit su permissu de iscrìere in s’archìviu in fatu. Tue o un'amministradore de sistema diais pòdere risòlvere s'errore, donende a su grupu Utentes su controllu totale de custu archìviu.
     
-    Impossìbile iscrìere in s'archìviu: { $path }
+    Impossìbile iscrìere in s’archìviu: { $path }
 update-in-progress-title = Atualizatzione in cursu
 update-in-progress-message = Boles chi { -brand-short-name } andet a in antis cun custa atualizatzione?
 update-in-progress-ok-button = &Iscarta
@@ -467,10 +700,14 @@ performance-limit-content-process-blocked-desc = Su nùmeru de protzessos de cun
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (predefinidu)
+performance-group =
+    .label = Rendimentu
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Navigatzione
+browsing-group-label =
+    .aria-label = Navigatzione
 browsing-use-autoscroll =
     .label = Imprea iscurrimentu in automàticu
     .accesskey = a
@@ -498,6 +735,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Ativa is cumandos vìdeu de immàgine-subra-immàgine
     .accesskey = A
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Sighi a riproduire vìdeos in sa modalidade Immàgine-subra-immàgine cando colas dae un’ischeda a un’àtera
+    .accesskey = r
 browsing-picture-in-picture-learn-more = Àteras informatziones
 browsing-media-control =
     .label = Controlla su cuntenutu multimediale cun su tecladu, is cùfias o s'interfache virtuale
@@ -510,6 +750,8 @@ browsing-cfr-features =
     .label = Cussìgia funtzionalidades durante sa navigatzione
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Àteras informatziones
+browsing-group =
+    .label = Navigatzione
 
 ## General Section - Proxy
 
@@ -523,12 +765,26 @@ network-proxy-connection-settings =
 ## Home Section
 
 home-new-windows-tabs-header = Ventanas e ischedas noas
-home-new-windows-tabs-description2 = Sèbera su chi bides cando aberis sa pàgina printzipale, e is ventanas e is ischedas noas.
+home-new-windows-tabs-description2 = Sèbera su chi bides cando aberis sa pàgina printzipale, ventanas noas e ischedas noas.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = Navigadore predefinidu
+is-default-browser-2 =
+    .message = { -brand-short-name } est su navigadore predefinidu tuo. Mègius de aici!
+set-as-my-default-browser-2 =
+    .label = Cunfigura comente predefinidu
+    .accesskey = p
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pàgina printzipale e ventanas noas
+home-homepage-new-windows =
+    .label = Ventanas noas
 home-newtabs-mode-label = Ischedas noas
+home-homepage-new-tabs =
+    .label = Ischedas noas
 home-restore-defaults =
     .label = Recùpera valores predefinidos
     .accesskey = R
@@ -556,20 +812,39 @@ choose-bookmark =
     .label = Imprea unu sinnalibru…
     .accesskey = s
 
+## Custom Homepage subpage
+
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Indiritzos de sitos web
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Nissunu situ web galu agiuntu.
+home-custom-homepage-delete-address-button =
+    .aria-label = Cantzella s’indiritzu
+    .title = Cantzella s’indiritzu
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with-prompt =
+    .label = Sostitui cun
+
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = Cuntenutos de { -firefox-home-brand-name }
+home-prefs-content-header2 = Cuntenutos de sa { -firefox-home-brand-name }
 home-prefs-content-description2 = Sèbera su cuntenutu chi boles visualizare in { -firefox-home-brand-name }.
+home-prefs-firefox-logo-header =
+    .label = logo de { -brand-short-name }
 home-prefs-search-header =
     .label = Chirca web
 home-prefs-shortcuts-header =
     .label = Curtzadòrgios
 home-prefs-shortcuts-description = Sitos chi as sarvadu o bisitadu
+home-prefs-shortcuts-select =
+    .aria-label = Curtzadòrgios
 home-prefs-shortcuts-by-option-sponsored =
     .label = Curtzadòrgios patrotzinados
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Cussigiados dae { $provider }
@@ -596,6 +871,8 @@ home-prefs-highlights-option-saved-to-pocket =
 home-prefs-recent-activity-header =
     .label = Atividade reghente
 home-prefs-recent-activity-description = Una seletzione de sitos e cuntenutos reghentes
+home-prefs-recent-activity-select =
+    .aria-label = Atividade reghente
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
@@ -605,7 +882,18 @@ home-prefs-snippets-header =
 home-prefs-snippets-description-new = Cussìgios e noas dae { -vendor-short-name } e { -brand-product-name }
 home-prefs-weather-header =
     .label = Tempus
+home-prefs-weather-description = Sa previsione de oe
 home-prefs-weather-learn-more-link = Àteras informatziones
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Agiuda a { -brand-product-name }
+home-prefs-mission-message = Is patrotzinadores nostros nos agiudant in sa missione nostra de istantargiare unu web mègius
+home-prefs-mission-message-learn-more-link = Iscoberi comente
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Estensione ({ $extension })
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -639,6 +927,35 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ammustra cussìgios de chirca in is resurtados de sa barra de indiritzos
     .accesskey = i
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Ammustra is cussìgios de chirca in antis de sa cronologia de navigatzione in is resurtados de sa barra de indiritzos
+search-show-suggestions-private-windows-2 =
+    .label = Cussìgios de chirca in is ventanas privadas
+search-suggestions-cant-show-2 =
+    .message = Is cussìgios de chirca no ant a èssere ammustrados in is resurtados de sa barra de positzione ca as cunfiguradu { -brand-short-name } in manera chi no regordet mai sa cronologia.
+addressbar-header-1 =
+    .label = Barra de indiritzos
+    .description = Sèbera is cussìgios de ammustrare in sa barra de indiritzos
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Cussìgios dae { -brand-short-name } e is sòtzios nostros in sa barra de indiritzos tua.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Ammustra is tèrmines de chirca in sa barra de indiritzos de is pàginas de resurtados
+search-separate-default-engine-2 =
+    .label = Imprea unu motore de chirca predefinidu diversu in is ischedas privadas
+    .accesskey = I
+search-separate-default-engine-dropdown =
+    .aria-label = Motore de chirca privadu in ventanas privadas
+search-suggestions-header-2 =
+    .label = Cussìgios dae is motores de chirca
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -657,6 +974,19 @@ suggestions-addressbar-settings-generic2 = Modìfica sa cunfiguratzione de àter
 search-suggestions-cant-show = Is cussìgios de chirca no ant a èssere ammustrados in is resurtados de sa barra de positzione ca as cunfiguradu { -brand-short-name } in manera chi no regordet mai sa cronologia.
 search-one-click-header2 = Curtzadòrgios de chirca
 search-one-click-desc = Sèbera motores de chirca alternativos chi ant a èssere ammustrados a suta de sa barra de indiritzos e de sa barra de chirca comente cumintzas a iscrìere unu faeddu.
+search-one-click-header-3 =
+    .label = Motores de chirca agiuntivos
+    .description = Sèbera cales motores de chirca e curtzadòrgios cumparent in sa barra de indiritzos tua.
+update-search-engine-success =
+    .message = Motores de chirca atualizadu
+search-edit-engine-2 =
+    .title = Modifica su motore de chirca
+search-delete-engine =
+    .title = Cantzella su motore de chirca
+search-enable-engine =
+    .title = Ativa su motore de chirca
+search-outlink-to-extensions-page =
+    .title = Gesti dae Estensiones e temas
 search-choose-engine-column =
     .label = Motore de chirca
 search-choose-keyword-column =
@@ -669,7 +999,13 @@ search-remove-engine =
     .accesskey = B
 search-add-engine =
     .label = Agiunghe
+    .accesskey = u
+search-add-engine-2 =
+    .label = Agiunghe unu motore de chirca
     .accesskey = A
+search-edit-engine =
+    .label = Modìfica
+    .accesskey = M
 search-find-more-link = Agata àteros motores de chirca
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -678,12 +1014,25 @@ search-keyword-warning-title = Su faeddu crae esistit giai
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = As seberadu unu faeddu crae chi est giai imperadu dae “{ $name }”. Sèbera·nde un'àteru.
 search-keyword-warning-bookmark = As seberadu unu faeddu crae chi est giai imperadu dae unu sinnalibru. Sèbera·nde un'àteru.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Esistit giai unu motore de chirca cun su nòmine “{ $name }”. Sèbera unu nòmine diferente.
+remove-engine-confirmation = Seguru chi boles cantzellare custu motore de chirca?
+remove-engine-remove = Boga
+remove-addon-engine-alert = Pro cantzellare custu motore de chirca, cantzella puru su cumplementu assotziadu.
+search-engine-group =
+    .label = Motore de chirca predefinidu
+search-default-engine =
+    .aria-label = Motore de chirca predefinidu
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Torra a sa cunfiguratzione
 containers-header = Ischedas cuntenidoras
+containers-section-header =
+    .heading = Ischedas cuntenidoras
 containers-add-button =
     .label = Agiunghe unu cuntenidore nou
     .accesskey = A
@@ -695,6 +1044,11 @@ containers-settings-button =
 containers-remove-button =
     .label = Boga
 
+## Account and sync
+
+sync-group-label =
+    .label = Sincronizatzione
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -702,6 +1056,12 @@ sync-signedout-caption = Bati·ti·nche·ddu in ònnia logu, su web tuo
 sync-signedout-description2 = Sincroniza is sinnalibros tuos, sa cronologia, is ischedas, is craes, is cumplementos e sa cunfiguratzione in totu is dispositivos tuos.
 sync-signedout-account-signin3 =
     .label = Identìfica·ti pro sincronizare…
+    .accesskey = I
+sync-signedout-account-signin-4 =
+    .label = Identìfica·ti cun su contu tuo pro aviare sa sincronizatzione
+    .accesskey = I
+sync-signedout-account-short =
+    .label = Identìfica·ti
     .accesskey = I
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
@@ -727,14 +1087,31 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Serra sa sessione…
     .accesskey = s
+sync-sign-out2 =
+    .label = Serra sa sessione
+    .accesskey = s
 sync-manage-account = Gesti su contu
+    .accesskey = o
+sync-manage-account2 =
+    .label = Gesti su contu
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } no est verificadu.
 sync-signedin-login-failure = Identìfica·ti pro torrare a connètere a { $email }
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -754,9 +1131,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Sincronizatzione ativada
+prefs-syncing-on-2 =
+    .label = Sa sincronizatzione est ATIVA
 prefs-syncing-off = Sincronizatzione disativada
+prefs-syncing-off-2 =
+    .label = Sa sincronizatzione est DISATIVADA
+    .description = Ativa sa sincronizatzione pro tènnere totu is sinnalibros, is craes, sa cronologia e àteru in su dispositivu.
 prefs-sync-turn-on-syncing =
     .label = Ativa sa sincronizatzione…
+    .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Ativa sa sincronizatzione
     .accesskey = s
 prefs-sync-offer-setup-label2 = Sincroniza is sinnalibros tuos, sa cronologia, is ischedas, is craes, is cumplementos e sa cunfiguratzione in totu is dispositivos tuos.
 prefs-sync-now =
@@ -766,12 +1151,19 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sincroniza immoe
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Sincroniza immoe
+    .accesskey = N
 prefs-syncing-button =
     .label = Sincronizende…
+prefs-syncing-button-2 =
+    .label = Sincronizende…
+    .title = Sincroniza immoe
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = Ses acanta de sincronizare custos elementos intre totu is dispositivos tuos connètidos:
+sync-syncing-across-devices-heading-2 = Datos sincronizados intre dispositivos
 sync-currently-syncing-bookmarks = Sinnalibros
 sync-currently-syncing-history = Cronologia
 sync-currently-syncing-tabs = Ischedas abertas
@@ -782,6 +1174,12 @@ sync-currently-syncing-creditcards = Cartas de crèditu
 sync-currently-syncing-payment-methods = Mètodos de pagamentu
 sync-currently-syncing-addons = Cumplementos
 sync-currently-syncing-settings = Cunfiguratzione
+sync-manage-options =
+    .label = Gesti sa sincronizatzione…
+    .accesskey = G
+sync-manage-options-2 =
+    .label = Gesti is datos sincronizados
+    .accesskey = G
 sync-change-options =
     .label = Modìfica…
     .accesskey = M
@@ -834,10 +1232,27 @@ sync-engine-settings =
     .label = Cunfiguratzione
     .tooltiptext = Cunfiguratzione generale, de riservadesa e de seguresa chi apas modificadu
     .accesskey = n
+sync-choose-what-to-sync-dialog4 =
+    .title = Sèbera elementos de sincronizare
+    .style = min-width: 36em;
+    .buttonlabelaccept = Sarva
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Disconnete…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
 sync-device-name-header = Nòmine de su dispositivu
+sync-device-name-header-2 =
+    .label = Nòmine de su dispositivu
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nòmine de su dispositivu
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Muda su nòmine de su dispositivu
+    .accesskey = u
 sync-device-name-change =
     .label = Muda su nòmine de su dispositivu…
     .accesskey = u
@@ -848,6 +1263,8 @@ sync-device-name-save =
     .label = Sarva
     .accesskey = v
 sync-connect-another-device = Connete un'àteru dispositivu
+sync-connect-another-device-2 =
+    .label = Connete un'àteru dispositivu
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -870,19 +1287,25 @@ pane-privacy-logins-and-passwords-header = Credentziales e craes
     .searchkeywords = { -lockwise-brand-short-name }
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
-    .label = Pregonta si bògio sarvare is credentziales e is craes de is sitos web
+    .label = Pregunta si bògio sarvare is credentziales e is craes de is sitos web
     .accesskey = D
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 # "Logins" is the former term for "Passwords". Users should find password settings
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Craes
     .searchkeywords = credentziales
+forms-passwords-header =
+    .label = Craes
+    .aria-label = Craes
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Cussìgia de sarvare is craes
     .accesskey = P
+forms-manage-password-exceptions =
+    .label = Gesti is etzetziones pro is craes
+    .accesskey = G
 forms-exceptions =
     .label = Etzetziones…
     .accesskey = z
@@ -916,9 +1339,28 @@ forms-fill-usernames-and-passwords =
 forms-saved-passwords =
     .label = Craes sarvadas
     .accesskey = C
+forms-saved-passwords-2 =
+    .label = Gesti is craes sarvadas
+    .accesskey = d
+forms-saved-passwords-searchkeywords = S’elaboradore tuo tenet credentziales sarvadas pro is sitos imbenientes
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Amparos agiuntivos
 forms-primary-pw-use =
     .label = Imprea una crae printzipale
     .accesskey = u
+forms-primary-pw-set =
+    .label = Cunfigura una crae printzipale
+forms-primary-pw-on =
+    .label = Sa crae printzipale est ATIVA
+forms-primary-pw-change-2 =
+    .label = Modifica sa crae printzipale
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Disativa·dda
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Rechede s’identificatzione in su dispositivu pro compilare in automàticu e gestire is craes
 forms-primary-pw-learn-more-link = Àteras informatziones
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -951,6 +1393,12 @@ primary-password-os-auth-dialog-message-win = Pro creare una crae printzipale, i
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crea una crae printzipale
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] modifica sa cunfiguratzione de is mètodos de pagamentu
+       *[other] { -brand-short-name } est proende a modificare is cunfiguratziones de is mètodos de pagamentu. Imprea s’identificatzione de su dispositivu tuo pro ddu permìtere.
+    }
 autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
@@ -966,6 +1414,46 @@ autofill-payment-methods-checkbox-submessage = Includet cartas de crèditu e de 
     .accesskey = I
 autofill-saved-payment-methods-button = Mètodos de pagamentu sarvados
     .accesskey = t
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Rechede s’identificatzione in su dispositivu pro compilare in automàticu e gestire is mètodos de pagamentu
+    .accesskey = R
+autofill-payment-methods-header =
+    .aria-label = Mètodos de pagamentu
+autofill-payment-methods-checkbox-message-2 =
+    .label = Sarva e cumpleta in automàticu is informatziones de pagamentu
+    .accesskey = S
+autofill-payment-methods-manage-payments-title =
+    .heading = Gesti is mètodos de pagamentu
+autofill-payment-methods-manage-payments-button =
+    .label = Gesti is mètodos de pagamentu
+    .accesskey = m
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Rechede s’identificatzione in su dispositivu pro compilare in automàticu e gestire is mètodos de pagamentu
+    .accesskey = R
+autofill-payment-methods-add-button = Agiunghe unu mètodu de pagamentu nou
+payments-list-header =
+    .label = Mètodos de pagamentu
+payments-delete-payment-prompt-title = Boles cantzellare custu mètodu de pagamentu?
+autofill-addresses-checkbox-message =
+    .label = Sarva e cumpleta in automàticu is indiritzos
+    .accesskey = a
+autofill-addresses-manage-addresses-button =
+    .label = Gesti is indiritzos e àteru
+    .accesskey = s
+autofill-addresses-add-button = Agiunghe un’indiritzu nou
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Indiritzos e àteru
+payments-group =
+    .label = Mètodos de pagamentu
 
 ## Privacy Section - History
 
@@ -987,6 +1475,12 @@ history-remember-option-never =
     .label = no at a regordare mai sa cronologia
 history-remember-option-custom =
     .label = Imprea sa cunfiguratzione personalizada pro sa cronologia
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } at a regordare sa cronologia de navigatzione, iscarrigamentu, formulàrios e de chirca.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } at a impreare sa pròpiu cunfiguratzione de sa navigatzione privada, e no at a regordare nissuna cronologia durante sa navigatzione tua in rete.
 history-remember-description = { -brand-short-name } at a regordare sa cronologia de navigatzione, iscarrigamentu, formulàrios e de chirca.
 history-dontremember-description = { -brand-short-name } at a impreare sa pròpiu cunfiguratzione de sa navigatzione privada, e no at a regordare nissuna cronologia durante sa navigatzione tua in rete.
 history-private-browsing-permanent =
@@ -1007,6 +1501,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Isbòida sa cronologia…
     .accesskey = s
+history-group =
+    .label = Cronologia
 
 ## Privacy Section - Site Data
 
@@ -1015,11 +1511,13 @@ sitedata-total-size-calculating = Carculende sa mannària de is datos de is sito
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
-sitedata-total-size = Is testimòngios, is datos de is sitos e sa memòria temporànea sunt impreende immoe { $value } { $unit } de s'ispàtziu in discu.
+sitedata-total-size = Is testimòngios, is datos de is sitos e sa memòria temporànea sunt impreende immoe { $value } { $unit } de ispàtziu in su discu.
 sitedata-learn-more = Leghe àteru
 sitedata-delete-on-close =
     .label = Cantzella is testimòngios e is datos de is sitos comente serras { -brand-short-name }
     .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = Segundu sa cunfiguratzione tua de sa cronologia, { -brand-short-name } nde cantzellat testimòngios (cookies) e datos de is sitos dae sa sessione tua cando serras su navigadore.
 sitedata-delete-on-close-private-browsing = In sa modalidade de navigatzione privada permanente, is testimòngios e is datos de is sitos ant a èssere semper cantzellados comente serras { -brand-short-name }.
 sitedata-delete-on-close-private-browsing2 = Segundu sa cunfiguratzione tua de sa cronologia, { -brand-short-name } nde cantzellat testimòngios (cookies) e datos de is sitos dae sa sessione tua cando serras su navigadore.
 sitedata-allow-cookies-option =
@@ -1044,6 +1542,12 @@ sitedata-option-block-all-cross-site-cookies =
     .label = Totu is testimòngios intre-sitos (diat pòdere causare chi unos cantos sitos non funtzionent)
 sitedata-option-block-all =
     .label = Totu is testimòngios (unos cantos sitos no ant a funtzionare)
+sitedata-clear2 =
+    .label = Cantzella is datos de navigatzione
+    .accesskey = z
+sitedata-settings2 =
+    .label = Gesti is datos de navigatzione
+    .accesskey = G
 sitedata-clear =
     .label = Isbòida is datos…
     .accesskey = I
@@ -1051,8 +1555,14 @@ sitedata-settings =
     .label = Gesti is datos…
     .accesskey = G
 sitedata-cookies-exceptions =
-    .label = Gesti etzetziones…
+    .label = Gesti is etzetziones…
     .accesskey = z
+sitedata-cookies-exceptions2 =
+    .label = Gesti is etzetziones
+    .accesskey = e
+    .description = Podes ispetzificare cales sitos tenent permissu o nono pro impreare testimòngios e datos de is sitos.
+cookies-site-data-group =
+    .label = Testimòngios e datos de is sitos
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1069,40 +1579,77 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Refuda in automàticu avisos de testimòngios
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Barra de indiritzos
 addressbar-suggest = Cando ses impreende sa barra de indiritzos, cussìgia
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Barra de indiritzos — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Sèbera su tipu de cussìgios chi depent apàrrere in sa barra de indiritzos.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Àteras informatziones
 addressbar-locbar-history-option =
-    .label = cronologia de navigatzione
-    .accesskey = n
+    .label = Cronologia de navigatzione
+    .accesskey = C
 addressbar-locbar-bookmarks-option =
-    .label = sinnalibros
+    .label = Sinnalibros
     .accesskey = s
 addressbar-locbar-clipboard-option =
     .label = Punta de billete
     .accesskey = P
 addressbar-locbar-openpage-option =
-    .label = ischedas abertas
-    .accesskey = i
+    .label = Ischedas abertas
+    .accesskey = I
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
-    .label = curtzadòrgios
+    .label = Curtzadòrgios
     .accesskey = u
 addressbar-locbar-topsites-option =
     .label = sitos populares
     .accesskey = p
+addressbar-locbar-engines-option-1 =
+    .label = Cussìgia is motores de chirca de impreare
+    .accesskey = m
 addressbar-locbar-engines-option =
     .label = motores de chirca
     .accesskey = m
 addressbar-locbar-quickactions-option =
     .label = Atziones lestras
     .accesskey = A
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Cussìgios de chirca in tendèntzia
+    .accesskey = t
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Cussìgios dae { -brand-short-name }
+    .description = Otene cussìgios de sa rete acapiados a sa chirca tua.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Cussìgios dae is ispònsors
+    .description = Sustene { -brand-short-name } cun propostas patrotzinadas in manera ocasionale.
 addressbar-suggestions-settings = Muda sa cunfiguratzione de cussìgios de motores de chirca
 addressbar-locbar-showrecentsearches-option =
     .label = Ammustra chircas reghentes
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Ammustra cussìgios de chirca in tendèntzia
+    .accesskey = A
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Cussìgios dae { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = Otene cussìgios de sa rete acapiados a sa chirca tua.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Cussìgios dae is ispònsors
+addressbar-locbar-suggest-sponsored-desc = Sustene { -brand-short-name } cun propostas patrotzinadas in manera ocasionale.
+addressbar-dismissed-suggestions-label-2 =
+    .label = Cussìgios iscartados
+    .description = Ripristina is cussìgios iscartados dae is patrotzinadores e { -brand-short-name }.
 addressbar-quickactions-learn-more = Àteras informatziones
+addressbar-dismissed-suggestions-label = Cussìgios iscartados
+addressbar-restore-dismissed-suggestions-description = Ripristina is cussìgios iscartados dae is patrotzinadores e { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Ripristina
 
 ## Privacy Section - Content Blocking
 
@@ -1131,7 +1678,7 @@ enhanced-tracking-protection-setting-custom =
 
 ##
 
-content-blocking-etp-standard-desc = Echilìbriu intre amparu e rendimentu. Is pàginas s'ant a carrigare cun normalidade.
+content-blocking-etp-standard-desc = Echilìbriu intre amparu e rendimentu. Is pàginas s’ant a carrigare cun normalidade.
 content-blocking-etp-strict-desc = Amparu prus poderosu, però diat pòdere causare chi unos cantos sitos o cuntenutos non funtzionent.
 content-blocking-etp-custom-desc = Sèbera cale elementos de sighidura e scripts depent èssere blocados.
 content-blocking-etp-blocking-desc = { -brand-short-name } blocat:
@@ -1155,12 +1702,13 @@ content-blocking-known-and-suspected-fingerprinters = Generadores de imprentas d
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 # "Contains" here means "isolates", "limits".
-content-blocking-etp-standard-tcp-rollout-description = Sa protetzione totale de testimòngios cuntenet is testimòngios de su situ in ue t'agatas, aici is sighidores no ddos podent impreare pro ti sighire intre unu situ e s'àteru.
+content-blocking-etp-standard-tcp-rollout-description = Sa protetzione totale de testimòngios cuntenet is testimòngios de su situ in ue t’agatas, aici is sighidores no ddos podent impreare pro ti sighire intre unu situ e s’àteru.
 content-blocking-etp-standard-tcp-rollout-learn-more = Àteras informatziones
 content-blocking-etp-standard-tcp-title = Includet sa protetzione totale de testimòngios, sa funtzionalidade nostra de riservadesa prus potente de semper
 content-blocking-warning-title = Atentzione!
 content-blocking-and-isolating-etp-warning-description-2 = Custa cunfiguratzione diat pòdere fàghere chi unos cantos sitos no ammustrent cuntenutos o non funtzionent bene. Si paret chi unu situ non siat funtzionende, podes proare a istudare sa protetzione dae sa sighidura pro chi cussu situ càrrighet totu su cuntenutu.
 content-blocking-warning-learn-how = Impara comente ddu fàghere
+content-blocking-baseline-uncheck-warning-dialog-title = Seguru chi boles disativare is curretziones?
 content-blocking-reload-description = As a dèpere torrare a carrigare is ischedas tuas pro carrigare custas modìficas.
 content-blocking-reload-tabs-button =
     .label = Torra a carrigare totu is ischedas
@@ -1205,7 +1753,7 @@ content-blocking-suspected-fingerprinters-label =
 ## Privacy Section - Tracking
 
 tracking-manage-exceptions =
-    .label = Gesti etzetziones…
+    .label = Gesti is etzetziones…
     .accesskey = z
 
 ## Privacy Section - Permissions
@@ -1240,42 +1788,84 @@ permissions-notification-link = Àteras informatziones
 permissions-notification-pause =
     .label = Pone is notìficas in pàusa fintzas a cando { -brand-short-name } no at a èssere torradu a aviare
     .accesskey = n
+permissions-autoplay2 =
+    .label = Riprodutzione in automàticu
 permissions-autoplay = Riprodutzione in automàticu
 permissions-autoplay-settings =
     .label = Cunfiguratzione…
     .accesskey = t
 permissions-block-popups =
-    .label = Bloca is ventanas emergentes
+    .label = Bloca is ventanas a cumparsa
     .accesskey = B
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
 permissions-block-popups-exceptions-button =
     .label = Etzetziones…
     .accesskey = E
-    .searchkeywords = ventanas emergentes
+    .searchkeywords = ventanas a cumparsa
 permissions-addon-install-warning =
     .label = Avisa si unu situ proat a installare cumplementos
     .accesskey = A
 permissions-addon-exceptions =
     .label = Etzetziones…
     .accesskey = E
+permissions-location2 =
+    .label = Positzione
+permissions-local-network2 =
+    .label = Dispositivos de rete locale
+permissions-xr2 =
+    .label = Realidade virtuale
+permissions-camera2 =
+    .label = Fotocàmera
+permissions-microphone2 =
+    .label = Micròfonu
+permissions-notification2 =
+    .label = Notìficas
 
 ## Privacy Section - Data Collection
 
 collection-header = Impreu e còllida de datos dae { -brand-short-name }
 collection-header2 = Impreu e collida de datos dae { -brand-short-name }
     .searchkeywords = telemetria
+preferences-collection-description = Nos impinnamus a ti donare sa possibilidade de seberare e regollimus isceti is datos mìnimos pro megiorare { -brand-product-name } pro totus.
+preferences-collection-privacy-notice = Bide s'avisu de riservadesa
+preferences-across-profiles = Custas cunfiguratziones sunt aplicadas a totu is profilos de { -brand-product-name } de custu dispositivu.
+preferences-view-profiles = Ammustra totu is profilos
 collection-description = Chircamus de ti garantire sèberos e de regòllere isceti su chi nos serbit pro sa frunidura e su megioru de { -brand-short-name } pro chie chi siat. Pedimus semper su permissu in antis de retzire informatziones personales.
 collection-privacy-notice = Avisu de riservadesa
 collection-health-report-telemetry-disabled = Non permitas prus a { -vendor-short-name } de caturare datos tècnicos e de interatzione. Totu is datos betzos ant a èssere cantzellados intro de 30 dies.
 collection-health-report-telemetry-disabled-link = Àteras informatziones
+addon-recommendations3 =
+    .label = Permite cussìgios personalizados de estensiones
+    .description = Retzi cussìgios de estensiones pro megiorare s’esperièntzia tua de navigatzione.
+collection-usage-ping =
+    .label = Imbia unu ping de impreu diàriu a { -vendor-short-name }
+    .accesskey = I
+collection-usage-ping-description = Custu permitit a { -vendor-short-name } de istimare su nùmeru de utentes ativos.
+collection-health-report2 =
+    .label = Imbia datos tècnicos e de interatzione a { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permite chi { -brand-short-name } imbiet datos tècnicos e de interatzione a { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Àteras informatziones
+collection-health-report-description = Custu nos agiudat a megiorare is funtziones, su rendimentu e s’istabilidade de { -brand-product-name }.
+collection-studies2 =
+    .label = Installa e faghe istùdios
+collection-studies-description = Proa funtziones e ideas in antis chi siant publicadas pro totus.
 collection-studies =
     .label = Permite a { -brand-short-name } de installare e aviare istùdios
 collection-studies-link = Ammustra is istùdios de { -brand-short-name }
+addon-recommendations2 =
+    .label = Permite cussìgios personalizados de estensiones
+addon-recommendations-description = Retzi cussìgios de estensiones pro megiorare s’esperièntzia tua de navigatzione.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = S’imbiu de datos est disativadu is sa cunfiguratzione de custa versione.
+collection-backlogged-crash-reports2 =
+    .label = Imbia sinnalatziones de faddina in automàticu
+    .accesskey = I
+collection-backlogged-crash-reports-description = Custu agiudat { -vendor-short-name } a agatare e arrangiare is faddinas de su navigadore. Is informes podent incluire datos personale o sensìbiles.
 addon-recommendations =
     .label = Permite chi { -brand-short-name } cussiget estensiones personalizadas
 addon-recommendations-link = Àteras informatziones
@@ -1284,18 +1874,41 @@ addon-recommendations-link = Àteras informatziones
 collection-health-report-disabled = S'informe de datos est disativadu in sa cunfiguratzione de custa versione
 collection-backlogged-crash-reports-with-link = Permite a { -brand-short-name } de t'imbiare informes de faddina in suspesu <a data-l10n-name="crash-reports-link">Àteras informatziones</a>
     .accesskey = i
-collection-backlogged-crash-reports = Permite a { -brand-short-name } de t'imbiare informes de faddina in suspesu
-    .accesskey = i
 privacy-segmentation-section-header = Caraterìsticas noas pro megiorare sa navigatzione
 privacy-segmentation-section-description = Cando oferimus caraterìsticas chi impreant is datos tuos pro ti donare un'esperièntzia prus personale:
 privacy-segmentation-radio-off =
     .label = Imprea is cussìgios de { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Ammustra informatziones detalliadas
+# The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
+data-collection =
+    .label = Impreu e collida de datos dae { -brand-short-name }
+    .description = Nos impinnamus a ti donare sa possibilidade de seberare e regollimus isceti is datos mìnimos pro megiorare { -brand-product-name } pro totus.
+    .searchkeywords = telemetria
+data-collection-link = Bide s'avisu de riservadesa
+data-collection-preferences-across-profiles =
+    .message = Custas cunfiguratziones sunt aplicadas a totu is profilos de { -brand-product-name } de custu dispositivu.
+data-collection-profiles-link = Ammustra totu is profilos
+data-collection-health-report-telemetry-disabled =
+    .message = Non permitas prus a { -vendor-short-name } de caturare datos tècnicos e de interatzione. Totu is datos betzos ant a èssere cantzellados intro de 30 dies.
+data-collection-health-report =
+    .label = Imbia datos tècnicos e de interatzione a { -vendor-short-name }
+    .accesskey = r
+    .description = Custu nos agiudat a megiorare is funtziones, su rendimentu e s’istabilidade de { -brand-product-name }.
+data-collection-studies-link =
+    .label = Ammustra is istùdios de { -brand-short-name }
+data-collection-usage-ping =
+    .label = Imbia unu ping de impreu diàriu a { -vendor-short-name }
+    .description = Custu permitit a { -vendor-short-name } de istimare su nùmeru de utentes ativos.
+    .accesskey = I
 
 ## Privacy Section - Website Advertising Preferences
 
 website-advertising-header = Preferèntzias de publitzidade de su situ
+website-advertising-private-attribution =
+    .label = Permite a is sitos de fàghere mesuras pro publitzidade respetende sa riservadesa.
+    .accesskey = P
+website-advertising-private-attribution-description = Custu agiudat a is sitos a cumprèndere comente sa publitzidade issoro funtzionet chene de collire datos tuos.
 
 ## Privacy Section - Security
 ##
@@ -1335,18 +1948,34 @@ space-alert-over-5gb-settings-button =
     .accesskey = A
 space-alert-over-5gb-message2 = <strong>Est acabbende s'ispàtziu in su discu pro { -brand-short-name }.</strong> Podet èssere chi is cuntenutos de is sitos no s'ammustrent in manera curreta. Podes isboidare is datos de is sitos sarvados in Cunfiguratziones > Riservadesa e Seguresa > Testimòngios e datos de is sitos.
 space-alert-under-5gb-message2 = <strong>Est acabbende s'ispàtziu in su discu pro { -brand-short-name }.</strong> Podet èssere chi is cuntenutos de is sitos no s'ammustrent in manera curreta. Bae a “Àteras informatziones” pro megiorare s'impreu de s'ispàtziu de su discu e duncas s'esperièntzia de navigatzione.
+certs-view2 =
+    .label = Gesti is tzertificados
+    .accesskey = z
+certs-devices2 =
+    .label = Gesti is dispositivos de seguresa
+    .accesskey = d
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modalidade HTTPS ebbia
+httpsonly-description3 = Permitit isceti connessiones seguras a is sitos. { -brand-short-name } at a preguntare in antis de si connètere in manera non segura.
+httpsonly-learn-more2 = Comente funtzionat sa modalidade «isceti HTTPS»
 httpsonly-description = HTTPS garantit una connessione segura e tzifrada intre { -brand-short-name } e is sitos web chi ses bisitende. Sa majoria de is sitos sunt cumpatìbiles cun HTTPS; si sa Modalidade HTTPS ebbia est ativada, { -brand-short-name } at a impreare HTTPS in totu is connessiones.
 httpsonly-learn-more = Àteras informatziones
 httpsonly-radio-enabled =
     .label = Ativa sa modalidade HTTPS ebbia in totu is ventanas
 httpsonly-radio-enabled-pbm =
     .label = Ativa sa modalidade HTTPS ebbia isceti in is ventanas privadas
+httpsonly-radio-disabled3 =
+    .label = No atives sa modalidade «isceti HTTPS»
+    .description = { -brand-short-name } diat pòdere ancora atualizare unas cantas connessiones
 httpsonly-radio-disabled =
     .label = No atives sa modalidade HTTPS ebbia
+httpsonly-group =
+    .label = Modalidade HTTPS ebbia
+    .description = Permitit isceti connessiones seguras a is sitos. { -brand-short-name } at a preguntare in antis de si connètere in manera non segura.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
@@ -1406,9 +2035,44 @@ preferences-doh-exceptions-description = { -brand-short-name } no at a impreare 
 preferences-doh-manage-exceptions =
     .label = Gesti is etzetziones…
     .accesskey = E
+preferences-doh-advanced-button =
+    .label = Cunfiguratziones avantzadas
+preferences-doh-manage-exceptions2 =
+    .label = Gesti is etzetziones
+    .accesskey = z
 
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Iscrivania
 downloads-folder-name = Iscarrigamentos
 choose-download-folder-title = Sèbera sa cartella de iscarrigamentos
+
+## AI controls page
+
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-translations-more-link = Àteras cunfiguratziones de tradutzione
+preferences-ai-controls-key-points-control =
+    .label = Puntos crae in sa previsualizatzione de is ligòngios
+    .description = Bide unu resumu lestru in antis de abèrrere unu ligòngiu.
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = A disponimentu
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Ativadu
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Blocadu
+preferences-ai-controls-state-description-before = Significadu dae is optziones:
+preferences-ai-controls-block-confirmation-translations = Tradutziones
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Annulla
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Bloca
+preferences-ai-controls-header3 =
+    .heading = Controllos de s’IA
+
+## Privacy and security status card
+
+security-privacy-status-update-needed-label = Nch’at una versione noa de { -brand-short-name } a disponimentu.

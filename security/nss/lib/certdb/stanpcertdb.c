@@ -14,7 +14,6 @@
 
 #include "secasn1.h"
 #include "secerr.h"
-#include "nssilock.h"
 #include "prmon.h"
 #include "base64.h"
 #include "sechash.h"
@@ -424,8 +423,8 @@ CERT_NewTempCertificate(CERTCertDBHandle *handle, SECItem *derCert,
     nssItem_Create(c->object.arena, &c->subject, cc->derSubject.len,
                    cc->derSubject.data);
     /* CERTCertificate stores serial numbers decoded.  I need the DER
-    * here.  sigh.
-    */
+     * here.  sigh.
+     */
     SECItem derSerial = { 0 };
     CERT_SerialNumberFromDERCert(&cc->derCert, &derSerial);
     if (!derSerial.data)
@@ -1045,10 +1044,15 @@ CERT_FindSMimeProfile(CERTCertificate *cert)
         nssSMIMEProfile *stanProfile;
         stanProfile = nssCryptoContext_FindSMIMEProfileForCertificate(cc, c);
         if (stanProfile) {
-            rvItem =
-                SECITEM_AllocItem(NULL, NULL, stanProfile->profileData->size);
-            if (rvItem) {
-                rvItem->data = stanProfile->profileData->data;
+            if (stanProfile->profileData) {
+                rvItem =
+                    SECITEM_AllocItem(NULL, NULL,
+                                      stanProfile->profileData->size);
+                if (rvItem) {
+                    PORT_Memcpy(rvItem->data,
+                                stanProfile->profileData->data,
+                                stanProfile->profileData->size);
+                }
             }
             nssSMIMEProfile_Destroy(stanProfile);
         }

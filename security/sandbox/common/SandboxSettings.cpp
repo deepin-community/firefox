@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,19 +5,17 @@
 #include "mozilla/SandboxSettings.h"
 #include "mozISandboxSettings.h"
 #include "nsServiceManagerUtils.h"
+#include "nsAppRunner.h"
 
 #include "mozilla/Components.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_security.h"
-#include "mozilla/StaticPrefs_webgl.h"
 
 #include "prenv.h"
 
 #ifdef XP_WIN
-#  include "mozilla/gfx/gfxVars.h"
-#  include "mozilla/WindowsVersion.h"
 #  include "nsExceptionHandler.h"
 #  include "PDMFactory.h"
 #endif  // XP_WIN
@@ -43,9 +39,6 @@ const char* ContentWin32kLockdownStateToString(
     case nsIXULRuntime::ContentWin32kLockdownState::PrefNotSet:
       return "Win32k Lockdown disabled -- Preference not set";
 
-    case nsIXULRuntime::ContentWin32kLockdownState::MissingRemoteWebGL:
-      return "Win32k Lockdown disabled -- Missing Remote WebGL";
-
     case nsIXULRuntime::ContentWin32kLockdownState::MissingNonNativeTheming:
       return "Win32k Lockdown disabled -- Missing Non-Native Theming";
 
@@ -55,9 +48,6 @@ const char* ContentWin32kLockdownStateToString(
 
     case nsIXULRuntime::ContentWin32kLockdownState::DisabledByEnvVar:
       return "Win32k Lockdown disabled -- MOZ_ENABLE_WIN32K is set";
-
-    case nsIXULRuntime::ContentWin32kLockdownState::DisabledBySafeMode:
-      return "Win32k Lockdown disabled -- Running in Safe Mode";
 
     case nsIXULRuntime::ContentWin32kLockdownState::DisabledByE10S:
       return "Win32k Lockdown disabled -- E10S is disabled";
@@ -128,13 +118,18 @@ int GetEffectiveContentSandboxLevel() {
     return 0;
   }
   int level = StaticPrefs::security_sandbox_content_level_DoNotUseDirectly();
-// On Windows and macOS, enforce a minimum content sandbox level of 1 (except on
-// Nightly, where it can be set to 0).
-#if !defined(NIGHTLY_BUILD) && (defined(XP_WIN) || defined(XP_MACOSX))
-  if (level < 1) {
-    level = 1;
-  }
+#if !defined(NIGHTLY_BUILD) && defined(XP_MACOSX)
+  // On non-Nightly macOS, enforce a minimum sandbox level of 1.
+  static const int minimumLevel = 1;
+#elif defined(XP_WIN)
+  // On Windows, enforce a minimum sandbox level of 6.
+  static const int minimumLevel = 6;
+#else
+  static const int minimumLevel = 0;
 #endif
+  if (level < minimumLevel) {
+    level = minimumLevel;
+  }
 #ifdef XP_LINUX
   // Level 1 was a configuration with default-deny seccomp-bpf but
   // which allowed direct filesystem access; that required additional
@@ -152,15 +147,23 @@ int GetEffectiveContentSandboxLevel() {
   if (level > 3 && !StaticPrefs::media_cubeb_sandbox()) {
     level = 3;
   }
+  // Turn off ioctl lockdown in safe mode, until it's gotten more testing.
+  if (level > 5 && gSafeMode) {
+    level = 5;
+  }
 #endif
 #if defined(XP_WIN)
   // Sandbox level 8, which uses a USER_RESTRICTED access token level, breaks if
   // prefs moving processing out of the content process are not the default.
   if (level >= 8 &&
-      (!StaticPrefs::webgl_out_of_process() ||
-       !PDMFactory::AllDecodersAreRemote() ||
-       !StaticPrefs::network_process_enabled() ||
-       !Preferences::GetBool("media.peerconnection.mtransport_process"))) {
+      (!PDMFactory::AllDecodersAreRemote()
+#  if defined(MOZ_WEBRTC) && !defined(MOZ_THUNDERBIRD)
+       // These are only relevant if webrtc is present. Thunderbird currently
+       // compiles with webrtc, but doesn't use it.
+       || !StaticPrefs::network_process_enabled() ||
+       !Preferences::GetBool("media.peerconnection.mtransport_process")
+#  endif
+           )) {
     level = 7;
   }
 #endif
@@ -170,6 +173,10 @@ int GetEffectiveContentSandboxLevel() {
 
 bool IsContentSandboxEnabled() { return GetEffectiveContentSandboxLevel() > 0; }
 
+bool IsGPUSandboxEnabled() {
+  return Preferences::GetInt("security.sandbox.gpu.level") > 0;
+}
+
 int GetEffectiveSocketProcessSandboxLevel() {
   if (PR_GetEnv("MOZ_DISABLE_SOCKET_PROCESS_SANDBOX")) {
     return 0;
@@ -178,12 +185,52 @@ int GetEffectiveSocketProcessSandboxLevel() {
   int level =
       StaticPrefs::security_sandbox_socket_process_level_DoNotUseDirectly();
 
+#ifdef XP_LINUX
+  // Turn off ioctl lockdown in safe mode, until it's gotten more testing.
+  if (level > 1 && gSafeMode) {
+    level = 1;
+  }
+#endif
+
   return level;
 }
 
 int GetEffectiveGpuSandboxLevel() {
   return StaticPrefs::security_sandbox_gpu_level();
 }
+
+#if defined(MOZ_PROFILE_GENERATE)
+// It should only be allowed on instrumented builds, never on production
+// builds.
+#  if defined(XP_WIN)
+bool GetLlvmProfileDir(std::wstring& parentPath) {
+  bool rv = false;
+  if (const wchar_t* llvmProfileFileEnv = _wgetenv(L"LLVM_PROFILE_FILE")) {
+    std::wstring llvmProfileDir(llvmProfileFileEnv);
+    const size_t found = llvmProfileDir.find_last_of(L"/\\");
+    if (found != std::string::npos) {
+      parentPath = llvmProfileDir.substr(0, found);
+      parentPath.append(L"\\*");
+      rv = true;
+    }
+  }
+  return rv;
+}
+#  else   // defined(XP_WIN)
+bool GetLlvmProfileDir(std::string& parentPath) {
+  bool rv = false;
+  if (const char* llvmProfileFileEnv = getenv("LLVM_PROFILE_FILE")) {
+    std::string llvmProfileDir(llvmProfileFileEnv);
+    const size_t found = llvmProfileDir.find_last_of("/\\");
+    if (found != std::string::npos) {
+      parentPath = llvmProfileDir.substr(0, found);
+      rv = true;
+    }
+  }
+  return rv;
+}
+#  endif  // defined(XP_WIN)
+#endif    // defined(MOZ_PROFILE_GENERATE
 
 #if defined(XP_MACOSX)
 int ClampFlashSandboxLevel(const int aLevel) {

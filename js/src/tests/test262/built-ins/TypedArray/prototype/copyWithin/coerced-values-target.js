@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -26,10 +25,10 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(undefined, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(undefined, 1),
       [1, 2, 3, 3]
     ),
     'undefined value coerced to 0'
@@ -37,7 +36,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(false, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(false, 1),
       [1, 2, 3, 3]
     ),
     'false value coerced to 0'
@@ -45,7 +44,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(NaN, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(NaN, 1),
       [1, 2, 3, 3]
     ),
     'NaN value coerced to 0'
@@ -53,7 +52,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(null, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(null, 1),
       [1, 2, 3, 3]
     ),
     'null value coerced to 0'
@@ -61,7 +60,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(true, 0),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(true, 0),
       [0, 0, 1, 2]
     ),
     'true value coerced to 1'
@@ -69,7 +68,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin('1', 0),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin('1', 0),
       [0, 0, 1, 2]
     ),
     'string "1" value coerced to 1'
@@ -77,7 +76,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(0.5, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(0.5, 1),
       [1, 2, 3, 3]
     ),
     '0.5 float value coerced to integer 0'
@@ -85,7 +84,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin(1.5, 0),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin(1.5, 0),
       [0, 0, 1, 2]
     ),
     '1.5 float value coerced to integer 1'
@@ -93,7 +92,7 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert(
     compareArray(
-      new TA([0, 1, 2, 3]).copyWithin({}, 1),
+      new TA(makeCtorArg([0, 1, 2, 3])).copyWithin({}, 1),
       [1, 2, 3, 3]
     ),
     'object value coerced to integer 0'

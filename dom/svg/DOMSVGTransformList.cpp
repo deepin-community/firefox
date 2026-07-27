@@ -1,18 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DOMSVGTransformList.h"
 
+#include <algorithm>
+
+#include "DOMSVGTransform.h"
+#include "SVGAnimatedTransformList.h"
 #include "mozilla/dom/SVGElement.h"
 #include "mozilla/dom/SVGMatrix.h"
 #include "mozilla/dom/SVGTransformListBinding.h"
-#include "DOMSVGTransform.h"
-#include "SVGAnimatedTransformList.h"
 #include "nsError.h"
-#include <algorithm>
 
 // local helper functions
 namespace {
@@ -110,7 +109,8 @@ void DOMSVGTransformList::InternalListLengthWillChange(uint32_t aNewLength) {
 }
 
 SVGTransformList& DOMSVGTransformList::InternalList() const {
-  SVGAnimatedTransformList* alist = Element()->GetAnimatedTransformList();
+  SVGAnimatedTransformList* alist =
+      Element()->GetExistingAnimatedTransformList();
   return IsAnimValList() && alist->mAnimVal ? *alist->mAnimVal
                                             : alist->mBaseVal;
 }
@@ -118,7 +118,7 @@ SVGTransformList& DOMSVGTransformList::InternalList() const {
 //----------------------------------------------------------------------
 void DOMSVGTransformList::Clear(ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -130,7 +130,7 @@ void DOMSVGTransformList::Clear(ErrorResult& error) {
     mAList->InternalBaseValListWillChangeLengthTo(0);
 
     mItems.Clear();
-    auto* alist = Element()->GetAnimatedTransformList();
+    auto* alist = Element()->GetExistingAnimatedTransformList();
     alist->mBaseVal.Clear();
     alist->mIsBaseSet = false;
   }
@@ -139,7 +139,7 @@ void DOMSVGTransformList::Clear(ErrorResult& error) {
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::Initialize(
     DOMSVGTransform& newItem, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
@@ -166,7 +166,7 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::GetItem(
   bool found;
   RefPtr<DOMSVGTransform> item = IndexedGetter(index, found, error);
   if (!found) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
   }
   return item.forget();
 }
@@ -186,13 +186,12 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::IndexedGetter(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::InsertItemBefore(
     DOMSVGTransform& newItem, uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
-  index = std::min(index, LengthNoFlush());
-  if (index >= DOMSVGTransform::MaxListIndex()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+  if (LengthNoFlush() >= DOMSVGTransform::MaxListIndex()) {
+    error.ThrowIndexSizeError("List too long");
     return nullptr;
   }
 
@@ -215,6 +214,8 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::InsertItemBefore(
     }
   }
 
+  index = std::min(index, LengthNoFlush());
+
   AutoChangeTransformListNotifier notifier(this);
   // Now that we know we're inserting, keep animVal list in sync as necessary.
   MaybeInsertNullInAnimValListAt(index);
@@ -235,12 +236,12 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::InsertItemBefore(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::ReplaceItem(
     DOMSVGTransform& newItem, uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -269,12 +270,12 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::ReplaceItem(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::RemoveItem(
     uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -301,15 +302,15 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::RemoveItem(
 
 already_AddRefed<DOMSVGTransform>
 DOMSVGTransformList::CreateSVGTransformFromMatrix(const DOMMatrix2DInit& matrix,
-                                                  ErrorResult& rv) {
-  RefPtr<DOMSVGTransform> result = new DOMSVGTransform(matrix, rv);
+                                                  ErrorResult& aRv) {
+  RefPtr<DOMSVGTransform> result = new DOMSVGTransform(matrix, aRv);
   return result.forget();
 }
 
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::Consolidate(
     ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 

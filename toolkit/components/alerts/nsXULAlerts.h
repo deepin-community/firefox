@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode:nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsXULAlerts_h__
-#define nsXULAlerts_h__
+#ifndef nsXULAlerts_h_
+#define nsXULAlerts_h_
 
 #include "nsCycleCollectionParticipant.h"
 #include "nsHashKeys.h"
@@ -23,13 +22,10 @@ struct PendingAlert {
   nsCOMPtr<nsIObserver> mListener;
 };
 
-class nsXULAlerts : public nsIAlertsService,
-                    public nsIAlertsDoNotDisturb,
-                    public nsIAlertsIconURI {
+class nsXULAlerts : public nsIAlertsService, public nsIAlertsDoNotDisturb {
   friend class nsXULAlertObserver;
 
  public:
-  NS_DECL_NSIALERTSICONURI
   NS_DECL_NSIALERTSDONOTDISTURB
   NS_DECL_NSIALERTSSERVICE
   NS_DECL_ISUPPORTS
@@ -41,6 +37,8 @@ class nsXULAlerts : public nsIAlertsService,
  protected:
   virtual ~nsXULAlerts() = default;
   void PersistentAlertFinished();
+  nsresult ShowAlertImpl(nsIAlertNotification* aAlert,
+                         nsIObserver* aAlertListener);
 
   nsInterfaceHashtable<nsStringHashKey, mozIDOMWindowProxy> mNamedWindows;
   uint32_t mPersistentAlertCount = 0;
@@ -81,4 +79,4 @@ class nsXULAlertObserver : public nsIObserver {
   bool mIsPersistent;
 };
 
-#endif /* nsXULAlerts_h__ */
+#endif /* nsXULAlerts_h_ */

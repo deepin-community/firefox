@@ -1,16 +1,16 @@
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHostResolver_h__
-#define nsHostResolver_h__
+#ifndef nsHostResolver_h_
+#define nsHostResolver_h_
 
 #include "nscore.h"
 #include "prnetdb.h"
 #include "PLDHashTable.h"
 #include "mozilla/CondVar.h"
 #include "mozilla/DataMutex.h"
+#include "mozilla/RWLock.h"
 #include "nsISupportsImpl.h"
 #include "nsIDNSListener.h"
 #include "nsTArray.h"
@@ -20,13 +20,11 @@
 #include "mozilla/net/DashboardTypes.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/UniquePtr.h"
 #include "nsHostRecord.h"
 #include "nsRefPtrHashtable.h"
 #include "nsIThreadPool.h"
 #include "mozilla/net/NetworkConnectivityService.h"
 #include "mozilla/net/DNSByTypeRecord.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/StaticPrefs_network.h"
 
 namespace mozilla {
@@ -34,14 +32,18 @@ namespace net {
 class TRR;
 class TRRQuery;
 
+// Clamped to 1 so DequeueNextRecord can always make progress.
 static inline uint32_t MaxResolverThreadsAnyPriority() {
-  return StaticPrefs::network_dns_max_any_priority_threads();
+  return std::max(StaticPrefs::network_dns_max_any_priority_threads(), 1u);
 }
 
 static inline uint32_t MaxResolverThreadsHighPriority() {
   return StaticPrefs::network_dns_max_high_priority_threads();
 }
 
+// The sum guarantees that MaxResolverThreadsHighPriority() threads are
+// always available for high-priority work even when all any-priority
+// slots are occupied by blocking lookups.
 static inline uint32_t MaxResolverThreads() {
   return MaxResolverThreadsAnyPriority() + MaxResolverThreadsHighPriority();
 }
@@ -52,8 +54,6 @@ static inline uint32_t MaxResolverThreads() {
 #define TRR_DISABLED(x)                       \
   (((x) == nsIDNSService::MODE_NATIVEONLY) || \
    ((x) == nsIDNSService::MODE_TRROFF))
-
-extern mozilla::Atomic<bool, mozilla::Relaxed> gNativeIsLocalhost;
 
 #define MAX_NON_PRIORITY_REQUESTS 150
 
@@ -103,18 +103,7 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   /**
    * creates an addref'd instance of a nsHostResolver object.
    */
-  static nsresult Create(uint32_t maxCacheEntries,  // zero disables cache
-                         uint32_t defaultCacheEntryLifetime,  // seconds
-                         uint32_t defaultGracePeriod,         // seconds
-                         nsHostResolver** result);
-
-  /**
-   * Set (new) cache limits.
-   */
-  void SetCacheLimits(uint32_t maxCacheEntries,  // zero disables cache
-                      uint32_t defaultCacheEntryLifetime,  // seconds
-                      uint32_t defaultGracePeriod);        // seconds
-
+  static nsresult Create(nsHostResolver** result);
   /**
    * puts the resolver in the shutdown state, which will cause any pending
    * callbacks to be detached.  any future calls to ResolveHost will fail.
@@ -175,34 +164,13 @@ class nsHostResolver : public nsISupports, public AHostResolver {
                           const mozilla::OriginAttributes& aOriginAttributes,
                           nsIDNSService::DNSFlags flags, uint16_t af,
                           nsIDNSListener* aListener, nsresult status);
-  /**
-   * values for the flags parameter passed to ResolveHost and DetachCallback
-   * that may be bitwise OR'd together.
-   *
-   * NOTE: in this implementation, these flags correspond exactly in value
-   *       to the flags defined on nsIDNSService.
-   */
-  enum {
-    RES_BYPASS_CACHE = nsIDNSService::RESOLVE_BYPASS_CACHE,
-    RES_CANON_NAME = nsIDNSService::RESOLVE_CANONICAL_NAME,
-    RES_PRIORITY_MEDIUM = nsHostRecord::DNS_PRIORITY_MEDIUM,
-    RES_PRIORITY_LOW = nsHostRecord::DNS_PRIORITY_LOW,
-    RES_SPECULATE = nsIDNSService::RESOLVE_SPECULATE,
-    // RES_DISABLE_IPV6 = nsIDNSService::RESOLVE_DISABLE_IPV6, // Not used
-    RES_OFFLINE = nsIDNSService::RESOLVE_OFFLINE,
-    // RES_DISABLE_IPv4 = nsIDNSService::RESOLVE_DISABLE_IPV4, // Not Used
-    RES_ALLOW_NAME_COLLISION = nsIDNSService::RESOLVE_ALLOW_NAME_COLLISION,
-    RES_DISABLE_TRR = nsIDNSService::RESOLVE_DISABLE_TRR,
-    RES_REFRESH_CACHE = nsIDNSService::RESOLVE_REFRESH_CACHE,
-    RES_IP_HINT = nsIDNSService::RESOLVE_IP_HINT
-  };
 
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
 
   /**
    * Flush the DNS cache.
    */
-  void FlushCache(bool aTrrToo);
+  void FlushCache(bool aTrrToo, bool aFlushEvictionQueue = false);
 
   LookupStatus CompleteLookup(nsHostRecord*, nsresult, mozilla::net::AddrInfo*,
                               bool pb, const nsACString& aOriginsuffix,
@@ -225,74 +193,84 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   // Records true if the TRR service is enabled for the record's effective
   // TRR mode. Also records the TRRSkipReason when the TRR service is not
   // available/enabled.
-  bool TRRServiceEnabledForRecord(nsHostRecord* aRec) MOZ_REQUIRES(mLock);
+  bool TRRServiceEnabledForRecord(nsHostRecord* aRec)
+      MOZ_REQUIRES(mQueue.mLock);
 
  private:
-  explicit nsHostResolver(uint32_t maxCacheEntries,
-                          uint32_t defaultCacheEntryLifetime,
-                          uint32_t defaultGracePeriod);
+  explicit nsHostResolver();
   virtual ~nsHostResolver();
 
-  bool DoRetryTRR(AddrHostRecord* aAddrRec,
-                  const mozilla::MutexAutoLock& aLock);
+  using CallbackArray = nsTArray<RefPtr<nsResolveHostCallback>>;
+
+  // Invoke all callbacks in aCallbacks with the given record and status.
+  // Must be called outside any nsHostResolver lock.
+  void FireCallbacks(const CallbackArray& aCallbacks, nsHostRecord* aRec,
+                     nsresult aStatus);
+
+  // Move all callbacks from a LinkedList into a CallbackArray.
+  static void DrainCallbacks(
+      mozilla::LinkedList<RefPtr<nsResolveHostCallback>>& aSrc,
+      CallbackArray& aDst);
+
+  bool DoRetryTRR(AddrHostRecord* aAddrRec) MOZ_REQUIRES(mQueue.mLock);
   bool MaybeRetryTRRLookup(
       AddrHostRecord* aAddrRec, nsresult aFirstAttemptStatus,
       mozilla::net::TRRSkippedReason aFirstAttemptSkipReason,
-      nsresult aChannelStatus, const mozilla::MutexAutoLock& aLock);
+      nsresult aChannelStatus) MOZ_REQUIRES(mQueue.mLock);
 
-  LookupStatus CompleteLookupLocked(nsHostRecord*, nsresult,
+  LookupStatus CompleteLookupLocked(nsHostRecord*, nsresult&,
                                     mozilla::net::AddrInfo*, bool pb,
                                     const nsACString& aOriginsuffix,
                                     mozilla::net::TRRSkippedReason aReason,
                                     mozilla::net::TRR* aTRRRequest,
-                                    const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+                                    CallbackArray& aCallbacks)
+      MOZ_REQUIRES(mDBLock) MOZ_REQUIRES(mQueue.mLock);
   LookupStatus CompleteLookupByTypeLocked(
-      nsHostRecord*, nsresult, mozilla::net::TypeRecordResultType& aResult,
+      nsHostRecord*, nsresult&, mozilla::net::TypeRecordResultType& aResult,
       mozilla::net::TRRSkippedReason aReason, uint32_t aTtl, bool pb,
-      const mozilla::MutexAutoLock& aLock) MOZ_REQUIRES(mLock);
+      CallbackArray& aCallbacks) MOZ_REQUIRES(mDBLock)
+      MOZ_REQUIRES(mQueue.mLock);
   nsresult Init();
   static void ComputeEffectiveTRRMode(nsHostRecord* aRec);
-  nsresult NativeLookup(nsHostRecord* aRec,
-                        const mozilla::MutexAutoLock& aLock);
-  nsresult TrrLookup(nsHostRecord*, const mozilla::MutexAutoLock& aLock,
-                     mozilla::net::TRR* pushedTRR = nullptr);
+  nsresult NativeLookup(nsHostRecord* aRec) MOZ_REQUIRES(mQueue.mLock);
+  nsresult TrrLookup(nsHostRecord*, mozilla::net::TRR* pushedTRR = nullptr)
+      MOZ_REQUIRES(mQueue.mLock);
 
   // Kick-off a name resolve operation, using native resolver and/or TRR
-  nsresult NameLookup(nsHostRecord* aRec, const mozilla::MutexAutoLock& aLock);
-  bool GetHostToLookup(nsHostRecord** result);
-  void MaybeRenewHostRecordLocked(nsHostRecord* aRec,
-                                  const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+  nsresult NameLookup(nsHostRecord* aRec) MOZ_REQUIRES(mQueue.mLock);
+  // Try to dequeue the next record without blocking.
+  already_AddRefed<nsHostRecord> DequeueNextRecord() MOZ_REQUIRES(mQueue.mLock);
+  // Dispatch a ResolveHostTask if there's pending work.
+  void MaybeDispatchResolveHostTask() MOZ_REQUIRES(mQueue.mLock);
 
   // Cancels host records in the pending queue and also
   // calls CompleteLookup with the NS_ERROR_ABORT result code.
   void ClearPendingQueue(mozilla::LinkedList<RefPtr<nsHostRecord>>& aPendingQ);
-  nsresult ConditionallyCreateThread(nsHostRecord* rec) MOZ_REQUIRES(mLock);
 
   /**
-   * Starts a new lookup in the background for entries that are in the grace
-   * period with a failed connect or all cached entries are negative.
+   * Starts a new lookup in the background for cached entries that are in the
+   * grace period or that are are negative.
+   *
+   * Also records telemetry for type of cache hit (HIT/NEGATIVE_HIT/RENEWAL).
+   * Requires both mDBLock (for reading cache) and mQueue.mLock (for queueing
+   * work).
    */
-  nsresult ConditionallyRefreshRecord(nsHostRecord* rec, const nsACString& host,
-                                      const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+  nsresult ConditionallyRefreshRecord(nsHostRecord* rec, const nsACString& host)
+      MOZ_REQUIRES(mDBLock) MOZ_REQUIRES(mQueue.mLock);
 
-  void OnResolveComplete(nsHostRecord* aRec,
-                         const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+  void OnResolveComplete(nsHostRecord* aRec) MOZ_REQUIRES(mDBLock)
+      MOZ_REQUIRES(mQueue.mLock);
 
-  void AddToEvictionQ(nsHostRecord* rec, const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+  void AddToEvictionQ(nsHostRecord* rec) MOZ_REQUIRES(mDBLock)
+      MOZ_REQUIRES(mQueue.mLock);
 
-  void ThreadFunc();
+  void ResolveHostTask();
 
   // Resolve the host from the DNS cache.
   already_AddRefed<nsHostRecord> FromCache(nsHostRecord* aRec,
                                            const nsACString& aHost,
-                                           uint16_t aType, nsresult& aStatus,
-                                           const mozilla::MutexAutoLock& aLock)
-      MOZ_REQUIRES(mLock);
+                                           uint16_t aType, nsresult& aStatus)
+      MOZ_REQUIRES(mDBLock) MOZ_REQUIRES(mQueue.mLock);
   // Called when the host name is an IP address and has been passed.
   already_AddRefed<nsHostRecord> FromCachedIPLiteral(nsHostRecord* aRec);
   // Like the above function, but the host name is not parsed to NetAddr yet.
@@ -303,7 +281,7 @@ class nsHostResolver : public nsISupports, public AHostResolver {
       nsHostRecord* aRec, const nsACString& aHost, const nsACString& aTrrServer,
       const nsACString& aOriginSuffix, uint16_t aType,
       nsIDNSService::DNSFlags aFlags, uint16_t af, bool aPb, nsresult& aStatus)
-      MOZ_REQUIRES(mLock);
+      MOZ_REQUIRES(mDBLock) MOZ_REQUIRES(mQueue.mLock);
 
   enum {
     METHOD_HIT = 1,
@@ -315,29 +293,27 @@ class nsHostResolver : public nsISupports, public AHostResolver {
     METHOD_NETWORK_SHARED = 7
   };
 
-  uint32_t mMaxCacheEntries = 0;
-  uint32_t mDefaultCacheLifetime = 0;  // granularity seconds
-  uint32_t mDefaultGracePeriod = 0;    // granularity seconds
   // mutable so SizeOfIncludingThis can be const
-  mutable Mutex mLock{"nsHostResolver.mLock"};
-  CondVar mIdleTaskCV;
+  // Protects mRecordDB. When held together with mQueue.mLock, always acquire
+  // mDBLock first.
+  mutable mozilla::RWLock mDBLock{"nsHostResolver.mDBLock"};
+  mozilla::net::HostRecordQueue mQueue;
   nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord> mRecordDB
-      MOZ_GUARDED_BY(mLock);
+      MOZ_GUARDED_BY(mDBLock);
   PRTime mCreationTime;
-  mozilla::TimeDuration mLongIdleTimeout;
-  mozilla::TimeDuration mShortIdleTimeout;
 
   RefPtr<nsIThreadPool> mResolverThreads;
   RefPtr<mozilla::net::NetworkConnectivityService>
       mNCS;  // reference to a singleton
-  mozilla::net::HostRecordQueue mQueue MOZ_GUARDED_BY(mLock);
-  mozilla::Atomic<bool> mShutdown MOZ_GUARDED_BY(mLock){true};
-  mozilla::Atomic<uint32_t> mNumIdleTasks MOZ_GUARDED_BY(mLock){0};
-  mozilla::Atomic<uint32_t> mActiveTaskCount MOZ_GUARDED_BY(mLock){0};
-  mozilla::Atomic<uint32_t> mActiveAnyThreadCount MOZ_GUARDED_BY(mLock){0};
+  // TODO: mShutdown is set under mQueue.mLock but read without it in a
+  // telemetry guard. Could be made non-atomic + MOZ_GUARDED_BY if that
+  // guard is removed.
+  mozilla::Atomic<bool> mShutdown{true};
+  uint32_t mActiveAnyThreadCount MOZ_GUARDED_BY(mQueue.mLock) = 0;
 
   // Set the expiration time stamps appropriately.
-  void PrepareRecordExpirationAddrRecord(AddrHostRecord* rec) const;
+  void PrepareRecordExpirationAddrRecord(AddrHostRecord* rec) const
+      MOZ_REQUIRES(rec->addr_info_lock);
 
  public:
   /*
@@ -348,4 +324,4 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   static bool IsNativeHTTPSEnabled();
 };
 
-#endif  // nsHostResolver_h__
+#endif  // nsHostResolver_h_

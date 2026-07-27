@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -41,7 +39,8 @@ Result<quota::UsageInfo, nsresult> FileSystemQuotaClient::InitOrigin(
   DebugOnly<quota::QuotaManager*> quotaManager = quota::QuotaManager::Get();
   MOZ_ASSERT(quotaManager);
 
-  MOZ_ASSERT(!quotaManager->IsTemporaryStorageInitializedInternal());
+  MOZ_ASSERT(
+      !quotaManager->IsTemporaryOriginInitializedInternal(aOriginMetadata));
 
   {
     QM_TRY_INSPECT(const nsCOMPtr<nsIFile>& databaseFile,
@@ -104,7 +103,7 @@ Result<quota::UsageInfo, nsresult> FileSystemQuotaClient::GetUsageForOrigin(
 }
 
 void FileSystemQuotaClient::OnOriginClearCompleted(
-    quota::PersistenceType aPersistenceType, const nsACString& aOrigin) {
+    const quota::OriginMetadata& aOriginMetadata) {
   quota::AssertIsOnIOThread();
 }
 

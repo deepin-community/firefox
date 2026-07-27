@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,7 @@
 
 #include <type_traits>
 
+#include "mozilla/AppUnits.h"
 #include "mozilla/gfx/Coord.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/gfx/Rect.h"
@@ -18,7 +17,6 @@
 #include "nsMargin.h"
 #include "nsRect.h"
 #include "nsRegion.h"
-#include "mozilla/AppUnits.h"
 
 namespace mozilla {
 
@@ -63,6 +61,7 @@ struct IsPixel<ExternalPixel> : std::true_type {};
 
 typedef gfx::CoordTyped<CSSPixel> CSSCoord;
 typedef gfx::IntCoordTyped<CSSPixel> CSSIntCoord;
+typedef gfx::PointTyped<CSSPixel, double> CSSDoublePoint;
 typedef gfx::PointTyped<CSSPixel> CSSPoint;
 typedef gfx::IntPointTyped<CSSPixel> CSSIntPoint;
 typedef gfx::SizeTyped<CSSPixel> CSSSize;
@@ -85,8 +84,10 @@ typedef gfx::MarginTyped<OuterCSSPixel> OuterCSSMargin;
 typedef gfx::IntMarginTyped<OuterCSSPixel> OuterCSSIntMargin;
 typedef gfx::IntRegionTyped<OuterCSSPixel> OuterCSSIntRegion;
 
+typedef gfx::CoordTyped<LayoutDevicePixel, double> LayoutDeviceDoubleCoord;
 typedef gfx::CoordTyped<LayoutDevicePixel> LayoutDeviceCoord;
 typedef gfx::IntCoordTyped<LayoutDevicePixel> LayoutDeviceIntCoord;
+typedef gfx::PointTyped<LayoutDevicePixel, double> LayoutDeviceDoublePoint;
 typedef gfx::PointTyped<LayoutDevicePixel> LayoutDevicePoint;
 typedef gfx::IntPointTyped<LayoutDevicePixel> LayoutDeviceIntPoint;
 typedef gfx::SizeTyped<LayoutDevicePixel> LayoutDeviceSize;
@@ -175,6 +176,7 @@ typedef gfx::SizeTyped<DesktopPixel> DesktopSize;
 typedef gfx::IntSizeTyped<DesktopPixel> DesktopIntSize;
 typedef gfx::RectTyped<DesktopPixel> DesktopRect;
 typedef gfx::IntRectTyped<DesktopPixel> DesktopIntRect;
+typedef gfx::IntMarginTyped<DesktopPixel> DesktopIntMargin;
 
 typedef gfx::CoordTyped<ExternalPixel> ExternalCoord;
 typedef gfx::IntCoordTyped<ExternalPixel> ExternalIntCoord;
@@ -228,6 +230,8 @@ typedef gfx::ScaleFactor<DesktopPixel, LayoutDevicePixel>
     DesktopToLayoutDeviceScale;
 typedef gfx::ScaleFactor<LayoutDevicePixel, DesktopPixel>
     LayoutDeviceToDesktopScale;
+typedef gfx::ScaleFactor<gfx::UnknownUnits, gfx::UnknownUnits>
+    UnknownScaleFactor;
 
 typedef gfx::ScaleFactors2D<CSSPixel, LayoutDevicePixel>
     CSSToLayoutDeviceScale2D;
@@ -358,10 +362,22 @@ struct CSSPixel {
 
   // Conversions to app units
 
-  // TODO: We might want an int32_t/CSSIntCoord overload which doesn't do float
-  // math but we'd need to ensure stuff is clamped to nscoord_MIN/MAX range.
   static nscoord ToAppUnits(CSSCoord aCoord) {
     return NSFloatPixelsToAppUnits(aCoord, AppUnitsPerCSSPixel());
+  }
+
+  // TODO: We might want an int32_t/CSSIntCoord overload which doesn't do float
+  // math but we'd need to ensure stuff is clamped to nscoord_MIN/MAX range.
+  static nscoord ToAppUnits(CSSIntCoord aCoord) {
+    return ToAppUnits(CSSCoord(aCoord));
+  }
+
+  static nscoord ToAppUnits(int32_t aCoord) {
+    return ToAppUnits(CSSIntCoord(aCoord));
+  }
+
+  static nscoord ToAppUnits(float aCoord) {
+    return ToAppUnits(CSSCoord(aCoord));
   }
 
   static nsPoint ToAppUnits(const CSSPoint& aPoint) {
@@ -397,10 +413,8 @@ struct CSSPixel {
   }
 
   static nsMargin ToAppUnits(const CSSIntMargin& aMargin) {
-    return nsMargin(ToAppUnits(CSSCoord(aMargin.top)),
-                    ToAppUnits(CSSCoord(aMargin.right)),
-                    ToAppUnits(CSSCoord(aMargin.bottom)),
-                    ToAppUnits(CSSCoord(aMargin.left)));
+    return nsMargin(ToAppUnits(aMargin.top), ToAppUnits(aMargin.right),
+                    ToAppUnits(aMargin.bottom), ToAppUnits(aMargin.left));
   }
 
   // Conversion from a given CSS point value.
@@ -546,7 +560,28 @@ struct LayoutDevicePixel {
     return ToAppUnits(LayoutDeviceCoord(aCoord), aAppUnitsPerDevPixel);
   }
 
+  static nscoord ToAppUnits(double aCoord, nscoord aAppUnitsPerDevPixel) {
+    return ToAppUnits(LayoutDeviceDoubleCoord(aCoord), aAppUnitsPerDevPixel);
+  }
+
+  static nscoord ToAppUnits(LayoutDeviceDoubleCoord aCoord,
+                            nscoord aAppUnitsPerDevPixel) {
+    return NSDoublePixelsToAppUnits(aCoord, aAppUnitsPerDevPixel);
+  }
+
   static nsPoint ToAppUnits(const LayoutDeviceIntPoint& aPoint,
+                            nscoord aAppUnitsPerDevPixel) {
+    return nsPoint(ToAppUnits(aPoint.x, aAppUnitsPerDevPixel),
+                   ToAppUnits(aPoint.y, aAppUnitsPerDevPixel));
+  }
+
+  static nsPoint ToAppUnits(const LayoutDevicePoint& aPoint,
+                            nscoord aAppUnitsPerDevPixel) {
+    return nsPoint(ToAppUnits(aPoint.x, aAppUnitsPerDevPixel),
+                   ToAppUnits(aPoint.y, aAppUnitsPerDevPixel));
+  }
+
+  static nsPoint ToAppUnits(const LayoutDeviceDoublePoint& aPoint,
                             nscoord aAppUnitsPerDevPixel) {
     return nsPoint(ToAppUnits(aPoint.x, aAppUnitsPerDevPixel),
                    ToAppUnits(aPoint.y, aAppUnitsPerDevPixel));
@@ -670,6 +705,9 @@ struct ParentLayerPixel {};
  * - on Windows *with* per-monitor DPI support, they are physical device pixels
  *   on each screen; note that this means the scaling between CSS pixels and
  *   desktop pixels may vary across multiple displays.
+ * - on Linux, they're "Gdk points", which correspond to widget coordinates
+ *   used by Gdk and X11 or Wayland compositor and are mapped to actual
+ *   screen pixels by per-monitor screen scale.
  */
 struct DesktopPixel {};
 
@@ -690,16 +728,18 @@ gfx::CoordTyped<Dst> operator/(const gfx::CoordTyped<Src>& aCoord,
   return gfx::CoordTyped<Dst>(aCoord.value / aScale.scale);
 }
 
-template <class Src, class Dst>
-gfx::PointTyped<Dst> operator*(const gfx::PointTyped<Src>& aPoint,
-                               const gfx::ScaleFactor<Src, Dst>& aScale) {
-  return gfx::PointTyped<Dst>(aPoint.x * aScale.scale, aPoint.y * aScale.scale);
+template <class Src, class Dst, class F>
+gfx::PointTyped<Dst, F> operator*(const gfx::PointTyped<Src, F>& aPoint,
+                                  const gfx::ScaleFactor<Src, Dst>& aScale) {
+  return gfx::PointTyped<Dst, F>(aPoint.x * aScale.scale,
+                                 aPoint.y * aScale.scale);
 }
 
-template <class Src, class Dst>
-gfx::PointTyped<Dst> operator/(const gfx::PointTyped<Src>& aPoint,
-                               const gfx::ScaleFactor<Dst, Src>& aScale) {
-  return gfx::PointTyped<Dst>(aPoint.x / aScale.scale, aPoint.y / aScale.scale);
+template <class Src, class Dst, class F>
+gfx::PointTyped<Dst, F> operator/(const gfx::PointTyped<Src, F>& aPoint,
+                                  const gfx::ScaleFactor<Dst, Src>& aScale) {
+  return gfx::PointTyped<Dst, F>(aPoint.x / aScale.scale,
+                                 aPoint.y / aScale.scale);
 }
 
 template <class Src, class Dst, class F>
@@ -890,8 +930,8 @@ template <class Src, class Dst>
 gfx::MarginTyped<Dst> operator/(const gfx::MarginTyped<Src>& aMargin,
                                 const gfx::ScaleFactor<Dst, Src>& aScale) {
   return gfx::MarginTyped<Dst>(
-      aMargin.top / aScale.scale, aMargin.right / aScale.scale,
-      aMargin.bottom / aScale.scale, aMargin.left / aScale.scale);
+      aMargin.top.value / aScale.scale, aMargin.right.value / aScale.scale,
+      aMargin.bottom.value / aScale.scale, aMargin.left.value / aScale.scale);
 }
 
 template <class Src, class Dst, class F>
@@ -910,6 +950,15 @@ gfx::MarginTyped<Dst, F> operator/(
   return gfx::MarginTyped<Dst, F>(
       aMargin.top.value / aScale.yScale, aMargin.right.value / aScale.xScale,
       aMargin.bottom.value / aScale.yScale, aMargin.left.value / aScale.xScale);
+}
+
+template <class Src, class Dst>
+gfx::MarginTyped<Dst> operator*(const gfx::IntMarginTyped<Src>& aMargin,
+                                const gfx::ScaleFactor<Src, Dst>& aScale) {
+  return gfx::MarginTyped<Dst>(float(aMargin.top.value) * aScale.scale,
+                               float(aMargin.right.value) * aScale.scale,
+                               float(aMargin.bottom.value) * aScale.scale,
+                               float(aMargin.left.value) * aScale.scale);
 }
 
 // Calculate the max or min or the ratios of the widths and heights of two

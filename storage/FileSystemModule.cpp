@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=2 et lcs=trail\:.,tab\:>~ :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -43,10 +41,8 @@ struct VirtualTableCursor : public VirtualTableCursorBase {
 };
 
 nsresult VirtualTableCursor::Init(const nsAString& aPath) {
-  nsCOMPtr<nsIFile> directory = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
-  NS_ENSURE_TRUE(directory, NS_ERROR_FAILURE);
-
-  nsresult rv = directory->InitWithPath(aPath);
+  nsCOMPtr<nsIFile> directory;
+  nsresult rv = (NS_NewLocalFile(aPath, getter_AddRefs(directory)));
   NS_ENSURE_SUCCESS(rv, rv);
 
   rv = directory->GetPath(mDirectoryPath);

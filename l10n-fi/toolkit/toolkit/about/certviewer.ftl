@@ -36,10 +36,17 @@ certificate-viewer-key-size = Avaimen koko
 certificate-viewer-inc-locality = Perustuspaikka
 certificate-viewer-locality = Sijainti
 certificate-viewer-location = Sijainti
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Lokin nimi
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Lokin tunnus
 certificate-viewer-method = Metodi
 certificate-viewer-modulus = Modulus
 certificate-viewer-name = Nimi
+certificate-viewer-surname = Sukunimi
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Etunimi
 certificate-viewer-not-after = Ei jälkeen
 certificate-viewer-not-before = Ei ennen
 certificate-viewer-organization = Organisaatio
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Varmentajan tiedonsaanti (AIA)
 certificate-viewer-certificate-policies = Varmennekäytännöt
 certificate-viewer-embedded-scts = Upotetut SCT:t
 certificate-viewer-crl-endpoints = CRL-jakelupisteet
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Lataa
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (varmenne)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (varmenneketju)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Tämä laajennus on merkitty kriittiseksi; se tarkoittaa, että asiakasohjelmien on hylättävä varmenne, jos ne eivät ymmärrä sitä.
@@ -112,6 +117,8 @@ certificate-viewer-export = Vie
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (tuntematon)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = varmenne
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Мазасыз шолуғ�
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } сіз үшін cookie баннерлерін қолға алады
 about-private-browsing-cookie-banners-promo-body = Біз қазір көптеген cookie баннерлерінен автоматты түрде бас тартамыз, осылайша олар сізді азырақ қадағалап, сізге алаңдатпай шолуға оралуыңызға болады.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Бұл құрылғыда із қалдырмау
 about-private-browsing-felt-privacy-v1-info-body = Барлық жеке терезелерді жапқанда, { -brand-short-name } сіздің cookie файлдарын, тарихты және сайт деректерін өшіреді.
 about-private-browsing-felt-privacy-v1-info-link = Менің белсенділігімді кім көре алады?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Барлық жеке терезелерді жабу cookie файлдарын, тарихты және сайт деректерін өшіреді.
+about-private-browsing-nova-info-link = Менің әрекеттерімді тағы кім көруі мүмкін?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Сіз жазбадан тыссыз
+about-private-browsing-nova-info-subheader = Бұл терезені жапқан кезде біз әрбір іздеу мен кіруді өшіреміз. { -brand-short-name } бағдарламасының трекерлерді блоктау сияқты кірістірілген қорғаулары да мұнда іске қосулы.

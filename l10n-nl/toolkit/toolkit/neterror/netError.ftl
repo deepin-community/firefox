@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Geblokkeerde pagina
 neterror-captive-portal-page-title = Aanmelden bij netwerk
 neterror-dns-not-found-title = Server niet gevonden
 neterror-malformed-uri-page-title = Ongeldige URL
+general-body-title = Wees voorzichtig. Er is iets niet in orde.
+problem-with-this-site-title = Het lijkt erop dat er een probleem met deze website is
 
 ## Error page actions
 
@@ -23,6 +25,8 @@ neterror-override-exception-button = Het risico aanvaarden en doorgaan
 neterror-pref-reset-button = Standaardinstellingen herstellen
 neterror-return-to-previous-page-button = Terug
 neterror-return-to-previous-page-recommended-button = Teruggaan (Aanbevolen)
+neterror-try-again-button-2 = Opnieuw proberen
+    .accesskey = w
 neterror-try-again-button = Opnieuw proberen
 neterror-add-exception-button = Altijd doorgaan voor deze website
 neterror-settings-button = DNS-instellingen wijzigen
@@ -41,6 +45,13 @@ neterror-generic-error = { -brand-short-name } kan deze pagina om de een of ande
 neterror-load-error-try-again = Misschien is de website tijdelijk niet beschikbaar of overbelast. Probeer het over enkele ogenblikken opnieuw.
 neterror-load-error-connection = Als u geen enkele pagina kunt laden, controleer dan de netwerkverbinding van uw computer.
 neterror-load-error-firewall = Als uw computer of netwerk wordt beveiligd door een firewall of proxy, zorg er dan voor dat { -brand-short-name } toegang heeft tot het web.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Als u een lokale netwerkpagina probeert te laden, controleer dan in de privacy- en beveiligingsinstellingen van macOS of { -brand-short-name } toestemming heeft voor een Lokaal netwerk.
+neterror-http-error-page = Controleer of u het websiteadres juist hebt ingetypt.
+neterror-http-empty-response = Controleer of u het websiteadres juist hebt ingetypt en probeer het over enkele ogenblikken opnieuw.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } heeft een lege pagina teruggestuurd.
 neterror-captive-portal = U moet zich aanmelden bij dit netwerk voordat u toegang hebt tot het internet.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +60,12 @@ neterror-dns-not-found-hint-header = <strong>Als u het juiste adres hebt ingevoe
 neterror-dns-not-found-hint-try-again = Het later opnieuw proberen
 neterror-dns-not-found-hint-check-network = Uw netwerkverbinding controleren
 neterror-dns-not-found-hint-firewall = Controleren of { -brand-short-name } toestemming heeft om toegang te krijgen tot internet (u bent mogelijk verbonden maar bevindt zich achter een firewall)
+neterror-dns-not-found-hint-check-network-2 = Controleer uw netwerkverbinding.
+neterror-dns-not-found-hint-firewall-2 = Controleren of { -brand-short-name } toestemming heeft om toegang te krijgen tot internet (u bent mogelijk verbonden maar bevindt zich achter een firewall).
+neterror-dns-not-found-offline-hint-header = <strong>Wat kunt u hieraan doen?</strong>
+neterror-dns-not-found-offline-hint-different-device = Probeer verbinding te maken op een ander apparaat.
+neterror-dns-not-found-offline-hint-modem = Controleer uw modem of router.
+neterror-dns-not-found-offline-hint-reconnect = Verbreek de verbinding en verbind opnieuw met wifi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +89,6 @@ neterror-dns-not-found-trr-unknown-problem = Onverwacht probleem.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } kan uw aanvraag om het adres van deze website niet beschermen via onze vertrouwde DNS-resolver. Dit is de reden:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } kan uw aanvraag om het adres van deze website niet beschermen via onze veilige DNS-provider. Dit is de reden:
 neterror-dns-not-found-native-fallback-heuristic = DNS over HTTPS is uitgeschakeld op uw netwerk.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } kon geen verbinding maken met { $trrDomain }.
 
@@ -80,9 +96,14 @@ neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } ko
 
 neterror-file-not-found-filename = Controleer de bestandsnaam op grote/kleine letters of andere typefouten.
 neterror-file-not-found-moved = Controleer of het bestand is verplaatst, hernoemd of verwijderd.
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = { -brand-short-name } kan het bestand niet vinden in <strong>{ $path }</strong>. Het bestaat niet, of het pad is onjuist.
+neterror-file-not-found-what-can-you-do = Als u het adres handmatig hebt ingetypt, controleer dan de bestandsnaam of het pad op hoofdletterfouten of typefouten. Als u een opgeslagen bladwijzer of koppeling hebt gevolgd, is het bestand mogelijk verplaatst, hernoemd of verwijderd sinds het werd opgeslagen. Probeer het te vinden via uw bestandsbeheerder of een recente zoekopdracht.
 neterror-access-denied = Het kan zijn verwijderd, verplaatst, of bestandsmachtigingen kunnen toegang tegengaan.
 neterror-unknown-protocol = Misschien moet u andere software installeren om dit adres te openen.
 neterror-redirect-loop = Dit probleem kan soms worden veroorzaakt door het uitschakelen of weigeren van cookies.
+neterror-unknown-socket-type-client-config = Dit kan het gevolg zijn van een configuratiefout in uw client.
 neterror-unknown-socket-type-psm-installed = Zorg ervoor dat de persoonlijke beveiligingsbeheerder op uw systeem is geïnstalleerd.
 neterror-unknown-socket-type-server-config = Dit kan het gevolg zijn van een niet-standaard configuratie van de server.
 neterror-not-cached-intro = Het opgevraagde document is niet beschikbaar in de buffer van { -brand-short-name }.
@@ -96,6 +117,9 @@ neterror-proxy-connect-failure-settings = Controleer of uw proxyinstellingen jui
 neterror-proxy-connect-failure-contact-admin = Neem contact op met uw netwerkbeheerder om te controleren of de proxyserver werkt.
 neterror-content-encoding-error = Neem contact op met de website-eigenaars om ze over dit probleem te informeren.
 neterror-unsafe-content-type = Neem contact op met de website-eigenaars om ze over dit probleem te informeren.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } vertrouwt { $hostname } niet, omdat de verbinding niet is beveiligd. Probeer de URL naar HTTPS te wijzigen.
 neterror-nss-failure-not-verified = De pagina die u wilt bekijken kan niet worden weergegeven, omdat de echtheid van de ontvangen gegevens niet kon worden geverifieerd.
 neterror-nss-failure-contact-website = Neem contact op met de website-eigenaars om ze over dit probleem te informeren.
 # Variables:
@@ -148,3 +172,50 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Als u niet bekend bent met 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> heeft een beveiligingsbeleid met de naam HTTP Strict Transport Security (HSTS), wat betekent dat { -brand-short-name } alleen een beveiligde verbinding ermee kan maken. U kunt geen uitzondering toevoegen om deze website te bezoeken.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Waarschijnlijk niets, aangezien er waarschijnlijk een probleem met de website zelf is.
+certerror-blocked-by-corp-headers-description = Soms stellen websites bescherming voor zichzelf en mensen zoals u in tegen ongewenste interacties met andere websites.
+certerror-coop-learn-more = Meer info over Cross Origin Opener-beleid (COOP)
+certerror-coep-learn-more = Meer info over Cross Origin Embedder-beleid (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Foutcode: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Het lijkt erop dat er een probleem is met uw internetverbinding
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } kan geen beveiligde verbinding met de server op { $hostname } tot stand brengen.
+fp-neterror-offline-intro = { -brand-short-name } kan geen verbinding maken met de server op <strong>{ $hostname }</strong>
+fp-neterror-offline-intro-2 = { -brand-short-name } kan geen verbinding maken met de server op <strong>{ $hostname }</strong>.
+fp-neterror-net-timeout-intro = De server op <strong>{ $hostname }</strong> doet er te lang over om te reageren.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = De server op <strong>{ $hostname }</strong> heeft een fout teruggestuurd: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = <strong>{ $hostname }</strong> heeft een header teruggestuurd met lege tekens die niet zijn toegestaan door webbeveiligingsstandaarden.
+fp-neterror-content-encoding-intro = De pagina die u wilt bekijken kan niet worden weergegeven, omdat deze gebruikmaakt van een ongeldige of niet-ondersteunde vorm van compressie.
+fp-neterror-coop-coep-intro = { -brand-short-name } heeft deze pagina niet geladen, omdat het lijkt alsof de beveiligingsconfiguratie niet overeenkomt met die van de vorige pagina.
+fp-neterror-blocked-by-policy-intro = Uw organisatie heeft toegang tot deze pagina of website geblokkeerd.
+fp-neterror-http-auth-disabled-intro = Iemand die zich voordoet als de website kan dingen zoals uw gebruikersnaam, wachtwoord of e-mailadres proberen te stelen.
+fp-neterror-http-auth-disabled-secure-connection = Deze website vereist een beveiligde verbinding, en u kunt geen uitzondering toevoegen om deze te bezoeken.
+fp-neterror-why-did-this-happen = Waarom is dit gebeurd?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Het lijkt erop dat deze website oude software met bekende beveiligingsproblemen gebruikt.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } vertrouwt { $hostname } niet, omdat de verbinding niet beveiligd is.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Zorg ervoor dat u de nieuwste versie van { -brand-short-name } gebruikt. Ga in het menu naar Help > Over { -brand-short-name }. Als u de nieuwste { -brand-short-name } gebruikt, ligt het probleem zeer waarschijnlijk bij de website zelf.
+fp-neterror-offline-what-can-you-do-body = Probeer verbinding te maken op een ander apparaat. Controleer uw modem of router. Verbreek uw wifiverbinding en maak opnieuw verbinding.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Probeer de URL naar HTTPS te wijzigen. Maar waarschijnlijk is er een probleem met de website zelf.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Soms stellen websites bescherming voor zichzelf in tegen ongewenste interacties met andere websites.
+fp-learn-more-about-https-connections = Meer info over HTTPS-verbindingen
+fp-neterror-vpn-error-title = Kan niet verbinden met VPN
+fp-neterror-vpn-error-description = Probeer het over een paar minuten opnieuw.
+fp-neterror-denied-port-access = Dit adres gebruikt een netwerkpoort die normaal gesproken voor andere doeleinden dan webbrowsen wordt gebruikt. { -brand-short-name } heeft de aanvraag geannuleerd om u te beschermen.

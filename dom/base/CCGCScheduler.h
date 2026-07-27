@@ -2,17 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#ifndef mozilla_dom_CCGCScheduler_h
+#define mozilla_dom_CCGCScheduler_h
+
 #include "js/SliceBudget.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/IdleTaskRunner.h"
 #include "mozilla/MainThreadIdlePeriod.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/ipc/IdleSchedulerChild.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsCycleCollector.h"
 #include "nsJSEnvironment.h"
-#include "nsCycleCollectionParticipant.h"
 
 namespace mozilla {
 
@@ -132,7 +133,7 @@ class CCGCScheduler {
         mReadyForMajorGC(!mAskParentBeforeMajorGC),
         mInterruptRequested(false) {}
 
-  static bool CCRunnerFired(TimeStamp aDeadline);
+  bool CCRunnerFired(TimeStamp aDeadline);
 
   // Parameter setting
 
@@ -178,7 +179,9 @@ class CCGCScheduler {
   JS::SliceBudget CreateGCSliceBudget(mozilla::TimeDuration aDuration,
                                       bool isIdle, bool isExtended) {
     mInterruptRequested = false;
-    auto budget = JS::SliceBudget(aDuration, &mInterruptRequested);
+    // Don't try to interrupt if we are in a mode where idle time is rare.
+    auto budget = JS::SliceBudget(
+        aDuration, mPreferFasterCollection ? nullptr : &mInterruptRequested);
     budget.idle = isIdle;
     budget.extended = isExtended;
     return budget;
@@ -350,6 +353,8 @@ class CCGCScheduler {
   JS::SliceBudget ComputeInterSliceGCBudget(TimeStamp aDeadline,
                                             TimeStamp aNow);
 
+  TimeDuration ComputeMinimumBudgetForRunner(TimeDuration aBaseValue);
+
   bool ShouldForgetSkippable(uint32_t aSuspectedCCObjects) const {
     // Only do a forget skippable if there are more than a few new objects
     // or we're doing the initial forget skippables.
@@ -451,6 +456,8 @@ class CCGCScheduler {
   JS::SliceBudget ComputeForgetSkippableBudget(TimeStamp aStartTimeStamp,
                                                TimeStamp aDeadline);
 
+  bool PreferFasterCollection() const { return mPreferFasterCollection; }
+
  private:
   // State
 
@@ -523,6 +530,9 @@ class CCGCScheduler {
   bool mIsCollectingCycles = false;
   bool mUserIsActive = true;
 
+  bool mCurrentCollectionHasSeenNonIdle = false;
+  bool mPreferFasterCollection = false;
+
  public:
   uint32_t mCCollectedWaitingForGC = 0;
   uint32_t mCCollectedZonesWaitingForGC = 0;
@@ -534,3 +544,5 @@ class CCGCScheduler {
 };
 
 }  // namespace mozilla
+
+#endif  // mozilla_dom_CCGCScheduler_h

@@ -12,23 +12,37 @@ update-updateButton =
     .label = Перезапустить { -brand-shorter-name } для обновления
     .accesskey = е
 update-checkingForUpdates = Проверка наличия обновлений…
+settings-update-checking-for-updates =
+    .label = Проверка наличия обновлений…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
-settings-update-downloading = <img data-l10n-name="icon"/>Загрузка обновления — <label data-l10n-name="download-status">{ $transfer }</label>
-aboutdialog-update-downloading = Загрузка обновления — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading = <img data-l10n-name="icon"/>Скачивание обновления — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Скачивание обновления — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Скачивание обновления — { $transfer }
 
 ##
 
 update-applying = Применение обновления…
-update-failed = Обновление не удалось. <label data-l10n-name="failed-link">Загрузите последнюю версию</label>
-update-failed-main = Обновление не удалось. <a data-l10n-name="failed-link-main">Загрузите последнюю версию</a>
+settings-update-applying =
+    .label = Применение обновления…
+update-failed = Обновление не удалось. <label data-l10n-name="failed-link">Скачайте последнюю версию</label>
+update-failed-main = Обновление не удалось. <a data-l10n-name="failed-link-main">Скачайте последнюю версию</a>
 update-adminDisabled = Обновления отключены вашим системным администратором
 update-policy-disabled = Обновления отключены вашей организацией
+settings-update-policy-disabled =
+    .label = Обновления отключены вашей организацией
 update-noUpdatesFound = Установлена последняя версия { -brand-short-name }
+settings-update-no-updates-found =
+    .label = Установлена последняя версия { -brand-short-name }
 aboutdialog-update-checking-failed = Не удалось проверить наличие обновлений.
-update-otherInstanceHandlingUpdates = Обновление производится другим процессом { -brand-short-name }
+settings-update-checking-failed =
+    .label = Не удалось проверить наличие обновлений.
+update-otherInstanceHandlingUpdates = { -brand-short-name } обновляется другим процессом
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } обновляется другим процессом
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = Обновление производит�
 aboutdialog-update-manual-with-link = Обновления доступны на <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Обновления доступны на <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = Вы не можете производить дальнейшие обновления на этой системе. <label data-l10n-name="unsupported-link">Подробнее</label>
+settings-update-unsupported = Вы не можете производить дальнейшие обновления на этой системе. <a data-l10n-name="unsupported-link">Подробнее</a>
 update-restarting = Перезапуск…
+settings-update-restarting =
+    .label = Перезапуск…
 update-internal-error2 = Не удалось проверить наличие обновлений из-за внутренней ошибки. Обновления доступны по адресу <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-internal-error = Не удалось проверить наличие обновлений из-за внутренней ошибки. Обновления доступны по адресу <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } создан <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> — <label data-l10n-name="community-creditsLink">глобальным сообществом</label>, работающим над тем, чтобы Интернет оставался открытым и общедоступным для всех и каждого.
 helpus = Хотите помочь? <label data-l10n-name="helpus-donateLink">Сделайте пожертвование</label> или <label data-l10n-name="helpus-getInvolvedLink">присоединяйтесь!</label>
 bottomLinks-license = Сведения о лицензии
+bottom-links-terms = Условия использования
+bottom-links-privacy = Уведомление о конфиденциальности
 bottomLinks-rights = Права конечного пользователя
 bottomLinks-privacy = Политика приватности
 # Example of resulting string: 66.0.1 (64-bit)

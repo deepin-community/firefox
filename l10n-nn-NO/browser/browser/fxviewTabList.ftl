@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Flytt til slutten
     .accesskey = s
 fxviewtabrow-move-tab-window = Flytt til nytt vindauge
     .accesskey = v
+fxviewtabrow-send-to-device = Send til eining
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Send til mobil
+    .accesskey = n
 fxviewtabrow-send-tab = Send fane til eining
     .accesskey = a
 fxviewtabrow-pin-tab = Fest fane
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Lyd på i faner
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Innstillingar for { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Demp { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Opphev demping av { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Lyd av i fane
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Lyd på i fane
+fxviewtabrow-send-to-mobile-connect-device = Kople til ei eining for å sende faner
+fxviewtabrow-send-to-mobile-device-missing2 = Ser du ikkje eininga di?
+fxviewtabrow-send-to-mobile-not-verified = Konto ikkje stadfesta
+fxviewtabrow-send-to-mobile-verify-account = Stadfest kontoen din
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Logg inn for å sende faner
+fxviewtabrow-send-to-mobile-turn-on-sync = Slå på synkronisering for å sende faner

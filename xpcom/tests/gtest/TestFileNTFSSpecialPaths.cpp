@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,20 +16,27 @@
 #include "gtest/gtest.h"
 
 static void CanInitWith(const char* aPath, bool aShouldWork) {
-  nsCOMPtr<nsIFile> file = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
-  nsresult rv = file->InitWithNativePath(nsDependentCString(aPath));
+  nsCOMPtr<nsIFile> file;
+  nsresult rv =
+      NS_NewNativeLocalFile(nsDependentCString(aPath), getter_AddRefs(file));
   bool success = aShouldWork ? NS_SUCCEEDED(rv) : NS_FAILED(rv);
   EXPECT_TRUE(success) << "'" << aPath << "' rv=" << std::hex
                        << (unsigned int)rv;
 }
 
-static void CanAppend(const char* aRoot, const char* aPath, bool aShouldWork) {
-  nsCOMPtr<nsIFile> file = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
-  file->InitWithNativePath(nsDependentCString(aRoot));
-  nsAutoCString basePath;
-  file->GetNativeTarget(basePath);
+static nsresult SetUpFile(const char* aRoot, nsIFile** aFile,
+                          nsAutoCString& aBasePath) {
+  MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(aRoot), aFile));
+  return (*aFile)->GetNativeTarget(aBasePath);
+}
 
-  nsresult rv = file->AppendNative(nsDependentCString(aPath));
+static void CanAppend(const char* aRoot, const char* aPath, bool aShouldWork) {
+  nsCOMPtr<nsIFile> file;
+  nsAutoCString basePath;
+  nsresult rv = SetUpFile(aRoot, getter_AddRefs(file), basePath);
+  if (NS_SUCCEEDED(rv)) {
+    rv = file->AppendNative(nsDependentCString(aPath));
+  }
   bool success = aShouldWork ? NS_SUCCEEDED(rv) : NS_FAILED(rv);
   EXPECT_TRUE(success) << "'" << basePath.get() << "' + '" << aPath
                        << "' rv=" << std::hex << (unsigned int)rv;
@@ -38,13 +44,12 @@ static void CanAppend(const char* aRoot, const char* aPath, bool aShouldWork) {
 
 static void CanSetLeafName(const char* aRoot, const char* aPath,
                            bool aShouldWork) {
-  nsCOMPtr<nsIFile> file = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
-  file->InitWithNativePath(nsDependentCString(aRoot));
+  nsCOMPtr<nsIFile> file;
   nsAutoCString basePath;
-  file->GetNativeTarget(basePath);
-
-  nsresult rv =
-      file->SetLeafName(NS_ConvertUTF8toUTF16(nsDependentCString(aPath)));
+  nsresult rv = SetUpFile(aRoot, getter_AddRefs(file), basePath);
+  if (NS_SUCCEEDED(rv)) {
+    rv = file->SetLeafName(NS_ConvertUTF8toUTF16(nsDependentCString(aPath)));
+  }
   bool success = aShouldWork ? NS_SUCCEEDED(rv) : NS_FAILED(rv);
   EXPECT_TRUE(success) << "'" << basePath.get() << "' set leaf to '" << aPath
                        << "' rv=" << std::hex << (unsigned int)rv;
@@ -278,11 +283,11 @@ TEST(TestFileNTFSSpecialPaths, Normalization)
   }
   startingFilePath.AppendLiteral(u"$mft");
 
-  nsCOMPtr<nsIFile> file = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID);
+  nsCOMPtr<nsIFile> file;
   // This should fail immediately, rather than waiting for a call to
   // nsIFile::Normalize, because normalization doesn't happen reliably,
   // and where it does happen consumers often don't check for errors.
-  nsresult rv = file->InitWithPath(startingFilePath);
+  nsresult rv = NS_NewLocalFile(startingFilePath, getter_AddRefs(file));
   EXPECT_NS_FAILED(rv) << " from normalizing '"
                        << NS_ConvertUTF16toUTF8(startingFilePath).get()
                        << "' rv=" << std::hex << (unsigned int)rv;

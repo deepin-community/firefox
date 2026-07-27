@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 'use strict';
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
@@ -26,7 +25,7 @@ includes: [testTypedArray.js]
 features: [align-detached-buffer-semantics-with-web-reality, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   let proto = TypedArray.prototype;
   let descriptorGetterThrows = {
     configurable: true,
@@ -39,7 +38,7 @@ testWithTypedArrayConstructors(function(TA) {
     ["1"]: descriptorGetterThrows,
   });
 
-  let sample = new TA(1);
+  let sample = new TA(makeCtorArg(1));
   assert.sameValue(delete sample["-1"], true, 'The value of `delete sample["-1"]` is true');
   assert.sameValue(delete sample[-1], true, 'The value of `delete sample[-1]` is true');
 

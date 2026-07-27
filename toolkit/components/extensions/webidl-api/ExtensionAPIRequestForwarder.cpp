@@ -1,4 +1,3 @@
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -400,7 +399,7 @@ nsresult RequestWorkerRunnable::DeserializeArgs(
     IgnoredErrorResult rv;
 
     JS::Rooted<JS::Value> jsvalue(aCx);
-    mArgsHolder->get()->Read(xpc::CurrentNativeGlobal(aCx), aCx, &jsvalue, rv);
+    mArgsHolder->get()->Read(aCx, &jsvalue, rv);
     if (NS_WARN_IF(rv.Failed())) {
       return NS_ERROR_UNEXPECTED;
     }
@@ -515,7 +514,7 @@ bool RequestWorkerRunnable::HandleAPIRequest(
 
   if (isExtensionError && !okSerializedError) {
     NS_WARNING("Failed to wrap ClonedErrorHolder");
-    MOZ_DIAGNOSTIC_ASSERT(false, "Failed to wrap ClonedErrorHolder");
+    MOZ_DIAGNOSTIC_CRASH("Failed to wrap ClonedErrorHolder");
     return false;
   }
 
@@ -534,7 +533,7 @@ bool RequestWorkerRunnable::HandleAPIRequest(
       return ProcessHandlerResult(aCx, aRetval);
   }
 
-  MOZ_DIAGNOSTIC_ASSERT(false, "Unexpected API request ResultType");
+  MOZ_DIAGNOSTIC_CRASH("Unexpected API request ResultType");
   return false;
 }
 
@@ -590,7 +589,7 @@ bool RequestWorkerRunnable::ProcessHandlerResult(
     }
   }
 
-  MOZ_DIAGNOSTIC_ASSERT(false, "Unexpected API request ResultType");
+  MOZ_DIAGNOSTIC_CRASH("Unexpected API request ResultType");
   return false;
 }
 
@@ -609,13 +608,12 @@ void RequestWorkerRunnable::ReadResult(JSContext* aCx,
 
   switch (*mResultType) {
     case mozIExtensionAPIRequestResult::ResultType::RETURN_VALUE:
-      mResultHolder->get()->Read(xpc::CurrentNativeGlobal(aCx), aCx, aResult,
-                                 aRv);
+      mResultHolder->get()->Read(aCx, aResult, aRv);
       return;
     case mozIExtensionAPIRequestResult::ResultType::EXTENSION_ERROR:
       JS::Rooted<JS::Value> exn(aCx);
       IgnoredErrorResult rv;
-      mResultHolder->get()->Read(xpc::CurrentNativeGlobal(aCx), aCx, &exn, rv);
+      mResultHolder->get()->Read(aCx, &exn, rv);
       if (rv.Failed()) {
         NS_WARNING("Failed to deserialize extension error");
         ExtensionAPIBase::ThrowUnexpectedError(aCx, aRv);
@@ -627,7 +625,7 @@ void RequestWorkerRunnable::ReadResult(JSContext* aCx,
       return;
   }
 
-  MOZ_DIAGNOSTIC_ASSERT(false, "Unexpected API request ResultType");
+  MOZ_DIAGNOSTIC_CRASH("Unexpected API request ResultType");
   aRv.Throw(NS_ERROR_UNEXPECTED);
 }
 

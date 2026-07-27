@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -14,12 +13,12 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/ReentrantMonitor.h"
 
-#define NS_WEBPENCODER_CID                           \
-  { /* a8e5a8e5-bebf-4512-9f50-e41e4748ce28 */       \
-    0xa8e5a8e5, 0xbebf, 0x4512, {                    \
-      0x9f, 0x50, 0xe4, 0x1e, 0x47, 0x48, 0xce, 0x28 \
-    }                                                \
-  }
+#define NS_WEBPENCODER_CID                    \
+  {/* a8e5a8e5-bebf-4512-9f50-e41e4748ce28 */ \
+   0xa8e5a8e5,                                \
+   0xbebf,                                    \
+   0x4512,                                    \
+   {0x9f, 0x50, 0xe4, 0x1e, 0x47, 0x48, 0xce, 0x28}}
 
 // Provides WEBP encoding functionality. Use InitFromData() to do the
 // encoding. See that function definition for encoding options.

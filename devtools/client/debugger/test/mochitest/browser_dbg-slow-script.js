@@ -7,11 +7,6 @@
 // Tests the slow script warning
 
 add_task(async function openDebuggerFirst() {
-  // This test fails with pending vsync at end of test without fission, not EFT
-  if (!isFissionEnabled() && !isEveryFrameTargetEnabled()) {
-    return;
-  }
-
   // In mochitest, the timeout is disable, so set it to a short, but non zero duration
   await pushPref("dom.max_script_run_time", 1);
   // Prevents having to click on the page to have the dialog to appear
@@ -38,19 +33,12 @@ add_task(async function openDebuggerFirst() {
   info("Waiting for the debugger to be paused");
   await waitForPaused(dbg);
   const source = findSource(dbg, "doc-slow-script.html");
-  assertPausedAtSourceAndLine(dbg, source.id, 14);
+  await assertPausedAtSourceAndLine(dbg, source.id, 14);
 
-  info("Close toolbox and tab");
-  await dbg.toolbox.closeToolbox();
-  await removeTab(gBrowser.selectedTab);
+  await closeTabAndToolbox();
 });
 
 add_task(async function openDebuggerFromDialog() {
-  // This test fails with pending vsync at end of test without fission, not EFT
-  if (!isFissionEnabled() && !isEveryFrameTargetEnabled()) {
-    return;
-  }
-
   const tab = await addTab(EXAMPLE_URL + "doc-slow-script.html");
 
   const alert = BrowserTestUtils.waitForGlobalNotificationBar(
@@ -93,9 +81,7 @@ add_task(async function openDebuggerFromDialog() {
   info("Waiting for the debugger to be paused");
   await waitForPaused(dbg);
   const source = findSource(dbg, "doc-slow-script.html");
-  assertPausedAtSourceAndLine(dbg, source.id, 14);
+  await assertPausedAtSourceAndLine(dbg, source.id, 14);
 
-  info("Close toolbox and tab");
-  await dbg.toolbox.closeToolbox();
-  await removeTab(gBrowser.selectedTab);
+  await closeTabAndToolbox();
 });

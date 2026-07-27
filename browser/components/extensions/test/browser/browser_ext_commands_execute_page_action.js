@@ -1,9 +1,13 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const scriptPage = url =>
   `<html><head><meta charset="utf-8"><script src="${url}"></script></head><body>Test Popup</body></html>`;
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
 
 add_task(async function test_execute_page_action_without_popup() {
   let extension = ExtensionTestUtils.loadExtension({
@@ -95,7 +99,14 @@ add_task(async function test_execute_page_action_with_popup() {
     files: {
       "popup.html": scriptPage("popup.js"),
       "popup.js": function () {
-        browser.runtime.sendMessage("popup-opened");
+        // TODO(Bug 2039637) consider removing this workaround along with fixing the actual underlying issue).
+        window.addEventListener(
+          "load",
+          () => {
+            browser.runtime.sendMessage("popup-opened");
+          },
+          { once: true }
+        );
       },
     },
 

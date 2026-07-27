@@ -27,8 +27,8 @@ experimental-features-cookie-samesite-none-requires-secure2-description = Kuketo
 # about:home should be kept in English, as it refers to the the URI for
 # the internal default home page.
 experimental-features-abouthome-startup-cache =
-    .label = about:home komenca staplo
-experimental-features-abouthome-startup-cache-description = Staplo por la komenca dokumento about:home, kiu estas norme ŝargita komence. La celo de tiu ĉi staplo estas plibonigi la efikecon de starto.
+    .label = about:home komenca stokejo
+experimental-features-abouthome-startup-cache-description = Staplo por la komenca dokumento about:home, kiu estas norme ŝargita komence. La celo de tiu ĉi stokejo estas plibonigi la efikecon de starto.
 # "Service Worker" is an API name and is usually not translated.
 experimental-features-devtools-serviceworker-debugger-support =
     .label = Iloj por programistoj: senerarigo de Service worker
@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Aktivigi Warp, kiu estas projekto po
 experimental-features-ime-search =
     .label = Adresa strio: montri rezultojn dum komponado IME
 experimental-features-ime-search-description = IME (redaktilo de eniga metodo) estas ilo, kiu permesas al vi, pere de normala klavaro, tajpi malsimplajn signojn, kiel la uzatajn en la skribataj lingvoj de orienta Azio aŭ Barato. Se vi ŝaltas tiun ĉi eksperimenton, la adresa strio restos malfermita dum vi uzas IME por tajpi ion. Notu ke IME povus montri panelon kiu kovras la rezultojn de la adresa strio, tial tiu ĉi prefero estas sugestita por la IME, kiuj ne uzas tiajn panelojn.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Inkrustita video: aŭtomate malfermi post ŝanĝo de langeto
-experimental-features-auto-pip-description = Akvitivi inkrustitan videon en aktiva video post ŝanĝo de langeto.
-genai-settings-chat-title =
-    .label = A.I. dialoganto
-# Updated sidebar settings
-sidebar-title =
-    .label = Flanka strio
-sidebar-description = Facila aliro dum retumo al via historio, langetoj el aliaj aparatoj, etendaĵoj por la flanka strio kaj pli da aferoj. <a data-l10n-name="connect">Komenti</a>
-vertical-tabs-title =
-    .label = Vertikalaj langetoj
-vertical-tabs-description = Movu viajn langetojn el supre de la retumilo al la flanko. Por tio vi devas ankaŭ provi la flankan strion. <a data-l10n-name="connect">Komenti</a>
-experimental-features-group-browsing =
-    .label = Retumado
-experimental-features-group-developer-tools =
-    .label = Iloj por programistoj
-experimental-features-group-webpage-display =
-    .label = Montro de retpaĝoj
-experimental-features-group-customize-browsing =
-    .label = Personecigu vian retumon
-experimental-features-group-customize-browsing-description = Se vi provas tiujn ĉi trajtojn, <a data-l10n-name="connect">komentu en Connect</a>

@@ -76,9 +76,9 @@ migration-bookmarks-option-label = zaznamki
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = priljubljene
 migration-logins-and-passwords-option-label = shranjene prijave in gesla
-migration-passwords-option-label = Shranjena gesla
+migration-passwords-option-label = shranjena gesla
 migration-history-option-label = zgodovina brskanja
-migration-extensions-option-label = Razširitve
+migration-extensions-option-label = razširitve
 migration-form-autofill-option-label = podatki za izpolnjevanje obrazcev
 migration-payment-methods-option-label = Plačilna sredstva
 migration-cookies-option-label = Piškotki
@@ -193,7 +193,7 @@ migration-wizard-progress-done-header = Podatki so uspešno uvoženi
 # if all resources were imported successfully.
 migration-wizard-progress-done-with-warnings-header = Uvoz podatkov dokončan
 migration-wizard-progress-icon-in-progress =
-    .aria-label = Uvažanje ...
+    .aria-label = Uvažanje …
 migration-wizard-progress-icon-completed =
     .aria-label = Dokončano
 migration-safari-password-import-header = Uvozi gesla iz brskalnika Safari
@@ -202,6 +202,14 @@ migration-safari-password-import-step1 = V Safariju odprite meni “Safari” in
 migration-safari-password-import-step2 = Kliknite gumb <img data-l10n-name="safari-icon-3dots"/> in izberite “Export All Passwords”
 migration-safari-password-import-step3 = Shranite datoteko z gesli
 migration-safari-password-import-step4 = Spodaj kliknite “Izberi datoteko” in poiščite datoteko, ki ste jo shranili
+migration-chrome-windows-password-import-header = Kako uvoziti gesla iz brskalnika Chrome
+migration-chrome-windows-password-import-steps-header = V Chromu:
+migration-chrome-windows-password-import-step1 = Odprite glavni meni <img data-l10n-name="chrome-icon-3dots"/> in izberite Gesla in samodejno izpolnjevanje > Googlov upravitelj gesel.
+migration-chrome-windows-password-import-step2 = V meniju izberite "Nastavitve".
+migration-chrome-windows-password-import-step3 = Izberite "Prenesi datoteko" in jo shranite na napravo.
+migration-chrome-windows-password-import-step4 = Vrnite se sem in izberite datoteko, da dokončate uvoz.
+migration-manual-password-import-skip-button = Preskoči
+migration-manual-password-import-select-button = Izberi datoteko
 migration-safari-password-import-skip-button = Preskoči
 migration-safari-password-import-select-button = Izberi datoteko
 # Shown in the migration wizard after importing bookmarks from another

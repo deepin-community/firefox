@@ -24,10 +24,6 @@ let mockAlertsService = {
     }, 100);
   },
 
-  showPersistentNotification(persistentData, alert, alertListener) {
-    this.showAlert(alert, alertListener);
-  },
-
   QueryInterface: ChromeUtils.generateQI(["nsIAlertsService"]),
 
   createInstance(aIID) {
@@ -49,7 +45,7 @@ add_setup(async function () {
       ["dom.serviceWorkers.exemptFromPerDomainMax", true],
       ["dom.serviceWorkers.enabled", true],
       ["dom.serviceWorkers.testing.enabled", true],
-      ["dom.serviceWorkers.disable_open_click_delay", 1000],
+      ["dom.webnotifications.disable_open_click_delay", 1000],
       ["dom.serviceWorkers.idle_timeout", 299999],
       ["dom.serviceWorkers.idle_extended_timeout", 299999],
       ["browser.link.open_newwindow", 3],
@@ -73,7 +69,7 @@ add_task(async function test() {
 
   // select tab and make sure its browser is focused
   gBrowser.selectedTab = tab;
-  tab.ownerGlobal.focus();
+  tab.documentGlobal.focus();
 
   // wait for tab load
   await BrowserTestUtils.browserLoaded(gBrowser.getBrowserForTab(tab));
@@ -96,7 +92,7 @@ add_task(async function test() {
 
     // Registration of the SW
     const swr = await content.navigator.serviceWorker.register(
-      "file_userContextId_openWindow.js"
+      "file_userContextId_openWindow.serviceworker.js"
     );
 
     // Activation

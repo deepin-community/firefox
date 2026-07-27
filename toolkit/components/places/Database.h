@@ -11,10 +11,18 @@
 #include "nsIObserver.h"
 #include "mozilla/storage.h"
 #include "mozilla/storage/StatementCache.h"
-#include "mozilla/Attributes.h"
 #include "nsIEventTarget.h"
 #include "Shutdown.h"
 #include "nsCategoryCache.h"
+
+// Filename of the database.
+#define DATABASE_FILENAME u"places.sqlite"_ns
+// Filename of the icons database.
+#define DATABASE_FAVICONS_FILENAME u"favicons.sqlite"_ns
+#define DATABASE_FAVICONS_SCHEMANAME "favicons"_ns
+
+// How much time Sqlite can wait before returning a SQLITE_BUSY error.
+#define DATABASE_BUSY_TIMEOUT_MS 100
 
 // Fired after Places inited.
 #define TOPIC_PLACES_INIT_COMPLETE "places-init-complete"
@@ -110,7 +118,7 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
    * @return one of the nsINavHistoryService::DATABASE_STATUS_* constants.
    */
   uint16_t GetDatabaseStatus() {
-    mozilla::Unused << EnsureConnection();
+    (void)EnsureConnection();
     return mDatabaseStatus;
   }
 
@@ -120,7 +128,7 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
    * @return The connection handle.
    */
   mozIStorageConnection* MainConn() {
-    mozilla::Unused << EnsureConnection();
+    (void)EnsureConnection();
     return mMainConn;
   }
 
@@ -130,15 +138,24 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
    *
    * @param aEvent
    *        The runnable to be dispatched.
+   * @param nsresult
    */
-  void DispatchToAsyncThread(nsIRunnable* aEvent) {
-    if (mClosed || NS_FAILED(EnsureConnection())) {
-      return;
+  nsresult DispatchToAsyncThread(nsIRunnable* aEvent) {
+    if (mClosed) {
+      return NS_ERROR_NOT_AVAILABLE;
     }
+
+    nsresult rv = EnsureConnection();
+    if (NS_FAILED(rv)) {
+      return rv;
+    }
+
     nsCOMPtr<nsIEventTarget> target = do_GetInterface(mMainConn);
-    if (target) {
-      (void)target->Dispatch(aEvent, NS_DISPATCH_NORMAL);
+    if (!target) {
+      return NS_ERROR_NOT_AVAILABLE;
     }
+
+    return target->Dispatch(aEvent, NS_DISPATCH_NORMAL);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -199,9 +216,14 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
       const nsACString& aQuery);
 
   int64_t GetTagsFolderId() {
-    mozilla::Unused << EnsureConnection();
+    (void)EnsureConnection();
     return mTagsRootId;
   }
+
+  /**
+   * Initializes additional SQLite functions, defined in SQLFunctions.h
+   */
+  static nsresult InitFunctions(mozIStorageConnection*);
 
  protected:
   /**
@@ -279,11 +301,6 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
                                bool shouldReparentRoots);
 
   /**
-   * Initializes additionale SQLite functions, defined in SQLFunctions.h
-   */
-  nsresult InitFunctions();
-
-  /**
    * Initializes temp entities, like triggers, tables, views...
    */
   nsresult InitTempEntities();
@@ -309,6 +326,14 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
   nsresult MigrateV74Up();
   nsresult MigrateV75Up();
   nsresult MigrateV77Up();
+  nsresult MigrateV78Up();
+  nsresult MigrateV79Up();
+  nsresult MigrateV80Up();
+  nsresult MigrateV81Up();
+  nsresult MigrateV82Up();
+  nsresult MigrateV83Up();
+  nsresult MigrateV85Up();
+  nsresult MigrateV86Up();
 
   nsresult UpdateBookmarkRootTitles();
 

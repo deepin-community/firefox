@@ -7,12 +7,107 @@
  * Test basic SSE connection.
  */
 
-add_task(async function () {
-  const { tab, monitor } = await initNetMonitor(
-    "http://mochi.test:8888/browser/devtools/client/netmonitor/test/html_sse-test-page.html",
-    {
-      requestCount: 1,
+// connection closed messages can take more than 5 seconds to show up,
+// increase the waitFor interval (10 -> 50).
+waitFor.overrideIntervalForTestFile = 50;
+
+function setupTestServer() {
+  const httpServer = createTestHTTPServer();
+  httpServer.registerContentType("html", "text/html");
+  httpServer.registerPathHandler("/index.html", function (request, response) {
+    response.setStatusLine(request.httpVersion, 200, "OK");
+    response.write(
+      `<!DOCTYPE html>
+      <html>
+        <head>
+          <title>SSE Inspection Test Page</title>
+        </head>
+        <body>
+            <h1>SSE Inspection Test Page</h1>
+            <script type="text/javascript">
+              /* exported openConnection, closeConnection, openAndCloseConnection */
+              "use strict";
+
+              let es;
+              function openConnection(endpoint) {
+                return new Promise(resolve => {
+                  es = new EventSource("http://localhost:${httpServer.identity.primaryPort}/" + endpoint);
+                  es.onmessage = function () {
+                    resolve();
+                  };
+                });
+              }
+
+              function closeConnection() {
+                es.close();
+              }
+
+              // Opens a connection sends the messages and closes it
+              function openAndCloseConnection(endPoint) {
+                return new Promise(resolve => {
+                  const es = new EventSource("http://localhost:${httpServer.identity.primaryPort}/" + endPoint);
+                  setTimeout(() => {
+                    es.close();
+                    resolve();
+                  }, 500);
+                });
+              }
+            </script>
+        </body>
+      </html>
+    `
+    );
+  });
+
+  let sseResponse;
+  httpServer.registerPathHandler("/sse", function (request, response) {
+    response.processAsync();
+    response.setHeader("Content-Type", "text/event-stream");
+    response.write("data: Why so serious?\n\n");
+    response.write("data: Why so serious?\n\n");
+    response.write("data: Why so serious?\n\n");
+    response.finish();
+  });
+
+  httpServer.registerPathHandler("/sse-delay", function (request, response) {
+    response.processAsync();
+    response.setHeader("Content-Type", "text/event-stream");
+    response.write("data: Why so serious?\n\n");
+    sseResponse = response;
+  });
+
+  // This sends messages with a single (\n) instead of double (\n\n)
+  httpServer.registerPathHandler(
+    "/bad-format-sse",
+    function (request, response) {
+      response.processAsync();
+      response.setHeader("Content-Type", "text/event-stream");
+      response.write("data: Bad format message\n");
+      response.write("data: Bad format message\n");
+      response.finish();
     }
+  );
+
+  const sendResponseMessages = () => {
+    sseResponse.write("data: Another why so serious?\n\n");
+    sseResponse.write("data: Another why so serious?\n\n");
+    sseResponse.write("data: Another why so serious?\n\n");
+  };
+
+  const completeResponse = () => {
+    sseResponse.finish();
+  };
+
+  return { httpServer, sendResponseMessages, completeResponse };
+}
+
+add_task(async function testBasicServerSentEvents() {
+  const { httpServer } = setupTestServer();
+  const port = httpServer.identity.primaryPort;
+
+  const { tab, monitor } = await initNetMonitor(
+    `http://localhost:${port}/index.html`,
+    { requestCount: 1 }
   );
   info("Starting test... ");
 
@@ -23,21 +118,26 @@ add_task(async function () {
 
   const onNetworkEvents = waitForNetworkEvents(monitor, 1);
   await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
-    await content.wrappedJSObject.openConnection();
+    await content.wrappedJSObject.openConnection("sse");
   });
   await onNetworkEvents;
 
   const requests = document.querySelectorAll(".request-list-item");
   is(requests.length, 1, "There should be one request");
 
+  const requestItem = document.querySelectorAll(".request-list-item")[0];
+
+  const type = requestItem.querySelector(".requests-list-type").textContent;
+  is(type, "eventsource", "Type should be rendered correctly.");
+
   // Select the request to open the side panel.
   EventUtils.sendMouseEvent({ type: "mousedown" }, requests[0]);
 
   // Wait for messages to be displayed in DevTools
-  const wait = waitForDOM(
+  const waitForMessages = waitForDOM(
     document,
     "#messages-view .message-list-table .message-list-item",
-    1
+    3
   );
 
   // Test that 'Save Response As' is not in the context menu
@@ -61,7 +161,7 @@ add_task(async function () {
 
   // Click on the "Response" panel
   clickOnSidebarTab(document, "response");
-  await wait;
+  await waitForMessages;
 
   // Get all messages present in the "Response" panel
   const frames = document.querySelectorAll(
@@ -69,7 +169,7 @@ add_task(async function () {
   );
 
   // Check expected results
-  is(frames.length, 1, "There should be one message");
+  is(frames.length, 3, "There should be three messages");
 
   is(
     frames[0].querySelector(".message-list-payload").textContent,
@@ -78,16 +178,11 @@ add_task(async function () {
     "Data column shows correct payload"
   );
 
-  // Closed message may already be here
-  if (
-    !document.querySelector("#messages-view .msg-connection-closed-message")
-  ) {
-    await waitForDOM(
-      document,
-      "#messages-view .msg-connection-closed-message",
-      1
-    );
-  }
+  await waitForDOM(
+    document,
+    "#messages-view .msg-connection-closed-message",
+    1
+  );
 
   is(
     !!document.querySelector("#messages-view .msg-connection-closed-message"),
@@ -97,13 +192,13 @@ add_task(async function () {
 
   is(
     document.querySelector(".message-network-summary-count").textContent,
-    "1 message",
+    "3 messages",
     "Correct message count is displayed"
   );
 
   is(
     document.querySelector(".message-network-summary-total-size").textContent,
-    "15 B total",
+    "45 B total",
     "Correct total size should be displayed"
   );
 
@@ -134,5 +229,158 @@ add_task(async function () {
       `Context menu item "${column}" is displayed`
     );
   }
+
+  return teardown(monitor);
+});
+
+/**
+ * Test various scenarios around SSE requests,
+ * 1) Assert that the SSE requests messages are displayed before the connection is closed.
+ * 2) Assert that subsequent messages after the response panel is open are visible.
+ * 3) Assert that the close connection message is displayed when the connection is closed.
+ */
+add_task(async function testServerSentEventsDetails() {
+  const { httpServer, sendResponseMessages, completeResponse } =
+    setupTestServer();
+  const port = httpServer.identity.primaryPort;
+
+  const { tab, monitor } = await initNetMonitor(
+    `http://localhost:${port}/index.html`,
+    {
+      requestCount: 1,
+    }
+  );
+  info("Starting test... ");
+
+  const { document, store, windowRequire } = monitor.panelWin;
+  const Actions = windowRequire("devtools/client/netmonitor/src/actions/index");
+
+  store.dispatch(Actions.batchEnable(false));
+
+  // We are expecting an SSE request whose response will remain pending on the server,
+  const waitForRequest = waitUntil(() =>
+    document.querySelector(".request-list-item")
+  );
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
+    await content.wrappedJSObject.openConnection("sse-delay");
+  });
+  await waitForRequest;
+
+  const requests = document.querySelectorAll(".request-list-item");
+  is(requests.length, 1, "There should be one request");
+
+  // Wait for messages to be displayed in DevTools
+  const waitForMessages = waitForDOM(
+    document,
+    "#messages-view .message-list-table .message-list-item",
+    1
+  );
+
+  // Select the request to open the side panel.
+  EventUtils.sendMouseEvent({ type: "mousedown" }, requests[0]);
+
+  // Click on the "Response" panel
+  clickOnSidebarTab(document, "response");
+  await waitForMessages;
+
+  // Get all messages present in the "Response" panel
+  const frames = document.querySelectorAll(
+    "#messages-view .message-list-table .message-list-item"
+  );
+
+  // Check expected results
+  is(frames.length, 1, "There should be one message");
+
+  is(
+    frames[0].querySelector(".message-list-payload").textContent,
+    // Initial whitespace comes from ColumnData.
+    " Why so serious?",
+    "Data column shows correct payload"
+  );
+
+  const waitForMoreMessages = waitForDOM(
+    document,
+    "#messages-view .message-list-table .message-list-item",
+    4
+  );
+  info("Send a couple of more messages");
+  sendResponseMessages();
+  await waitForMoreMessages;
+
+  ok(
+    !document.querySelector("#messages-view .msg-connection-closed-message"),
+    "Connection closed message not be should not be displayed"
+  );
+
+  // Lets finish the request
+  completeResponse();
+
+  const waitForClose = waitForDOM(
+    document,
+    "#messages-view .msg-connection-closed-message",
+    1
+  );
+
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
+    await content.wrappedJSObject.closeConnection();
+  });
+
+  await waitForClose;
+
+  is(
+    !!document.querySelector("#messages-view .msg-connection-closed-message"),
+    true,
+    "Connection closed message should be displayed"
+  );
+
+  // Wait for the connection closed event to complete
+  await waitForTime(1000);
+
+  return teardown(monitor);
+});
+
+// Tests that malformed server sent events messages are still displayed as
+// raw response text in the response panel.
+add_task(async function testBadFormatServerSentEvents() {
+  const { httpServer } = setupTestServer();
+  const port = httpServer.identity.primaryPort;
+
+  const { tab, monitor } = await initNetMonitor(
+    `http://localhost:${port}/index.html`,
+    { requestCount: 1 }
+  );
+  info("Starting test... ");
+
+  const { document, store, windowRequire } = monitor.panelWin;
+  const Actions = windowRequire("devtools/client/netmonitor/src/actions/index");
+
+  store.dispatch(Actions.batchEnable(false));
+
+  const onNetworkEvents = waitForNetworkEvents(monitor, 1);
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
+    await content.wrappedJSObject.openAndCloseConnection("bad-format-sse");
+  });
+  await onNetworkEvents;
+
+  const requests = document.querySelectorAll(".request-list-item");
+  is(requests.length, 1, "There should be one request");
+
+  // Wait for response content to render in the editor
+  const waitForEditor = waitForDOM(document, "#response-panel .cm-editor", 1);
+
+  // Select the request to open the side panel.
+  EventUtils.sendMouseEvent({ type: "mousedown" }, requests[0]);
+
+  // Click on the "Response" panel
+  clickOnSidebarTab(document, "response");
+  await waitForEditor;
+
+  const editorContent = document.querySelector("#response-panel .cm-content");
+  is(
+    editorContent.innerText,
+    "data: Bad format message\ndata: Bad format message\n\n",
+    "The RAW eventsource content is displayed"
+  );
+
   return teardown(monitor);
 });

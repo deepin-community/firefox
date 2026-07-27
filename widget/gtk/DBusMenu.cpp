@@ -1,4 +1,3 @@
-/* -*- Mode: c++; tab-width: 2; indent-tabs-mode: nil; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,7 +5,6 @@
 #include "DBusMenu.h"
 #include "prlink.h"
 #include "nsThreadUtils.h"
-#include "mozilla/ArrayUtils.h"
 
 namespace mozilla::widget {
 
@@ -34,9 +32,8 @@ static bool sLibPresent;
     return sLibPresent;
   }
   sInitialized = true;
-#define FUNC(name, type, params)                         \
-  { #name, (DBusMenuFunc*)&DBusMenuFunctions::s_##name } \
-  ,
+#define FUNC(name, type, params) \
+  {#name, (DBusMenuFunc*)&DBusMenuFunctions::s_##name},
   static const DBusMenuDynamicFunction kDbusmenuGlibSymbols[] = {
       DBUSMENU_GLIB_FUNCTIONS};
   static const DBusMenuDynamicFunction kDbusmenuGtkSymbols[] = {
@@ -49,7 +46,7 @@ static bool sLibPresent;
       return false;                                                           \
     }                                                                         \
   }                                                                           \
-  for (uint32_t i = 0; i < mozilla::ArrayLength(k##symbol##Symbols); ++i) {   \
+  for (uint32_t i = 0; i < std::size(k##symbol##Symbols); ++i) {              \
     *k##symbol##Symbols[i].function =                                         \
         PR_FindFunctionSymbol(g##symbol, k##symbol##Symbols[i].functionName); \
     if (!*k##symbol##Symbols[i].function) {                                   \

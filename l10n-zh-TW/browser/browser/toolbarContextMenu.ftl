@@ -29,6 +29,12 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] 回復關閉的 { $tabCount } 個分頁
         }
     .accesskey = o
+toolbar-context-turn-on-vertical-tabs =
+    .label = 開啟垂直分頁功能
+toolbar-context-turn-off-vertical-tabs =
+    .label = 關閉垂直分頁功能
+toolbar-context-customize-sidebar =
+    .label = 自訂側邊欄
 toolbar-context-menu-manage-extension =
     .label = 管理擴充套件
     .accesskey = E
@@ -53,6 +59,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = 開始下載時顯示面板
     .accesskey = S
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = 總是顯示於工具列
+    .accesskey = A
 toolbar-context-menu-remove-from-toolbar =
     .label = 自工具列移除
     .accesskey = R

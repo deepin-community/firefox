@@ -1,11 +1,11 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __nsAccessibilityService_h__
-#define __nsAccessibilityService_h__
+#ifndef _nsAccessibilityService_h_
+#define _nsAccessibilityService_h_
 
+#include "mozilla/a11y/CacheConstants.h"
 #include "mozilla/a11y/DocManager.h"
 #include "mozilla/a11y/FocusManager.h"
 #include "mozilla/a11y/Platform.h"
@@ -57,7 +57,7 @@ SelectionManager* SelectionMgr();
 ApplicationAccessible* ApplicationAcc();
 xpcAccessibleApplication* XPCApplicationAcc();
 
-typedef LocalAccessible*(New_Accessible)(mozilla::dom::Element* aElement,
+typedef LocalAccessible*(New_Accessible)(mozilla::dom::Element * aElement,
                                          LocalAccessible* aContext);
 
 // These fields are not `nsStaticAtom* const` because MSVC doesn't like it.
@@ -91,6 +91,23 @@ void PrefChanged(const char* aPref, void* aClosure);
  */
 EPlatformDisabledState ReadPlatformDisabledState();
 
+/**
+ * RAII class to prevent new cache domains from being requested. This is
+ * necessary in some cases when code for an OS accessibility API requires
+ * information in order to fire an event. We don't necessarily know that a
+ * client is even interested in that event, so requesting data that the client
+ * may never query doesn't make sense.
+ */
+class MOZ_RAII CacheDomainActivationBlocker {
+ public:
+  CacheDomainActivationBlocker();
+  ~CacheDomainActivationBlocker();
+
+ private:
+  // Used to manage re-entry.
+  static uint32_t sEntryCount;
+};
+
 }  // namespace a11y
 }  // namespace mozilla
 
@@ -103,6 +120,10 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
   typedef mozilla::a11y::LocalAccessible LocalAccessible;
   typedef mozilla::a11y::DocAccessible DocAccessible;
 
+  static const uint64_t kDefaultCacheDomains =
+      mozilla::a11y::CacheDomain::NameAndDescription |
+      mozilla::a11y::CacheDomain::State;
+
   // nsIListenerChangeListener
   NS_IMETHOD ListenersChanged(nsIArray* aEventChanges) override;
 
@@ -112,6 +133,9 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
  public:
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_NSIOBSERVER
+
+  nsAccessibilityService(const nsAccessibilityService&) = delete;
+  nsAccessibilityService& operator=(const nsAccessibilityService&) = delete;
 
   LocalAccessible* GetRootDocumentAccessible(mozilla::PresShell* aPresShell,
                                              bool aCanCreate);
@@ -181,10 +205,12 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
                                     nsIContent* aContent);
 
   /**
-   * Notifies when a combobox <option> text or label changes.
+   * Notifies when a combobox's <option> text or label changes.
    */
   void ComboboxOptionMaybeChanged(mozilla::PresShell*,
                                   nsIContent* aMutatingNode);
+  // Notifies when a combobox's selected index changes.
+  void ComboboxValueChanged(nsIContent*);
 
   void UpdateText(mozilla::PresShell* aPresShell, nsIContent* aContent);
 
@@ -198,6 +224,11 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
    * Notify of input@type="element" value change.
    */
   void RangeValueChanged(mozilla::PresShell* aPresShell, nsIContent* aContent);
+
+  /**
+   * Notify accessibility that the value of an <input type="color"> has changed.
+   */
+  void ColorValueChanged(mozilla::PresShell* aPresShell, nsIContent* aContent);
 
   /**
    * Update the image map.
@@ -245,6 +276,31 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
                                    int32_t aAppUnitsPerDevPixel);
 
   /**
+   * Notify accessibility that an anchor positioned frame is
+   * about to be removed. This gives us a chance to update cached relations
+   * before the reflow where we will lose references to the anchor and won't be
+   * able to refresh its accessible's cache.
+   */
+  void NotifyAnchorPositionedRemoved(mozilla::PresShell* aPresShell,
+                                     nsIFrame* aFrame);
+
+  /**
+   * Notify accessibility that an anchor frame is about to be removed. This
+   * gives us a chance to update cached relations before the reflow where the
+   * anchor will be lost and we won't be able to refresh the accessible cache of
+   * prior relations.
+   */
+  void NotifyAnchorRemoved(mozilla::PresShell* aPresShell, nsIFrame* aFrame);
+
+  /**
+   * Notify accessibility that an anchor positioned frame has
+   * been marked for reflow because of a scroll change for one of its
+   * anchors. A fallback anchor may be activated or deactivated.
+   */
+  void NotifyAnchorPositionedScrollUpdate(mozilla::PresShell* aPresShell,
+                                          nsIFrame* aFrame);
+
+  /**
    * Notify accessibility that an element explicitly set for an attribute is
    * about to change. See dom::Element::ExplicitlySetAttrElement.
    */
@@ -256,6 +312,9 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
    * changed. See dom::Element::ExplicitlySetAttrElement.
    */
   void NotifyAttrElementChanged(mozilla::dom::Element* aElement, nsAtom* aAttr);
+
+  void AriaNotify(nsINode* aNode, const nsAString& aAnnouncement,
+                  const mozilla::dom::AriaNotificationOptions& aOptions);
 
   // nsAccessibiltiyService
 
@@ -269,6 +328,15 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
    */
   static bool ShouldCreateImgAccessible(mozilla::dom::Element* aElement,
                                         DocAccessible* aDocument);
+
+  /*
+   * Set the currently-active cache domains.
+   */
+  void SetCacheDomains(uint64_t aCacheDomains);
+
+  bool CacheDomainIsActive(uint64_t aCacheDomain) const {
+    return (gCacheDomains & aCacheDomain) != mozilla::a11y::CacheDomain::None;
+  }
 
   /**
    * Creates an accessible for the given DOM node.
@@ -297,7 +365,7 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
     const mozilla::a11y::MarkupMapInfo* markupMap =
         GetMarkupMapInfoFor(aSource);
     if (markupMap) {
-      for (size_t i = 0; i < mozilla::ArrayLength(markupMap->attrs); i++) {
+      for (size_t i = 0; i < std::size(markupMap->attrs); i++) {
         const mozilla::a11y::MarkupAttrInfo* info = markupMap->attrs + i;
         if (info->name == aAtom) {
           return info->value;
@@ -331,6 +399,9 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
     ePlatformAPI = 1 << 2,
   };
 
+  static uint64_t GetActiveCacheDomains() { return gCacheDomains; }
+  bool ShouldAllowNewCacheDomains() { return mShouldAllowNewCacheDomains; }
+
 #if defined(ANDROID)
   static mozilla::Monitor& GetAndroidMonitor();
 #endif
@@ -339,14 +410,12 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
   // nsAccessibilityService creation is controlled by friend
   // GetOrCreateAccService, keep constructors private.
   nsAccessibilityService();
-  nsAccessibilityService(const nsAccessibilityService&);
-  nsAccessibilityService& operator=(const nsAccessibilityService&);
 
  private:
   /**
    * Initialize accessibility service.
    */
-  bool Init();
+  bool Init(uint64_t aCacheDomains = kDefaultCacheDomains);
 
   /**
    * Shutdowns accessibility service.
@@ -395,6 +464,15 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
    */
   static uint32_t gConsumers;
 
+  /**
+   * Contains the currently active cache domains.
+   */
+  static uint64_t gCacheDomains;
+  // True if requesting new cache domains should be allowed, false if this
+  // should be disallowed. This should only be changed by
+  // CacheDomainActivationBlocker.
+  bool mShouldAllowNewCacheDomains = true;
+
   // Can be weak because all atoms are known static
   using MarkupMap = nsTHashMap<nsAtom*, const mozilla::a11y::MarkupMapInfo*>;
   MarkupMap mHTMLMarkupMap;
@@ -420,8 +498,8 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
   nsTHashMap<nsAtom*, const mozilla::a11y::XULMarkupMapInfo*> mXULMarkupMap;
 
   friend nsAccessibilityService* GetAccService();
-  friend nsAccessibilityService* GetOrCreateAccService(uint32_t);
-  friend void MaybeShutdownAccService(uint32_t);
+  friend nsAccessibilityService* GetOrCreateAccService(uint32_t, uint64_t);
+  friend void MaybeShutdownAccService(uint32_t, bool);
   friend void mozilla::a11y::PrefChanged(const char*, void*);
   friend mozilla::a11y::FocusManager* mozilla::a11y::FocusMgr();
   friend mozilla::a11y::SelectionManager* mozilla::a11y::SelectionMgr();
@@ -429,6 +507,7 @@ class nsAccessibilityService final : public mozilla::a11y::DocManager,
   friend mozilla::a11y::xpcAccessibleApplication*
   mozilla::a11y::XPCApplicationAcc();
   friend class xpcAccessibilityService;
+  friend class mozilla::a11y::CacheDomainActivationBlocker;
 };
 
 /**
@@ -442,12 +521,18 @@ inline nsAccessibilityService* GetAccService() {
  * Return accessibility service instance; creating one if necessary.
  */
 nsAccessibilityService* GetOrCreateAccService(
-    uint32_t aNewConsumer = nsAccessibilityService::ePlatformAPI);
+    uint32_t aNewConsumer = nsAccessibilityService::ePlatformAPI,
+    uint64_t aCacheDomains = nsAccessibilityService::GetActiveCacheDomains());
 
 /**
  * Shutdown accessibility service if needed.
+ * @param aFormerConsumer The ServiceConsumer that is no longer using the
+ *        service.
+ * @param aAsync True to shut down the service asynchronously using a runnable.
+ *        This should be used to avoid reentry if this is called during the
+ *        shutdown of a document.
  */
-void MaybeShutdownAccService(uint32_t aFormerConsumer);
+void MaybeShutdownAccService(uint32_t aFormerConsumer, bool aAsync = false);
 
 /**
  * Return true if we're in a content process and not B2G.
@@ -500,6 +585,8 @@ static const char kEventTypeNames[][40] = {
     "live region added",         // EVENT_LIVE_REGION_ADDED
     "live region removed",       // EVENT_LIVE_REGION_REMOVED
     "inner reorder",             // EVENT_INNER_REORDER
+    "live region changed",       // EVENT_LIVE_REGION_CHANGED
+    "errormessage changed",      // EVENT_ERRORMESSAGE_CHANGED
 };
 
 #endif

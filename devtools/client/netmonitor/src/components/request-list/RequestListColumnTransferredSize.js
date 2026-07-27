@@ -6,9 +6,9 @@
 
 const {
   Component,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const {
   getFormattedSize,
 } = require("resource://devtools/client/netmonitor/src/utils/format-utils.js");
@@ -24,11 +24,16 @@ const SIZE_CACHED = L10N.getStr("networkMenu.sizeCached");
 const SIZE_SERVICE_WORKER = L10N.getStr("networkMenu.sizeServiceWorker");
 const SIZE_UNAVAILABLE = L10N.getStr("networkMenu.sizeUnavailable");
 const SIZE_UNAVAILABLE_TITLE = L10N.getStr("networkMenu.sizeUnavailable.title");
+// @backward-compat { version 151 } Once version 151 is on release, isRacing
+// can be removed. It was part of RCWN (Race Cache With Network) which was
+// removed in Bug 2020946.
 const UPDATED_TRANSFERRED_PROPS = [
   "transferredSize",
   "fromCache",
   "isRacing",
   "fromServiceWorker",
+  "blockedReason",
+  "extension",
 ];
 
 class RequestListColumnTransferredSize extends Component {
@@ -49,7 +54,7 @@ class RequestListColumnTransferredSize extends Component {
   render() {
     const {
       blockedReason,
-      blockingExtension,
+      extension,
       fromCache,
       fromServiceWorker,
       status,
@@ -59,13 +64,16 @@ class RequestListColumnTransferredSize extends Component {
     let text;
 
     if (blockedReason) {
-      text = getBlockedReasonString(blockedReason, blockingExtension);
+      text = getBlockedReasonString(blockedReason, extension);
     } else if (fromCache || status === "304") {
       text = SIZE_CACHED;
     } else if (fromServiceWorker) {
       text = SIZE_SERVICE_WORKER;
     } else if (typeof transferredSize == "number") {
       text = getFormattedSize(transferredSize);
+      // @backward-compat { version 151 } Once version 151 is on release,
+      // isRacing can be removed. It was part of RCWN which was removed in
+      // Bug 2020946.
       if (isRacing && typeof isRacing == "boolean") {
         text = L10N.getFormatStr("networkMenu.raced", text);
       }
@@ -77,7 +85,8 @@ class RequestListColumnTransferredSize extends Component {
 
     return dom.td(
       {
-        className: "requests-list-column requests-list-transferred",
+        className:
+          "requests-list-column requests-list-number-column requests-list-transferred",
         title,
       },
       text

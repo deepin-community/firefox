@@ -1,6 +1,3 @@
-
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +9,6 @@
 #include "CacheControlParser.h"
 #include "PLDHashTable.h"
 #include "mozilla/DataMutex.h"
-#include "mozilla/HashFunctions.h"
 #include "mozilla/OriginAttributes.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_network.h"
@@ -35,9 +31,7 @@
 namespace mozilla {
 namespace net {
 
-const uint32_t kHttp3VersionCount = 5;
-const nsCString kHttp3Versions[] = {"h3-29"_ns, "h3-30"_ns, "h3-31"_ns,
-                                    "h3-32"_ns, "h3"_ns};
+extern const char kProxyType_SOCKS[];
 
 // https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3/#section-4.3
 constexpr uint64_t kWebTransportErrorCodeStart = 0x52e4a40fa8db;
@@ -46,12 +40,13 @@ constexpr uint64_t kWebTransportErrorCodeEnd = 0x52e4a40fa9e2;
 // find out how many atoms we have
 #define HTTP_ATOM(_name, _value) Unused_##_name,
 enum {
-#include "nsHttpAtomList.h"
+#include "nsHttpAtomList.inc"
   NUM_HTTP_ATOMS
 };
 #undef HTTP_ATOM
 
-static StaticDataMutex<nsTHashtable<nsCStringASCIICaseInsensitiveHashKey>>
+MOZ_RUNINIT static StaticDataMutex<
+    nsTHashtable<nsCStringASCIICaseInsensitiveHashKey>>
     sAtomTable("nsHttp::sAtomTable");
 
 // This is set to true in DestroyAtomTable so we don't try to repopulate the
@@ -69,7 +64,7 @@ nsresult CreateAtomTable(
   // fill the table with our known atoms
   const nsHttpAtomLiteral* atoms[] = {
 #define HTTP_ATOM(_name, _value) &(_name),
-#include "nsHttpAtomList.h"
+#include "nsHttpAtomList.inc"
 #undef HTTP_ATOM
   };
 
@@ -77,7 +72,7 @@ nsresult CreateAtomTable(
     return NS_OK;
   }
   for (const auto* atom : atoms) {
-    Unused << base.PutEntry(atom->val(), fallible);
+    (void)base.PutEntry(atom->val(), fallible);
   }
 
   LOG(("Added static atoms to atomTable"));
@@ -284,16 +279,6 @@ bool ValidationRequired(bool isForcedValid,
     *performBackgroundRevalidation = false;
   }
 
-  // Check isForcedValid to see if it is possible to skip validation.
-  // Don't skip validation if we have serious reason to believe that this
-  // content is invalid (it's expired).
-  // See netwerk/cache2/nsICacheEntry.idl for details
-  if (isForcedValid && (!cachedResponseHead->ExpiresInPast() ||
-                        !cachedResponseHead->MustValidateIfExpired())) {
-    LOG(("NOT validating based on isForcedValid being true.\n"));
-    return false;
-  }
-
   // If the LOAD_FROM_CACHE flag is set, any cached data can simply be used
   if (loadFlags & nsIRequest::LOAD_FROM_CACHE || allowStaleCacheContent) {
     LOG(("NOT validating based on LOAD_FROM_CACHE load flag\n"));
@@ -307,6 +292,16 @@ bool ValidationRequired(bool isForcedValid,
       !isImmutable) {
     LOG(("Validating based on VALIDATE_ALWAYS load flag\n"));
     return true;
+  }
+
+  // Check isForcedValid to see if it is possible to skip validation.
+  // Don't skip validation if we have serious reason to believe that this
+  // content is invalid (it's expired).
+  // See netwerk/cache2/nsICacheEntry.idl for details
+  if (isForcedValid && (!cachedResponseHead->ExpiresInPast() ||
+                        !cachedResponseHead->MustValidateIfExpired())) {
+    LOG(("NOT validating based on isForcedValid being true.\n"));
+    return false;
   }
 
   // Even if the VALIDATE_NEVER flag is set, there are still some cases in
@@ -983,21 +978,10 @@ nsresult HttpProxyResponseToErrorCode(uint32_t aStatusCode) {
   return rv;
 }
 
-SupportedAlpnRank H3VersionToRank(const nsACString& aVersion) {
-  for (uint32_t i = 0; i < kHttp3VersionCount; i++) {
-    if (aVersion.Equals(kHttp3Versions[i])) {
-      return static_cast<SupportedAlpnRank>(
-          static_cast<uint32_t>(SupportedAlpnRank::HTTP_3_DRAFT_29) + i);
-    }
-  }
-
-  return SupportedAlpnRank::NOT_SUPPORTED;
-}
-
 SupportedAlpnRank IsAlpnSupported(const nsACString& aAlpn) {
   if (nsHttpHandler::IsHttp3Enabled() &&
       gHttpHandler->IsHttp3VersionSupported(aAlpn)) {
-    return H3VersionToRank(aAlpn);
+    return SupportedAlpnRank::HTTP_3_VER_1;
   }
 
   if (StaticPrefs::network_http_http2_enabled()) {
@@ -1014,15 +998,17 @@ SupportedAlpnRank IsAlpnSupported(const nsACString& aAlpn) {
   return SupportedAlpnRank::NOT_SUPPORTED;
 }
 
-// NSS Errors which *may* have been triggered by the use of 0-RTT in the
-// presence of badly behaving middleboxes. We may re-attempt the connection
-// without early data.
+// NSS errors that may be triggered by early data or PSK session resumption
+// (e.g. badly behaving middleboxes, or a server whose session ticket
+// encryption key has rotated). We re-attempt the connection without early
+// data; MaybeRemoveSSLToken evicts the stale token so it is not re-offered.
 bool PossibleZeroRTTRetryError(nsresult aReason) {
   return (aReason ==
           psm::GetXPCOMFromNSSError(SSL_ERROR_PROTOCOL_VERSION_ALERT)) ||
          (aReason == psm::GetXPCOMFromNSSError(SSL_ERROR_BAD_MAC_ALERT)) ||
          (aReason ==
-          psm::GetXPCOMFromNSSError(SSL_ERROR_HANDSHAKE_UNEXPECTED_ALERT));
+          psm::GetXPCOMFromNSSError(SSL_ERROR_HANDSHAKE_UNEXPECTED_ALERT)) ||
+         (aReason == psm::GetXPCOMFromNSSError(SSL_ERROR_DECRYPT_ERROR_ALERT));
 }
 
 nsresult MakeOriginURL(const nsACString& origin, nsCOMPtr<nsIURI>& url) {
@@ -1176,6 +1162,21 @@ nsLiteralCString HttpVersionToTelemetryLabel(HttpVersion version) {
       break;
   }
   return "unknown"_ns;
+}
+
+nsIHttpChannelInternal::ProxyDNSStrategy GetProxyDNSStrategyHelper(
+    const char* aType, uint32_t aFlag) {
+  if (!aType) {
+    return nsIHttpChannelInternal::PROXY_DNS_STRATEGY_ORIGIN;
+  }
+
+  if (!(aFlag & nsIProxyInfo::TRANSPARENT_PROXY_RESOLVES_HOST)) {
+    if (aType == kProxyType_SOCKS) {
+      return nsIHttpChannelInternal::PROXY_DNS_STRATEGY_ORIGIN;
+    }
+  }
+
+  return nsIHttpChannelInternal::PROXY_DNS_STRATEGY_PROXY;
 }
 
 }  // namespace net

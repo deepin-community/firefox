@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,8 +8,16 @@
 #include "2D.h"
 #include "DrawEventRecorder.h"
 
+class nsICanvasRenderingContextInternal;
+
 namespace mozilla {
+
+namespace ipc {
+class IProtocol;
+}  // namespace ipc
+
 namespace layers {
+class CanvasChild;
 class CanvasDrawEventRecorder;
 class RecordedTextureData;
 struct RemoteTextureOwnerId;
@@ -25,7 +31,6 @@ class DrawTargetRecording final : public DrawTarget {
   DrawTargetRecording(DrawEventRecorder* aRecorder, DrawTarget* aDT,
                       IntRect aRect, bool aHasData = false);
   DrawTargetRecording(layers::CanvasDrawEventRecorder* aRecorder,
-                      int64_t aTextureId,
                       const layers::RemoteTextureOwnerId& aTextureOwnerId,
                       DrawTarget* aDT, const IntSize& aSize);
 
@@ -43,6 +48,8 @@ class DrawTargetRecording final : public DrawTarget {
                     const Rect& aRect) override;
   virtual void Destination(const char* aDestination,
                            const Point& aPoint) override;
+
+  virtual void AccessibleId(uint64_t aBrowsingContextId, uint64_t aAccId) final;
 
   virtual already_AddRefed<SourceSurface> Snapshot() override;
   virtual already_AddRefed<SourceSurface> IntoLuminanceSource(
@@ -223,6 +230,9 @@ class DrawTargetRecording final : public DrawTarget {
    */
   virtual void PopClip() override;
 
+  /* Remove all applied clips. */
+  virtual bool RemoveAllClips() override;
+
   /**
    * Push a 'layer' to the DrawTarget, a layer is a temporary surface that all
    * drawing will be redirected to, this is used for example to support group
@@ -355,6 +365,11 @@ class DrawTargetRecording final : public DrawTarget {
 
   virtual already_AddRefed<FilterNode> CreateFilter(FilterType aType) override;
 
+  virtual already_AddRefed<FilterNode> DeferFilterInput(
+      const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+      const IntPoint& aDestOffset, const DrawOptions& aOptions = DrawOptions(),
+      const StrokeOptions* aStrokeOptions = nullptr) override;
+
   /*
    * Set a transform on the surface, this transform is applied at drawing time
    * to both the mask and source of the operation.
@@ -389,6 +404,17 @@ class DrawTargetRecording final : public DrawTarget {
   }
 
   layers::RecordedTextureData* mTextureData = nullptr;
+
+  friend class layers::CanvasChild;
+
+  already_AddRefed<SourceSurface> CreateExternalSourceSurface(
+      const IntSize& aSize, SurfaceFormat aFormat);
+
+  friend class ::nsICanvasRenderingContextInternal;
+
+  already_AddRefed<SourceSurface> SnapshotExternalCanvas(
+      nsICanvasRenderingContextInternal* aCanvas,
+      mozilla::ipc::IProtocol* aActor);
 
  private:
   /**

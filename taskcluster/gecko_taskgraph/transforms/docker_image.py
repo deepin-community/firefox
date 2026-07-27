@@ -3,25 +3,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import json
 import logging
 import os
 import re
+from typing import Optional
 
 import mozpack.path as mozpath
 import taskgraph
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.util import json
+from taskgraph.util.docker import create_context_tar, generate_context_hash
 from taskgraph.util.schema import Schema
-from voluptuous import Optional, Required
 
 from gecko_taskgraph.util.docker import (
-    create_context_tar,
-    generate_context_hash,
     image_path,
 )
 
 from .. import GECKO
-from .task import task_description_schema
+from .task import TaskDescriptionSchema
 
 logger = logging.getLogger(__name__)
 
@@ -30,45 +29,40 @@ CONTEXTS_DIR = "docker-contexts"
 DIGEST_RE = re.compile("^[0-9a-f]{64}$")
 
 IMAGE_BUILDER_IMAGE = (
-    "mozillareleases/image_builder:5.0.0"
+    "mozillareleases/image_builder:6.0.0"
     "@sha256:"
-    "e510a9a9b80385f71c112d61b2f2053da625aff2b6d430411ac42e424c58953f"
+    "734c03809c83c716c1460ed3e00519d79b14d117343d3c556cbd9218a2e7f094"
 )
 
 transforms = TransformSequence()
 
-docker_image_schema = Schema(
-    {
-        # Name of the docker image.
-        Required("name"): str,
-        # Name of the parent docker image.
-        Optional("parent"): str,
-        # Treeherder symbol.
-        Required("symbol"): str,
-        # relative path (from config.path) to the file the docker image was defined
-        # in.
-        Optional("task-from"): str,
-        # Arguments to use for the Dockerfile.
-        Optional("args"): {str: str},
-        # Name of the docker image definition under taskcluster/docker, when
-        # different from the docker image name.
-        Optional("definition"): str,
-        # List of package tasks this docker image depends on.
-        Optional("packages"): [str],
-        Optional("arch"): str,
-        Optional(
-            "index",
-            description="information for indexing this build so its artifacts can be discovered",
-        ): task_description_schema["index"],
-        Optional(
-            "cache",
-            description="Whether this image should be cached based on inputs.",
-        ): bool,
-    }
-)
+
+class DockerImageSchema(Schema, kw_only=True):
+    # Name of the docker image.
+    name: str
+    # Name of the parent docker image.
+    parent: Optional[str] = None
+    # Treeherder symbol.
+    symbol: str
+    # relative path (from config.path) to the file the docker image was defined
+    # in.
+    task_from: Optional[str] = None
+    # Arguments to use for the Dockerfile.
+    args: Optional[dict[str, str]] = None
+    # Name of the docker image definition under taskcluster/docker, when
+    # different from the docker image name.
+    definition: Optional[str] = None
+    # List of package tasks this docker image depends on.
+    packages: Optional[list[str]] = None
+    arch: Optional[str] = None
+    # information for indexing this build so its artifacts can be discovered
+    index: TaskDescriptionSchema.__annotations__["index"] = None
+    # Whether this image should be cached based on inputs.
+    cache: Optional[bool] = None
+    run_on_repo_type: TaskDescriptionSchema.__annotations__["run_on_repo_type"] = None
 
 
-transforms.add_validate(docker_image_schema)
+transforms.add_validate(DockerImageSchema)
 
 
 @transforms.add
@@ -87,9 +81,7 @@ def fill_template(config, tasks):
         for p in packages:
             if f"packages-{p}" not in config.kind_dependencies_tasks:
                 raise Exception(
-                    "Missing package job for {}-{}: {}".format(
-                        config.kind, image_name, p
-                    )
+                    f"Missing package job for {config.kind}-{image_name}: {p}"
                 )
 
         if not taskgraph.fast:
@@ -98,12 +90,10 @@ def fill_template(config, tasks):
                 context_file = os.path.join(CONTEXTS_DIR, f"{image_name}.tar.gz")
                 logger.info(f"Writing {context_file} for docker image {image_name}")
                 context_hash = create_context_tar(
-                    GECKO, context_path, context_file, image_name, args
+                    GECKO, context_path, context_file, args
                 )
             else:
-                context_hash = generate_context_hash(
-                    GECKO, context_path, image_name, args
-                )
+                context_hash = generate_context_hash(GECKO, context_path, args)
         else:
             if config.write_artifacts:
                 raise Exception("Can't write artifacts if `taskgraph.fast` is set.")
@@ -111,9 +101,7 @@ def fill_template(config, tasks):
         digest_data = [context_hash]
         digest_data += [json.dumps(args, sort_keys=True)]
 
-        description = "Build the docker image {} for use by dependent tasks".format(
-            image_name
-        )
+        description = f"Build the docker image {image_name} for use by dependent tasks"
 
         args["DOCKER_IMAGE_PACKAGES"] = " ".join(f"<{p}>" for p in packages)
 
@@ -125,9 +113,9 @@ def fill_template(config, tasks):
         zstd_level = "3" if int(config.params["level"]) == 1 else "10"
 
         if task.get("arch", "") == "arm64":
-            worker_type = "images-gcp-aarch64"
+            worker_type = "images-aarch64"
         else:
-            worker_type = "images-gcp"
+            worker_type = "images"
 
         # include some information that is useful in reconstructing this task
         # from JSON
@@ -148,6 +136,7 @@ def fill_template(config, tasks):
                 "tier": 1,
             },
             "run-on-projects": [],
+            "run-on-repo-type": task.get("run-on-repo-type", ["git", "hg"]),
             "worker-type": worker_type,
             "worker": {
                 "implementation": "docker-worker",
@@ -155,15 +144,13 @@ def fill_template(config, tasks):
                 "artifacts": [
                     {
                         "type": "file",
-                        "path": "/workspace/image.tar.zst",
+                        "path": "/workspace/out/image.tar.zst",
                         "name": "public/image.tar.zst",
                     }
                 ],
                 "env": {
                     "CONTEXT_TASK_ID": {"task-reference": "<decision>"},
-                    "CONTEXT_PATH": "public/docker-contexts/{}.tar.gz".format(
-                        image_name
-                    ),
+                    "CONTEXT_PATH": f"public/docker-contexts/{image_name}.tar.gz",
                     "HASH": context_hash,
                     "PROJECT": config.params["project"],
                     "IMAGE_NAME": image_name,
@@ -178,9 +165,6 @@ def fill_template(config, tasks):
                 # FIXME: We aren't currently propagating the exit code
             },
         }
-        # Retry for 'funsize-update-generator' if exit status code is -1
-        if image_name in ["funsize-update-generator"]:
-            taskdesc["worker"]["retry-exit-status"] = [-1]
 
         worker = taskdesc["worker"]
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,18 +11,18 @@
 
 #include "gfxContext.h"
 #include "gfxUtils.h"
-#include "mozilla/dom/ElementInlines.h"
-#include "mozilla/gfx/2D.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/PresShellInlines.h"
 #include "mozilla/ServoStyleSetInlines.h"
+#include "mozilla/dom/ElementInlines.h"
+#include "mozilla/gfx/2D.h"
 #include "nsCSSFrameConstructor.h"
 #include "nsDisplayList.h"
+#include "nsIContentInlines.h"
+#include "nsIFrameInlines.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
 #include "nsPresContextInlines.h"
-#include "nsIFrameInlines.h"
-#include "nsIContentInlines.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -46,7 +44,7 @@ NS_QUERYFRAME_TAIL_INHERITING(nsIFrame)
 #endif
 
 /* virtual */
-void nsPlaceholderFrame::AddInlineMinISize(gfxContext* aRenderingContext,
+void nsPlaceholderFrame::AddInlineMinISize(const IntrinsicSizeInput& aInput,
                                            InlineMinISizeData* aData) {
   // Override AddInlineMinISize so that *nothing* happens. In
   // particular, we don't want to zero out |aData->mTrailingWhitespace|,
@@ -54,16 +52,12 @@ void nsPlaceholderFrame::AddInlineMinISize(gfxContext* aRenderingContext,
   // whitespace, and we don't want to set aData->mSkipWhitespace to
   // false.
 
-  // ...but push floats onto the list
-  if (mOutOfFlowFrame->IsFloating()) {
-    const nscoord floatISize = nsLayoutUtils::IntrinsicForContainer(
-        aRenderingContext, mOutOfFlowFrame, IntrinsicISizeType::MinISize);
-    aData->mFloats.EmplaceBack(mOutOfFlowFrame, floatISize);
-  }
+  // ...but push floats onto aData's list.
+  AddFloatToIntrinsicISizeData(aInput, IntrinsicISizeType::MinISize, aData);
 }
 
 /* virtual */
-void nsPlaceholderFrame::AddInlinePrefISize(gfxContext* aRenderingContext,
+void nsPlaceholderFrame::AddInlinePrefISize(const IntrinsicSizeInput& aInput,
                                             InlinePrefISizeData* aData) {
   // Override AddInlinePrefISize so that *nothing* happens. In
   // particular, we don't want to zero out |aData->mTrailingWhitespace|,
@@ -71,10 +65,19 @@ void nsPlaceholderFrame::AddInlinePrefISize(gfxContext* aRenderingContext,
   // whitespace, and we don't want to set aData->mSkipWhitespace to
   // false.
 
-  // ...but push floats onto the list
+  // ...but push floats onto aData's list.
+  AddFloatToIntrinsicISizeData(aInput, IntrinsicISizeType::PrefISize, aData);
+}
+
+void nsPlaceholderFrame::AddFloatToIntrinsicISizeData(
+    const IntrinsicSizeInput& aInput, IntrinsicISizeType aType,
+    InlineIntrinsicISizeData* aData) const {
   if (mOutOfFlowFrame->IsFloating()) {
+    const IntrinsicSizeInput floatInput(
+        aInput, mOutOfFlowFrame->GetWritingMode(), GetWritingMode());
     const nscoord floatISize = nsLayoutUtils::IntrinsicForContainer(
-        aRenderingContext, mOutOfFlowFrame, IntrinsicISizeType::PrefISize);
+        floatInput.mContext, mOutOfFlowFrame, aType,
+        floatInput.mPercentageBasisForChildren);
     aData->mFloats.EmplaceBack(mOutOfFlowFrame, floatISize);
   }
 }
@@ -95,10 +98,20 @@ void nsPlaceholderFrame::Reflow(nsPresContext* aPresContext,
   // Popups are an exception though, because their position doesn't depend on
   // the placeholder, so they don't have this requirement (and this condition
   // doesn't hold anyways because the default popupgroup goes before than the
-  // default tooltip, for example).
+  // default tooltip, for example). Same for the backdrop.
+  // TODO(emilio): All top layer nodes technically can hit this, but their
+  // static pos is supposed to be 0, 0, see
+  // https://github.com/w3c/csswg-drafts/issues/9939.
+  //
+  // We also have an exception if the out-of-flow created an orthogonal flow,
+  // because in this case we may have needed to do a measuring reflow during
+  // intrinsic size computation. That's OK because it does not depend on the
+  // placeholder being reflowed first.
   if (HasAnyStateBits(NS_FRAME_FIRST_REFLOW) &&
       !mOutOfFlowFrame->IsMenuPopupFrame() &&
-      !mOutOfFlowFrame->HasAnyStateBits(NS_FRAME_FIRST_REFLOW)) {
+      mOutOfFlowFrame->Style()->GetPseudoType() != PseudoStyleType::Backdrop &&
+      !mOutOfFlowFrame->HasAnyStateBits(NS_FRAME_FIRST_REFLOW) &&
+      !mOutOfFlowFrame->GetWritingMode().IsOrthogonalTo(GetWritingMode())) {
     // Unfortunately, this can currently happen when the placeholder is in a
     // later continuation or later IB-split sibling than its out-of-flow (as
     // is the case in some of our existing unit tests). So for now, in that
@@ -131,16 +144,9 @@ static FrameChildListID ChildListIDForOutOfFlow(nsFrameState aPlaceholderState,
   if (aPlaceholderState & PLACEHOLDER_FOR_FLOAT) {
     return FrameChildListID::Float;
   }
-  if (aPlaceholderState & PLACEHOLDER_FOR_FIXEDPOS) {
-    return nsLayoutUtils::MayBeReallyFixedPos(aChild)
-               ? FrameChildListID::Fixed
-               : FrameChildListID::Absolute;
-  }
-  if (aPlaceholderState & PLACEHOLDER_FOR_ABSPOS) {
-    return FrameChildListID::Absolute;
-  }
-  MOZ_DIAGNOSTIC_ASSERT(false, "unknown list");
-  return FrameChildListID::Float;
+  MOZ_ASSERT(aPlaceholderState &
+             (PLACEHOLDER_FOR_FIXEDPOS | PLACEHOLDER_FOR_ABSPOS));
+  return FrameChildListID::Absolute;
 }
 
 void nsPlaceholderFrame::Destroy(DestroyContext& aContext) {
@@ -218,7 +224,8 @@ void nsPlaceholderFrame::List(FILE* out, const char* aPrefix,
 
   if (mOutOfFlowFrame) {
     str += " outOfFlowFrame=";
-    str += mOutOfFlowFrame->ListTag();
+    str += mOutOfFlowFrame->ListTag(
+        aFlags.contains(ListFlag::OnlyListDeterministicInfo));
   }
   fprintf_stderr(out, "%s\n", str.get());
 }

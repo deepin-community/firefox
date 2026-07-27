@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -65,7 +63,7 @@ class WindowsDllNopSpacePatcher final : public WindowsDllPatcherBase<VMPolicy> {
     const wchar_t* kIncompatibleDLLs[] = {L"detoured.dll", L"_etoured.dll",
                                           L"nvd3d9wrap.dll", L"nvdxgiwrap.dll"};
     // See if the infringing DLLs are already loaded
-    for (unsigned int i = 0; i < mozilla::ArrayLength(kIncompatibleDLLs); ++i) {
+    for (unsigned int i = 0; i < std::size(kIncompatibleDLLs); ++i) {
       if (GetModuleHandleW(kIncompatibleDLLs[i])) {
         return false;
       }
@@ -104,12 +102,11 @@ class WindowsDllNopSpacePatcher final : public WindowsDllPatcherBase<VMPolicy> {
         while (token) {
           wchar_t fname[_MAX_FNAME] = {0};
           if (!_wsplitpath_s(token, nullptr, 0, nullptr, 0, fname,
-                             mozilla::ArrayLength(fname), nullptr, 0)) {
+                             std::size(fname), nullptr, 0)) {
             // nvinit.dll is responsible for bootstrapping the DLL injection, so
             // that is the library that we check for here
             const wchar_t kNvInitName[] = L"nvinit";
-            if (!_wcsnicmp(fname, kNvInitName,
-                           mozilla::ArrayLength(kNvInitName))) {
+            if (!_wcsnicmp(fname, kNvInitName, std::size(kNvInitName))) {
               return false;
             }
           }

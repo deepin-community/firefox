@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef WindowDefs_h__
-#define WindowDefs_h__
+#ifndef WindowDefs_h_
+#define WindowDefs_h_
 
 /*
  * nsWindowDefs - nsWindow related definitions, consts, and macros.
  */
 
 #include "mozilla/widget/WinMessages.h"
-#include "nsBaseWidget.h"
+#include "nsIWidget.h"
 #include "nsdefs.h"
 #include "resource.h"
 
@@ -23,10 +22,6 @@
 
 // ConstrainPosition window positioning slop value
 #define kWindowPositionSlop 20
-
-// Origin of the system context menu when displayed in full screen mode
-#define MOZ_SYSCONTEXT_X_POS 20
-#define MOZ_SYSCONTEXT_Y_POS 20
 
 // Don't put more than this many rects in the dirty region, just fluff
 // out to the bounding-box if there are more
@@ -116,4 +111,4 @@ struct MSGResult {
   NS_ASSERTION(((s) & (WS_CHILD | WS_POPUP)) != (WS_CHILD | WS_POPUP), \
                "WS_POPUP and WS_CHILD are mutually exclusive")
 
-#endif /* WindowDefs_h__ */
+#endif /* WindowDefs_h_ */

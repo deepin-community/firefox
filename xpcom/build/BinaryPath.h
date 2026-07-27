@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -301,16 +299,9 @@ class BinaryPath {
     if (NS_FAILED(rv)) {
       return rv;
     }
-#  ifdef XP_WIN
-    rv = NS_NewLocalFile(nsDependentString(exePath), true, getter_AddRefs(lf));
-#  else
-    rv = NS_NewNativeLocalFile(nsDependentCString(exePath), true,
-                               getter_AddRefs(lf));
-#  endif
-    if (NS_FAILED(rv)) {
-      return rv;
-    }
-    NS_ADDREF(*aResult = lf);
+    MOZ_TRY(NS_NewPathStringLocalFile(DependentPathString(exePath),
+                                      getter_AddRefs(lf)));
+    lf.forget(aResult);
     return NS_OK;
   }
 #endif

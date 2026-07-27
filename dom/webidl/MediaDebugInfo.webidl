@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -158,25 +157,25 @@ dictionary MediaStateDebugInfo {
   boolean hasPromise = false;
   boolean waitingPromise = false;
   boolean hasDemuxRequest = false;
-  long demuxQueueSize = 0;
+  unsigned long long demuxQueueSize = 0;
   boolean hasDecoder = false;
   double timeTreshold = 0.0;
   boolean timeTresholdHasSeeked = false;
-  long long numSamplesInput = 0;
-  long long numSamplesOutput = 0;
-  long queueSize = 0;
-  long pending = 0;
+  unsigned long long numSamplesInput = 0;
+  unsigned long long numSamplesOutput = 0;
+  unsigned long long queueSize = 0;
+  unsigned long long pending = 0;
   boolean waitingForData = false;
   long demuxEOS = 0;
   long drainState = 0;
   boolean waitingForKey = false;
-  long long lastStreamSourceID = 0;
+  unsigned long lastStreamSourceID = 0;
 };
 
 dictionary MediaFrameStats {
-  long long droppedDecodedFrames = 0;
-  long long droppedSinkFrames = 0;
-  long long droppedCompositorFrames = 0;
+  unsigned long long droppedDecodedFrames = 0;
+  unsigned long long droppedSinkFrames = 0;
+  unsigned long long droppedCompositorFrames = 0;
 };
 
 dictionary MediaFormatReaderDebugInfo {
@@ -188,11 +187,11 @@ dictionary MediaFormatReaderDebugInfo {
   DOMString audioType = "";
   DOMString audioDecoderName = "";
   boolean videoHardwareAccelerated = false;
-  long long videoNumSamplesOutputTotal = 0;
-  long long videoNumSamplesSkippedTotal = 0;
-  long audioChannels = 0;
+  unsigned long long videoNumSamplesOutputTotal = 0;
+  unsigned long long videoNumSamplesSkippedTotal = 0;
+  unsigned long audioChannels = 0;
   double audioRate = 0.0;
-  long long audioFramesDecoded = 0;
+  unsigned long long audioFramesDecoded = 0;
   MediaStateDebugInfo audioState = {};
   MediaStateDebugInfo videoState = {};
   MediaFrameStats frameStats = {};

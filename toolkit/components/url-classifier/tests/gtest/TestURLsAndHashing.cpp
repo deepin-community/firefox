@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,16 +9,15 @@
 static void VerifyFragments(const nsACString& aURL,
                             const nsTArray<nsCString>& aExpected) {
   nsTArray<nsCString> fragments;
-  nsresult rv = LookupCache::GetLookupFragments(aURL, &fragments);
-  ASSERT_EQ(rv, NS_OK) << "GetLookupFragments should not fail";
+  LookupCache::GetLookupFragments(aURL, &fragments);
 
   ASSERT_EQ(aExpected.Length(), fragments.Length())
-      << "Fragments generated from " << aURL.BeginReading()
+      << "Fragments generated from " << PromiseFlatCString(aURL).get()
       << " are not the same as expected";
 
   for (const auto& fragment : fragments) {
     ASSERT_TRUE(aExpected.Contains(fragment))
-    << "Fragments generated from " << aURL.BeginReading()
+    << "Fragments generated from " << PromiseFlatCString(aURL).get()
     << " are not the same as expected";
   }
 }

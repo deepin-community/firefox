@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +6,8 @@
 #include "EnterpriseRoots.h"
 
 #include "PKCS11ModuleDB.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/IntegerPrintfMacros.h"
-#include "mozilla/Casting.h"
 #include "mozilla/Logging.h"
-#include "mozilla/Unused.h"
 #include "mozpkix/Result.h"
 #include "nsCRT.h"
 #include "nsThreadUtils.h"
@@ -75,7 +71,7 @@ struct CertStoreLocation {
 // The documentation doesn't make this clear, but the certificate location
 // identified by "ROOT" contains trusted root certificates. The certificate
 // location identified by "CA" contains intermediate certificates.
-const CertStoreLocation kCertStoreLocations[] = {
+MOZ_RUNINIT const CertStoreLocation kCertStoreLocations[] = {
     CertStoreLocation(L"ROOT", true), CertStoreLocation(L"CA", false)};
 
 // Because HCERTSTORE is just a typedef void*, we can't use any of the nice
@@ -413,11 +409,11 @@ OSStatus GatherEnterpriseCertsMacOS(nsTArray<EnterpriseCert>& certs,
   // this query. Further work (below) filters such certificates out.
   const CFStringRef keys[] = {kSecClass, kSecMatchLimit};
   const void* values[] = {kSecClassCertificate, kSecMatchLimitAll};
-  static_assert(ArrayLength(keys) == ArrayLength(values),
+  static_assert(std::size(keys) == std::size(values),
                 "mismatched SecItemCopyMatching key/value array sizes");
   // https://developer.apple.com/documentation/corefoundation/1516782-cfdictionarycreate
   ScopedCFType<CFDictionaryRef> searchDictionary(CFDictionaryCreate(
-      nullptr, (const void**)&keys, (const void**)&values, ArrayLength(keys),
+      nullptr, (const void**)&keys, (const void**)&values, std::size(keys),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   CFTypeRef items;
   // https://developer.apple.com/documentation/security/1398306-secitemcopymatching

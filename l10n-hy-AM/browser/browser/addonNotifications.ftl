@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-xpinstall-prompt = { -brand-short-name } կասեցրել է ձեր համակարգչում ծրագրի տեղակայման հարցումը այս կայքից:
+xpinstall-prompt = { -brand-short-name }-ը կանխել է այս կայքին Ձեր համակարգչում ծրագրային ապահովման տեղադրումը հարցնելուց։
 
 ## Variables:
 ##   $host (String): The hostname of the site the add-on is being installed from.
@@ -34,10 +34,14 @@ xpinstall-prompt-install =
 
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
+site-permission-install-first-prompt-midi-header = Այս կայքը խնդրում է մուտք գործել ձեր MIDI (Երաժշտական գործիքի թվային միջերես) սարքերին: Սարքին մուտքը կարող է միացվել՝ տեղադրելով հավելում:
+site-permission-install-first-prompt-midi-message = Այս մուտքի անվտանգությունը երաշխավորված չէ։ Շարունակեք միայն այն դեպքում, եթե վստահում եք այս կայքին։
+site-permission-install-first-prompt-serial-header = Այս կայքը խնդրում է մուտք գործել ձեր սերիական սարքերին: Սարքին մուտքը կարող է միացվել՝ տեղադրելով հավելում:
+site-permission-install-first-prompt-serial-message = Այս մուտքի անվտանգությունը երաշխավորված չէ։ Շարունակեք միայն այն դեպքում, եթե վստահում եք այս կայքին։
 
 ##
 
-xpinstall-disabled-locked = Ծրագրերի տեղակայումը պասիվացվել է ձեր համակարգի վարիչի կողմից։
+xpinstall-disabled-locked = Ծրագրերի տեղադրումը անջատված է ձեր համակարգի վարիչի կողմից։
 xpinstall-disabled-by-policy = Ծրագրային ապահովման տեղադրումն անջատված է Ձեր կազմակերպության կողմից:
 xpinstall-disabled = Ծրագրերի տեղադրումը ժամանակավորապես պասիվացված է: Սեղմեք Ակտիվացնել և կրկին փորձեք:
 xpinstall-disabled-button =
@@ -48,11 +52,15 @@ xpinstall-disabled-button =
 #   $addonName (String): the name of the add-on.
 #   $addonId (String): the ID of add-on.
 addon-install-blocked-by-policy = { $addonName }({ $addonId }) արգելափակված է Ձեր համակարգավարի կողմից։
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-domain-blocked-by-policy = Ձեր համակարգի ադմինիստրատորը արգելել է այս կայքին խնդրել ձեզ ձեր համակարգչում ծրագրակազմ տեղադրել։
 # This message is shown when the installation of an add-on is blocked by enterprise policy.
 # Variables:
 #   $addonName (String): the name of the add-on.
 #   $addonId (String): the ID of add-on.
 addon-installation-blocked-by-policy = { $addonName }-ը ({ $addonId }) արգելափակված է Ձեր կազմակերպության կողմից:
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = Ձեր կազմակերպությունը կանխել է այս կայքի կողմից ձեր համակարգչում ծրագրակազմ տեղադրելու խնդրանքը։
 addon-install-full-screen-blocked = Լրացուցիչ էկրան տեղադրումը չի թույլատրվում ամբողջ էկրանին ռեժիմը մուտքագրվելիս կամ դրա ընթացքում։
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -75,6 +83,8 @@ addon-removal-title = Հեռացնե՞լ { $name }-ը:
 addon-removal-message = Հեռացնե՞լ { $name } ֊ը { -brand-shorter-name } ֊ից։
 addon-removal-button = Հեռացնել
 addon-removal-abuse-report-checkbox = Զեկուցեք այս ընդլայնման մասին { -vendor-short-name }-ին
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Եթե դուք օգտագործում եք այս մոդելն օգտագործող գործառույթները կամ ընդլայնումները, այն կրկին կավելացվի։
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -112,17 +122,24 @@ addon-confirm-install-some-unsigned-message = Ուշադրություն. Այս
 ##   $addonName (String): the add-on name.
 
 addon-install-error-network-failure = Հավելումը չի կարող ներբեռնվել, քանի որ տեղի է ունեցել կապի խափանում:
-addon-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համապատասխանում ակնկալվող { -brand-short-name } հավելմանը:
+addon-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համընկնում ակնկալվող { -brand-short-name } հավելմանը:
 addon-install-error-corrupt-file = Այս կայքից ներբեռնած հավելումը չի տեղադրվել, քանի որ այն վնասված է:
-addon-install-error-file-access = { $addonName }-ը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ նիշքը։
+addon-install-error-file-access = { $addonName }-ը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 addon-install-error-not-signed = { -brand-short-name }-ը կանխել է այս կայքից չստուգված հավելումների տեղադրումը:
 addon-install-error-invalid-domain = { $addonName }-ը հավելումը այս վայրից չի կարող տեղադրվել։
+addon-install-error-no-addon-name-file-access = Հավելումը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 addon-local-install-error-network-failure = Հետևյալ հավելումը չի տեղադրվել ֆայլերի համակարգի սխալի պատճառով:
-addon-local-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համապատասխանում ակնկալվող { -brand-short-name } հավելմանը:
+addon-local-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համընկնում ակնկալվող { -brand-short-name } հավելմանը:
 addon-local-install-error-corrupt-file = Այս հավելումը չի կարող տեղադրվել, քանի որ այն վնասված է:
 addon-local-install-error-file-access = { $addonName }-ը չի կարող տեղակայվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը:
 addon-local-install-error-not-signed = Այս հավելումը չի կարող տեղադրվել, քանի որ այն ստուգված չէ:
+addon-local-install-no-addon-name-error-file-access = Հավելումը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName }-ը չի կարող տեղադրվել, քանի որ համատեղելի չէ { -brand-short-name } { $appVersion }-ի հետ:
+addon-install-error-hard-blocked = { $addonName }-ը խախտում է Mozilla-ի քաղաքականությունը և չի կարող տեղադրվել { -brand-short-name }-ում։
+addon-install-error-soft-blocked2 = { $addonName }-ը սահմանափակված է և չի կարող տեղադրվել { -brand-short-name }-ում։
 addon-install-error-blocklisted = { $addonName }-ը չի կարող տեղադրվել, քանի որ այն պարունակում է անվտանգության խնդիրներ:
+addon-install-error-soft-blocked = { $addonName }-ը խախտում է Mozilla-ի քաղաքականությունը և չի կարող տեղադրվել { -brand-short-name }-ում։
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Դուք չեք կարող տեղադրել { $addonName }-ը որպես վերջնական օգտատեր, այն կարող է տեղադրվել միայն ձեռնարկության քաղաքականություն օգտագործող կազմակերպության կողմից։

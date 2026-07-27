@@ -180,9 +180,23 @@ var testCases = [
       });
     }
 
+    // Override the expected blocking notifications if the tracker cookie
+    // blocking
+    let isTrackerCookieBlocked = Services.prefs.getBoolPref(
+      "network.cookie.cookieBehavior.trackerCookieBlocking"
+    );
+
+    if (!isTrackerCookieBlocked) {
+      // Override for BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN.
+      testCases[5].cases[3] = [false]; /* 3rd-party tracker */
+      testCases[5].cases[4] = [false]; /* 3rd-party tracker with permission */
+      testCases[5].cases[7] = [false]; /* insecure tracker */
+    }
+
     testCases.forEach(test => {
       let [hasStorageAccess, expectedBlockingNotifications] =
         test.cases[settings.indexOf(setting)];
+
       let callback = hasStorageAccess
         ? async _ => {
             /* import-globals-from storageAccessAPIHelpers.js */
@@ -199,10 +213,6 @@ var testCases = [
         allowList: false,
         callback,
         extraPrefs: [
-          [
-            "privacy.partition.always_partition_third_party_non_cookie_storage",
-            true,
-          ],
           // Testing Storage Access API grants constrained to secure contexts
           ["dom.storage_access.dont_grant_insecure_contexts", true],
         ],

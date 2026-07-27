@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-arraybuffer-resizable) skip-if(!ArrayBuffer.prototype.resize||!xulRuntime.shell) -- resizable-arraybuffer is not enabled unconditionally, requires shell-options
 // Copyright (C) 2021 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -6,7 +5,7 @@ esid: sec-get-%typedarray%.prototype.byteoffset
 description: |
   reset to 0 if the underlying ArrayBuffer is resized beyond the boundary of
   the dynamically-sized TypedArray instance
-includes: [testBigIntTypedArray.js]
+includes: [testTypedArray.js]
 features: [ArrayBuffer, BigInt, TypedArray, resizable-arraybuffer]
 ---*/
 
@@ -36,6 +35,12 @@ testWithBigIntTypedArrayConstructors(function(TA) {
   assert.sameValue(array.byteOffset, BPE, "following shrink (within bounds)");
 
   try {
+    ab.resize(BPE * 3 - 1);
+  } catch (_) {}
+
+  assert.sameValue(array.byteOffset, BPE, "following shrink (partial element)");
+
+  try {
     ab.resize(BPE);
   } catch (_) {}
 
@@ -48,6 +53,6 @@ testWithBigIntTypedArrayConstructors(function(TA) {
   } catch (_) {}
 
   assert.sameValue(array.byteOffset, expected, "following shrink (out of bounds)");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

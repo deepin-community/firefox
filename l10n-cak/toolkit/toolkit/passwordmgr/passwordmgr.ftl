@@ -27,10 +27,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Man tik'ex ruwäch
     .accesskey = M
+primary-password-prompt-message = Tab'ana' utzil tatz'ib'aj ri Nab'ey Ewan Atzij.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Majun rub'i' winäq
-password-manager-toggle-password =
-    .label = Tik'ut ewan tzij
-    .accesskey = h
 password-manager-confirm-password-change = Tijikib'äx ri ruk'exik ewan tzij
 password-manager-select-username = Tacha' ri rutikirib'al moloj richin nik'ex:

@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsExternalHelperAppService_h__
-#define nsExternalHelperAppService_h__
+#ifndef nsExternalHelperAppService_h_
+#define nsExternalHelperAppService_h_
 
 #include "mozilla/Logging.h"
 #include "prtime.h"
@@ -31,7 +30,6 @@
 #include "nsIObserver.h"
 #include "nsCOMArray.h"
 #include "nsWeakReference.h"
-#include "mozilla/Attributes.h"
 
 class nsExternalAppHandler;
 class nsIMIMEInfo;
@@ -39,13 +37,8 @@ class nsITransfer;
 class nsIPrincipal;
 class MaybeCloseWindowHelper;
 
-#define EXTERNAL_APP_HANDLER_IID                     \
-  {                                                  \
-    0x50eb7479, 0x71ff, 0x4ef8, {                    \
-      0xb3, 0x1e, 0x3b, 0x59, 0xc8, 0xab, 0xb9, 0x24 \
-    }                                                \
-  }
-
+#define EXTERNAL_APP_HANDLER_IID \
+  {0x50eb7479, 0x71ff, 0x4ef8, {0xb3, 0x1e, 0x3b, 0x59, 0xc8, 0xab, 0xb9, 0x24}}
 /**
  * The helper app service. Responsible for handling content that Mozilla
  * itself can not handle
@@ -135,6 +128,14 @@ class nsExternalHelperAppService : public nsIExternalHelperAppService,
   static nsresult EscapeURI(nsIURI* aURI, nsIURI** aResult);
 
   /**
+   * Check whether `aBrowsingContext` is sandboxed such that external
+   * protocol navigations performed in that context would be blocked.
+   */
+  static bool ExternalProtocolIsBlockedBySandbox(
+      mozilla::dom::BrowsingContext* aBrowsingContext,
+      const bool aHasValidUserGestureActivation);
+
+  /**
    * Logging Module. Usage: set MOZ_LOG=HelperAppService:level, where level
    * should be 2 for errors, 3 for debug messages from the cross- platform
    * nsExternalHelperAppService, and 4 for os-specific debug messages.
@@ -208,6 +209,12 @@ class nsExternalHelperAppService : public nsIExternalHelperAppService,
    */
   void ExpungeTemporaryPrivateFiles();
 
+  /*
+   * Deletes files downloaded in a private browsing session
+   * if deletePrivate pref is set to true
+   */
+  void ExpungePrivateFiles();
+
   bool GetFileNameFromChannel(nsIChannel* aChannel, nsAString& aFileName,
                               nsIURI** aURI);
 
@@ -251,6 +258,10 @@ class nsExternalHelperAppService : public nsIExternalHelperAppService,
    * added during the private browsing mode)
    */
   nsCOMArray<nsIFile> mTemporaryPrivateFilesList;
+  /*
+   * Array for files downloaded in private browsing that should be deleted
+   */
+  nsCOMArray<nsIFile> mPrivateFilesList;
 
  private:
   nsresult DoContentContentProcessHelper(
@@ -281,7 +292,7 @@ class nsExternalAppHandler final : public nsIStreamListener,
   NS_DECL_NSIBACKGROUNDFILESAVEROBSERVER
   NS_DECL_NSINAMED
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(EXTERNAL_APP_HANDLER_IID)
+  NS_INLINE_DECL_STATIC_IID(EXTERNAL_APP_HANDLER_IID)
 
   /**
    * @param aMIMEInfo       MIMEInfo object, representing the type of the
@@ -302,7 +313,8 @@ class nsExternalAppHandler final : public nsIStreamListener,
                        mozilla::dom::BrowsingContext* aBrowsingContext,
                        nsIInterfaceRequestor* aWindowContext,
                        nsExternalHelperAppService* aExtProtSvc,
-                       const nsAString& aSuggestedFileName, uint32_t aReason,
+                       const nsAString& aSuggestedFileName,
+                       nsIHelperAppLauncherDialog::reason aReason,
                        bool aForceSave);
 
   /**
@@ -396,7 +408,7 @@ class nsExternalAppHandler final : public nsIStreamListener,
    * reason the dialog was shown (unknown content type, server requested it,
    * etc).
    */
-  uint32_t mReason;
+  nsIHelperAppLauncherDialog::reason mReason;
 
   /**
    * Indicates if the nsContentSecurityUtils rate this download as
@@ -559,6 +571,5 @@ class nsExternalAppHandler final : public nsIStreamListener,
 
   RefPtr<nsExternalHelperAppService> mExtProtSvc;
 };
-NS_DEFINE_STATIC_IID_ACCESSOR(nsExternalAppHandler, EXTERNAL_APP_HANDLER_IID)
 
-#endif  // nsExternalHelperAppService_h__
+#endif  // nsExternalHelperAppService_h_

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 /* Iterator class for frame lists that respect CSS "order" during layout */
 
 #include "CSSOrderAwareFrameIterator.h"
+
 #include "nsIFrameInlines.h"
 
 static bool CanUse(const nsIFrame* aFrame) {
@@ -30,13 +29,17 @@ bool ReverseCSSOrderAwareFrameIterator::CanUse(const nsIFrame* aFrame) {
 template <>
 int CSSOrderAwareFrameIterator::CSSOrderComparator(nsIFrame* const& a,
                                                    nsIFrame* const& b) {
-  return a->StylePosition()->mOrder - b->StylePosition()->mOrder;
+  const auto o1 = a->StylePosition()->mOrder;
+  const auto o2 = b->StylePosition()->mOrder;
+  return (o1 > o2) - (o1 < o2);
 }
 
 template <>
 int CSSOrderAwareFrameIterator::CSSBoxOrdinalGroupComparator(
     nsIFrame* const& a, nsIFrame* const& b) {
-  return a->StyleXUL()->mBoxOrdinal - b->StyleXUL()->mBoxOrdinal;
+  const auto o1 = a->StyleXUL()->mBoxOrdinal;
+  const auto o2 = b->StyleXUL()->mBoxOrdinal;
+  return (o1 > o2) - (o1 < o2);
 }
 
 template <>
@@ -59,13 +62,17 @@ nsFrameList::iterator CSSOrderAwareFrameIterator::end(
 template <>
 int ReverseCSSOrderAwareFrameIterator::CSSOrderComparator(nsIFrame* const& a,
                                                           nsIFrame* const& b) {
-  return b->StylePosition()->mOrder - a->StylePosition()->mOrder;
+  const auto o1 = a->StylePosition()->mOrder;
+  const auto o2 = b->StylePosition()->mOrder;
+  return (o2 > o1) - (o2 < o1);
 }
 
 template <>
 int ReverseCSSOrderAwareFrameIterator::CSSBoxOrdinalGroupComparator(
     nsIFrame* const& a, nsIFrame* const& b) {
-  return b->StyleXUL()->mBoxOrdinal - a->StyleXUL()->mBoxOrdinal;
+  const auto o1 = a->StyleXUL()->mBoxOrdinal;
+  const auto o2 = b->StyleXUL()->mBoxOrdinal;
+  return (o2 > o1) - (o2 < o1);
 }
 
 template <>

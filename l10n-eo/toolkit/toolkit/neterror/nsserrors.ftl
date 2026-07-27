@@ -10,13 +10,11 @@
 
 psmerr-ssl-disabled = Ne eblas konektiĝi sekure ĉar la protokolo SSL estis malaktivigita.
 psmerr-ssl2-disabled = Ne eblas konektiĝi sekure ĉar la retejo uzas malnovan, nesekuran version de la protokolo SSL.
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     Vi ricevis nevalidan atestilon.  Bonvolu kontakti la administranton de la servilo aŭ la sendinton de la retpoŝto kaj doni al ili la jenan informon:
     
     Via atestilo enhavas la saman serian numeron de alia atestilo eldonita de la atestila aŭtoritato.  Bonvolu akiri novan atestilon kiu enhavas unikan serian numeron.
-
 ssl-error-export-only-server = Ne eblas komunikiĝi sekure.  La paro ne kapablas uzi altgradan ĉifradon.
 ssl-error-us-only-server = Ne eblas komunikiĝi sekure.  La paro postulas altgradan ĉifradon kiu ne estas subtenata.
 ssl-error-no-cypher-overlap = Ne eblas komunikiĝi sekure kun la paro: neniu komuna ĉifra algoritmo.
@@ -93,7 +91,7 @@ ssl-error-sha-digest-failure = SHA-1 digest function failed.
 ssl-error-mac-computation-failure = MAC computation failed.
 ssl-error-sym-key-context-failure = Failure to create Symmetric Key context.
 ssl-error-sym-key-unwrap-failure = Failure to unwrap the Symmetric key in Client Key Exchange message.
-ssl-error-pub-key-size-limit-exceeded = SSL Server attempted to use domestic-grade public key with export cipher suite.
+ssl-error-pub-key-size-limit-exceeded = La servilo SSL klopodis uzi nacian publikan ŝlosilon kun eksporta ĉifraro.
 ssl-error-iv-param-failure = PKCS11 code failed to translate an IV into a param.
 ssl-error-init-cipher-suite-failure = Failed to initialize the selected cipher suite.
 ssl-error-session-key-gen-failure = Client failed to generate session keys for SSL session.
@@ -112,7 +110,7 @@ ssl-error-unknown-ca-alert = Peer does not recognize and trust the CA that issue
 ssl-error-access-denied-alert = Peer received a valid certificate, but access was denied.
 ssl-error-decode-error-alert = Peer could not decode an SSL handshake message.
 ssl-error-decrypt-error-alert = Peer reports failure of signature verification or key exchange.
-ssl-error-export-restriction-alert = Peer reports negotiation not in compliance with export regulations.
+ssl-error-export-restriction-alert = La fora sistemo sciigas ke la intertrakto ne kongruas kun eksportaj reguloj.
 ssl-error-protocol-version-alert = Peer reports incompatible or unsupported protocol version.
 ssl-error-insufficient-security-alert = Server requires ciphers more secure than those supported by client.
 ssl-error-internal-error-alert = Peer reports it experienced an internal error.
@@ -153,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = No supported TLS signature algorith
 ssl-error-unsupported-signature-algorithm = The peer used an unsupported combination of signature and hash algorithm.
 ssl-error-missing-extended-master-secret = The peer tried to resume without a correct extended_master_secret extension.
 ssl-error-unexpected-extended-master-secret = The peer tried to resume with an unexpected extended_master_secret extension.
-
 sec-error-io = An I/O error occurred during security authorization.
 sec-error-library-failure = security library failure.
 sec-error-bad-data = security library: received bad data.
@@ -219,7 +216,7 @@ sec-error-key-nickname-collision = A key with the same nickname already exists.
 sec-error-safe-not-created = error while creating safe object
 sec-error-baggage-not-created = error while creating baggage object
 sec-error-bad-export-algorithm = Required algorithm is not allowed.
-sec-error-exporting-certificates = Error attempting to export certificates.
+sec-error-exporting-certificates = Eraro dum klopodo eksporti atestilojn.
 sec-error-importing-certificates = Error attempting to import certificates.
 sec-error-pkcs12-decoding-pfx = Unable to import.  Decoding error.  File not valid.
 sec-error-pkcs12-invalid-mac = Unable to import.  Invalid MAC.  Incorrect password or corrupt file.
@@ -238,11 +235,11 @@ sec-error-inadequate-cert-type = Certificate type not approved for application.
 sec-error-cert-addr-mismatch = Address in signing certificate does not match address in message headers.
 sec-error-pkcs12-unable-to-import-key = Unable to import.  Error attempting to import private key.
 sec-error-pkcs12-importing-cert-chain = Unable to import.  Error attempting to import certificate chain.
-sec-error-pkcs12-unable-to-locate-object-by-name = Unable to export.  Unable to locate certificate or key by nickname.
-sec-error-pkcs12-unable-to-export-key = Unable to export.  Private Key could not be located and exported.
-sec-error-pkcs12-unable-to-write = Unable to export.  Unable to write the export file.
+sec-error-pkcs12-unable-to-locate-object-by-name = Ne eblas eksporti. La atestilo aŭ ŝlosilo ne troveblas laŭ kromnomo.
+sec-error-pkcs12-unable-to-export-key = Ne eblas eksporti. La privata ŝlosilo ne estis trovita.
+sec-error-pkcs12-unable-to-write = Ne eblas eksporti. Ne eblas skribi sur la eksporta dosiero.
 sec-error-pkcs12-unable-to-read = Unable to import.  Unable to read the import file.
-sec-error-pkcs12-key-database-not-initialized = Unable to export.  Key database corrupt or deleted.
+sec-error-pkcs12-key-database-not-initialized = Ne eblas eksporti. La datumbazo de ŝlosiloj estas difektita aŭ forigita.
 sec-error-keygen-fail = Unable to generate public/private key pair.
 sec-error-invalid-password = Password entered is invalid.  Please pick a different one.
 sec-error-retry-old-password = Old password entered incorrectly.  Please try again.
@@ -320,7 +317,6 @@ sec-error-locked-password = The password is locked.
 sec-error-unknown-pkcs11-error = Unknown PKCS #11 error.
 sec-error-bad-crl-dp-url = Invalid or unsupported URL in CRL distribution point name.
 sec-error-cert-signature-algorithm-disabled = The certificate was signed using an signature algorithm that is disabled because it is not secure.
-
 mozilla-pkix-error-key-pinning-failure = The server uses key pinning (HPKP) but no trusted certificate chain could be constructed that matches the pinset. Key pinning violations cannot be overridden.
 mozilla-pkix-error-ca-cert-used-as-end-entity = The server uses a certificate with a basic constraints extension identifying it as a certificate authority. For a properly-issued certificate, this should not be the case.
 mozilla-pkix-error-inadequate-key-size = The server presented a certificate with a key size that is too small to establish a secure connection.
@@ -335,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = The server presented a certificate
 mozilla-pkix-error-empty-issuer-name = The server presented a certificate with an empty issuer distinguished name.
 mozilla-pkix-error-additional-policy-constraint-failed = Aldona politika limigo malsuckesis dum validigo de tiu ĉi atestilo.
 mozilla-pkix-error-self-signed-cert = La atestilo ne estas fidata ĉar ĝi estas memsubskribita.
-
+mozilla-pkix-error-issuer-no-longer-trusted = La atestila aŭtoritato, kiu eldonis la atestilon, estis nefidita antaŭ la eldono.
 xp-java-remove-principal-error = Couldn't remove the principal
 xp-java-delete-privilege-error = Couldn't delete the privilege
 xp-java-cert-not-exists-error = This principal doesn't have a certificate
-
 xp-sec-fortezza-bad-card = Fortezza card has not been properly initialized.  Please remove it and return it to your issuer.
 xp-sec-fortezza-no-card = No Fortezza cards Found
 xp-sec-fortezza-none-selected = No Fortezza card selected

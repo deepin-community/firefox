@@ -3,11 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## OS Prompt Dialog
-
-
 ## The credit card capture doorhanger
 
+# If Sync is enabled and credit card sync is available,
+# this checkbox is displayed on the doorhanger shown when saving credit card.
+credit-card-doorhanger-credit-cards-sync-checkbox = I-sync lahat ng aking mga naka-save na card sa iba't-ibang mga device
 
 # Used on the doorhanger when an credit card change is detected.
 
@@ -41,3 +41,6 @@ autofill-category-name = pangalan
 autofill-category-organization = organisasyon
 autofill-category-tel = telepono
 autofill-category-email = email
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ang isang hindi secure na site. Pansamantalang hindi pinagana ang Form Autofill

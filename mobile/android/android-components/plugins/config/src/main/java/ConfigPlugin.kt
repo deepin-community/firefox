@@ -4,22 +4,20 @@
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.initialization.Settings
-import java.io.File
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.kotlin.dsl.extra
+import org.gradle.process.ExecOutput
+import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
-class ConfigPlugin : Plugin<Settings> {
-    override fun apply(settings: Settings) = Unit
+class ConfigPlugin : Plugin<Project> {
+    override fun apply(project: Project) = Unit
 }
 
 object Config {
-
-    @JvmStatic
-    val vcsHash by lazy { readVcsHash() }
 
     @JvmStatic
     private fun generateDebugVersionName(): String {
@@ -48,27 +46,15 @@ object Config {
 
     @JvmStatic
     fun readVersionFromFile(project: Project): String {
-        var versionPath = "../version.txt"
-
-        if (project.findProject(":geckoview") != null) {
-            versionPath = "./mobile/android/version.txt"
-        }
-
-        return File(versionPath).useLines { it.firstOrNull() ?: "" }
-
+        var mozconfig = project.gradle.extensions.extraProperties.get("mozconfig") as Map<*, *>;
+        var topsrcdir = mozconfig.get("topsrcdir") as String;
+        var versionPath = Paths.get(topsrcdir, "mobile/android/version.txt");
+        return project.file(versionPath).useLines { it.firstOrNull() ?: "" }
     }
 
     @JvmStatic
     fun majorVersion(project: Project): String {
         return readVersionFromFile(project).split(".")[0]
-    }
-
-    /**
-     * Generate a build date that follows the ISO-8601 format
-     */
-    @JvmStatic
-    fun generateBuildDate(): String {
-        return LocalDateTime.now().toString()
     }
 
     private val fennecBaseVersionCode by lazy {
@@ -91,7 +77,7 @@ object Config {
      * the documented epoch date (20150901) and the effective epoch date (20150801).
      */
     @JvmStatic
-    fun generateFennecVersionCode(abi: String, aab: Boolean): Int {
+    fun generateFennecVersionCode(abi: String): Int {
         // The important consideration is that version codes be monotonically
         // increasing (per Android package name) for all published builds.  The input
         // build IDs are based on timestamps and hence are always monotonically
@@ -124,7 +110,7 @@ object Config {
         // they take precedence over 32-bit builds on devices that support 64-bit.
         //
         // The bit labelled 'g' was once used for APK splits. Today, it is 0 for
-        // APK builds, or 1 for AAB builds.
+        // APK builds, or 1 for AAB/Universal builds.
         //
         // We throw an explanatory exception when we are within one calendar year of
         // running out of build events.  This gives lots of time to update the version
@@ -154,72 +140,20 @@ object Config {
         version = version or (base shl 3)
 
         // 'x' bit is 1 for x86/x86-64 architectures
-        if (aab || abi == "x86_64" || abi == "x86") {
+        if (abi == "universal" || abi == "x86_64" || abi == "x86") {
             version = version or (1 shl 2)
         }
 
         // 'p' bit is 1 for 64-bit architectures.
-        if (aab || abi == "arm64-v8a" || abi == "x86_64") {
+        if (abi == "universal" || abi == "arm64-v8a" || abi == "x86_64") {
             version = version or (1 shl 1)
         }
 
-        // 'g' bit is 0 for APK, 1 for AAB
-        if (aab) {
+        // 'g' bit is 0 for APK, 1 for AAB/Universal
+        if (abi == "universal") {
             version = version or (1 shl 0)
         }
 
         return version
-    }
-
-    /**
-     * Returns the git or hg hash of the currently checked out revision. If there are uncommitted changes,
-     * a "+" will be appended to the hash, e.g. "c8ba05ad0+".
-     */
-    private fun readVcsHash(): String {
-        val gitRevision: String
-        try {
-            val revisionCmd = arrayOf("git", "rev-parse", "--short", "HEAD")
-            gitRevision = execReadStandardOutOrThrow(revisionCmd)
-        } catch (e: IllegalStateException) {
-            // hg id already appends "+" if the working directory isn't clean
-            val revisionCmd = arrayOf("hg", "id", "--id")
-            val hgRevision = execReadStandardOutOrThrow(revisionCmd)
-            return "hg-$hgRevision"
-        }
-        // Append "+" if there are uncommitted changes in the working directory.
-        val statusCmd = arrayOf("git", "status", "--porcelain=v2")
-        val status = execReadStandardOutOrThrow(statusCmd)
-        val hasUnstagedChanges = status.isNotBlank()
-        val statusSuffix = if (hasUnstagedChanges) "+" else ""
-        return "git-$gitRevision$statusSuffix"
-    }
-
-    /**
-     * Executes the given command with [Runtime.exec], throwing if the command returns a non-zero exit
-     * code or times out. If successful, returns the command's stdout.
-     *
-     * @return stdout of the command
-     * @throws [IllegalStateException] if the command returns a non-zero exit code or times out.
-     */
-    private fun execReadStandardOutOrThrow(cmd: Array<String>, timeoutSeconds: Long = 30): String {
-        val process = Runtime.getRuntime().exec(cmd)
-
-        check(
-            process.waitFor(
-                timeoutSeconds,
-                TimeUnit.SECONDS,
-            ),
-        ) { "command unexpectedly timed out: `$cmd`" }
-        check(process.exitValue() == 0) {
-            val stderr = process.errorStream.bufferedReader().readText().trim()
-
-            """command exited with non-zero exit value: ${process.exitValue()}.
-           |cmd: ${cmd.joinToString(separator = " ")}
-           |stderr:
-           |$stderr"""
-                .trimMargin()
-        }
-
-        return process.inputStream.bufferedReader().readText().trim()
     }
 }

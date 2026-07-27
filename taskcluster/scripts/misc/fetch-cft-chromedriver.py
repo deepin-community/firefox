@@ -1,5 +1,4 @@
 #!/usr/bin/python3 -u
-# -*- coding: utf-8 -*-
 
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +12,6 @@ the chromedrivers associated with Chrome for Testing. The `Canary`
 channel is specified as it is required for the Chromium-as-Release
 performance tests.
 """
-
 
 import argparse
 import errno
@@ -30,27 +28,40 @@ CHROME_FOR_TESTING_INFO = {
         "platform": "linux64",
         "dir": "cft-chromedriver-linux",
         "result": "cft-cd-linux.tar.bz2",
+        "result_backup": "cft-cd-linux-backup.tar.bz2",
         "chromedriver": "chromedriver_linux64.zip",
     },
     "win64": {
         "platform": "win64",
         "dir": "cft-chromedriver-win64",
         "result": "cft-cd-win64.tar.bz2",
+        "result_backup": "cft-cd-win64-backup.tar.bz2",
         "chromedriver": "chromedriver_win32.zip",
+    },
+    "mac": {
+        "platform": "mac-x64",
+        "dir": "cft-chromedriver-mac",
+        "result": "cft-cd-mac.tar.bz2",
+        "result_backup": "cft-cd-mac-backup.tar.bz2",
+        "chromedriver": "chromedriver_mac64.zip",
     },
     "mac-arm": {
         "platform": "mac-arm64",
         "dir": "cft-chromedriver-mac",
         "result": "cft-cd-mac-arm.tar.bz2",
+        "result_backup": "cft-cd-mac-arm-backup.tar.bz2",
         "chromedriver": "chromedriver_mac64.zip",
     },
 }
 
-# Bug 1869592
-# Potentially add another JSON endpoint to grab more than 1 chromedriver
 LAST_GOOD_CFT_JSON = (
     "https://googlechromelabs.github.io/chrome-for-testing/"
     "last-known-good-versions-with-downloads.json"
+)
+
+MILESTONE_CFT_JSON = (
+    "https://googlechromelabs.github.io/chrome-for-testing/"
+    "latest-versions-per-milestone-with-downloads.json"
 )
 
 
@@ -77,30 +88,30 @@ def unzip(zippath, target):
     subprocess.check_call(unzip_command)
 
 
-def get_cft_metadata():
+def get_cft_metadata(endpoint=LAST_GOOD_CFT_JSON):
     """Send a request to the Chrome for Testing's last
     good json URL (default) and get the json payload which will have
     the download URLs that we need.
     """
-    res = requests.get(LAST_GOOD_CFT_JSON)
+    res = requests.get(endpoint)
     data = res.json()
 
     return data
 
 
-def get_cd_url(data, cft_platform):
+def get_cd_url(data, cft_platform, channel):
     """Given the json data, get the download URL's for
     the correct platform
     """
-    for p in data["channels"]["Canary"]["downloads"]["chromedriver"]:
+    for p in data["channels"][channel]["downloads"]["chromedriver"]:
         if p["platform"] == cft_platform:
             return p["url"]
     raise Exception("Platform not found")
 
 
-def get_chromedriver_revision(data):
+def get_chromedriver_revision(data, channel):
     """Grab revision metadata from payload"""
-    return data["channels"]["Canary"]["revision"]
+    return data["channels"][channel]["revision"]
 
 
 def fetch_chromedriver(download_url, cft_dir):
@@ -117,7 +128,7 @@ def fetch_chromedriver(download_url, cft_dir):
     cd_path = None
     for dirpath, _, filenames in os.walk(tmppath):
         for filename in filenames:
-            if filename == "chromedriver" or filename == "chromedriver.exe":
+            if filename in {"chromedriver", "chromedriver.exe"}:
                 cd_path = os.path.join(dirpath, filename)
                 break
         if cd_path is not None:
@@ -128,7 +139,52 @@ def fetch_chromedriver(download_url, cft_dir):
     shutil.copy(cd_path, cft_dir)
 
 
-def build_cft_archive(platform):
+def get_backup_chromedriver(version, cft_data, cft_platform):
+    """Download a backup chromedriver for the transitionary period of machine auto updates.
+
+    If no version is specified, by default grab the N-1 version of the latest Stable channel
+    chromedriver.
+
+    """
+    log("Grabbing a backup chromedriver...")
+    if not version:
+        log("No version specified")
+        # Get latest stable version and subtract 1
+        current_stable_version = cft_data["channels"]["Stable"]["version"].split(".")[0]
+        version = str(int(current_stable_version) - 1)
+        log("Fetching major version %s" % version)
+
+    milestone_metadata = get_cft_metadata(MILESTONE_CFT_JSON)
+    backup_revision = milestone_metadata["milestones"][version]["revision"]
+    backup_version = milestone_metadata["milestones"][version]["version"].split(".")[0]
+
+    backup_url = None
+    for p in milestone_metadata["milestones"][version]["downloads"]["chromedriver"]:
+        if p["platform"] == cft_platform:
+            backup_url = p["url"]
+
+    log("Found backup chromedriver")
+
+    if not backup_url:
+        raise Exception("Platform not found")
+
+    return backup_url, backup_revision, backup_version
+
+
+def get_version_from_json(data, channel):
+    return data["channels"][channel]["version"].split(".")[0]
+
+
+def insert_channel_in_archive_name(filename, channel):
+    parts = filename.rsplit(".", maxsplit=2)
+    if len(parts) != 3:
+        raise ValueError(
+            f"Unexpected filename format: '{filename}'. Expected a file with two extensions (e.g., '.tar.bz2')."
+        )
+    return f"{parts[0]}-{channel.lower()}.{parts[1]}.{parts[2]}"
+
+
+def build_cft_archive(platform, channel, backup, version):
     """Download and store a chromedriver for a given platform."""
     upload_dir = os.environ.get("UPLOAD_DIR")
     if upload_dir:
@@ -143,13 +199,28 @@ def build_cft_archive(platform):
     cft_platform = CHROME_FOR_TESTING_INFO[platform]["platform"]
 
     data = get_cft_metadata()
-    cft_chromedriver_url = get_cd_url(data, cft_platform)
-    revision = get_chromedriver_revision(data)
+    if backup:
+        cft_chromedriver_url, revision, payload_version = get_backup_chromedriver(
+            version, data, cft_platform
+        )
+        tar_file = CHROME_FOR_TESTING_INFO[platform]["result_backup"]
+    else:
+        cft_chromedriver_url = get_cd_url(data, cft_platform, channel)
+        revision = get_chromedriver_revision(data, channel)
+        payload_version = get_version_from_json(data, channel)
+        # For clarity, include channel in artifact name.
+        tar_file = insert_channel_in_archive_name(
+            CHROME_FOR_TESTING_INFO[platform]["result"], channel
+        )
     # Make a temporary location for the file
     tmppath = tempfile.mkdtemp()
 
     # Create the directory format expected for browsertime setup in taskgraph transform
     artifact_dir = CHROME_FOR_TESTING_INFO[platform]["dir"]
+    if backup or channel in ("Stable", "Beta"):
+        # need to prepend the major version to the artifact dir due to how raptor browsertime
+        # ensures the correct version is used with chrome stable.
+        artifact_dir = payload_version + artifact_dir
     cft_dir = os.path.join(tmppath, artifact_dir)
     os.mkdir(cft_dir)
 
@@ -159,7 +230,6 @@ def build_cft_archive(platform):
     with open(revision_file, "w+") as f:
         f.write(str(revision))
 
-    tar_file = CHROME_FOR_TESTING_INFO[platform]["result"]
     tar_command = ["tar", "cjf", tar_file, "-C", tmppath, artifact_dir]
     log("Revision is %s" % revision)
     log("Added revision to %s file." % revision_file)
@@ -185,6 +255,25 @@ def parse_args():
         required=True,
     )
     # Bug 1869592 - Add optional flag to provide CfT channel e.g. Canary, Stable, etc.
+    parser.add_argument(
+        "--channel",
+        help="Corresponding channel of CfT chromedriver to fetch.",
+        required=False,
+        default="Canary",
+    )
+    parser.add_argument(
+        "--backup",
+        help="Determine if we are grabbing a backup chromedriver version.",
+        required=False,
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--version",
+        help="Pin the revision if necessary for current platform",
+        required=False,
+        default="",
+    )
     return parser.parse_args()
 
 

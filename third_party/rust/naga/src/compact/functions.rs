@@ -4,16 +4,28 @@ use super::{FunctionMap, ModuleMap};
 pub struct FunctionTracer<'a> {
     pub function: &'a crate::Function,
     pub constants: &'a crate::Arena<crate::Constant>,
+    pub overrides: &'a crate::Arena<crate::Override>,
 
+    pub functions_pending: &'a mut HandleSet<crate::Function>,
+    pub functions_used: &'a mut HandleSet<crate::Function>,
     pub types_used: &'a mut HandleSet<crate::Type>,
+    pub global_variables_used: &'a mut HandleSet<crate::GlobalVariable>,
     pub constants_used: &'a mut HandleSet<crate::Constant>,
+    pub overrides_used: &'a mut HandleSet<crate::Override>,
     pub global_expressions_used: &'a mut HandleSet<crate::Expression>,
 
     /// Function-local expressions used.
     pub expressions_used: HandleSet<crate::Expression>,
 }
 
-impl<'a> FunctionTracer<'a> {
+impl FunctionTracer<'_> {
+    pub fn trace_call(&mut self, function: crate::Handle<crate::Function>) {
+        if !self.functions_used.contains(function) {
+            self.functions_used.insert(function);
+            self.functions_pending.insert(function);
+        }
+    }
+
     pub fn trace(&mut self) {
         for argument in self.function.arguments.iter() {
             self.types_used.insert(argument.ty);
@@ -44,13 +56,16 @@ impl<'a> FunctionTracer<'a> {
         self.as_expression().trace_expressions();
     }
 
-    fn as_expression(&mut self) -> super::expressions::ExpressionTracer {
+    const fn as_expression(&mut self) -> super::expressions::ExpressionTracer<'_> {
         super::expressions::ExpressionTracer {
             constants: self.constants,
+            overrides: self.overrides,
             expressions: &self.function.expressions,
 
             types_used: self.types_used,
+            global_variables_used: self.global_variables_used,
             constants_used: self.constants_used,
+            overrides_used: self.overrides_used,
             expressions_used: &mut self.expressions_used,
             global_expressions_used: Some(&mut self.global_expressions_used),
         }
@@ -97,10 +112,10 @@ impl FunctionMap {
             self.expressions.adjust(&mut handle);
             reuse.insert(handle, name);
         }
-        std::mem::swap(&mut function.named_expressions, reuse);
+        core::mem::swap(&mut function.named_expressions, reuse);
         assert!(reuse.is_empty());
 
         // Adjust statements.
-        self.adjust_body(function);
+        self.adjust_body(function, &module_map.functions);
     }
 }

@@ -1,7 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef TOOLKIT_COMPONENTS_TYPEAHEADFIND_NSTYPEAHEADFIND_H_
+#define TOOLKIT_COMPONENTS_TYPEAHEADFIND_NSTYPEAHEADFIND_H_
 
 #include "mozilla/GlobalTeardownObserver.h"
 #include "mozilla/WeakPtr.h"
@@ -28,8 +30,6 @@ class Selection;
 }  // namespace dom
 }  // namespace mozilla
 
-#define TYPEAHEADFIND_NOTFOUND_WAV_URL "chrome://global/content/notfound.wav"
-
 class nsTypeAheadFind : public nsITypeAheadFind,
                         public nsIObserver,
                         public nsSupportsWeakReference,
@@ -49,7 +49,6 @@ class nsTypeAheadFind : public nsITypeAheadFind,
   nsresult PrefsReset();
 
   void SaveFind();
-  void PlayNotFoundSound();
   nsresult GetWebBrowserFind(nsIDocShell* aDocShell,
                              nsIWebBrowserFind** aWebBrowserFind);
 
@@ -88,21 +87,16 @@ class nsTypeAheadFind : public nsITypeAheadFind,
 
   // Current find state
   nsString mTypeAheadBuffer;
-  nsCString mNotFoundSoundURL;
 
   // PRBools are used instead of PRPackedBools because the address of the
   // boolean variable is getting passed into a method.
   bool mStartLinksOnlyPref;
-  bool mCaretBrowsingOn;
   bool mDidAddObservers;
   nsCOMPtr<mozilla::dom::Element>
       mFoundLink;  // Most recent elem found, if a link
   nsCOMPtr<mozilla::dom::Element>
       mFoundEditable;           // Most recent elem found, if editable
   RefPtr<nsRange> mFoundRange;  // Most recent range found
-  // mLastFindLength is the character length of the last find string.  It is
-  // used for disabling the "not found" sound when using backspace or delete
-  uint32_t mLastFindLength;
 
   // where selection was when user started the find
   RefPtr<nsRange> mStartFindRange;
@@ -144,3 +138,5 @@ class nsTypeAheadFind : public nsITypeAheadFind,
   nsWeakPtr mSelectionController;
   // Most recent match's controller
 };
+
+#endif  // TOOLKIT_COMPONENTS_TYPEAHEADFIND_NSTYPEAHEADFIND_H_

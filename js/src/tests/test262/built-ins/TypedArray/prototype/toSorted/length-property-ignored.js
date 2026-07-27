@@ -1,9 +1,8 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Igalia, S.L. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
 /*---
-esid: sec-%typedarray%.prototype.toSorted
+esid: sec-%typedarray%.prototype.tosorted
 description: >
   %TypedArray%.prototype.toSorted does not read a "length" property
 info: |
@@ -16,19 +15,19 @@ includes: [testTypedArray.js, compareArray.js]
 features: [TypedArray, change-array-by-copy]
 ---*/
 
-testWithTypedArrayConstructors(TA => {
-  var ta = new TA([3, 1, 2]);
+testWithTypedArrayConstructors((TA, makeCtorArg) => {
+  var ta = new TA(makeCtorArg([3, 1, 2]));
   Object.defineProperty(ta, "length", { value: 2 })
   var res = ta.toSorted()
   assert.compareArray(res, [1, 2, 3]);
   assert.sameValue(res.length, 3);
 
-  ta = new TA([3, 1, 2]);
+  ta = new TA(makeCtorArg([3, 1, 2]));
   Object.defineProperty(ta, "length", { value: 5 });
   res = ta.toSorted();
   assert.compareArray(res, [1, 2, 3]);
   assert.sameValue(res.length, 3);
-});
+}, null, ["passthrough"]);
 
 function setLength(length) {
     Object.defineProperty(TypedArray.prototype, "length", {
@@ -36,8 +35,8 @@ function setLength(length) {
     });
 }
 
-testWithTypedArrayConstructors(TA => {
-  var ta = new TA([3, 1, 2]);
+testWithTypedArrayConstructors((TA, makeCtorArg) => {
+  var ta = new TA(makeCtorArg([3, 1, 2]));
 
   setLength(2);
   var res = ta.toSorted();
@@ -49,6 +48,6 @@ testWithTypedArrayConstructors(TA => {
   setLength(3);
 
   assert.compareArray(res, [1, 2, 3]);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

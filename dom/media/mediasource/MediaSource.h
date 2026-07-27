@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,8 @@
 #define mozilla_dom_MediaSource_h_
 
 #include "MediaSourceDecoder.h"
+#include "TimeUnits.h"
 #include "js/RootingAPI.h"
-#include "mozilla/Assertions.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/dom/MediaSourceBinding.h"
@@ -20,7 +17,6 @@
 #include "nsID.h"
 #include "nsISupports.h"
 #include "nscore.h"
-#include "TimeUnits.h"
 
 struct JSContext;
 class JSObject;
@@ -47,12 +43,8 @@ class SourceBufferList;
 template <typename T>
 class Optional;
 
-#define MOZILLA_DOM_MEDIASOURCE_IMPLEMENTATION_IID   \
-  {                                                  \
-    0x3839d699, 0x22c5, 0x439f, {                    \
-      0x94, 0xca, 0x0e, 0x0b, 0x26, 0xf9, 0xca, 0xbf \
-    }                                                \
-  }
+#define MOZILLA_DOM_MEDIASOURCE_IMPLEMENTATION_IID \
+  {0x3839d699, 0x22c5, 0x439f, {0x94, 0xca, 0x0e, 0x0b, 0x26, 0xf9, 0xca, 0xbf}}
 
 class MediaSource final : public DOMEventTargetHelper,
                           public DecoderDoctorLifeLogger<MediaSource> {
@@ -83,7 +75,8 @@ class MediaSource final : public DOMEventTargetHelper,
   // Throws on aRv if not supported.
   static void IsTypeSupported(const nsAString& aType,
                               DecoderDoctorDiagnostics* aDiagnostics,
-                              ErrorResult& aRv);
+                              ErrorResult& aRv,
+                              Maybe<bool> aShouldResistFingerprinting);
 
   IMPL_EVENT_HANDLER(sourceopen);
   IMPL_EVENT_HANDLER(sourceended);
@@ -93,7 +86,7 @@ class MediaSource final : public DOMEventTargetHelper,
 
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(MediaSource, DOMEventTargetHelper)
-  NS_DECLARE_STATIC_IID_ACCESSOR(MOZILLA_DOM_MEDIASOURCE_IMPLEMENTATION_IID)
+  NS_INLINE_DECL_STATIC_IID(MOZILLA_DOM_MEDIASOURCE_IMPLEMENTATION_IID)
 
   nsPIDOMWindowInner* GetParentObject() const;
 
@@ -139,7 +132,7 @@ class MediaSource final : public DOMEventTargetHelper,
   void DispatchSimpleEvent(const char* aName);
   void QueueAsyncSimpleEvent(const char* aName);
 
-  void DurationChange(const media::TimeUnit& aNewDuration, ErrorResult& aRv);
+  void DurationChangeOnEndOfStream();
   void DurationChange(double aNewDuration, ErrorResult& aRv);
 
   // SetDuration with no checks.
@@ -171,9 +164,6 @@ class MediaSource final : public DOMEventTargetHelper,
   Maybe<media::TimeRanges> mLiveSeekableRange;
   nsTArray<MozPromiseHolder<ActiveCompletionPromise>> mCompletionPromises;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(MediaSource,
-                              MOZILLA_DOM_MEDIASOURCE_IMPLEMENTATION_IID)
 
 }  // namespace dom
 

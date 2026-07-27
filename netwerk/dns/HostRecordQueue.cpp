@@ -1,25 +1,23 @@
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "HostRecordQueue.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkDnsMetrics.h"
 #include "nsQueryObject.h"
 
 namespace mozilla {
 namespace net {
 
 void HostRecordQueue::InsertRecord(nsHostRecord* aRec,
-                                   nsIDNSService::DNSFlags aFlags,
-                                   const MutexAutoLock& aProofOfLock) {
+                                   nsIDNSService::DNSFlags aFlags) {
   if (aRec->isInList()) {
     MOZ_DIAGNOSTIC_ASSERT(!mEvictionQ.contains(aRec),
                           "Already in eviction queue");
     MOZ_DIAGNOSTIC_ASSERT(!mHighQ.contains(aRec), "Already in high queue");
     MOZ_DIAGNOSTIC_ASSERT(!mMediumQ.contains(aRec), "Already in med queue");
     MOZ_DIAGNOSTIC_ASSERT(!mLowQ.contains(aRec), "Already in low queue");
-    MOZ_DIAGNOSTIC_ASSERT(false, "Already on some other queue?");
+    MOZ_DIAGNOSTIC_CRASH("Already on some other queue?");
   }
 
   switch (AddrHostRecord::GetPriority(aFlags)) {
@@ -40,8 +38,7 @@ void HostRecordQueue::InsertRecord(nsHostRecord* aRec,
 
 void HostRecordQueue::AddToEvictionQ(
     nsHostRecord* aRec, uint32_t aMaxCacheEntries,
-    nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord>& aDB,
-    const MutexAutoLock& aProofOfLock) {
+    nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord>& aDB) {
   if (aRec->isInList()) {
     bool inEvictionQ = mEvictionQ.contains(aRec);
     MOZ_DIAGNOSTIC_ASSERT(!inEvictionQ, "Already in eviction queue");
@@ -51,7 +48,7 @@ void HostRecordQueue::AddToEvictionQ(
     MOZ_DIAGNOSTIC_ASSERT(!inMediumQ, "Already in med queue");
     bool inLowQ = mLowQ.contains(aRec);
     MOZ_DIAGNOSTIC_ASSERT(!inLowQ, "Already in low queue");
-    MOZ_DIAGNOSTIC_ASSERT(false, "Already on some other queue?");
+    MOZ_DIAGNOSTIC_CRASH("Already on some other queue?");
 
     // Bug 1678117 - it's not clear why this can happen, but let's fix it
     // for release users.
@@ -76,28 +73,37 @@ void HostRecordQueue::AddToEvictionQ(
       // record the age of the entry upon eviction.
       TimeDuration age = TimeStamp::NowLoRes() - head->mValidStart;
       if (aRec->IsAddrRecord()) {
-        Telemetry::Accumulate(Telemetry::DNS_CLEANUP_AGE,
-                              static_cast<uint32_t>(age.ToSeconds() / 60));
+        glean::dns::cleanup_age.AccumulateRawDuration(age);
       } else {
-        Telemetry::Accumulate(Telemetry::DNS_BY_TYPE_CLEANUP_AGE,
-                              static_cast<uint32_t>(age.ToSeconds() / 60));
+        glean::dns::by_type_cleanup_age.AccumulateRawDuration(age);
       }
       if (head->CheckExpiration(TimeStamp::Now()) !=
           nsHostRecord::EXP_EXPIRED) {
         if (aRec->IsAddrRecord()) {
-          Telemetry::Accumulate(Telemetry::DNS_PREMATURE_EVICTION,
-                                static_cast<uint32_t>(age.ToSeconds() / 60));
+          glean::dns::premature_eviction.AccumulateRawDuration(age);
         } else {
-          Telemetry::Accumulate(Telemetry::DNS_BY_TYPE_PREMATURE_EVICTION,
-                                static_cast<uint32_t>(age.ToSeconds() / 60));
+          glean::dns::by_type_premature_eviction.AccumulateRawDuration(age);
         }
       }
     }
   }
 }
 
-void HostRecordQueue::MaybeRenewHostRecord(nsHostRecord* aRec,
-                                           const MutexAutoLock& aProofOfLock) {
+void HostRecordQueue::MoveToEvictionQueueTail(nsHostRecord* aRec) {
+  bool inEvictionQ = mEvictionQ.contains(aRec);
+  if (!inEvictionQ) {
+    // Note: this function can be called when the record isn't in the
+    // mEvictionQ. For example, if we immediately start a TTL lookup (see
+    // nsHostResolver::CompleteLookupLocked), the record may not be in
+    // mEvictionQ.
+    return;
+  }
+
+  aRec->remove();
+  mEvictionQ.insertBack(aRec);
+}
+
+void HostRecordQueue::MaybeRenewHostRecord(nsHostRecord* aRec) {
   if (!aRec->isInList()) {
     return;
   }
@@ -123,8 +129,7 @@ void HostRecordQueue::MaybeRenewHostRecord(nsHostRecord* aRec,
 }
 
 void HostRecordQueue::FlushEvictionQ(
-    nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord>& aDB,
-    const MutexAutoLock& aProofOfLock) {
+    nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord>& aDB) {
   mEvictionQSize = 0;
 
   // Clear the evictionQ and remove all its corresponding entries from
@@ -138,8 +143,7 @@ void HostRecordQueue::FlushEvictionQ(
   }
 }
 
-void HostRecordQueue::MaybeRemoveFromQ(nsHostRecord* aRec,
-                                       const MutexAutoLock& aProofOfLock) {
+void HostRecordQueue::MaybeRemoveFromQ(nsHostRecord* aRec) {
   if (!aRec->isInList()) {
     return;
   }
@@ -157,8 +161,7 @@ void HostRecordQueue::MaybeRemoveFromQ(nsHostRecord* aRec,
 }
 
 void HostRecordQueue::MoveToAnotherPendingQ(nsHostRecord* aRec,
-                                            nsIDNSService::DNSFlags aFlags,
-                                            const MutexAutoLock& aProofOfLock) {
+                                            nsIDNSService::DNSFlags aFlags) {
   if (!(mHighQ.contains(aRec) || mMediumQ.contains(aRec) ||
         mLowQ.contains(aRec))) {
     MOZ_ASSERT(false, "record is not in the pending queue");
@@ -170,11 +173,10 @@ void HostRecordQueue::MoveToAnotherPendingQ(nsHostRecord* aRec,
   // increment this value again.
   mPendingCount--;
 
-  InsertRecord(aRec, aFlags, aProofOfLock);
+  InsertRecord(aRec, aFlags);
 }
 
-already_AddRefed<nsHostRecord> HostRecordQueue::Dequeue(
-    bool aHighQOnly, const MutexAutoLock& aProofOfLock) {
+already_AddRefed<nsHostRecord> HostRecordQueue::Dequeue(bool aHighQOnly) {
   RefPtr<nsHostRecord> rec;
   if (!mHighQ.isEmpty()) {
     rec = mHighQ.popFirst();
@@ -192,8 +194,7 @@ already_AddRefed<nsHostRecord> HostRecordQueue::Dequeue(
 }
 
 void HostRecordQueue::ClearAll(
-    const std::function<void(nsHostRecord*)>& aCallback,
-    const MutexAutoLock& aProofOfLock) {
+    const std::function<void(nsHostRecord*)>& aCallback) {
   mPendingCount = 0;
 
   auto clearPendingQ = [&](LinkedList<RefPtr<nsHostRecord>>& aPendingQ) {

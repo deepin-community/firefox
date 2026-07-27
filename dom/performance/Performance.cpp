@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +13,6 @@
 
 #include "ETWTools.h"
 #include "GeckoProfiler.h"
-#include "nsRFPService.h"
 #include "PerformanceEntry.h"
 #include "PerformanceMainThread.h"
 #include "PerformanceMark.h"
@@ -26,19 +23,21 @@
 #include "PerformanceWorker.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/dom/MessagePortBinding.h"
-#include "mozilla/dom/PerformanceBinding.h"
-#include "mozilla/dom/PerformanceEntryEvent.h"
-#include "mozilla/dom/PerformanceNavigationBinding.h"
-#include "mozilla/dom/PerformanceObserverBinding.h"
-#include "mozilla/dom/PerformanceNavigationTiming.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/Perfetto.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/dom/MessagePortBinding.h"
+#include "mozilla/dom/PerformanceBinding.h"
+#include "mozilla/dom/PerformanceEntryEvent.h"
+#include "mozilla/dom/PerformanceNavigationBinding.h"
+#include "mozilla/dom/PerformanceNavigationTiming.h"
+#include "mozilla/dom/PerformanceObserverBinding.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRunnable.h"
 #include "mozilla/dom/WorkerScope.h"
+#include "nsGlobalWindowInner.h"
+#include "nsRFPService.h"
 
 #define PERFLOG(msg, ...) printf_stderr(msg, ##__VA_ARGS__)
 
@@ -59,6 +58,11 @@ NS_IMPL_CYCLE_COLLECTION_INHERITED(Performance, DOMEventTargetHelper,
 
 NS_IMPL_ADDREF_INHERITED(Performance, DOMEventTargetHelper)
 NS_IMPL_RELEASE_INHERITED(Performance, DOMEventTargetHelper)
+
+// Used to dump performance timing information to a local file.
+// Only defined when the env variable MOZ_USE_PERFORMANCE_MARKER_FILE
+// is set and initialized by MaybeOpenMarkerFile().
+static FILE* sMarkerFile = nullptr;
 
 /* static */
 already_AddRefed<Performance> Performance::CreateForMainThread(
@@ -177,15 +181,15 @@ void Performance::GetEntries(nsTArray<RefPtr<PerformanceEntry>>& aRetval) {
 
 void Performance::GetEntriesByType(
     const nsAString& aEntryType, nsTArray<RefPtr<PerformanceEntry>>& aRetval) {
-  if (aEntryType.EqualsLiteral("resource")) {
+  RefPtr<nsAtom> entryType = NS_Atomize(aEntryType);
+  if (entryType == nsGkAtoms::resource) {
     aRetval = mResourceEntries.Clone();
     return;
   }
 
   aRetval.Clear();
 
-  if (aEntryType.EqualsLiteral("mark") || aEntryType.EqualsLiteral("measure")) {
-    RefPtr<nsAtom> entryType = NS_Atomize(aEntryType);
+  if (entryType == nsGkAtoms::mark || entryType == nsGkAtoms::measure) {
     for (PerformanceEntry* entry : mUserEntries) {
       if (entry->GetEntryType() == entryType) {
         aRetval.AppendElement(entry);
@@ -297,8 +301,12 @@ struct UserTimingMarker : public BaseMarkerType<UserTimingMarker> {
 
   using MS = MarkerSchema;
   static constexpr MS::PayloadField PayloadFields[] = {
-      {"name", MS::InputType::String, "User Marker Name", MS::Format::String,
-       MS::PayloadFlags::Searchable},
+      {
+          "name",
+          MS::InputType::String,
+          "User Marker Name",
+          MS::Format::String,
+      },
       {"entryType", MS::InputType::Boolean, "Entry Type"},
       {"startMark", MS::InputType::String, "Start Mark"},
       {"endMark", MS::InputType::String, "End Mark"}};
@@ -524,6 +532,10 @@ DOMHighResTimeStamp Performance::ResolveEndTimeForMeasure(
     }
 
     endTime = start + duration;
+  } else if (aReturnUnclamped) {
+    MOZ_DIAGNOSTIC_ASSERT(sMarkerFile ||
+                          profiler_thread_is_being_profiled_for_markers());
+    endTime = NowUnclamped();
   } else {
     endTime = Now();
   }
@@ -581,37 +593,61 @@ static std::string GetMarkerFilename() {
   return s.str();
 }
 
-std::pair<TimeStamp, TimeStamp> Performance::GetTimeStampsForMarker(
+Maybe<std::pair<TimeStamp, TimeStamp>> Performance::GetTimeStampsForMarker(
     const Maybe<const nsAString&>& aStartMark,
     const Optional<nsAString>& aEndMark,
-    const Maybe<const PerformanceMeasureOptions&>& aOptions, ErrorResult& aRv) {
+    const Maybe<const PerformanceMeasureOptions&>& aOptions) {
+  ErrorResult err;
   const DOMHighResTimeStamp unclampedStartTime = ResolveStartTimeForMeasure(
-      aStartMark, aOptions, aRv, /* aReturnUnclamped */ true);
+      aStartMark, aOptions, err, /* aReturnUnclamped */ true);
   const DOMHighResTimeStamp unclampedEndTime =
-      ResolveEndTimeForMeasure(aEndMark, aOptions, aRv, /* aReturnUnclamped */
-                               true);
+      ResolveEndTimeForMeasure(aEndMark, aOptions, /* aReturnUnclamped */
+                               err, true);
+
+  if (err.Failed()) {
+    return Nothing();
+  }
+
+  // Performance.measure() can receive user-supplied timestamps and those
+  // timestamps might not be relative to 'navigation start'. This is
+  // (potentially) valid but, if we treat them as relative, we will end up
+  // placing them far into the future which causes problems for the profiler
+  // later so we report that as an error. (See bug 1925191 for details.)
+  // kMaxFuture_ms represents approximately 10 years worth of milliseconds.
+  static constexpr double kMaxFuture_ms = 31536000000.0;
+  if (unclampedStartTime > kMaxFuture_ms || unclampedEndTime > kMaxFuture_ms) {
+    return Nothing();
+  }
 
   TimeStamp startTimeStamp =
       CreationTimeStamp() + TimeDuration::FromMilliseconds(unclampedStartTime);
   TimeStamp endTimeStamp =
       CreationTimeStamp() + TimeDuration::FromMilliseconds(unclampedEndTime);
 
-  return std::make_pair(startTimeStamp, endTimeStamp);
+  return Some(std::make_pair(startTimeStamp, endTimeStamp));
 }
 
-static FILE* MaybeOpenMarkerFile() {
+// Try to open the marker file for writing performance markers.
+// If successful, returns true and sMarkerFile will be defined
+// to the file handle.  Otherwise, return false and sMarkerFile
+// is NULL.
+static bool MaybeOpenMarkerFile() {
   if (!getenv("MOZ_USE_PERFORMANCE_MARKER_FILE")) {
-    return nullptr;
+    return false;
+  }
+
+  // Check if it's already open.
+  if (sMarkerFile) {
+    return true;
   }
 
 #ifdef XP_LINUX
   // We treat marker files similar to Jitdump files (see PerfSpewer.cpp) and
   // mmap them if needed.
   int fd = open(GetMarkerFilename().c_str(), O_CREAT | O_TRUNC | O_RDWR, 0666);
-  FILE* markerFile = fdopen(fd, "w+");
-
-  if (!markerFile) {
-    return nullptr;
+  sMarkerFile = fdopen(fd, "w+");
+  if (!sMarkerFile) {
+    return false;
   }
 
   // On Linux and Android, we need to mmap the file so that the path makes it
@@ -633,10 +669,10 @@ static FILE* MaybeOpenMarkerFile() {
   long page_size = sysconf(_SC_PAGESIZE);
   void* mmap_address = mmap(nullptr, page_size, protection, MAP_PRIVATE, fd, 0);
   if (mmap_address == MAP_FAILED) {
-    fclose(markerFile);
-    return nullptr;
+    fclose(sMarkerFile);
+    sMarkerFile = nullptr;
+    return false;
   }
-  return markerFile;
 #else
   // On macOS, we just need to `open` or `fopen` the marker file, and samply
   // will know its path because it hooks those functions - no mmap needed.
@@ -644,8 +680,12 @@ static FILE* MaybeOpenMarkerFile() {
   // we have ETW trace events for UserTiming measures. Still, we want this code
   // to compile successfully on Windows, so we use fopen rather than
   // open+fdopen.
-  return fopen(GetMarkerFilename().c_str(), "w+");
+  sMarkerFile = fopen(GetMarkerFilename().c_str(), "w+");
+  if (!sMarkerFile) {
+    return false;
+  }
 #endif
+  return true;
 }
 
 // This emits markers to an external marker-[pid].txt file for use by an
@@ -653,27 +693,25 @@ static FILE* MaybeOpenMarkerFile() {
 void Performance::MaybeEmitExternalProfilerMarker(
     const nsAString& aName, Maybe<const PerformanceMeasureOptions&> aOptions,
     Maybe<const nsAString&> aStartMark, const Optional<nsAString>& aEndMark) {
-  static FILE* markerFile = MaybeOpenMarkerFile();
-  if (!markerFile) {
+  if (!MaybeOpenMarkerFile()) {
     return;
   }
 
 #if defined(XP_LINUX) || defined(XP_WIN) || defined(XP_MACOSX)
-  ErrorResult rv;
-  auto [startTimeStamp, endTimeStamp] =
-      GetTimeStampsForMarker(aStartMark, aEndMark, aOptions, rv);
-
-  if (NS_WARN_IF(rv.Failed())) {
+  Maybe<std::pair<TimeStamp, TimeStamp>> tsPair =
+      GetTimeStampsForMarker(aStartMark, aEndMark, aOptions);
+  if (tsPair.isNothing()) {
     return;
   }
+  auto [startTimeStamp, endTimeStamp] = tsPair.value();
 #endif
 
 #ifdef XP_LINUX
   uint64_t rawStart = startTimeStamp.RawClockMonotonicNanosecondsSinceBoot();
   uint64_t rawEnd = endTimeStamp.RawClockMonotonicNanosecondsSinceBoot();
 #elif XP_WIN
-  uint64_t rawStart = startTimeStamp.RawQueryPerformanceCounterValue().value();
-  uint64_t rawEnd = endTimeStamp.RawQueryPerformanceCounterValue().value();
+  uint64_t rawStart = startTimeStamp.RawQueryPerformanceCounterValue();
+  uint64_t rawEnd = endTimeStamp.RawQueryPerformanceCounterValue();
 #elif XP_MACOSX
   uint64_t rawStart = startTimeStamp.RawMachAbsoluteTimeNanoseconds();
   uint64_t rawEnd = endTimeStamp.RawMachAbsoluteTimeNanoseconds();
@@ -688,9 +726,47 @@ void Performance::MaybeEmitExternalProfilerMarker(
   // `<raw_start_timestamp> <raw_end_timestamp> <measure_name>`
   //
   // The timestamp value is OS specific.
-  fprintf(markerFile, "%" PRIu64 " %" PRIu64 " %s\n", rawStart, rawEnd,
+  fprintf(sMarkerFile, "%" PRIu64 " %" PRIu64 " %s\n", rawStart, rawEnd,
           NS_ConvertUTF16toUTF8(aName).get());
-  fflush(markerFile);
+  fflush(sMarkerFile);
+}
+
+void MOZ_ALWAYS_INLINE Performance::MaybeAddProfileMarker(
+    const nsAString& aName,
+    const Maybe<const PerformanceMeasureOptions&>& options,
+    const Maybe<const nsAString&>& aStartMark,
+    const Optional<nsAString>& aEndMark) {
+  if (profiler_thread_is_being_profiled_for_markers()) {
+    AddProfileMarker(aName, options, aStartMark, aEndMark);
+  }
+}
+
+void MOZ_NEVER_INLINE Performance::AddProfileMarker(
+    const nsAString& aName,
+    const Maybe<const PerformanceMeasureOptions&>& options,
+    const Maybe<const nsAString&>& aStartMark,
+    const Optional<nsAString>& aEndMark) {
+  Maybe<std::pair<TimeStamp, TimeStamp>> tsPair =
+      GetTimeStampsForMarker(aStartMark, aEndMark, options);
+  if (tsPair.isNothing()) {
+    return;
+  }
+  auto [startTimeStamp, endTimeStamp] = tsPair.value();
+
+  Maybe<nsString> endMark;
+  if (aEndMark.WasPassed()) {
+    endMark.emplace(aEndMark.Value());
+  }
+
+  Maybe<uint64_t> innerWindowId;
+  if (nsGlobalWindowInner* owner = GetOwnerWindow()) {
+    innerWindowId = Some(owner->WindowID());
+  }
+  profiler_add_marker("UserTiming", geckoprofiler::category::DOM,
+                      {MarkerTiming::Interval(startTimeStamp, endTimeStamp),
+                       MarkerInnerWindowId(innerWindowId)},
+                      UserTimingMarker{}, aName, /* aIsMeasure */ true,
+                      aStartMark, endMark);
 }
 
 already_AddRefed<PerformanceMeasure> Performance::Measure(
@@ -790,25 +866,7 @@ already_AddRefed<PerformanceMeasure> Performance::Measure(
 
   MaybeEmitExternalProfilerMarker(aName, options, startMark, aEndMark);
 
-  if (profiler_thread_is_being_profiled_for_markers()) {
-    auto [startTimeStamp, endTimeStamp] =
-        GetTimeStampsForMarker(startMark, aEndMark, options, aRv);
-
-    Maybe<nsString> endMark;
-    if (aEndMark.WasPassed()) {
-      endMark.emplace(aEndMark.Value());
-    }
-
-    Maybe<uint64_t> innerWindowId;
-    if (nsGlobalWindowInner* owner = GetOwnerWindow()) {
-      innerWindowId = Some(owner->WindowID());
-    }
-    profiler_add_marker("UserTiming", geckoprofiler::category::DOM,
-                        {MarkerTiming::Interval(startTimeStamp, endTimeStamp),
-                         MarkerInnerWindowId(innerWindowId)},
-                        UserTimingMarker{}, aName, /* aIsMeasure */ true,
-                        startMark, endMark);
-  }
+  MaybeAddProfileMarker(aName, options, startMark, aEndMark);
 
   return performanceMeasure.forget();
 }
@@ -820,7 +878,7 @@ void Performance::ClearMeasures(const Optional<nsAString>& aName) {
 void Performance::LogEntry(PerformanceEntry* aEntry,
                            const nsACString& aOwner) const {
   PERFLOG("Performance Entry: %s|%s|%s|%f|%f|%" PRIu64 "\n",
-          aOwner.BeginReading(),
+          PromiseFlatCString(aOwner).get(),
           NS_ConvertUTF16toUTF8(aEntry->GetEntryType()->GetUTF16String()).get(),
           NS_ConvertUTF16toUTF8(aEntry->GetName()->GetUTF16String()).get(),
           aEntry->StartTime(), aEntry->Duration(),
@@ -859,7 +917,7 @@ void Performance::InsertUserEntry(PerformanceEntry* aEntry) {
  *
  * Buffer Full Event
  */
-void Performance::BufferEvent() {
+void Performance::ResourceTimingBufferFullEvent() {
   /*
    * While resource timing secondary buffer is not empty,
    * run the following substeps:
@@ -880,7 +938,7 @@ void Performance::BufferEvent() {
      * at the Performance object.
      */
     if (!CanAddResourceTimingEntry()) {
-      DispatchBufferFullEvent();
+      DispatchResourceTimingBufferFullEvent();
     }
 
     /*
@@ -993,7 +1051,8 @@ void Performance::InsertResourceEntry(PerformanceEntry* aEntry) {
      * Queue a task to run fire a buffer full event.
      */
     NS_DispatchToCurrentThread(NewCancelableRunnableMethod(
-        "Performance::BufferEvent", this, &Performance::BufferEvent));
+        "Performance::ResourceTimingBufferFullEvent", this,
+        &Performance::ResourceTimingBufferFullEvent));
   }
   /*
    * Add new entry to the resource timing secondary buffer.
@@ -1061,7 +1120,7 @@ void Performance::RunNotificationObserversTask() {
   mPendingNotificationObserversTask = true;
   nsCOMPtr<nsIRunnable> task = new NotifyObserversTask(this);
   nsresult rv;
-  if (nsIGlobalObject* global = GetOwnerGlobal()) {
+  if (nsIGlobalObject* global = GetRelevantGlobal()) {
     rv = global->Dispatch(task.forget());
   } else {
     rv = NS_DispatchToCurrentThread(task.forget());
@@ -1076,7 +1135,7 @@ void Performance::QueueEntry(PerformanceEntry* aEntry) {
   if (!mObservers.IsEmpty()) {
     const auto [begin, end] = mObservers.NonObservingRange();
     std::copy_if(begin, end, MakeBackInserter(interestedObservers),
-                 [aEntry](PerformanceObserver* observer) {
+                 [&](PerformanceObserver* observer) {
                    return observer->ObservesTypeOfEntry(aEntry);
                  });
   }

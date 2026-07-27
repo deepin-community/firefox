@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
-"""Code to integration with automation.
-"""
+"""Code to integration with automation."""
 
 try:
     import simplejson as json
@@ -44,7 +41,7 @@ TBPL_WORST_LEVEL_TUPLE = (
 )
 
 
-class AutomationMixin(object):
+class AutomationMixin:
     worst_status = TBPL_SUCCESS
     properties = {}
 

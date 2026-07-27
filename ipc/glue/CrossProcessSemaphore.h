@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +14,7 @@
 #else
 #  include <pthread.h>
 #  include <semaphore.h>
-#  include "mozilla/ipc/SharedMemory.h"
+#  include "mozilla/ipc/SharedMemoryMapping.h"
 #  include "mozilla/Atomics.h"
 #endif
 
@@ -41,13 +39,7 @@ typedef mozilla::UniqueFileHandle CrossProcessSemaphoreHandle;
 #elif defined(XP_DARWIN)
 typedef mozilla::UniqueMachSendRight CrossProcessSemaphoreHandle;
 #else
-typedef mozilla::ipc::SharedMemory::Handle CrossProcessSemaphoreHandle;
-
-template <>
-inline bool IsHandleValid<CrossProcessSemaphoreHandle>(
-    const CrossProcessSemaphoreHandle& handle) {
-  return !(handle == mozilla::ipc::SharedMemory::NULLHandle());
-}
+typedef mozilla::ipc::MutableSharedMemoryHandle CrossProcessSemaphoreHandle;
 #endif
 
 class CrossProcessSemaphore {
@@ -108,7 +100,8 @@ class CrossProcessSemaphore {
 
   CrossProcessSemaphoreHandle mSemaphore;
 #else
-  RefPtr<mozilla::ipc::SharedMemory> mSharedBuffer;
+  mozilla::ipc::MutableSharedMemoryHandle mHandle;
+  mozilla::ipc::SharedMemoryMapping mSharedBuffer;
   sem_t* mSemaphore;
   mozilla::Atomic<int32_t>* mRefCount;
 #endif

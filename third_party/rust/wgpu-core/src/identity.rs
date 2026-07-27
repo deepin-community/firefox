@@ -1,11 +1,11 @@
-use wgt::Backend;
+use alloc::vec::Vec;
+use core::{fmt::Debug, marker::PhantomData};
 
 use crate::{
     id::{Id, Marker},
     lock::{rank, Mutex},
     Epoch, Index,
 };
-use std::{fmt::Debug, marker::PhantomData};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum IdSource {
@@ -32,10 +32,20 @@ enum IdSource {
 /// - `IdentityValues` reuses the index values of freed ids before returning
 ///   ids with new index values. Freed vector entries get reused.
 ///
+/// - The non-reuse property is achieved by storing an `epoch` alongside the
+///   index in an `Id`. Index values are reused, but only with a different
+///   epoch.
+///
+/// `IdentityValues` can also be used to track the count of IDs allocated by
+/// some external allocator. Combining internal and external allocation is not
+/// allowed; calling both `alloc` and `mark_as_used` on the same
+/// `IdentityValues` will result in a panic. The external mode is used when
+/// [playing back a trace of wgpu operations][player].
+///
 /// [`Id`]: crate::id::Id
-/// [`Backend`]: wgt::Backend;
 /// [`alloc`]: IdentityValues::alloc
 /// [`release`]: IdentityValues::release
+/// [player]: https://github.com/gfx-rs/wgpu/tree/trunk/player/
 #[derive(Debug)]
 pub(super) struct IdentityValues {
     free: Vec<(Index, Epoch)>,
@@ -48,11 +58,12 @@ pub(super) struct IdentityValues {
 }
 
 impl IdentityValues {
-    /// Allocate a fresh, never-before-seen id with the given `backend`.
+    /// Allocate a fresh, never-before-seen ID.
     ///
-    /// The backend is incorporated into the id, so that ids allocated with
-    /// different `backend` values are always distinct.
-    pub fn alloc<T: Marker>(&mut self, backend: Backend) -> Id<T> {
+    /// # Panics
+    ///
+    /// If `mark_as_used` has previously been called on this `IdentityValues`.
+    pub fn alloc<T: Marker>(&mut self) -> Id<T> {
         assert!(
             self.id_source != IdSource::External,
             "Mix of internally allocated and externally provided IDs"
@@ -61,16 +72,21 @@ impl IdentityValues {
 
         self.count += 1;
         match self.free.pop() {
-            Some((index, epoch)) => Id::zip(index, epoch + 1, backend),
+            Some((index, epoch)) => Id::zip(index, epoch + 1),
             None => {
                 let index = self.next_index;
                 self.next_index += 1;
                 let epoch = 1;
-                Id::zip(index, epoch, backend)
+                Id::zip(index, epoch)
             }
         }
     }
 
+    /// Increment the count of used IDs.
+    ///
+    /// # Panics
+    ///
+    /// If `alloc` has previously been called on this `IdentityValues`.
     pub fn mark_as_used<T: Marker>(&mut self, id: Id<T>) -> Id<T> {
         assert!(
             self.id_source != IdSource::Allocated,
@@ -82,10 +98,12 @@ impl IdentityValues {
         id
     }
 
-    /// Free `id`. It will never be returned from `alloc` again.
+    /// Free `id` and/or decrement the count of used IDs.
+    ///
+    /// Freed IDs will never be returned from `alloc` again.
     pub fn release<T: Marker>(&mut self, id: Id<T>) {
         if let IdSource::Allocated = self.id_source {
-            let (index, epoch, _backend) = id.unzip();
+            let (index, epoch) = id.unzip();
             self.free.push((index, epoch));
         }
         self.count -= 1;
@@ -103,8 +121,8 @@ pub struct IdentityManager<T: Marker> {
 }
 
 impl<T: Marker> IdentityManager<T> {
-    pub fn process(&self, backend: Backend) -> Id<T> {
-        self.values.lock().alloc(backend)
+    pub fn process(&self) -> Id<T> {
+        self.values.lock().alloc()
     }
     pub fn mark_as_used(&self, id: Id<T>) -> Id<T> {
         self.values.lock().mark_as_used(id)
@@ -135,10 +153,10 @@ impl<T: Marker> IdentityManager<T> {
 fn test_epoch_end_of_life() {
     use crate::id;
     let man = IdentityManager::<id::markers::Buffer>::new();
-    let id1 = man.process(Backend::Empty);
-    assert_eq!(id1.unzip(), (0, 1, Backend::Empty));
+    let id1 = man.process();
+    assert_eq!(id1.unzip(), (0, 1));
     man.free(id1);
-    let id2 = man.process(Backend::Empty);
+    let id2 = man.process();
     // confirm that the epoch 1 is no longer re-used
-    assert_eq!(id2.unzip(), (0, 2, Backend::Empty));
+    assert_eq!(id2.unzip(), (0, 2));
 }

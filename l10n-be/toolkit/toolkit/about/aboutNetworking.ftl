@@ -12,6 +12,13 @@ about-networking-dns-trr-url = URL-адрас DoH
 about-networking-dns-trr-mode = Рэжым DoH
 about-networking-dns-suffix = DNS-суфікс
 about-networking-websockets = Сеціўныя сокеты
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Крыніца
+about-networking-alt-svc-alternate = Альтэрнатыўны
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Правераны
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Ключ ізаляцыі
 about-networking-refresh = Паднавіць
 about-networking-auto-refresh = Паднаўляць кожныя 3 секунды
 about-networking-hostname = Назва трымальніка
@@ -39,6 +46,7 @@ about-networking-dns-lookup = Пошук DNS
 about-networking-dns-lookup-button = Вырашыць
 about-networking-dns-domain = Дамен:
 about-networking-dns-lookup-table-column = IPs
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR-ы
 about-networking-dns-https-rr-lookup-table-column = HTTP RR-ы
 about-networking-rcwn = Статыстыка RCWN
 about-networking-rcwn-status = Стан RCWN
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Гэта старонка была пер
 
 about-networking-networkid-is-up = Злучэнне актыўнае
 about-networking-networkid-status-known = Стан злучэння вядомы
-
-##
-

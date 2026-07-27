@@ -1,5 +1,3 @@
-// |jit-test| skip-if: !wasmJSStringBuiltinsEnabled();
-
 function wasmEvalWithConstants(text, namespace) {
   return wasmEvalText(text, {}, { importedStringConstants: namespace }).exports;
 }
@@ -18,10 +16,8 @@ assertErrorMessage(() => wasmEvalWithConstants(`(module
 )`, "'"), WebAssembly.CompileError, /type mismatch/);
 
 function testString(type, literal, namespace) {
-  // Temporary backwards compat for string namespace
-  let importSpecifier = namespace === true ? "'" : namespace;
   return wasmEvalWithConstants(`(module
-    (global (import "${importSpecifier}" "${literal}") ${type})
+    (global (import "${namespace}" "${literal}") ${type})
     (export "constant" (global 0))
   )`, namespace).constant.value;
 }
@@ -36,9 +32,7 @@ let tests = [
 let namespaces = [
   "",
   "'",
-  "strings",
-  // Temporary backwards compat for string namespace
-  true
+  "strings"
 ];
 
 for (let namespace of namespaces) {

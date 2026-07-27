@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,15 +7,13 @@
 #include <cmath>
 #include <cstdint>
 #include <new>
+
 #include "ErrorList.h"
 #include "js/Conversions.h"
 #include "js/Equality.h"
 #include "js/StructuredClone.h"
 #include "js/Value.h"
-#include "mozilla/Casting.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/MacroForEach.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/ServoCSSParser.h"
 #include "mozilla/dom/BindingDeclarations.h"
@@ -40,8 +36,6 @@ namespace mozilla::dom {
 template <typename T>
 static void SetDataInMatrix(DOMMatrixReadOnly* aMatrix, const T* aData,
                             int aLength, ErrorResult& aRv);
-
-static const double radPerDegree = 2.0 * M_PI / 360.0;
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(DOMMatrixReadOnly, mParent)
 
@@ -127,12 +121,19 @@ static bool ValidateAndFixupMatrixInit(DOMMatrixInit& aMatrixInit,
 void DOMMatrixReadOnly::SetDataFromMatrix2DInit(
     const DOMMatrix2DInit& aMatrixInit) {
   MOZ_ASSERT(Is2D());
-  mMatrix2D->_11 = aMatrixInit.mM11.Value();
-  mMatrix2D->_12 = aMatrixInit.mM12.Value();
-  mMatrix2D->_21 = aMatrixInit.mM21.Value();
-  mMatrix2D->_22 = aMatrixInit.mM22.Value();
-  mMatrix2D->_31 = aMatrixInit.mM41.Value();
-  mMatrix2D->_32 = aMatrixInit.mM42.Value();
+  *mMatrix2D = ToMatrixDouble(aMatrixInit);
+}
+
+gfx::MatrixDouble DOMMatrixReadOnly::ToMatrixDouble(
+    const DOMMatrix2DInit& aMatrixInit) {
+  gfx::MatrixDouble matrix{};
+  matrix._11 = aMatrixInit.mM11.Value();
+  matrix._12 = aMatrixInit.mM12.Value();
+  matrix._21 = aMatrixInit.mM21.Value();
+  matrix._22 = aMatrixInit.mM22.Value();
+  matrix._31 = aMatrixInit.mM41.Value();
+  matrix._32 = aMatrixInit.mM42.Value();
+  return matrix;
 }
 
 void DOMMatrixReadOnly::SetDataFromMatrixInit(
@@ -173,6 +174,16 @@ already_AddRefed<DOMMatrixReadOnly> DOMMatrixReadOnly::FromMatrix(
       new DOMMatrixReadOnly(aParent, /* is2D */ true);
   matrix->SetDataFromMatrix2DInit(matrixInit);
   return matrix.forget();
+}
+
+gfx::MatrixDouble DOMMatrixReadOnly::ToValidatedMatrixDouble(
+    const DOMMatrix2DInit& aMatrixInit, ErrorResult& aRv) {
+  DOMMatrix2DInit matrixInit(aMatrixInit);
+  if (!ValidateAndFixupMatrix2DInit(matrixInit, aRv)) {
+    return gfx::MatrixDouble{};
+  };
+
+  return ToMatrixDouble(matrixInit);
 }
 
 already_AddRefed<DOMMatrixReadOnly> DOMMatrixReadOnly::FromMatrix(
@@ -559,7 +570,7 @@ void DOMMatrixReadOnly::Stringify(nsAString& aResult, ErrorResult& aRv) {
     matrixStr.AppendLiteral(")");
   }
 
-  aResult = matrixStr;
+  aResult = std::move(matrixStr);
 }
 
 // https://drafts.fxtf.org/geometry/#structured-serialization
@@ -890,7 +901,7 @@ DOMMatrix* DOMMatrix::RotateFromVectorSelf(double aX, double aY) {
   }
 
   if (mMatrix3D) {
-    RotateAxisAngleSelf(0, 0, 1, angle / radPerDegree);
+    RotateAxisAngleSelf(0, 0, 1, angle / kRadPerDegree);
   } else {
     *mMatrix2D = mMatrix2D->PreRotate(angle);
   }
@@ -917,34 +928,57 @@ DOMMatrix* DOMMatrix::RotateSelf(double aRotX, const Optional<double>& aRotY,
 
   if (mMatrix3D) {
     if (fmod(rotZ, 360) != 0) {
-      mMatrix3D->RotateZ(rotZ * radPerDegree);
+      mMatrix3D->RotateZ(rotZ * kRadPerDegree);
     }
     if (fmod(rotY, 360) != 0) {
-      mMatrix3D->RotateY(rotY * radPerDegree);
+      mMatrix3D->RotateY(rotY * kRadPerDegree);
     }
     if (fmod(aRotX, 360) != 0) {
-      mMatrix3D->RotateX(aRotX * radPerDegree);
+      mMatrix3D->RotateX(aRotX * kRadPerDegree);
     }
   } else if (fmod(rotZ, 360) != 0) {
-    *mMatrix2D = mMatrix2D->PreRotate(rotZ * radPerDegree);
+    *mMatrix2D = mMatrix2D->PreRotate(rotZ * kRadPerDegree);
   }
 
   return this;
 }
 
+// https://drafts.fxtf.org/geometry/#dom-dommatrix-rotateaxisangleself
 DOMMatrix* DOMMatrix::RotateAxisAngleSelf(double aX, double aY, double aZ,
                                           double aAngle) {
+  // (Unspecified but rather obvious optimization)
   if (fmod(aAngle, 360) == 0) {
     return this;
   }
 
-  aAngle *= radPerDegree;
+  aAngle *= kRadPerDegree;
 
-  Ensure3DMatrix();
+  // Step 1: Post-multiply a rotation transformation on the current matrix
+  // around the specified vector x, y, z by the specified rotation angle in
+  // degrees.
+  // (But actual multiplication happens below with step 2)
   gfx::Matrix4x4Double m;
   m.SetRotateAxisAngle(aX, aY, aZ, aAngle);
 
-  *mMatrix3D = m * *mMatrix3D;
+  // Step 2: If x or y are not 0 or -0, set is 2D of the current matrix to
+  // false.
+  // (But we don't have "is 2D" flag and need to multiply either 2D or 3D
+  // matrix)
+  if (mMatrix3D || aX != 0 || aY != 0) {
+    Ensure3DMatrix();
+    *mMatrix3D = m * *mMatrix3D;
+    return this;
+  }
+
+  gfx::Matrix4x4Double result = m * gfx::Matrix4x4Double::From2D(*mMatrix2D);
+  mMatrix2D->_11 = result._11;
+  mMatrix2D->_12 = result._12;
+  mMatrix2D->_21 = result._21;
+  mMatrix2D->_22 = result._22;
+
+  // Different field names, see ::From2D implementation
+  mMatrix2D->_31 = result._41;
+  mMatrix2D->_32 = result._42;
 
   return this;
 }
@@ -956,11 +990,11 @@ DOMMatrix* DOMMatrix::SkewXSelf(double aSx) {
 
   if (mMatrix3D) {
     gfx::Matrix4x4Double m;
-    m._21 = tan(aSx * radPerDegree);
+    m._21 = tan(aSx * kRadPerDegree);
     *mMatrix3D = m * *mMatrix3D;
   } else {
     gfx::MatrixDouble m;
-    m._21 = tan(aSx * radPerDegree);
+    m._21 = tan(aSx * kRadPerDegree);
     *mMatrix2D = m * *mMatrix2D;
   }
 
@@ -974,11 +1008,11 @@ DOMMatrix* DOMMatrix::SkewYSelf(double aSy) {
 
   if (mMatrix3D) {
     gfx::Matrix4x4Double m;
-    m._12 = tan(aSy * radPerDegree);
+    m._12 = tan(aSy * kRadPerDegree);
     *mMatrix3D = m * *mMatrix3D;
   } else {
     gfx::MatrixDouble m;
-    m._12 = tan(aSy * radPerDegree);
+    m._12 = tan(aSy * kRadPerDegree);
     *mMatrix2D = m * *mMatrix2D;
   }
 

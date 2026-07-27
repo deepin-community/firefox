@@ -4,31 +4,36 @@
 "use strict";
 
 add_task(async function test() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
+
   let results = [
-    new UrlbarResult(
-      UrlbarUtils.RESULT_TYPE.URL,
-      UrlbarUtils.RESULT_SOURCE.HISTORY,
-      {
+    new UrlbarResult({
+      type: UrlbarUtils.RESULT_TYPE.URL,
+      source: UrlbarUtils.RESULT_SOURCE.HISTORY,
+      heuristic: true,
+      payload: {
         url: "http://mozilla.org/1",
         helpUrl: "http://example.com/",
         isBlockable: true,
         blockL10n: { id: "urlbar-result-menu-remove-from-history" },
-      }
-    ),
-    new UrlbarResult(
-      UrlbarUtils.RESULT_TYPE.URL,
-      UrlbarUtils.RESULT_SOURCE.HISTORY,
-      {
+      },
+    }),
+    new UrlbarResult({
+      type: UrlbarUtils.RESULT_TYPE.URL,
+      source: UrlbarUtils.RESULT_SOURCE.HISTORY,
+      payload: {
         url: "http://mozilla.org/2",
         helpUrl: "http://example.com/",
         isBlockable: true,
         blockL10n: { id: "urlbar-result-menu-remove-from-history" },
-      }
-    ),
-    new UrlbarResult(
-      UrlbarUtils.RESULT_TYPE.TIP,
-      UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-      {
+      },
+    }),
+    new UrlbarResult({
+      type: UrlbarUtils.RESULT_TYPE.TIP,
+      source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+      payload: {
         helpUrl: "http://example.com/",
         type: "test",
         titleL10n: { id: "urlbar-search-tips-confirm" },
@@ -38,11 +43,9 @@ add_task(async function test() {
             l10n: { id: "urlbar-search-tips-confirm" },
           },
         ],
-      }
-    ),
+      },
+    }),
   ];
-
-  results[0].heuristic = true;
 
   let selectionCount = 0;
   let provider = new UrlbarTestUtils.TestProvider({
@@ -52,7 +55,8 @@ add_task(async function test() {
       selectionCount++;
     },
   });
-  UrlbarProvidersManager.registerProvider(provider);
+  let providersManager = ProvidersManager.getInstanceForSap("urlbar");
+  providersManager.registerProvider(provider);
 
   await UrlbarTestUtils.promiseAutocompleteResultPopup({
     window,
@@ -69,5 +73,5 @@ add_task(async function test() {
   );
 
   Assert.equal(selectionCount, 6, "Number of elements selected in the view.");
-  UrlbarProvidersManager.unregisterProvider(provider);
+  providersManager.unregisterProvider(provider);
 });

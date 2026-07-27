@@ -9,11 +9,11 @@ const TEST_URI = `
   <style>
   body {
     color: blue;
-    ruby-align: center;
+    overflow-anchor: auto;
     user-modify: read-only;
   }
   div {
-    scrollbar-width: thin;
+    user-select: auto;
   }
   </style>
   <body>
@@ -23,20 +23,20 @@ const TEST_URI = `
 
 const TEST_DATA_SELECTED = [
   {
-    property: "ruby-align",
-    url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+    property: "overflow-anchor",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
   },
   {
     property: "user-modify",
-    url: "https://developer.mozilla.org/docs/Web/CSS/user-modify",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-modify",
   },
 ];
 
 const TEST_DATA_ALL = [
   ...TEST_DATA_SELECTED,
   {
-    property: "scrollbar-width",
-    url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+    property: "user-select",
+    url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
   },
 ];
 

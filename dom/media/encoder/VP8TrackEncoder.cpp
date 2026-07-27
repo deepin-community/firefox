@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-*/
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,15 +9,15 @@
 
 #include "DriftCompensation.h"
 #include "ImageConversion.h"
-#include "mozilla/gfx/2D.h"
-#include "prsystem.h"
 #include "VideoSegment.h"
 #include "VideoUtils.h"
 #include "WebMWriter.h"
-#include "mozilla/media/MediaUtils.h"
-#include "mozilla/dom/ImageUtils.h"
-#include "mozilla/dom/ImageBitmapBinding.h"
 #include "mozilla/ProfilerLabels.h"
+#include "mozilla/dom/ImageBitmapBinding.h"
+#include "mozilla/dom/ImageUtils.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/media/MediaUtils.h"
+#include "prsystem.h"
 
 namespace mozilla {
 
@@ -674,7 +673,7 @@ nsresult VP8TrackEncoder::PrepareRawFrame(VideoChunk& aChunk) {
                               mVPXImageWrapper.planes[VPX_PLANE_U],
                               mVPXImageWrapper.stride[VPX_PLANE_U],
                               mVPXImageWrapper.planes[VPX_PLANE_V],
-                              mVPXImageWrapper.stride[VPX_PLANE_V]);
+                              mVPXImageWrapper.stride[VPX_PLANE_V], imgSize);
   if (NS_FAILED(rv)) {
     VP8LOG(LogLevel::Error, "Converting to I420 failed");
     return rv;

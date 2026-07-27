@@ -18,9 +18,13 @@ support-addons-type = Τύπος
 support-addons-enabled = Ενεργό
 support-addons-version = Έκδοση
 support-addons-id = ID
-legacy-user-stylesheets-title = Φύλλα στυλ χρήστη παλαιού τύπου
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Τοποθεσία
+legacy-user-stylesheets-title = Παλαιού τύπου φύλλα μορφοποίησης χρήστη
 legacy-user-stylesheets-enabled = Ενεργό
-legacy-user-stylesheets-stylesheet-types = Φύλλο στυλ
+legacy-user-stylesheets-stylesheet-types = Φύλλα μορφοποίησης
 legacy-user-stylesheets-no-stylesheets-found = Δεν βρέθηκαν φύλλα στυλ
 security-software-title = Λογισμικό ασφαλείας
 security-software-type = Τύπος
@@ -59,7 +63,7 @@ app-basics-profile-dir =
     }
 app-basics-enabled-plugins = Ενεργά αρθρώματα
 app-basics-build-config = Ρύθμιση δομής
-app-basics-user-agent = Παράγοντας χρήστη
+app-basics-user-agent = Πράκτορας χρήστη
 app-basics-os = ΛΣ
 app-basics-os-theme = Θέμα ΛΣ
 # Rosetta is Apple's translation process to run apps containing x86_64
@@ -88,7 +92,7 @@ app-basics-pointing-devices = Συσκευές κατάδειξης
 app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
-        [macos] Προβολή στο Finder
+        [macos] Εμφάνιση στο Finder
         [windows] Άνοιγμα φακέλου
        *[other] Άνοιγμα καταλόγου
     }
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Αποδοτικότητα (%)
 place-database-stats-sequentiality-perc = Διαδοχικότητα (%)
 place-database-integrity = Ακεραιότητα
 place-database-verify-integrity = Επαλήθευση ακεραιότητας
+place-database-last-idle-maintenance-data = Ημερομηνία τελευταίας συντήρησης σε αδράνεια
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Ημερομηνία τελευταίας διεργασίας vacuum
+place-database-last-integrity-corruption-date = Ημερομηνία τελευταίας παραβίασης ακεραιότητας
 a11y-title = Προσβασιμότητα
 a11y-activated = Ενεργό
 a11y-force-disabled = Αποτροπή προσβασιμότητας
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Απαρίθμηση βάσης δεδομένω�
 
 media-codec-support-sw-decoding = Αποκωδικοποίηση λογισμικού
 media-codec-support-hw-decoding = Αποκωδικοποίηση υλικού
+media-codec-support-sw-encoding = Κωδικοποίηση λογισμικού
+media-codec-support-hw-encoding = Κωδικοποίηση υλικού
 media-codec-support-codec-name = Όνομα κωδικοποιητή
 media-codec-support-supported = Υποστηρίζεται
 media-codec-support-unsupported = Δεν υποστηρίζεται
@@ -384,8 +394,8 @@ fission-status-enabled-by-env = Ενεργοποιήθηκε από το περ�
 fission-status-disabled-by-env = Ανενεργό λόγω περιβάλλοντος
 fission-status-enabled-by-default = Ενεργό από προεπιλογή
 fission-status-disabled-by-default = Απενεργοποιήθηκε από προεπιλογή
-fission-status-enabled-by-user-pref = Ενεργοποιήθηκε από το χρήστη
-fission-status-disabled-by-user-pref = Απενεργοποιήθηκε από το χρήστη
+fission-status-enabled-by-user-pref = Ενεργοποιήθηκε από τον χρήστη
+fission-status-disabled-by-user-pref = Απενεργοποιήθηκε από τον χρήστη
 fission-status-disabled-by-e10s-other = Ανενεργό E10s
 fission-status-enabled-by-rollout = Ενεργό με σταδιακή διάθεση
 async-pan-zoom = Ασύγχρονο pan/zoom

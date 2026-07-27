@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Gini'iaj
 download-cert-view-text = Natsi' CA sertifikado
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Na giri: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Nu sa'àj riña: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Nanu ruhuâ nuguan' ganïn ruhuât nan
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Da'ngà' huìi guenda sertifikado na (gi'iaj hìo'):
 set-password-reminder = Sa ña'āanj: Si sā gini'ñunt si da'ngà' huì si sertifikadot nī si ga'ue nari' ñut'. Na'nïnj sa' hue'e.
-
-## Protected authentication alert
-

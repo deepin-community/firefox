@@ -1,12 +1,18 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 document.addEventListener(
   "MozBeforeInitialXULLayout",
   () => {
-    // <commandset id="mainCommandSet"> defined in browser-sets.inc
+    const lazy = {};
+    ChromeUtils.defineESModuleGetters(lazy, {
+      TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
+      AIWindowUI:
+        "moz-src:///browser/components/aiwindow/ui/modules/AIWindowUI.sys.mjs",
+    });
+
+    // <commandset id="mainCommandSet"> defined in browser-sets.inc.xhtml
     document
       .getElementById("mainCommandSet")
       // eslint-disable-next-line complexity
@@ -65,13 +71,24 @@ document.addEventListener(
           case "cmd_closeWindow":
             BrowserCommands.tryToCloseWindow(event);
             break;
+          case "cmd_returnToOpener":
+            BrowserCommands.returnToOpenerFromPiP(event);
+            break;
+          case "cmd_minimizeWindow":
+            window.minimize();
+            break;
+          case "cmd_maximizeWindow":
+            window.maximize();
+            break;
+          case "cmd_restoreWindow":
+            window.fullScreen ? BrowserCommands.fullScreen() : window.restore();
+            break;
           case "cmd_toggleMute":
             gBrowser.toggleMuteAudioOnMultiSelectedTabs(gBrowser.selectedTab);
             break;
-          // TODO: Used with <observes>
-          // cmd_CustomizeToolbars() {
-          //   gCustomizeMode.enter();
-          // },
+          case "cmd_CustomizeToolbars":
+            gCustomizeMode.enter();
+            break;
           case "cmd_toggleOfflineStatus":
             BrowserOffline.toggleOfflineStatus();
             break;
@@ -87,13 +104,12 @@ document.addEventListener(
           case "View:PageInfo":
             BrowserCommands.pageInfo();
             break;
-          // TODO: Used with <observes>
-          // "View:FullScreen": function () {
-          //   BrowserCommands.fullScreen();
-          // },
-          // "View:ReaderView": function (event) {
-          //   AboutReaderParent.toggleReaderMode(event);
-          // },
+          case "View:FullScreen":
+            BrowserCommands.fullScreen();
+            break;
+          case "View:ReaderView":
+            AboutReaderParent.toggleReaderMode(event);
+            break;
           case "View:PictureInPicture":
             PictureInPicture.onCommand(event);
             break;
@@ -109,12 +125,14 @@ document.addEventListener(
           case "cmd_findSelection":
             gLazyFindCommand("onFindSelectionCommand");
             break;
-          // TODO: <observes>
-          // cmd_reportBrokenSite(event) {
-          //   ReportBrokenSite.open(event);
-          // },
           case "cmd_translate":
             FullPageTranslationsPanel.open(event);
+            break;
+          case "cmd_openAboutTranslations":
+            lazy.TranslationsParent.openAboutTranslationsPage({
+              browserWindow: window,
+              targetLanguage: "derive",
+            }).catch(console.error);
             break;
           case "Browser:AddBookmarkAs":
             PlacesCommandHook.bookmarkPage();
@@ -152,6 +170,9 @@ document.addEventListener(
             break;
           case "Browser:ReloadSkipCache":
             BrowserCommands.reloadSkipCache();
+            break;
+          case "Browser:DuplicateTab":
+            BrowserCommands.duplicateTab();
             break;
           case "Browser:NextTab":
             gBrowser.tabContainer.advanceSelectedTab(1, true);
@@ -196,14 +217,39 @@ document.addEventListener(
           case "Browser:OpenAboutContainers":
             openPreferences("paneContainers");
             break;
+          // deliberate fallthrough
+          case "Profiles:CreateProfile":
+          case "Profiles:ManageProfiles":
+          case "Profiles:LaunchProfile":
+          case "Profiles:MoveTabsToProfile":
+            gProfiles.handleCommand(event);
+            break;
           case "Tools:Search":
-            BrowserSearch.webSearch();
+            SearchUIUtils.webSearch(window);
             break;
           case "Tools:Downloads":
             BrowserCommands.downloadsUI();
             break;
           case "Tools:Addons":
             BrowserAddonUI.openAddonsMgr();
+            if (event.sourceEvent?.target.id == "key_openAddons") {
+              Services.prefs.setStringPref(
+                "browser.keys.openAddons.lastUsed",
+                new Date().toISOString()
+              );
+            }
+            break;
+          case "cmd_openUnifiedExtensionsPanel":
+            gUnifiedExtensions.openPanel(event);
+            break;
+          case "Tools:ClassicWindow":
+            OpenBrowserWindow({ aiWindow: false });
+            break;
+          case "Tools:AIWindow":
+            AIWindow.launchWindow(gBrowser?.selectedBrowser, true, "menu");
+            break;
+          case "Tools:ChatsHistory":
+            FirefoxViewHandler.openTab("chats");
             break;
           case "Tools:Sanitize":
             Sanitizer.showUI(window);
@@ -212,17 +258,16 @@ document.addEventListener(
             OpenBrowserWindow({ private: true });
             break;
           case "Browser:Screenshot":
-            ScreenshotsUtils.notify(window, "shortcut");
+            ScreenshotsUtils.notify(window, "Shortcut");
             break;
-          // TODO: <observes>
-          // "History:UndoCloseTab": function () {
-          //   undoCloseTab();
-          // },
+          case "History:UndoCloseTab":
+            SessionWindowUI.undoCloseTab(window);
+            break;
           case "History:UndoCloseWindow":
-            undoCloseWindow();
+            SessionWindowUI.undoCloseWindow();
             break;
           case "History:RestoreLastClosedTabOrWindowOrSession":
-            restoreLastClosedTabOrWindowOrSession();
+            SessionWindowUI.restoreLastClosedTabOrWindowOrSession(window);
             break;
           case "History:SearchHistory":
             PlacesCommandHook.searchHistory();
@@ -236,9 +281,6 @@ document.addEventListener(
           case "windowRecordingCmd":
             gGfxUtils.toggleWindowRecording();
             break;
-          case "minimizeWindow":
-            window.minimize();
-            break;
           case "zoomWindow":
             zoomWindow();
             break;
@@ -246,6 +288,11 @@ document.addEventListener(
       });
 
     document.getElementById("mainKeyset").addEventListener("command", event => {
+      const SIDEBAR_REVAMP_PREF = "sidebar.revamp";
+      const SIDEBAR_REVAMP_ENABLED = Services.prefs.getBoolPref(
+        SIDEBAR_REVAMP_PREF,
+        false
+      );
       switch (event.target.id) {
         case "goHome":
           BrowserCommands.home();
@@ -258,6 +305,35 @@ document.addEventListener(
           break;
         case "viewBookmarksToolbarKb":
           BookmarkingUI.toggleBookmarksToolbar("shortcut");
+          break;
+        case "viewGenaiChatSidebarKb": {
+          const currentURI = window.gBrowser.selectedBrowser.currentURI;
+          const isSmartWindowFullPageMode =
+            AIWindow.isAIWindowContentPage(currentURI);
+          if (AIWindow.isAIWindowActive(window) && !isSmartWindowFullPageMode) {
+            lazy.AIWindowUI.toggleSidebar(window);
+            break;
+          }
+
+          const pref = "browser.ml.chat.enabled";
+          const enabled = Services.prefs.getBoolPref(pref);
+          Glean.genaiChatbot.keyboardShortcut.record({
+            enabled,
+            sidebar: SidebarController.currentID,
+          });
+          if (enabled) {
+            SidebarController.toggle("viewGenaiChatSidebar");
+          }
+          break;
+        }
+        case "toggleSidebarKb":
+          if (SIDEBAR_REVAMP_ENABLED) {
+            SidebarController.handleToolbarButtonClick();
+            Glean.sidebar.keyboardShortcut.record({
+              panel: SidebarController.currentID,
+              opened: SidebarController._state.launcherExpanded,
+            });
+          }
           break;
         case "key_gotoHistory":
           SidebarController.toggle("viewHistorySidebar");

@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:Suppress("UnusedMaterialScaffoldPaddingParameter")
-
 package org.mozilla.focus.settings
 
 import android.os.Bundle
@@ -13,24 +11,28 @@ import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import mozilla.components.compose.base.button.IconButton
 import org.mozilla.focus.R
-import org.mozilla.focus.activity.MainActivity
 import org.mozilla.focus.ext.hideToolbar
 import org.mozilla.focus.ui.theme.FocusTheme
 import org.mozilla.focus.ui.theme.focusColors
+import mozilla.components.ui.icons.R as iconsR
 
 /**
  * Fragment acting as a wrapper over a [Composable] which will be shown below a [TopAppBar].
@@ -38,8 +40,7 @@ import org.mozilla.focus.ui.theme.focusColors
  * Useful for Fragments shown in otherwise fullscreen Activities such that they would be shown
  * beneath the status bar not below it.
  *
- * Classes extending this are expected to provide the [Composable] content and a basic behavior
- * for the toolbar: title and navigate up callback.
+ * Classes extending this are expected to provide the [Composable] content and toolbar title.
  */
 abstract class BaseComposeFragment : Fragment() {
     /**
@@ -49,10 +50,16 @@ abstract class BaseComposeFragment : Fragment() {
 
     open val titleText: String? = null
 
+    open val backgroundColorResource: Int = R.color.settings_background
+
+    private lateinit var composeView: ComposeView
+
     /**
      * Callback for the up navigation button shown in toolbar.
      */
-    abstract fun onNavigateUp(): () -> Unit
+    open fun onNavigateUp(): () -> Unit = {
+        activity?.onBackPressedDispatcher?.onBackPressed()
+    }
 
     /**
      * content of the screen in compose. That will be shown below Toolbar
@@ -65,30 +72,44 @@ abstract class BaseComposeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        hideToolbar()
-        (requireActivity() as? MainActivity)?.hideStatusBarBackground()
-
         return ComposeView(requireContext()).apply {
-            setContent {
-                val title = getTitle()
-                FocusTheme {
-                    Scaffold(
+            composeView = this
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            isTransitionGroup = true
+            setBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    backgroundColorResource,
+                ),
+            )
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        hideToolbar()
+        val title = getTitle()
+        composeView.setContent {
+            FocusTheme {
+                Scaffold(
+                    modifier = Modifier.systemBarsPadding(),
+                    topBar = {
+                        FocusTopAppBar(
+                            title = title,
+                            modifier = Modifier,
+                            onNavigateUpClick = onNavigateUp(),
+                        )
+                    },
+                ) { paddingValues ->
+                    Column(
                         modifier = Modifier
-                            .background(colorResource(id = R.color.settings_background))
-                            .statusBarsPadding(),
-                    ) { paddingValues ->
-                        Column {
-                            TopAppBar(
-                                title = title,
-                                modifier = Modifier.padding(paddingValues),
-                                onNavigateUpClick = onNavigateUp(),
-                            )
-                            this@BaseComposeFragment.Content()
-                        }
+                            .background(colorResource(id = backgroundColorResource))
+                            .padding(paddingValues),
+                    ) {
+                        this@BaseComposeFragment.Content()
                     }
                 }
             }
-            isTransitionGroup = true
         }
     }
 
@@ -100,8 +121,9 @@ abstract class BaseComposeFragment : Fragment() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopAppBar(
+private fun FocusTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     onNavigateUpClick: () -> Unit,
@@ -110,21 +132,25 @@ private fun TopAppBar(
         title = {
             Text(
                 text = title,
-                color = focusColors.toolbarColor,
             )
         },
         modifier = modifier,
         navigationIcon = {
             IconButton(
                 onClick = onNavigateUpClick,
+                contentDescription = stringResource(R.string.go_back),
             ) {
                 Icon(
-                    painterResource(id = R.drawable.mozac_ic_back_24),
-                    stringResource(R.string.go_back),
-                    tint = focusColors.toolbarColor,
+                    painter = painterResource(id = iconsR.drawable.mozac_ic_back_24),
+                    contentDescription = null,
                 )
             }
         },
-        backgroundColor = colorResource(R.color.settings_background),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorResource(R.color.settings_background),
+            scrolledContainerColor = colorResource(R.color.settings_background),
+            navigationIconContentColor = focusColors.toolbarColor,
+            titleContentColor = focusColors.toolbarColor,
+        ),
     )
 }

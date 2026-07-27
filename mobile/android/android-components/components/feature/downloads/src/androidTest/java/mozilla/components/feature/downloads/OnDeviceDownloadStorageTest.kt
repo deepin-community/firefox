@@ -5,11 +5,12 @@
 package mozilla.components.feature.downloads
 
 import android.content.Context
+import android.os.Environment
+import androidx.core.database.getStringOrNull
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mozilla.components.browser.state.state.content.DownloadState
 import mozilla.components.feature.downloads.db.DownloadsDatabase
@@ -18,6 +19,7 @@ import mozilla.components.feature.downloads.db.toDownloadEntity
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -25,7 +27,6 @@ import org.junit.Test
 
 private const val MIGRATION_TEST_DB = "migration-test"
 
-@ExperimentalCoroutinesApi
 class OnDeviceDownloadStorageTest {
     private lateinit var context: Context
     private lateinit var storage: DownloadStorage
@@ -147,6 +148,79 @@ class OnDeviceDownloadStorageTest {
 
             // The download 1 must keep its url.
             assertEquals("url", cursor.getString(cursor.getColumnIndexOrThrow("url")))
+        }
+    }
+
+    @Test
+    fun migrate4to5() {
+        helper.createDatabase(MIGRATION_TEST_DB, 4).apply {
+            query("SELECT * FROM downloads").use { cursor ->
+                assertEquals(false, cursor.columnNames.contains("etag"))
+            }
+
+            execSQL(
+                "INSERT INTO " +
+                    "downloads " +
+                    "(id, url, file_name, content_type,content_length,status,destination_directory,created_at) " +
+                    "VALUES " +
+                    "(1,'https://mozilla.com/somefile','file_name','content_type',1,1,'destination_directory',1)",
+            )
+
+            close()
+        }
+
+        val dbVersion5 = helper.runMigrationsAndValidate(MIGRATION_TEST_DB, 5, true, Migrations.migration_4_5)
+
+        dbVersion5.query("SELECT * FROM downloads").use { cursor ->
+            // The existing entries remain
+            assertEquals(1, cursor.count)
+            // etag column is present
+            assertEquals(true, cursor.columnNames.contains("etag"))
+
+            cursor.moveToFirst()
+            // The existing entries set etag to null
+            assertNull(cursor.getStringOrNull(cursor.getColumnIndexOrThrow("etag")))
+        }
+    }
+
+    @Test
+    fun migrate5to6() {
+        val downloadDirName = Environment.DIRECTORY_DOWNLOADS
+        val publicDownloadsPath =
+            Environment.getExternalStoragePublicDirectory(downloadDirName).path
+
+        helper.createDatabase(MIGRATION_TEST_DB, 5).apply {
+            query("SELECT * FROM downloads").use { cursor ->
+                assertTrue(cursor.columnNames.contains("destination_directory"))
+                assertFalse(cursor.columnNames.contains("directory_path"))
+            }
+
+            execSQL(
+                """
+            INSERT INTO downloads
+            (id, url, file_name, content_type, content_length, status, destination_directory, created_at, etag)
+            VALUES
+            ('id_to_convert', 'https://firefox.com', 'app.apk', 'apk', 2048, 1, '$downloadDirName', 67890, 'etag')
+            """.trimIndent(),
+            )
+            close()
+        }
+
+        val dbVersion6 =
+            helper.runMigrationsAndValidate(MIGRATION_TEST_DB, 6, true, Migrations.migration_5_6)
+
+        dbVersion6.query("SELECT * FROM downloads ORDER BY id ASC").use { cursor ->
+            assertFalse(cursor.columnNames.contains("destination_directory"))
+            assertTrue(cursor.columnNames.contains("directory_path"))
+            assertEquals(1, cursor.count)
+
+            cursor.moveToFirst()
+            assertEquals("id_to_convert", cursor.getString(cursor.getColumnIndexOrThrow("id")))
+            assertEquals(
+                publicDownloadsPath,
+                cursor.getString(cursor.getColumnIndexOrThrow("directory_path")),
+            )
+            assertEquals("etag", cursor.getString(cursor.getColumnIndexOrThrow("etag")))
         }
     }
 

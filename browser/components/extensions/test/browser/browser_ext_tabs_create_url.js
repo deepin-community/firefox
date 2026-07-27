@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 async function runWithDisabledPrivateBrowsing(callback) {
@@ -97,16 +95,17 @@ add_task(async function default_url() {
     background() {
       function promiseNonBlankTab() {
         return new Promise(resolve => {
-          browser.tabs.onUpdated.addListener(function listener(
-            tabId,
-            changeInfo,
-            tab
-          ) {
-            if (changeInfo.status === "complete" && tab.url !== "about:blank") {
-              browser.tabs.onUpdated.removeListener(listener);
-              resolve(tab);
+          browser.tabs.onUpdated.addListener(
+            function listener(tabId, changeInfo, tab) {
+              if (
+                changeInfo.status === "complete" &&
+                tab.url !== "about:blank"
+              ) {
+                browser.tabs.onUpdated.removeListener(listener);
+                resolve(tab);
+              }
             }
-          });
+          );
         });
       }
 

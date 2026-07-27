@@ -1,11 +1,13 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: nil; -*-
- * Any copyright is dedicated to the Public Domain.
+/* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 package org.mozilla.geckoview.test
 
-import android.graphics.* // ktlint-disable no-wildcard-imports
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import org.hamcrest.Matchers
@@ -27,7 +29,7 @@ private const val BANNER_HEIGHT = SCREEN_HEIGHT * 0.1f // height: 10%
 @MediumTest
 class VerticalClippingTest : BaseSessionTest() {
     private fun getComparisonScreenshot(bottomOffset: Int): Bitmap {
-        val screenshotFile = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888)
+        val screenshotFile = createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(screenshotFile)
         val paint = Paint()
 

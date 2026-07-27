@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,21 +5,15 @@
 #ifndef mozilla_CSSStyleRule_h
 #define mozilla_CSSStyleRule_h
 
-#include "mozilla/css/GroupRule.h"
 #include "mozilla/ServoBindingTypes.h"
-#include "mozilla/NotNull.h"
-#include "mozilla/WeakPtr.h"
-#include "mozilla/dom/CSSStyleRuleBinding.h"
-
+#include "mozilla/css/GroupRule.h"
 #include "nsDOMCSSDeclaration.h"
 
-namespace mozilla {
-
-class DeclarationBlock;
-
-namespace dom {
+namespace mozilla::dom {
 class DocGroup;
 class CSSStyleRule;
+struct SelectorWarning;
+class StylePropertyMap;
 
 class CSSStyleRuleDeclaration final : public nsDOMCSSDeclaration {
  public:
@@ -32,9 +24,9 @@ class CSSStyleRuleDeclaration final : public nsDOMCSSDeclaration {
   nsISupports* GetParentObject() const final;
 
  protected:
-  mozilla::DeclarationBlock* GetOrCreateCSSDeclaration(
-      Operation aOperation, mozilla::DeclarationBlock** aCreated) final;
-  nsresult SetCSSDeclaration(DeclarationBlock* aDecl,
+  Block* GetOrCreateCSSDeclaration(Operation aOperation,
+                                   Block** aCreated) final;
+  nsresult SetCSSDeclaration(Block* aDecl,
                              MutationClosureData* aClosureData) final;
   ParsingEnvironment GetParsingEnvironment(
       nsIPrincipal* aSubjectPrincipal) const final;
@@ -43,19 +35,18 @@ class CSSStyleRuleDeclaration final : public nsDOMCSSDeclaration {
   // For accessing the constructor.
   friend class CSSStyleRule;
 
-  explicit CSSStyleRuleDeclaration(
-      already_AddRefed<StyleLockedDeclarationBlock> aDecls);
+  explicit CSSStyleRuleDeclaration(already_AddRefed<Block> aDecls);
   ~CSSStyleRuleDeclaration();
 
   inline CSSStyleRule* Rule();
   inline const CSSStyleRule* Rule() const;
 
-  void SetRawAfterClone(RefPtr<StyleLockedDeclarationBlock>);
+  void SetRawAfterClone(RefPtr<Block>);
 
-  RefPtr<DeclarationBlock> mDecls;
+  RefPtr<Block> mDecls;
 };
 
-class CSSStyleRule final : public css::GroupRule, public SupportsWeakPtr {
+class CSSStyleRule final : public css::GroupRule {
  public:
   CSSStyleRule(already_AddRefed<StyleLockedStyleRule> aRawRule,
                StyleSheet* aSheet, css::Rule* aParentRule, uint32_t aLine,
@@ -73,18 +64,27 @@ class CSSStyleRule final : public css::GroupRule, public SupportsWeakPtr {
   bool SelectorMatchesElement(uint32_t aSelectorIndex, dom::Element&,
                               const nsAString& aPseudo,
                               bool aRelevantLinkVisited);
-  NotNull<DeclarationBlock*> GetDeclarationBlock() const;
+  Element* GetScopeRootFor(uint32_t aSelectorIndex, dom::Element&,
+                           const nsAString& aPseudo, bool aRelevantLinkVisited);
+  StyleLockedDeclarationBlock& GetDeclarationBlock() const;
   void GetSelectorWarnings(nsTArray<SelectorWarning>& aResult) const;
-  already_AddRefed<nsINodeList> QuerySelectorAll(nsINode& aRoot);
+  already_AddRefed<NodeList> QuerySelectorAll(nsINode& aRoot);
 
   // WebIDL interface
   StyleCssRuleType Type() const final;
   void GetCssText(nsACString& aCssText) const final;
   void GetSelectorText(nsACString& aSelectorText);
   void SetSelectorText(const nsACString& aSelectorText);
-  nsICSSDeclaration* Style();
+  nsDOMCSSDeclaration* Style() { return &mDecls; }
+
+  // If we wanted to follow the declaration order in CSSStyleRule.webidl,
+  // chromeonly Web IDL stuff would be declared here, but it's currently
+  // declared above.
+
+  StylePropertyMap* StyleMap();
 
   StyleLockedStyleRule* Raw() const { return mRawRule; }
+  const StyleLockedDeclarationBlock* RawStyle() const;
   void SetRawAfterClone(RefPtr<StyleLockedStyleRule>);
   already_AddRefed<StyleLockedCssRules> GetOrCreateRawRules() final;
 
@@ -106,6 +106,7 @@ class CSSStyleRule final : public css::GroupRule, public SupportsWeakPtr {
   friend class CSSStyleRuleDeclaration;
 
   RefPtr<StyleLockedStyleRule> mRawRule;
+  RefPtr<StylePropertyMap> mStyleMap;
   CSSStyleRuleDeclaration mDecls;
 };
 
@@ -119,7 +120,6 @@ const CSSStyleRule* CSSStyleRuleDeclaration::Rule() const {
       reinterpret_cast<const uint8_t*>(this) - offsetof(CSSStyleRule, mDecls));
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_CSSStyleRule_h

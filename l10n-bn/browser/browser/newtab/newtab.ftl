@@ -14,18 +14,50 @@ newtab-personalize-icon-label =
 newtab-personalize-dialog-label =
     .aria-label = ব্যক্তিগতকরণ
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = নতুন ট্যাবগুলি
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num }টি সারি
+           *[other] { $num }টি সারি
+        }
+home-restore-defaults-srd =
+    .label = ডিফল্ট মান পুনরায় স্থাপন
+    .accesskey = R
+home-mode-choice-custom-srd =
+    .label = কাস্টম URLs…
+home-mode-choice-blank-srd =
+    .label = ফাঁকা পাতা
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = স্পন্সর করা স্টোরি
+home-prefs-highlights-option-visited-pages-srd =
+    .label = ঘুরে আসা পেজ
+home-prefs-highlights-options-bookmarks-srd =
+    .label = বুকমার্ক
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = সর্বশেষ ডাউনলোড
+
 ## Search box component.
 
 # "Search" is a verb/action
 newtab-search-box-search-button =
     .title = অনুসন্ধান
     .aria-label = অনুসন্ধান
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
 newtab-search-box-handoff-text-no-engine = অনুসন্ধান করুন বা ঠিকানা লিখুন
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
     .title = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
@@ -39,7 +71,7 @@ newtab-search-box-input =
     .placeholder = ওয়েবে অনুসন্ধান করুন
     .aria-label = ওয়েবে অনুসন্ধান করুন
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = অনুসন্ধান ইঞ্জিন যোগ করুন
 newtab-topsites-add-shortcut-header = নতুন শর্টকাট
@@ -86,7 +118,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = মুছে ফেলুন
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = মেনু খুলুন
     .aria-label = { $title } থেকে কনটেক্সট মেনু খুলুন
@@ -159,16 +191,16 @@ newtab-label-saved = { -pocket-brand-name } এ সংরক্ষণ হয়ে�
 newtab-label-download = ডাউনলোড হয়েছে
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } । প্রযোজিত
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = { $sponsor } দ্বারা স্পনসরকৃত
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } মিনিট
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -197,7 +229,7 @@ newtab-section-expand-section-label =
 newtab-section-header-topsites = শীর্ঘ সাইট
 newtab-section-header-recent-activity = সাম্প্রতিক কার্যকলাপ
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } দ্বারা সুপারিশকৃত
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -205,7 +237,7 @@ newtab-section-header-pocket = { $provider } দ্বারা সুপার�
 newtab-empty-section-highlights = ব্রাউজি করা শুরু করুন, এবং কিছু গুরুত্বপূর্ণ নিবন্ধ, ভিডিও, এবং আপনি সম্প্রতি পরিদর্শন বা বুকমার্ক করেছেন এমন কিছু পৃষ্ঠা আমরা এখানে প্রদর্শন করব।
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = কিছু একটা ঠিক নেই। { $provider } এর শীর্ষ গল্পগুলো পেতে কিছুক্ষণ পর আবার দেখুন। অপেক্ষা করতে চান না? বিশ্বের সেরা গল্পগুলো পেতে কোন জনপ্রিয় বিষয় নির্বাচন করুন।
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -226,9 +258,6 @@ newtab-pocket-learn-more = আরও জানুন
 newtab-pocket-cta-button = { -pocket-brand-name } ব্যবহার করুন
 newtab-pocket-cta-text = { -pocket-brand-name } এ আপনার পছন্দের গল্পগুলো সংরক্ষণ করুন, এবং চমৎকার সব লেখা পড়ে আপনার মনের ইন্ধন যোগান।
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -239,9 +268,23 @@ newtab-error-fallback-refresh-link = আবার চেষ্টা করত�
 
 newtab-custom-shortcuts-title = শর্টকাট
 newtab-custom-shortcuts-subtitle = আপনার সংরক্ষণ বা পরিদর্শন করা সাইট
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = শর্টকাট
     .description = আপনার সংরক্ষণ বা পরিদর্শন করা সাইট
+newtab-custom-shortcuts-nova =
+    .label = শর্টকাট
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num }টি সারি
+           *[other] { $num }টি সারি
+        }
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num }টি সারি

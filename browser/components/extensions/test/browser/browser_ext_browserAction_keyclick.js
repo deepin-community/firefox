@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 // Like focusButtonAndPressKey, but leaves time between keydown and keyup
@@ -50,11 +48,13 @@ add_task(async function testKeyBrowserAction() {
   await extension.startup();
   await extension.awaitMessage("ready");
 
-  let elem = getBrowserActionWidget(extension).forWindow(window).node;
+  let button = getBrowserActionWidget(extension)
+    .forWindow(window)
+    .node.querySelector(".unified-extensions-item-action-button");
 
   await promiseAnimationFrame(window);
   await showBrowserAction(extension, window);
-  await focusButtonAndPressKeyWithDelay(" ", elem.firstElementChild, {});
+  await focusButtonAndPressKeyWithDelay(" ", button, {});
 
   extension.sendMessage("checkCounter");
   let counter = await extension.awaitMessage("counter");

@@ -156,14 +156,14 @@ struct TestCopyWithDeletedMove {
   void operator()() { MOZ_RELEASE_ASSERT(mCopyCounter); }
   int* mCopyCounter;
 };
-struct TestMove {
-  explicit TestMove(int* aMoveCounter) : mMoveCounter(aMoveCounter) {}
-  TestMove(const TestMove&) = delete;
-  TestMove(TestMove&& a) : mMoveCounter(a.mMoveCounter) {
+struct TestMoveCounter {
+  explicit TestMoveCounter(int* aMoveCounter) : mMoveCounter(aMoveCounter) {}
+  TestMoveCounter(const TestMoveCounter&) = delete;
+  TestMoveCounter(TestMoveCounter&& a) : mMoveCounter(a.mMoveCounter) {
     a.mMoveCounter = nullptr;
     *mMoveCounter += 1;
   }
-  ~TestMove() { mMoveCounter = nullptr; }
+  ~TestMoveCounter() { mMoveCounter = nullptr; }
   void operator()() { MOZ_RELEASE_ASSERT(mMoveCounter); }
   int* mMoveCounter;
 };
@@ -292,7 +292,7 @@ static void TestRunnableFactory(bool aNamed) {
     {
       nsCOMPtr<nsIRunnable> trackedRunnable;
       {
-        TestMove tracker(&moveCounter);
+        TestMoveCounter tracker(&moveCounter);
         trackedRunnable =
             aNamed ? RunnableFactory::Create("unused", std::move(tracker))
                    : RunnableFactory::Create("TestNewRunnableFunction",
@@ -308,9 +308,10 @@ static void TestRunnableFactory(bool aNamed) {
       nsCOMPtr<nsIRunnable> trackedRunnable;
       {
         trackedRunnable =
-            aNamed ? RunnableFactory::Create("unused", TestMove(&moveCounter))
+            aNamed ? RunnableFactory::Create("unused",
+                                             TestMoveCounter(&moveCounter))
                    : RunnableFactory::Create("TestNewRunnableFunction",
-                                             TestMove(&moveCounter));
+                                             TestMoveCounter(&moveCounter));
       }
       trackedRunnable->Run();
     }
@@ -433,7 +434,9 @@ static void TestRunnableFactory(bool aNamed) {
 }
 
 TEST(ThreadUtils, NewRunnableFunction)
-{ TestRunnableFactory<BasicRunnableFactory>(/*aNamed*/ false); }
+{
+  TestRunnableFactory<BasicRunnableFactory>(/*aNamed*/ false);
+}
 
 TEST(ThreadUtils, NewNamedRunnableFunction)
 {
@@ -450,7 +453,9 @@ TEST(ThreadUtils, NewNamedRunnableFunction)
 }
 
 TEST(ThreadUtils, NewCancelableRunnableFunction)
-{ TestRunnableFactory<CancelableRunnableFactory>(/*aNamed*/ false); }
+{
+  TestRunnableFactory<CancelableRunnableFactory>(/*aNamed*/ false);
+}
 
 TEST(ThreadUtils, NewNamedCancelableRunnableFunction)
 {
@@ -595,7 +600,9 @@ static void TestNewRunnableMethod(bool aNamed) {
 }
 
 TEST(ThreadUtils, RunnableMethod)
-{ TestNewRunnableMethod(/* aNamed */ false); }
+{
+  TestNewRunnableMethod(/* aNamed */ false);
+}
 
 TEST(ThreadUtils, NamedRunnableMethod)
 {
@@ -647,7 +654,7 @@ class IdleObject final {
  public:
   NS_INLINE_DECL_REFCOUNTING(IdleObject)
   IdleObject() {
-    for (uint32_t index = 0; index < ArrayLength(mRunnableExecuted); ++index) {
+    for (uint32_t index = 0; index < std::size(mRunnableExecuted); ++index) {
       mRunnableExecuted[index] = false;
       mSetIdleDeadlineCalled = false;
     }
@@ -661,7 +668,7 @@ class IdleObject final {
       << aKey << ": Method" << index << " should've executed";
     }
 
-    for (; index < ArrayLength(mRunnableExecuted); ++index) {
+    for (; index < std::size(mRunnableExecuted); ++index) {
       ASSERT_FALSE(mRunnableExecuted[index])
       << aKey << ": Method" << index << " shouldn't have executed";
     }
@@ -693,7 +700,8 @@ class IdleObject final {
     CheckExecutedMethods("Method3", 3);
 
     NS_NewTimerWithFuncCallback(getter_AddRefs(mTimer), Method4, this, 10,
-                                nsITimer::TYPE_ONE_SHOT, "IdleObject::Method3");
+                                nsITimer::TYPE_ONE_SHOT,
+                                "IdleObject::Method3"_ns);
     NS_DispatchToCurrentThreadQueue(
         NewIdleRunnableMethodWithTimer("IdleObject::Method5", this,
                                        &IdleObject::Method5),
@@ -803,7 +811,7 @@ TEST(ThreadUtils, IdleTaskRunner)
         cnt1++;
         return true;
       },
-      "runner1", 0, TimeDuration::FromMilliseconds(10),
+      "runner1"_ns, 0, TimeDuration::FromMilliseconds(10),
       TimeDuration::FromMilliseconds(3), true, nullptr);
 
   // Non-repeating but callback always return false so it's still repeating.
@@ -813,7 +821,7 @@ TEST(ThreadUtils, IdleTaskRunner)
         cnt2++;
         return false;
       },
-      "runner2", 0, TimeDuration::FromMilliseconds(10),
+      "runner2"_ns, 0, TimeDuration::FromMilliseconds(10),
       TimeDuration::FromMilliseconds(3), false, nullptr);
 
   // Repeating until cnt3 >= 2 by returning 'true' in MayStopProcessing
@@ -825,7 +833,7 @@ TEST(ThreadUtils, IdleTaskRunner)
         cnt3++;
         return true;
       },
-      "runner3", 0, TimeDuration::FromMilliseconds(10),
+      "runner3"_ns, 0, TimeDuration::FromMilliseconds(10),
       TimeDuration::FromMilliseconds(3), true, [&cnt3] { return cnt3 >= 2; });
 
   // Non-repeating can callback return true so the callback will
@@ -836,7 +844,7 @@ TEST(ThreadUtils, IdleTaskRunner)
         cnt4++;
         return true;
       },
-      "runner4", 0, TimeDuration::FromMilliseconds(10),
+      "runner4"_ns, 0, TimeDuration::FromMilliseconds(10),
       TimeDuration::FromMilliseconds(3), false, nullptr);
 
   // Firstly we wait until the two repeating tasks reach their limits.
@@ -876,12 +884,8 @@ TEST(ThreadUtils, IdleTaskRunner)
 }
 
 // {9e70a320-be02-11d1-8031-006008159b5a}
-#define NS_IFOO_IID                                  \
-  {                                                  \
-    0x9e70a320, 0xbe02, 0x11d1, {                    \
-      0x80, 0x31, 0x00, 0x60, 0x08, 0x15, 0x9b, 0x5a \
-    }                                                \
-  }
+#define NS_IFOO_IID \
+  {0x9e70a320, 0xbe02, 0x11d1, {0x80, 0x31, 0x00, 0x60, 0x08, 0x15, 0x9b, 0x5a}}
 
 TEST(ThreadUtils, TypeTraits)
 {
@@ -1049,11 +1053,10 @@ struct Spy {
 };
 
 struct ISpyWithISupports : public nsISupports {
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IFOO_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IFOO_IID)
   NS_IMETHOD_(nsrefcnt) RefCnt() = 0;
   NS_IMETHOD_(int32_t) ID() = 0;
 };
-NS_DEFINE_STATIC_IID_ACCESSOR(ISpyWithISupports, NS_IFOO_IID)
 struct SpyWithISupports : public ISpyWithISupports, public Spy {
  private:
   virtual ~SpyWithISupports() = default;
@@ -1068,13 +1071,11 @@ NS_IMPL_ISUPPORTS(SpyWithISupports, ISpyWithISupports)
 
 class IThreadUtilsObject : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IFOO_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IFOO_IID)
 
   NS_IMETHOD_(nsrefcnt) RefCnt() = 0;
   NS_IMETHOD_(int32_t) ID() = 0;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(IThreadUtilsObject, NS_IFOO_IID)
 
 struct ThreadUtilsObjectNonRefCountedBase {
   virtual void MethodFromNonRefCountedBase() {}

@@ -83,6 +83,7 @@ open class HttpIconLoader(
         return resource.url.sanitizeURL().toUri().isHttpOrHttps && !failureCache.hasFailedRecently(resource.url)
     }
 
+    @Suppress("CognitiveComplexMethod")
     private fun Response.toIconLoaderResult(): IconLoader.Result {
         // Compare the Response Content-Length header with the available memory on device
         val contentLengthHeader = headers[Headers.Names.CONTENT_LENGTH]
@@ -110,10 +111,6 @@ open class HttpIconLoader(
 
                         if (bytesRead > MAX_DOWNLOAD_BYTES || bytesRead > memoryInfoProvider.getAvailMem()) {
                             return@useStream IconLoader.Result.NoResult
-                        }
-
-                        if (bytesInChunk < DEFAULT_BUFFER_SIZE) {
-                            break
                         }
                     }
                     IconLoader.Result.BytesResult(outStream.toByteArray(), Icon.Source.DOWNLOAD)

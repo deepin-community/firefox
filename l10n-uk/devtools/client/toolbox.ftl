@@ -11,45 +11,46 @@
 ## external links. Some of the commands have the keyboard shortcut shown next to
 ## the label.
 
-toolbox-meatball-menu-dock-bottom-label = Прикріпити знизу
-toolbox-meatball-menu-dock-left-label = Прикріпити ліворуч
-toolbox-meatball-menu-dock-right-label = Прикріпити праворуч
+toolbox-meatball-menu-dock-bottom-label = Закріпити знизу
+toolbox-meatball-menu-dock-left-label = Закріпити ліворуч
+toolbox-meatball-menu-dock-right-label = Закріпити праворуч
 toolbox-meatball-menu-dock-separate-window-label = Окреме вікно
-
 toolbox-meatball-menu-splitconsole-label = Показати консоль розділення
 toolbox-meatball-menu-hideconsole-label = Сховати консоль розділення
-
 toolbox-meatball-menu-settings-label = Налаштування
 toolbox-meatball-menu-documentation-label = Документація…
 toolbox-meatball-menu-community-label = Спільнота…
-
 # This menu item is only available in the browser toolbox. It forces the popups/panels
 # to stay visible on blur, which is primarily useful for addon developers and Firefox
 # contributors.
 toolbox-meatball-menu-noautohide-label = Вимкнути автоприховування спливних вікон
-
 toolbox-meatball-menu-pseudo-locale-accented = Увімкнути “accented” локаль
 toolbox-meatball-menu-pseudo-locale-bidi = Увімкнути “bidi” локаль
-
-##
-
 
 ## These labels are shown in the top-toolbar in the Browser Toolbox and Browser Console
 
 toolbox-mode-browser-toolbox-label = Режим інструментів браузера
 toolbox-mode-browser-console-label = Режим консолі браузера
-
 toolbox-mode-everything-label = Багатопроцесний
 toolbox-mode-everything-sub-label = (Повільніше)
 toolbox-mode-everything-container =
     .title = Налагоджувати все в усіх процесах
-
 toolbox-mode-parent-process-label = Лише процес вищого рівня
 toolbox-mode-parent-process-sub-label = (Швидко)
 toolbox-mode-parent-process-container =
     .title = Зосередитися лише на ресурсах з процесу вищого рівня.
-
 toolbox-always-on-top-enabled2 = Вимкнути завжди вгорі
     .title = Ця дія перезапустить інструменти розробника
 toolbox-always-on-top-disabled2 = Увімкнути завжди вгорі
     .title = Ця дія перезапустить інструменти розробника
+
+## These two labels are shown when navigating to a file:// URL while having DevTools opened,
+## in order to suggest enabling the Local Mode and load them from https instead.
+
+# Variables:
+#   $url (String): The local mode URL
+toolbox-local-mode-notice = Цей документ також можна завантажити з “{ $url }” за допомогою “Локального режиму” в DevTools, який можна ввімкнути на панелі налаштувань.
+toolbox-local-mode-notice-add-to-settings-button = Додати до налаштувань
+toolbox-local-mode-notice-try-it-button = Спробувати
+toolbox-local-mode-notice-navigate-to-existing-mapping = Перейти до наявного зіставлення
+toolbox-local-mode-notice-always-hide = Не показувати це знову

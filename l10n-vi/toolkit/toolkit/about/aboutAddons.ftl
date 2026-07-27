@@ -120,6 +120,8 @@ private-browsing-description2 =
     tiện ích mở rộng sẽ không chạy trong khi duyệt web riêng tư và sẽ không có quyền truy cập vào các hoạt động trực tuyến của bạn.
     Chúng tôi đã thực hiện thay đổi này để giữ trình duyệt của bạn riêng tư.
     <label data-l10n-name="private-browsing-learn-more">Tìm hiểu cách quản lý cài đặt tiện ích mở rộng.</label>
+aboutaddons-sidebar =
+    .heading = Tiện ích
 addon-category-discover = Đề xuất
 addon-category-discover-title =
     .title = Đề xuất
@@ -170,6 +172,8 @@ extensions-warning-update-security-button = Bật
 extensions-warning-imported-addons2 =
     .message = Vui lòng hoàn tất việc cài đặt các tiện ích mở rộng đã được nhập vào { -brand-short-name }.
 extensions-warning-imported-addons-button = Cài đặt tiện ích mở rộng
+extensions-warning-safe-mode3 =
+    .message = Tất cả tiện ích đã bị vô hiệu hóa bởi chế độ khắc phục sự cố.
 
 ## Strings connected to add-on updates
 
@@ -205,6 +209,10 @@ addon-updates-manual-updates-found = Xem các cập nhật hiện có
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Cài đặt tiện ích từ tập tin…
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Cài đặt hoặc cập nhật tiện ích từ tập tin…
     .accesskey = I
 addon-install-from-file-dialog-title = Chọn tiện ích để cài đặt
 addon-install-from-file-filter-name = Tiện ích
@@ -277,6 +285,19 @@ discopane-notice-recommendations2 =
         Một số trong những khuyến nghị được cá nhân hóa. Nó dựa trên khác
         tiện ích mở rộng mà bạn đã cài đặt, tùy chọn hồ sơ và thống kê sử dụng.
 discopane-notice-learn-more = Tìm hiểu thêm
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Chủ đề phối màu của bạn đã bị xóa.
+    .message =
+        { -brand-product-name } đã cập nhật bộ sưu tập phối màu của mình.
+        Chúng tôi đã xóa phiên bản cũ từ danh sách “Chủ đề đã lưu” của bạn.
+        Nhận phiên bản mới trên trang tiện ích.
+colorway-removal-notice-learn-more = Tìm hiểu thêm
+colorway-removal-notice-button = Nhận chủ đề phối màu được cập nhật
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Cài đặt độ tương phản của Windows của bạn đang ghi đè chủ đề { -brand-short-name }. Tắt các cài đặt này để sử dụng chủ đề trong { -brand-short-name }.
 privacy-policy = Chính sách riêng tư
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -297,6 +318,16 @@ find-more-themes = Tìm thêm chủ đề
 # used for screen readers.
 addon-options-button =
     .aria-label = Tùy chọn khác
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Tiện ích mở rộng và chủ đề cho phép bạn tùy chỉnh { -brand-product-name }. Nó có thể tăng cường
+    quyền riêng tư, nâng cao năng suất, cải thiện phương tiện, thay đổi giao diện { -brand-product-name }, và
+    hơn thế nữa. Những chương trình phần mềm nhỏ này thường được phát triển bởi bên thứ ba. Đây là
+    lựa chọn <a data-l10n-name="learn-more-trigger">được đề xuất</a> của Firefox
+    để có được tính bảo mật, hiệu suất và chức năng đặc biệt.
 
 ## Add-on actions
 
@@ -382,6 +413,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Được phép trong cửa sổ riêng tư
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Được phép trong cửa sổ riêng tư
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -421,6 +456,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tiện ích mở rộng này đã được xem xét để đáp ứng các tiêu chuẩn của chúng tôi về bảo mật và hiệu suất
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Tiện ích mở rộng chính thức do Mozilla xây dựng. Đáp ứng các tiêu chuẩn về bảo mật và hiệu suất.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Tiện ích mở rộng này đã được xem xét để đáp ứng các tiêu chuẩn về bảo mật và hiệu suất
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox chỉ đề xuất các tiện ích mở rộng đáp ứng các tiêu chuẩn về bảo mật và hiệu suất
 
 ##
 
@@ -428,10 +481,18 @@ available-updates-heading = Cập nhật có sẵn
 recent-updates-heading = Cập nhật gần đây
 release-notes-loading = Đang tải…
 release-notes-error = Xin lỗi, nhưng có lỗi xảy ra khi mở ghi chú phát hành.
+addon-permissions-heading = Quyền hạn
+addon-permissions-empty2 = Tiện ích mở rộng này không yêu cầu bất kỳ quyền nào.
+addon-permissions-required-label = Bắt buộc:
+addon-permissions-optional-label = Không bắt buộc:
 addon-permissions-empty = Tiện ích mở rộng này không yêu cầu bất kỳ quyền nào
 addon-permissions-required = Các quyền cần thiết cho chức năng cốt lõi:
 addon-permissions-optional = Các quyền tùy chọn cho chức năng được bổ sung:
 addon-permissions-learnmore = Tìm hiểu thêm về quyền hạn
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Một số quyền truy cập được quản lý bởi tổ chức của bạn.
 recommended-extensions-heading = Tiện ích mở rộng được đề xuất
 recommended-themes-heading = Chủ đề được đề xuất
 # Variables:
@@ -455,6 +516,9 @@ shortcuts-heading = Quản lý phím tắt tiện ích mở rộng
 default-heading-search-label = Tìm thêm tiện ích
 addons-heading-search-input =
     .placeholder = Tìm kiếm addons.mozilla.org
+addons-heading-search-button =
+    .title = Tìm kiếm addons.mozilla.org
+    .aria-label = Tìm kiếm addons.mozilla.org
 addon-page-options-button =
     .title = Công cụ cho tất cả tiện ích
 
@@ -477,14 +541,32 @@ details-notification-unsigned-and-disabled-link = Thông tin chi tiết
 details-notification-unsigned = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name }. Bạn nên cẩn thận.
 details-notification-unsigned2 =
     .message = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name }. Bạn nên cẩn thận.
+details-notification-hard-blocked-extension =
+    .message = Tiện ích mở rộng này bị chặn do vi phạm chính sách của Mozilla và đã bị vô hiệu hóa.
+details-notification-hard-blocked-other =
+    .message = Tiện ích này bị chặn do vi phạm chính sách của Mozilla và đã bị vô hiệu hóa.
 details-notification-unsigned-link = Thông tin chi tiết
 details-notification-blocked = { $name } đã bị vô hiệu hóa vì vấn đề bảo mật hoặc tính ổn định.
-details-notification-blocked2 =
-    .message = { $name } đã bị vô hiệu hóa vì vấn đề bảo mật hoặc tính ổn định.
+details-notification-blocked-link2 = Xem chi tiết
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Tiện ích mở rộng này bị hạn chế và đã bị vô hiệu hóa. Bạn có thể bật nó, nhưng việc này có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Tiện ích mở rộng này bị hạn chế. Sử dụng nó có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Tiện ích này bị hạn chế và đã bị vô hiệu hóa. Bạn có thể bật nó, nhưng việc này có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Tiện ích này bị hạn chế. Sử dụng nó có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-extension-disabled =
+    .message = Tiện ích mở rộng này bị hạn chế do vi phạm chính sách của Mozilla và đã bị vô hiệu hóa. Bạn có thể bật nó, nhưng điều này có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tiện ích mở rộng này vi phạm chính sách của Mozilla. Sử dụng nó có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-other-disabled =
+    .message = Tiện ích mở rộng này bị hạn chế do vi phạm chính sách của Mozilla và đã bị vô hiệu hóa. Bạn có thể bật nó, nhưng điều này có thể tiềm ẩn rủi ro.
+details-notification-soft-blocked-other-enabled =
+    .message = Tiện ích này vi phạm chính sách của Mozilla. Sử dụng nó có thể tiềm ẩn rủi ro.
+details-notification-softblocked-link2 = Xem chi tiết
 details-notification-blocked-link = Thông tin Chi tiết
 details-notification-softblocked = { $name } được cho là gây ra các vấn đề về bảo mật hoặc tính ổn định.
-details-notification-softblocked2 =
-    .message = { $name } được cho là gây ra các vấn đề về bảo mật hoặc tính ổn định.
 details-notification-softblocked-link = Thông tin Chi tiết
 details-notification-gmp-pending = { $name } sắp được cài.
 details-notification-gmp-pending2 =
@@ -498,3 +580,46 @@ plugins-openh264-name = Bộ giải mã OpenH264 được cung cấp bởi Cisco
 plugins-openh264-description = Phần bổ trợ này được Mozilla cài đặt tự động để tương thích với quy chuẩn WebRTC và để cho phép tạo cuộc gọi WebRTC với các thiết bị yêu cầu sử dụng mã hóa H.264. Xin hãy truy cập http://www.openh264.org/ để xem mã nguồn của bộ giải mã và tìm hiểu thêm.
 plugins-widevine-name = Mô-đun giải mã nội dung Widevine được cung cấp bởi Google Inc.
 plugins-widevine-description = Phần bổ trợ này cho phép phát lại phương tiện được mã hóa tuân thủ theo thông số kỹ thuật của phần mở rộng phương tiện được mã hóa. Phương tiện được mã hóa thường được sử dụng bởi các trang web để bảo vệ chống sao chép nội dung phương tiện cao cấp. Truy cập https://www.w3.org/TR/encrypted-media/ để biết thêm thông tin về tiện ích mở rộng phương tiện được mã hóa.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Thu thập dữ liệu bắt buộc:
+addon-permissions-optional-data-collection = Thu thập dữ liệu tùy chọn:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Quyền hạn và dữ liệu
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Được sử dụng bởi tiện ích mở rộng { $extensionName }
+addon-permissions-data-collection-heading = Thu thập dữ liệu
+addon-permissions-data-collection-empty = Nhà phát triển cho biết tiện ích mở rộng này không yêu cầu thu thập dữ liệu.
+addon-data-collection-provided = Thông tin được cung cấp bởi nhà phát triển tiện ích mở rộng
+addon-data-collection-learnmore = Tìm hiểu thêm về thu thập dữ liệu
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } sử dụng cái này trên about:inference
+mlmodel-link-preview = { -brand-short-name } sử dụng cái này để tạo ra nội dung chính khi bạn xem trước các liên kết
+mlmodel-pdfjs = { -brand-short-name } sử dụng cái này để tạo văn bản thay thế cho hình ảnh bạn thêm vào PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } sử dụng cái này để gợi ý tên cho nhóm thẻ của bạn
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } sử dụng cái này để đề xuất các thẻ cho nhóm thẻ của bạn
+mlmodel-formfill-engine = { -brand-short-name } sử dụng cái này để giúp điền vào các mẫu địa chỉ
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI trên thiết bị
+addon-category-mlmodel-title =
+    .title = AI trên thiết bị
+mlmodel-heading = Quản lý mô hình AI trên thiết bị
+mlmodel-description = Một số tính năng và tiện ích mở rộng trong { -brand-short-name } được hỗ trợ bởi các mô hình AI hoạt động cục bộ trên thiết bị của bạn. Cách tiếp cận này bảo vệ quyền riêng tư của bạn và trong nhiều trường hợp, tăng tốc hiệu suất. <a data-l10n-name="learn-more">Tìm hiểu thêm</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Xóa
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Kích cỡ tập tin
+mlmodel-addon-detail-last-used-label = Sử dụng lần cuối
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Được sử dụng bởi
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Model card
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Xem trên Hugging Face

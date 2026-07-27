@@ -19,12 +19,6 @@ protections-popup-footer-protection-label-standard = معیاری
 ##
 
 protections-panel-etp-off-header = ٹریکنگ سے بہتر تحفظ اس سائٹ کے لیئے بند ہے
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = سائٹ کام نہیں کررہی ہے؟
 # The heading/title of the sub-panel view

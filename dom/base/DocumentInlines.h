@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef mozilla_dom_DocumentInlines_h
 #define mozilla_dom_DocumentInlines_h
 
-#include "mozilla/dom/Document.h"
-
 #include "mozilla/PresShell.h"
 #include "mozilla/ServoStyleSet.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLBodyElement.h"
 #include "nsContentUtils.h"
 #include "nsPresContext.h"
@@ -26,8 +23,10 @@ inline nsPresContext* Document::GetPresContext() const {
   return presShell ? presShell->GetPresContext() : nullptr;
 }
 
-inline HTMLBodyElement* Document::GetBodyElement() {
-  return static_cast<HTMLBodyElement*>(GetHtmlChildElement(nsGkAtoms::body));
+inline HTMLBodyElement* Document::GetBodyElement(
+    const nsIContent* aContentToIgnore) const {
+  return static_cast<HTMLBodyElement*>(
+      GetHtmlChildElement(nsGkAtoms::body, aContentToIgnore));
 }
 
 inline void Document::SetServoRestyleRoot(nsINode* aRoot, uint32_t aDirtyBits) {

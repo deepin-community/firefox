@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -44,6 +43,6 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert.sameValue(called, sample.length, "callbackfn called for each index");
   assert.sameValue(result, true, "return is true");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

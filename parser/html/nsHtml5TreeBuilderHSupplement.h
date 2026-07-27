@@ -61,12 +61,13 @@ nsIContentHandle* getDocumentFragmentForTemplate(nsIContentHandle* aTemplate);
 void setDocumentFragmentForTemplate(nsIContentHandle* aTemplate,
                                     nsIContentHandle* aFragment);
 
-nsIContentHandle* getShadowRootFromHost(nsIContentHandle* aHost,
-                                        nsIContentHandle* aTemplateNode,
-                                        nsHtml5String aShadowRootMode,
-                                        bool aShadowRootIsClonable,
-                                        bool aShadowRootIsSerializable,
-                                        bool aShadowRootDelegatesFocus);
+nsIContentHandle* getShadowRootFromHost(
+    nsIContentHandle* aHost, nsIContentHandle* aTemplateNode,
+    nsHtml5String aShadowRootMode, bool aShadowRootIsClonable,
+    bool aShadowRootIsSerializable, bool aShadowRootDelegatesFocus,
+    bool aShadowRootCustomElementRegistry,
+    nsHtml5String aShadowRootSlotAssignment,
+    nsHtml5String aShadowRootReferenceTarget);
 
 nsIContentHandle* getFormPointerForContext(nsIContentHandle* aContext);
 

@@ -36,10 +36,17 @@ certificate-viewer-key-size = Wjelikosć kluca
 certificate-viewer-inc-locality = Městno pśedewześa
 certificate-viewer-locality = Městnosć
 certificate-viewer-location = Městno
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Mě protokola
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Protokolowy ID
 certificate-viewer-method = Metoda
 certificate-viewer-modulus = Modul
 certificate-viewer-name = Mě
+certificate-viewer-surname = Familijowe mě
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Dane mě
 certificate-viewer-not-after = Nic pó tom
 certificate-viewer-not-before = Nic pjerwjej
 certificate-viewer-organization = Organizacija
@@ -110,6 +117,8 @@ certificate-viewer-export = Eksportěrowaś
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (njeznaty)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certifikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

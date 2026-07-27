@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -96,7 +95,7 @@ already_AddRefed<PrintTarget> nsDeviceContextSpecGTK::MakePrintTarget() {
       return nullptr;
     }
     close(fd);
-    if (NS_FAILED(NS_NewNativeLocalFile(nsDependentCString(buf), false,
+    if (NS_FAILED(NS_NewNativeLocalFile(nsDependentCString(buf),
                                         getter_AddRefs(mSpoolFile)))) {
       unlink(buf);
       g_free(buf);
@@ -243,7 +242,14 @@ NS_IMETHODIMP nsDeviceContextSpecGTK::Init(nsIPrintSettings* aPS,
   mGtkPageSetup = gtk_page_setup_copy(mGtkPageSetup);
   mGtkPrintSettings = gtk_print_settings_copy(mGtkPrintSettings);
 
-  if (!aPS->GetPrintInColor() && StaticPrefs::print_cups_monochrome_enabled()) {
+  gtk_print_settings_set(mGtkPrintSettings, "cups-" CUPS_PRINT_COLOR_MODE,
+                         aPS->GetPrintInColor()
+                             ? CUPS_PRINT_COLOR_MODE_COLOR
+                             : CUPS_PRINT_COLOR_MODE_MONOCHROME);
+  // Try with a wide set of known monochrome settings too, because the generic
+  // setting is not honored consistently for all printers, see bug 2030650 for
+  // at least one example.
+  if (!aPS->GetPrintInColor()) {
     for (const auto& setting : kKnownMonochromeSettings) {
       gtk_print_settings_set(mGtkPrintSettings, setting.mKey, setting.mValue);
     }
@@ -338,6 +344,7 @@ void nsDeviceContextSpecGTK::EnumeratePrinters() {
 NS_IMETHODIMP
 nsDeviceContextSpecGTK::BeginDocument(const nsAString& aTitle,
                                       const nsAString& aPrintToFileName,
+                                      uint64_t aBrowsingContextId,
                                       int32_t aStartPage, int32_t aEndPage) {
   // Print job names exceeding 255 bytes are safe with GTK version 3.18.2 or
   // newer. This is a workaround for old GTK.
@@ -380,8 +387,7 @@ RefPtr<PrintEndDocumentPromise> nsDeviceContextSpecGTK::EndDocument() {
       nsCOMPtr<nsIFile> destFile;
       mPrintSettings->GetToFileName(targetPath);
 
-      nsresult rv =
-          NS_NewLocalFile(targetPath, false, getter_AddRefs(destFile));
+      nsresult rv = NS_NewLocalFile(targetPath, getter_AddRefs(destFile));
       if (NS_FAILED(rv)) {
         return PrintEndDocumentPromise::CreateAndReject(rv, __func__);
       }

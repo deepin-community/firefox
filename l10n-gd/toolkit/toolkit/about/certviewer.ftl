@@ -36,6 +36,7 @@ certificate-viewer-key-size = Meud na h-iuchrach
 certificate-viewer-inc-locality = Ionadachd chlàraichte
 certificate-viewer-locality = Ionadachd
 certificate-viewer-location = Ionad
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID an loga
 certificate-viewer-method = Dòigh
 certificate-viewer-modulus = Mòidealas
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = Fiosrachadh an ùghdarrais (AIA)
 certificate-viewer-certificate-policies = Poileasaidhean teisteanais
 certificate-viewer-embedded-scts = SCTs leabaichte
 certificate-viewer-crl-endpoints = Puingean-deiridh CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Luchdaich a-nuas
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (teisteanas)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (dùl-iuchrach)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Chaidh comharra a chur gu bheil an leudachan seo èiginneach. Is ciall dha seo gum feum na cliantan an teisteanas a dhiùltadh mura tuig iad e.

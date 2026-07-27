@@ -27,12 +27,12 @@ migration-wizard-selection-option-with-profile = { $sourceBrowser } — { $profi
 migration-wizard-migrator-display-name-brave = Brave
 migration-wizard-migrator-display-name-canary = كروم كناري
 migration-wizard-migrator-display-name-chrome = كروم
-migration-wizard-migrator-display-name-chrome-beta = كروم بيتا
+migration-wizard-migrator-display-name-chrome-beta = كروم تجريبي
 migration-wizard-migrator-display-name-chrome-dev = إصدارة كروم التطويرية
 migration-wizard-migrator-display-name-chromium = كروميوم
 migration-wizard-migrator-display-name-chromium-360se = متصفح ٣٦٠ الآمن
 migration-wizard-migrator-display-name-chromium-edge = ميكروسوفت إدج
-migration-wizard-migrator-display-name-chromium-edge-beta = ميكروسوفت إدج بيتا
+migration-wizard-migrator-display-name-chromium-edge-beta = ميكروسوفت إدج تجريبي
 migration-wizard-migrator-display-name-edge-legacy = ميكروسوفت إدج العتيق
 migration-wizard-migrator-display-name-firefox = Firefox
 migration-wizard-migrator-display-name-file-password-csv = كلمات السر من ملف CVS
@@ -76,6 +76,7 @@ migration-bookmarks-option-label = العلامات
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = المفضّلة
 migration-logins-and-passwords-option-label = جلسات الولوج وكلمات السر المحفوظة
+migration-passwords-option-label = كلمات السر المحفوظة
 migration-history-option-label = تأريخ التصفح
 migration-extensions-option-label = الامتدادات
 migration-form-autofill-option-label = بيانات الملء الآلي للاستمارات
@@ -108,6 +109,14 @@ migration-bookmarks-from-file-picker-title = استورد ملف علامات
 migration-bookmarks-from-file-progress-header = استيراد العلامات
 migration-bookmarks-from-file = العلامات
 migration-bookmarks-from-file-success-header = استوردت العلامات بنجاح
+migration-bookmarks-from-file-no-valid-data = لا يحتوي الملف على أي بيانات علامة. أختر ملفا آخر.
+# A description for the .html file format that may be shown as the file type
+# filter by the operating system.
+migration-bookmarks-from-file-html-filter-title =
+    { PLATFORM() ->
+        [macos] مستند HTML
+       *[other] ملف HTML
+    }
 # A description for the .json file format that may be shown as the file type
 # filter by the operating system.
 migration-bookmarks-from-file-json-filter-title = ملف JSON
@@ -118,6 +127,7 @@ migration-cancel-button-label = ألغِ
 migration-done-button-label = تمّ
 migration-continue-button-label = واصِل
 migration-wizard-import-browser-no-browsers = تعذر على { -brand-short-name } إيجاد أي برامج تحتوي على بيانات أو علامات أو تأريخ أو كلمات سر.
+migration-wizard-import-browser-no-resources = حدث خطأ. لا يمكن لـ { -brand-short-name } العثور على أي بيانات لاستيرادها من ملف شخصي المتصفح هذا.
 
 ## These strings will be used to create a dynamic list of items that can be
 ## imported. The list will be created using Intl.ListFormat(), so it will
@@ -152,7 +162,17 @@ migration-wizard-progress-icon-completed =
     .aria-label = اكتمل
 migration-safari-password-import-header = استورد كلمات السر من Safari
 migration-safari-password-import-steps-header = لاستيراد كلمات سر Safari:
+migration-safari-password-import-step1 = في Safari، افتح قائمة "Safari" وانتقل إلى التفضيلات > كلمات المرور
+migration-safari-password-import-step2 = حدد زر <img data-l10n-name="safari-icon-3dots"/> واختر "تصدير جميع كلمات المرور"
 migration-safari-password-import-step3 = احفظ ملف كلمات السر
+migration-safari-password-import-step4 = استخدم "تحديد الملف" أدناه لاختيار ملف كلمات المرور التي حفظتها
+migration-chrome-windows-password-import-header = كيفية استيراد كلمات السر من متصفح Chrome
+migration-chrome-windows-password-import-steps-header = في Chrome:
+migration-chrome-windows-password-import-step1 = افتح القائمة الرئيسية <img data-l10n-name="chrome-icon-3dots"/> وانتقل إلى كلمات السر والتعبئة التلقائية > مدير كلمات مرور جوجل.
+migration-chrome-windows-password-import-step2 = حدّد "الإعدادات" من القائمة.
+migration-chrome-windows-password-import-step3 = اختر "نزّل الملف" واحفظه على جهازك.
+migration-manual-password-import-skip-button = تخطَّ
+migration-manual-password-import-select-button = اختر ملفًا
 migration-safari-password-import-skip-button = تخطَّ
 migration-safari-password-import-select-button = اختر ملفًا
 
@@ -160,6 +180,14 @@ migration-safari-password-import-select-button = اختر ملفًا
 ## browsers and installs the corresponding (matching) extensions compatible
 ## with Firefox, if available.
 
+# Shown in the migration wizard after importing a partial amount of
+# matched extensions from supported browsers.
+#
+# Variables:
+#   $matched (Number): the number of matched imported extensions
+#   $quantity (Number): the number of total extensions found during import
+migration-wizard-progress-partial-success-extensions = { $matched } من { $quantity } امتدادة
+migration-wizard-progress-extensions-support-link = تعرّف على كيفية تطابق { -brand-product-name } مع الامتدادات
 # Shown in the migration wizard if there are no matched extensions
 # on import from supported browsers.
 migration-wizard-progress-no-matched-extensions = لا امتدادات مطابقة
@@ -168,4 +196,6 @@ migration-wizard-progress-extensions-addons-link = تصفح الامتدادات
 ##
 
 migration-wizard-progress-success-formdata = تأريخ الاستمارات
+migration-wizard-safari-permissions-sub-header = لاستيراد علامات Safari وتأريخ التصفح:
 migration-wizard-safari-instructions-continue = اختر "واصِل"
+migration-wizard-safari-instructions-folder = حدّد مجلد Safari في القائمة واختر "افتح"

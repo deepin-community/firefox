@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } sta cercando
 autofill-edit-payment-method-os-prompt-macos = visualizzare informazioni salvate relative ai metodi di pagamento
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } sta cercando di visualizzare informazioni salvate relative ai metodi di pagamento. Confermare l’accesso all’account Windows.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } sta cercando di visualizzare informazioni salvate relative ai metodi di pagamento.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Opzioni compilazione automatica moduli
 autofill-options-link-osx = Preferenze compilazione automatica moduli
 
@@ -51,6 +51,7 @@ credit-card-capture-update-button =
 autofill-clear-form-label = Annulla compilazione automatica
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
 autofill-manage-addresses-label = Gestisci indirizzi
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
 autofill-manage-payment-methods-label = Gestisci metodi di pagamento
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
@@ -80,4 +81,6 @@ autofill-category-name = nome
 autofill-category-organization = organizzazione
 autofill-category-tel = telefono
 autofill-category-email = email
-
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ha rilevato un sito non sicuro. La compilazione automatica dei moduli è temporaneamente disattivata.

@@ -5,7 +5,6 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=548828
 -->
 <head>
   <title>Test for Bug 548828</title>
-  <script type="text/javascript" src="/MochiKit/MochiKit.js"></script>
   <script src="/tests/SimpleTest/SimpleTest.js"></script>
   <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css" />
 </head>
@@ -18,7 +17,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=548828
 <pre id="test">
 <script class="testbody" type="text/javascript">
 
-/** Test for Bug 548828 **/
+/** Test for Bug 548828 */
   var head = document.getElementsByTagName("head")[0];
   is(document.head, head, "document.head and document.getElementsByTagName(\"head\")[0] should match");
   document.head = "";

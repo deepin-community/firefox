@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,7 +22,7 @@ function run_test() {
   runHttpTests(tests, testComplete(srv));
 }
 
-/** *************
+/***************
  * BEGIN TESTS *
  ***************/
 
@@ -195,7 +193,7 @@ function start_handleAsync2(ch) {
       (now - startTime_handleAsync2) +
       "ms after start time"
   );
-  Assert.ok(now >= startTime_handleAsync2 + startToHeaderDelay);
+  Assert.greaterOrEqual(now, startTime_handleAsync2 + startToHeaderDelay);
 
   Assert.equal(ch.responseStatus, 200);
   Assert.equal(ch.responseStatusText, "Status line");
@@ -211,7 +209,7 @@ function stop_handleAsync2(ch, status, data) {
       (now - startTime_handleAsync2) +
       "ms after header time"
   );
-  Assert.ok(now >= startTime_handleAsync2 + startToFinishedDelay);
+  Assert.greaterOrEqual(now, startTime_handleAsync2 + startToFinishedDelay);
 
   Assert.equal(String.fromCharCode.apply(null, data), "BODY");
 }

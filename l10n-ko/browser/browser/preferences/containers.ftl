@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = { $name } 컨테이너 설정
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = 이름
+    .placeholder = 이름 추가
+containers-icon-label2 =
+    .label = 아이콘
+containers-color-label2 =
+    .label = 색상
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,45 +29,38 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = 이름
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = 컨테이너 이름 입력
-
 containers-icon-label = 아이콘
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = 색상
     .accesskey = o
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = 완료
     .buttonaccesskeyaccept = D
-
 containers-color-blue =
-    .label = 파랑
+    .label = 파란색
 containers-color-turquoise =
-    .label = 청록
+    .label = 청록색
 containers-color-green =
-    .label = 초록
+    .label = 초록색
 containers-color-yellow =
-    .label = 노랑
+    .label = 노란색
 containers-color-orange =
-    .label = 주황
+    .label = 주황색
 containers-color-red =
-    .label = 빨강
+    .label = 빨간색
 containers-color-pink =
-    .label = 분홍
+    .label = 분홍색
 containers-color-purple =
-    .label = 보라
+    .label = 보라색
 containers-color-toolbar =
     .label = 도구 모음과 맞춤
-
 containers-icon-fence =
     .label = 울타리
 containers-icon-fingerprint =
@@ -91,3 +89,19 @@ containers-icon-tree =
     .label = 나무
 containers-icon-chill =
     .label = 추운
+containers-window-new3 =
+    .title = 새 컨테이너 추가
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = { $name } 컨테이너 설정
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = 새 컨테이너 추가
+containers-panel-create-button =
+    .label = 완료
+containers-panel-cancel-button =
+    .label = 취소

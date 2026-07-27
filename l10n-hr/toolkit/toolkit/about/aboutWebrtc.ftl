@@ -12,9 +12,6 @@ about-webrtc-document-title = WebRTC Internals
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = spremi about:webrtc kao
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC zapisnik
@@ -24,7 +21,7 @@ about-webrtc-aec-logging-on-state-msg = AEC zapisnik aktivan (razgovaraj s poziv
 about-webrtc-aec-logging-toggled-on-state-msg = AEC zapisnik aktivan (razgovaraj s pozivateljem par minuta i zatim zaustavi snimanje)
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
-about-webrtc-aec-logging-toggled-off-state-msg = Snimljene log datoteke je moguće pronaći u: { $path }
+about-webrtc-aec-logging-toggled-off-state-msg = Snimljene datoteke zapisnika se mogu pronaći u: { $path }
 
 ##
 
@@ -91,7 +88,7 @@ about-webrtc-debug-mode-off-state-label = Pokreni modus za otklanjanja grešaka
 about-webrtc-debug-mode-on-state-label = Prekini modus za otklanjanja grešaka
 about-webrtc-stats-heading = Statistika sesije
 about-webrtc-stats-clear = Izbriši povijest
-about-webrtc-log-heading = Zapisnik veze
+about-webrtc-log-heading = Zapisnik povezivanja
 about-webrtc-log-clear = Izbriši zapisnik
 about-webrtc-log-show-msg = prikaži zapisnik
     .title = klikni za rasklapanje ovog odjeljka
@@ -101,6 +98,8 @@ about-webrtc-log-section-show-msg = Prikaži zapisnik
     .title = Klikni za rasklapanje ovog odjeljka
 about-webrtc-log-section-hide-msg = Sakrij zapisnik
     .title = Klikni za sklapanje ovog odjeljka
+about-webrtc-copy-report-button = Kopiraj izvještaj
+about-webrtc-copy-report-history-button = Kopiraj povijest izvještaja
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -116,6 +115,9 @@ about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (zatvore
 ## Variables:
 ##  $codecs - a list of media codecs
 
+about-webrtc-short-send-receive-direction = Slanje / Primanje: { $codecs }
+about-webrtc-short-send-direction = Slanje: { $codecs }
+about-webrtc-short-receive-direction = Primanje: { $codecs }
 
 ##
 
@@ -144,9 +146,6 @@ about-webrtc-time-elapsed = Proteklo vrijeme (s)
 about-webrtc-estimated-framerate = Procijenjena brzina okvira
 about-webrtc-rotation-degrees = Okretanje (u stupnjevima)
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
 ## These are displayed on the button that shows or hides the
 ## PeerConnection configuration disclosure
 
@@ -168,40 +167,72 @@ about-webrtc-user-modified-configuration-show-msg = Prikaži korisnički promije
 
 ##
 
+# The amount of time it takes for a packet to travel from the local machine to the remote machine,
+# and then have a packet return
+about-webrtc-round-trip-time-ms = RTT ms
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = stranica spremljena u: { $path }
-about-webrtc-debug-mode-off-state-msg = trace zapisnik je moguće pronaći na: { $path }
-about-webrtc-debug-mode-on-state-msg = modus za otklanjanja grešaka aktivan, staza zapisnika: { $path }
-about-webrtc-aec-logging-off-state-msg = snimljene log datoteke je moguće pronaći u: { $path }
+about-webrtc-debug-mode-off-state-msg = detaljni zapisnik se može pronaći u: { $path }
+about-webrtc-debug-mode-on-state-msg = modus za otklanjanja grešaka aktivan, detaljni zapisnik u: { $path }
+about-webrtc-aec-logging-off-state-msg = snimljene datoteke zapisnika se mogu pronaći u: { $path }
 # This path is used for saving the about:webrtc page so it can be attached to
 # bug reports.
 # Variables:
 #  $path (String) - The path to which the file is saved.
 about-webrtc-save-page-complete-msg = Stranica spremljena u: { $path }
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } kanal
+        [few] { $channels } kanala
+       *[other] { $channels } kanala
+    }
+# This is the total number of packets received on the PeerConnection.
+# Variables:
+#  $packets (Number) - The number of packets received.
+about-webrtc-received-label =
+    { $packets ->
+        [one] Primljen je { $packets } paket
+        [few] Primljena su { $packets } paketa
+       *[other] Primljeno je { $packets } paketa
+    }
+# This is the total number of packets lost by the PeerConnection.
+# Variables:
+#  $packets (Number) - The number of packets lost.
+about-webrtc-lost-label =
+    { $packets ->
+        [one] Izgubljen je { $packets } paket
+        [few] Izgubljena su { $packets } paketa
+       *[other] Izgubljeno je { $packets } paketa
+    }
+# This is the total number of packets sent by the PeerConnection.
+# Variables:
+#  $packets (Number) - The number of packets sent.
+about-webrtc-sent-label =
+    { $packets ->
+        [one] Poslan je { $packets } paket
+        [few] Poslana su { $packets } paketa
+       *[other] Poslano je { $packets } paketa
+    }
 # Jitter is the variance in the arrival time of packets.
 # See: https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter
 # Variables:
 #   $jitter (Number) - The jitter.
 about-webrtc-jitter-label = Jitter { $jitter }
 
-## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
-## See http://wikipedia.org/wiki/Session_Description_Protocol
-
-
 ## These are displayed on the button that shows or hides the SDP information disclosure
 
 about-webrtc-show-msg-sdp = Prikaži SDP
+about-webrtc-hide-msg-sdp = Sakrij SDP
 
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs
 ## the negotiated CODEC settings.
 
 about-webrtc-media-context-show-msg = Prikaži kontekst medija
-
-##
-
+about-webrtc-media-context-hide-msg = Sakrij kontekst medija
+about-webrtc-media-context-heading = Kontekst medija

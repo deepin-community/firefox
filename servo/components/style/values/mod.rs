@@ -8,21 +8,24 @@
 
 #![deny(missing_docs)]
 
+use crate::derives::*;
 use crate::parser::{Parse, ParserContext};
 use crate::values::distance::{ComputeSquaredDistance, SquaredDistance};
+use crate::values::generics::position::IsTreeScoped;
 use crate::Atom;
 pub use cssparser::{serialize_identifier, serialize_name, CowRcStr, Parser};
 pub use cssparser::{SourceLocation, Token};
 use precomputed_hash::PrecomputedHash;
 use selectors::parser::SelectorParseErrorKind;
 use std::fmt::{self, Debug, Write};
-use style_traits::{CssWriter, ParseError, StyleParseErrorKind, ToCss};
+use style_traits::{
+    CssString, CssWriter, KeywordValue, MathSum, NumericValue, ParseError, StyleParseErrorKind,
+    ToCss, ToTyped, TypedValue, UnitValue,
+};
+use thin_vec::ThinVec;
 use to_shmem::impl_trivial_to_shmem;
 
-#[cfg(feature = "gecko")]
-pub use crate::gecko::url::CssUrl;
-#[cfg(feature = "servo")]
-pub use crate::servo::url::CssUrl;
+pub use crate::url::CssUrl;
 
 pub mod animated;
 pub mod computed;
@@ -30,6 +33,7 @@ pub mod distance;
 pub mod generics;
 pub mod resolved;
 pub mod specified;
+pub mod tagged_numeric;
 
 /// A CSS float value.
 pub type CSSFloat = f32;
@@ -93,11 +97,11 @@ where
 }
 
 /// Serialize a number with calc, and NaN/infinity handling (if enabled)
-pub fn serialize_number<W>(v: f32, was_calc: bool, dest: &mut CssWriter<W>) -> fmt::Result
+pub fn serialize_number<W>(v: f32, dest: &mut CssWriter<W>) -> fmt::Result
 where
     W: Write,
 {
-    serialize_specified_dimension(v, "", was_calc, dest)
+    serialize_specified_dimension(v, "", /* was_calc = */ false, dest)
 }
 
 /// Serialize a specified dimension with unit, calc, and NaN/infinity handling (if enabled)
@@ -227,7 +231,7 @@ where
 
 /// A generic CSS `<ident>` stored as an `Atom`, for the default atom set.
 #[cfg(feature = "servo")]
-pub type AtomIdent = GenericAtomIdent<servo_atoms::AtomStaticSet>;
+pub type AtomIdent = GenericAtomIdent<stylo_atoms::AtomStaticSet>;
 
 #[cfg(feature = "servo")]
 impl<Set: string_cache::StaticAtomSet> style_traits::SpecifiedValueInfo for GenericAtomIdent<Set> {}
@@ -290,6 +294,16 @@ impl<Set: string_cache::StaticAtomSet> malloc_size_of::MallocSizeOf for GenericA
 #[cfg(feature = "servo")]
 impl<Set: string_cache::StaticAtomSet> cssparser::ToCss for GenericAtomIdent<Set> {
     fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+    where
+        W: Write,
+    {
+        serialize_atom_identifier(&self.0, dest)
+    }
+}
+
+#[cfg(feature = "servo")]
+impl<Set: string_cache::StaticAtomSet> style_traits::ToCss for GenericAtomIdent<Set> {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
     where
         W: Write,
     {
@@ -438,6 +452,29 @@ where
     dest.write_char('%')
 }
 
+/// Reify a percentage with calc.
+pub fn reify_percentage(
+    value: CSSFloat,
+    was_calc: bool,
+    dest: &mut ThinVec<TypedValue>,
+) -> Result<(), ()> {
+    let numeric_value = NumericValue::Unit(UnitValue {
+        value: value * 100.,
+        unit: CssString::from("percent"),
+    });
+
+    // https://drafts.css-houdini.org/css-typed-om-1/#reify-a-math-expression
+    if was_calc {
+        dest.push(TypedValue::Numeric(NumericValue::Sum(MathSum {
+            values: ThinVec::from([numeric_value]),
+        })));
+    } else {
+        dest.push(TypedValue::Numeric(numeric_value));
+    }
+
+    Ok(())
+}
+
 /// Convenience void type to disable some properties and values through types.
 #[cfg_attr(feature = "servo", derive(Deserialize, MallocSizeOf, Serialize))]
 #[derive(
@@ -582,6 +619,15 @@ impl ToCss for CustomIdent {
     }
 }
 
+impl ToTyped for CustomIdent {
+    fn to_typed(&self, dest: &mut ThinVec<TypedValue>) -> Result<(), ()> {
+        // This shouldn't escape identifiers. See bug 2023533.
+        let s = ToCss::to_css_cssstring(self);
+        dest.push(TypedValue::Keyword(KeywordValue(s)));
+        Ok(())
+    }
+}
+
 /// <https://www.w3.org/TR/css-values-4/#dashed-idents>
 /// This is simply an Atom, but will only parse if the identifier starts with "--".
 #[repr(transparent)]
@@ -593,9 +639,12 @@ impl ToCss for CustomIdent {
     MallocSizeOf,
     PartialEq,
     SpecifiedValueInfo,
+    ToAnimatedValue,
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    Serialize,
+    Deserialize,
 )]
 pub struct DashedIdent(pub Atom);
 
@@ -621,6 +670,26 @@ impl DashedIdent {
     /// Check for special internal value.
     pub fn is_empty(&self) -> bool {
         self.0 == atom!("")
+    }
+
+    /// Returns an atom with the same value, but without the starting "--".
+    ///
+    /// # Panics
+    ///
+    /// Panics when used on the special `DashedIdent::empty()`.
+    pub(crate) fn undashed(&self) -> Atom {
+        assert!(!self.is_empty(), "Can't undash the empty DashedIdent");
+        #[cfg(feature = "gecko")]
+        let name = &self.0.as_slice()[2..];
+        #[cfg(feature = "servo")]
+        let name = &self.0[2..];
+        Atom::from(name)
+    }
+}
+
+impl IsTreeScoped for DashedIdent {
+    fn is_tree_scoped(&self) -> bool {
+        !self.is_empty()
     }
 }
 
@@ -700,7 +769,8 @@ impl Parse for KeyframesName {
         let location = input.current_source_location();
         Ok(match *input.next()? {
             Token::Ident(ref s) => Self(CustomIdent::from_ident(location, s, &["none"])?.0),
-            Token::QuotedString(ref s) => Self(Atom::from(s.as_ref())),
+            // Note that empty <string> should be rejected.
+            Token::QuotedString(ref s) if !s.as_ref().is_empty() => Self(Atom::from(s.as_ref())),
             ref t => return Err(location.new_unexpected_token_error(t.clone())),
         })
     }
@@ -715,16 +785,26 @@ impl ToCss for KeyframesName {
             return dest.write_str("none");
         }
 
-        let serialize = |string: &_| {
+        fn serialize<W: Write>(string: &str, dest: &mut CssWriter<W>) -> fmt::Result {
             if CustomIdent::is_valid(string, &["none"]) {
                 serialize_identifier(string, dest)
             } else {
                 string.to_css(dest)
             }
-        };
+        }
+
         #[cfg(feature = "gecko")]
-        return self.0.with_str(serialize);
+        return self.0.with_str(|s| serialize(s, dest));
+
         #[cfg(feature = "servo")]
-        return serialize(self.0.as_ref());
+        return serialize(self.0.as_ref(), dest);
+    }
+}
+
+impl ToTyped for KeyframesName {
+    fn to_typed(&self, dest: &mut ThinVec<TypedValue>) -> Result<(), ()> {
+        let s = ToCss::to_css_cssstring(self);
+        dest.push(TypedValue::Keyword(KeywordValue(s)));
+        Ok(())
     }
 }

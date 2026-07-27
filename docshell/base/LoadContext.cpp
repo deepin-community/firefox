@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -38,11 +36,16 @@ LoadContext::LoadContext(OriginAttributes& aAttrs)
       mIsContent(false),
       mUseRemoteTabs(false),
       mUseRemoteSubframes(false),
-      mUseTrackingProtection(false),
 #ifdef DEBUG
       mIsNotNull(true),
 #endif
       mOriginAttributes(aAttrs) {
+  // This constructor does not have a base load context, so we need to decide
+  // the mUseTrackingProtection based on prefs.
+  mUseTrackingProtection =
+      StaticPrefs::privacy_trackingprotection_enabled() ||
+      (UsePrivateBrowsing() &&
+       StaticPrefs::privacy_trackingprotection_pbmode_enabled());
 }
 
 LoadContext::LoadContext(nsIPrincipal* aPrincipal,
@@ -57,6 +60,12 @@ LoadContext::LoadContext(nsIPrincipal* aPrincipal,
 #endif
       mOriginAttributes(aPrincipal->OriginAttributesRef()) {
   if (!aOptionalBase) {
+    // Fallback to prefs to determine if tracking protection is enabled.
+    mUseTrackingProtection =
+        StaticPrefs::privacy_trackingprotection_enabled() ||
+        (UsePrivateBrowsing() &&
+         StaticPrefs::privacy_trackingprotection_pbmode_enabled());
+
     return;
   }
 

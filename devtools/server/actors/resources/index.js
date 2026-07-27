@@ -15,16 +15,19 @@ const TYPES = {
   ERROR_MESSAGE: "error-message",
   LAST_PRIVATE_CONTEXT_EXIT: "last-private-context-exit",
   NETWORK_EVENT: "network-event",
+  NETWORK_EVENT_DECODED_BODY_SIZE: "network-event-decoded-body-size",
   NETWORK_EVENT_STACKTRACE: "network-event-stacktrace",
   PLATFORM_MESSAGE: "platform-message",
   REFLOW: "reflow",
   SERVER_SENT_EVENT: "server-sent-event",
+  SESSION_HISTORY: "session-history",
   SOURCE: "source",
   STYLESHEET: "stylesheet",
   THREAD_STATE: "thread-state",
   JSTRACER_TRACE: "jstracer-trace",
   JSTRACER_STATE: "jstracer-state",
   WEBSOCKET: "websocket",
+  WEBTRANSPORT: "webtransport",
 
   // storage types
   CACHE_STORAGE: "Cache",
@@ -98,6 +101,9 @@ const FrameTargetResources = augmentResourceDictionary({
   [TYPES.NETWORK_EVENT]: {
     path: "devtools/server/actors/resources/network-events-content",
   },
+  [TYPES.NETWORK_EVENT_DECODED_BODY_SIZE]: {
+    path: "devtools/server/actors/resources/network-events-decoded-body-size",
+  },
   [TYPES.NETWORK_EVENT_STACKTRACE]: {
     path: "devtools/server/actors/resources/network-events-stacktraces",
   },
@@ -115,6 +121,9 @@ const FrameTargetResources = augmentResourceDictionary({
   },
   [TYPES.WEBSOCKET]: {
     path: "devtools/server/actors/resources/websockets",
+  },
+  [TYPES.WEBTRANSPORT]: {
+    path: "devtools/server/actors/resources/webtransport",
   },
 });
 
@@ -173,6 +182,29 @@ const WorkerTargetResources = augmentResourceDictionary({
   },
 });
 
+// Web Extension Content Script resources are spawn for each content script,
+// from the web page's main thread it relates to.
+//
+// Similarly to workers, it doesn't relate to any DOM Document,
+// but only a JavaScript context. So it only expose a subset of resources.
+const WebExtensionContentScriptTargetResources = augmentResourceDictionary({
+  [TYPES.CONSOLE_MESSAGE]: {
+    path: "devtools/server/actors/resources/console-messages",
+  },
+  [TYPES.JSTRACER_TRACE]: {
+    path: "devtools/server/actors/resources/jstracer-trace",
+  },
+  [TYPES.JSTRACER_STATE]: {
+    path: "devtools/server/actors/resources/jstracer-state",
+  },
+  [TYPES.SOURCE]: {
+    path: "devtools/server/actors/resources/sources",
+  },
+  [TYPES.THREAD_STATE]: {
+    path: "devtools/server/actors/resources/thread-states",
+  },
+});
+
 // Parent process resources are spawned via the Watcher Actor.
 // Their watcher class receives the watcher actor as first argument.
 // They are instantiated once per watcher from the parent process.
@@ -196,6 +228,9 @@ const ParentProcessResources = augmentResourceDictionary({
   },
   [TYPES.LAST_PRIVATE_CONTEXT_EXIT]: {
     path: "devtools/server/actors/resources/last-private-context-exit",
+  },
+  [TYPES.SESSION_HISTORY]: {
+    path: "devtools/server/actors/resources/session-history",
   },
 });
 
@@ -258,6 +293,8 @@ function getResourceTypeDictionaryForTargetType(targetType) {
       return WorkerTargetResources;
     case Targets.TYPES.SHARED_WORKER:
       return WorkerTargetResources;
+    case Targets.TYPES.CONTENT_SCRIPT:
+      return WebExtensionContentScriptTargetResources;
     default:
       throw new Error(`Unsupported target actor typeName '${targetType}'`);
   }

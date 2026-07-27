@@ -1,13 +1,9 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { UpdateUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/UpdateUtils.sys.mjs"
-);
-const { AppConstants } = ChromeUtils.importESModule(
-  "resource://gre/modules/AppConstants.sys.mjs"
 );
 const { getAppInfo, updateAppInfo } = ChromeUtils.importESModule(
   "resource://testing-common/AppInfo.sys.mjs"
@@ -271,6 +267,7 @@ add_task(async function test_build_target() {
 
 // url constructed with %LOCALE%
 // Bug 488936 added the update.locale file that stores the update locale
+// Bug 1936528 renamed it as default.locale
 add_task(async function test_locale() {
   // The code that gets the locale accesses the profile which is only available
   // after calling do_get_profile in xpcshell tests. This prevents an error from

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,7 @@
 #include <d3d11.h>
 #include <d3d11_1.h>
 
+#include "gfxPlatform.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/gfx/Types.h"
 #include "mozilla/layers/TextureD3D11.h"
@@ -17,29 +16,129 @@
 namespace mozilla {
 namespace layers {
 
-// TODO: Replace with YUVRangedColorSpace
+// TODO: De-duplicate this, it also exists in DCLayerTree.cpp.
 static Maybe<DXGI_COLOR_SPACE_TYPE> GetSourceDXGIColorSpace(
-    const gfx::YUVColorSpace aYUVColorSpace,
-    const gfx::ColorRange aColorRange) {
-  if (aYUVColorSpace == gfx::YUVColorSpace::BT601) {
-    if (aColorRange == gfx::ColorRange::FULL) {
-      return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601);
-    } else {
-      return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601);
-    }
-  } else if (aYUVColorSpace == gfx::YUVColorSpace::BT709) {
-    if (aColorRange == gfx::ColorRange::FULL) {
-      return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709);
-    } else {
-      return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
-    }
-  } else if (aYUVColorSpace == gfx::YUVColorSpace::BT2020) {
-    if (aColorRange == gfx::ColorRange::FULL) {
-      // XXX Add SMPTEST2084 handling. HDR content is not handled yet
-      return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020);
-    } else {
-      return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020);
-    }
+    const gfx::YUVColorSpace aYUVColorSpace, const gfx::ColorRange aColorRange,
+    const gfx::TransferFunction aTransferFunction) {
+  switch (aYUVColorSpace) {
+    case gfx::YUVColorSpace::BT601:
+      // https://en.wikipedia.org/wiki/Rec._601 - this is the NTSC and SECAM/PAL
+      // color spaces
+      if (aTransferFunction != gfx::TransferFunction::BT709) {
+        gfxCriticalNoteOnce
+            << "GetSourceDXGIColorSpace: Unhandled transfer function "
+            << static_cast<int>(aTransferFunction)
+            << " for BT601, treating as BT709 transfer function";
+      }
+      switch (aColorRange) {
+        case gfx::ColorRange::FULL:
+          return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601);
+        case gfx::ColorRange::LIMITED:
+          return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601);
+      }
+      gfxCriticalNoteOnce << "GetSourceDXGIColorSpace: Unhandled color range "
+                          << static_cast<int>(aColorRange) << " for BT601";
+      return Nothing();
+    case gfx::YUVColorSpace::Identity:
+      gfxCriticalNoteOnce
+          << "GetSourceDXGIColorSpace: Unhandled YUV color space "
+          << static_cast<int>(aYUVColorSpace)
+          << ", treating as BT709 color space";
+      FMT_FALLTHROUGH;
+    case gfx::YUVColorSpace::BT709:
+      // https://en.wikipedia.org/wiki/Rec._709 - this is the HDTV color space
+      if (aTransferFunction != gfx::TransferFunction::BT709) {
+        gfxCriticalNoteOnce
+            << "GetSourceDXGIColorSpace: Unhandled transfer function "
+            << static_cast<int>(aTransferFunction)
+            << " for BT709, treating as BT709 transfer function";
+      }
+      switch (aColorRange) {
+        case gfx::ColorRange::FULL:
+          return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709);
+        case gfx::ColorRange::LIMITED:
+          return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
+      }
+      gfxCriticalNoteOnce << "GetSourceDXGIColorSpace: Unhandled color range "
+                          << static_cast<int>(aColorRange) << " for BT709";
+      return Nothing();
+    case gfx::YUVColorSpace::BT2020:
+      // https://en.wikipedia.org/wiki/Rec._2020 - this is the UHDTV color space
+      if (!gfxPlatform::UseHDR()) {
+        // This pref being off mimics legacy behavior, it's wrong but it's
+        // precisely what we did before, looks washed out if it's PQ.
+        switch (aColorRange) {
+          case gfx::ColorRange::FULL:
+            return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020);
+          case gfx::ColorRange::LIMITED:
+            return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020);
+        }
+        gfxCriticalNoteOnce << "GetSourceDXGIColorSpace: Unhandled color range "
+                            << static_cast<int>(aColorRange) << " for BT2020";
+        return Nothing();
+      }
+      switch (aTransferFunction) {
+        case gfx::TransferFunction::SRGB:
+        case gfx::TransferFunction::LINEAR:
+          // Almost certainly never used, but cover all switch cases to support
+          // the compiler warning if any are added later.
+          gfxCriticalNoteOnce
+              << "GetSourceDXGIColorSpace: DXGI has no support for "
+              << static_cast<int>(aTransferFunction)
+              << " transfer function for YCBCR content, treating as BT2020 "
+                 "transfer function";
+          FMT_FALLTHROUGH;
+        case gfx::TransferFunction::BT709:
+          // BT2020 defines a transfer function that is almost identical to
+          // BT709 + BT1886, so this refers to BT2020 transfer function.
+          // https://en.wikipedia.org/wiki/Rec._2020
+          switch (aColorRange) {
+            case gfx::ColorRange::FULL:
+              return Some(DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020);
+            case gfx::ColorRange::LIMITED:
+              return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020);
+          }
+          gfxCriticalNoteOnce
+              << "GetSourceDXGIColorSpace: Unhandled color range "
+              << static_cast<int>(aColorRange) << " for BT2020";
+          return Nothing();
+        case gfx::TransferFunction::PQ:
+          // This is an HDR video transfer function, needs 10bit (HDR10) to
+          // avoid being lower quality than BT709 over the SDR range.
+          // https://en.wikipedia.org/wiki/Perceptual_quantizer
+          switch (aColorRange) {
+            case gfx::ColorRange::FULL:
+              gfxCriticalNoteOnce
+                  << "GetSourceDXGIColorSpace: DXGI has no support for PQ "
+                     "transfer function with full color range for BT2020 "
+                     "content, treating as studio range";
+              return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
+            case gfx::ColorRange::LIMITED:
+              return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
+          }
+          gfxCriticalNoteOnce
+              << "GetSourceDXGIColorSpace: Unhandled color range "
+              << static_cast<int>(aColorRange) << " for BT2020";
+          return Nothing();
+        case gfx::TransferFunction::HLG:
+          // This is an HDR video transfer function, does not strictly require
+          // 10bit but certainly benefits from it.
+          // https://en.wikipedia.org/wiki/Hybrid_log%E2%80%93gamma
+          switch (aColorRange) {
+            case gfx::ColorRange::FULL:
+              return Some(DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020);
+            case gfx::ColorRange::LIMITED:
+              return Some(DXGI_COLOR_SPACE_YCBCR_STUDIO_GHLG_TOPLEFT_P2020);
+          }
+          gfxCriticalNoteOnce
+              << "GetSourceDXGIColorSpace: Unhandled color range "
+              << static_cast<int>(aColorRange) << " for BT2020";
+          return Nothing();
+      }
+      gfxCriticalNoteOnce
+          << "GetSourceDXGIColorSpace: Unhandled transfer function "
+          << static_cast<int>(aTransferFunction) << " for BT2020";
+      return Nothing();
   }
 
   return Nothing();
@@ -48,7 +147,7 @@ static Maybe<DXGI_COLOR_SPACE_TYPE> GetSourceDXGIColorSpace(
 static Maybe<DXGI_COLOR_SPACE_TYPE> GetSourceDXGIColorSpace(
     const gfx::YUVRangedColorSpace aYUVColorSpace) {
   const auto info = FromYUVRangedColorSpace(aYUVColorSpace);
-  return GetSourceDXGIColorSpace(info.space, info.range);
+  return GetSourceDXGIColorSpace(info.space, info.range, info.transferFunction);
 }
 
 /* static */
@@ -110,9 +209,9 @@ VideoProcessorD3D11::VideoProcessorD3D11(ID3D11Device* aDevice,
 
 VideoProcessorD3D11::~VideoProcessorD3D11() {}
 
-bool VideoProcessorD3D11::Init(const gfx::IntSize& aSize) {
+HRESULT VideoProcessorD3D11::Init(const gfx::IntSize& aSize) {
   if (mSize == aSize) {
-    return true;
+    return S_OK;
   }
 
   mVideoProcessorEnumerator = nullptr;
@@ -136,14 +235,14 @@ bool VideoProcessorD3D11::Init(const gfx::IntSize& aSize) {
   if (FAILED(hr)) {
     gfxCriticalNoteOnce << "Failed to create VideoProcessorEnumerator: "
                         << gfx::hexa(hr);
-    return false;
+    return hr;
   }
 
   hr = mVideoDevice->CreateVideoProcessor(mVideoProcessorEnumerator, 0,
                                           getter_AddRefs(mVideoProcessor));
   if (FAILED(hr)) {
     gfxCriticalNoteOnce << "Failed to create VideoProcessor: " << gfx::hexa(hr);
-    return false;
+    return hr;
   }
 
   // Turn off auto stream processing (the default) that will hurt power
@@ -153,23 +252,21 @@ bool VideoProcessorD3D11::Init(const gfx::IntSize& aSize) {
 
   mSize = aSize;
 
-  return true;
+  return S_OK;
 }
 
 bool VideoProcessorD3D11::CallVideoProcessorBlt(
-    DXGITextureHostD3D11* aTextureHost, ID3D11Texture2D* aInputTexture,
-    ID3D11Texture2D* aOutputTexture) {
+    InputTextureInfo& aTextureInfo, ID3D11Texture2D* aOutputTexture) {
   MOZ_ASSERT(mVideoProcessorEnumerator);
   MOZ_ASSERT(mVideoProcessor);
-  MOZ_ASSERT(aTextureHost);
-  MOZ_ASSERT(aInputTexture);
+  MOZ_ASSERT(aTextureInfo.mTexture);
   MOZ_ASSERT(aOutputTexture);
 
   HRESULT hr;
 
   auto yuvRangedColorSpace = gfx::ToYUVRangedColorSpace(
-      gfx::ToYUVColorSpace(aTextureHost->mColorSpace),
-      aTextureHost->mColorRange);
+      gfx::ToYUVColorSpace(aTextureInfo.mColorSpace), aTextureInfo.mColorRange,
+      aTextureInfo.mTransferFunction);
   auto sourceColorSpace = GetSourceDXGIColorSpace(yuvRangedColorSpace);
   if (sourceColorSpace.isNothing()) {
     gfxCriticalNoteOnce << "Unsupported color space";
@@ -188,11 +285,11 @@ bool VideoProcessorD3D11::CallVideoProcessorBlt(
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC inputDesc = {};
   inputDesc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
-  inputDesc.Texture2D.ArraySlice = aTextureHost->mArrayIndex;
+  inputDesc.Texture2D.ArraySlice = aTextureInfo.mIndex;
 
   RefPtr<ID3D11VideoProcessorInputView> inputView;
   hr = mVideoDevice->CreateVideoProcessorInputView(
-      aInputTexture, mVideoProcessorEnumerator, &inputDesc,
+      aTextureInfo.mTexture, mVideoProcessorEnumerator, &inputDesc,
       getter_AddRefs(inputView));
   if (FAILED(hr)) {
     gfxCriticalNoteOnce << "ID3D11VideoProcessorInputView creation failed: "

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,121 +7,49 @@
 #include "SVGContentUtils.h"
 
 // Keep others in (case-insensitive) order:
+#include "SVGAnimatedPreserveAspectRatio.h"
+#include "SVGGeometryProperty.h"
+#include "SVGOuterSVGFrame.h"
+#include "SVGPathData.h"
+#include "SVGPathElement.h"
 #include "gfx2DGlue.h"
 #include "gfxMatrix.h"
 #include "gfxPlatform.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/dom/SVGSVGElement.h"
+#include "mozilla/ComputedStyle.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/ReflowInput.h"
 #include "mozilla/SVGContextPaint.h"
 #include "mozilla/SVGUtils.h"
 #include "mozilla/TextUtils.h"
+#include "mozilla/dom/SVGSVGElement.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/gfx/Types.h"
 #include "nsComputedDOMStyle.h"
 #include "nsContainerFrame.h"
+#include "nsContentUtils.h"
 #include "nsFontMetrics.h"
 #include "nsIFrame.h"
 #include "nsIScriptError.h"
 #include "nsLayoutUtils.h"
 #include "nsMathUtils.h"
 #include "nsWhitespaceTokenizer.h"
-#include "SVGAnimatedPreserveAspectRatio.h"
-#include "SVGGeometryProperty.h"
-#include "nsContentUtils.h"
-#include "mozilla/gfx/Types.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/ComputedStyle.h"
-#include "SVGOuterSVGFrame.h"
-#include "SVGPathData.h"
-#include "SVGPathElement.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
 using namespace mozilla::dom::SVGPreserveAspectRatio_Binding;
 using namespace mozilla::gfx;
 
-static bool ParseNumber(RangedPtr<const char16_t>& aIter,
-                        const RangedPtr<const char16_t>& aEnd, double& aValue) {
-  int32_t sign;
-  if (!SVGContentUtils::ParseOptionalSign(aIter, aEnd, sign)) {
-    return false;
-  }
+static bool StringToValue(const nsAString& aString, float& aValue) {
+  nsresult errorCode;
+  aValue = aString.ToFloat(&errorCode);
+  return NS_SUCCEEDED(errorCode);
+}
 
-  // Absolute value of the integer part of the mantissa.
-  double intPart = 0.0;
-
-  bool gotDot = *aIter == '.';
-
-  if (!gotDot) {
-    if (!mozilla::IsAsciiDigit(*aIter)) {
-      return false;
-    }
-    do {
-      intPart = 10.0 * intPart + mozilla::AsciiAlphanumericToNumber(*aIter);
-      ++aIter;
-    } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
-
-    if (aIter != aEnd) {
-      gotDot = *aIter == '.';
-    }
-  }
-
-  // Fractional part of the mantissa.
-  double fracPart = 0.0;
-
-  if (gotDot) {
-    ++aIter;
-    if (aIter == aEnd || !mozilla::IsAsciiDigit(*aIter)) {
-      return false;
-    }
-
-    // Power of ten by which we need to divide the fraction
-    double divisor = 1.0;
-
-    do {
-      fracPart = 10.0 * fracPart + mozilla::AsciiAlphanumericToNumber(*aIter);
-      divisor *= 10.0;
-      ++aIter;
-    } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
-
-    fracPart /= divisor;
-  }
-
-  bool gotE = false;
-  int32_t exponent = 0;
-  int32_t expSign;
-
-  if (aIter != aEnd && (*aIter == 'e' || *aIter == 'E')) {
-    RangedPtr<const char16_t> expIter(aIter);
-
-    ++expIter;
-    if (expIter != aEnd) {
-      expSign = *expIter == '-' ? -1 : 1;
-      if (*expIter == '-' || *expIter == '+') {
-        ++expIter;
-      }
-      if (expIter != aEnd && mozilla::IsAsciiDigit(*expIter)) {
-        // At this point we're sure this is an exponent
-        // and not the start of a unit such as em or ex.
-        gotE = true;
-      }
-    }
-
-    if (gotE) {
-      aIter = expIter;
-      do {
-        exponent = 10.0 * exponent + mozilla::AsciiAlphanumericToNumber(*aIter);
-        ++aIter;
-      } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
-    }
-  }
-
-  // Assemble the number
-  aValue = sign * (intPart + fracPart);
-  if (gotE) {
-    aValue *= pow(10.0, expSign * exponent);
-  }
-  return true;
+static bool StringToValue(const nsAString& aString, double& aValue) {
+  nsresult errorCode;
+  aValue = aString.ToDouble(&errorCode);
+  return NS_SUCCEEDED(errorCode);
 }
 
 namespace mozilla {
@@ -141,10 +67,10 @@ SVGSVGElement* SVGContentUtils::GetOuterSVGElement(SVGElement* aSVGElement) {
   return SVGSVGElement::FromNodeOrNull(element);
 }
 
-enum DashState {
-  eDashedStroke,
-  eContinuousStroke,  //< all dashes, no gaps
-  eNoStroke           //< all gaps, no dashes
+enum class DashState {
+  DashedStroke,
+  ContinuousStroke,  //< all dashes, no gaps
+  NoStroke           //< all gaps, no dashes
 };
 
 static DashState GetStrokeDashData(
@@ -156,20 +82,20 @@ static DashState GetStrokeDashData(
 
   if (aStyleSVG->mStrokeDasharray.IsContextValue()) {
     if (!aContextPaint) {
-      return eContinuousStroke;
+      return DashState::ContinuousStroke;
     }
     const FallibleTArray<Float>& dashSrc = aContextPaint->GetStrokeDashArray();
     dashArrayLength = dashSrc.Length();
     if (dashArrayLength <= 0) {
-      return eContinuousStroke;
+      return DashState::ContinuousStroke;
     }
     Float* dashPattern = aStrokeOptions->InitDashPattern(dashArrayLength);
     if (!dashPattern) {
-      return eContinuousStroke;
+      return DashState::ContinuousStroke;
     }
     for (size_t i = 0; i < dashArrayLength; i++) {
       if (dashSrc[i] < 0.0) {
-        return eContinuousStroke;  // invalid
+        return DashState::ContinuousStroke;  // invalid
       }
       dashPattern[i] = Float(dashSrc[i]);
       (i % 2 ? totalLengthOfGaps : totalLengthOfDashes) += dashSrc[i];
@@ -178,24 +104,24 @@ static DashState GetStrokeDashData(
     const auto dasharray = aStyleSVG->mStrokeDasharray.AsValues().AsSpan();
     dashArrayLength = dasharray.Length();
     if (dashArrayLength <= 0) {
-      return eContinuousStroke;
+      return DashState::ContinuousStroke;
     }
     if (auto* shapeElement = SVGGeometryElement::FromNode(aElement)) {
-      pathScale =
-          shapeElement->GetPathLengthScale(SVGGeometryElement::eForStroking);
+      pathScale = shapeElement->GetPathLengthScale(
+          SVGGeometryElement::PathLengthScaleUsageType::Stroking);
       if (pathScale <= 0 || !std::isfinite(pathScale)) {
-        return eContinuousStroke;
+        return DashState::ContinuousStroke;
       }
     }
     Float* dashPattern = aStrokeOptions->InitDashPattern(dashArrayLength);
     if (!dashPattern) {
-      return eContinuousStroke;
+      return DashState::ContinuousStroke;
     }
     for (uint32_t i = 0; i < dashArrayLength; i++) {
       Float dashLength =
           SVGContentUtils::CoordToFloat(aElement, dasharray[i]) * pathScale;
       if (dashLength < 0.0) {
-        return eContinuousStroke;  // invalid
+        return DashState::ContinuousStroke;  // invalid
       }
       dashPattern[i] = dashLength;
       (i % 2 ? totalLengthOfGaps : totalLengthOfDashes) += dashLength;
@@ -209,9 +135,9 @@ static DashState GetStrokeDashData(
   if ((dashArrayLength % 2) == 1) {
     // If we have a dash pattern with an odd number of lengths the pattern
     // repeats a second time, per the SVG spec., and as implemented by Moz2D.
-    // When deciding whether to return eNoStroke or eContinuousStroke below we
-    // need to take into account that in the repeat pattern the dashes become
-    // gaps, and the gaps become dashes.
+    // When deciding whether to return DashState::NoStroke or
+    // DashState::ContinuousStroke below we need to take into account that in
+    // the repeat pattern the dashes become gaps, and the gaps become dashes.
     Float origTotalLengthOfDashes = totalLengthOfDashes;
     totalLengthOfDashes += totalLengthOfGaps;
     totalLengthOfGaps += origTotalLengthOfDashes;
@@ -224,13 +150,13 @@ static DashState GetStrokeDashData(
   // we can avoid expensive stroking operations (the underlying platform
   // graphics libraries don't seem to optimize for this).
   if (totalLengthOfGaps <= 0) {
-    return eContinuousStroke;
+    return DashState::ContinuousStroke;
   }
-  // We can only return eNoStroke if the value of stroke-linecap isn't
+  // We can only return DashState::NoStroke if the value of stroke-linecap isn't
   // adding caps to zero length dashes.
   if (totalLengthOfDashes <= 0 &&
       aStyleSVG->mStrokeLinecap == StyleStrokeLinecap::Butt) {
-    return eNoStroke;
+    return DashState::NoStroke;
   }
 
   if (aStyleSVG->mStrokeDashoffset.IsContextValue()) {
@@ -243,7 +169,7 @@ static DashState GetStrokeDashData(
         pathScale;
   }
 
-  return eDashedStroke;
+  return DashState::DashedStroke;
 }
 
 void SVGContentUtils::GetStrokeOptions(AutoStrokeOptions* aStrokeOptions,
@@ -255,21 +181,22 @@ void SVGContentUtils::GetStrokeOptions(AutoStrokeOptions* aStrokeOptions,
     const nsStyleSVG* styleSVG = computedStyle->StyleSVG();
 
     bool checkedDashAndStrokeIsDashed = false;
-    if (aFlags != eIgnoreStrokeDashing) {
+    if (!aFlags.contains(StrokeOptionFlag::IgnoreStrokeDashing)) {
       DashState dashState =
           GetStrokeDashData(aStrokeOptions, aElement, styleSVG, aContextPaint);
 
-      if (dashState == eNoStroke) {
+      if (dashState == DashState::NoStroke) {
         // Hopefully this will shortcircuit any stroke operations:
         aStrokeOptions->mLineWidth = 0;
         return;
       }
-      if (dashState == eContinuousStroke && aStrokeOptions->mDashPattern) {
+      if (dashState == DashState::ContinuousStroke &&
+          aStrokeOptions->mDashPattern) {
         // Prevent our caller from wasting time looking at a pattern without
         // gaps:
         aStrokeOptions->DiscardDashPattern();
       }
-      checkedDashAndStrokeIsDashed = (dashState == eDashedStroke);
+      checkedDashAndStrokeIsDashed = (dashState == DashState::DashedStroke);
     }
 
     aStrokeOptions->mLineWidth =
@@ -457,17 +384,20 @@ nsresult SVGContentUtils::ReportToConsole(const Document* doc,
                                           const char* aWarning,
                                           const nsTArray<nsString>& aParams) {
   return nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, "SVG"_ns,
-                                         doc, nsContentUtils::eSVG_PROPERTIES,
+                                         doc, PropertiesFile::SVG_PROPERTIES,
                                          aWarning, aParams);
 }
 
-bool SVGContentUtils::EstablishesViewport(const nsIContent* aContent) {
-  // Although SVG 1.1 states that <image> is an element that establishes a
-  // viewport, this is really only for the document it references, not
-  // for any child content, which is what this function is used for.
-  return aContent &&
-         aContent->IsAnyOfSVGElements(nsGkAtoms::svg, nsGkAtoms::foreignObject,
-                                      nsGkAtoms::symbol);
+static bool EstablishesViewport(const nsIContent* aContent) {
+  MOZ_ASSERT(aContent, "Expecting aContent to be non-null");
+
+  // A symbol element only establishes a viewport if it is instanced by a use
+  // element.
+  if (aContent->IsSVGElement(nsGkAtoms::symbol) &&
+      aContent->IsInSVGUseShadowTree()) {
+    return true;
+  }
+  return aContent->IsSVGElement(nsGkAtoms::svg);
 }
 
 SVGViewportElement* SVGContentUtils::GetNearestViewportElement(
@@ -475,13 +405,10 @@ SVGViewportElement* SVGContentUtils::GetNearestViewportElement(
   nsIContent* element = aContent->GetFlattenedTreeParent();
 
   while (element && element->IsSVGElement()) {
+    if (element->IsSVGElement(nsGkAtoms::foreignObject)) {
+      return nullptr;
+    }
     if (EstablishesViewport(element)) {
-      if (element->IsSVGElement(nsGkAtoms::foreignObject)) {
-        return nullptr;
-      }
-      MOZ_ASSERT(element->IsAnyOfSVGElements(nsGkAtoms::svg, nsGkAtoms::symbol),
-                 "upcoming static_cast is only valid for "
-                 "SVGViewportElement subclasses");
       return static_cast<SVGViewportElement*>(element);
     }
     element = element->GetFlattenedTreeParent();
@@ -496,31 +423,23 @@ static gfx::Matrix GetCTMInternal(SVGElement* aElement, CTMType aCTMType,
   auto getLocalTransformHelper =
       [](SVGElement const* e, bool shouldIncludeChildToUserSpace) -> gfxMatrix {
     gfxMatrix ret;
-
     if (auto* f = e->GetPrimaryFrame()) {
       ret = SVGUtils::GetTransformMatrixInUserSpace(f);
-    } else {
-      // FIXME: Ideally we should also return the correct matrix
-      // for display:none, but currently transform related code relies
-      // heavily on the present of a frame.
-      // For now we just fall back to |PrependLocalTransformsTo| which
-      // doesn't account for CSS transform.
-      ret = e->PrependLocalTransformsTo({}, eUserSpaceToParent);
     }
-
     if (shouldIncludeChildToUserSpace) {
-      ret = e->PrependLocalTransformsTo({}, eChildToUserSpace) * ret;
+      auto t = e->ChildToUserSpaceTransform();
+      if (!t.IsSingular()) {
+        ret = t * ret;
+      }
     }
-
     return ret;
   };
 
   auto postTranslateFrameOffset = [](nsIFrame* aFrame, nsIFrame* aAncestorFrame,
                                      gfx::Matrix& aMatrix) {
     auto point = aFrame->GetOffsetTo(aAncestorFrame);
-    aMatrix =
-        aMatrix.PostTranslate(nsPresContext::AppUnitsToFloatCSSPixels(point.x),
-                              nsPresContext::AppUnitsToFloatCSSPixels(point.y));
+    aMatrix.PostTranslate(nsPresContext::AppUnitsToFloatCSSPixels(point.x),
+                          nsPresContext::AppUnitsToFloatCSSPixels(point.y));
   };
 
   gfxMatrix matrix = getLocalTransformHelper(aElement, aHaveRecursed);
@@ -536,7 +455,8 @@ static gfx::Matrix GetCTMInternal(SVGElement* aElement, CTMType aCTMType,
         if (SVGOuterSVGFrame* frame =
                 do_QueryFrame(element->GetPrimaryFrame())) {
           Matrix childTransform;
-          if (frame->HasChildrenOnlyTransform(&childTransform)) {
+          if (frame->HasChildrenOnlyTransform(&childTransform) &&
+              !childTransform.IsSingular()) {
             return gfx::ToMatrix(matrix) * childTransform;
           }
         }
@@ -544,24 +464,24 @@ static gfx::Matrix GetCTMInternal(SVGElement* aElement, CTMType aCTMType,
       }
     }
     matrix *= getLocalTransformHelper(element, true);
-    if (aCTMType == CTMType::NearestViewport &&
-        SVGContentUtils::EstablishesViewport(element)) {
-      if (!element->IsAnyOfSVGElements(nsGkAtoms::svg, nsGkAtoms::symbol)) {
-        NS_ERROR("New (SVG > 1.1) SVG viewport establishing element?");
-        return gfx::Matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);  // singular
+    if (aCTMType == CTMType::NearestViewport) {
+      if (element->IsSVGElement(nsGkAtoms::foreignObject)) {
+        return {};
       }
-      // XXX spec seems to say x,y translation should be undone for IsInnerSVG
-      return gfx::ToMatrix(matrix);
+      if (EstablishesViewport(element)) {
+        // XXX spec seems to say x,y translation should be undone for IsInnerSVG
+        return gfx::ToMatrix(matrix);
+      }
     }
     ancestor = ancestor->GetFlattenedTreeParent();
   }
   if (aCTMType == CTMType::NearestViewport) {
     // didn't find a nearestViewportElement
-    return gfx::Matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);  // singular
+    return {};
   }
   if (!element->IsSVGElement(nsGkAtoms::svg)) {
     // Not a valid SVG fragment
-    return gfx::Matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);  // singular
+    return {};
   }
   if (element == aElement && !aHaveRecursed) {
     // We get here when getScreenCTM() is called on an outer-<svg>.
@@ -581,8 +501,32 @@ static gfx::Matrix GetCTMInternal(SVGElement* aElement, CTMType aCTMType,
   if (frame->IsSVGOuterSVGFrame()) {
     nsMargin bp = frame->GetUsedBorderAndPadding();
     int32_t appUnitsPerCSSPixel = AppUnitsPerCSSPixel();
-    tm.PostTranslate(NSAppUnitsToFloatPixels(bp.left, appUnitsPerCSSPixel),
-                     NSAppUnitsToFloatPixels(bp.top, appUnitsPerCSSPixel));
+    nscoord xOffset, yOffset;
+    // See
+    // https://drafts.csswg.org/css-transforms/#valdef-transform-box-fill-box
+    // For elements with associated CSS layout box, the used value for fill-box
+    // is content-box and for stroke-box and view-box is border-box.
+    switch (frame->StyleDisplay()->mTransformBox) {
+      case StyleTransformBox::FillBox:
+      case StyleTransformBox::ContentBox:
+        xOffset = bp.left;
+        yOffset = bp.top;
+        break;
+      case StyleTransformBox::StrokeBox:
+      case StyleTransformBox::ViewBox:
+      case StyleTransformBox::BorderBox: {
+        // Extract the rotation component of the matrix.
+        float angle = std::atan2(tm._12, tm._11);
+        float cosAngle = std::cos(angle);
+        float sinAngle = std::sin(angle);
+        // Apply that rotation to bp.left and bp.top.
+        xOffset = bp.left * cosAngle - bp.top * sinAngle;
+        yOffset = bp.top * cosAngle + bp.left * sinAngle;
+        break;
+      }
+    }
+    tm.PostTranslate(NSAppUnitsToFloatPixels(xOffset, appUnitsPerCSSPixel),
+                     NSAppUnitsToFloatPixels(yOffset, appUnitsPerCSSPixel));
   }
 
   if (!ancestor || !ancestor->IsElement()) {
@@ -681,6 +625,21 @@ void SVGContentUtils::RectilinearGetStrokeBounds(
 double SVGContentUtils::ComputeNormalizedHypotenuse(double aWidth,
                                                     double aHeight) {
   return NS_hypot(aWidth, aHeight) / M_SQRT2;
+}
+
+double SVGContentUtils::AxisLength(const gfxSize& aAxisSize,
+                                   SVGLength::Axis aAxis) {
+  switch (aAxis) {
+    case SVGLength::Axis::X:
+      return aAxisSize.width;
+    case SVGLength::Axis::Y:
+      return aAxisSize.height;
+    case SVGLength::Axis::XY:
+      return ComputeNormalizedHypotenuse(aAxisSize.width, aAxisSize.height);
+    default:
+      MOZ_ASSERT_UNREACHABLE("Unknown value for SVGLength::Axis");
+      return 1;
+  }
 }
 
 float SVGContentUtils::AngleBisect(float a1, float a2) {
@@ -784,47 +743,83 @@ gfx::Matrix SVGContentUtils::GetViewBoxTransform(
 }
 
 template <class floatType>
-bool SVGContentUtils::ParseNumber(RangedPtr<const char16_t>& aIter,
-                                  const RangedPtr<const char16_t>& aEnd,
+bool SVGContentUtils::ParseNumber(nsAString::const_iterator& aIter,
+                                  const nsAString::const_iterator& aEnd,
                                   floatType& aValue) {
-  RangedPtr<const char16_t> iter(aIter);
+  const nsAString::const_iterator start(aIter);
+  auto resetIterator = mozilla::MakeScopeExit([&]() { aIter = start; });
+  int32_t sign;
+  if (!SVGContentUtils::ParseOptionalSign(aIter, aEnd, sign)) {
+    return false;
+  }
 
-  double value;
-  if (!::ParseNumber(iter, aEnd, value)) {
-    return false;
+  bool gotDot = *aIter == '.';
+
+  if (!gotDot) {
+    if (!mozilla::IsAsciiDigit(*aIter)) {
+      return false;
+    }
+    do {
+      ++aIter;
+    } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
+
+    if (aIter != aEnd) {
+      gotDot = *aIter == '.';
+    }
   }
-  floatType floatValue = floatType(value);
-  if (!std::isfinite(floatValue)) {
-    return false;
+
+  if (gotDot) {
+    ++aIter;
+    if (aIter == aEnd || !mozilla::IsAsciiDigit(*aIter)) {
+      return false;
+    }
+
+    do {
+      ++aIter;
+    } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
   }
-  aValue = floatValue;
-  aIter = iter;
-  return true;
+
+  bool gotE = false;
+
+  if (aIter != aEnd && (*aIter == 'e' || *aIter == 'E')) {
+    nsAString::const_iterator expIter(aIter);
+
+    ++expIter;
+    if (expIter != aEnd) {
+      if (*expIter == '-' || *expIter == '+') {
+        ++expIter;
+      }
+      if (expIter != aEnd && mozilla::IsAsciiDigit(*expIter)) {
+        // At this point we're sure this is an exponent
+        // and not the start of a unit such as em or ex.
+        gotE = true;
+      }
+    }
+
+    if (gotE) {
+      aIter = expIter;
+      do {
+        ++aIter;
+      } while (aIter != aEnd && mozilla::IsAsciiDigit(*aIter));
+    }
+  }
+
+  resetIterator.release();
+  return ::StringToValue(Substring(start, aIter), aValue);
 }
 
 template bool SVGContentUtils::ParseNumber<float>(
-    RangedPtr<const char16_t>& aIter, const RangedPtr<const char16_t>& aEnd,
+    nsAString::const_iterator& aIter, const nsAString::const_iterator& aEnd,
     float& aValue);
-
 template bool SVGContentUtils::ParseNumber<double>(
-    RangedPtr<const char16_t>& aIter, const RangedPtr<const char16_t>& aEnd,
+    nsAString::const_iterator& aIter, const nsAString::const_iterator& aEnd,
     double& aValue);
-
-RangedPtr<const char16_t> SVGContentUtils::GetStartRangedPtr(
-    const nsAString& aString) {
-  return RangedPtr<const char16_t>(aString.Data(), aString.Length());
-}
-
-RangedPtr<const char16_t> SVGContentUtils::GetEndRangedPtr(
-    const nsAString& aString) {
-  return RangedPtr<const char16_t>(aString.Data() + aString.Length(),
-                                   aString.Data(), aString.Length());
-}
 
 template <class floatType>
 bool SVGContentUtils::ParseNumber(const nsAString& aString, floatType& aValue) {
-  RangedPtr<const char16_t> iter = GetStartRangedPtr(aString);
-  const RangedPtr<const char16_t> end = GetEndRangedPtr(aString);
+  nsAString::const_iterator iter, end;
+  aString.BeginReading(iter);
+  aString.EndReading(end);
 
   return ParseNumber(iter, end, aValue) && iter == end;
 }
@@ -835,10 +830,10 @@ template bool SVGContentUtils::ParseNumber<double>(const nsAString& aString,
                                                    double& aValue);
 
 /* static */
-bool SVGContentUtils::ParseInteger(RangedPtr<const char16_t>& aIter,
-                                   const RangedPtr<const char16_t>& aEnd,
+bool SVGContentUtils::ParseInteger(nsAString::const_iterator& aIter,
+                                   const nsAString::const_iterator& aEnd,
                                    int32_t& aValue) {
-  RangedPtr<const char16_t> iter(aIter);
+  nsAString::const_iterator iter(aIter);
 
   int32_t sign;
   if (!ParseOptionalSign(iter, aEnd, sign)) {
@@ -859,26 +854,27 @@ bool SVGContentUtils::ParseInteger(RangedPtr<const char16_t>& aIter,
   } while (iter != aEnd && mozilla::IsAsciiDigit(*iter));
 
   aIter = iter;
-  aValue = int32_t(clamped(sign * value,
-                           int64_t(std::numeric_limits<int32_t>::min()),
-                           int64_t(std::numeric_limits<int32_t>::max())));
+  aValue = int32_t(std::clamp(sign * value,
+                              int64_t(std::numeric_limits<int32_t>::min()),
+                              int64_t(std::numeric_limits<int32_t>::max())));
   return true;
 }
 
 /* static */
 bool SVGContentUtils::ParseInteger(const nsAString& aString, int32_t& aValue) {
-  RangedPtr<const char16_t> iter = GetStartRangedPtr(aString);
-  const RangedPtr<const char16_t> end = GetEndRangedPtr(aString);
+  nsAString::const_iterator iter, end;
+  aString.BeginReading(iter);
+  aString.EndReading(end);
 
   return ParseInteger(iter, end, aValue) && iter == end;
 }
 
 float SVGContentUtils::CoordToFloat(const SVGElement* aContent,
                                     const LengthPercentage& aLength,
-                                    uint8_t aCtxType) {
+                                    SVGLength::Axis aAxis) {
   float result = aLength.ResolveToCSSPixelsWith([&] {
     SVGViewportElement* ctx = aContent->GetCtx();
-    return CSSCoord(ctx ? ctx->GetLength(aCtxType) : 0.0f);
+    return CSSCoord(ctx ? ctx->GetLength(aAxis) : 0.0f);
   });
   if (aLength.IsCalc()) {
     const auto& calc = aLength.AsCalc();

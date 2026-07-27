@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,52 +20,36 @@ let uniqueFaviconId = 0;
 /**
  * Checks that the favicon for the given page matches the provided data.
  *
- * @param aPageURI
+ * @param {string|URL|nsIURI} aPageURI
  *        nsIURI object for the page to check.
- * @param aExpectedMimeType
+ * @param {string} aExpectedMimeType
  *        Expected MIME type of the icon, for example "image/png".
- * @param aExpectedData
+ * @param {number[]} aExpectedData
  *        Expected icon data, expressed as an array of byte values.
  *        If set null, skip the test for the favicon data.
- * @param aCallback
- *        This function is called after the check finished.
  */
-function checkFaviconDataForPage(
+async function checkFaviconDataForPage(
   aPageURI,
   aExpectedMimeType,
-  aExpectedData,
-  aCallback
+  aExpectedData
 ) {
-  PlacesUtils.favicons.getFaviconDataForPage(
-    aPageURI,
-    async function (aURI, aDataLen, aData, aMimeType) {
-      Assert.equal(aExpectedMimeType, aMimeType);
-      if (aExpectedData) {
-        Assert.ok(compareArrays(aExpectedData, aData));
-      }
-      await check_guid_for_uri(aPageURI);
-      aCallback();
-    }
-  );
+  let favicon = await PlacesTestUtils.getFaviconForPage(aPageURI);
+  Assert.equal(aExpectedMimeType, favicon.mimeType);
+  if (aExpectedData) {
+    Assert.ok(compareArrays(aExpectedData, favicon.rawData));
+  }
+  await check_guid_for_uri(aPageURI);
 }
 
 /**
  * Checks that the given page has no associated favicon.
  *
- * @param aPageURI
- *        nsIURI object for the page to check.
- * @param aCallback
- *        This function is called after the check finished.
+ * @param {string|URL|nsIURI} aPageURI
+ *   nsIURI object for the page to check.
  */
-function checkFaviconMissingForPage(aPageURI, aCallback) {
-  PlacesUtils.favicons.getFaviconURLForPage(aPageURI, function (aURI) {
-    Assert.ok(aURI === null);
-    aCallback();
-  });
-}
-
-function promiseFaviconMissingForPage(aPageURI) {
-  return new Promise(resolve => checkFaviconMissingForPage(aPageURI, resolve));
+async function checkFaviconMissingForPage(aPageURI) {
+  let favicon = await PlacesTestUtils.getFaviconForPage(aPageURI);
+  Assert.ok(!favicon);
 }
 
 function promiseFaviconChanged(aExpectedPageURI, aExpectedFaviconURI) {
@@ -125,7 +108,7 @@ async function createFavicon(aFileName) {
 
   return {
     file: faviconFile,
-    uri: uri(faviconFile),
+    uri: Services.io.newFileURI(faviconFile),
     data: readFileData(faviconFile),
     mimeType: "image/png",
   };

@@ -7,6 +7,9 @@ sanitize-prefs2 =
     .style = min-width: 34em
 sanitize-prefs-style =
     .style = width: 17em
+sanitize-dialog-title2 =
+    .title = Escafar las donadas de navegacion e los cookies
+    .style = min-width: 34em
 sanitize-dialog-title =
     .title = Voidar l'istoric recent
     .style = min-width: 34em
@@ -37,6 +40,10 @@ clear-time-duration-value-last-2-hours =
     .label = las darrièras doas oras
 clear-time-duration-value-last-4-hours =
     .label = las darrièras quatre oras
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = dempuèi { $midnightTime }
 clear-time-duration-value-today =
     .label = Uèi
 clear-time-duration-value-everything =
@@ -51,10 +58,7 @@ history-section-label = Istoric
 item-history-and-downloads =
     .label = Istoric de navegacion e dels telecargaments
     .accesskey = I
-item-history-form-data-downloads =
-    .label = Istoric
-    .accesskey = I
-item-history-form-data-downloads-description = Escafa l’istoric de navegacion e dels telecargaments, los formularis gardats e las recèrcas
+item-history-and-downloads-description2 = Escafa l’istoric dels sites e dels telecargaments
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -74,6 +78,15 @@ item-active-logins =
 item-cache =
     .label = Escondedor
     .accesskey = E
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = Fichièrs e paginas en cache temporari ({ $amount } { $unit })
+    .accesskey = t
+item-cached-content =
+    .label = Fichièrs e paginas en cache temporari
+    .accesskey = t
 item-cached-content-description = Escafa los elements que permeton d’accelerar lo cargament dels sites
 item-form-search-history =
     .label = Istoric dels formularis e de las recèrcas
@@ -81,6 +94,7 @@ item-form-search-history =
 item-site-prefs =
     .label = Paramètres de site
     .accesskey = i
+item-formdata-description = Escafa d’entresenhas coma los noms, adreças electronicas e d’autres elements que picatz dins de formularis
 item-site-prefs-description = Reïnicializa las autorizacions e preferéncias de site cap a lor valor d’origina
 data-section-label = Donadas
 item-site-settings =

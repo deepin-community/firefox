@@ -4,11 +4,11 @@
 
 label-disable = Оневозможи
 label-enable = Овозможи
+label-interventions = Интервенции
+# Variables:
+#   $bug (string) - Bug number
+label-more-information = Повеќе информации: Бубачка { $bug }
+text-disabled-in-about-config = Оваа особеност е оневозможена во about:config
+text-no-interventions = Не се користат интервенции
+text-no-overrides = Нема никакви промени на корисничкиот агент
 text-title = about:compat
-
-## Do not translate "SmartBlock". For reference, SmartBlock is a feature
-## of Firefox anti-tracking which fixes website breakage caused when
-## trackers are blocked, by acting just enough like those trackers to fix the
-## breakage. SmartBlock also contains special fixes for sites broken by
-## Firefox's Total Cookie Protection feature.
-

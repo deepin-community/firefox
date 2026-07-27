@@ -20,7 +20,10 @@ async function playMedia(tab, { expectBlocked }) {
 
 add_task(async function setPref() {
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_DELAY_AUTOPLAY, true]],
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      [PREF_DELAY_AUTOPLAY, true],
+    ],
   });
 });
 
@@ -152,14 +155,24 @@ add_task(async function testDelayPlayWhenUsingButton() {
   ok(activeMediaBlocked(tab1), "Tab1 is activemedia-blocked");
 
   info("Press the Play Tab icon on tab0");
-  await pressIcon(tab0.overlayIcon);
+  let isPinned = tab0.pinned;
+  let isVerticalAndCollapsed =
+    Services.prefs.getBoolPref("sidebar.revamp", false) &&
+    Services.prefs.getBoolPref("sidebar.verticalTabs", false) &&
+    !window.SidebarController._state.launcherExpanded;
+  let icon0 =
+    isPinned || isVerticalAndCollapsed ? tab0.overlayIcon : tab0.audioButton;
+  await pressIcon(icon0);
 
   // tab0 unblocked, tab1 blocked
   ok(!activeMediaBlocked(tab0), "Tab0 is not activemedia-blocked");
   ok(activeMediaBlocked(tab1), "Tab1 is activemedia-blocked");
 
   info("Press the Play Tab icon on tab1");
-  await pressIcon(tab1.overlayIcon);
+  isPinned = tab1.pinned;
+  let icon1 =
+    isPinned || isVerticalAndCollapsed ? tab1.overlayIcon : tab1.audioButton;
+  await pressIcon(icon1);
 
   // tab0 unblocked, tab1 unblocked
   ok(!activeMediaBlocked(tab0), "Tab0 is not activemedia-blocked");

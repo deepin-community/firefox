@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -109,10 +108,18 @@ class MOZ_STACK_CLASS gfxOTSContext : public ots::OTSContext {
 
   virtual ots::TableAction GetTableAction(uint32_t aTag) override {
     // Pass through or validate OTL and Variation tables, depending on prefs.
-    if ((!mCheckOTLTables && (aTag == TRUETYPE_TAG('G', 'D', 'E', 'F') ||
-                              aTag == TRUETYPE_TAG('G', 'P', 'O', 'S') ||
-                              aTag == TRUETYPE_TAG('G', 'S', 'U', 'B')))) {
-      return ots::TABLE_ACTION_PASSTHRU;
+    if (aTag == TRUETYPE_TAG('G', 'D', 'E', 'F') ||
+        aTag == TRUETYPE_TAG('G', 'P', 'O', 'S') ||
+        aTag == TRUETYPE_TAG('G', 'S', 'U', 'B')) {
+      switch (mCheckOTLTables) {
+        case 0:  // no validation
+          return ots::TABLE_ACTION_PASSTHRU;
+        case 1:  // validate, logging errors, but do not reject font
+          return ots::TABLE_ACTION_SANITIZE_SOFT;
+        case 2:  // validate, and reject font if errors are found
+        default:
+          return ots::TABLE_ACTION_SANITIZE;
+      }
     }
     auto isVariationTable = [](uint32_t aTag) -> bool {
       return aTag == TRUETYPE_TAG('a', 'v', 'a', 'r') ||
@@ -173,7 +180,7 @@ class MOZ_STACK_CLASS gfxOTSContext : public ots::OTSContext {
   }
 
  private:
-  bool mCheckOTLTables;
+  uint8_t mCheckOTLTables;
   bool mCheckVariationTables;
   bool mKeepColorBitmaps;
   bool mKeepSVG;

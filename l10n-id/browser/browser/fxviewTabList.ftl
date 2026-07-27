@@ -37,8 +37,8 @@ fxviewtabrow-open-in-window = Buka di Jendela Baru
 fxviewtabrow-open-in-private-window = Buka di Jendela Pribadi Baru
     .accesskey = P
 # “Bookmark” is a verb, as in "Bookmark this page" (add to bookmarks).
-fxviewtabrow-add-bookmark = Tandai…
-    .accesskey = B
+fxviewtabrow-add-bookmark = Markahi…
+    .accesskey = M
 fxviewtabrow-save-to-pocket = Simpan ke { -pocket-brand-name }
     .accesskey = o
 fxviewtabrow-copy-link = Salin Tautan
@@ -68,7 +68,7 @@ fxviewtabrow-unmute-tab = Bunyikan Tab
 fxviewtabrow-options-menu-button =
     .title = Opsi untuk { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Senyapkan tab

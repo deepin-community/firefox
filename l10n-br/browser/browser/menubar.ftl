@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -149,8 +137,6 @@ menu-view-history-button =
     .label = Roll istor
 menu-view-synced-tabs-sidebar =
     .label = Ivinelloù goubredet
-menu-view-megalist-sidebar =
-    .label = Gerioù-tremen
 menu-view-full-zoom =
     .label = Zoum
     .accesskey = Z
@@ -257,6 +243,19 @@ menu-bookmarks-other =
     .label = Sinedoù all
 menu-bookmarks-mobile =
     .label = Sinedoù hezoug
+
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiloù
+menu-profiles-manage-profiles =
+    .label = Merañ ar profiloù
+menu-profiles-new-profile =
+    .label = Profil nevez
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (a-vremañ)
 
 ## Tools Menu
 

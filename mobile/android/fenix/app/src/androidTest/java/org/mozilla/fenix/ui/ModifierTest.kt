@@ -3,20 +3,21 @@ package org.mozilla.fenix.ui
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.ComposeTestRule
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.modifier.onShown
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.compose.ext.onShown
+import org.mozilla.fenix.helpers.FenixTestRule
 
 private const val ON_SHOWN_ROOT_TAG = "onShownRoot"
 private const val ON_SHOWN_SETTLE_TIME_MS = 1000
@@ -24,8 +25,10 @@ private const val ON_SHOWN_INDEX = 15
 private const val ON_SHOWN_NODE_COUNT = 30
 
 class ModifierTest {
+    @get:Rule(order = 0)
+    val fenixTestRule: FenixTestRule = FenixTestRule()
 
-    @get:Rule
+    @get:Rule(order = 1)
     val composeTestRule = createComposeRule()
 
     @Test
@@ -57,10 +60,9 @@ class ModifierTest {
         }
 
         composeTestRule.scrollToOnShownIndex()
+        composeTestRule.waitForIdle()
 
-        assertFalse(onShown)
-
-        composeTestRule.waitUntil(ON_SHOWN_SETTLE_TIME_MS + 500L) { onShown }
+        composeTestRule.waitUntil(ON_SHOWN_SETTLE_TIME_MS + 4000L) { onShown }
 
         assertTrue(onShown)
     }

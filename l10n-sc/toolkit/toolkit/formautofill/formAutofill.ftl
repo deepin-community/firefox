@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Optziones de cumpletamentu automàticu de formulàrios
 autofill-options-link-osx = Preferèntzias de cumpletamentu automàticu de formulàrios
 
@@ -17,6 +17,9 @@ credit-card-capture-cancel-button =
 
 # Used on the doorhanger when an credit card change is detected.
 
+credit-card-capture-save-new-button =
+    .label = Sarva comente carta noa
+    .accessKey = S
 # Label for the button in the dropdown menu used to clear the populated form.
 autofill-clear-form-label = Isbòida su formulàriu cumpletadu in automàticu
 
@@ -47,3 +50,6 @@ autofill-category-name = nòmine
 autofill-category-organization = organizatzione
 autofill-category-tel = telèfonu
 autofill-category-email = indiritzu de posta eletrònica
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } at rilevadu unu situ non seguru. Su cumpletamentu automàticu est istadu disativadu in manera temporànea.

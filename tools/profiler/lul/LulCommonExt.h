@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
-
 // Copyright (c) 2006, 2010, 2012, 2013 Google Inc.
 // All rights reserved.
 //
@@ -374,7 +371,7 @@ class scoped_ptr_malloc {
 };
 
 template <typename T, typename FP>
-FP const scoped_ptr_malloc<T, FP>::free_ = FP();
+MOZ_RUNINIT FP const scoped_ptr_malloc<T, FP>::free_ = FP();
 
 template <typename T, typename FP>
 inline void swap(scoped_ptr_malloc<T, FP>& a, scoped_ptr_malloc<T, FP>& b) {

@@ -1,10 +1,9 @@
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHostRecord_h__
-#define nsHostRecord_h__
+#ifndef nsHostRecord_h_
+#define nsHostRecord_h_
 
 #include "mozilla/AtomicBitfields.h"
 #include "mozilla/DataMutex.h"
@@ -79,13 +78,15 @@ struct nsHostKey {
   const nsCString host;
   const nsCString mTrrServer;
   uint16_t type = 0;
-  nsIDNSService::DNSFlags flags = nsIDNSService::RESOLVE_DEFAULT_FLAGS;
+  mozilla::Atomic<nsIDNSService::DNSFlags> flags{
+      nsIDNSService::RESOLVE_DEFAULT_FLAGS};
   uint16_t af = 0;
   bool pb = false;
   const nsCString originSuffix;
   explicit nsHostKey(const nsACString& host, const nsACString& aTrrServer,
                      uint16_t type, nsIDNSService::DNSFlags flags, uint16_t af,
                      bool pb, const nsACString& originSuffix);
+  explicit nsHostKey(const nsHostKey& other);
   bool operator==(const nsHostKey& other) const;
   size_t SizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
   PLDHashNumber Hash() const;
@@ -127,6 +128,8 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
   friend class mozilla::net::HostRecordQueue;
   friend class mozilla::net::TRR;
   friend class mozilla::net::TRRQuery;
+
+  using DNSResolverType = mozilla::net::DNSResolverType;
 
   explicit nsHostRecord(const nsHostKey& key);
   virtual ~nsHostRecord() = default;
@@ -173,6 +176,7 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
     mTrrAttempts = 0;
     mTRRSuccess = false;
     mNativeSuccess = false;
+    mResolverType = DNSResolverType::Native;
   }
 
   virtual void OnCompleteLookup() {}
@@ -181,6 +185,8 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
 
   // true if pending and on the queue (not yet given to getaddrinfo())
   bool onQueue() { return LoadNative() && isInList(); }
+
+  mozilla::TimeStamp mLastUpdate = mozilla::TimeStamp::NowLoRes();
 
   // When the record began being valid. Used mainly for bookkeeping.
   mozilla::TimeStamp mValidStart;
@@ -218,6 +224,9 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
   // TRR is attempted at most twice - first attempt and retry.
   mozilla::Atomic<int32_t> mTrrAttempts{0};
 
+  // TRR was used on this record
+  mozilla::Atomic<DNSResolverType> mResolverType{DNSResolverType::Native};
+
   // True if this record is a cache of a failed lookup.  Negative cache
   // entries are valid just like any other (though never for more than 60
   // seconds), but a use of that negative entry forces an asynchronous refresh.
@@ -251,19 +260,14 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
 };
 
 // b020e996-f6ab-45e5-9bf5-1da71dd0053a
-#define ADDRHOSTRECORD_IID                           \
-  {                                                  \
-    0xb020e996, 0xf6ab, 0x45e5, {                    \
-      0x9b, 0xf5, 0x1d, 0xa7, 0x1d, 0xd0, 0x05, 0x3a \
-    }                                                \
-  }
+#define ADDRHOSTRECORD_IID \
+  {0xb020e996, 0xf6ab, 0x45e5, {0x9b, 0xf5, 0x1d, 0xa7, 0x1d, 0xd0, 0x05, 0x3a}}
 
 class AddrHostRecord final : public nsHostRecord {
   using Mutex = mozilla::Mutex;
-  using DNSResolverType = mozilla::net::DNSResolverType;
 
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(ADDRHOSTRECORD_IID)
+  NS_INLINE_DECL_STATIC_IID(ADDRHOSTRECORD_IID)
   NS_DECL_ISUPPORTS_INHERITED
 
   /* a fully resolved host record has either a non-null |addr_info| or |addr|
@@ -277,16 +281,12 @@ class AddrHostRecord final : public nsHostRecord {
 
   /* the lock protects |addr_info| and |addr_info_gencnt| because they
    * are mutable and accessed by the resolver worker thread and the
-   * nsDNSService2 class.  |addr| doesn't change after it has been
-   * assigned a value.  only the resolver worker thread modifies
-   * nsHostRecord (and only in nsHostResolver::CompleteLookup);
-   * the other threads just read it.  therefore the resolver worker
-   * thread doesn't need to lock when reading |addr_info|.
+   * nsDNSService2 class.
    */
-  Mutex addr_info_lock MOZ_UNANNOTATED{"AddrHostRecord.addr_info_lock"};
+  mutable Mutex addr_info_lock{"AddrHostRecord.addr_info_lock"};
   // generation count of |addr_info|
-  int addr_info_gencnt = 0;
-  RefPtr<mozilla::net::AddrInfo> addr_info;
+  int addr_info_gencnt MOZ_GUARDED_BY(addr_info_lock) = 0;
+  RefPtr<mozilla::net::AddrInfo> addr_info MOZ_GUARDED_BY(addr_info_lock);
   mozilla::UniquePtr<mozilla::net::NetAddr> addr;
 
   // hold addr_info_lock when calling the blocklist functions
@@ -300,6 +300,7 @@ class AddrHostRecord final : public nsHostRecord {
   nsITRRSkipReason::value TrrSkipReason() const { return mTRRSkippedReason; }
 
   nsresult GetTtl(uint32_t* aResult);
+  nsresult GetLastUpdate(mozilla::TimeStamp* aLastUpdate);
 
  private:
   friend class nsHostResolver;
@@ -310,7 +311,7 @@ class AddrHostRecord final : public nsHostRecord {
   explicit AddrHostRecord(const nsHostKey& key);
   ~AddrHostRecord();
 
-  // Checks if the record is usable (not expired and has a value)
+  // Checks if the record is usable (not expired and has a value).
   bool HasUsableResultInternal(
       const mozilla::TimeStamp& now,
       nsIDNSService::DNSFlags queryFlags) const override;
@@ -327,7 +328,6 @@ class AddrHostRecord final : public nsHostRecord {
   virtual void Reset() override {
     nsHostRecord::Reset();
     StoreNativeUsed(false);
-    mResolverType = DNSResolverType::Native;
   }
 
   virtual void OnCompleteLookup() override {
@@ -338,35 +338,22 @@ class AddrHostRecord final : public nsHostRecord {
 
   void ResolveComplete() override;
 
-  // TRR was used on this record
-  mozilla::Atomic<DNSResolverType> mResolverType{DNSResolverType::Native};
-
-  // The number of times ReportUnusable() has been called in the record's
-  // lifetime.
-  uint32_t mUnusableCount = 0;
-
   // a list of addresses associated with this record that have been reported
   // as unusable. the list is kept as a set of strings to make it independent
   // of gencnt.
-  nsTArray<nsCString> mUnusableItems;
+  nsTArray<nsCString> mUnusableItems MOZ_GUARDED_BY(addr_info_lock);
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(AddrHostRecord, ADDRHOSTRECORD_IID)
-
 // 77b786a7-04be-44f2-987c-ab8aa96676e0
-#define TYPEHOSTRECORD_IID                           \
-  {                                                  \
-    0x77b786a7, 0x04be, 0x44f2, {                    \
-      0x98, 0x7c, 0xab, 0x8a, 0xa9, 0x66, 0x76, 0xe0 \
-    }                                                \
-  }
+#define TYPEHOSTRECORD_IID \
+  {0x77b786a7, 0x04be, 0x44f2, {0x98, 0x7c, 0xab, 0x8a, 0xa9, 0x66, 0x76, 0xe0}}
 
 class TypeHostRecord final : public nsHostRecord,
                              public nsIDNSTXTRecord,
                              public nsIDNSHTTPSSVCRecord,
                              public mozilla::net::DNSHTTPSSVCRecordBase {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(TYPEHOSTRECORD_IID)
+  NS_INLINE_DECL_STATIC_IID(TYPEHOSTRECORD_IID)
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_NSIDNSTXTRECORD
   NS_DECL_NSIDNSHTTPSSVCRECORD
@@ -391,14 +378,13 @@ class TypeHostRecord final : public nsHostRecord,
 
   void ResolveComplete() override;
 
-  mozilla::net::TypeRecordResultType mResults = AsVariant(mozilla::Nothing());
-  mozilla::Mutex mResultsLock MOZ_UNANNOTATED{"TypeHostRecord.mResultsLock"};
+  mozilla::net::TypeRecordResultType mResults MOZ_GUARDED_BY(mResultsLock) =
+      AsVariant(mozilla::Nothing());
+  mutable mozilla::Mutex mResultsLock{"TypeHostRecord.mResultsLock"};
 
-  mozilla::Maybe<nsCString> mOriginHost;
+  mozilla::Maybe<nsCString> mOriginHost MOZ_GUARDED_BY(mResultsLock);
   bool mAllRecordsExcluded = false;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(TypeHostRecord, TYPEHOSTRECORD_IID)
 
 static inline bool IsHighPriority(nsIDNSService::DNSFlags flags) {
   return !(flags & (nsHostRecord::DNS_PRIORITY_LOW |
@@ -413,4 +399,4 @@ static inline bool IsLowPriority(nsIDNSService::DNSFlags flags) {
   return flags & nsHostRecord::DNS_PRIORITY_LOW;
 }
 
-#endif  // nsHostRecord_h__
+#endif  // nsHostRecord_h_

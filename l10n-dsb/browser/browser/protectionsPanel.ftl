@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Dalšne informacije wó pólěpšonem slědowańskem šćiśe
 protections-panel-etp-on-header = Pólěpšony slědowański šćit jo zmóžnjony za toś to sedło
 protections-panel-etp-off-header = Polěpšony slědowański šćit jo znjemóžnjony za toś to sedło
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Sedło njefunkcioněrujo?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Sedło njefunkcioněrujo?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Pólěpšony slědowański šćit
     .description = Za toś to sedło znjemóžnjony
     .aria-label = Pólěpšony slědowański šćit: za { $host } znjemóžnjony
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Sedło njefunkcioněrujo?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Sedło njefunkcioněrujo?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -60,7 +60,7 @@ protections-panel-no-trackers-found = Žedne pśeslědowaki, kótarež { -brand-
 protections-panel-content-blocking-tracking-protection = Slědujuce wopśimjeśe
 protections-panel-content-blocking-socialblock = Pśeslědowaki socialnych medijow
 protections-panel-content-blocking-cryptominers-label = Kryptokopanje
-protections-panel-content-blocking-fingerprinters-label = Palcowe wótśišće
+protections-panel-content-blocking-fingerprinters-label = Zběrarje palcowych wótśišćow
 
 ## In the protections panel, Content Blocking category items are in three sections:
 ##   "Blocked" for categories being blocked in the current page,
@@ -71,6 +71,24 @@ protections-panel-content-blocking-fingerprinters-label = Palcowe wótśišće
 protections-panel-blocking-label = Blokěrowany
 protections-panel-not-blocking-label = Dowólony
 protections-panel-not-found-label = Njenamakany
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } wopśimjeśe pśeslědowanja blokěrujo, mjaztym až sćo na toś tom sedle, snaźkuli jo dowólujośo.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = { $trackername } dowóliś
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Pśeslědowaki { $trackername } a wopśimjeśe blokěrowane
+smartblock-placeholder-desc = Waše nastajenja { -brand-short-name } su toś tomu wopśimjeśeju zawoborali,  wam pśez sedła slědowaś abo za wabjenje wužywaś.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = { $websitehost } dowóliś
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = Wopśimjeśe z blokěrowanego zasajźenja
 
 ##
 
@@ -95,7 +113,7 @@ protections-panel-site-not-working-view-send-report = Rozpšawu pósłaś
 
 protections-panel-cross-site-tracking-cookies = Toś te cookieje wam wót sedła do sedła slěduju, aby daty wó tom zběrali, což online gótujośo. Stajaju se wót tśeśich póbitowarjow kaž na pśikład wabjarjow a analyzowych pśedewześćow.
 protections-panel-cryptominers = Kryptokopanje liceńske wugbaśe wašogo systema wužywa, aby digitalne pjenjeze dobyło. Kryptokopanske skripty wašu bateriju proznje, wašo licadło spómałšuju a mógu wašu pśetrjebu energije pówušyś.
-protections-panel-fingerprinters = Palcowe wótśišće zběraju nastajenja z wašogo wobglědowaka a licadła, aby profil wó was napórali. Gaž toś ten digitalny palcowy wótśišć wužywaśo, mógu wam pśez rozdźělne websedła slědowaś.
+protections-panel-fingerprinters = Zběrarje palcowych wótśišćow zběraju nastajenja z wašogo wobglědowaka a licadła, aby profil wó was napórali. Gaž toś ten digitalny palcowy wótśišć wužywaśo, mógu wam pśez rozdźělne websedła slědowaś.
 protections-panel-tracking-content = Websedła mógu eksterne wabjenje, wideo a druge wośimjeśe ze slědujucym kodom zacytaś. Gaž slědujuce wopśimjeśe blokěrujośo, móžo to pomagaś, sedła malsnjej zacytaś, ale někotare tłocaški, formulary a pśizjawjeńske póla snaź wěcej njebudu funkcioněrowaś.
 protections-panel-social-media-trackers = Socialne seśi placěruju pśeslědowaki na drugich websedłach, aby slědowali, což online gótujośo, wiźiśo a se wobglědujośo. To pśedewześam socialnych medijow dowólujo, wěcej wó was zgónił ako w profilach socialnych medijow źěliśo.
 protections-panel-description-shim-allowed = Blokěrowanje někotarych dołojce markěrowanych pśeslědowakow jo se pó zdźělach wótpórało na toś tom boku, dokulaž sćo interagěrował z nimi.
@@ -108,7 +126,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Wobškóźone sedło k wěsći daś
 protections-panel-content-blocking-breakage-report-view-description = Blokěrowanje wěstych pśeslědowakow móžo problemy z někotarymi websedłami zawinowaś. Gaž problemy k wěsći dajośo, pomagaśo { -brand-short-name } za kuždego pólěpšyś. Pósćelo se Mozilla URL a informacije wó wašych nastajenjach wobglědowaka. <label data-l10n-name="learn-more">Dalšne informacije</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Blokěrowanje wěstych pśeslědowakow móžo problemy z někotarymi websedłami zawinowaś. Gaž problemy k wěsći dajośo, pomagaśo { -brand-short-name } za kuždego pólěpšyś. Pósćelo se { -vendor-short-name } URL a informacije wó wašych nastajenjach wobglědowaka.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

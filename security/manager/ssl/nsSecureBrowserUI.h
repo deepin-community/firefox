@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,12 +22,8 @@ class CanonicalBrowsingContext;
 }  // namespace dom
 }  // namespace mozilla
 
-#define NS_SECURE_BROWSER_UI_CID                     \
-  {                                                  \
-    0xcc75499a, 0x1dd1, 0x11b2, {                    \
-      0x8a, 0x82, 0xca, 0x41, 0x0a, 0xc9, 0x07, 0xb8 \
-    }                                                \
-  }
+#define NS_SECURE_BROWSER_UI_CID \
+  {0xcc75499a, 0x1dd1, 0x11b2, {0x8a, 0x82, 0xca, 0x41, 0x0a, 0xc9, 0x07, 0xb8}}
 
 class nsSecureBrowserUI : public nsISecureBrowserUI,
                           public nsSupportsWeakReference {

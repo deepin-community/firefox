@@ -25,6 +25,8 @@ return-to-amo-subtitle = Bonege, vi havas { -brand-short-name }
 return-to-amo-addon-title = Nun, instalu ni <img data-l10n-name="icon"/><b>{ $addon-name }</b> por vi.
 return-to-amo-add-extension-label = Aldoni etendaĵon
 return-to-amo-add-theme-label = Aldoni la etoson
+return-to-amo-theme-install-complete-label = Etoso instalita
+return-to-amo-extension-install-complete-label = Etendaĵo instalita
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -49,13 +51,10 @@ mr1-onboarding-sign-in-button-label = Komenci seancon
 # The primary import button label will depend on whether we can detect which browser was used to download Firefox.
 # Variables:
 #   $previous (Str) - Previous browser name, such as Edge, Chrome
-mr1-onboarding-import-primary-button-label-attribution = Enporti el { $previous }
+mr1-onboarding-import-primary-button-label-attribution = Importi el { $previous }
 mr1-onboarding-theme-header = Personecigu ĝin
 mr1-onboarding-theme-subtitle = Personecigi { -brand-short-name } per etoso.
 mr1-onboarding-theme-secondary-button-label = Ne nun
-newtab-wallpaper-onboarding-title = Provu koloran tuŝeton
-newtab-wallpaper-onboarding-subtitle = Elektu ekranfonon por doni novan aspekton al la paĝo por novaj langetoj.
-newtab-wallpaper-onboarding-primary-button-label = Elekti ekranfonon
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistema etoso
 mr1-onboarding-theme-label-light = Hela
@@ -63,6 +62,15 @@ mr1-onboarding-theme-label-dark = Malhela
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 onboarding-theme-primary-button-label = Farita
+
+## Accessible labels for the icon-only play/pause toggle that controls animated
+## illustrations on the onboarding screen. The button replaces the animation
+## with a static image when clicked.
+
+onboarding-animation-pause-button =
+    .aria-label = Paŭzigi movbildon
+onboarding-animation-play-button =
+    .aria-label = Ludi movbildon
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
@@ -171,7 +179,7 @@ mr2022-onboarding-easy-setup-primary-button-label = Konservi kaj daŭrigi
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = Igu { -brand-short-name } via norma retumilo
 # Import action checkbox label used on new user onboarding first screen
-mr2022-onboarding-easy-setup-import-checkbox-label = Enporti el antaŭa retumilo
+mr2022-onboarding-easy-setup-import-checkbox-label = Importi el antaŭa retumilo
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -225,11 +233,13 @@ mr2022-onboarding-set-default-subtitle = Uzu retumilon apogatan de neprofitcela 
 mr2022-onboarding-get-started-primary-subtitle = Nia lasta versio estis fasonita por vi, kio faciligas retumon pli ol iam ajn antaŭe. Ĝi pakas amason da trajtoj, kaj ni pensas ke vi ilin ŝategos.
 mr2022-onboarding-get-started-primary-button-label = Agordi en sekundoj
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Fulmrapida agordo
 mr2022-onboarding-import-subtitle = Agordu { -brand-short-name } kiel vi ĝin ŝatas. Aldonu viajn legosignojn, pasvortojn kaj pli el via antaŭa retumilo.
-mr2022-onboarding-import-primary-button-label-no-attribution = Enporti el antaŭa retumilo
+mr2022-onboarding-import-primary-button-label-no-attribution = Importi el antaŭa retumilo
 
 ## If your language uses grammatical genders, in the description for the
 ## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
@@ -305,8 +315,8 @@ mr2022-onboarding-gratitude-secondary-button-label = Komenci retumi
 ## Onboarding spotlight for infrequent users
 
 onboarding-infrequent-import-title = Sentu vin hejme
-onboarding-infrequent-import-subtitle = Ĉu vi pretas instali ĉu vi simple provas, memoru ke vi povas enporti viajn legosignojn, pasvortojn kaj aliajn aferojn.
-onboarding-infrequent-import-primary-button = Enporti en { -brand-short-name }
+onboarding-infrequent-import-subtitle = Ĉu vi pretas instali, ĉu vi simple provas, memoru ke vi povas importi viajn legosignojn, pasvortojn kaj aliajn aferojn.
+onboarding-infrequent-import-primary-button = Importi en { -brand-short-name }
 
 ## MR2022 Illustration alt tags
 ## Descriptive tags for illustrations used by screen readers and other assistive tech
@@ -356,6 +366,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Kiam vi spegulas, { -
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protektas vin
 onboarding-gratitude-security-and-privacy-subtitle = Dankon pro via elekto de { -brand-short-name }, apogata de Mozilla Foundation. Kun via subteno ni laboras por interreto pli sekura kaj pli alirebla por ĉiuj.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Spegulu viajn datumojn al aliaj aparatoj
+onboarding-sign-up-description = Kreu konton kaj ĉiuj viaj gravaj informoj — pasvortoj, legosignoj, kaj pli — estos sekure konservitaj kaj disponeblaj kiam vi komencas seancon en iu ajn aparato.
+onboarding-sign-up-button = Komenci seancon aŭ krei konton
+onboarding-sign-up-secondary-button = Komenci retumi
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +390,209 @@ onboarding-new-user-survey-familiarity-based-option-1 = Mi estas novulo
 onboarding-new-user-survey-familiarity-based-option-2 = Mi iom uzis ĝin
 onboarding-new-user-survey-familiarity-based-option-3 = Mi konas ĝin tre bone
 onboarding-new-user-survey-familiarity-based-option-4 = Mi antaŭe uzis ĝin, sed antaŭ longe
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Bonvolu diri al ni kie vi ŝatus havi viajn langetojn
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = En la agordoj de la flanka strio vi povas ŝanĝi tion iam ajn.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Viaj langetoj, laŭ via maniero
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Ĉu vi havas multajn malfermitajn langetojn? Provu meti ilin flanken por pli simpla vido. Aŭ lasu ilin supre, laŭ la klasika maniero. Ŝanĝu tion kiam ajn vi volas.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Elektu la aranĝon de viaj langetoj
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Por pli simpla vido, kiu povas vin resti fokusigita, provi meti viajn langetojn flanken. Aŭ lasu ilin supre, laŭ la klasika maniero. Ŝanĝu tion kiam ajn vi volas.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Langetoj flanke
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Langetoj supre
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Eblas havi vertikalajn langetojn
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Prezento de vertikalaj langetoj
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Provu viajn langetojn ĉe flanke. Reloku ilin iam ajn en la agordoj de la flanka strio.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Provu vertikalajn langetojn
+onboarding-flair-text = Nova!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Gardi horizontalajn langetojn
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Retumila fenestro kun langetoj flanke, kiel parto de la flanka strio de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Retumila fenestro kun langetoj flanke, kiel parto de la flanka strio de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Retumila fenestro kun langetoj supre.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Retumila fenestro kun langetoj supre.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Provu dialoganton de A.I. en la flanka strio
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resumu retan enhavon, trovu ideojn, kreu malnetojn de mesaĝoj dum vi retumas. Elektu inter pluraj provizantoj. Ŝanĝu iam ajn. <a data-l10n-name="learn-more">Pli da informo</a>
+onboarding-genai-sidebar-primary-button = Elekti dialoganton
+onboarding-genai-sidebar-secondary-button = Komenci retumi
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Fini la agordadon de { -brand-short-name }
+onboarding-checklist-subtitle = Seku la jenajn paŝojn por eltiri la maksimumon el via retuma sperto.
+onboarding-checklist-set-default = Igu { -brand-short-name } via norma retumilo
+onboarding-checklist-pin = Alpingli { -brand-short-name } al via Dock
+onboarding-checklist-import = Importi el antaŭa retumilo
+onboarding-checklist-extension = Aldoni etendaĵon
+onboarding-checklist-sign-up = Registriĝu aŭ komencu seancon per via konto
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Provu la grupojn de langetoj, por pli da ordo kaj fokuso.
+tab-groups-onboarding-feature-callout-subtitle = Ordigu viajn langetojn per treno de unu sur alia, por krei vian unuan grupon.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Trovu iam ajn viajn grupojn de langetoj en la menuo Listigi ĉiujn langetojn
+tab-groups-onboarding-create-group-title-2 = Iam ajn retrovu ĉi tie viajn grupojn de langetoj.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Retrovu viajn grupojn de langetoj per serĉo en la adresa strio.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Se vi fermas grupon de langetoj, vi povas iam ajn remalfermi ĝin en la menuo Listigi ĉiujn langetojn
+tab-groups-onboarding-saved-groups-title-2 = Se vi fermas grupon de langetoj, vi povas remalfermi ĝin ĉi tie, iam ajn.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Retrovu viajn fermitajn grupojn de langetoj per serĉo en la adresa strio.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Remalfermi iam ajn viajn grupojn de langetoj en la menuo Listigi ĉiujn langetojn
+tab-groups-onboarding-session-restore-title = Remalfermu viajn grupojn de langetoj ĉi tie, iam ajn.
+tab-groups-onboarding-dismiss = Akcepti
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Bonvenon al la profiloj de { -brand-product-name }
+multi-profile-spotlight-body = Facile ŝanĝi inter laboreja kaj libertempa retumo. Profiloj plene izolas viajn retumajn datumojn, kiuj inkluzivas la serĉan historion kaj pasvortojn, tiel ke vi povas resti bone organizita.
+multi-profile-spotlight-cta = Krei profilon
+multi-profile-callout-title = Krei malsamajn profilojn por laboro kaj libertempo
+multi-profile-callout-subtitle = Profiloj permesas al vi plene izolas viajn retumajn datumojn, kiel serĉan historion kaj pasvortojn.
+multi-profile-callout-cta = Krei profilon
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Elŝutu, spegulu, kaj ek!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Skanu la kodon QR por elŝuti { -brand-product-name } por poŝaparatoj. Post instalo elektu "Speguli en poŝaparato” por aliri viajn pasvortojn, legosignojn kaj pli el ie ajn.
+dismiss-button-label = Ignori
+sync-to-mobile-button-label = Speguli en poŝaparato
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Kodo QR por elŝuti { -brand-product-name } por poŝaparatoj
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Ĉu vi ĝisdatigas al Windows 11?
+    Faru ni sekurkopion de viaj datumoj de { -brand-product-name }.
+create-backup-screen-1-subtitle = Aŭtomate protektu viajn pasvortojn, legosignojn kaj pli, en malpli ol du minutoj.
+create-backup-screen-1-flair = Rekomenditaj
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Pli da informo</a>
+create-backup-screen-1-sync-label = Speguli per { -brand-product-name }
+create-backup-screen-1-sync-body = Fari sekurkopion de ĉiuj aparatoj kun seancoj malfermitaj
+create-backup-screen-1-backup-label = Fari sekurkopion en la komputilo
+create-backup-screen-1-backup-body = Fari sekurkopion en via aparato aŭ en OneDrive
+create-backup-select-tile-button-label = Elekti
+create-backup-back-button-label = Reen
+create-backup-show-fewer =
+    .label = Montri malpli da ĉi tiaj mesaĝoj
+create-backup-screen-2-title = Elekti la datumojn de { -brand-product-name } kiuj estos en la sekurkopio
+create-backup-screen-2-subtitle = Tio ĉi prenos nur minuton. Viaj datumoj estos sekurkopiitaj fojon ĉiutage.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Facila agordado
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Legosignoj, historio, agordoj kaj pli
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Tio ĉi inkluzivas nek pasvortojn nek pagmetodojn
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Neĉifrita
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Ĉiuj datumoj
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Tio ĉi inkluzivas kaj pasvortojn kaj pagmetodojn
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Ĉifrita de pasvorto
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Kie vi volas konservi la sekurkopion?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Krei pasvorton por ĉifri sekurkopion
+create-backup-screen-3-subtitle = Tio ĉi estas postulata por ĉifri viajn datumojn. Gardu ĝin en loko, kiun vi memoros.
+fx-backup-opt-in-header = Elekti lokon por la dosiero
+fx-backup-opt-in-filepath-label = Elektu lokon, kiun vi planas porti al alia aparato, ekzemple OneDrive.
+fx-backup-opt-in-create-password-label = Tajpu pasvorton
+fx-backup-opt-in-confirm-btn-label = Daŭrigi
+fx-backup-opt-in-cancel-btn-label = Reen
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Via sekurkopio estas programita
+fx-backup-confirmation-screen-close-button = Fermi
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Ĉiuj retumaj datumoj inkluzivitaj
+fx-backup-confirmation-screen-all-data-item-text-2 = Konservi en via aparato
+fx-backup-confirmation-screen-all-data-item-text-3 = Ĉifrita kaj protektita de pasvorto
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Legosignoj, historio, agordoj kaj aliaj datumoj inkluzivitaj
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Konservi en via aparato
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Pasvortoj kaj pagmetodoj ne inkluzivitaj
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Iru al <a data-l10n-name="settings">Agordoj</a> por inkluzivi delikatajn datumojn.
+fx-backup-confirmation-screen-item-subtext-1 = Via sekurkopio komenciĝos post kelkaj minutoj kaj estos rulita fojon ĉiutage. Vi povas sekvi la progreson en <a data-l10n-name="settings">Agordoj</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } serĉos vian sekurkopion se vi bezonas reinstali ĝin.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Reakiri el sekurkopio
+restore-from-backup-title = Rehavu ni { -brand-short-name } tiel kiel vi ĝin ŝatas
+restore-from-backup-subtitle = Reakiru ĉiujn viajn legosignojn, historion kaj aliajn datumojn por daŭrigi vian retumon.
+restore-from-backup-secondary-button = Ne reakiri
+multiple-backups-info-tile = <strong>Pluraj sekurkopiaj dosieroj estis trovitaj.</strong> La plej nova estas elektita. Restarigu aliajn profilojn en la <a data-l10n-name="settings-label">agordoj.</a>
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Ni revenis! Viaj datumoj de { -brand-short-name } estis reakiritaj.
+restored-from-backup-success-with-checklist-subtitle = Ĉu vi volas gardi vian plej ŝatatan retumilon, kiu ĉefe zorgas pri via privateco, je unu alklako?
+restored-from-backup-success-no-checklist-subtitle = Vi povas ŝalti sekurkopiojn por tiu ĉi aparato en <a data-l10n-name="settings">Agordoj</a>.
+restored-from-backup-success-with-checklist-primary-button = Konservi kaj daŭrigi
+restored-from-backup-success-with-checklist-secondary-button = Pretersalti tiun ĉi paŝon
+restored-from-backup-success-no-checklist-primary-button = Daŭrigi
+restored-from-backup-error-title = Hmm, estis problemo kun via sekurkopia dosiero.
+restored-from-backup-error-subtitle = Se vi havas alian sekurkopian dosieron de { -brand-short-name }, klopodu reakiri el tiu. <a data-l10n-name="restore-problems">Ĉu plu estas problemoj?</a>
+restored-from-backup-error-primary-button = Fermi
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personecigu vian sperton en { -brand-short-name }
+onboarding-personalization-subtitle = Respondu kelkajn demandojn kaj ni rekomendos trajtojn kaj etendaĵojn por plibonigi vian uzon de { -brand-short-name }.
+onboarding-personalization-use-case-title = Por kio vi uzos { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Persona
+onboarding-personalization-use-case-school-option = Lernejo
+onboarding-personalization-use-case-work-option = Laboro
+onboarding-personalization-motivation-title = Kiuj trajtoj de { -brand-short-name } estas plej gravaj por vi?
+onboarding-personalization-motivation-privacy-option = Privateco kaj sekureco
+onboarding-personalization-motivation-productivity-option = Produktemo
+onboarding-personalization-motivation-other-option = Aliaj
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Ni protektas viajn datumojn kaj evitas ke entreprenoj spionu viajn alklakojn, aŭtomate.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Vi troviĝas en bonaj manoj
+onboarding-refresh-import-subtitle = Importu viajn pasvortojn, legosignojn, historion, kaj pli.
+onboarding-refresh-import-title = Estu tute komforta ene de { -brand-short-name }
+onboarding-refresh-onboarding-addons-subtitle = Etendaĵoj estas etaj apoj kiuj permesas al vi personecigi { -brand-short-name }. Ili povas fortigi vian privatecon, plibonigi efikecon, ŝanĝi la aspekton de { -brand-short-name } kaj fari amason da aliaj aferoj.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Plibonigu vian retumon
+onboarding-refresh-sync-subtitle = Komencu seancon en { -brand-short-name } por aliri viajn legosignojn, pasvortojn kaj pli. Pro tio ke viaj datumoj estas ĉifritaj, nur vi povas ilin vidi.
+onboarding-refresh-sync-title = Iru kien ajn vi volas, spegulu ĉiujn viajn datumojn.
+onboarding-refresh-gratitude-subtitle = Dankon pro via uzo de { -brand-short-name }, la ununura granda retumilo subtenita de neprofitcela organizo. Kun via helpo ni laboras por igi la reton pli sekura kaj alirebla por ĉiuj.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } protektas vin

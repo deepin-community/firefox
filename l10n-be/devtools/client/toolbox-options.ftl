@@ -30,10 +30,18 @@ options-context-inspector = Даследчык
 options-show-user-agent-styles-label = Паказаць стылі браўзера
 options-show-user-agent-styles-tooltip =
     .title = Калі ўключана, будзе паказваць прадвызначаныя стылі, загружаныя браўзерам.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Паказаць DOM ценявога аб'екта браўзера
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Уключэнне гэтай опцыі дазволіць паказваць элементы ценявога DOM, якія апрацоўваюцца браўзерам.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Абсякаць атрыбуты DOM
 options-collapse-attrs-tooltip =
     .title = Абсякаць доўгія атрыбуты ў інспектары
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Паказаць каментарыі
+options-show-comments-tooltip =
+    .title = Паказваць вузлы каментарыяў у інспектары
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Націснуць і перацягнуць, каб змяніць значэнні памеру
 options-inspector-draggable-properties-tooltip =
@@ -107,6 +115,12 @@ options-sourceeditor-tabsize-label = Шырыня табуляцыі
 options-sourceeditor-keybinding-label = Клавіятурныя скароты
 options-sourceeditor-keybinding-default-label = Прадвызначана
 
+## Local Mode section
+
+options-local-mode-domain-label = Карыстальніцкі дамен:
+options-local-mode-toggle-enable = Уключыць
+options-local-mode-toggle-disable = Адключыць
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +129,8 @@ options-context-advanced-settings = Дадатковыя налады
 options-disable-http-cache-label = Выключыць кэш HTTP (калі панэль прылад адкрыта)
 options-disable-http-cache-tooltip =
     .title = Калі ўключана, забараняе кэш HTTP для ўсіх картак, на якіх адкрыта панэль прылад. Гэты параметр не дзейнічае на воркеры сэрвісу.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Адключыць JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Забараніць JavaScript *
 options-disable-javascript-tooltip =
@@ -143,5 +159,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Уключыць мапы зыходнага коду
 options-source-maps-tooltip =
     .title = Калі ўключана, зыходныя коды будуць супастаўлены ў інструментах.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (толькі бягучы сеанс, перазагрузка старонкі)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Толькі для бягучага сеанса, перазагружае старонку
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (перазагружае старонку)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Аўта
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Састарэла. Даведацца больш…

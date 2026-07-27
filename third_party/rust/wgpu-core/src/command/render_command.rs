@@ -1,34 +1,33 @@
-use crate::{
-    binding_model::BindGroup,
-    id,
-    pipeline::RenderPipeline,
-    resource::{Buffer, QuerySet},
-};
 use wgt::{BufferAddress, BufferSize, Color};
 
-use std::{num::NonZeroU32, sync::Arc};
+use super::{DrawCommandFamily, Rect};
+#[cfg(feature = "serde")]
+use crate::command::serde_object_reference_struct;
+use crate::command::{ArcReferences, ReferenceType};
 
-use super::{Rect, RenderBundle};
+#[cfg(feature = "serde")]
+use macro_rules_attribute::apply;
 
+/// cbindgen:ignore
 #[doc(hidden)]
-#[derive(Clone, Copy, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum RenderCommand {
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", apply(serde_object_reference_struct))]
+pub enum RenderCommand<R: ReferenceType> {
     SetBindGroup {
         index: u32,
         num_dynamic_offsets: usize,
-        bind_group_id: id::BindGroupId,
+        bind_group: Option<R::BindGroup>,
     },
-    SetPipeline(id::RenderPipelineId),
+    SetPipeline(R::RenderPipeline),
     SetIndexBuffer {
-        buffer_id: id::BufferId,
+        buffer: R::Buffer,
         index_format: wgt::IndexFormat,
         offset: BufferAddress,
         size: Option<BufferSize>,
     },
     SetVertexBuffer {
         slot: u32,
-        buffer_id: id::BufferId,
+        buffer: Option<R::Buffer>,
         offset: BufferAddress,
         size: Option<BufferSize>,
     },
@@ -42,29 +41,26 @@ pub enum RenderCommand {
     },
     SetScissor(Rect<u32>),
 
-    /// Set a range of push constants to values stored in [`BasePass::push_constant_data`].
+    /// Set a range of immediates to values stored in [`BasePass::immediates_data`].
     ///
-    /// See [`wgpu::RenderPass::set_push_constants`] for a detailed explanation
+    /// See [`wgpu::RenderPass::set_immediates`] for a detailed explanation
     /// of the restrictions these commands must satisfy.
-    SetPushConstant {
-        /// Which stages we are setting push constant values for.
-        stages: wgt::ShaderStages,
-
-        /// The byte offset within the push constant storage to write to.  This
+    SetImmediate {
+        /// The byte offset within the immediate data storage to write to.  This
         /// must be a multiple of four.
         offset: u32,
 
         /// The number of bytes to write. This must be a multiple of four.
         size_bytes: u32,
 
-        /// Index in [`BasePass::push_constant_data`] of the start of the data
+        /// Index in [`BasePass::immediates_data`] of the start of the data
         /// to be written.
         ///
         /// Note: this is not a byte offset like `offset`. Rather, it is the
-        /// index of the first `u32` element in `push_constant_data` to read.
+        /// index of the first `u32` element in `immediates_data` to read.
         ///
         /// `None` means zeros should be written to the destination range, and
-        /// there is no corresponding data in `push_constant_data`. This is used
+        /// there is no corresponding data in `immediates_data`. This is used
         /// by render bundles, which explicitly clear out any state that
         /// post-bundle code might see.
         values_offset: Option<u32>,
@@ -82,20 +78,28 @@ pub enum RenderCommand {
         base_vertex: i32,
         first_instance: u32,
     },
-    MultiDrawIndirect {
-        buffer_id: id::BufferId,
+    DrawMeshTasks {
+        group_count_x: u32,
+        group_count_y: u32,
+        group_count_z: u32,
+    },
+    DrawIndirect {
+        buffer: R::Buffer,
         offset: BufferAddress,
-        /// Count of `None` represents a non-multi call.
-        count: Option<NonZeroU32>,
-        indexed: bool,
+        count: u32,
+        family: DrawCommandFamily,
+        /// This limit is only populated for commands in a finished [`RenderBundle`].
+        vertex_or_index_limit: Option<u64>,
+        /// This limit is only populated for commands in a finished [`RenderBundle`].
+        instance_limit: Option<u64>,
     },
     MultiDrawIndirectCount {
-        buffer_id: id::BufferId,
+        buffer: R::Buffer,
         offset: BufferAddress,
-        count_buffer_id: id::BufferId,
+        count_buffer: R::Buffer,
         count_buffer_offset: BufferAddress,
         max_count: u32,
-        indexed: bool,
+        family: DrawCommandFamily,
     },
     PushDebugGroup {
         color: u32,
@@ -107,7 +111,7 @@ pub enum RenderCommand {
         len: usize,
     },
     WriteTimestamp {
-        query_set_id: id::QuerySetId,
+        query_set: R::QuerySet,
         query_index: u32,
     },
     BeginOcclusionQuery {
@@ -115,375 +119,25 @@ pub enum RenderCommand {
     },
     EndOcclusionQuery,
     BeginPipelineStatisticsQuery {
-        query_set_id: id::QuerySetId,
+        query_set: R::QuerySet,
         query_index: u32,
     },
     EndPipelineStatisticsQuery,
-    ExecuteBundle(id::RenderBundleId),
-}
-
-impl RenderCommand {
-    /// Resolves all ids in a list of commands into the corresponding resource Arc.
-    #[cfg(any(feature = "serde", feature = "replay"))]
-    pub fn resolve_render_command_ids(
-        hub: &crate::hub::Hub,
-        commands: &[RenderCommand],
-    ) -> Result<Vec<ArcRenderCommand>, super::RenderPassError> {
-        use super::{
-            DrawKind, PassErrorScope, RenderCommandError, RenderPassError, RenderPassErrorInner,
-        };
-
-        let buffers_guard = hub.buffers.read();
-        let bind_group_guard = hub.bind_groups.read();
-        let query_set_guard = hub.query_sets.read();
-        let pipelines_guard = hub.render_pipelines.read();
-        let render_bundles_guard = hub.render_bundles.read();
-
-        let resolved_commands: Vec<ArcRenderCommand> = commands
-            .iter()
-            .map(|c| -> Result<ArcRenderCommand, RenderPassError> {
-                Ok(match *c {
-                    RenderCommand::SetBindGroup {
-                        index,
-                        num_dynamic_offsets,
-                        bind_group_id,
-                    } => ArcRenderCommand::SetBindGroup {
-                        index,
-                        num_dynamic_offsets,
-                        bind_group: bind_group_guard.get_owned(bind_group_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::SetBindGroup,
-                                inner: RenderPassErrorInner::InvalidBindGroup(index),
-                            }
-                        })?,
-                    },
-
-                    RenderCommand::SetPipeline(pipeline_id) => ArcRenderCommand::SetPipeline(
-                        pipelines_guard
-                            .get_owned(pipeline_id)
-                            .map_err(|_| RenderPassError {
-                                scope: PassErrorScope::SetPipelineRender,
-                                inner: RenderCommandError::InvalidPipelineId(pipeline_id).into(),
-                            })?,
-                    ),
-
-                    RenderCommand::SetPushConstant {
-                        offset,
-                        size_bytes,
-                        values_offset,
-                        stages,
-                    } => ArcRenderCommand::SetPushConstant {
-                        offset,
-                        size_bytes,
-                        values_offset,
-                        stages,
-                    },
-
-                    RenderCommand::PushDebugGroup { color, len } => {
-                        ArcRenderCommand::PushDebugGroup { color, len }
-                    }
-
-                    RenderCommand::PopDebugGroup => ArcRenderCommand::PopDebugGroup,
-
-                    RenderCommand::InsertDebugMarker { color, len } => {
-                        ArcRenderCommand::InsertDebugMarker { color, len }
-                    }
-
-                    RenderCommand::WriteTimestamp {
-                        query_set_id,
-                        query_index,
-                    } => ArcRenderCommand::WriteTimestamp {
-                        query_set: query_set_guard.get_owned(query_set_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::WriteTimestamp,
-                                inner: RenderPassErrorInner::InvalidQuerySet(query_set_id),
-                            }
-                        })?,
-                        query_index,
-                    },
-
-                    RenderCommand::BeginPipelineStatisticsQuery {
-                        query_set_id,
-                        query_index,
-                    } => ArcRenderCommand::BeginPipelineStatisticsQuery {
-                        query_set: query_set_guard.get_owned(query_set_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::BeginPipelineStatisticsQuery,
-                                inner: RenderPassErrorInner::InvalidQuerySet(query_set_id),
-                            }
-                        })?,
-                        query_index,
-                    },
-
-                    RenderCommand::EndPipelineStatisticsQuery => {
-                        ArcRenderCommand::EndPipelineStatisticsQuery
-                    }
-
-                    RenderCommand::SetIndexBuffer {
-                        buffer_id,
-                        index_format,
-                        offset,
-                        size,
-                    } => ArcRenderCommand::SetIndexBuffer {
-                        buffer: buffers_guard.get_owned(buffer_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::SetIndexBuffer,
-                                inner: RenderCommandError::InvalidBufferId(buffer_id).into(),
-                            }
-                        })?,
-                        index_format,
-                        offset,
-                        size,
-                    },
-
-                    RenderCommand::SetVertexBuffer {
-                        slot,
-                        buffer_id,
-                        offset,
-                        size,
-                    } => ArcRenderCommand::SetVertexBuffer {
-                        slot,
-                        buffer: buffers_guard.get_owned(buffer_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::SetVertexBuffer,
-                                inner: RenderCommandError::InvalidBufferId(buffer_id).into(),
-                            }
-                        })?,
-                        offset,
-                        size,
-                    },
-
-                    RenderCommand::SetBlendConstant(color) => {
-                        ArcRenderCommand::SetBlendConstant(color)
-                    }
-
-                    RenderCommand::SetStencilReference(reference) => {
-                        ArcRenderCommand::SetStencilReference(reference)
-                    }
-
-                    RenderCommand::SetViewport {
-                        rect,
-                        depth_min,
-                        depth_max,
-                    } => ArcRenderCommand::SetViewport {
-                        rect,
-                        depth_min,
-                        depth_max,
-                    },
-
-                    RenderCommand::SetScissor(scissor) => ArcRenderCommand::SetScissor(scissor),
-
-                    RenderCommand::Draw {
-                        vertex_count,
-                        instance_count,
-                        first_vertex,
-                        first_instance,
-                    } => ArcRenderCommand::Draw {
-                        vertex_count,
-                        instance_count,
-                        first_vertex,
-                        first_instance,
-                    },
-
-                    RenderCommand::DrawIndexed {
-                        index_count,
-                        instance_count,
-                        first_index,
-                        base_vertex,
-                        first_instance,
-                    } => ArcRenderCommand::DrawIndexed {
-                        index_count,
-                        instance_count,
-                        first_index,
-                        base_vertex,
-                        first_instance,
-                    },
-
-                    RenderCommand::MultiDrawIndirect {
-                        buffer_id,
-                        offset,
-                        count,
-                        indexed,
-                    } => ArcRenderCommand::MultiDrawIndirect {
-                        buffer: buffers_guard.get_owned(buffer_id).map_err(|_| {
-                            RenderPassError {
-                                scope: PassErrorScope::Draw {
-                                    kind: if count.is_some() {
-                                        DrawKind::MultiDrawIndirect
-                                    } else {
-                                        DrawKind::DrawIndirect
-                                    },
-                                    indexed,
-                                },
-                                inner: RenderCommandError::InvalidBufferId(buffer_id).into(),
-                            }
-                        })?,
-                        offset,
-                        count,
-                        indexed,
-                    },
-
-                    RenderCommand::MultiDrawIndirectCount {
-                        buffer_id,
-                        offset,
-                        count_buffer_id,
-                        count_buffer_offset,
-                        max_count,
-                        indexed,
-                    } => {
-                        let scope = PassErrorScope::Draw {
-                            kind: DrawKind::MultiDrawIndirectCount,
-                            indexed,
-                        };
-                        ArcRenderCommand::MultiDrawIndirectCount {
-                            buffer: buffers_guard.get_owned(buffer_id).map_err(|_| {
-                                RenderPassError {
-                                    scope,
-                                    inner: RenderCommandError::InvalidBufferId(buffer_id).into(),
-                                }
-                            })?,
-                            offset,
-                            count_buffer: buffers_guard.get_owned(count_buffer_id).map_err(
-                                |_| RenderPassError {
-                                    scope,
-                                    inner: RenderCommandError::InvalidBufferId(count_buffer_id)
-                                        .into(),
-                                },
-                            )?,
-                            count_buffer_offset,
-                            max_count,
-                            indexed,
-                        }
-                    }
-
-                    RenderCommand::BeginOcclusionQuery { query_index } => {
-                        ArcRenderCommand::BeginOcclusionQuery { query_index }
-                    }
-
-                    RenderCommand::EndOcclusionQuery => ArcRenderCommand::EndOcclusionQuery,
-
-                    RenderCommand::ExecuteBundle(bundle) => ArcRenderCommand::ExecuteBundle(
-                        render_bundles_guard
-                            .get_owned(bundle)
-                            .map_err(|_| RenderPassError {
-                                scope: PassErrorScope::ExecuteBundle,
-                                inner: RenderCommandError::InvalidRenderBundle(bundle).into(),
-                            })?,
-                    ),
-                })
-            })
-            .collect::<Result<Vec<_>, RenderPassError>>()?;
-        Ok(resolved_commands)
-    }
+    ExecuteBundle(R::RenderBundle),
 }
 
 /// Equivalent to `RenderCommand` with the Ids resolved into resource Arcs.
-#[doc(hidden)]
-#[derive(Clone, Debug)]
-pub enum ArcRenderCommand {
-    SetBindGroup {
-        index: u32,
-        num_dynamic_offsets: usize,
-        bind_group: Arc<BindGroup>,
-    },
-    SetPipeline(Arc<RenderPipeline>),
-    SetIndexBuffer {
-        buffer: Arc<Buffer>,
-        index_format: wgt::IndexFormat,
-        offset: BufferAddress,
-        size: Option<BufferSize>,
-    },
-    SetVertexBuffer {
-        slot: u32,
-        buffer: Arc<Buffer>,
-        offset: BufferAddress,
-        size: Option<BufferSize>,
-    },
-    SetBlendConstant(Color),
-    SetStencilReference(u32),
-    SetViewport {
-        rect: Rect<f32>,
-        depth_min: f32,
-        depth_max: f32,
-    },
-    SetScissor(Rect<u32>),
-
-    /// Set a range of push constants to values stored in [`BasePass::push_constant_data`].
-    ///
-    /// See [`wgpu::RenderPass::set_push_constants`] for a detailed explanation
-    /// of the restrictions these commands must satisfy.
-    SetPushConstant {
-        /// Which stages we are setting push constant values for.
-        stages: wgt::ShaderStages,
-
-        /// The byte offset within the push constant storage to write to.  This
-        /// must be a multiple of four.
-        offset: u32,
-
-        /// The number of bytes to write. This must be a multiple of four.
-        size_bytes: u32,
-
-        /// Index in [`BasePass::push_constant_data`] of the start of the data
-        /// to be written.
-        ///
-        /// Note: this is not a byte offset like `offset`. Rather, it is the
-        /// index of the first `u32` element in `push_constant_data` to read.
-        ///
-        /// `None` means zeros should be written to the destination range, and
-        /// there is no corresponding data in `push_constant_data`. This is used
-        /// by render bundles, which explicitly clear out any state that
-        /// post-bundle code might see.
-        values_offset: Option<u32>,
-    },
-    Draw {
-        vertex_count: u32,
-        instance_count: u32,
-        first_vertex: u32,
-        first_instance: u32,
-    },
-    DrawIndexed {
-        index_count: u32,
-        instance_count: u32,
-        first_index: u32,
-        base_vertex: i32,
-        first_instance: u32,
-    },
-    MultiDrawIndirect {
-        buffer: Arc<Buffer>,
-        offset: BufferAddress,
-        /// Count of `None` represents a non-multi call.
-        count: Option<NonZeroU32>,
-        indexed: bool,
-    },
-    MultiDrawIndirectCount {
-        buffer: Arc<Buffer>,
-        offset: BufferAddress,
-        count_buffer: Arc<Buffer>,
-        count_buffer_offset: BufferAddress,
-        max_count: u32,
-        indexed: bool,
-    },
-    PushDebugGroup {
-        color: u32,
-        len: usize,
-    },
-    PopDebugGroup,
-    InsertDebugMarker {
-        color: u32,
-        len: usize,
-    },
-    WriteTimestamp {
-        query_set: Arc<QuerySet>,
-        query_index: u32,
-    },
-    BeginOcclusionQuery {
-        query_index: u32,
-    },
-    EndOcclusionQuery,
-    BeginPipelineStatisticsQuery {
-        query_set: Arc<QuerySet>,
-        query_index: u32,
-    },
-    EndPipelineStatisticsQuery,
-    ExecuteBundle(Arc<RenderBundle>),
-}
+///
+/// In a render pass, commands are stored in this format between when they are
+/// added to the pass, and when the pass is `end()`ed and the commands are
+/// replayed to the HAL encoder. Validation occurs when the pass is ended, which
+/// means that parameters stored in an `ArcRenderCommand` for a pass operation
+/// have generally not been validated.
+///
+/// In a render bundle, commands are stored in this format between when the bundle
+/// is `finish()`ed and when the bundle is executed. Validation occurs when the
+/// bundle is finished, which means that parameters stored in an `ArcRenderCommand`
+/// for a render bundle operation must have been validated.
+///
+/// cbindgen:ignore
+pub type ArcRenderCommand = RenderCommand<ArcReferences>;

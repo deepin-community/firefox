@@ -1,0 +1,101 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# The title of the experiment should be kept in English as it may be referenced
+# by various online articles and is technical in nature.
+experimental-features-media-jxl =
+    .label = Медіа: JPEG XL
+experimental-features-media-jxl-description = Увімкнення цієї функції активує в { -brand-short-name } підтримку формату JPEG XL (JXL). Це вдосконалений формат файлів зображень, який підтримує перетворення без втрат з традиційних файлів JPEG. Для докладної інформації дивіться <a data-l10n-name="bugzilla">bug 1539075</a>.
+# JS JIT Warp project
+experimental-features-js-warp =
+    .label = JavaScript JIT: Warp
+experimental-features-js-warp-description = Увімкнути Warp – проєкт для вдосконалення продуктивності та використання пам'яті JavaScript.
+# Search during IME
+experimental-features-ime-search =
+    .label = Панель адреси: показувати результати під час складання IME
+experimental-features-ime-search-description = IME (редактор методу введення) – це засіб, який дозволяє вводити складні символи, як-от такі, що використовуються у східноазійських або індійських писемних мовах, за допомогою стандартної клавіатури. Увімкнення цього експерименту залишатиме панель адреси відкритою, показуючи результати пошуку та пропозиції, одночасно використовуючи IME для введення тексту. Зверніть увагу, що IME може показувати панель, яка перекриває результати панелі адреси, тому це налаштування пропонується лише для IME, який не використовує цей тип панелі.
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = Зображення в зображенні: автоматично відкривати під час перемикання вкладок
+experimental-features-auto-pip-description = Вмикати функцію "Зображення в зображенні" для активних відео під час перемикання вкладок.
+experimental-features-group-developer-tools =
+    .label = Інструменти розробника
+experimental-features-group-webpage-display =
+    .label = Подання вебсторінки
+experimental-features-group-customize-browsing =
+    .label = Налаштуйте свій перегляд
+experimental-features-group-productivity =
+    .label = Продуктивність
+experimental-features-group-newtab-widgets =
+    .label = Віджети на { -firefox-home-brand-name }
+# Contextual Password Manager in sidebar
+experimental-features-contextual-password-manager =
+    .label = Паролі в бічній панелі
+experimental-features-contextual-password-manager-description = Користуйтеся своїми паролями безпосередньо в бічній панелі. Більше не потрібно шукати чи скидати паролі, коли ви намагаєтесь увійти. Щоб скористатися цією функцією, виберіть паролі на бічній панелі. Потім перейдіть до загальних налаштувань і в розділі "Подання браузера" виберіть "Показати бічну панель". Потім налаштуйте бічну панель, вибравши паролі. Якщо ви спробуєте, <a data-l10n-name="connect">повідомте нам своє враження</a>.
+# New Tab Custom Wallpapers
+experimental-features-custom-wallpaper =
+    .label = Вибір власних шпалер або кольору для нової вкладки
+experimental-features-custom-wallpaper-description = Вивантажте власне зображення або виберіть особливий колір тла для нової вкладки.
+# Link Previews with AI
+experimental-features-link-previews =
+    .label = Перегляд посилань
+experimental-features-link-previews-description =
+    { PLATFORM() ->
+        [macos] Щоб дізнатися більше про вебсторінку, перш ніж натиснути посилання, наведіть на нього курсор і натисніть Shift (⇧) + Option (⌥) або Alt. Перегляд може містити інформацію, як-от заголовок і час читання. Для деяких вебсторінок ШІ також може читати текст сторінки та генерувати зведення. ШІ оптимізовано для читання та створення тексту англійською мовою. Щоб забезпечити вашу приватність, ШІ працює локально на вашому комп'ютері. <a data-l10n-name="connect">Поділитися відгуком</a>
+       *[other] Щоб дізнатися більше про вебсторінку, перш ніж натиснути посилання, наведіть на нього курсор і натисніть Shift + Alt. Перегляд може містити інформацію, як-от заголовок і час читання. Для деяких вебсторінок ШІ також може читати текст сторінки та генерувати зведення. ШІ оптимізовано для читання та створення тексту англійською мовою. Щоб забезпечити вашу приватність, ШІ працює локально на вашому комп'ютері. <a data-l10n-name="connect">Поділитися відгуком</a>
+    }
+# This version of the link previews description does not mention AI.
+experimental-features-link-previews-description-no-ai =
+    { PLATFORM() ->
+        [macos] Щоб дізнатися більше про вебсторінку, перш ніж її відкрити, наведіть курсор на посилання та натисніть Shift (⇧) + Option (⌥) або Alt. Попередній перегляд може містити такі відомості, як назва та час читання. <a data-l10n-name="connect">Поділитися відгуком</a>
+       *[other] Щоб дізнатися більше про вебсторінку, перш ніж її відкрити, наведіть курсор на посилання та натисніть Shift + Alt. Попередній перегляд може містити такі відомості, як назва та час читання. <a data-l10n-name="connect">Поділитися відгуком</a>
+    }
+# New Tab Sections with follow and block
+experimental-features-newtab-sections-follow-block =
+    .label = Розділи тем і Стежити/Блокувати для історій нової вкладки
+experimental-features-newtab-sections-follow-block-description = Організуйте історії на сторінці нової вкладки за тематичними розділами (спорт, їжа, розваги тощо) для більш структурованого та зручного перегляду. Використовуйте наші нові елементи керування "Стежити" та "Блокувати", щоб налаштувати вміст, який ви бачите. <a data-l10n-name="connect">Поділитися відгуком</a>
+# Firefox Web Apps
+experimental-features-fx-web-apps =
+    .label = Додайте сайти до панелі завдань
+# “Add tab to taskbar” is found in the tooltip text of `-taskbar-tab-urlbar-button-open`.
+experimental-features-fx-web-apps-description = Відкривайте часто відвідувані сайти з панелі завдань, як вебпрограми. Знайдіть піктограму “Додати вкладку до панелі завдань” у правій частині панелі адреси, щоб відкрити сайт у спеціальному вікні з повним захистом { -brand-product-name }. <a data-l10n-name="connect">Поділіться враженням</a>
+
+## New Tab Productivity Widgets
+
+# Lists Widget
+experimental-features-newtab-widget-lists =
+    .label = Списки на { -firefox-home-brand-name }
+experimental-features-newtab-widget-lists-new =
+    .label = Списки
+experimental-features-newtab-widget-lists-description = Переглядайте свій список завдань, відкриваючи нову вкладку. Керуйте планами у { -brand-product-name }. <a data-l10n-name="connect">Поділіться враженням</a>
+# Timer Widget
+experimental-features-newtab-widget-timer =
+    .label = Таймер у { -firefox-home-brand-name }
+experimental-features-newtab-widget-timer-new =
+    .label = Таймер
+experimental-features-newtab-widget-timer-description = Встановлюйте таймер для зосередження, нагадування про ціль або про час відновлення. <a data-l10n-name="connect">Поділіться враженням</a>
+# Lists and Timer Widget (Combined)
+experimental-features-newtab-widget-lists-and-timer =
+    .label = Списки та таймер на { -firefox-home-brand-name }
+experimental-features-newtab-widget-lists-and-timer-description = Переглядайте свій список завдань, відкриваючи нову вкладку. Керуйте планами у { -brand-product-name }. Встановлюйте таймер для зосередження, нагадування про ціль або про час відновлення. <a data-l10n-name="connect">Поділіться враженням</a>
+# Weather Widget
+experimental-features-newtab-widget-weather =
+    .label = Прогнози погоди
+experimental-features-newtab-widget-weather-description = Отримайте чітке уявлення про сьогоднішню погоду завдяки погодинним прогнозам. <a data-l10n-name="connect">Поділіться відгуком</a>
+# Picture of the Day Widget
+experimental-features-newtab-widget-picture-of-the-day =
+    .label = Зображення дня
+experimental-features-newtab-widget-picture-of-the-day-description = Додайте дещо нове у свій день. Зробіть нове фото, дізнайтеся щось цікаве і встановіть нові шпалери за мить. <a data-l10n-name="connect">Поділіться відгуком</a>
+# Clocks Widget
+experimental-features-newtab-widget-clocks =
+    .label = Годинники
+experimental-features-newtab-widget-clocks-description = Додайте до чотирьох годинників із власними псевдонімами, щоб відстежувати час у важливих для вас місцях. <a data-l10n-name="connect">Поділіться відгуком</a>
+# Semantic History Search
+experimental-features-semantic-history-search =
+    .label = Семантичний пошук історії
+experimental-features-semantic-history-search-description = Використовуйте локальну модель машинного навчання для пропозицій записів з історії, пов'язаних з вашими пошуковими запитами, на основі розуміння мовлення в панелі адреси { -brand-product-name }. <a data-l10n-name="connect">Поділіться враженням</a>
+# Tab Notes
+experimental-features-tab-notes =
+    .label = Нотатки вкладок
+experimental-features-tab-notes-description = Нотатки вкладок – це експериментальна функція, за допомогою якої можна додавати власні нотатки до вкладок браузера. Записуйте контекст, нагадування або заплановані подальші дії, щоб згодом ви могли пригадати, чому їх відкрили. Ми будемо вдячні за ваші відгуки, які допоможуть нам вдосконалювати цю функцію. <a data-l10n-name="connect">Поділитися відгуком</a>

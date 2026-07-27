@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +14,6 @@
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "mozilla/dom/WindowContext.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/MoveOnlyFunction.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_dom.h"
@@ -24,6 +22,7 @@
 #include "nsFocusManager.h"
 #include "nsIClipboardOwner.h"
 #include "nsIPromptService.h"
+#include "nsISupportsPrimitives.h"
 #include "nsError.h"
 #include "nsXPCOM.h"
 
@@ -244,11 +243,13 @@ nsBaseClipboard::AsyncSetClipboardData::SetData(nsITransferable* aTransferable,
   MOZ_ASSERT(mClipboard);
   MOZ_ASSERT(
       mClipboard->nsIClipboard::IsClipboardTypeSupported(mClipboardType));
-  MOZ_DIAGNOSTIC_ASSERT(mClipboard->mPendingWriteRequests[mClipboardType] ==
-                        this);
+  RefPtr<AsyncSetClipboardData> selfPin(this);
 
-  RefPtr<AsyncSetClipboardData> request =
-      std::move(mClipboard->mPendingWriteRequests[mClipboardType]);
+  if (mClipboard->mPendingWriteRequests[mClipboardType] != this) {
+    return NS_ERROR_IN_PROGRESS;
+  }
+  mClipboard->mPendingWriteRequests[mClipboardType] = nullptr;
+
   nsresult rv = mClipboard->SetData(aTransferable, aOwner, mClipboardType,
                                     mWindowContext);
   MaybeNotifyCallback(rv);
@@ -275,13 +276,13 @@ void nsBaseClipboard::AsyncSetClipboardData::MaybeNotifyCallback(
   // take a reference to mClipboard.
 
   MOZ_ASSERT(IsValid());
+  // Once the callback is notified, setData should not be allowed, so invalidate
+  // this request.
+  mClipboard = nullptr;
   if (nsCOMPtr<nsIAsyncClipboardRequestCallback> callback =
           mCallback.forget()) {
     callback->OnComplete(aResult);
   }
-  // Once the callback is notified, setData should not be allowed, so invalidate
-  // this request.
-  mClipboard = nullptr;
 }
 
 void nsBaseClipboard::RejectPendingAsyncSetDataRequestIfAny(
@@ -389,6 +390,7 @@ NS_IMETHODIMP nsBaseClipboard::SetData(
     mIgnoreEmptyNotification = true;
     // Reject existing pending asyncSetData request if any.
     RejectPendingAsyncSetDataRequestIfAny(aWhichClipboard);
+    SanitizeForClipboard(aTransferable);
     rv = SetNativeClipboardData(aTransferable, aWhichClipboard);
     mIgnoreEmptyNotification = false;
   }
@@ -463,10 +465,26 @@ NS_IMETHODIMP nsBaseClipboard::GetData(
     // at this point we can't satisfy the request from cache data so let's look
     // for things other people put on the system clipboard
   }
-  nsresult rv = GetNativeClipboardData(aTransferable, aWhichClipboard);
+
+  nsTArray<nsCString> flavors;
+  nsresult rv = aTransferable->FlavorsTransferableCanImport(flavors);
   if (NS_FAILED(rv)) {
-    return rv;
+    return NS_ERROR_FAILURE;
   }
+
+  for (const auto& flavor : flavors) {
+    auto dataOrError = GetNativeClipboardData(flavor, aWhichClipboard);
+    if (dataOrError.isErr()) {
+      continue;
+    }
+
+    if (dataOrError.inspect()) {
+      aTransferable->SetTransferData(flavor.get(), dataOrError.inspect());
+      // XXX Maybe try to fill in more types? Is there a point?
+      break;
+    }
+  }
+
   if (!mozilla::contentanalysis::ContentAnalysis::
           CheckClipboardContentAnalysisSync(this, aWindowContext->Canonical(),
                                             aTransferable, aWhichClipboard)) {
@@ -480,6 +498,14 @@ void nsBaseClipboard::MaybeRetryGetAvailableFlavors(
     const nsTArray<nsCString>& aFlavorList, ClipboardType aWhichClipboard,
     nsIClipboardGetDataSnapshotCallback* aCallback, int32_t aRetryCount,
     mozilla::dom::WindowContext* aRequestingWindowContext) {
+  MOZ_CLIPBOARD_LOG("%s: clipboard=%d", __FUNCTION__, aWhichClipboard);
+  if (MOZ_CLIPBOARD_LOG_ENABLED()) {
+    MOZ_CLIPBOARD_LOG("    Asking for content:");
+    for (const auto& flavor : aFlavorList) {
+      MOZ_CLIPBOARD_LOG("        MIME %s", flavor.get());
+    }
+  }
+
   // Note we have to get the clipboard sequence number first before the actual
   // read. This is to use it to verify the clipboard data is still the one we
   // try to read, instead of the later state.
@@ -518,11 +544,17 @@ void nsBaseClipboard::MaybeRetryGetAvailableFlavors(
         }
 
         if (sequenceNumber == sequenceNumberOrError.unwrap()) {
+          auto flavorList = std::move(aFlavorsOrError.unwrap());
+          if (MOZ_CLIPBOARD_LOG_ENABLED()) {
+            for (const auto& flavor : flavorList) {
+              MOZ_CLIPBOARD_LOG("    has %s", flavor.get());
+            }
+          }
+
           auto clipboardDataSnapshot =
               mozilla::MakeRefPtr<ClipboardDataSnapshot>(
-                  aWhichClipboard, sequenceNumber,
-                  std::move(aFlavorsOrError.unwrap()), false, self,
-                  requestingWindowContext);
+                  aWhichClipboard, sequenceNumber, std::move(flavorList), false,
+                  self, requestingWindowContext);
           callback->OnSuccess(clipboardDataSnapshot);
           return;
         }
@@ -538,7 +570,7 @@ void nsBaseClipboard::MaybeRetryGetAvailableFlavors(
           return;
         }
 
-        MOZ_DIAGNOSTIC_ASSERT(false, "How can this happen?!?");
+        MOZ_DIAGNOSTIC_CRASH("How can this happen?!?");
         callback->OnError(NS_ERROR_FAILURE);
       });
 }
@@ -586,12 +618,6 @@ NS_IMETHODIMP nsBaseClipboard::GetDataSnapshot(
         return NS_OK;
       }
     }
-  }
-
-  // TODO: enable showing the "Paste" button in this case; see bug 1773681.
-  if (aRequestingPrincipal->GetIsAddonOrExpandedAddonPrincipal()) {
-    MOZ_CLIPBOARD_LOG("%s: Addon without read permission.", __FUNCTION__);
-    return aCallback->OnError(NS_ERROR_FAILURE);
   }
 
   RequestUserConfirmation(aWhichClipboard, aFlavorList,
@@ -703,9 +729,11 @@ NS_IMETHODIMP nsBaseClipboard::GetDataSnapshotSync(
 
   nsTArray<nsCString> results;
   for (const auto& flavor : aFlavorList) {
+    MOZ_CLIPBOARD_LOG("%s: Asking for MIME %s", __FUNCTION__, flavor.get());
     auto resultOrError = HasNativeClipboardDataMatchingFlavors(
         AutoTArray<nsCString, 1>{flavor}, aWhichClipboard);
     if (resultOrError.isOk() && resultOrError.unwrap()) {
+      MOZ_CLIPBOARD_LOG("    has %s", flavor.get());
       results.AppendElement(flavor);
     }
   }
@@ -873,9 +901,9 @@ void nsBaseClipboard::AsyncHasNativeClipboardDataMatchingFlavors(
 }
 
 void nsBaseClipboard::AsyncGetNativeClipboardData(
-    nsITransferable* aTransferable, ClipboardType aWhichClipboard,
-    GetDataCallback&& aCallback) {
-  aCallback(GetNativeClipboardData(aTransferable, aWhichClipboard));
+    const nsACString& aFlavor, ClipboardType aWhichClipboard,
+    GetNativeDataCallback&& aCallback) {
+  aCallback(GetNativeClipboardData(aFlavor, aWhichClipboard));
 }
 
 void nsBaseClipboard::ClearClipboardCache(ClipboardType aClipboardType) {
@@ -956,6 +984,42 @@ void nsBaseClipboard::RequestUserConfirmation(
   promise->AppendNativeHandler(sUserConfirmationRequest);
 }
 
+/* static */
+nsresult nsBaseClipboard::SanitizeForClipboard(nsITransferable* aTransferable) {
+  NS_ENSURE_ARG(aTransferable);
+
+  nsTArray<nsCString> flavors;
+  nsresult rv = aTransferable->FlavorsTransferableCanImport(flavors);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  // Remove NULs from text flavors.
+  for (const auto& flavor : flavors) {
+    nsCOMPtr<nsISupports> data;
+    rv = aTransferable->GetTransferData(flavor.get(), getter_AddRefs(data));
+    NS_ENSURE_SUCCESS(rv, rv);
+    if (NS_WARN_IF(MOZ_UNLIKELY(!data))) {
+      continue;
+    }
+    nsCOMPtr<nsISupportsString> stringData = do_QueryInterface(data);
+    if (!stringData) {
+      continue;
+    }
+
+    // Remove NULs from stringData.  If that does anything then the size of the
+    // string will be reduced.
+    nsAutoString newString;
+    rv = stringData->GetData(newString);
+    NS_ENSURE_SUCCESS(rv, rv);
+    auto oldLength = newString.Length();
+    newString.StripChar(L'\0');
+    if (newString.Length() != oldLength) {
+      rv = stringData->SetData(newString);
+      NS_ENSURE_SUCCESS(rv, rv);
+    }
+  }
+  return NS_OK;
+}
+
 NS_IMPL_ISUPPORTS(nsBaseClipboard::ClipboardDataSnapshot,
                   nsIClipboardDataSnapshot)
 
@@ -1002,6 +1066,10 @@ NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetData(
     return rv;
   }
 
+  if (flavors.IsEmpty()) {
+    return NS_OK;
+  }
+
   // If the requested flavor is not in the list, throw an error.
   for (const auto& flavor : flavors) {
     if (!mFlavors.Contains(flavor)) {
@@ -1010,18 +1078,16 @@ NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetData(
   }
 
   if (!IsValid()) {
-    aCallback->OnComplete(NS_ERROR_FAILURE);
+    aCallback->OnComplete(NS_ERROR_NOT_AVAILABLE);
     return NS_OK;
   }
 
   MOZ_ASSERT(mClipboard);
 
   auto contentAnalysisCallback =
-      mozilla::MakeRefPtr<mozilla::contentanalysis::ContentAnalysis::
-                              SafeContentAnalysisResultCallback>(
+      mozilla::MakeRefPtr<mozilla::contentanalysis::ContentAnalysisCallback>(
           [transferable = nsCOMPtr{aTransferable},
-           callback = nsCOMPtr{aCallback}](
-              RefPtr<nsIContentAnalysisResult>&& aResult) {
+           callback = nsCOMPtr{aCallback}](nsIContentAnalysisResult* aResult) {
             if (aResult->GetShouldAllowContent()) {
               callback->OnComplete(NS_OK);
             } else {
@@ -1053,8 +1119,8 @@ NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetData(
 
   // Since this is an async operation, we need to check if the data is still
   // valid after we get the result.
-  mClipboard->AsyncGetNativeClipboardData(
-      aTransferable, mClipboardType,
+  GetDataInternal(
+      std::move(flavors), 0, aTransferable,
       [callback = nsCOMPtr{aCallback}, self = RefPtr{this},
        transferable = nsCOMPtr{aTransferable},
        contentAnalysisCallback =
@@ -1066,7 +1132,7 @@ NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetData(
         // `IsValid()` checks the clipboard sequence number to ensure the data
         // we are requesting is still valid.
         if (!self->IsValid()) {
-          callback->OnComplete(NS_ERROR_FAILURE);
+          callback->OnComplete(NS_ERROR_NOT_AVAILABLE);
           return;
         }
         mozilla::contentanalysis::ContentAnalysis::
@@ -1078,6 +1144,86 @@ NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetData(
                 transferable, self->mClipboardType, contentAnalysisCallback);
       });
   return NS_OK;
+}
+
+NS_IMETHODIMP nsBaseClipboard::ClipboardDataSnapshot::GetDataSync(
+    nsITransferable* aTransferable) {
+  MOZ_CLIPBOARD_LOG("ClipboardDataSnapshot::GetDataSync: %p", this);
+
+  if (!aTransferable) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  nsTArray<nsCString> flavors;
+  nsresult rv = aTransferable->FlavorsTransferableCanImport(flavors);
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
+
+  // If the requested flavor is not in the list, throw an error.
+  for (const auto& flavor : flavors) {
+    if (!mFlavors.Contains(flavor)) {
+      return NS_ERROR_FAILURE;
+    }
+  }
+
+  if (!IsValid()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  MOZ_ASSERT(mClipboard);
+
+  if (mFromCache) {
+    const auto* clipboardCache =
+        mClipboard->GetClipboardCacheIfValid(mClipboardType);
+    // `IsValid()` above ensures we should get a valid cache and matched
+    // sequence number here.
+    MOZ_DIAGNOSTIC_ASSERT(clipboardCache);
+    MOZ_DIAGNOSTIC_ASSERT(clipboardCache->GetSequenceNumber() ==
+                          mSequenceNumber);
+    if (NS_SUCCEEDED(clipboardCache->GetData(aTransferable))) {
+      bool shouldAllowContent = mozilla::contentanalysis::ContentAnalysis::
+          CheckClipboardContentAnalysisSync(
+              mClipboard,
+              mRequestingWindowContext ? mRequestingWindowContext->Canonical()
+                                       : nullptr,
+              aTransferable, mClipboardType);
+      if (shouldAllowContent) {
+        return NS_OK;
+      }
+      aTransferable->ClearAllData();
+      return NS_ERROR_CONTENT_BLOCKED;
+    }
+
+    // At this point we can't satisfy the request from cache data so let's look
+    // for things other people put on the system clipboard.
+  }
+
+  for (const auto& flavor : flavors) {
+    auto dataOrError =
+        mClipboard->GetNativeClipboardData(flavor, mClipboardType);
+    if (dataOrError.isErr()) {
+      continue;
+    }
+
+    if (dataOrError.inspect()) {
+      aTransferable->SetTransferData(flavor.get(), dataOrError.inspect());
+      // XXX Maybe try to fill in more types? Is there a point?
+      break;
+    }
+  }
+
+  bool shouldAllowContent = mozilla::contentanalysis::ContentAnalysis::
+      CheckClipboardContentAnalysisSync(
+          mClipboard,
+          mRequestingWindowContext ? mRequestingWindowContext->Canonical()
+                                   : nullptr,
+          aTransferable, mClipboardType);
+  if (shouldAllowContent) {
+    return NS_OK;
+  }
+  aTransferable->ClearAllData();
+  return NS_ERROR_CONTENT_BLOCKED;
 }
 
 bool nsBaseClipboard::ClipboardDataSnapshot::IsValid() {
@@ -1111,6 +1257,127 @@ bool nsBaseClipboard::ClipboardDataSnapshot::IsValid() {
   }
 
   return true;
+}
+
+void nsBaseClipboard::ClipboardDataSnapshot::GetDataInternal(
+    nsTArray<nsCString>&& aTypes, nsTArray<nsCString>::index_type aIndex,
+    nsITransferable* aTransferable, GetDataInternalCallback&& aCallback) {
+  MOZ_ASSERT(aIndex < aTypes.Length());
+
+  // Since this is an async operation, we need to check if the data is still
+  // valid after we get the result.
+  nsCString type = aTypes[aIndex];
+  mClipboard->AsyncGetNativeClipboardData(
+      type, mClipboardType,
+      [self = RefPtr{this}, types = std::move(aTypes), index = aIndex,
+       transferable = nsCOMPtr{aTransferable}, callback = std::move(aCallback)](
+          mozilla::Result<nsCOMPtr<nsISupports>, nsresult> aResult) mutable {
+        MOZ_ASSERT(index < types.Length());
+
+        // `IsValid()` checks the clipboard sequence number to ensure the data
+        // we are requesting is still valid.
+        if (!self->IsValid()) {
+          callback(NS_ERROR_NOT_AVAILABLE);
+          return;
+        }
+
+        if (!aResult.isErr() && aResult.inspect()) {
+          transferable->SetTransferData(types[index].get(), aResult.inspect());
+          callback(NS_OK);
+          return;
+        }
+
+        // No more types to try.
+        if (++index >= types.Length()) {
+          callback(NS_OK);
+          return;
+        }
+
+        // Recursively call GetDataInternal to try the next type.
+        self->GetDataInternal(std::move(types), index, transferable,
+                              std::move(callback));
+      });
+}
+
+NS_IMPL_ISUPPORTS(nsBaseClipboard::ClipboardPopulatedDataSnapshot,
+                  nsIClipboardDataSnapshot)
+
+nsBaseClipboard::ClipboardPopulatedDataSnapshot::ClipboardPopulatedDataSnapshot(
+    nsITransferable* aTransferable)
+    : mTransferable(aTransferable) {
+  MOZ_ASSERT(mTransferable);
+  aTransferable->FlavorsTransferableCanExport(mFlavors);
+}
+
+NS_IMETHODIMP nsBaseClipboard::ClipboardPopulatedDataSnapshot::GetValid(
+    bool* aOutResult) {
+  // Since this is a snapshot of what the clipboard data was, this is always
+  // valid
+  *aOutResult = true;
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsBaseClipboard::ClipboardPopulatedDataSnapshot::GetFlavorList(
+    nsTArray<nsCString>& aFlavors) {
+  aFlavors.AppendElements(mFlavors);
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsBaseClipboard::ClipboardPopulatedDataSnapshot::GetData(
+    nsITransferable* aTransferable,
+    nsIAsyncClipboardRequestCallback* aCallback) {
+  if (!aTransferable || !aCallback) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  NS_DispatchToMainThread(NS_NewRunnableFunction(
+      "ClipboardPopulatedDataSnapshot::GetData",
+      [self = RefPtr{this}, transferable = RefPtr{aTransferable},
+       callback = RefPtr{aCallback}]() {
+        nsresult rv = self->GetDataSync(transferable);
+        callback->OnComplete(rv);
+      }));
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsBaseClipboard::ClipboardPopulatedDataSnapshot::GetDataSync(
+    nsITransferable* aTransferable) {
+  MOZ_CLIPBOARD_LOG("ClipboardPopulatedDataSnapshot::GetDataSync: %p", this);
+
+  if (!aTransferable) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  nsTArray<nsCString> flavors;
+  nsresult rv = aTransferable->FlavorsTransferableCanImport(flavors);
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
+
+  // If the requested flavor is not in the list, throw an error.
+  for (const auto& flavor : flavors) {
+    if (!mFlavors.Contains(flavor)) {
+      return NS_ERROR_FAILURE;
+    }
+  }
+
+  // This method only fills in the data for the first flavor passed in. This
+  // seems weird but matches the IDL documentation and behavior.
+  if (!flavors.IsEmpty()) {
+    nsCOMPtr<nsISupports> data;
+    rv = mTransferable->GetTransferData(flavors[0].get(), getter_AddRefs(data));
+    if (NS_FAILED(rv)) {
+      aTransferable->ClearAllData();
+      return rv;
+    }
+    rv = aTransferable->SetTransferData(flavors[0].get(), data);
+    if (NS_FAILED(rv)) {
+      aTransferable->ClearAllData();
+      return rv;
+    }
+  }
+  return NS_OK;
 }
 
 mozilla::Maybe<uint64_t> nsBaseClipboard::GetClipboardCacheInnerWindowId(

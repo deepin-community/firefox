@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,17 +8,22 @@
 
 #include "mozilla/Base64.h"
 #include "mozilla/dom/MimeType.h"
+#include "mozilla/net/NeckoChild.h"
+#include "mozilla/net/NeckoCommon.h"
 #include "nsDataHandler.h"
 #include "nsIInputStream.h"
 #include "nsEscape.h"
 #include "nsISupports.h"
 #include "nsStringStream.h"
 #include "nsIObserverService.h"
-#include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/ContentChild.h"
+#include "../protocol/http/nsHttpHandler.h"
 
 using namespace mozilla;
+using namespace mozilla::net;
 
-NS_IMPL_ISUPPORTS_INHERITED(nsDataChannel, nsBaseChannel, nsIDataChannel)
+NS_IMPL_ISUPPORTS_INHERITED(nsDataChannel, nsBaseChannel, nsIDataChannel,
+                            nsIIdentChannel, nsIChildChannel)
 
 /**
  * Helper for performing a fallible unescape.
@@ -49,24 +53,24 @@ nsresult nsDataChannel::OpenContentStream(bool async, nsIInputStream** result,
 
   nsresult rv;
 
-  // In order to avoid potentially building up a new path including the
-  // ref portion of the URI, which we don't care about, we clone a version
-  // of the URI that does not have a ref and in most cases should share
-  // string buffers with the original URI.
-  nsCOMPtr<nsIURI> uri;
-  rv = NS_GetURIWithoutRef(URI(), getter_AddRefs(uri));
-  if (NS_FAILED(rv)) return rv;
+  // In general, a `data:` URI is stored as a `nsSimpleURI`, which holds a
+  // single mSpec string. This can be read most efficiently with `GetSpec`, as
+  // the underlying string buffer will be shared.
+  //
+  // NOTE: In the case where the `data:` URI is parsed with `DefaultURI`, this
+  // will be inefficient, as there is no way to share the string buffer with
+  // MozURL.
 
-  nsAutoCString path;
-  rv = uri->GetPathQueryRef(path);
+  nsAutoCString spec;
+  rv = URI()->GetSpec(spec);
   if (NS_FAILED(rv)) return rv;
 
   nsCString contentType, contentCharset;
   nsDependentCSubstring dataRange;
   RefPtr<CMimeType> fullMimeType;
   bool lBase64;
-  rv = nsDataHandler::ParsePathWithoutRef(path, contentType, &contentCharset,
-                                          lBase64, &dataRange, &fullMimeType);
+  rv = nsDataHandler::ParseURI(spec, contentType, &contentCharset, lBase64,
+                               &dataRange, &fullMimeType);
   if (NS_FAILED(rv)) return rv;
 
   // This will avoid a copy if nothing needs to be unescaped.
@@ -119,7 +123,20 @@ nsresult nsDataChannel::OpenContentStream(bool async, nsIInputStream** result,
   return NS_OK;
 }
 
+nsresult nsDataChannel::Init() {
+  NS_ENSURE_STATE(mLoadInfo);
+
+  RefPtr<nsHttpHandler> handler = nsHttpHandler::GetInstance();
+  mChannelId = handler->NewChannelId();
+  return NS_OK;
+}
+
 nsresult nsDataChannel::MaybeSendDataChannelOpenNotification() {
+  nsCOMPtr<nsIObserverService> obsService = services::GetObserverService();
+  if (!obsService) {
+    return NS_OK;
+  }
+
   nsCOMPtr<nsILoadInfo> loadInfo;
   nsresult rv = GetLoadInfo(getter_AddRefs(loadInfo));
   if (NS_FAILED(rv)) {
@@ -140,13 +157,47 @@ nsresult nsDataChannel::MaybeSendDataChannelOpenNotification() {
 
   if ((browsingContextID != 0 && isTopLevel) ||
       !loadInfo->TriggeringPrincipal()->IsSystemPrincipal()) {
-    NotifyListeners();
+    obsService->NotifyObservers(static_cast<nsIIdentChannel*>(this),
+                                "data-channel-opened", nullptr);
   }
   return NS_OK;
 }
 
-nsresult nsDataChannel::NotifyListeners() {
-  // Nothing to do here, this will be handled in
-  // DataChannelChild::NotifyListeners.
+//-----------------------------------------------------------------------------
+// nsDataChannel::nsIIdentChannel
+
+NS_IMETHODIMP
+nsDataChannel::GetChannelId(uint64_t* aChannelId) {
+  *aChannelId = mChannelId;
   return NS_OK;
+}
+
+NS_IMETHODIMP
+nsDataChannel::SetChannelId(uint64_t aChannelId) {
+  mChannelId = aChannelId;
+  return NS_OK;
+}
+
+//-----------------------------------------------------------------------------
+// nsDataChannel::nsIChildChannel
+
+NS_IMETHODIMP
+nsDataChannel::ConnectParent(uint32_t aId) {
+  if (!IsNeckoChild()) {
+    return NS_ERROR_NOT_IMPLEMENTED;
+  }
+
+  mozilla::dom::ContentChild* cc =
+      static_cast<mozilla::dom::ContentChild*>(gNeckoChild->Manager());
+  if (cc->IsShuttingDown()) {
+    return NS_ERROR_FAILURE;
+  }
+
+  gNeckoChild->SendConnectBaseChannel(aId);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsDataChannel::CompleteRedirectSetup(nsIStreamListener* aListener) {
+  return AsyncOpen(aListener);
 }

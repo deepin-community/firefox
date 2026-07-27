@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -394,6 +392,14 @@ def detect_rustc_target(
         elif narrowed:
             candidates = narrowed
 
+        # The wasm32-wasi target was renamed to wasm32-wasip1
+        if host_or_target.raw_os == "wasi":
+            narrowed = [c for c in candidates if c.target.raw_os == "wasip1"]
+            if len(narrowed) == 1:
+                return narrowed[0].rust_target
+            elif narrowed:
+                candidates = narrowed
+
         # See if we can narrow down with the raw OS and raw CPU
         narrowed = [
             c
@@ -431,7 +437,7 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
         suffix=".rlib"
     ) as out_path:
         with open(in_path, "w") as fd:
-            source = b'pub extern fn hello() { println!("Hello world"); }'
+            source = b'pub extern "C" fn hello() { println!("Hello world"); }'
             log.debug("Creating `%s` with content:", in_path)
             with LineIO(lambda l: log.debug("| %s", l)) as out:
                 out.write(source)
@@ -495,11 +501,10 @@ def rust_host_triple(
                 """\
         The rust compiler host ({rustc}) is not suitable for the configure host ({configure}).
 
-        You can solve this by:
-        * Set your configure host to match the rust compiler host by editing your
-        mozconfig and adding "ac_add_options --host={rustc}".
-        * Or, install the rust toolchain for {configure}, if supported, by running
-        "rustup default stable-{rustc_target}"
+        To resolve this, install and select a Rust toolchain for {rustc_target}:
+          rustup default stable-{rustc_target}
+
+        Then rerun configure.
         """.format(
                     rustc=rustc_host,
                     configure=configure_host,
@@ -543,6 +548,13 @@ rustdoc = check_prog(
     allow_missing=True,
 )
 
+option(
+    env="RUSTDOCFLAGS",
+    nargs=1,
+    help="Extra options for the rustdoc program",
+)
+set_config("RUSTDOCFLAGS", depends_if("RUSTDOCFLAGS")(lambda flags: flags[0]))
+
 # This option is separate from --enable-tests because Rust tests are particularly
 # expensive in terms of compile time (especially for code in libxul).
 option(
@@ -581,7 +593,7 @@ set_config("RUSTC_NATVIS_LDFLAGS", rustc_natvis_ldflags)
 option(
     "--enable-rust-debug",
     default=depends(when="--enable-debug")(lambda: True),
-    help="{Build|Do not build} Rust code with debug assertions turned " "on.",
+    help="{Build|Do not build} Rust code with debug assertions turned on",
 )
 
 
@@ -696,16 +708,17 @@ def rust_compile_flags(
 # ==============================================================
 
 
-option("--disable-cargo-incremental", help="Disable incremental rust compilation.")
+option("--disable-cargo-incremental", help="Disable incremental rust compilation")
 
 
 @depends(
     developer_options,
     debug_rust,
-    "MOZ_AUTOMATION",
+    moz_automation,
     code_coverage,
     "--disable-cargo-incremental",
     using_sccache,
+    using_buildcache,
     "RUSTC_WRAPPER",
 )
 @imports("os")
@@ -716,6 +729,7 @@ def cargo_incremental(
     code_coverage,
     enabled,
     using_sccache,
+    using_buildcache,
     rustc_wrapper,
 ):
     """Return a value for the CARGO_INCREMENTAL environment variable."""
@@ -737,12 +751,13 @@ def cargo_incremental(
         return "0"
 
     # Incremental compilation doesn't work as well as it should, and if we're
-    # using sccache, it's better to use sccache than incremental compilation.
-    if not using_sccache and rustc_wrapper:
-        rustc_wrapper = os.path.basename(rustc_wrapper[0])
-        if os.path.splitext(rustc_wrapper)[0].lower() == "sccache":
-            using_sccache = True
-    if using_sccache:
+    # using a compiler cache, it's better to use it than incremental compilation.
+    using_compiler_cache = using_sccache or using_buildcache
+    if not using_compiler_cache and rustc_wrapper:
+        wrapper_name = os.path.splitext(os.path.basename(rustc_wrapper[0]))[0].lower()
+        if wrapper_name in ("sccache", "buildcache"):
+            using_compiler_cache = True
+    if using_compiler_cache:
         return "0"
 
     # Incremental compilation is automatically turned on for debug builds, so
