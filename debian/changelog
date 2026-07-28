@@ -1,3 +1,12 @@
+firefox (152.0.6-1deepin3) unstable; urgency=medium
+
+  * Fix edition 2024 compatibility with Rust 1.81 for workspace members
+  * Downgrade edition from 2024 to 2021 for geckodriver, marionette,
+    webdriver, mozdevice, mozrunner, mozprofile, mozversion, sync15
+    Cargo.toml
+
+ -- lichenggang <lichenggang@uniontech.com>  Tue, 28 Jul 2026 11:23:00 +0800
+
 firefox (152.0.6-1deepin2) unstable; urgency=medium
 
   * Lower Rust minimum version requirement to 1.81.0

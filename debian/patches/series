@@ -23,3 +23,4 @@ porting-riscv64/allowriscv64-use-gles.patch
 rust-min-version.patch
 cbindgen-min-version.patch
 ssl-tokens-cache-edition.patch
+edition-2024-to-2021.patch
